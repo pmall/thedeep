@@ -6,6 +6,8 @@
     <Nullable>enable</Nullable>
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
     <RootNamespace>TheDeep</RootNamespace>
+    <!-- Only FrameGrabber uses it: copying frames out of Godot's buffers without garbage. -->
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
   </PropertyGroup>
   <ItemGroup>
     <!-- The xUnit project has its own csproj; keep its sources out of the game assembly. -->

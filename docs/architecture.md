@@ -21,8 +21,9 @@ scenes/
   rooms/Block.tscn         one world block (Size + Surface)
   camera/SideCamera.tscn   camera + depth-of-field attributes
   ui/DebugHud.tscn         state/velocity/abilities readout + control hints
+  ui/OwnerCapture.tscn     F12 screenshot / F10 video: REC dot + saved-file toast
 scripts/
-  Main.cs                  spawns the player; adds SmokeDriver when run with `-- --smoke`
+  Main.cs                  spawns the player; adds SmokeDriver (`-- --smoke`) or CaptureTestDriver (`-- --capture-test`)
   core/InputActions.cs     input action names (StringName constants)
   core/PhysicsLayers.cs    physics layer bits
   player/Player.cs         body, input sampling, timers, movement helpers, state machine host
@@ -40,10 +41,18 @@ scripts/
   rooms/SurfaceKind.cs     Rock / Metal
   rooms/BackdropScatter.cs deterministic out-of-focus boxes (backdrop/foreground)
   ui/DebugHud.cs
+  capture/OwnerCapture.cs  owner capture keys (every build): files + state report to captures/
+  capture/FrameGrabber.cs  async GPU readback of the viewport into pooled buffers
+  capture/VideoEncoder.cs  ffmpeg process fed raw frames from a writer thread
+  capture/VideoClock.cs    wall-clock → constant-rate video frames
+  capture/FfmpegCommand.cs ffmpeg arguments, codec choice (NVENC, else x264)
+  capture/CaptureFiles.cs, CaptureReport.cs   capture names, sidecar text
   debug/DebugCheats.cs     R/Back respawn, F1–F5 toggle abilities (debug builds only)
   debug/SmokeDriver.cs     scripted smoke test
+  debug/CaptureTestDriver.cs  windowed capture check + frame times (`-- --capture-test`)
   util/Motion.cs           Approach / Damp
   util/Countdown.cs        coyote, buffers, cooldowns
+  util/FrameTimeStats.cs   average / percentile / worst frame times
 resources/player_tuning.tres   the live PlayerTuning values
 assets/materials/              placeholder materials (rock, metal, backdrop, foreground)
 tests/TheDeep.Tests/           xUnit (has .gdignore so Godot skips the folder)
@@ -80,6 +89,9 @@ Code with no Godot types is compiled straight into the xUnit project via `<Compi
 - `camera/CameraMath.cs`
 - `abilities/Ability.cs`
 - `abilities/AbilitySet.cs`
+- `util/FrameTimeStats.cs`
+- `capture/CaptureFiles.cs`, `capture/CaptureReport.cs`, `capture/VideoClock.cs`, `capture/FfmpegCommand.cs`
+- `capture/VideoEncoder.cs` (plain .NET; its tests run the real ffmpeg)
 
 Keep these Godot-free. When adding testable logic, put it in a Godot-free file and add it to `tests/TheDeep.Tests/TheDeep.Tests.csproj`. The future map solver and machine behavior logic follow this pattern ([long-term.md](long-term.md)).
 
@@ -95,3 +107,4 @@ Keep these Godot-free. When adding testable logic, put it in a Godot-free file a
 - Standard C# naming: PascalCase types, methods and properties; `_camelCase` private fields. One class per file, with the file named after the class.
 - Namespace `TheDeep` (player states: `TheDeep.States`).
 - Nullable reference types on, warnings are errors. Exported node and resource references are declared `= null!;`.
+- `unsafe` is allowed in the game assembly only for `FrameGrabber`, which copies frames out of Godot's native buffers through `Godot.NativeInterop` to avoid multi-megabyte allocations every frame. Don't spread it.

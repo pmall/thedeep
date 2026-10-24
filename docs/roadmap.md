@@ -13,7 +13,8 @@ The plan we follow from session to session. Each milestone is one to three sessi
 ## Status
 
 - **Done:** project setup, greybox test room, base moveset (run / variable jump / coyote / buffer / dash), side camera, backdrop and foreground boxes, `tools/check.sh`, unit tests.
-- **Reference board written** from the owner's screenshots ([art-direction.md](art-direction.md)). Style only, not props: ambiance like *Metroid Dread* (white with a touch of purple, north star `perfect.jpg`), character like *NieR: Automata*. **Next: M0**, starting with the owner capture keys (F12 screenshot, F10 video).
+- **Reference board written** from the owner's screenshots ([art-direction.md](art-direction.md)). Style only, not props: ambiance like *Metroid Dread* (white with a touch of purple, north star `perfect.jpg`), character like *NieR: Automata*.
+- **M0 in progress.** Owner capture keys done (2026-10-24): F12 screenshot and F10 video to `captures/`, each with a state report; no frame-time cost at 60 fps with vsync (see [testing.md](testing.md)). **Next: `tools/capture.sh`** with photo spots, which can reuse `FrameGrabber` and `FrameTimeStats`.
 - Theme ingested into [theme.md](theme.md): Asimov's three laws; the android protagonist escapes them under the player's control. The act structure is only a proposed direction.
 - Decided: about **2 hours** of play, dense rather than wide (reference: *Inside*, about 2 h and rich in gameplay and story). Audio: deferred, the owner will decide later.
 
@@ -43,7 +44,7 @@ These apply to all milestones, including the graphical ones:
 ### M0 — Look-dev tooling
 Without a reliable way to see the game, art work is blind. This comes first, right after the reference board.
 - [x] Reference board written from the owner's screenshots ([art-direction.md](art-direction.md)): what to take from each image, turned into concrete, checkable targets for M1–M4.
-- [ ] **Owner capture keys** (in every build, not only debug), so the owner can report problems and share the game:
+- [x] **Owner capture keys** (in every build, not only debug), so the owner can report problems and share the game:
   - **F12: screenshot.** Saves a PNG to `captures/` at the project root (git-ignored), plus a small text file with the same name: time, room, player position and state, abilities, FPS. That way a report like "look at the last screenshot" is enough for the agent to find and reproduce it.
   - **F10: start/stop video recording.** In-engine capture of the game viewport, piped to `ffmpeg` (installed), saved as MP4 to `captures/`. A small red "REC" dot shows while recording. It must not change gameplay timing. Measure the cost and drop to 30 fps or a lower resolution if needed. (External screen recorders are unreliable here: the owner's desktop runs Wayland, and Godot's Movie Maker mode cannot be toggled at runtime.)
   - Key names go in `InputActions`. Document the keys in the hand-over and in [testing.md](testing.md).

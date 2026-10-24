@@ -9,13 +9,19 @@
     <RootNamespace>TheDeep.Tests</RootNamespace>
   </PropertyGroup>
   <ItemGroup>
-    <!-- Keep in sync with the "Pure logic" list in AGENTS.md. These files must not use Godot types. -->
+    <!-- Keep in sync with the "Pure logic" list in docs/architecture.md. These files must not use Godot types. -->
     <Compile Include="../../scripts/util/Motion.cs" Link="Shared/Motion.cs" />
     <Compile Include="../../scripts/util/Countdown.cs" Link="Shared/Countdown.cs" />
     <Compile Include="../../scripts/tuning/JumpMath.cs" Link="Shared/JumpMath.cs" />
     <Compile Include="../../scripts/camera/CameraMath.cs" Link="Shared/CameraMath.cs" />
     <Compile Include="../../scripts/abilities/Ability.cs" Link="Shared/Ability.cs" />
     <Compile Include="../../scripts/abilities/AbilitySet.cs" Link="Shared/AbilitySet.cs" />
+    <Compile Include="../../scripts/util/FrameTimeStats.cs" Link="Shared/FrameTimeStats.cs" />
+    <Compile Include="../../scripts/capture/CaptureFiles.cs" Link="Shared/CaptureFiles.cs" />
+    <Compile Include="../../scripts/capture/CaptureReport.cs" Link="Shared/CaptureReport.cs" />
+    <Compile Include="../../scripts/capture/VideoClock.cs" Link="Shared/VideoClock.cs" />
+    <Compile Include="../../scripts/capture/FfmpegCommand.cs" Link="Shared/FfmpegCommand.cs" />
+    <Compile Include="../../scripts/capture/VideoEncoder.cs" Link="Shared/VideoEncoder.cs" />
   </ItemGroup>
   <ItemGroup>
     <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.12.0" />

@@ -6,11 +6,13 @@
 [ext_resource type="PackedScene" path="res://scenes/ui/DebugHud.tscn" id="4_hud"]
 [ext_resource type="Script" path="res://scripts/debug/DebugCheats.cs" id="5_cheats"]
 [ext_resource type="PackedScene" path="res://scenes/camera/SideCamera.tscn" id="6_camera"]
+[ext_resource type="PackedScene" path="res://scenes/ui/OwnerCapture.tscn" id="7_capture"]
 
-[node name="Main" type="Node3D" node_paths=PackedStringArray("Room", "Player")]
+[node name="Main" type="Node3D" node_paths=PackedStringArray("Room", "Player", "Capture")]
 script = ExtResource("1_main")
 Room = NodePath("TestRoom")
 Player = NodePath("Player")
+Capture = NodePath("OwnerCapture")
 
 [node name="TestRoom" parent="." instance=ExtResource("2_room")]
 
@@ -25,5 +27,9 @@ Player = NodePath("../Player")
 
 [node name="DebugCheats" type="Node" parent="." node_paths=PackedStringArray("Player", "Room")]
 script = ExtResource("5_cheats")
+Player = NodePath("../Player")
+Room = NodePath("../TestRoom")
+
+[node name="OwnerCapture" parent="." node_paths=PackedStringArray("Player", "Room") instance=ExtResource("7_capture")]
 Player = NodePath("../Player")
 Room = NodePath("../TestRoom")

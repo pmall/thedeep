@@ -16,6 +16,10 @@ public static class InputActions
     public static readonly StringName Attack = "attack";
     public static readonly StringName Interact = "interact";
 
+    // Owner capture keys (OwnerCapture), available in every build.
+    public static readonly StringName CaptureScreenshot = "capture_screenshot";
+    public static readonly StringName CaptureVideo = "capture_video";
+
     // Debug-only actions (handled by DebugCheats).
     public static readonly StringName DebugRespawn = "debug_respawn";
     public static readonly StringName DebugToggleMagGrip = "debug_toggle_mag_grip";
