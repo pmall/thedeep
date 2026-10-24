@@ -7,6 +7,7 @@ shader_type spatial;
 #include "res://assets/shaders/lib/noise.gdshaderinc"
 #include "res://assets/shaders/lib/palette.gdshaderinc"
 #include "res://assets/shaders/lib/surface.gdshaderinc"
+#include "res://assets/shaders/lib/water.gdshaderinc"
 
 uniform int slot : hint_enum("Rock", "Metal", "Backdrop", "Backdrop accent", "Foreground") = 0;
 
@@ -152,6 +153,7 @@ void fragment() {
 	rough = mix(rough, 0.04, puddle * wetness);
 
 	ALBEDO = albedo * shade;
+	EMISSION = ALBEDO * caustics_at(v_world_pos, view_to_world(f.normal, INV_VIEW_MATRIX), TIME);
 	ROUGHNESS = rough;
 	METALLIC = 0.0;
 	SPECULAR = mix(0.35, 0.5, wet);

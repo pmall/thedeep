@@ -18,9 +18,12 @@ scenes/
   Main.tscn                world (loads the start room), player, camera, HUD, debug cheats
   player/Player.tscn       capsule placeholder + emissive visor showing facing
   rooms/                   room scenes only (RoomValidator checks every .tscn here)
-  rooms/TestRoom.tscn      the first kit room: gameplay blocks, exits, kit dressing, lighting, backdrop
+  rooms/TestRoom.tscn      the first kit room: gameplay blocks, exits, kit dressing, lighting, shafts, fog volumes,
+                           water, particles, backdrop skylines, framing foreground
   kit/Block.tscn           one gameplay block (Size + Surface; collider + bevelled kit mesh)
   camera/SideCamera.tscn   camera + depth-of-field attributes
+  camera/ScreenGrade.tscn  finishing pass over the 3D view: vignette + grain (strengths from the biome)
+  fx/                      ambient particle effects (AmbientParticles): Dust, Silt, Drips
   ui/DebugHud.tscn         state/velocity/abilities readout + control hints
   ui/OwnerCapture.tscn     F12 screenshot / F10 video: REC dot + saved-file toast
 scripts/
@@ -46,6 +49,8 @@ scripts/
   rooms/Block.cs           gameplay box: collider, physics layer from Surface, kit mesh (or CollisionOnly), look override
   rooms/SurfaceKind.cs     Rock / Metal
   rooms/BackdropScatter.cs deterministic out-of-focus kit blocks (backdrop/foreground)
+  rooms/AmbientParticles.cs  particles filling a box (Extents, Density per m² of front face), fixed seed
+  rooms/WaterBody.cs       water: surface mesh + underwater fog volume, pushes water level/area globals
   kit/                     the environment kit (M2): procedural meshes, Godot-free geometry
     MeshData.cs, MeshBuilder.cs   vertices with a surface frame; bevelled boxes, sweeps, caps
     Profile.cs, PathFrame.cs, SweepPath.cs   cross-sections and paths (lines, bends, cables, arches)
@@ -77,12 +82,20 @@ assets/shaders/                the material library (M1), procedural, no UVs or 
   lib/noise.gdshaderinc        hashes, value noise, fbm, Voronoi borders
   lib/palette.gdshaderinc      the biome palette globals + srgb_to_linear
   lib/surface.gdshaderinc      the kit's surface frame from mesh attributes: patch UV, edge distance, height, bump, seed
+  lib/water.gdshaderinc        water globals + caustics (rock and metal include it)
   rock.gdshader                strata, cracks, silt, chipped edges, grime; `wetness` → wet stone
   metal.gdshader               ceramic-metal panels, seams, rivets, rust, streaks, chipped coating; `corrosion` → rust
   glyph.gdshader               emissive faith glyphs on a quad
+  water.gdshader               water surface: depth absorption, own screen-space reflections, ripples
+  underwater.gdshader          fog shader for the volume under a water surface
+  particle.gdshader            ambient particles on camera-facing quads (mote, streak, bubble), lit only by direct light
+  backdrop_silhouette.gdshader far skylines (cathedral, server halls) with their own haze and mist
+  screen_grade.gdshader        canvas pass: vignette + grain
   biome_surface.gdshader       flat palette color (still used by the foreground silhouettes)
 assets/materials/              rock, wet_stone, metal, rust, glyphs, cable; *_mid for the midground behind the
-                               play plane (stone_mid, metal_mid, rust_mid); backdrop_stone, backdrop_rust, foreground
+                               play plane (stone_mid, metal_mid, rust_mid); backdrop_stone, backdrop_rust, foreground;
+                               backdrop_cathedral, backdrop_halls; water, underwater, fog_clear; screen_grade
+assets/particles/              process materials and draw materials of the fx effects
 tests/TheDeep.Tests/           xUnit (has .gdignore so Godot skips the folder)
 tools/check.sh
 tools/capture.sh               look-dev photo spots + frame times + before/after sheet
@@ -95,7 +108,8 @@ tools/lookdev_compare.py       the before/after sheet (python3-pil)
 - **Composition:** scenes are small, with one responsibility each. `Main.tscn` wires the room, player, camera, HUD and cheats together through typed `[Export]` node references.
 - **Materials:** a material is a `.tres` (`ShaderMaterial`) referenced by blocks and scenes, never a shader assigned in code, so an authored material can replace it. Shaders read colors from the biome palette and the piece's **surface frame** from its mesh (`lib/surface.gdshaderinc`): UV is the position on a rectangular patch (a box face, one side of a swept profile) in meters, UV2 the patch size (negative along an axis that wraps, like a pipe's girth), TANGENT/BINORMAL the patch directions, COLOR.r the height above the piece's bottom (/ 8 m, 8-bit) and COLOR.g a per-part variation. Panels, seams and edge wear follow any kit piece that way, curved or not, with no texture UVs and no triplanar blending. A block's look can be overridden (`Block.Material`: wet stone, rust…) without touching its `Surface`, which alone decides the physics layer. Pieces behind the play plane use the `*_mid` materials (`shade` < 1), so the play plane stays the brightest layer and only grippable metal reads as bright metal.
 - **Environment kit:** each piece is a `[GlobalClass]` mesh resource (`ColumnMesh`, `ArchMesh`, `PipeMesh`…) deriving from `KitMesh : PrimitiveMesh`, used by a plain `MeshInstance3D`. Its geometry is pure C# (`KitShapes`, `MeshBuilder`), unit tested. Rooms place pieces as sub-resources (pieces sharing one resource share one generated mesh). Swapping in authored art means replacing the mesh resource; an authored mesh keeps the procedural materials only if it carries the same surface frame. Kit pieces are visual only: gameplay collision is `Block` boxes (`CollisionOnly` when a kit piece shows the block, like the grate platform).
-- **Biomes:** a room references a `BiomeProfile`. `Room.ApplyBiome` pushes the palette into global shader uniforms (`[shader_globals]` in `project.godot`, names in `ShaderGlobals`) and sets the room's environment, key light and lamps. Materials read the palette from those globals, so they follow the biome without per-room copies, and an authored material can replace a procedural one and still use them. Machines will take their colors from the same palette (M5).
+- **Biomes:** a room references a `BiomeProfile`. `Room.ApplyBiome` pushes the palette into global shader uniforms (`[shader_globals]` in `project.godot`, names in `ShaderGlobals`) and sets the room's environment, key light and lamps. Materials read the palette from those globals, so they follow the biome without per-room copies, and an authored material can replace a procedural one and still use them. Machines will take their colors from the same palette (M5). The biome also sets the volumetric fog, the color of the room's light shafts (`Room.Shafts`) and glyph lights (`Room.GlyphLights`), the far haze, water colors and caustics, and the finishing pass (vignette, grain) through `post_*` globals.
+- **Atmosphere in a room** (M3): light shafts are shadowed `SpotLight3D`s listed in `Room.Shafts`; a negative-density `FogVolume` (`fog_clear.tres`) keeps volumetric fog off the space in front of the play plane; ambient particles are instances of `scenes/fx/*.tscn` with `Extents` and `Density` set; water is a `WaterBody` (one per room for now: the water globals hold one level and area). Visual only: nothing here touches gameplay or collision.
 - **Rooms:** each room is its own scene in `scenes/rooms/` with a `Room` root: spawn point, camera bounds, biome, photo spots, and `RoomExit` markers. `World` (in `Main`) loads one; nodes that need the room (camera, cheats, capture) reference `World` and read `World.Room`. An exit's `Requires` is for leaving through it; the way back is the target exit's own, and a two-way exit's target must lead back (`OneWay` otherwise). `RoomValidator` (in `tools/check.sh`) checks every room: block edges on the 0.5 m grid and axis-aligned, kit piece origins on the 0.25 m grid, spawn and exits inside the bounds, exit requirements parse, targets exist and lead back, at least one photo spot. Room transitions come in M6, the map graph extractor in M7.
 
 ## Physics layers

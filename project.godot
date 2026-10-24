@@ -185,6 +185,38 @@ biome_silt={
 "type": "color",
 "value": Color(0.6, 0.6, 0.62, 1)
 }
+biome_haze={
+"type": "color",
+"value": Color(0.3, 0.3, 0.38, 1)
+}
+biome_shaft={
+"type": "color",
+"value": Color(1, 1, 1, 1)
+}
+biome_water={
+"type": "color",
+"value": Color(0.3, 0.32, 0.4, 1)
+}
+biome_water_deep={
+"type": "color",
+"value": Color(0.05, 0.07, 0.1, 1)
+}
+biome_caustic={
+"type": "color",
+"value": Color(1, 1, 1, 1)
+}
+biome_caustic_strength={
+"type": "float",
+"value": 0.0
+}
+water_level={
+"type": "float",
+"value": -10000.0
+}
+water_area={
+"type": "vec4",
+"value": Vector4(0, 0, 0, 0)
+}
 post_vignette={
 "type": "float",
 "value": 0.0

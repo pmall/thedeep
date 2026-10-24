@@ -16,7 +16,8 @@ The plan we follow from session to session. Each milestone is one to three sessi
 - **Reference board written** from the owner's screenshots ([art-direction.md](art-direction.md)). Style only, not props: ambiance like *Metroid Dread* (white with a touch of purple, north star `perfect.jpg`), character like *NieR: Automata*.
 - **M0 done (2026-10-24).** Owner capture keys (F12 screenshot, F10 video, each with a state report). `tools/capture.sh`: photo spots at 1080p, frame times, automatic before/after sheet, pixel-deterministic. `BiomeProfile` with Flooded (first pass at the `perfect.jpg` palette) and a Volcanic draft.
 - **M1 done (2026-10-24), pending the owner's eye.** Procedural material library: rock, wet stone, ceramic-metal, rust, emissive faith glyphs, with bevels, edge wear, grime by height and per-block variation; SSR for wet floors. New `Materials` photo spot. Frame time 2.3 → 4.5 ms average at 1080p (GPU 4.4 ms; budget 10 ms). Details in [art-direction.md](art-direction.md#current-state).
-- **M2 done (2026-10-24), pending the owner's eye.** Environment kit as generated meshes (blocks, columns, pipes, cables, arches and ribs, grates, server racks, wrecks), each a swappable mesh resource over pure, unit-tested geometry. Materials now read a surface frame from the mesh instead of a box uniform. Rooms are their own scenes, loaded by `World`; `RoomExit` markers carry a requirement expression (`MagGrip | Harpoon`) and a one-way flag; `RoomValidator` checks every room in `tools/check.sh`. The test room is rebuilt as a drowned cathedral hall (same gameplay, snapped to the grid, three sealed exits). New `Hall` and `Arcade` photo spots. Frame time 4.5 → 5.8 ms average. **Next: M3**, atmosphere and the three depth layers.
+- **M2 done (2026-10-24), pending the owner's eye.** Environment kit as generated meshes (blocks, columns, pipes, cables, arches and ribs, grates, server racks, wrecks), each a swappable mesh resource over pure, unit-tested geometry. Materials now read a surface frame from the mesh instead of a box uniform. Rooms are their own scenes, loaded by `World`; `RoomExit` markers carry a requirement expression (`MagGrip | Harpoon`) and a one-way flag; `RoomValidator` checks every room in `tools/check.sh`. The test room is rebuilt as a drowned cathedral hall (same gameplay, snapped to the grid, three sealed exits). New `Hall` and `Arcade` photo spots. Frame time 4.5 → 5.8 ms average.
+- **M3 done (2026-10-24), pending the owner's eye.** Volumetric fog set by the biome, with clear air in front of the play plane; two light shafts (the arcade one cut into rays); dust, silt and drips; the back of the hall flooded (water with reflections, underwater haze, caustics); two procedural backdrop skylines; a dark framing foreground; vignette and grain; tuned glow and glyph lights. SDFGI rejected on cost. Frame time 5.8 → 6.9 ms average (p99 7.8). Details in [art-direction.md](art-direction.md#current-state). **Next: M4**, the pilgrim.
 - Theme ingested into [theme.md](theme.md): Asimov's three laws; the android protagonist escapes them under the player's control. The act structure is only a proposed direction.
 - Decided: about **2 hours** of play, dense rather than wide (reference: *Inside*, about 2 h and rich in gameplay and story). Audio: deferred, the owner will decide later.
 
@@ -75,12 +76,12 @@ Without a reliable way to see the game, art work is blind. This comes first, rig
 - **Done when:** a room is assembled from kit pieces, collision matches the playable shapes, and exits are markers.
 
 ### M3 — Atmosphere and the three depth layers
-- [ ] Volumetric fog with local fog volumes, light shafts through openings, and emissive ruins as light sources.
-- [ ] The three layers formalized: authored backdrop planes (cathedral silhouettes, drowned server halls) with parallax and haze; a framing foreground (pipes, cables, rubble) that never hides gameplay.
-- [ ] Ambient particles: dust in light, drips, bubbles, floating silt; later steam, ice crystals, embers via the biome profile.
-- [ ] Water: surface shader, underwater fog and tint, caustics on walls (needed later by Ballast).
-- [ ] Post-processing: color grading, vignette, film grain, tuned glow. Possibly a custom compositor pass for the painterly depth haze.
-- [ ] A lighting quality pass: GI options (SDFGI/VoxelGI) evaluated against the frame budget.
+- [x] Volumetric fog with local fog volumes (clear air in front of the play plane, haze under water), light shafts through openings (shadowed spots, cut into rays), and emissive ruins as light sources (glyph lights).
+- [x] The three layers formalized: procedural backdrop skylines (cathedral silhouettes, drowned server halls) with parallax and their own haze; a framing foreground (pipe, cables, rubble) that stays out of the play area.
+- [x] Ambient particles: dust in light, drips, floating silt (`scenes/fx/`). Bubbles have a particle shape but no effect yet: seen through the water they vanish; they come with Ballast, when the player dives. Steam, ice crystals, embers later via the biome profile.
+- [x] Water: surface shader (absorption, own screen-space reflections, ripples), underwater fog and tint, caustics on walls (needed later by Ballast).
+- [x] Post-processing: color grading (existing), vignette, film grain, tuned glow. The custom compositor pass for painterly depth haze was not needed: skylines do their own haze.
+- [x] A lighting quality pass: SDFGI evaluated and rejected (+1.7 ms, p99 over budget, barely visible); VoxelGI needs a bake, revisit for dark interiors.
 - **Done when:** captures of the room look like a moody scene, not a test level, and stay within budget.
 
 ### M4 — The pilgrim (player character)

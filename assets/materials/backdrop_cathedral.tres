@@ -1,0 +1,17 @@
+[gd_resource type="ShaderMaterial" format=3]
+; Far backdrop: the drowned cathedral's skyline (bays, lancet windows, pinnacles, spires).
+
+[ext_resource type="Shader" path="res://assets/shaders/backdrop_silhouette.gdshader" id="1_shader"]
+
+[resource]
+shader = ExtResource("1_shader")
+shader_parameter/style = 0
+shader_parameter/seed = 1
+shader_parameter/bay_width = 9.0
+shader_parameter/height = 34.0
+shader_parameter/height_variation = 0.3
+shader_parameter/haze = 0.78
+shader_parameter/mist_height = 24.0
+shader_parameter/mist = 0.7
+shader_parameter/window_light = 0.7
+shader_parameter/lit_share = 0.4

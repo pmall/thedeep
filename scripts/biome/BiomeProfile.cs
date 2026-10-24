@@ -69,6 +69,9 @@ public partial class BiomeProfile : Resource
     [Export] public float FogDepthBegin { get; set; } = 24f;
     [Export] public float FogDepthEnd { get; set; } = 75f;
 
+    /// <summary>The far distance's color: backdrop skylines sink into it (they do their own haze).</summary>
+    [Export] public Color HazeColor { get; set; } = new(0.5f, 0.5f, 0.6f);
+
     /// <summary>Density of the volumetric fog: the haze that light shafts and lamps are seen in.</summary>
     [Export] public float VolumetricDensity { get; set; } = 0.02f;
 
@@ -97,6 +100,19 @@ public partial class BiomeProfile : Resource
 
     [Export] public float GlowIntensity { get; set; } = 0.6f;
 
+    /// <summary>What water surfaces reflect where no geometry is reflected: the haze above the water.</summary>
+    [ExportGroup("Water")]
+    [Export] public Color WaterTint { get; set; } = new(0.3f, 0.32f, 0.4f);
+
+    /// <summary>The water's own color with depth: what things under the surface sink into.</summary>
+    [Export] public Color WaterDeep { get; set; } = new(0.05f, 0.07f, 0.1f);
+
+    /// <summary>Color of the caustic light under and just above water.</summary>
+    [Export] public Color CausticColor { get; set; } = Colors.White;
+
+    /// <summary>Caustic light strength (0 none).</summary>
+    [Export] public float CausticStrength { get; set; } = 0.5f;
+
     /// <summary>How much the screen's edges darken (0 none, 1 full), so the bright stage sits in a dark frame.</summary>
     [ExportGroup("Post")]
     [Export] public float Vignette { get; set; } = 0.5f;
@@ -119,10 +135,11 @@ public partial class BiomeProfile : Resource
     }
 
     /// <summary>
-    /// Re-themes a room: sets the palette globals, then the environment, key light, lamps and light shafts.
+    /// Re-themes a room: sets the palette globals, then the environment, key light, lamps, light shafts and
+    /// glyph lights.
     /// Only colors, energies and grading change; effects (SSAO, glow on/off…) stay as the room set them.
     /// </summary>
-    public void Apply(Environment environment, DirectionalLight3D keyLight, Light3D[] lamps, Light3D[] shafts)
+    public void Apply(Environment environment, DirectionalLight3D keyLight, Light3D[] lamps, Light3D[] shafts, Light3D[] glyphLights)
     {
         RenderingServer.GlobalShaderParameterSet(ShaderGlobals.BiomeRock, Rock);
         RenderingServer.GlobalShaderParameterSet(ShaderGlobals.BiomeMetal, Metal);
@@ -133,6 +150,12 @@ public partial class BiomeProfile : Resource
         RenderingServer.GlobalShaderParameterSet(ShaderGlobals.BiomeParticle, ParticleTint);
         RenderingServer.GlobalShaderParameterSet(ShaderGlobals.BiomeRust, Rust);
         RenderingServer.GlobalShaderParameterSet(ShaderGlobals.BiomeSilt, Silt);
+        RenderingServer.GlobalShaderParameterSet(ShaderGlobals.BiomeHaze, HazeColor);
+        RenderingServer.GlobalShaderParameterSet(ShaderGlobals.BiomeShaft, ShaftColor);
+        RenderingServer.GlobalShaderParameterSet(ShaderGlobals.BiomeWater, WaterTint);
+        RenderingServer.GlobalShaderParameterSet(ShaderGlobals.BiomeWaterDeep, WaterDeep);
+        RenderingServer.GlobalShaderParameterSet(ShaderGlobals.BiomeCaustic, CausticColor);
+        RenderingServer.GlobalShaderParameterSet(ShaderGlobals.BiomeCausticStrength, CausticStrength);
         RenderingServer.GlobalShaderParameterSet(ShaderGlobals.PostVignette, Vignette);
         RenderingServer.GlobalShaderParameterSet(ShaderGlobals.PostVignetteColor, VignetteColor);
         RenderingServer.GlobalShaderParameterSet(ShaderGlobals.PostGrain, Grain);
@@ -169,7 +192,15 @@ public partial class BiomeProfile : Resource
         {
             shaft.LightColor = ShaftColor;
         }
+
+        foreach (Light3D glyphLight in glyphLights)
+        {
+            glyphLight.LightColor = GlyphLightColor;
+        }
     }
+
+    /// <summary>The faith glyphs' light: the accent toward white, as the glyph shader draws it (its `whiten`).</summary>
+    public Color GlyphLightColor => Accent.Lerp(Colors.White, 0.35f);
 
     /// <summary>A 1D lookup from <see cref="Lift"/> to <see cref="Gain"/>: a per-channel lift/gain grade.</summary>
     private GradientTexture1D GradeLookup() => new()

@@ -1,0 +1,17 @@
+[gd_resource type="ShaderMaterial" format=3]
+; Far backdrop, nearer layer: towers of ancient servers with a few lit slits.
+
+[ext_resource type="Shader" path="res://assets/shaders/backdrop_silhouette.gdshader" id="1_shader"]
+
+[resource]
+shader = ExtResource("1_shader")
+shader_parameter/style = 1
+shader_parameter/seed = 4
+shader_parameter/bay_width = 6.0
+shader_parameter/height = 20.0
+shader_parameter/height_variation = 0.55
+shader_parameter/haze = 0.62
+shader_parameter/mist_height = 14.0
+shader_parameter/mist = 0.55
+shader_parameter/window_light = 0.55
+shader_parameter/lit_share = 1.0
