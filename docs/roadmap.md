@@ -13,7 +13,7 @@ The plan we follow from session to session. Each milestone is one to three sessi
 ## Status
 
 - **Done:** project setup, greybox test room, base moveset (run / variable jump / coyote / buffer / dash), side camera, backdrop and foreground boxes, `tools/check.sh`, unit tests.
-- **Reference board written** from the owner's screenshots ([art-direction.md](art-direction.md)). North star: `perfect.jpg` (white *Metroid Dread* with a touch of purple, staged like *NieR: Automata*'s 2D sections). **Next: M0.**
+- **Reference board written** from the owner's screenshots ([art-direction.md](art-direction.md)). Style only, not props: ambiance like *Metroid Dread* (white with a touch of purple, north star `perfect.jpg`), character like *NieR: Automata*. **Next: M0.**
 - Theme ingested into [theme.md](theme.md): Asimov's three laws; the android protagonist escapes them under the player's control. The act structure is only a proposed direction.
 - Decided: about **2 hours** of play, dense rather than wide (reference: *Inside*, about 2 h and rich in gameplay and story). Audio: deferred, the owner will decide later.
 
@@ -78,8 +78,8 @@ Without a reliable way to see the game, art work is blind. This comes first, rig
 
 ### M4 — The pilgrim (player character)
 - [ ] **Modular part system** (shared with machines in M5): chassis, locomotion, sensors, tools and ornaments, assembled in code with scale, proportions and palette.
-- [ ] The pilgrim built from parts: a readable silhouette, lamp/visor, cloak or cables, religious plating. It is a human-built android ([theme.md](theme.md)), so it should read as foreign among the native machines.
-- [ ] Procedural animation: stride, lean into acceleration, landing compression, idle breathing, secondary motion on cables or cloth.
+- [ ] The pilgrim built from parts, in the *NieR: Automata* style ([art-direction.md](art-direction.md)): a slender humanoid android, dark with white highlights, flowing secondary pieces (coat tails, hair, cables). It is human-built ([theme.md](theme.md)), so it should read as foreign among the native machines.
+- [ ] Procedural animation, graceful and acrobatic: stride, lean into acceleration, landing compression, idle breathing, flowing secondary motion on cloth, hair or cables.
 - [ ] Movement feedback: dash trail, landing dust, footstep sparks on metal and grit on rock, small screen shake, and a carried light so dark rooms stay readable.
 - **Done when:** the player is readable and alive in every capture, and movement feels heavier and more physical in play without any change to the tuning numbers.
 
