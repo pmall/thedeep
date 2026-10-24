@@ -6,19 +6,20 @@ The plan we follow from session to session. Each milestone is one to three sessi
 
 1. **One playable game, on a beautiful basis.** Art direction and graphical detail come first, before the game grows wide.
 2. **Procedural only, pushed as far as possible.** All visuals come from code: shaders, generated meshes, lighting, fog, particles, post-processing. No imported textures or models yet. Another art source comes later, so every visual piece must be **swappable** (a material, a part mesh) without touching gameplay.
-3. **Two long-term objectives shape the architecture from now on** (details in [LONG_TERM.md](LONG_TERM.md)):
+3. **Two long-term objectives shape the architecture from now on** (details in [long-term.md](long-term.md)):
    - **No two machines alike:** 150–200 behaviorally distinct machine species, built from modular parts and a shared behavior vocabulary.
    - **Any order, proven on every build:** abilities collectable in many orders, never a softlock, checked by a solver on every build.
 
 ## Status
 
 - **Done:** project setup, greybox test room, base moveset (run / variable jump / coyote / buffer / dash), side camera, backdrop and foreground boxes, `tools/check.sh`, unit tests.
-- **Next:** M0, look-dev tooling.
+- **Next session starts with the owner's reference screenshots** (what they want to implement). Turn them into the reference board in [art-direction.md](art-direction.md) (see "Reference board" there), then start M0.
+- Decided: about **2 hours** of play, dense rather than wide (reference: *Inside*, about 2 h and rich in gameplay and story). Audio: deferred, the owner will decide later.
 
 ## Session protocol
 
 Every session:
-1. Read `AGENTS.md`, this file and, when the milestone touches machines or the map, `LONG_TERM.md`.
+1. Read `AGENTS.md`, this file, then the docs that `AGENTS.md` lists for the task at hand.
 2. Work on the first unfinished milestone (or what the owner asks for).
 3. For any visual change, capture the photo spots (M0) **before and after** and look at them. Never judge visuals from code alone.
 4. `tools/check.sh` passes, then commit.
@@ -39,7 +40,8 @@ These apply to all milestones, including the graphical ones:
 ## Phase 1: visual foundation (procedural)
 
 ### M0 — Look-dev tooling
-Without a reliable way to see the game, art work is blind. This comes first.
+Without a reliable way to see the game, art work is blind. This comes first, right after the reference board.
+- [ ] Reference board written from the owner's screenshots ([art-direction.md](art-direction.md)): what to take from each image, turned into concrete, checkable targets for M1–M4.
 - [ ] `tools/capture.sh`: renders named **photo spots** (camera position + game state) to PNGs, using Movie Maker mode with vsync off. Output goes to a fresh folder per run.
 - [ ] Photo spots defined per room as marker nodes (for example "shaft bottom", "wide view", "player close-up").
 - [ ] Side-by-side before/after sheet, so changes are judged by comparison.
@@ -81,7 +83,7 @@ Without a reliable way to see the game, art work is blind. This comes first.
 - **Done when:** the player is readable and alive in every capture, and movement feels heavier and more physical in play without any change to the tuning numbers.
 
 ### M5 — Machine part library and first species prototypes
-Objective 1 starts here (`LONG_TERM.md`: "prototype the modular machine-part look early").
+Objective 1 starts here ([long-term.md](long-term.md): "prototype the modular machine-part look early").
 - [ ] Part library broad enough for clearly different silhouettes: legs, treads, fins, rotors; eyes, antennas; claws, drills, censers; prayer wheels, plating, cables.
 - [ ] `MachineSpecies` resource (`[GlobalClass]`): name, layer, parts, stats, palette (from the biome palette), behavior reference, and a placeholder creed line.
 - [ ] Behavior vocabulary v0, as pure logic where possible:
@@ -100,7 +102,6 @@ Objective 1 starts here (`LONG_TERM.md`: "prototype the modular machine-part loo
 - [ ] **Mag-grip**: snap corners first, then smoothing; metal detected by physics layer only.
 - [ ] A basic attack, health, damage, death and respawn, and a save point (a pilgrim shrine).
 - [ ] About 5 species living in the slice, a third of them non-hostile.
-- [ ] Ambient audio pass (see open decisions).
 - [ ] Connection markers carry real requirements in every slice room.
 - **Done when:** the owner plays the slice start to finish and it feels like the real game.
 
@@ -111,7 +112,7 @@ Objective 2's tools are built **before** content production, so the map is desig
 - [ ] Solver (pure C#, xUnit): state exploration over room + abilities owned; fails on any softlock with the exact path; reports the achievable orders.
 - [ ] Geometry sanity check: gaps and heights at each connection against limits derived from `player_tuning.tres`.
 - [ ] Debug command that prints the graph and achievable orders. Solver and checks added to `tools/check.sh`.
-- [ ] Scope locked, by default about 40–60 rooms, 5 abilities, 3–4 bosses, about 2 hours of play.
+- [ ] Scope locked: about 2 hours of play (decided). Dense rather than wide, like *Inside*: fewer rooms, each one with a purpose. Estimate 40–60 rooms, 5 abilities, 3–4 bosses.
 - **Done when:** the slice passes the solver and geometry checks inside `tools/check.sh`, and the full-map design passes the solver as a *draft planning graph*. That draft is only a design aid: during production, each room's real markers replace their part of it, and the markers stay the source of truth.
 
 ## Phase 3: production
@@ -124,13 +125,13 @@ For each layer:
 - [ ] Its species, grown by layer: older and stranger deeper down
 - [ ] A boss
 
-Machine checks join `tools/check.sh` once machines exist (`LONG_TERM.md`):
+Machine checks join `tools/check.sh` once machines exist ([long-term.md](long-term.md)):
 - [ ] Every species resource loads and references a valid behavior and valid parts.
 - [ ] Headless arena run per species, with and without the player nearby, fails on any error.
 - [ ] A species report: count per layer, plus flags for likely duplicates.
 - [ ] Bestiary: entries fill in from observed behaviors.
 
-Species growth follows `LONG_TERM.md`: about 10 good ones first, then by layer. Distinctness before count.
+Species growth follows [long-term.md](long-term.md): about 10 good ones first, then by layer. Distinctness before count.
 
 ## Phase 4: complete game
 
@@ -139,6 +140,10 @@ Species growth follows `LONG_TERM.md`: about 10 good ones first, then by layer. 
 - [ ] Ending
 - [ ] Controller polish, accessibility options
 - [ ] Exported Linux and Windows builds, a performance pass on lower settings
+
+## Later: audio
+
+Deferred by the owner. Ask before planning it. It will likely matter for ambience (room tones, machinery, water), so keep hooks cheap: rooms and biome profiles can later reference ambience.
 
 ## Later: beyond procedural art
 
@@ -150,6 +155,6 @@ Once the procedural look has gone as far as it can, upgrade the visuals another 
 
 | Decision | Default until answered | Needed by |
 |---|---|---|
-| Audio: when and from where (procedural synthesis vs. free sound libraries) | Silent until M6; ambience then | M6 |
-| Game length and room count | About 2 h, 40–60 rooms | M7 |
-| Reference images for the mood (2–3 screenshots) | Work from the written art direction | M1–M3 (helps a lot) |
+| Audio: when and from where | Silent; owner decides later | — |
+| Reference images for the mood | Owner brings screenshots next session | Before M0 |
+| Exact room count | 40–60, refined in M7 | M7 |
