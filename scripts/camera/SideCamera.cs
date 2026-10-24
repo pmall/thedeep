@@ -10,7 +10,7 @@ namespace TheDeep;
 public partial class SideCamera : Camera3D
 {
     [Export] public Player Target { get; set; } = null!;
-    [Export] public Room Room { get; set; } = null!;
+    [Export] public World World { get; set; } = null!;
 
     /// <summary>Distance from the play plane (Z = 0) to the camera.</summary>
     [Export] public float Distance { get; set; } = 22f;
@@ -151,7 +151,7 @@ public partial class SideCamera : Camera3D
         Vector2 viewport = GetViewport().GetVisibleRect().Size;
         float halfWidth = halfHeight * (viewport.Y > 0f ? viewport.X / viewport.Y : 16f / 9f);
         return new Vector2(
-            CameraMath.ClampAxis(center.X, halfWidth, Room.BoundsMin.X, Room.BoundsMax.X),
-            CameraMath.ClampAxis(center.Y, halfHeight, Room.BoundsMin.Y, Room.BoundsMax.Y));
+            CameraMath.ClampAxis(center.X, halfWidth, World.Room.BoundsMin.X, World.Room.BoundsMax.X),
+            CameraMath.ClampAxis(center.Y, halfHeight, World.Room.BoundsMin.Y, World.Room.BoundsMax.Y));
     }
 }

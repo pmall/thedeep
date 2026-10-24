@@ -1,0 +1,11 @@
+[gd_resource type="ShaderMaterial" format=3]
+
+[ext_resource type="Shader" path="res://assets/shaders/metal.gdshader" id="1_shader"]
+
+; Metal behind the play plane (racks, machinery): darker and duller than grippable metal.
+[resource]
+shader = ExtResource("1_shader")
+shader_parameter/shade = 0.5
+shader_parameter/corrosion = 0.4
+shader_parameter/clearcoat = 0.3
+shader_parameter/rim = 0.1

@@ -9,6 +9,7 @@ Run it after every change and before every commit. It stops at the first failure
 3. Smoke test:
    - (a) The main scene boots headless for 300 frames with no errors.
    - (b) A scripted run (`-- --smoke`, `scripts/debug/SmokeDriver.cs`) presses run, jump and dash through the real input actions. It must print `SMOKE OK`: moved ≥ 10 m, full jump ≥ 2.9 m, every base state entered, never left Z = 0.
+   - (c) Room check (`-- --validate-rooms`, `scripts/debug/RoomValidator.cs`): every scene in `scenes/rooms/` must print no `ROOM CHECK` error and the run `ROOMS OK`. It checks the grid (block edges 0.5 m, kit piece origins 0.25 m), axis-aligned blocks, spawn and exits inside the camera bounds, exit requirements, exit targets that exist and lead back, and at least one photo spot.
 4. xUnit tests in `tests/TheDeep.Tests`.
 
 The unit tests include `VideoEncoderTests`, which run the real `ffmpeg` (a required tool, see [toolchain.md](toolchain.md)).
@@ -43,7 +44,7 @@ Each run makes a fresh `lookdev/<date>_<time>[-label]/` (git-ignored) with:
 
 `tools/capture.sh label --biome volcanic` renders with another `BiomeProfile` (from `resources/biomes/`). `tools/capture.sh --compare A B` rebuilds a sheet for two existing runs. Runs are deterministic (fixed 60 fps game time, vsync off): two runs of the same build are pixel-identical, so any change in the sheet is real. The sheet needs `python3-pil` (installed).
 
-**Photo spots** are `PhotoSpot` markers under `PhotoSpots` in each room scene (`scripts/rooms/PhotoSpot.cs`). The marker *is* the camera: X/Y is where it looks, Z its distance from the play plane (gameplay uses 22). It also sets where the player stands, which way they face, and an optional FOV. Depth of field is refocused on the play plane at the spot's distance. Keep a spot's camera out of the foreground layer (Z 6–9 in the test room) unless that is the point. Add spots for anything a visual change should be judged on; the test room has Start, CloseUp, Platforms, Materials (rock, metal and glyphs up close), Shaft and Wide.
+**Photo spots** are `PhotoSpot` markers under `PhotoSpots` in each room scene (`scripts/rooms/PhotoSpot.cs`). The marker *is* the camera: X/Y is where it looks, Z its distance from the play plane (gameplay uses 22). It also sets where the player stands, which way they face, and an optional FOV. Depth of field is refocused on the play plane at the spot's distance. Keep a spot's camera out of the foreground layer (Z 6–9 in the test room) unless that is the point. Add spots for anything a visual change should be judged on; the test room has Start, CloseUp, Platforms, Materials (rock, metal and glyphs up close), Shaft, Wide, Hall (racks and a wreck from the floor) and Arcade (both tiers of the arcade, pipes, cables).
 
 How it works: `-- --lookdev <dir> [--size WxH]` adds `LookDevDriver`, which renders at a fixed size whatever the window (viewport stretch mode), grabs the settled frame of each spot with `FrameGrabber`, then plays `DemoInput` while measuring. Movie Maker mode is not used: it would write every frame, while `--fixed-fps 60` gives the same deterministic timing.
 
@@ -91,7 +92,7 @@ What the owner does to test a build. Remind them of this when handing over:
    | Screenshot | F12 | Share |
    | Start/stop video | F10 | — |
 
-3. In debug builds, F6 cycles the room through the biome profiles (Flooded, Volcanic draft). `godot --path . -- --biome volcanic` starts with one.
+3. In debug builds, F6 cycles the room through the biome profiles (Flooded, Volcanic draft). `godot --path . -- --biome volcanic` starts with one, and `-- --room <Name>` starts in `scenes/rooms/<Name>.tscn`.
 4. The top-left readout shows the movement state, velocity, floor contact and dash cooldown.
 5. To report something, press F12 (or record with F10) and say "look at the last screenshot". Files land in `captures/`.
 6. Feedback is given in plain words ("floaty jump", "camera lags"). The agent translates it into tuning changes. The owner may also edit `resources/player_tuning.tres` and relaunch, which needs no rebuild.

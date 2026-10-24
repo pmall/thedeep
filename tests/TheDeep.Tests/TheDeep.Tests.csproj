@@ -22,6 +22,14 @@
     <Compile Include="../../scripts/capture/VideoClock.cs" Link="Shared/VideoClock.cs" />
     <Compile Include="../../scripts/capture/FfmpegCommand.cs" Link="Shared/FfmpegCommand.cs" />
     <Compile Include="../../scripts/capture/VideoEncoder.cs" Link="Shared/VideoEncoder.cs" />
+    <Compile Include="../../scripts/kit/MeshData.cs" Link="Shared/MeshData.cs" />
+    <Compile Include="../../scripts/kit/MeshBuilder.cs" Link="Shared/MeshBuilder.cs" />
+    <Compile Include="../../scripts/kit/Profile.cs" Link="Shared/Profile.cs" />
+    <Compile Include="../../scripts/kit/PathFrame.cs" Link="Shared/PathFrame.cs" />
+    <Compile Include="../../scripts/kit/SweepPath.cs" Link="Shared/SweepPath.cs" />
+    <Compile Include="../../scripts/kit/KitShapes.cs" Link="Shared/KitShapes.cs" />
+    <Compile Include="../../scripts/map/Requirement.cs" Link="Shared/Requirement.cs" />
+    <Compile Include="../../scripts/map/GridSnap.cs" Link="Shared/GridSnap.cs" />
   </ItemGroup>
   <ItemGroup>
     <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.12.0" />

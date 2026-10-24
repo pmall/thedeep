@@ -29,10 +29,24 @@ The owner never opens the Godot editor. Every `.tscn`, `.tres`, `.cs` file and `
 ## Shaders
 
 - Global shader uniforms are declared in `project.godot` under `[shader_globals]` and named in `ShaderGlobals`. Godot passes `color` globals to shaders **without** sRGB-to-linear conversion (unlike material colors and `source_color` uniforms), so a shader using one as albedo must convert it (see `srgb_to_linear` in `assets/shaders/biome_surface.gdshader`). Values stay in sRGB everywhere they are written.
-- Shared shader code lives in `assets/shaders/lib/*.gdshaderinc` (`#include "res://…"`). Varyings can only be **assigned** in `vertex()` itself, not in a function it calls, hence the `BOX_VERTEX` macro in `lib/box.gdshaderinc`.
-- Per-instance values use `instance uniform` in the shader and `SetInstanceShaderParameter` in C#, with names from `ShaderInstance`.
+- Shared shader code lives in `assets/shaders/lib/*.gdshaderinc` (`#include "res://…"`). Varyings can only be **assigned** in `vertex()` itself, not in a function it calls, and built-ins (`UV`, `COLOR`, `TANGENT`…) are only readable in `vertex()`/`fragment()` themselves, hence the `SURFACE_VERTEX` and `SURFACE` macros in `lib/surface.gdshaderinc`.
+- Per-instance values use `instance uniform` in the shader and `SetInstanceShaderParameter` in C#; keep their names in a constants class like `ShaderGlobals` (none are in use today).
+- Vertex colors are stored as **8-bit** (`COLOR`): fine for 0–1 values, not for meters (the kit stores height / 8 m). Godot's `BINORMAL` is `cross(NORMAL, TANGENT) * tangent.w`.
 - `tools/check.sh` (headless import) compiles every shader and fails on `SHADER ERROR`, so a broken shader never reaches the look-dev step.
 - `.tscn` and `.tres` files accept `;` comment lines after the header line. Use them sparingly, for instance to say what a photo spot shows.
+
+## Procedural meshes
+
+Kit pieces are `PrimitiveMesh` subclasses (`scripts/kit/KitMesh.cs`) overriding `_CreateMeshArray()`. In a `.tscn` they are sub-resources of the native base type with the script attached, and their exported properties:
+
+```
+[sub_resource type="PrimitiveMesh" id="Arch_arcade"]
+script = ExtResource("17_arch")
+Span = 8
+Rise = 5
+```
+
+Every exported property's setter calls `RequestUpdate()`, so the mesh rebuilds when it changes. Front faces are **clockwise** in Godot; `MeshBuilder` orients triangles from the vertex normals, so geometry code only has to get normals right.
 
 ## Physics interpolation
 

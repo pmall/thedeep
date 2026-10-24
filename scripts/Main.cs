@@ -3,7 +3,7 @@ using Godot;
 
 namespace TheDeep;
 
-/// <summary>Boots the test room: puts the player at the room's spawn point.</summary>
+/// <summary>Boots the game: the world loads the start room, then the player goes to its spawn point.</summary>
 public partial class Main : Node3D
 {
     /// <summary>User argument (after `--`) that runs the scripted smoke test, used by tools/check.sh.</summary>
@@ -19,22 +19,46 @@ public partial class Main : Node3D
     /// <summary>`--biome &lt;name&gt;`: start with resources/biomes/&lt;name&gt;.tres instead of the room's own.</summary>
     private const string BiomeArgument = "--biome";
 
-    [Export] public Room Room { get; set; } = null!;
+    /// <summary>`--room &lt;name&gt;`: start in scenes/rooms/&lt;name&gt;.tscn instead of the world's start room.</summary>
+    private const string RoomArgument = "--room";
+
+    /// <summary>User argument that checks every room scene and quits (see RoomValidator), used by tools/check.sh.</summary>
+    private const string ValidateRoomsArgument = "--validate-rooms";
+
+    [Export] public World World { get; set; } = null!;
     [Export] public Player Player { get; set; } = null!;
     [Export] public OwnerCapture Capture { get; set; } = null!;
     [Export] public SideCamera Camera { get; set; } = null!;
     [Export] public DebugHud Hud { get; set; } = null!;
 
+    public override void _EnterTree()
+    {
+        // Before the world is ready, so it loads the requested room instead of its start room.
+        if (ArgumentValue(OS.GetCmdlineUserArgs(), RoomArgument) is { } roomName)
+        {
+            string path = World.RoomPath(roomName);
+            if (ResourceLoader.Exists(path))
+            {
+                World.StartRoom = GD.Load<PackedScene>(path);
+            }
+            else
+            {
+                GD.PushError($"no room named {roomName} ({path})");
+            }
+        }
+    }
+
     public override void _Ready()
     {
-        Player.Respawn(Room.SpawnPoint.GlobalPosition);
+        Room room = World.Room;
+        Player.Respawn(room.SpawnPoint.GlobalPosition);
 
         string[] args = OS.GetCmdlineUserArgs();
         if (ArgumentValue(args, BiomeArgument) is { } biomeName)
         {
             if (BiomeProfile.Load(biomeName) is { } biome)
             {
-                Room.ApplyBiome(biome);
+                room.ApplyBiome(biome);
             }
             else
             {
@@ -42,7 +66,11 @@ public partial class Main : Node3D
             }
         }
 
-        if (Array.IndexOf(args, SmokeArgument) >= 0)
+        if (Array.IndexOf(args, ValidateRoomsArgument) >= 0)
+        {
+            AddChild(new RoomValidator());
+        }
+        else if (Array.IndexOf(args, SmokeArgument) >= 0)
         {
             AddChild(new SmokeDriver { Player = Player });
         }
@@ -54,7 +82,7 @@ public partial class Main : Node3D
         {
             var driver = new LookDevDriver
             {
-                Player = Player, Room = Room, Camera = Camera, Overlays = new CanvasLayer[] { Hud, Capture },
+                Player = Player, Room = room, Camera = Camera, Overlays = new CanvasLayer[] { Hud, Capture },
                 OutputDir = outputDir,
             };
             if (ArgumentValue(args, SizeArgument) is { } size && size.Split('x') is [var w, var h]

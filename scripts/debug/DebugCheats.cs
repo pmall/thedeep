@@ -9,7 +9,7 @@ namespace TheDeep;
 public partial class DebugCheats : Node
 {
     [Export] public Player Player { get; set; } = null!;
-    [Export] public Room Room { get; set; } = null!;
+    [Export] public World World { get; set; } = null!;
 
     /// <summary>Profiles F6 cycles through.</summary>
     [Export] public BiomeProfile[] Biomes { get; set; } = System.Array.Empty<BiomeProfile>();
@@ -38,15 +38,15 @@ public partial class DebugCheats : Node
     {
         if (@event.IsActionPressed(InputActions.DebugRespawn))
         {
-            Player.Respawn(Room.SpawnPoint.GlobalPosition);
+            Player.Respawn(World.Room.SpawnPoint.GlobalPosition);
             GetViewport().SetInputAsHandled();
             return;
         }
 
         if (@event.IsActionPressed(InputActions.DebugCycleBiome) && Biomes.Length > 0)
         {
-            int next = (System.Array.IndexOf(Biomes, Room.Biome) + 1) % Biomes.Length;
-            Room.ApplyBiome(Biomes[next]);
+            int next = (System.Array.IndexOf(Biomes, World.Room.Biome) + 1) % Biomes.Length;
+            World.Room.ApplyBiome(Biomes[next]);
             GD.Print($"[debug] biome: {Biomes[next].DisplayName}");
             GetViewport().SetInputAsHandled();
             return;

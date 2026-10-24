@@ -1,0 +1,9 @@
+[gd_resource type="ShaderMaterial" format=3]
+
+[ext_resource type="Shader" path="res://assets/shaders/rock.gdshader" id="1_shader"]
+
+; Rock for architecture behind the play plane (the arcade): darker, strata only, so the play plane reads first.
+[resource]
+shader = ExtResource("1_shader")
+shader_parameter/detail = false
+shader_parameter/shade = 0.6

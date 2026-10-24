@@ -6,4 +6,3 @@
 shader = ExtResource("1_shader")
 shader_parameter/slot = 2
 shader_parameter/detail = false
-shader_parameter/bevel_radius = 0.15

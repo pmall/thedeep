@@ -1,0 +1,10 @@
+[gd_resource type="ShaderMaterial" format=3]
+
+[ext_resource type="Shader" path="res://assets/shaders/biome_surface.gdshader" id="1_shader"]
+
+; Cables: dark rubber sheathing, slightly glossy.
+[resource]
+shader = ExtResource("1_shader")
+shader_parameter/slot = 4
+shader_parameter/metallic = 0.0
+shader_parameter/roughness = 0.45

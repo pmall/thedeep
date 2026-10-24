@@ -1,13 +1,13 @@
-// Metal: the pale, glossy "ceramic-metal" of the art direction. Each box face is cut into panels sized to
+// Metal: the pale, glossy "ceramic-metal" of the art direction. Each patch is cut into panels sized to
 // fit it, with seams, a crisp panel bevel and rivets; rust gathers in the creases and along the bottom,
-// wet streaks run down from the seams, the coating chips at the box edges. `corrosion` turns it into
-// rust. Glossy and cool, so it never reads as rock (mag-grip). Pattern in box space, so panels follow
-// the box edges.
+// wet streaks run down from the seams, the coating chips at the edges. `corrosion` turns it into
+// rust. Glossy and cool, so it never reads as rock (mag-grip). Pattern on the surface frame (lib/surface),
+// so panels fit each box face or pipe and follow its edges.
 shader_type spatial;
 
 #include "res://assets/shaders/lib/noise.gdshaderinc"
 #include "res://assets/shaders/lib/palette.gdshaderinc"
-#include "res://assets/shaders/lib/box.gdshaderinc"
+#include "res://assets/shaders/lib/surface.gdshaderinc"
 
 uniform int slot : hint_enum("Rock", "Metal", "Backdrop", "Backdrop accent", "Foreground") = 1;
 
@@ -26,18 +26,20 @@ uniform float rivet_share : hint_range(0.0, 1.0) = 0.45;
 group_uniforms wear;
 /// 0 = clean coating, 1 = mostly rust.
 uniform float corrosion : hint_range(0.0, 1.0) = 0.25;
-/// Width of chipped coating along the box edges, meters.
+/// Width of chipped coating along the edges, meters.
 uniform float edge_chip : hint_range(0.0, 0.3) = 0.07;
 uniform float streaks : hint_range(0.0, 1.0) = 0.5;
 uniform float grime_height : hint_range(0.0, 4.0) = 1.0;
 uniform float grime_strength : hint_range(0.0, 1.0) = 0.35;
-uniform float bevel_radius : hint_range(0.0, 0.2) = 0.035;
 
 group_uniforms coating;
 uniform float roughness : hint_range(0.0, 1.0) = 0.32;
 uniform float metallic : hint_range(0.0, 1.0) = 0.25;
 uniform float clearcoat : hint_range(0.0, 1.0) = 0.6;
 uniform float rim : hint_range(0.0, 1.0) = 0.25;
+/// Albedo multiplier. Below 1 pushes a piece back behind the play plane (midground), so grippable
+/// metal on the play plane stays the brightest metal on screen.
+uniform float shade : hint_range(0.0, 1.0) = 1.0;
 group_uniforms;
 
 struct Panels {
@@ -88,21 +90,21 @@ Panels panels_at(vec2 uv, vec2 size, float seed, float aa) {
 }
 
 void vertex() {
-	BOX_VERTEX
+	SURFACE_VERTEX
 }
 
 void fragment() {
-	BoxFace f = box_face();
+	Surface f = SURFACE;
 	float seed = v_seed;
 	vec3 p = v_world_pos;
-	bool side = abs(f.normal.y) < 0.5;
+	bool side = abs(view_to_world(f.normal, INV_VIEW_MATRIX).y) < 0.5;
 	float aa = max(fwidth(f.uv.x), fwidth(f.uv.y)) * 0.75;
 
 	Panels pn = panels_at(f.uv, f.size, seed, aa);
 	const float e = 0.004;
 	float hx = panels_at(f.uv + vec2(e, 0.0), f.size, seed, aa).height;
 	float hy = panels_at(f.uv + vec2(0.0, e), f.size, seed, aa).height;
-	vec3 n = box_bump(f, box_bevel_normal(f, bevel_radius), vec2(hx - pn.height, hy - pn.height) / e);
+	vec3 n = surface_bump(f, f.normal, vec2(hx - pn.height, hy - pn.height) / e);
 
 	vec3 coat = palette_color(slot) * (0.94 + 0.12 * pn.panel) * (0.96 + 0.08 * seed);
 	float blotch = fbm3(p * 0.7 + seed * 9.0, 3);
@@ -117,7 +119,7 @@ void fragment() {
 	rust = clamp(rust, 0.0, 1.0);
 	vec3 rust_color = srgb_to_linear(biome_rust.rgb) * (0.75 + 0.5 * fbm3(p * 6.0, 2));
 
-	// Coating chipped along the box edges shows bare, darker metal.
+	// Coating chipped along the edges shows bare, darker metal.
 	float chip = 1.0 - smoothstep(0.0, edge_chip * (0.3 + 1.4 * value_noise3(p * 4.0 + seed * 3.0)), f.edge);
 	chip = step(0.5, chip);
 
@@ -150,7 +152,7 @@ void fragment() {
 	albedo *= 1.0 - pn.seam * 0.65;
 	albedo = mix(albedo, coat * 1.08, pn.rivet * (1.0 - rust));
 
-	ALBEDO = albedo;
+	ALBEDO = albedo * shade;
 	ROUGHNESS = clamp(rough, 0.05, 1.0);
 	METALLIC = metal;
 	CLEARCOAT = coat_amount;
@@ -159,5 +161,5 @@ void fragment() {
 	RIM_TINT = 0.6;
 	AO = 1.0 - pn.seam * 0.7 - pn.crease * 0.15;
 	AO_LIGHT_AFFECT = 0.2;
-	NORMAL = box_to_view(n, MODEL_MATRIX, VIEW_MATRIX);
+	NORMAL = n;
 }

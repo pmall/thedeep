@@ -3,9 +3,11 @@ using Godot;
 namespace TheDeep;
 
 /// <summary>
-/// A greybox world block: a box of <see cref="Size"/> whose <see cref="Surface"/> sets both its
+/// A gameplay block: a box collider of <see cref="Size"/> whose <see cref="Surface"/> sets both its
 /// physics layer (world_rock / world_metal, the source of truth for gameplay) and its default material.
 /// <see cref="Material"/> overrides the look only (wet stone, rust…), never the physics layer.
+/// Its mesh is a bevelled kit block; <see cref="CollisionOnly"/> hides it when kit pieces dress the
+/// block instead (a grate, an arch), so collision stays a simple box under any visual.
 /// </summary>
 public partial class Block : StaticBody3D
 {
@@ -17,6 +19,12 @@ public partial class Block : StaticBody3D
     /// <summary>Optional look replacing the default material of <see cref="Surface"/>.</summary>
     [Export] public Material? Material { get; set; }
 
+    /// <summary>Chamfer on the mesh's edges, meters (visual only).</summary>
+    [Export] public float Bevel { get; set; } = 0.05f;
+
+    /// <summary>No mesh: the block is only collision, under kit pieces that show it.</summary>
+    [Export] public bool CollisionOnly { get; set; }
+
     public override void _Ready()
     {
         bool metal = Surface == SurfaceKind.Metal;
@@ -24,9 +32,15 @@ public partial class Block : StaticBody3D
         CollisionMask = 0;
 
         var mesh = GetNode<MeshInstance3D>("%Mesh");
-        mesh.Mesh = new BoxMesh { Size = Size };
-        mesh.MaterialOverride = Material ?? (metal ? MetalMaterial : RockMaterial);
-        mesh.SetInstanceShaderParameter(ShaderInstance.BoxSize, Size);
+        if (CollisionOnly)
+        {
+            mesh.QueueFree();
+        }
+        else
+        {
+            mesh.Mesh = new BlockMesh { Size = Size, Bevel = Bevel };
+            mesh.MaterialOverride = Material ?? (metal ? MetalMaterial : RockMaterial);
+        }
 
         GetNode<CollisionShape3D>("%Shape").Shape = new BoxShape3D { Size = Size };
     }

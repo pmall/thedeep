@@ -25,7 +25,7 @@ public partial class OwnerCapture : CanvasLayer
     private static readonly TimeSpan FinishTimeout = TimeSpan.FromSeconds(10);
 
     [Export] public Player Player { get; set; } = null!;
-    [Export] public Room Room { get; set; } = null!;
+    [Export] public World World { get; set; } = null!;
 
     /// <summary>Video frame rate. The game's own frame rate is unaffected.</summary>
     [Export] public int VideoFps { get; set; } = 60;
@@ -333,7 +333,7 @@ public partial class OwnerCapture : CanvasLayer
         Vector2I window = DisplayServer.WindowGetSize();
         return new CaptureReport(title)
             .Add("time", DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss", CultureInfo.InvariantCulture))
-            .Add("room", $"{Room.Name} ({Room.SceneFilePath})")
+            .Add("room", $"{World.Room.Name} ({World.Room.SceneFilePath})")
             .Add("position", FormatVector(position))
             .Add("velocity", FormatVector(velocity))
             .Add("state", Player.CurrentState.Name)

@@ -67,4 +67,11 @@ M1 material library in place (2026-10-24), judged on the test room's photo spots
 - The palette gained `Rust` and `Silt` in `BiomeProfile`.
 - Backdrop pillars use the rock shader without detail (strata and tone only); the magenta hulks use metal panels.
 
+M2 environment kit in place (2026-10-24):
+- **Generated meshes** (`scripts/kit/`): bevelled blocks (real chamfers with smooth normals replace M1's fake shader bevel), clustered and faceted columns, pipes with rounded bends and flanges, sagging cable bundles, round and pointed (Gothic) arches, iron ribs with an inner fin, grates, server racks with missing and pulled-out bays, seeded heaps of broken machinery (a fallen tank, a gear, plates, pipe stubs).
+- The materials draw on any piece through its surface frame, so pipes get welded seams and collars, arches get strata, and racks get panels with no extra work.
+- **Midground rule:** pieces behind the play plane use the `*_mid` materials (darker, duller), so the play plane stays the brightest layer and only grippable metal reads as bright pale metal.
+- The test room is now a drowned industrial cathedral: a two-tier arcade (clustered piers and pointed arches below, slim columns and round arches above), two rows of server racks on a wet back floor, a rust pipe run, risers behind the shaft, cables between the capitals, wrecks, and magenta iron ribs far back (they replace M1's floating magenta boxes as the backdrop accent).
+- Cost: 5.8 ms average per frame at 1080p (4.5 ms before).
+
 Still missing compared with `perfect.jpg`: the pale, bright stage (the scene is darker and bluer than the reference), the light shaft, vignette and dark frame, bloom on a few emissives (M3), and the dark android (M4). The player capsule is still grey and low in contrast.

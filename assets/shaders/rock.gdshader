@@ -1,12 +1,12 @@
 // Rock: layered strata, cracks, silt settled in crevices and on ledges, chipped edges, grime near the
 // ground. With `wetness` it becomes wet stone (darker, glossy, puddles on top faces). Matte and warm
 // so it never reads as metal (mag-grip). Pattern in world space: strata and cracks run on across
-// neighbouring blocks; the box (lib/box) only adds edges, bevels and grime by height.
+// neighbouring pieces; the surface frame (lib/surface) only adds edge wear and grime by height.
 shader_type spatial;
 
 #include "res://assets/shaders/lib/noise.gdshaderinc"
 #include "res://assets/shaders/lib/palette.gdshaderinc"
-#include "res://assets/shaders/lib/box.gdshaderinc"
+#include "res://assets/shaders/lib/surface.gdshaderinc"
 
 uniform int slot : hint_enum("Rock", "Metal", "Backdrop", "Backdrop accent", "Foreground") = 0;
 
@@ -33,7 +33,8 @@ uniform float grime_height : hint_range(0.0, 4.0) = 1.2;
 uniform float grime_strength : hint_range(0.0, 1.0) = 0.45;
 
 group_uniforms edges;
-uniform float bevel_radius : hint_range(0.0, 0.3) = 0.07;
+/// Width of the worn band along edges, meters (varies along the edge).
+uniform float wear_width : hint_range(0.0, 0.3) = 0.07;
 /// Paler, freshly exposed stone along the edges.
 uniform float edge_wear : hint_range(0.0, 1.0) = 0.5;
 
@@ -43,6 +44,9 @@ uniform float roughness : hint_range(0.0, 1.0) = 0.9;
 uniform float wetness : hint_range(0.0, 1.0) = 0.0;
 /// Turns detail off for distant, blurred pieces (backdrop): only tone and strata remain.
 uniform bool detail = true;
+/// Albedo multiplier. Below 1 pushes a piece back behind the play plane (midground), so the play
+/// plane stays the brightest, most readable layer.
+uniform float shade : hint_range(0.0, 1.0) = 1.0;
 group_uniforms;
 
 struct Rock {
@@ -93,13 +97,13 @@ Rock rock_at(vec3 p, vec3 t, vec3 b, float seed) {
 }
 
 void vertex() {
-	BOX_VERTEX
+	SURFACE_VERTEX
 }
 
 void fragment() {
-	BoxFace f = box_face();
-	vec3 t = box_to_world(f.tangent, MODEL_MATRIX);
-	vec3 b = box_to_world(f.bitangent, MODEL_MATRIX);
+	Surface f = SURFACE;
+	vec3 t = view_to_world(f.tangent, INV_VIEW_MATRIX);
+	vec3 b = view_to_world(f.bitangent, INV_VIEW_MATRIX);
 	vec3 p = v_world_pos;
 	float seed = v_seed;
 
@@ -107,26 +111,25 @@ void fragment() {
 	vec3 n = f.normal;
 	float chipped = 0.0;
 	if (detail) {
-		// Bump from the height field by finite differences along the face.
+		// Bump from the height field by finite differences along the surface.
 		const float e = 0.006;
 		float hx = rock_at(p + t * e, t, b, seed).height;
 		float hy = rock_at(p + b * e, t, b, seed).height;
-		// Chipped edges: the bevel varies along the edge.
+		// Worn edges: the band's width varies along the edge.
 		float chip_noise = value_noise3(p * 3.1 + seed * 5.0);
-		float radius = bevel_radius * (0.4 + 1.2 * chip_noise);
-		chipped = (1.0 - smoothstep(0.0, radius * 1.6, f.edge)) * edge_wear;
-		n = box_bump(f, box_bevel_normal(f, radius), vec2(hx - r.height, hy - r.height) / e);
-	} else {
-		n = box_bevel_normal(f, bevel_radius);
+		float width = wear_width * (0.4 + 1.2 * chip_noise);
+		chipped = (1.0 - smoothstep(0.0, width * 1.6, f.edge)) * edge_wear;
+		n = surface_bump(f, n, vec2(hx - r.height, hy - r.height) / e);
 	}
-	bool side = abs(f.normal.y) < 0.5;
+	vec3 face_world_n = view_to_world(f.normal, INV_VIEW_MATRIX);
+	bool side = abs(face_world_n.y) < 0.5;
 	// Puddles on top faces: still water is flat, so it reflects cleanly (SSR).
 	float puddle = 0.0;
 	if (!side && wetness > 0.0) {
 		puddle = smoothstep(0.42, 0.5, value_noise3(p * 0.45 + seed * 3.0)) * (1.0 - r.cavity);
 		n = normalize(mix(n, f.normal, puddle));
 	}
-	vec3 world_n = box_to_world(n, MODEL_MATRIX);
+	vec3 world_n = view_to_world(n, INV_VIEW_MATRIX);
 
 	vec3 base = palette_color(slot) * (0.92 + 0.16 * seed);
 	vec3 albedo = base * r.tone;
@@ -137,7 +140,7 @@ void fragment() {
 	float silt = detail ? clamp(max(r.cavity * 0.8, settle) * silt_amount, 0.0, 1.0) : 0.0;
 	albedo = mix(albedo, srgb_to_linear(biome_silt.rgb), silt * 0.75);
 
-	// Grime by height: dirt and water stains near the bottom of each block's sides.
+	// Grime by height: dirt and water stains near the bottom of each piece's sides.
 	float grime = side ? (1.0 - smoothstep(0.0, grime_height, f.height + (value_noise3(p * 2.3) - 0.5) * 0.5)) : 0.0;
 	albedo *= 1.0 - grime * grime_strength;
 	albedo *= 1.0 - r.cavity * 0.3;
@@ -148,11 +151,11 @@ void fragment() {
 	float rough = mix(roughness, side ? 0.32 : 0.28, wet);
 	rough = mix(rough, 0.04, puddle * wetness);
 
-	ALBEDO = albedo;
+	ALBEDO = albedo * shade;
 	ROUGHNESS = rough;
 	METALLIC = 0.0;
 	SPECULAR = mix(0.35, 0.5, wet);
 	AO = 1.0 - r.cavity * 0.6;
 	AO_LIGHT_AFFECT = 0.25;
-	NORMAL = box_to_view(n, MODEL_MATRIX, VIEW_MATRIX);
+	NORMAL = n;
 }

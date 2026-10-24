@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# The check step: build, headless import, smoke test, unit tests. Stops at the first failure.
+# The check step: build, headless import, smoke test and room check, unit tests. Stops at the first failure.
 # Run after every change and before every commit:  tools/check.sh
 set -euo pipefail
 
@@ -36,7 +36,7 @@ step "2/4 headless import"
 scan_log "$LOG_DIR/import.log" "import"
 echo "ok"
 
-step "3/4 smoke test (main scene, headless)"
+step "3/4 smoke test and room check (main scene, headless)"
 # a) Idle boot of the main scene, exactly as the owner launches it.
 "$GODOT" --headless --path . --fixed-fps 60 --quit-after 300 >"$LOG_DIR/smoke_idle.log" 2>&1 \
     || { tail -20 "$LOG_DIR/smoke_idle.log"; fail "main scene exited non-zero"; }
@@ -48,6 +48,12 @@ echo "idle boot: ok"
 scan_log "$LOG_DIR/smoke_driver.log" "scripted smoke run"
 grep -q 'SMOKE OK' "$LOG_DIR/smoke_driver.log" || { tail -20 "$LOG_DIR/smoke_driver.log"; fail "scripted smoke run did not report SMOKE OK"; }
 grep 'SMOKE OK' "$LOG_DIR/smoke_driver.log"
+# c) Room scenes: grid, exits and their requirements, bounds (RoomValidator).
+"$GODOT" --headless --path . --fixed-fps 60 --quit-after 600 -- --validate-rooms >"$LOG_DIR/rooms.log" 2>&1 \
+    || { grep -E 'ROOM CHECK|ERROR' "$LOG_DIR/rooms.log" | head -40; fail "room check failed (full log: $LOG_DIR/rooms.log)"; }
+scan_log "$LOG_DIR/rooms.log" "room check"
+grep -q 'ROOMS OK' "$LOG_DIR/rooms.log" || { tail -20 "$LOG_DIR/rooms.log"; fail "room check did not report ROOMS OK"; }
+grep 'ROOMS OK' "$LOG_DIR/rooms.log"
 
 step "4/4 unit tests"
 if [ -f tests/TheDeep.Tests/TheDeep.Tests.csproj ]; then

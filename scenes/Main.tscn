@@ -1,6 +1,7 @@
 [gd_scene format=3]
 
 [ext_resource type="Script" path="res://scripts/Main.cs" id="1_main"]
+[ext_resource type="Script" path="res://scripts/rooms/World.cs" id="2_world"]
 [ext_resource type="PackedScene" path="res://scenes/rooms/TestRoom.tscn" id="2_room"]
 [ext_resource type="PackedScene" path="res://scenes/player/Player.tscn" id="3_player"]
 [ext_resource type="PackedScene" path="res://scenes/ui/DebugHud.tscn" id="4_hud"]
@@ -10,31 +11,34 @@
 [ext_resource type="Resource" path="res://resources/biomes/flooded.tres" id="8_flooded"]
 [ext_resource type="Resource" path="res://resources/biomes/volcanic.tres" id="9_volcanic"]
 
-[node name="Main" type="Node3D" node_paths=PackedStringArray("Room", "Player", "Capture", "Camera", "Hud")]
+[node name="Main" type="Node3D" node_paths=PackedStringArray("World", "Player", "Capture", "Camera", "Hud")]
 script = ExtResource("1_main")
-Room = NodePath("TestRoom")
+World = NodePath("World")
 Player = NodePath("Player")
 Capture = NodePath("OwnerCapture")
 Camera = NodePath("SideCamera")
 Hud = NodePath("DebugHud")
 
-[node name="TestRoom" parent="." instance=ExtResource("2_room")]
+; Loads the room scenes (first child, so the room exists before the camera and HUD are ready).
+[node name="World" type="Node3D" parent="."]
+script = ExtResource("2_world")
+StartRoom = ExtResource("2_room")
 
 [node name="Player" parent="." instance=ExtResource("3_player")]
 
-[node name="SideCamera" parent="." node_paths=PackedStringArray("Target", "Room") instance=ExtResource("6_camera")]
+[node name="SideCamera" parent="." node_paths=PackedStringArray("Target", "World") instance=ExtResource("6_camera")]
 Target = NodePath("../Player")
-Room = NodePath("../TestRoom")
+World = NodePath("../World")
 
 [node name="DebugHud" parent="." node_paths=PackedStringArray("Player") instance=ExtResource("4_hud")]
 Player = NodePath("../Player")
 
-[node name="DebugCheats" type="Node" parent="." node_paths=PackedStringArray("Player", "Room")]
+[node name="DebugCheats" type="Node" parent="." node_paths=PackedStringArray("Player", "World")]
 script = ExtResource("5_cheats")
 Player = NodePath("../Player")
-Room = NodePath("../TestRoom")
+World = NodePath("../World")
 Biomes = [ExtResource("8_flooded"), ExtResource("9_volcanic")]
 
-[node name="OwnerCapture" parent="." node_paths=PackedStringArray("Player", "Room") instance=ExtResource("7_capture")]
+[node name="OwnerCapture" parent="." node_paths=PackedStringArray("Player", "World") instance=ExtResource("7_capture")]
 Player = NodePath("../Player")
-Room = NodePath("../TestRoom")
+World = NodePath("../World")

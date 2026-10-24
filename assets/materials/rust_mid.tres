@@ -1,0 +1,10 @@
+[gd_resource type="ShaderMaterial" format=3]
+
+[ext_resource type="Shader" path="res://assets/shaders/metal.gdshader" id="1_shader"]
+
+; Rusted metal behind the play plane (pipes, wrecks).
+[resource]
+shader = ExtResource("1_shader")
+shader_parameter/shade = 0.7
+shader_parameter/corrosion = 0.95
+shader_parameter/streaks = 0.8

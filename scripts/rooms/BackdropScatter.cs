@@ -23,13 +23,15 @@ public partial class BackdropScatter : Node3D
     [Export] public Vector3 SizeMin { get; set; } = Vector3.One;
     [Export] public Vector3 SizeMax { get; set; } = new(3f, 10f, 3f);
 
+    /// <summary>Chamfer on the boxes' edges, meters.</summary>
+    [Export] public float Bevel { get; set; } = 0.1f;
+
     /// <summary>Boxes hang down from their base (ceiling clutter) instead of standing on it.</summary>
     [Export] public bool Hanging { get; set; }
 
     public override void _Ready()
     {
         var rng = new RandomNumberGenerator { Seed = (ulong)Seed };
-        var unitBox = new BoxMesh();
         for (int i = 0; i < Count; i++)
         {
             var size = new Vector3(
@@ -41,16 +43,13 @@ public partial class BackdropScatter : Node3D
                 rng.RandfRange(AreaMin.Y, AreaMax.Y),
                 rng.RandfRange(DepthRange.X, DepthRange.Y));
 
-            var box = new MeshInstance3D
+            AddChild(new MeshInstance3D
             {
-                Mesh = unitBox,
+                Mesh = new BlockMesh { Size = size, Bevel = Bevel },
                 MaterialOverride = Material,
                 CastShadow = GeometryInstance3D.ShadowCastingSetting.Off,
                 Position = basePosition + new Vector3(0f, (Hanging ? -0.5f : 0.5f) * size.Y, 0f),
-                Scale = size,
-            };
-            box.SetInstanceShaderParameter(ShaderInstance.BoxSize, size);
-            AddChild(box);
+            });
         }
     }
 }

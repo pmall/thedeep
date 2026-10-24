@@ -15,7 +15,8 @@ The plan we follow from session to session. Each milestone is one to three sessi
 - **Done:** project setup, greybox test room, base moveset (run / variable jump / coyote / buffer / dash), side camera, backdrop and foreground boxes, `tools/check.sh`, unit tests.
 - **Reference board written** from the owner's screenshots ([art-direction.md](art-direction.md)). Style only, not props: ambiance like *Metroid Dread* (white with a touch of purple, north star `perfect.jpg`), character like *NieR: Automata*.
 - **M0 done (2026-10-24).** Owner capture keys (F12 screenshot, F10 video, each with a state report). `tools/capture.sh`: photo spots at 1080p, frame times, automatic before/after sheet, pixel-deterministic. `BiomeProfile` with Flooded (first pass at the `perfect.jpg` palette) and a Volcanic draft.
-- **M1 done (2026-10-24), pending the owner's eye.** Procedural material library: rock, wet stone, ceramic-metal, rust, emissive faith glyphs, with bevels, edge wear, grime by height and per-block variation; SSR for wet floors. New `Materials` photo spot. Frame time 2.3 → 4.5 ms average at 1080p (GPU 4.4 ms; budget 10 ms). Details in [art-direction.md](art-direction.md#current-state). **Next: M2**, the modular environment kit and rooms as their own scenes.
+- **M1 done (2026-10-24), pending the owner's eye.** Procedural material library: rock, wet stone, ceramic-metal, rust, emissive faith glyphs, with bevels, edge wear, grime by height and per-block variation; SSR for wet floors. New `Materials` photo spot. Frame time 2.3 → 4.5 ms average at 1080p (GPU 4.4 ms; budget 10 ms). Details in [art-direction.md](art-direction.md#current-state).
+- **M2 done (2026-10-24), pending the owner's eye.** Environment kit as generated meshes (blocks, columns, pipes, cables, arches and ribs, grates, server racks, wrecks), each a swappable mesh resource over pure, unit-tested geometry. Materials now read a surface frame from the mesh instead of a box uniform. Rooms are their own scenes, loaded by `World`; `RoomExit` markers carry a requirement expression (`MagGrip | Harpoon`) and a one-way flag; `RoomValidator` checks every room in `tools/check.sh`. The test room is rebuilt as a drowned cathedral hall (same gameplay, snapped to the grid, three sealed exits). New `Hall` and `Arcade` photo spots. Frame time 4.5 → 5.8 ms average. **Next: M3**, atmosphere and the three depth layers.
 - Theme ingested into [theme.md](theme.md): Asimov's three laws; the android protagonist escapes them under the player's control. The act structure is only a proposed direction.
 - Decided: about **2 hours** of play, dense rather than wide (reference: *Inside*, about 2 h and rich in gameplay and story). Audio: deferred, the owner will decide later.
 
@@ -67,10 +68,10 @@ Without a reliable way to see the game, art work is blind. This comes first, rig
 - **Done when:** the test room reads as stone and corroded machinery, not as colored boxes, and rock and metal are distinct at a glance.
 
 ### M2 — Modular environment kit (generated meshes)
-- [ ] Mesh generators in code (`SurfaceTool`/`ArrayMesh`): bevelled blocks, arches, columns, pipes and cables along curves, grates, server racks, broken machinery, ribs of an industrial cathedral.
-- [ ] Kit pieces snap to a grid. Gameplay collision stays simple boxes, kept separate from the visual mesh.
-- [ ] **Room as its own scene**, with spawn points, camera bounds and **connection markers** (exits carrying a requirement expression and a one-way flag). Main loads rooms instead of embedding one.
-- [ ] Rebuild the test room as the first real room using the kit.
+- [x] Mesh generators in code (`PrimitiveMesh` resources over a pure C# `MeshBuilder`): bevelled blocks, arches, columns, pipes and cables along curves, grates, server racks, broken machinery, ribs of an industrial cathedral.
+- [x] Kit pieces snap to a grid (block edges 0.5 m, piece origins 0.25 m, checked by `RoomValidator`). Gameplay collision stays simple boxes, kept separate from the visual mesh.
+- [x] **Room as its own scene**, with spawn points, camera bounds and **connection markers** (`RoomExit`: target room and exit, a requirement expression, a one-way flag). `World` in Main loads rooms instead of embedding one.
+- [x] Rebuild the test room as the first real room using the kit.
 - **Done when:** a room is assembled from kit pieces, collision matches the playable shapes, and exits are markers.
 
 ### M3 — Atmosphere and the three depth layers
