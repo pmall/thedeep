@@ -21,7 +21,7 @@ A planet in the *Nirvanary* universe. Machines across many worlds seek "Nirvanar
 
 **The game is a descent:** deeper means older, stranger, hotter.
 
-Narrative is out of scope for now: placeholder text only. Given the *Inside* reference, expect storytelling to come mostly through environments and machine behavior rather than text. Keep rooms and machines able to carry that later.
+Narrative is out of scope for now: placeholder text only. Given the *Inside* reference, expect storytelling to come mostly through environments and machine behavior rather than text. Keep rooms and machines able to carry that later. The owner also wants **high-quality voiced dialogue** someday, with generated voices. So all text (dialogue, creeds, bestiary) is stored as data with stable line IDs, never hard-coded (see "Later: audio" in [roadmap.md](roadmap.md)).
 
 ## Owner workflow
 

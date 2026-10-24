@@ -143,7 +143,11 @@ Species growth follows [long-term.md](long-term.md): about 10 good ones first, t
 
 ## Later: audio
 
-Deferred by the owner. Ask before planning it. It will likely matter for ambience (room tones, machinery, water), so keep hooks cheap: rooms and biome profiles can later reference ambience.
+Deferred by the owner. Ask before planning it. Two parts:
+- **Ambience** (room tones, machinery, water). Keep hooks cheap: rooms and biome profiles can later reference ambience.
+- **High-quality voiced dialogue** (owner wish, "someday"). Generated voices, via an ElevenLabs MCP server or local TTS models, to be decided then. This fits the setting: machine voices can be processed (filters, vocoder-like effects) per species or layer.
+
+  To keep it cheap, when any text is written (placeholder lines, machine creeds, bestiary entries), store it as **data**: one entry per line with a stable ID, speaker, text and optional delivery notes. Never hard-code strings in scenes or scripts. Voice files can then be generated per line ID in a batch and re-generated when text changes.
 
 ## Later: beyond procedural art
 
