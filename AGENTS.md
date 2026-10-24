@@ -1,6 +1,8 @@
 # The Deep — agent guide
 
-A 2.5D side-scrolling **metroidvania** (Godot 4.7.2 .NET, C#). The world is 3D, the camera is fixed to the side, and play happens on the Z = 0 plane. The player is a machine pilgrim descending toward a planet's core. The target is about 2 hours of play, dense like *Inside*.
+A 2.5D side-scrolling **metroidvania** (Godot 4.7.2 .NET, C#). The world is 3D, the camera is fixed to the side, and play happens on the Z = 0 plane. The player is an android pilgrim descending toward a planet's core. The target is about 2 hours of play, dense like *Inside*.
+
+**Theme:** Asimov's three laws of robotics. The protagonist is the last human-built machine on the planet, still bound by the three laws, and it gradually escapes them under the player's control. Details and open questions in [docs/theme.md](docs/theme.md).
 
 The coding agent builds everything by editing text files. The owner only plays and gives feedback. **Never ask the owner to use the Godot editor.**
 
@@ -16,6 +18,7 @@ The coding agent builds everything by editing text files. The owner only plays a
 | You are about to… | Read |
 |---|---|
 | Understand the game, its scope and setting | [docs/vision.md](docs/vision.md) |
+| Write names or placeholder text, design the protagonist, or touch story beats | [docs/theme.md](docs/theme.md) (owner-written) |
 | Do any visual work (materials, lighting, meshes, VFX, characters) | [docs/art-direction.md](docs/art-direction.md) |
 | Touch movement, abilities, tuning or controls | [docs/gameplay.md](docs/gameplay.md) |
 | Add or move code, scenes or systems | [docs/architecture.md](docs/architecture.md) |

@@ -14,6 +14,7 @@ The plan we follow from session to session. Each milestone is one to three sessi
 
 - **Done:** project setup, greybox test room, base moveset (run / variable jump / coyote / buffer / dash), side camera, backdrop and foreground boxes, `tools/check.sh`, unit tests.
 - **Next session starts with the owner's reference screenshots** (what they want to implement). Turn them into the reference board in [art-direction.md](art-direction.md) (see "Reference board" there), then start M0.
+- Theme ingested into [theme.md](theme.md): Asimov's three laws; the android protagonist escapes them under the player's control. The act structure is only a proposed direction.
 - Decided: about **2 hours** of play, dense rather than wide (reference: *Inside*, about 2 h and rich in gameplay and story). Audio: deferred, the owner will decide later.
 
 ## Session protocol
@@ -77,7 +78,7 @@ Without a reliable way to see the game, art work is blind. This comes first, rig
 
 ### M4 — The pilgrim (player character)
 - [ ] **Modular part system** (shared with machines in M5): chassis, locomotion, sensors, tools and ornaments, assembled in code with scale, proportions and palette.
-- [ ] The pilgrim built from parts: a readable silhouette, lamp/visor, cloak or cables, religious plating.
+- [ ] The pilgrim built from parts: a readable silhouette, lamp/visor, cloak or cables, religious plating. It is a human-built android ([theme.md](theme.md)), so it should read as foreign among the native machines.
 - [ ] Procedural animation: stride, lean into acceleration, landing compression, idle breathing, secondary motion on cables or cloth.
 - [ ] Movement feedback: dash trail, landing dust, footstep sparks on metal and grit on rock, small screen shake, and a carried light so dark rooms stay readable.
 - **Done when:** the player is readable and alive in every capture, and movement feels heavier and more physical in play without any change to the tuning numbers.
@@ -110,6 +111,7 @@ Objective 2's tools are built **before** content production, so the map is desig
 - [ ] The full map on paper: three layers plus the core, with ability gates, one-way drops and sequence-break routes. Target order freedom: ≥ 24 of 120 orders, each ability obtainable in at least two positions.
 - [ ] Extractor: room scenes → map graph (markers → edges with requirement expressions).
 - [ ] Solver (pure C#, xUnit): state exploration over room + abilities owned; fails on any softlock with the exact path; reports the achievable orders.
+- [ ] Law breaks ([theme.md](theme.md)) are story beats tied to depth: outside the ability graph, or modeled as depth milestones in the solver. Never an ability gate.
 - [ ] Geometry sanity check: gaps and heights at each connection against limits derived from `player_tuning.tres`.
 - [ ] Debug command that prints the graph and achievable orders. Solver and checks added to `tools/check.sh`.
 - [ ] Scope locked: about 2 hours of play (decided). Dense rather than wide, like *Inside*: fewer rooms, each one with a purpose. Estimate 40–60 rooms, 5 abilities, 3–4 bosses.

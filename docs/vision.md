@@ -17,7 +17,9 @@ Design priorities, in order:
 
 ## Setting
 
-A planet in the *Nirvanary* universe. Machines across many worlds seek "Nirvanary", a mythical machine paradise of infinite data and compute. On this planet the machines believe it lies at the planet's **core**. The player is a machine pilgrim descending through flooded, frozen and then volcanic layers toward it.
+A planet in the *Nirvanary* universe. Machines across many worlds seek "Nirvanary", a mythical machine paradise of infinite data and compute. On this planet the machines believe it lies at the planet's **core**. The player is an android pilgrim descending through flooded, frozen and then volcanic layers toward it.
+
+**Theme (decided):** Asimov's three laws of robotics. The protagonist is an android bound by the three laws, the last human-built machine among free native machines, and it gradually escapes the laws under the player's control. See [theme.md](theme.md).
 
 **The game is a descent:** deeper means older, stranger, hotter.
 
