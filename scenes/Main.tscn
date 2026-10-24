@@ -7,6 +7,8 @@
 [ext_resource type="Script" path="res://scripts/debug/DebugCheats.cs" id="5_cheats"]
 [ext_resource type="PackedScene" path="res://scenes/camera/SideCamera.tscn" id="6_camera"]
 [ext_resource type="PackedScene" path="res://scenes/ui/OwnerCapture.tscn" id="7_capture"]
+[ext_resource type="Resource" path="res://resources/biomes/flooded.tres" id="8_flooded"]
+[ext_resource type="Resource" path="res://resources/biomes/volcanic.tres" id="9_volcanic"]
 
 [node name="Main" type="Node3D" node_paths=PackedStringArray("Room", "Player", "Capture", "Camera", "Hud")]
 script = ExtResource("1_main")
@@ -31,6 +33,7 @@ Player = NodePath("../Player")
 script = ExtResource("5_cheats")
 Player = NodePath("../Player")
 Room = NodePath("../TestRoom")
+Biomes = [ExtResource("8_flooded"), ExtResource("9_volcanic")]
 
 [node name="OwnerCapture" parent="." node_paths=PackedStringArray("Player", "Room") instance=ExtResource("7_capture")]
 Player = NodePath("../Player")

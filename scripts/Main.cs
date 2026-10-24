@@ -16,6 +16,9 @@ public partial class Main : Node3D
     private const string LookDevArgument = "--lookdev";
     private const string SizeArgument = "--size";
 
+    /// <summary>`--biome &lt;name&gt;`: start with resources/biomes/&lt;name&gt;.tres instead of the room's own.</summary>
+    private const string BiomeArgument = "--biome";
+
     [Export] public Room Room { get; set; } = null!;
     [Export] public Player Player { get; set; } = null!;
     [Export] public OwnerCapture Capture { get; set; } = null!;
@@ -27,6 +30,18 @@ public partial class Main : Node3D
         Player.Respawn(Room.SpawnPoint.GlobalPosition);
 
         string[] args = OS.GetCmdlineUserArgs();
+        if (ArgumentValue(args, BiomeArgument) is { } biomeName)
+        {
+            if (BiomeProfile.Load(biomeName) is { } biome)
+            {
+                Room.ApplyBiome(biome);
+            }
+            else
+            {
+                GD.PushError($"no biome profile named {biomeName} in {BiomeProfile.Folder}");
+            }
+        }
+
         if (Array.IndexOf(args, SmokeArgument) >= 0)
         {
             AddChild(new SmokeDriver { Player = Player });

@@ -59,11 +59,10 @@ A pale, misty *Dread* world in white, grey and a touch of purple, where color me
 
 ## Current state
 
-Greybox only:
-- rock blocks are grey-brown, metal blocks blue-grey
-- a teal ambient light and a cold key light, plus one rust-orange lamp
-- depth fog, depth of field
-- scattered backdrop and foreground boxes
-- a capsule player with an emissive visor
+Greybox shapes with a first palette pass (M0):
+- the **Flooded** `BiomeProfile` (`resources/biomes/flooded.tres`) gives the `perfect.jpg` family of colors: grey-blue stage, lavender haze, magenta accents on a few backdrop pieces, near-black foreground. Rock is a warm-neutral grey, metal a cool blue-white: they read apart.
+- flat colored boxes (one placeholder shader reading the biome palette), depth fog, depth of field, a cool key light, one lamp
+- a capsule player with an emissive visor, grey and low in contrast against the pale world (M4 makes it a dark android)
+- a **Volcanic** draft profile shows the re-theme works; it is not tuned (rock and metal too close).
 
-All of this is placeholder, to be replaced by roadmap Phase 1.
+Compared with `perfect.jpg` it still lacks the light shaft, vignette and dark frame, surface detail and bloom on a few emissives: M1 and M3. Judge with `tools/capture.sh` against the reference.

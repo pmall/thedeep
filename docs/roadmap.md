@@ -14,7 +14,7 @@ The plan we follow from session to session. Each milestone is one to three sessi
 
 - **Done:** project setup, greybox test room, base moveset (run / variable jump / coyote / buffer / dash), side camera, backdrop and foreground boxes, `tools/check.sh`, unit tests.
 - **Reference board written** from the owner's screenshots ([art-direction.md](art-direction.md)). Style only, not props: ambiance like *Metroid Dread* (white with a touch of purple, north star `perfect.jpg`), character like *NieR: Automata*.
-- **M0 in progress.** Owner capture keys done (2026-10-24): F12 screenshot and F10 video to `captures/`, each with a state report; no frame-time cost at 60 fps with vsync (see [testing.md](testing.md)). **Next: `tools/capture.sh`** with photo spots, which can reuse `FrameGrabber` and `FrameTimeStats`.
+- **M0 done (2026-10-24).** Owner capture keys (F12 screenshot, F10 video, each with a state report). `tools/capture.sh`: photo spots at 1080p, frame times (test room 2.3 ms average against the 10 ms budget), automatic before/after sheet, pixel-deterministic. `BiomeProfile` with Flooded (first pass at the `perfect.jpg` palette) and a Volcanic draft. **Next: M1**, the material library, judged with `tools/capture.sh`.
 - Theme ingested into [theme.md](theme.md): Asimov's three laws; the android protagonist escapes them under the player's control. The act structure is only a proposed direction.
 - Decided: about **2 hours** of play, dense rather than wide (reference: *Inside*, about 2 h and rich in gameplay and story). Audio: deferred, the owner will decide later.
 
@@ -52,7 +52,7 @@ Without a reliable way to see the game, art work is blind. This comes first, rig
 - [x] Photo spots defined per room as marker nodes (`PhotoSpot`; the test room has Start, CloseUp, Platforms, Shaft, Wide).
 - [x] Side-by-side before/after sheet, so changes are judged by comparison (automatic against the previous run).
 - [x] Performance readout: average, p99 and worst frame time over a scripted run (`perf.json`). Budget: 1080p at 60 fps on the owner's RTX 3060, with headroom (target ≤ 10 ms). Test room today: 2.3 ms average.
-- [ ] `BiomeProfile` resource: palette, fog, light colors, grading and particle tint for one depth layer. Rooms reference a profile; the test room uses "Flooded".
+- [x] `BiomeProfile` resource: palette, fog, light colors, grading and particle tint for one depth layer. Rooms reference a profile; the test room uses "Flooded" (first pass toward `perfect.jpg`). The palette reaches materials through global shader uniforms. F6 cycles profiles; `--biome` picks one.
 - **Done when:** one command produces a comparable set of screenshots plus frame times, changing a `BiomeProfile` visibly re-themes the room, and the owner can press F12 for a screenshot and F10 to record a video while playing.
 
 ### M1 — Material library (shaders)

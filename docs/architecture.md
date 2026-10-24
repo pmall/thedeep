@@ -26,6 +26,8 @@ scripts/
   Main.cs                  spawns the player; adds a test driver from user args (`--smoke`, `--capture-test`, `--lookdev`)
   core/InputActions.cs     input action names (StringName constants)
   core/PhysicsLayers.cs    physics layer bits
+  core/ShaderGlobals.cs    global shader uniform names (the biome palette)
+  biome/BiomeProfile.cs    [GlobalClass] look of a depth layer: palette, light, fog, grading, particle tint
   player/Player.cs         body, input sampling, timers, movement helpers, state machine host
   player/PlayerInput.cs    held input for one tick
   player/PlayerVisual.cs   facing + squash/stretch (on physics ticks)
@@ -36,7 +38,7 @@ scripts/
   camera/CameraMath.cs     clamp/FOV math
   tuning/PlayerTuning.cs   [GlobalClass] resource holding all movement numbers
   tuning/JumpMath.cs       gravity / take-off speed from jump height + time to apex
-  rooms/Room.cs            spawn point, camera bounds, photo spots
+  rooms/Room.cs            spawn point, camera bounds, biome (ApplyBiome), photo spots
   rooms/PhotoSpot.cs       look-dev camera marker (position = camera) + player placement
   rooms/Block.cs           sizes mesh/shape, sets physics layer from Surface
   rooms/SurfaceKind.cs     Rock / Metal
@@ -58,7 +60,9 @@ scripts/
   util/Countdown.cs        coyote, buffers, cooldowns
   util/FrameTimeStats.cs   average / percentile / worst frame times
 resources/player_tuning.tres   the live PlayerTuning values
-assets/materials/              placeholder materials (rock, metal, backdrop, foreground)
+resources/biomes/              BiomeProfile per depth layer (flooded, volcanic draft)
+assets/shaders/biome_surface.gdshader   placeholder surface colored by the biome palette
+assets/materials/              placeholder materials (rock, metal, backdrop, foreground) using that shader
 tests/TheDeep.Tests/           xUnit (has .gdignore so Godot skips the folder)
 tools/check.sh
 tools/capture.sh               look-dev photo spots + frame times + before/after sheet
@@ -69,6 +73,7 @@ tools/lookdev_compare.py       the before/after sheet (python3-pil)
 
 - **Player state machine:** one class per state in `scripts/player/states/`. Each physics tick the active state sets velocity and returns the next state (or null); `Player` then calls `MoveAndSlide` and keeps the body on Z = 0. Shared timers and movement helpers live on `Player`. No giant `_PhysicsProcess`.
 - **Composition:** scenes are small, with one responsibility each. `Main.tscn` wires the room, player, camera, HUD and cheats together through typed `[Export]` node references.
+- **Biomes:** a room references a `BiomeProfile`. `Room.ApplyBiome` pushes the palette into global shader uniforms (`[shader_globals]` in `project.godot`, names in `ShaderGlobals`) and sets the room's environment, key light and lamps. Materials read the palette from those globals, so they follow the biome without per-room copies, and an authored material can replace a procedural one and still use them. Machines will take their colors from the same palette (M5).
 - **Rooms:** `Room` exposes a spawn point and camera bounds. Today the one room is embedded in `Main`; roadmap M2 turns rooms into separately loaded scenes with connection markers.
 
 ## Physics layers

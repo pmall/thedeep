@@ -26,6 +26,11 @@ The owner never opens the Godot editor. Every `.tscn`, `.tres`, `.cs` file and `
 - Connect signals with C# events (`button.Pressed += OnPressed;`), not `Connect("name", ...)`. Unsubscribe in `_ExitTree` when the source outlives the listener.
 - Use the generated `SignalName.X` / `PropertyName.X` constants, never string literals. Input actions come from `InputActions`.
 
+## Shaders
+
+- Global shader uniforms are declared in `project.godot` under `[shader_globals]` and named in `ShaderGlobals`. Godot passes `color` globals to shaders **without** sRGB-to-linear conversion (unlike material colors and `source_color` uniforms), so a shader using one as albedo must convert it (see `srgb_to_linear` in `assets/shaders/biome_surface.gdshader`). Values stay in sRGB everywhere they are written.
+- `.tscn` and `.tres` files accept `;` comment lines after the header line. Use them sparingly, for instance to say what a photo spot shows.
+
 ## Physics interpolation
 
 It is on project-wide. Move physics bodies, and the visuals under them, in `_PhysicsProcess`. A node moved in `_Process` (like the camera) sets `PhysicsInterpolationMode = Off` and reads targets with `GetGlobalTransformInterpolated()`. After a teleport, call `ResetPhysicsInterpolation()`.

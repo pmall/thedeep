@@ -3,13 +3,16 @@ using Godot;
 namespace TheDeep;
 
 /// <summary>
-/// Debug keys for playtesting: R / pad Back respawns, F1–F5 toggle each ability.
-/// Removed from release builds.
+/// Debug keys for playtesting: R / pad Back respawns, F1–F5 toggle each ability, F6 cycles the
+/// room's biome profile. Removed from release builds.
 /// </summary>
 public partial class DebugCheats : Node
 {
     [Export] public Player Player { get; set; } = null!;
     [Export] public Room Room { get; set; } = null!;
+
+    /// <summary>Profiles F6 cycles through.</summary>
+    [Export] public BiomeProfile[] Biomes { get; set; } = System.Array.Empty<BiomeProfile>();
 
     private (StringName Action, Ability Ability)[] _toggles = null!;
 
@@ -36,6 +39,15 @@ public partial class DebugCheats : Node
         if (@event.IsActionPressed(InputActions.DebugRespawn))
         {
             Player.Respawn(Room.SpawnPoint.GlobalPosition);
+            GetViewport().SetInputAsHandled();
+            return;
+        }
+
+        if (@event.IsActionPressed(InputActions.DebugCycleBiome) && Biomes.Length > 0)
+        {
+            int next = (System.Array.IndexOf(Biomes, Room.Biome) + 1) % Biomes.Length;
+            Room.ApplyBiome(Biomes[next]);
+            GD.Print($"[debug] biome: {Biomes[next].DisplayName}");
             GetViewport().SetInputAsHandled();
             return;
         }

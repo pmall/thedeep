@@ -1,0 +1,32 @@
+[gd_resource type="Resource" script_class="BiomeProfile" format=3]
+; Layer 3 (draft): basalt and ember, warming toward the NieR furnace amber of the core.
+
+[ext_resource type="Script" path="res://scripts/biome/BiomeProfile.cs" id="1_biome"]
+
+[resource]
+script = ExtResource("1_biome")
+DisplayName = "Volcanic"
+Rock = Color(0.2, 0.18, 0.17, 1)
+Metal = Color(0.44, 0.38, 0.34, 1)
+Backdrop = Color(0.1, 0.07, 0.06, 1)
+BackdropAccent = Color(0.95, 0.42, 0.12, 1)
+Foreground = Color(0.02, 0.01, 0.01, 1)
+Accent = Color(1, 0.5, 0.15, 1)
+Background = Color(0.04, 0.02, 0.02, 1)
+AmbientColor = Color(0.5, 0.34, 0.26, 1)
+AmbientEnergy = 0.4
+KeyColor = Color(1, 0.72, 0.48, 1)
+KeyEnergy = 1.0
+LampColor = Color(1, 0.45, 0.15, 1)
+FogColor = Color(0.17, 0.07, 0.04, 1)
+FogDensity = 1.0
+FogDepthBegin = 20.0
+FogDepthEnd = 65.0
+Exposure = 1.0
+Brightness = 1.0
+Contrast = 1.1
+Saturation = 0.95
+Lift = Color(0.04, 0.01, 0, 1)
+Gain = Color(1, 0.95, 0.88, 1)
+GlowIntensity = 0.8
+ParticleTint = Color(1, 0.6, 0.25, 1)

@@ -4,6 +4,7 @@
 #
 #   tools/capture.sh [label]                 new run in lookdev/<date>_<time>[-label]/, compared with the latest run
 #   tools/capture.sh [label] --against DIR   compare with DIR instead
+#   tools/capture.sh [label] --biome NAME    render with resources/biomes/NAME.tres instead of each room's own
 #   tools/capture.sh --compare BEFORE AFTER  only build the sheet for two existing runs
 #
 # Opens a small window for about half a minute (rendering needs a GPU). See docs/testing.md.
@@ -33,10 +34,11 @@ if [ "${1:-}" = "--compare" ]; then
     exit 0
 fi
 
-label="" against=""
+label="" against="" biome_args=()
 while [ $# -gt 0 ]; do
     case "$1" in
         --against) against="${2%/}"; shift 2 ;;
+        --biome) biome_args=(--biome "$2"); shift 2 ;;
         -*) fail "unknown option $1" ;;
         *) label="$1"; shift ;;
     esac
@@ -51,6 +53,7 @@ mkdir -p "$out"
 {
     echo "date    $(date '+%Y-%m-%d %H:%M:%S')"
     echo "label   ${label:-none}"
+    echo "biome   ${biome_args[1]:-room default}"
     echo "commit  $(git rev-parse --short HEAD 2>/dev/null || echo unknown)$(git diff --quiet HEAD 2>/dev/null || echo ' + uncommitted changes')"
 } >"$out/run.txt"
 
@@ -58,7 +61,7 @@ mkdir -p "$out"
 dotnet build TheDeep.sln -v q -nologo >"$out/build.log" 2>&1 || { tail -20 "$out/build.log"; fail "dotnet build"; }
 
 printf '\033[1mrendering photo spots and frame times into %s\033[0m\n' "$out"
-"$GODOT" --path . --disable-vsync --fixed-fps 60 --resolution 960x540 -- --lookdev "$out" --size "$SIZE" \
+"$GODOT" --path . --disable-vsync --fixed-fps 60 --resolution 960x540 -- --lookdev "$out" --size "$SIZE" "${biome_args[@]}" \
     >"$out/godot.log" 2>&1 || { tail -20 "$out/godot.log"; fail "look-dev run exited non-zero (log: $out/godot.log)"; }
 if grep -E "$FAIL_PATTERN" "$out/godot.log" >/dev/null; then
     grep -n -E -A3 "$FAIL_PATTERN" "$out/godot.log" | head -40

@@ -7,6 +7,7 @@
 [ext_resource type="Material" path="res://assets/materials/backdrop_rust.tres" id="5_rust"]
 [ext_resource type="Material" path="res://assets/materials/foreground.tres" id="6_fore"]
 [ext_resource type="Script" path="res://scripts/rooms/PhotoSpot.cs" id="7_spot"]
+[ext_resource type="Resource" path="res://resources/biomes/flooded.tres" id="8_biome"]
 
 [sub_resource type="Environment" id="Environment_room"]
 background_mode = 1
@@ -25,9 +26,13 @@ fog_density = 1.0
 fog_depth_begin = 24.0
 fog_depth_end = 75.0
 
-[node name="TestRoom" type="Node3D" node_paths=PackedStringArray("SpawnPoint")]
+[node name="TestRoom" type="Node3D" node_paths=PackedStringArray("SpawnPoint", "Environment", "KeyLight", "Lamps")]
 script = ExtResource("1_room")
 SpawnPoint = NodePath("SpawnPoint")
+Biome = ExtResource("8_biome")
+Environment = NodePath("WorldEnvironment")
+KeyLight = NodePath("Sun")
+Lamps = [NodePath("ShaftLamp")]
 BoundsMin = Vector2(-2, -2)
 BoundsMax = Vector2(66, 34)
 

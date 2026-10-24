@@ -54,3 +54,4 @@ Input actions are defined in `project.godot` and mirrored in `scripts/core/Input
 | `capture_video` (start/stop) | F10 | — |
 | `debug_respawn` | R | Back |
 | `debug_toggle_{mag_grip,harpoon,drill,ballast,heat_plating}` | F1–F5 | — |
+| `debug_cycle_biome` | F6 | — |
