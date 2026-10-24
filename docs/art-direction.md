@@ -59,10 +59,12 @@ A pale, misty *Dread* world in white, grey and a touch of purple, where color me
 
 ## Current state
 
-Greybox shapes with a first palette pass (M0):
-- the **Flooded** `BiomeProfile` (`resources/biomes/flooded.tres`) gives the `perfect.jpg` family of colors: grey-blue stage, lavender haze, magenta accents on a few backdrop pieces, near-black foreground. Rock is a warm-neutral grey, metal a cool blue-white: they read apart.
-- flat colored boxes (one placeholder shader reading the biome palette), depth fog, depth of field, a cool key light, one lamp
-- a capsule player with an emissive visor, grey and low in contrast against the pale world (M4 makes it a dark android)
-- a **Volcanic** draft profile shows the re-theme works; it is not tuned (rock and metal too close).
+M1 material library in place (2026-10-24), judged on the test room's photo spots:
+- **Rock** (`assets/shaders/rock.gdshader`): warm-neutral matte stone in uneven horizontal strata, sparse tapering cracks, pale silt in crevices and on ledges, chipped paler edges, grime near the bottom of each block. **Wet stone** is the same shader with `wetness`: darker, glossy, flat mirror-like puddles on top faces (the test room floor; reflections come from SSR).
+- **Metal** (`metal.gdshader`): pale blue-white glossy ceramic-metal (clearcoat, rim), each face cut into panels that fit it, with seams, a crisp panel bevel, rivets on some panels, faint wet streaks, rust in the creases, coating chipped at the box edges. **Rust** is the same shader with `corrosion` (the shaft's right wall). Panels and gloss keep even rusty metal readable as metal, but its value gets close to rock: keep heavy rust off metal where the grip read matters most.
+- **Faith glyphs** (`glyph.gdshader`): generated pilgrim markings on a quad, the biome accent mixed toward white, breathing slowly. Decor, so kept soft: saturated emissives stay for gameplay.
+- Every block varies slightly (tone, panel size, crack layout) from a seed taken from its position.
+- The palette gained `Rust` and `Silt` in `BiomeProfile`.
+- Backdrop pillars use the rock shader without detail (strata and tone only); the magenta hulks use metal panels.
 
-Compared with `perfect.jpg` it still lacks the light shaft, vignette and dark frame, surface detail and bloom on a few emissives: M1 and M3. Judge with `tools/capture.sh` against the reference.
+Still missing compared with `perfect.jpg`: the pale, bright stage (the scene is darker and bluer than the reference), the light shaft, vignette and dark frame, bloom on a few emissives (M3), and the dark android (M4). The player capsule is still grey and low in contrast.

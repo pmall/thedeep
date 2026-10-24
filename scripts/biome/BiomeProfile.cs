@@ -32,8 +32,14 @@ public partial class BiomeProfile : Resource
     /// <summary>Foreground silhouettes framing the screen.</summary>
     [Export] public Color Foreground { get; set; } = new(0.03f, 0.03f, 0.04f);
 
-    /// <summary>The layer's accent hue for emissive decor (glyphs, later).</summary>
+    /// <summary>The layer's accent hue for emissive decor (faith glyphs).</summary>
     [Export] public Color Accent { get; set; } = new(0.8f, 0.3f, 0.8f);
+
+    /// <summary>Corrosion on metal (creases, bottoms, the rust material). Keep it muted: color means gameplay.</summary>
+    [Export] public Color Rust { get; set; } = new(0.42f, 0.3f, 0.26f);
+
+    /// <summary>Silt or moss settled in rock crevices and on ledges.</summary>
+    [Export] public Color Silt { get; set; } = new(0.6f, 0.6f, 0.62f);
 
     /// <summary>The void behind everything.</summary>
     [ExportGroup("Light")]
@@ -95,6 +101,8 @@ public partial class BiomeProfile : Resource
         RenderingServer.GlobalShaderParameterSet(ShaderGlobals.BiomeForeground, Foreground);
         RenderingServer.GlobalShaderParameterSet(ShaderGlobals.BiomeAccent, Accent);
         RenderingServer.GlobalShaderParameterSet(ShaderGlobals.BiomeParticle, ParticleTint);
+        RenderingServer.GlobalShaderParameterSet(ShaderGlobals.BiomeRust, Rust);
+        RenderingServer.GlobalShaderParameterSet(ShaderGlobals.BiomeSilt, Silt);
 
         environment.BackgroundColor = Background;
         environment.AmbientLightColor = AmbientColor;

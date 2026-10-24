@@ -8,6 +8,9 @@
 [ext_resource type="Material" path="res://assets/materials/foreground.tres" id="6_fore"]
 [ext_resource type="Script" path="res://scripts/rooms/PhotoSpot.cs" id="7_spot"]
 [ext_resource type="Resource" path="res://resources/biomes/flooded.tres" id="8_biome"]
+[ext_resource type="Material" path="res://assets/materials/wet_stone.tres" id="9_wet"]
+[ext_resource type="Material" path="res://assets/materials/rust.tres" id="10_rust"]
+[ext_resource type="Material" path="res://assets/materials/glyphs.tres" id="11_glyphs"]
 
 [sub_resource type="Environment" id="Environment_room"]
 background_mode = 1
@@ -16,6 +19,8 @@ ambient_light_source = 2
 ambient_light_color = Color(0.3, 0.46, 0.5, 1)
 ambient_light_energy = 0.35
 tonemap_mode = 4
+ssr_enabled = true
+ssr_max_steps = 48
 ssao_enabled = true
 glow_enabled = true
 glow_intensity = 0.6
@@ -25,6 +30,12 @@ fog_light_color = Color(0.05, 0.11, 0.12, 1)
 fog_density = 1.0
 fog_depth_begin = 24.0
 fog_depth_end = 75.0
+
+[sub_resource type="QuadMesh" id="QuadMesh_glyph_row"]
+size = Vector2(3.2, 0.62)
+
+[sub_resource type="QuadMesh" id="QuadMesh_glyph_column"]
+size = Vector2(0.36, 4.4)
 
 [node name="TestRoom" type="Node3D" node_paths=PackedStringArray("SpawnPoint", "Environment", "KeyLight", "Lamps")]
 script = ExtResource("1_room")
@@ -60,6 +71,7 @@ shadow_enabled = true
 [node name="Floor" parent="Geometry" instance=ExtResource("2_block")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 32, -1, 0)
 Size = Vector3(68, 2, 4)
+Material = ExtResource("9_wet")
 
 [node name="WallLeft" parent="Geometry" instance=ExtResource("2_block")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -1, 16, 0)
@@ -113,6 +125,7 @@ Surface = 1
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 56.5, 13, 0)
 Size = Vector3(1, 26, 4)
 Surface = 1
+Material = ExtResource("10_rust")
 
 [node name="TopLedgeRight" parent="Geometry" instance=ExtResource("2_block")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 60.75, 25.75, 0)
@@ -149,6 +162,21 @@ Size = Vector3(3, 0.5, 4)
 [node name="ShaftLedge8" parent="Geometry" instance=ExtResource("2_block")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 54.5, 24, 0)
 Size = Vector3(3, 0.5, 4)
+
+; Faith glyphs: pilgrim markings on the front faces (Z = 2) of the step and the shaft's left wall.
+[node name="Glyphs" type="Node3D" parent="."]
+
+[node name="StepGlyphs" type="MeshInstance3D" parent="Glyphs"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 26, 1.15, 2.01)
+mesh = SubResource("QuadMesh_glyph_row")
+material_override = ExtResource("11_glyphs")
+cast_shadow = 0
+
+[node name="ShaftGlyphs" type="MeshInstance3D" parent="Glyphs"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 45.5, 6.5, 2.01)
+mesh = SubResource("QuadMesh_glyph_column")
+material_override = ExtResource("11_glyphs")
+cast_shadow = 0
 
 [node name="Backdrop" type="Node3D" parent="."]
 
@@ -218,6 +246,12 @@ transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 20, 5, 22)
 script = ExtResource("7_spot")
 PlayerPosition = Vector3(22, 7.5, 0)
 PlayerFacing = -1
+
+; rock and metal up close: the step (strata, cracks, glyphs) and the metal pillar (panels, rivets)
+[node name="Materials" type="Marker3D" parent="PhotoSpots"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 29, 2.4, 9.5)
+script = ExtResource("7_spot")
+PlayerPosition = Vector3(22, 7.5, 0)
 
 ; the metal shaft from its bottom, lamp included
 [node name="Shaft" type="Marker3D" parent="PhotoSpots"]

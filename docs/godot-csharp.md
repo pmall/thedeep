@@ -29,6 +29,9 @@ The owner never opens the Godot editor. Every `.tscn`, `.tres`, `.cs` file and `
 ## Shaders
 
 - Global shader uniforms are declared in `project.godot` under `[shader_globals]` and named in `ShaderGlobals`. Godot passes `color` globals to shaders **without** sRGB-to-linear conversion (unlike material colors and `source_color` uniforms), so a shader using one as albedo must convert it (see `srgb_to_linear` in `assets/shaders/biome_surface.gdshader`). Values stay in sRGB everywhere they are written.
+- Shared shader code lives in `assets/shaders/lib/*.gdshaderinc` (`#include "res://…"`). Varyings can only be **assigned** in `vertex()` itself, not in a function it calls, hence the `BOX_VERTEX` macro in `lib/box.gdshaderinc`.
+- Per-instance values use `instance uniform` in the shader and `SetInstanceShaderParameter` in C#, with names from `ShaderInstance`.
+- `tools/check.sh` (headless import) compiles every shader and fails on `SHADER ERROR`, so a broken shader never reaches the look-dev step.
 - `.tscn` and `.tres` files accept `;` comment lines after the header line. Use them sparingly, for instance to say what a photo spot shows.
 
 ## Physics interpolation

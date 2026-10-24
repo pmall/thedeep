@@ -136,7 +136,7 @@ public partial class OwnerCapture : CanvasLayer
     {
         try
         {
-            Directory.CreateDirectory(folder);
+            CreateFolder(folder);
             string png = Path.Combine(folder, name + ".png");
             Error error = FramePng.Save(bytes, frame, png);
             if (error != Error.Ok)
@@ -186,7 +186,7 @@ public partial class OwnerCapture : CanvasLayer
         VideoEncoder encoder;
         try
         {
-            Directory.CreateDirectory(folder);
+            CreateFolder(folder);
             encoder = VideoEncoder.Start(new FfmpegCommand(
                 format.Width, format.Height, format.PixelFormat, VideoFps, codec, VideoMaxWidth,
                 Path.Combine(folder, name + ".mp4")), FrameGrabber.Buffers);
@@ -353,6 +353,17 @@ public partial class OwnerCapture : CanvasLayer
             ? OS.GetExecutablePath().GetBaseDir()
             : ProjectSettings.GlobalizePath("res://");
         return Path.Combine(root, "captures");
+    }
+
+    /// <summary>Creates the capture folder with an empty .gdignore, so Godot never imports the captures.</summary>
+    private static void CreateFolder(string folder)
+    {
+        Directory.CreateDirectory(folder);
+        string gdignore = Path.Combine(folder, ".gdignore");
+        if (!File.Exists(gdignore))
+        {
+            File.WriteAllText(gdignore, "");
+        }
     }
 
     private static string FormatVector(Vector3 v) =>

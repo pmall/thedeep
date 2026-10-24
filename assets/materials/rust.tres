@@ -1,0 +1,9 @@
+[gd_resource type="ShaderMaterial" format=3]
+; Metal given up to corrosion. Still metal (the physics layer decides), but no longer glossy.
+
+[ext_resource type="Shader" path="res://assets/shaders/metal.gdshader" id="1_shader"]
+
+[resource]
+shader = ExtResource("1_shader")
+shader_parameter/corrosion = 0.95
+shader_parameter/streaks = 0.8

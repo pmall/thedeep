@@ -50,6 +50,7 @@ previous="$(find "$ROOT" -mindepth 1 -maxdepth 1 -type d 2>/dev/null | sort | ta
 
 out="$ROOT/$(date +%Y-%m-%d_%H-%M-%S)${label:+-$label}"
 mkdir -p "$out"
+touch "$ROOT/.gdignore" # Godot must not import the captures
 {
     echo "date    $(date '+%Y-%m-%d %H:%M:%S')"
     echo "label   ${label:-none}"

@@ -27,6 +27,7 @@ scripts/
   core/InputActions.cs     input action names (StringName constants)
   core/PhysicsLayers.cs    physics layer bits
   core/ShaderGlobals.cs    global shader uniform names (the biome palette)
+  core/ShaderInstance.cs   per-instance shader uniform names (box_size)
   biome/BiomeProfile.cs    [GlobalClass] look of a depth layer: palette, light, fog, grading, particle tint
   player/Player.cs         body, input sampling, timers, movement helpers, state machine host
   player/PlayerInput.cs    held input for one tick
@@ -40,7 +41,7 @@ scripts/
   tuning/JumpMath.cs       gravity / take-off speed from jump height + time to apex
   rooms/Room.cs            spawn point, camera bounds, biome (ApplyBiome), photo spots
   rooms/PhotoSpot.cs       look-dev camera marker (position = camera) + player placement
-  rooms/Block.cs           sizes mesh/shape, sets physics layer from Surface
+  rooms/Block.cs           sizes mesh/shape, sets physics layer from Surface, optional look override, box_size
   rooms/SurfaceKind.cs     Rock / Metal
   rooms/BackdropScatter.cs deterministic out-of-focus boxes (backdrop/foreground)
   ui/DebugHud.cs
@@ -61,8 +62,15 @@ scripts/
   util/FrameTimeStats.cs   average / percentile / worst frame times
 resources/player_tuning.tres   the live PlayerTuning values
 resources/biomes/              BiomeProfile per depth layer (flooded, volcanic draft)
-assets/shaders/biome_surface.gdshader   placeholder surface colored by the biome palette
-assets/materials/              placeholder materials (rock, metal, backdrop, foreground) using that shader
+assets/shaders/                the material library (M1), procedural, no UVs or textures:
+  lib/noise.gdshaderinc        hashes, value noise, fbm, Voronoi borders
+  lib/palette.gdshaderinc      the biome palette globals + srgb_to_linear
+  lib/box.gdshaderinc          box faces: face frame, edge distance, fake bevel, bump, per-instance seed
+  rock.gdshader                strata, cracks, silt, chipped edges, grime; `wetness` → wet stone
+  metal.gdshader               ceramic-metal panels, seams, rivets, rust, streaks, chipped coating; `corrosion` → rust
+  glyph.gdshader               emissive faith glyphs on a quad
+  biome_surface.gdshader       flat palette color (still used by the foreground silhouettes)
+assets/materials/              rock, wet_stone, metal, rust, glyphs, backdrop_stone, backdrop_rust, foreground
 tests/TheDeep.Tests/           xUnit (has .gdignore so Godot skips the folder)
 tools/check.sh
 tools/capture.sh               look-dev photo spots + frame times + before/after sheet
@@ -73,6 +81,7 @@ tools/lookdev_compare.py       the before/after sheet (python3-pil)
 
 - **Player state machine:** one class per state in `scripts/player/states/`. Each physics tick the active state sets velocity and returns the next state (or null); `Player` then calls `MoveAndSlide` and keeps the body on Z = 0. Shared timers and movement helpers live on `Player`. No giant `_PhysicsProcess`.
 - **Composition:** scenes are small, with one responsibility each. `Main.tscn` wires the room, player, camera, HUD and cheats together through typed `[Export]` node references.
+- **Materials:** a material is a `.tres` (`ShaderMaterial`) referenced by blocks and scenes, never a shader assigned in code, so an authored material can replace it. Shaders read colors from the biome palette and box geometry from the `box_size` instance uniform, which `Block` and `BackdropScatter` set. A block's look can be overridden (`Block.Material`: wet stone, rust…) without touching its `Surface`, which alone decides the physics layer. Patterns are projected on the box's own faces (exact, cheap); curved kit meshes (M2) will need blended triplanar projection in `lib/`.
 - **Biomes:** a room references a `BiomeProfile`. `Room.ApplyBiome` pushes the palette into global shader uniforms (`[shader_globals]` in `project.godot`, names in `ShaderGlobals`) and sets the room's environment, key light and lamps. Materials read the palette from those globals, so they follow the biome without per-room copies, and an authored material can replace a procedural one and still use them. Machines will take their colors from the same palette (M5).
 - **Rooms:** `Room` exposes a spawn point and camera bounds. Today the one room is embedded in `Main`; roadmap M2 turns rooms into separately loaded scenes with connection markers.
 

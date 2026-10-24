@@ -15,4 +15,6 @@ public static class ShaderGlobals
     public static readonly StringName BiomeForeground = "biome_foreground";
     public static readonly StringName BiomeAccent = "biome_accent";
     public static readonly StringName BiomeParticle = "biome_particle";
+    public static readonly StringName BiomeRust = "biome_rust";
+    public static readonly StringName BiomeSilt = "biome_silt";
 }

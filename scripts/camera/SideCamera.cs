@@ -33,6 +33,12 @@ public partial class SideCamera : Camera3D
     private bool _framingShot;
     private float _followFov;
     private CameraAttributes? _followAttributes;
+
+    /// <summary>
+    /// The follow attributes refocused for the current shot. One copy, reused: a fresh duplicate per shot
+    /// leaves resources only C# wrappers hold, and finalizing those at quit crashes Godot .NET 4.7.2.
+    /// </summary>
+    private CameraAttributesPractical? _shotAttributes;
     private float _lookAhead;
     private float _lookAheadTarget;
 
@@ -105,9 +111,12 @@ public partial class SideCamera : Camera3D
 
         GlobalPosition = position;
         Fov = fov > 0f ? fov : _followFov;
-        Attributes = _followAttributes is CameraAttributesPractical practical
-            ? RefocusedOnPlayPlane(practical, position.Z - Distance)
-            : _followAttributes;
+        if (_followAttributes is CameraAttributesPractical practical)
+        {
+            _shotAttributes ??= (CameraAttributesPractical)practical.Duplicate();
+            RefocusOnPlayPlane(_shotAttributes, practical, position.Z - Distance);
+            Attributes = _shotAttributes;
+        }
     }
 
     /// <summary>Goes back to following the target after <see cref="FrameShot"/>.</summary>
@@ -124,13 +133,11 @@ public partial class SideCamera : Camera3D
         SnapToTarget();
     }
 
-    /// <summary>The same blur bands, moved by <paramref name="shift"/> meters so the play plane stays sharp.</summary>
-    private static CameraAttributesPractical RefocusedOnPlayPlane(CameraAttributesPractical source, float shift)
+    /// <summary>Sets <paramref name="attributes"/> to the blur bands of <paramref name="source"/> moved by <paramref name="shift"/> meters, so the play plane stays sharp.</summary>
+    private static void RefocusOnPlayPlane(CameraAttributesPractical attributes, CameraAttributesPractical source, float shift)
     {
-        var attributes = (CameraAttributesPractical)source.Duplicate();
         attributes.DofBlurFarDistance = Mathf.Max(source.DofBlurFarDistance + shift, 1f);
         attributes.DofBlurNearDistance = Mathf.Max(source.DofBlurNearDistance + shift, 0.1f);
-        return attributes;
     }
 
     private void ApplyFocus()

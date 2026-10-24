@@ -49,6 +49,7 @@ public partial class BackdropScatter : Node3D
                 Position = basePosition + new Vector3(0f, (Hanging ? -0.5f : 0.5f) * size.Y, 0f),
                 Scale = size,
             };
+            box.SetInstanceShaderParameter(ShaderInstance.BoxSize, size);
             AddChild(box);
         }
     }

@@ -1,0 +1,7 @@
+[gd_resource type="ShaderMaterial" format=3]
+; Emissive faith glyphs (pilgrim markings), on a quad just in front of a surface.
+
+[ext_resource type="Shader" path="res://assets/shaders/glyph.gdshader" id="1_shader"]
+
+[resource]
+shader = ExtResource("1_shader")

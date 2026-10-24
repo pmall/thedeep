@@ -1,9 +1,6 @@
 [gd_resource type="ShaderMaterial" format=3]
 
-[ext_resource type="Shader" path="res://assets/shaders/biome_surface.gdshader" id="1_shader"]
+[ext_resource type="Shader" path="res://assets/shaders/metal.gdshader" id="1_shader"]
 
 [resource]
 shader = ExtResource("1_shader")
-shader_parameter/slot = 1
-shader_parameter/metallic = 0.55
-shader_parameter/roughness = 0.42

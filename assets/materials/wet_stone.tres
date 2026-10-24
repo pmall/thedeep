@@ -1,0 +1,9 @@
+[gd_resource type="ShaderMaterial" format=3]
+; Rock, wet: darker and glossy, puddles on top faces. Flooded floors.
+
+[ext_resource type="Shader" path="res://assets/shaders/rock.gdshader" id="1_shader"]
+
+[resource]
+shader = ExtResource("1_shader")
+shader_parameter/wetness = 1.0
+shader_parameter/silt_amount = 0.35

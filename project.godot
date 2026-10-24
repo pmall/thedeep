@@ -177,6 +177,14 @@ biome_particle={
 "type": "color",
 "value": Color(1, 1, 1, 1)
 }
+biome_rust={
+"type": "color",
+"value": Color(0.42, 0.3, 0.26, 1)
+}
+biome_silt={
+"type": "color",
+"value": Color(0.6, 0.6, 0.62, 1)
+}
 
 [rendering]
 
