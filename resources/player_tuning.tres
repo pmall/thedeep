@@ -1,0 +1,26 @@
+[gd_resource type="Resource" script_class="PlayerTuning" format=3]
+
+[ext_resource type="Script" path="res://scripts/tuning/PlayerTuning.cs" id="1_tuning"]
+
+[resource]
+script = ExtResource("1_tuning")
+RunSpeed = 7.0
+GroundAcceleration = 70.0
+GroundDeceleration = 80.0
+AirAcceleration = 45.0
+AirDeceleration = 30.0
+JumpHeight = 3.2
+JumpTimeToApex = 0.38
+JumpCutFactor = 0.45
+FallGravityMultiplier = 1.6
+ApexHangThreshold = 1.5
+ApexGravityMultiplier = 0.55
+MaxFallSpeed = 20.0
+CoyoteTime = 0.1
+JumpBufferTime = 0.12
+DashDistance = 4.5
+DashDuration = 0.16
+DashCooldown = 0.4
+DashExitSpeedFactor = 1.0
+DashBufferTime = 0.1
+AirDashes = 1
