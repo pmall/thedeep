@@ -38,6 +38,7 @@ tools/capture.sh after-fog         # renders, then compares with the previous ru
 
 Each run makes a fresh `lookdev/<date>_<time>[-label]/` (git-ignored) with:
 - `<Room>-<Spot>.png`: every **photo spot** of the room at 1920×1080, no HUD;
+- `Motion.png`: the **motion reel** (test room only, `scripts/debug/MotionReel.cs`): idle, run start, run cycle, stop, turn, jump, dash off a ledge and a hard landing, shot close and laid out as a contact sheet (frames in `motion/`). Judge animation changes on it;
 - `perf.json`: frame, GPU and CPU render times (average, p99, worst) over a 900-frame scripted run with the gameplay camera, checked against the 10 ms budget;
 - `run.txt` (commit, label), `godot.log`;
 - `compare/`: before/after images against the previous run (or `--against DIR`), one per spot plus `sheet.png` with all of them, and the share of pixels that changed. Look at `compare/sheet.png`.

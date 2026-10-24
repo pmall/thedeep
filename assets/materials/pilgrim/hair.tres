@@ -1,0 +1,13 @@
+[gd_resource type="ShaderMaterial" format=3]
+
+[ext_resource type="Shader" path="res://assets/shaders/android.gdshader" id="1_shader"]
+
+[resource]
+shader = ExtResource("1_shader")
+shader_parameter/base_color = Color(0.82, 0.83, 0.86, 1)
+shader_parameter/roughness = 0.38
+shader_parameter/metallic = 0.2
+shader_parameter/rim = 0.2
+shader_parameter/anisotropy = 0.6
+shader_parameter/strand_spacing = 0.012
+shader_parameter/line_spacing = 0

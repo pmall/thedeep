@@ -1,35 +1,99 @@
+using System;
 using Godot;
+using NVector2 = System.Numerics.Vector2;
 
 namespace TheDeep;
 
 /// <summary>
-/// The player's placeholder body: turns to face the movement direction and does a little
-/// squash and stretch. Pivot is at the feet. Updated on physics ticks so physics interpolation stays smooth.
+/// The pilgrim's body: a <see cref="PartBody"/> built from its part assembly, animated procedurally by
+/// <see cref="PilgrimMotion"/> (run cycle with planted feet, leaps, dash lunge, leaning, landing
+/// compression), its coat, braid and lantern flowing behind, turning smoothly through a glance at the
+/// camera when the facing flips. Pivot is at the feet. <see cref="Player"/> calls <see cref="Animate"/>
+/// after each physics move, so physics interpolation keeps it smooth.
 /// </summary>
 public partial class PlayerVisual : Node3D
 {
-    /// <summary>How fast squash/stretch returns to normal, in 1/s.</summary>
-    [Export] public float SquashRecovery { get; set; } = 14f;
+    [Export] public PartBody Body { get; set; } = null!;
 
-    private Vector2 _squash = Vector2.One;
+    /// <summary>The light the pilgrim carries; it moves into the lantern at the end of <see cref="LanternChain"/>.</summary>
+    [Export] public OmniLight3D? CarriedLight { get; set; }
+
+    [Export] public StringName LanternChain { get; set; } = "Lantern";
+
+    /// <summary>How fast the body turns around when the facing flips, 1/s (higher is snappier).</summary>
+    [Export] public float TurnSharpness { get; set; } = 20f;
+
+    private HumanoidRig? _rig;
+    private PilgrimMotion? _motion;
     private int _facing = 1;
+    private float _yaw;
+
+    /// <summary>A foot was planted at this world position, on the near (+1) or far (-1) side.</summary>
+    public event Action<Vector3, int>? Footfall;
+
+    /// <summary>How much the run cycle shows, 0 standing to 1 at run speed.</summary>
+    public float Gait => _motion?.Gait ?? 0f;
+
+    public override void _Ready()
+    {
+        _rig = HumanoidRig.From(Body);
+        if (CarriedLight is not null && Body.ChainEnd(LanternChain) is { } lantern)
+        {
+            Vector3 offset = CarriedLight.Position;
+            CarriedLight.Reparent(lantern, false);
+            CarriedLight.Position = offset;
+        }
+    }
+
+    /// <summary>Sizes the animation for the player's run speed (the gait's stride scales with it).</summary>
+    public void Setup(float runSpeed)
+    {
+        if (_rig is not null)
+        {
+            _motion = new PilgrimMotion(_rig.Dims, runSpeed);
+        }
+    }
 
     public void SetFacing(int facing) => _facing = facing < 0 ? -1 : 1;
 
-    public void Stretch() => _squash = new Vector2(0.8f, 1.25f);
+    /// <summary>Kicks the landing compression; <paramref name="impactSpeed"/> is the downward speed at touchdown.</summary>
+    public void Land(float impactSpeed) => _motion?.Land(impactSpeed);
 
-    public void Squash() => _squash = new Vector2(1.25f, 0.78f);
-
-    public void DashStretch() => _squash = new Vector2(1.35f, 0.8f);
-
-    public override void _PhysicsProcess(double delta)
+    /// <summary>One physics tick of animation, after the body moved.</summary>
+    public void Animate(float delta, Vector3 velocity, MotionMode mode, bool onFloor, float floorY)
     {
-        float d = (float)delta;
-        _squash = new Vector2(
-            Motion.Damp(_squash.X, 1f, SquashRecovery, d),
-            Motion.Damp(_squash.Y, 1f, SquashRecovery, d));
+        _yaw = Motion.Damp(_yaw, TargetYaw, TurnSharpness, delta);
+        Basis = new Basis(Vector3.Up, _yaw);
+        if (_rig is null || _motion is null)
+        {
+            return;
+        }
 
-        var turn = new Basis(Vector3.Up, _facing > 0 ? 0f : Mathf.Pi);
-        Basis = turn * Basis.FromScale(new Vector3(_squash.X, _squash.Y, _squash.X));
+        _motion.Update(delta, new NVector2(velocity.X, velocity.Y), _facing, mode);
+        _rig.Apply(_motion.Pose);
+        Body.StepChains(delta, onFloor ? floorY + 0.02f : float.NaN);
+
+        if (_motion.Footfall != 0 && Body.Joint(_motion.Footfall > 0 ? "FootR" : "FootL") is { } foot)
+        {
+            Footfall?.Invoke(foot.GlobalPosition with { Y = floorY }, _motion.Footfall);
+        }
     }
+
+    /// <summary>Snaps to a still stance facing the current way (spawn, teleport).</summary>
+    public void Snap()
+    {
+        _yaw = TargetYaw;
+        Basis = new Basis(Vector3.Up, _yaw);
+        if (_rig is not null && _motion is not null)
+        {
+            _motion.Reset();
+            _rig.Apply(_motion.Pose);
+            Body.ResetChains();
+        }
+
+        ResetPhysicsInterpolation();
+    }
+
+    /// <summary>Facing +X is yaw 0; facing -X is -π, so a turn either way passes through facing the camera.</summary>
+    private float TargetYaw => _facing > 0 ? 0f : -Mathf.Pi;
 }

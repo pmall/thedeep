@@ -16,6 +16,8 @@ public sealed class DashState : PlayerState
 
     public override bool AllowsTurning => false;
 
+    public override MotionMode Motion => MotionMode.Dash;
+
     public override void Enter()
     {
         _direction = Player.CurrentInput.MoveX != 0 ? Player.CurrentInput.MoveX : Player.Facing;

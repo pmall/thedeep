@@ -1,0 +1,33 @@
+[gd_resource type="ParticleProcessMaterial" format=3]
+; Dust pushed out by a landing: soft puffs spreading low along the floor, growing and fading.
+
+[sub_resource type="Gradient" id="Gradient_fade"]
+offsets = PackedFloat32Array(0, 0.15, 1)
+colors = PackedColorArray(1, 1, 1, 0, 1, 1, 1, 0.55, 1, 1, 1, 0)
+
+[sub_resource type="GradientTexture1D" id="GradientTexture1D_fade"]
+gradient = SubResource("Gradient_fade")
+
+[sub_resource type="Curve" id="Curve_grow"]
+_data = [Vector2(0, 0.4), 0.0, 1.5, 0, 0, Vector2(1, 1), 0.0, 0.0, 0, 0]
+point_count = 2
+
+[sub_resource type="CurveTexture" id="CurveTexture_grow"]
+curve = SubResource("Curve_grow")
+
+[resource]
+emission_shape = 3
+emission_box_extents = Vector3(0.2, 0.02, 0.15)
+direction = Vector3(1, 0.15, 0)
+spread = 180.0
+flatness = 0.85
+initial_velocity_min = 0.8
+initial_velocity_max = 2.4
+gravity = Vector3(0, 0.15, 0)
+damping_min = 3.0
+damping_max = 5.0
+scale_min = 0.7
+scale_max = 1.4
+scale_curve = SubResource("CurveTexture_grow")
+color = Color(0.85, 0.85, 0.88, 1)
+color_ramp = SubResource("GradientTexture1D_fade")

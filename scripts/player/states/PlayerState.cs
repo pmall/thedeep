@@ -17,6 +17,9 @@ public abstract class PlayerState
     /// <summary>Whether held input may change the player's facing while in this state.</summary>
     public virtual bool AllowsTurning => true;
 
+    /// <summary>What the animation shows in this state.</summary>
+    public virtual MotionMode Motion => MotionMode.Ground;
+
     protected Player Player { get; }
 
     protected PlayerTuning Tuning => Player.Tuning;

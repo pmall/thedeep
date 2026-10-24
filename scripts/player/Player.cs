@@ -27,6 +27,12 @@ public partial class Player : CharacterBody3D
     /// <summary>Raised after <see cref="Respawn"/> teleports the player.</summary>
     public event Action? Respawned;
 
+    /// <summary>Raised on touching down, with the downward speed (m/s) just before.</summary>
+    public event Action<float>? Landed;
+
+    /// <summary>Raised when a dash starts, with its direction (+1 right, -1 left).</summary>
+    public event Action<int>? Dashed;
+
     public AbilitySet Abilities { get; } = new();
 
     public PlayerStateSet States { get; private set; } = null!;
@@ -42,6 +48,9 @@ public partial class Player : CharacterBody3D
 
     public int AirDashesLeft => _airDashesLeft;
 
+    /// <summary>What the player stands on (from the floor's physics layer), or null in the air.</summary>
+    public SurfaceKind? FloorSurface { get; private set; }
+
     /// <summary>A buffered jump press and the ground (or coyote time) to jump from.</summary>
     public bool WantsJump => _jumpBuffer.Active && _coyote.Active;
 
@@ -56,6 +65,8 @@ public partial class Player : CharacterBody3D
         _state = States.Idle;
         _state.Enter();
         _airDashesLeft = Tuning.AirDashes;
+        Visual.Setup(Tuning.RunSpeed);
+        Visual.Snap();
     }
 
     public override void _PhysicsProcess(double delta)
@@ -79,6 +90,8 @@ public partial class Player : CharacterBody3D
             ChangeState(next);
         }
 
+        bool wasOnFloor = IsOnFloor();
+        float fallSpeed = -Velocity.Y;
         MoveAndSlide();
         StayOnPlayPlane();
 
@@ -86,7 +99,19 @@ public partial class Player : CharacterBody3D
         {
             _coyote.Start(Tuning.CoyoteTime);
             _airDashesLeft = Tuning.AirDashes;
+            FloorSurface = FloorSurfaceKind();
+            if (!wasOnFloor)
+            {
+                Visual.Land(fallSpeed);
+                Landed?.Invoke(fallSpeed);
+            }
         }
+        else
+        {
+            FloorSurface = null;
+        }
+
+        Visual.Animate(dt, Velocity, _state.Motion, IsOnFloor(), GlobalPosition.Y);
     }
 
     /// <summary>
@@ -109,6 +134,7 @@ public partial class Player : CharacterBody3D
         _dashCooldown.Clear();
         _airDashesLeft = Tuning.AirDashes;
         ResetPhysicsInterpolation();
+        Visual.Snap();
         Respawned?.Invoke();
     }
 
@@ -163,7 +189,7 @@ public partial class Player : CharacterBody3D
         }
 
         SetFacing(direction);
-        Visual.DashStretch();
+        Dashed?.Invoke(direction);
     }
 
     public void EndDash() => _dashCooldown.Start(Tuning.DashCooldown);
@@ -199,6 +225,23 @@ public partial class Player : CharacterBody3D
     {
         Facing = direction < 0 ? -1 : 1;
         Visual.SetFacing(Facing);
+    }
+
+    /// <summary>The surface under the player, from the physics layer of the floor it touched (metal wins).</summary>
+    private SurfaceKind FloorSurfaceKind()
+    {
+        SurfaceKind kind = SurfaceKind.Rock;
+        for (int i = 0; i < GetSlideCollisionCount(); i++)
+        {
+            KinematicCollision3D collision = GetSlideCollision(i);
+            if (collision.GetNormal().Y > 0.7f && collision.GetCollider() is CollisionObject3D body
+                && (body.CollisionLayer & PhysicsLayers.WorldMetal) != 0)
+            {
+                kind = SurfaceKind.Metal;
+            }
+        }
+
+        return kind;
     }
 
     /// <summary>All gameplay happens on X/Y; AxisLockLinearZ covers physics, this covers everything else.</summary>

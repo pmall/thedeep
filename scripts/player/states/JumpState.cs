@@ -9,11 +9,12 @@ public sealed class JumpState : PlayerState
     {
     }
 
+    public override MotionMode Motion => MotionMode.Air;
+
     public override void Enter()
     {
         Player.ConsumeJump();
         Player.Velocity = Player.Velocity with { Y = Tuning.JumpTakeOffSpeed };
-        Player.Visual.Stretch();
         _cut = false;
     }
 

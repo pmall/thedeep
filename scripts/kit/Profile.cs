@@ -64,6 +64,35 @@ public sealed class Profile
         return new Profile(segments);
     }
 
+    /// <summary>An ellipse with radii <paramref name="radii"/>, one round patch that wraps around (pod caps).</summary>
+    public static Profile Ellipse(Vector2 radii, int sides)
+    {
+        sides = Math.Max(3, sides);
+        var points = new Vector2[sides];
+        for (int i = 0; i < sides; i++)
+        {
+            float a = MathF.Tau * i / sides;
+            points[i] = new Vector2(MathF.Cos(a) * radii.X, MathF.Sin(a) * radii.Y);
+        }
+
+        float length = 0f;
+        var segments = new Segment[sides];
+        for (int i = 0; i < sides; i++)
+        {
+            Vector2 a = points[i], b = points[(i + 1) % sides];
+            float step = Vector2.Distance(a, b);
+            segments[i] = new Segment(a, b, EllipseNormal(a, radii), EllipseNormal(b, radii), length, length + step, 0f);
+            length += step;
+        }
+
+        for (int i = 0; i < sides; i++)
+        {
+            segments[i] = segments[i] with { PatchWidth = -length };
+        }
+
+        return new Profile(segments);
+    }
+
     /// <summary>
     /// A rectangle centered on the path, <paramref name="width"/> along X and <paramref name="height"/> along Y,
     /// with its corners cut by a chamfer of <paramref name="bevel"/> meters whose normals turn smoothly from
@@ -151,6 +180,12 @@ public sealed class Profile
         }
 
         return Polygon(points);
+    }
+
+    private static Vector2 EllipseNormal(Vector2 p, Vector2 radii)
+    {
+        var n = new Vector2(p.X / MathF.Max(radii.X * radii.X, 1e-8f), p.Y / MathF.Max(radii.Y * radii.Y, 1e-8f));
+        return n.LengthSquared() > 1e-12f ? Vector2.Normalize(n) : Vector2.UnitX;
     }
 
     private static Vector2 Polar(float radius, float angle) => new Vector2(MathF.Cos(angle), MathF.Sin(angle)) * radius;

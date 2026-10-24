@@ -30,6 +30,16 @@
     <Compile Include="../../scripts/kit/KitShapes.cs" Link="Shared/KitShapes.cs" />
     <Compile Include="../../scripts/map/Requirement.cs" Link="Shared/Requirement.cs" />
     <Compile Include="../../scripts/map/GridSnap.cs" Link="Shared/GridSnap.cs" />
+    <Compile Include="../../scripts/parts/PartShapes.cs" Link="Shared/PartShapes.cs" />
+    <Compile Include="../../scripts/parts/PlanarIk.cs" Link="Shared/PlanarIk.cs" />
+    <Compile Include="../../scripts/parts/VerletChain.cs" Link="Shared/VerletChain.cs" />
+    <Compile Include="../../scripts/parts/HumanoidBone.cs" Link="Shared/HumanoidBone.cs" />
+    <Compile Include="../../scripts/parts/Humanoid.cs" Link="Shared/Humanoid.cs" />
+    <Compile Include="../../scripts/parts/HumanoidDims.cs" Link="Shared/HumanoidDims.cs" />
+    <Compile Include="../../scripts/parts/HumanoidPose.cs" Link="Shared/HumanoidPose.cs" />
+    <Compile Include="../../scripts/parts/PartCategory.cs" Link="Shared/PartCategory.cs" />
+    <Compile Include="../../scripts/player/MotionMode.cs" Link="Shared/MotionMode.cs" />
+    <Compile Include="../../scripts/player/PilgrimMotion.cs" Link="Shared/PilgrimMotion.cs" />
   </ItemGroup>
   <ItemGroup>
     <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.12.0" />

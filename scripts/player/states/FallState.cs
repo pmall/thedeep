@@ -7,6 +7,8 @@ public sealed class FallState : PlayerState
     {
     }
 
+    public override MotionMode Motion => MotionMode.Air;
+
     public override PlayerState? PhysicsUpdate(float delta)
     {
         Player.ApplyRunControl(delta, grounded: false);
@@ -24,7 +26,6 @@ public sealed class FallState : PlayerState
 
         if (Player.IsOnFloor())
         {
-            Player.Visual.Squash();
             return Player.CurrentInput.MoveX != 0 ? Player.States.Run : Player.States.Idle;
         }
 

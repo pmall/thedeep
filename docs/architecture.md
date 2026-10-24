@@ -57,6 +57,14 @@ scripts/
     KitShapes.cs           the pieces as pure geometry: block, column, pipe, cables, arch/rib, grate, rack, wreck
     KitMesh.cs             PrimitiveMesh base: MeshData → mesh arrays (swappable for an authored mesh)
     BlockMesh.cs … WreckMesh.cs   one [GlobalClass] mesh resource per piece, parameters exported
+  parts/                   the modular part system (M4), shared by the pilgrim and future machines:
+    PartAssembly.cs, RigJoint.cs, PartSlot.cs, PartChain.cs   data: joints, rigid parts on joints, flowing chains
+    PartBody.cs            Node3D that builds an assembly; chains simulated on physics ticks, drawn per frame
+    PodMesh.cs, PlateMesh.cs, RingMesh.cs   part mesh resources over PartShapes (pure geometry)
+    PlanarIk.cs, VerletChain.cs, Humanoid*.cs   pure: side-plane IK, secondary motion, humanoid bones and poses
+    HumanoidRig.cs         applies a HumanoidPose to a PartBody's joints
+  player/PilgrimMotion.cs  pure procedural animation: gait, lean, landing spring, air and dash poses
+  player/PlayerEffects.cs, BurstPool.cs, DashTrail.cs   grit/sparks/dust bursts by surface, dash trail
   map/Requirement.cs       ability requirement expressions (`MagGrip | Harpoon`), parsed to alternatives
   map/GridSnap.cs          the kit grid (block edges 0.5 m, piece origins 0.25 m)
   ui/DebugHud.cs
@@ -141,6 +149,7 @@ Code with no Godot types is compiled straight into the xUnit project via `<Compi
 - `capture/VideoEncoder.cs` (plain .NET; its tests run the real ffmpeg)
 - `kit/MeshData.cs`, `kit/MeshBuilder.cs`, `kit/Profile.cs`, `kit/PathFrame.cs`, `kit/SweepPath.cs`, `kit/KitShapes.cs` (System.Numerics)
 - `map/Requirement.cs`, `map/GridSnap.cs`
+- `parts/PartShapes.cs`, `parts/PlanarIk.cs`, `parts/VerletChain.cs`, `parts/Humanoid*.cs`, `parts/PartCategory.cs`, `player/MotionMode.cs`, `player/PilgrimMotion.cs`
 
 Keep these Godot-free. When adding testable logic, put it in a Godot-free file and add it to `tests/TheDeep.Tests/TheDeep.Tests.csproj`. The future map solver and machine behavior logic follow this pattern ([long-term.md](long-term.md)).
 

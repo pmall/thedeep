@@ -21,8 +21,12 @@ public partial class KitMesh : PrimitiveMesh
     {
         var builder = new MeshBuilder();
         Build(builder);
-        MeshData mesh = builder.Finish();
+        return ToArrays(builder.Finish());
+    }
 
+    /// <summary>Godot mesh arrays for <paramref name="mesh"/>, with the surface frame the materials read.</summary>
+    public static Array ToArrays(MeshData mesh)
+    {
         int count = mesh.VertexCount;
         var positions = new Vector3[count];
         var normals = new Vector3[count];

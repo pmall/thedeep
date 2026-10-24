@@ -14,7 +14,9 @@ namespace TheDeep;
 /// Look-dev run for tools/capture.sh (`-- --lookdev &lt;dir&gt;`). Renders at a fixed size (1080p by
 /// default) whatever the window size, without HUD:
 /// 1. every <see cref="PhotoSpot"/> of the room to &lt;dir&gt;/&lt;Room&gt;-&lt;Spot&gt;.png;
-/// 2. a scripted run with the gameplay camera, measuring frame times into &lt;dir&gt;/perf.json.
+/// 2. in the test room, the <see cref="MotionReel"/>: scripted moves shot close, a frame per shot to
+///    &lt;dir&gt;/motion/ (tools/motion_sheet.py makes them a contact sheet);
+/// 3. a scripted run with the gameplay camera, measuring frame times into &lt;dir&gt;/perf.json.
 /// Meant to run with `--fixed-fps 60 --disable-vsync`, so game time is identical from run to run
 /// and frame times show the real cost. Prints "LOOKDEV OK" and quits, or quits with code 1.
 /// </summary>
@@ -37,6 +39,8 @@ public partial class LookDevDriver : Node
     private IEnumerator<int> _script = null!;
     private FrameGrabber? _grabber;
     private DemoInput? _demo;
+    private MotionReel.Segment? _segment;
+    private int _segmentTick;
     private int _pendingSaves;
     private ulong _lastFrameUsec;
     private bool _measuring;
@@ -76,6 +80,22 @@ public partial class LookDevDriver : Node
     public override void _PhysicsProcess(double delta)
     {
         _demo?.Tick();
+        if (_segment is not null)
+        {
+            foreach (MotionReel.Press press in _segment.Presses)
+            {
+                if (press.Tick == _segmentTick && press.Down)
+                {
+                    Input.ActionPress(press.Action);
+                }
+                else if (press.Tick == _segmentTick)
+                {
+                    Input.ActionRelease(press.Action);
+                }
+            }
+
+            _segmentTick++;
+        }
     }
 
     public override void _Process(double delta)
@@ -138,7 +158,41 @@ public partial class LookDevDriver : Node
             _problems.Enqueue($"room {Room.Name} has no PhotoSpot");
         }
 
-        // 2. Frame times over a scripted run with the gameplay camera.
+        // 2. Motion reel, followed by a close camera.
+        if (Room.Name == MotionReel.Room)
+        {
+            string reelDir = Path.Combine(OutputDir, "motion");
+            Directory.CreateDirectory(reelDir);
+            int shotCount = 0;
+            foreach (MotionReel.Segment segment in MotionReel.Segments)
+            {
+                DemoInput.ReleaseAll();
+                Player.Respawn(Room.ToGlobal(segment.Start), segment.Facing);
+                _segment = segment;
+                _segmentTick = 0;
+                while (_segmentTick < segment.Length)
+                {
+                    Vector3 p = Player.GetGlobalTransformInterpolated().Origin;
+                    Camera.FrameShot(new Vector3(p.X, p.Y + 0.9f, MotionReel.CameraDistance), 0f);
+                    foreach (MotionReel.Shot shot in segment.Shots)
+                    {
+                        if (shot.Tick == _segmentTick)
+                        {
+                            string path = Path.Combine(reelDir, $"{shotCount++:00}-{shot.Label}.png");
+                            Interlocked.Increment(ref _pendingSaves);
+                            _grabber.Request(bytes => Task.Run(() => Save(bytes, format, path)));
+                        }
+                    }
+
+                    yield return 0;
+                }
+            }
+
+            _segment = null;
+            DemoInput.ReleaseAll();
+        }
+
+        // 3. Frame times over a scripted run with the gameplay camera.
         Player.Respawn(Room.SpawnPoint.GlobalPosition, 1);
         Camera.ResumeFollow();
         _demo = new DemoInput();

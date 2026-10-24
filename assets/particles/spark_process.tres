@@ -1,0 +1,22 @@
+[gd_resource type="ParticleProcessMaterial" format=3]
+; Sparks struck from metal by a footstep or a landing: fast, bright, short-lived, aligned with their flight.
+
+[sub_resource type="Gradient" id="Gradient_fade"]
+offsets = PackedFloat32Array(0, 0.6, 1)
+colors = PackedColorArray(1, 1, 1, 1, 1, 0.85, 0.6, 0.8, 1, 0.6, 0.3, 0)
+
+[sub_resource type="GradientTexture1D" id="GradientTexture1D_fade"]
+gradient = SubResource("Gradient_fade")
+
+[resource]
+particle_flag_align_y = true
+emission_shape = 3
+emission_box_extents = Vector3(0.06, 0.01, 0.05)
+direction = Vector3(0, 1, 0)
+spread = 70.0
+initial_velocity_min = 2.0
+initial_velocity_max = 4.5
+gravity = Vector3(0, -12, 0)
+scale_min = 0.6
+scale_max = 1.0
+color_ramp = SubResource("GradientTexture1D_fade")

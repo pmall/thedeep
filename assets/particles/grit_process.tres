@@ -1,0 +1,24 @@
+[gd_resource type="ParticleProcessMaterial" format=3]
+; Grit kicked up by a footstep on rock: a few heavy specks thrown up and back, falling fast.
+
+[sub_resource type="Gradient" id="Gradient_fade"]
+offsets = PackedFloat32Array(0, 0.1, 0.7, 1)
+colors = PackedColorArray(1, 1, 1, 0, 1, 1, 1, 1, 1, 1, 1, 0.8, 1, 1, 1, 0)
+
+[sub_resource type="GradientTexture1D" id="GradientTexture1D_fade"]
+gradient = SubResource("Gradient_fade")
+
+[resource]
+emission_shape = 3
+emission_box_extents = Vector3(0.08, 0.01, 0.06)
+direction = Vector3(0, 1, 0)
+spread = 50.0
+initial_velocity_min = 0.6
+initial_velocity_max = 1.8
+gravity = Vector3(0, -9.8, 0)
+damping_min = 0.5
+damping_max = 1.5
+scale_min = 0.5
+scale_max = 1.2
+color = Color(0.72, 0.72, 0.74, 1)
+color_ramp = SubResource("GradientTexture1D_fade")

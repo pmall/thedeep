@@ -70,6 +70,7 @@ if grep -E "$FAIL_PATTERN" "$out/godot.log" >/dev/null; then
 fi
 grep -q 'LOOKDEV OK' "$out/godot.log" || { tail -20 "$out/godot.log"; fail "look-dev run did not report LOOKDEV OK"; }
 grep -E '^(frame|gpu|cpu) |budget' "$out/godot.log"
+if [ -d "$out/motion" ]; then python3 -I tools/motion_sheet.py "$out"; fi
 ls "$out"/*.png | sed 's/^/  /'
 
 if [ -n "$previous" ] && [ -d "$previous" ]; then

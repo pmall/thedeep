@@ -1,7 +1,8 @@
-// Ambient particles (dust, silt, drips, bubbles) on camera-facing quads: the camera always looks down -Z
-// and particles never rotate, so a QuadMesh facing +Z needs no billboard. Lit from every side alike
-// (they are tiny and translucent), with no ambient light and only a share of the key light: motes vanish
-// in the dark and glow inside light shafts and near lamps. `glow` is the only light they keep in the dark.
+// Ambient particles (dust, silt, drips, bubbles) and the pilgrim's grit, dust and sparks, on camera-facing
+// quads: the camera always looks down -Z and particles barely rotate (sparks turn along their flight),
+// so a QuadMesh facing +Z needs no billboard. Lit from every side alike (they are tiny and translucent),
+// with no ambient light and only a share of the key light: motes vanish in the dark and glow inside light
+// shafts and near lamps. `glow` is the only light they keep in the dark.
 // Color: the biome's particle tint times the particle's own color (alpha fades from the color ramp).
 shader_type spatial;
 render_mode blend_mix, depth_draw_never, cull_disabled, specular_disabled, ambient_light_disabled;
@@ -10,7 +11,7 @@ render_mode blend_mix, depth_draw_never, cull_disabled, specular_disabled, ambie
 
 global uniform vec4 biome_particle;
 
-uniform int shape : hint_enum("Mote", "Streak", "Bubble") = 0;
+uniform int shape : hint_enum("Mote", "Streak", "Bubble", "Spark") = 0;
 uniform float opacity : hint_range(0.0, 1.0) = 0.6;
 /// Light the particle gives off by itself, so it never goes fully black in shadow.
 uniform float glow : hint_range(0.0, 4.0) = 0.05;
@@ -31,6 +32,9 @@ void fragment() {
 		// A bubble: a thin bright rim and a small highlight.
 		a = smoothstep(0.55, 0.8, r) * (1.0 - smoothstep(0.85, 1.0, r));
 		a = max(a, 1.0 - smoothstep(0.0, 0.22, length(p - vec2(-0.35, -0.35))));
+	} else if (shape == 3) {
+		// A spark aligned with its velocity (+Y): a hot head and a fading tail.
+		a = (1.0 - smoothstep(0.1, 0.9, abs(p.x))) * (1.0 - UV.y) * (1.0 - UV.y);
 	} else {
 		a = 1.0 - smoothstep(0.25, 1.0, r);
 	}

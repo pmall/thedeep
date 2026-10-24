@@ -29,6 +29,14 @@ public partial class SideCamera : Camera3D
     /// <summary>Horizontal speed above which the look-ahead switches to the direction of travel.</summary>
     [Export] public float LookAheadMinSpeed { get; set; } = 1f;
 
+    /// <summary>Landing speed (m/s) above which a landing shakes the camera, and the speed of the strongest shake.</summary>
+    [Export] public float ShakeLandingSpeed { get; set; } = 13f;
+    [Export] public float ShakeLandingMax { get; set; } = 22f;
+
+    /// <summary>Largest shake offset, meters; shake fades at <see cref="ShakeDecay"/> per second.</summary>
+    [Export] public float ShakeAmplitude { get; set; } = 0.12f;
+    [Export] public float ShakeDecay { get; set; } = 2.5f;
+
     private Vector2 _focus;
     private bool _framingShot;
     private float _followFov;
@@ -41,19 +49,26 @@ public partial class SideCamera : Camera3D
     private CameraAttributesPractical? _shotAttributes;
     private float _lookAhead;
     private float _lookAheadTarget;
+    private float _trauma;
+    private float _shakeTime;
 
     public override void _Ready()
     {
         // Moved in _Process from the target's interpolated transform, so it must not be interpolated itself.
         PhysicsInterpolationMode = PhysicsInterpolationModeEnum.Off;
         Target.Respawned += SnapToTarget;
+        Target.Landed += OnLanded;
         SnapToTarget();
     }
 
     public override void _ExitTree()
     {
         Target.Respawned -= SnapToTarget;
+        Target.Landed -= OnLanded;
     }
+
+    /// <summary>Adds shake (0 to 1); the offset grows with its square, so small amounts stay subtle.</summary>
+    public void AddShake(float amount) => _trauma = Mathf.Clamp(_trauma + amount, 0f, 1f);
 
     public override void _Process(double delta)
     {
@@ -63,6 +78,8 @@ public partial class SideCamera : Camera3D
         }
 
         float dt = (float)delta;
+        _trauma = Mathf.Max(0f, _trauma - ShakeDecay * dt);
+        _shakeTime += dt;
         Vector3 target = Target.GetGlobalTransformInterpolated().Origin;
 
         float vx = Target.Velocity.X;
@@ -142,7 +159,20 @@ public partial class SideCamera : Camera3D
 
     private void ApplyFocus()
     {
-        GlobalPosition = new Vector3(_focus.X, _focus.Y, Distance);
+        // Smooth, mostly vertical shake from a few incommensurate sines: a jolt, never a rattle.
+        float shake = _trauma * _trauma * ShakeAmplitude;
+        var offset = new Vector2(
+            0.5f * Mathf.Sin(_shakeTime * 37f) * Mathf.Sin(_shakeTime * 13f),
+            Mathf.Sin(_shakeTime * 43f + 1.3f) * Mathf.Cos(_shakeTime * 17f)) * shake;
+        GlobalPosition = new Vector3(_focus.X + offset.X, _focus.Y + offset.Y, Distance);
+    }
+
+    private void OnLanded(float impactSpeed)
+    {
+        if (impactSpeed > ShakeLandingSpeed)
+        {
+            AddShake(0.75f * Mathf.Clamp((impactSpeed - ShakeLandingSpeed) / (ShakeLandingMax - ShakeLandingSpeed), 0.25f, 1f));
+        }
     }
 
     private Vector2 ClampToRoom(Vector2 center)
