@@ -1,0 +1,14 @@
+# Godot generated
+.godot/
+# .NET build output (any depth, including tests/)
+bin/
+obj/
+# Export builds
+/build/
+/export/
+/exports/
+# Editor / OS noise
+*.tmp
+.DS_Store
+.vscode/
+.idea/

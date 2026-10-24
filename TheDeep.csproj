@@ -1,0 +1,14 @@
+<Project Sdk="Godot.NET.Sdk/4.7.2">
+  <PropertyGroup>
+    <TargetFramework>net8.0</TargetFramework>
+    <TargetFramework Condition=" '$(GodotTargetPlatform)' == 'android' ">net9.0</TargetFramework>
+    <EnableDynamicLoading>true</EnableDynamicLoading>
+    <Nullable>enable</Nullable>
+    <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
+    <RootNamespace>TheDeep</RootNamespace>
+  </PropertyGroup>
+  <ItemGroup>
+    <!-- The xUnit project has its own csproj; keep its sources out of the game assembly. -->
+    <Compile Remove="tests/**" />
+  </ItemGroup>
+</Project>
