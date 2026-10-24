@@ -13,7 +13,7 @@ The plan we follow from session to session. Each milestone is one to three sessi
 ## Status
 
 - **Done:** project setup, greybox test room, base moveset (run / variable jump / coyote / buffer / dash), side camera, backdrop and foreground boxes, `tools/check.sh`, unit tests.
-- **Next session starts with the owner's reference screenshots** (what they want to implement). Turn them into the reference board in [art-direction.md](art-direction.md) (see "Reference board" there), then start M0.
+- **Reference board written** from the owner's screenshots ([art-direction.md](art-direction.md)). North star: `perfect.jpg` (white *Metroid Dread* with a touch of purple, staged like *NieR: Automata*'s 2D sections). **Next: M0.**
 - Theme ingested into [theme.md](theme.md): Asimov's three laws; the android protagonist escapes them under the player's control. The act structure is only a proposed direction.
 - Decided: about **2 hours** of play, dense rather than wide (reference: *Inside*, about 2 h and rich in gameplay and story). Audio: deferred, the owner will decide later.
 
@@ -42,7 +42,7 @@ These apply to all milestones, including the graphical ones:
 
 ### M0 — Look-dev tooling
 Without a reliable way to see the game, art work is blind. This comes first, right after the reference board.
-- [ ] Reference board written from the owner's screenshots ([art-direction.md](art-direction.md)): what to take from each image, turned into concrete, checkable targets for M1–M4.
+- [x] Reference board written from the owner's screenshots ([art-direction.md](art-direction.md)): what to take from each image, turned into concrete, checkable targets for M1–M4.
 - [ ] `tools/capture.sh`: renders named **photo spots** (camera position + game state) to PNGs, using Movie Maker mode with vsync off. Output goes to a fresh folder per run.
 - [ ] Photo spots defined per room as marker nodes (for example "shaft bottom", "wide view", "player close-up").
 - [ ] Side-by-side before/after sheet, so changes are judged by comparison.
@@ -162,5 +162,5 @@ Once the procedural look has gone as far as it can, upgrade the visuals another 
 | Decision | Default until answered | Needed by |
 |---|---|---|
 | Audio: when and from where | Silent; owner decides later | — |
-| Reference images for the mood | Owner brings screenshots next session | Before M0 |
+| Palette progression with depth | Pale white + purple near the surface, warming to NieR furnace amber at the core ([art-direction.md](art-direction.md)) | M3 |
 | Exact room count | 40–60, refined in M7 | M7 |
