@@ -1,0 +1,7 @@
+[gd_resource type="FogMaterial" format=3]
+; Cancels the volumetric fog inside its FogVolume: clear air in front of the play plane, so shafts and
+; haze never wash out gameplay. Depth fog (Environment) still applies.
+
+[resource]
+density = -1.0
+edge_fade = 0.2

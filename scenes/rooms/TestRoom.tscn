@@ -26,6 +26,10 @@
 [ext_resource type="Material" path="res://assets/materials/stone_mid.tres" id="24_stone_mid"]
 [ext_resource type="Material" path="res://assets/materials/metal_mid.tres" id="25_metal_mid"]
 [ext_resource type="Material" path="res://assets/materials/rust_mid.tres" id="26_rust_mid"]
+[ext_resource type="Material" path="res://assets/materials/fog_clear.tres" id="27_fog_clear"]
+[ext_resource type="PackedScene" path="res://scenes/fx/Dust.tscn" id="28_dust"]
+[ext_resource type="PackedScene" path="res://scenes/fx/Silt.tscn" id="29_silt"]
+[ext_resource type="PackedScene" path="res://scenes/fx/Drips.tscn" id="30_drips"]
 
 [sub_resource type="Environment" id="Environment_room"]
 background_mode = 1
@@ -45,6 +49,9 @@ fog_light_color = Color(0.05, 0.11, 0.12, 1)
 fog_density = 1.0
 fog_depth_begin = 24.0
 fog_depth_end = 75.0
+volumetric_fog_enabled = true
+volumetric_fog_length = 72.0
+volumetric_fog_detail_spread = 1.5
 
 [sub_resource type="QuadMesh" id="QuadMesh_glyph_row"]
 size = Vector2(3.2, 0.62)
@@ -156,6 +163,12 @@ Radius = 0.2
 BendRadius = 1
 FlangeSpacing = 2.5
 
+[sub_resource type="PrimitiveMesh" id="Tracery"]
+script = ExtResource("19_grate")
+Size = Vector3(14, 0.6, 14)
+Spacing = 1.4
+Bar = 0.45
+
 [sub_resource type="PrimitiveMesh" id="Cables_low"]
 script = ExtResource("23_cable")
 End = Vector3(8, 0, 0)
@@ -172,13 +185,14 @@ Radius = 0.03
 Strands = 2
 Seed = 2
 
-[node name="TestRoom" type="Node3D" node_paths=PackedStringArray("SpawnPoint", "Environment", "KeyLight", "Lamps")]
+[node name="TestRoom" type="Node3D" node_paths=PackedStringArray("SpawnPoint", "Environment", "KeyLight", "Lamps", "Shafts")]
 script = ExtResource("1_room")
 SpawnPoint = NodePath("SpawnPoint")
 Biome = ExtResource("8_biome")
 Environment = NodePath("WorldEnvironment")
 KeyLight = NodePath("Sun")
 Lamps = [NodePath("ShaftLamp")]
+Shafts = [NodePath("Shafts/Arcade"), NodePath("Shafts/Shaft")]
 BoundsMin = Vector2(-2, -2)
 BoundsMax = Vector2(66, 34)
 
@@ -200,6 +214,76 @@ light_color = Color(1, 0.48, 0.2, 1)
 light_energy = 2.5
 omni_range = 11.0
 shadow_enabled = true
+
+; Light shafts: spot lights high behind the room, seen in the volumetric fog and cut by the arcade's shadows.
+[node name="Shafts" type="Node3D" parent="."]
+
+; from the upper left, down through the gallery and the arcade onto the platforms
+[node name="Arcade" type="SpotLight3D" parent="Shafts"]
+transform = Transform3D(-0.7071, 0.6288, -0.3234, 0, 0.4573, 0.8893, 0.7071, 0.6288, -0.3234, 4, 44, -16)
+light_energy = 6.0
+light_volumetric_fog_energy = 14.0
+shadow_enabled = true
+spot_range = 80.0
+spot_attenuation = 0.25
+spot_angle = 11.0
+spot_angle_attenuation = 2.0
+
+; out of frame under the light, casting shadows only: cuts the arcade shaft into rays
+[node name="Tracery" type="MeshInstance3D" parent="Shafts"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 7, 36, -13)
+mesh = SubResource("Tracery")
+cast_shadow = 3
+
+; straight down the metal shaft from behind the hatch
+[node name="Shaft" type="SpotLight3D" parent="Shafts"]
+transform = Transform3D(-1, 0, 0, 0, 0.1414, 0.9899, 0, 0.9899, -0.1414, 51, 46, -6)
+light_energy = 5.0
+light_volumetric_fog_energy = 10.0
+shadow_enabled = true
+spot_range = 70.0
+spot_attenuation = 0.25
+spot_angle = 9.0
+spot_angle_attenuation = 2.0
+
+; Clear air in front of the play plane (Z 2 to 26): the volumetric haze stays behind gameplay.
+[node name="ClearFront" type="FogVolume" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 33, 18, 14)
+size = Vector3(100, 60, 24)
+shape = 3
+material = ExtResource("27_fog_clear")
+
+; Ambient particles (scenes/fx): dust in the air (lit by the shafts), silt over the back floor, drips.
+[node name="Particles" type="Node3D" parent="."]
+
+[node name="HallDust" parent="Particles" instance=ExtResource("28_dust")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 24, 13, -5.5)
+Extents = Vector3(34, 14, 6.5)
+Density = 2.4
+
+[node name="ShaftDust" parent="Particles" instance=ExtResource("28_dust")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 51, 16, -1)
+Extents = Vector3(5, 16, 2.5)
+Density = 2.5
+
+[node name="BackFloorSilt" parent="Particles" instance=ExtResource("29_silt")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 32, 1.4, -8)
+Extents = Vector3(34, 1.4, 6)
+Density = 1.5
+
+; from the gallery beam into the back of the hall (fall time for 23 m)
+[node name="GalleryDrips" parent="Particles" instance=ExtResource("30_drips")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 20, 23, -4.5)
+amount = 10
+lifetime = 2.17
+Extents = Vector3(14, 0.05, 0.4)
+
+; from the ceiling beside the shaft onto the play floor (fall time for 32 m)
+[node name="CeilingDrips" parent="Particles" instance=ExtResource("30_drips")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 40, 32, -1)
+amount = 4
+lifetime = 2.55
+Extents = Vector3(3, 0.05, 0.8)
 
 ; Gameplay geometry: box colliders with their edges on the 0.5 m grid (RoomValidator checks it).
 [node name="Geometry" type="Node3D" parent="."]

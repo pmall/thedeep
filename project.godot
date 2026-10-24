@@ -185,6 +185,18 @@ biome_silt={
 "type": "color",
 "value": Color(0.6, 0.6, 0.62, 1)
 }
+post_vignette={
+"type": "float",
+"value": 0.0
+}
+post_vignette_color={
+"type": "color",
+"value": Color(0, 0, 0, 1)
+}
+post_grain={
+"type": "float",
+"value": 0.0
+}
 
 [rendering]
 

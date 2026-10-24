@@ -1,0 +1,18 @@
+[gd_scene format=3]
+; Dust motes drifting in the air, seen in light shafts. Place it, then set Extents and Density.
+
+[ext_resource type="Script" path="res://scripts/rooms/AmbientParticles.cs" id="1_ambient"]
+[ext_resource type="Material" path="res://assets/particles/dust_process.tres" id="2_process"]
+[ext_resource type="Material" path="res://assets/particles/mote_material.tres" id="3_material"]
+
+[sub_resource type="QuadMesh" id="QuadMesh_mote"]
+material = ExtResource("3_material")
+size = Vector2(0.06, 0.06)
+
+[node name="Dust" type="GPUParticles3D"]
+cast_shadow = 0
+amount = 400
+lifetime = 14.0
+process_material = ExtResource("2_process")
+draw_pass_1 = SubResource("QuadMesh_mote")
+script = ExtResource("1_ambient")

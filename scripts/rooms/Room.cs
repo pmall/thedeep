@@ -17,6 +17,9 @@ public partial class Room : Node3D
     /// <summary>Lamps that take the biome's lamp color.</summary>
     [Export] public Light3D[] Lamps { get; set; } = System.Array.Empty<Light3D>();
 
+    /// <summary>Light shafts (spot lights seen in the volumetric fog) that take the biome's shaft color.</summary>
+    [Export] public Light3D[] Shafts { get; set; } = System.Array.Empty<Light3D>();
+
     /// <summary>Lower-left corner (X, Y) of the area the camera is allowed to show, on the play plane.</summary>
     [Export] public Vector2 BoundsMin { get; set; } = new(-10f, -10f);
 
@@ -32,7 +35,7 @@ public partial class Room : Node3D
     public void ApplyBiome(BiomeProfile biome)
     {
         Biome = biome;
-        biome.Apply(Environment.Environment, KeyLight, Lamps);
+        biome.Apply(Environment.Environment, KeyLight, Lamps, Shafts);
     }
 
     /// <summary>The room's look-dev camera spots (tools/capture.sh), in scene order.</summary>

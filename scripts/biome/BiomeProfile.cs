@@ -55,6 +55,12 @@ public partial class BiomeProfile : Resource
     /// <summary>Color of the room's lamps; their energy and range stay per lamp.</summary>
     [Export] public Color LampColor { get; set; } = Colors.White;
 
+    /// <summary>Color of the room's light shafts (spot lights seen in the volumetric fog); energy stays per shaft.</summary>
+    [Export] public Color ShaftColor { get; set; } = Colors.White;
+
+    /// <summary>How brightly the key light lights the volumetric fog (its haze everywhere), against the shafts.</summary>
+    [Export] public float KeyFogEnergy { get; set; } = 0.5f;
+
     [ExportGroup("Fog")]
     [Export] public Color FogColor { get; set; } = new(0.5f, 0.5f, 0.6f);
     [Export] public float FogDensity { get; set; } = 1f;
@@ -62,6 +68,20 @@ public partial class BiomeProfile : Resource
     /// <summary>Distance from the camera where depth fog starts and where it is full.</summary>
     [Export] public float FogDepthBegin { get; set; } = 24f;
     [Export] public float FogDepthEnd { get; set; } = 75f;
+
+    /// <summary>Density of the volumetric fog: the haze that light shafts and lamps are seen in.</summary>
+    [Export] public float VolumetricDensity { get; set; } = 0.02f;
+
+    /// <summary>Color the volumetric fog scatters light with.</summary>
+    [Export] public Color VolumetricAlbedo { get; set; } = Colors.White;
+
+    /// <summary>Light the volumetric fog gives off by itself, so unlit haze is never black.</summary>
+    [Export] public Color VolumetricEmission { get; set; } = Colors.Black;
+
+    [Export] public float VolumetricEmissionEnergy { get; set; } = 1f;
+
+    /// <summary>Forward scattering: above 0, shafts glow brighter when the camera looks into the light.</summary>
+    [Export] public float VolumetricAnisotropy { get; set; } = 0.2f;
 
     [ExportGroup("Grading")]
     [Export] public float Exposure { get; set; } = 1f;
@@ -77,7 +97,17 @@ public partial class BiomeProfile : Resource
 
     [Export] public float GlowIntensity { get; set; } = 0.6f;
 
-    /// <summary>Tint of ambient particles (dust, silt, embers), used from roadmap M3.</summary>
+    /// <summary>How much the screen's edges darken (0 none, 1 full), so the bright stage sits in a dark frame.</summary>
+    [ExportGroup("Post")]
+    [Export] public float Vignette { get; set; } = 0.5f;
+
+    /// <summary>What the edges darken toward (multiplied in); a tint, not black, keeps the frame in the palette.</summary>
+    [Export] public Color VignetteColor { get; set; } = new(0.2f, 0.2f, 0.25f);
+
+    /// <summary>Film grain strength (0 none; around 0.03 is subtle).</summary>
+    [Export] public float Grain { get; set; } = 0.03f;
+
+    /// <summary>Tint of ambient particles (dust, silt, drips, bubbles; later embers or ice).</summary>
     [ExportGroup("Particles")]
     [Export] public Color ParticleTint { get; set; } = Colors.White;
 
@@ -89,10 +119,10 @@ public partial class BiomeProfile : Resource
     }
 
     /// <summary>
-    /// Re-themes a room: sets the palette globals, then the environment, key light and lamps.
+    /// Re-themes a room: sets the palette globals, then the environment, key light, lamps and light shafts.
     /// Only colors, energies and grading change; effects (SSAO, glow on/off…) stay as the room set them.
     /// </summary>
-    public void Apply(Environment environment, DirectionalLight3D keyLight, Light3D[] lamps)
+    public void Apply(Environment environment, DirectionalLight3D keyLight, Light3D[] lamps, Light3D[] shafts)
     {
         RenderingServer.GlobalShaderParameterSet(ShaderGlobals.BiomeRock, Rock);
         RenderingServer.GlobalShaderParameterSet(ShaderGlobals.BiomeMetal, Metal);
@@ -103,6 +133,9 @@ public partial class BiomeProfile : Resource
         RenderingServer.GlobalShaderParameterSet(ShaderGlobals.BiomeParticle, ParticleTint);
         RenderingServer.GlobalShaderParameterSet(ShaderGlobals.BiomeRust, Rust);
         RenderingServer.GlobalShaderParameterSet(ShaderGlobals.BiomeSilt, Silt);
+        RenderingServer.GlobalShaderParameterSet(ShaderGlobals.PostVignette, Vignette);
+        RenderingServer.GlobalShaderParameterSet(ShaderGlobals.PostVignetteColor, VignetteColor);
+        RenderingServer.GlobalShaderParameterSet(ShaderGlobals.PostGrain, Grain);
 
         environment.BackgroundColor = Background;
         environment.AmbientLightColor = AmbientColor;
@@ -111,6 +144,11 @@ public partial class BiomeProfile : Resource
         environment.FogDensity = FogDensity;
         environment.FogDepthBegin = FogDepthBegin;
         environment.FogDepthEnd = FogDepthEnd;
+        environment.VolumetricFogDensity = VolumetricDensity;
+        environment.VolumetricFogAlbedo = VolumetricAlbedo;
+        environment.VolumetricFogEmission = VolumetricEmission;
+        environment.VolumetricFogEmissionEnergy = VolumetricEmissionEnergy;
+        environment.VolumetricFogAnisotropy = VolumetricAnisotropy;
         environment.TonemapExposure = Exposure;
         environment.AdjustmentEnabled = true;
         environment.AdjustmentBrightness = Brightness;
@@ -121,9 +159,15 @@ public partial class BiomeProfile : Resource
 
         keyLight.LightColor = KeyColor;
         keyLight.LightEnergy = KeyEnergy;
+        keyLight.LightVolumetricFogEnergy = KeyFogEnergy;
         foreach (Light3D lamp in lamps)
         {
             lamp.LightColor = LampColor;
+        }
+
+        foreach (Light3D shaft in shafts)
+        {
+            shaft.LightColor = ShaftColor;
         }
     }
 

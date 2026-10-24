@@ -1,0 +1,18 @@
+[gd_scene format=3]
+; Silt flecks floating and slowly sinking near floors and water. Place it, then set Extents and Density.
+
+[ext_resource type="Script" path="res://scripts/rooms/AmbientParticles.cs" id="1_ambient"]
+[ext_resource type="Material" path="res://assets/particles/silt_process.tres" id="2_process"]
+[ext_resource type="Material" path="res://assets/particles/silt_material.tres" id="3_material"]
+
+[sub_resource type="QuadMesh" id="QuadMesh_fleck"]
+material = ExtResource("3_material")
+size = Vector2(0.07, 0.07)
+
+[node name="Silt" type="GPUParticles3D"]
+cast_shadow = 0
+amount = 200
+lifetime = 18.0
+process_material = ExtResource("2_process")
+draw_pass_1 = SubResource("QuadMesh_fleck")
+script = ExtResource("1_ambient")

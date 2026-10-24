@@ -1,0 +1,22 @@
+[gd_resource type="ParticleProcessMaterial" format=3]
+; Drips falling from ceilings and beams: emitted from a flat box, plain gravity. The scene's lifetime
+; decides how far they fall.
+
+[sub_resource type="Gradient" id="Gradient_fade"]
+offsets = PackedFloat32Array(0, 0.1, 0.9, 1)
+colors = PackedColorArray(1, 1, 1, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0)
+
+[sub_resource type="GradientTexture1D" id="GradientTexture1D_fade"]
+gradient = SubResource("Gradient_fade")
+
+[resource]
+emission_shape = 3
+emission_box_extents = Vector3(1, 0.05, 1)
+direction = Vector3(0, -1, 0)
+spread = 0.0
+initial_velocity_min = 0.0
+initial_velocity_max = 0.3
+gravity = Vector3(0, -9.8, 0)
+scale_min = 0.7
+scale_max = 1.2
+color_ramp = SubResource("GradientTexture1D_fade")

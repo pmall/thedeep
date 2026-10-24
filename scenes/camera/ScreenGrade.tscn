@@ -1,0 +1,17 @@
+[gd_scene format=3]
+; The finishing pass over the 3D view (vignette, grain), under every UI layer. Its strengths come from the
+; room's BiomeProfile (Post group).
+
+[ext_resource type="Material" path="res://assets/materials/screen_grade.tres" id="1_material"]
+
+[node name="ScreenGrade" type="CanvasLayer"]
+layer = -1
+
+[node name="Pass" type="ColorRect" parent="."]
+material = ExtResource("1_material")
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2

@@ -17,4 +17,7 @@ public static class ShaderGlobals
     public static readonly StringName BiomeParticle = "biome_particle";
     public static readonly StringName BiomeRust = "biome_rust";
     public static readonly StringName BiomeSilt = "biome_silt";
+    public static readonly StringName PostVignette = "post_vignette";
+    public static readonly StringName PostVignetteColor = "post_vignette_color";
+    public static readonly StringName PostGrain = "post_grain";
 }

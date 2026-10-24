@@ -10,6 +10,7 @@
 [ext_resource type="PackedScene" path="res://scenes/ui/OwnerCapture.tscn" id="7_capture"]
 [ext_resource type="Resource" path="res://resources/biomes/flooded.tres" id="8_flooded"]
 [ext_resource type="Resource" path="res://resources/biomes/volcanic.tres" id="9_volcanic"]
+[ext_resource type="PackedScene" path="res://scenes/camera/ScreenGrade.tscn" id="10_grade"]
 
 [node name="Main" type="Node3D" node_paths=PackedStringArray("World", "Player", "Capture", "Camera", "Hud")]
 script = ExtResource("1_main")
@@ -29,6 +30,8 @@ StartRoom = ExtResource("2_room")
 [node name="SideCamera" parent="." node_paths=PackedStringArray("Target", "World") instance=ExtResource("6_camera")]
 Target = NodePath("../Player")
 World = NodePath("../World")
+
+[node name="ScreenGrade" parent="." instance=ExtResource("10_grade")]
 
 [node name="DebugHud" parent="." node_paths=PackedStringArray("Player") instance=ExtResource("4_hud")]
 Player = NodePath("../Player")
