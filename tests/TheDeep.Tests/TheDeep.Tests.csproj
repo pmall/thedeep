@@ -1,0 +1,25 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <!-- Plain xUnit tests for pure game logic. Godot types can't run outside the engine, so this
+       project compiles the Godot-free source files directly instead of referencing TheDeep.csproj. -->
+  <PropertyGroup>
+    <TargetFramework>net8.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
+    <IsPackable>false</IsPackable>
+    <RootNamespace>TheDeep.Tests</RootNamespace>
+  </PropertyGroup>
+  <ItemGroup>
+    <!-- Keep in sync with the "Pure logic" list in AGENTS.md. These files must not use Godot types. -->
+    <Compile Include="../../scripts/util/Motion.cs" Link="Shared/Motion.cs" />
+    <Compile Include="../../scripts/util/Countdown.cs" Link="Shared/Countdown.cs" />
+    <Compile Include="../../scripts/tuning/JumpMath.cs" Link="Shared/JumpMath.cs" />
+    <Compile Include="../../scripts/camera/CameraMath.cs" Link="Shared/CameraMath.cs" />
+    <Compile Include="../../scripts/abilities/Ability.cs" Link="Shared/Ability.cs" />
+    <Compile Include="../../scripts/abilities/AbilitySet.cs" Link="Shared/AbilitySet.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.12.0" />
+    <PackageReference Include="xunit" Version="2.9.2" />
+    <PackageReference Include="xunit.runner.visualstudio" Version="2.8.2" />
+  </ItemGroup>
+</Project>

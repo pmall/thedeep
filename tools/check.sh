@@ -43,13 +43,11 @@ step "3/4 smoke test (main scene, headless)"
 scan_log "$LOG_DIR/smoke_idle.log" "idle smoke run"
 echo "idle boot: ok"
 # b) Scripted run: SmokeDriver presses run/jump/dash and asserts the player actually moved.
-if [ -f scripts/debug/SmokeDriver.cs ]; then
 "$GODOT" --headless --path . --fixed-fps 60 --quit-after 900 -- --smoke >"$LOG_DIR/smoke_driver.log" 2>&1 \
     || { tail -20 "$LOG_DIR/smoke_driver.log"; fail "scripted smoke run exited non-zero"; }
 scan_log "$LOG_DIR/smoke_driver.log" "scripted smoke run"
 grep -q 'SMOKE OK' "$LOG_DIR/smoke_driver.log" || { tail -20 "$LOG_DIR/smoke_driver.log"; fail "scripted smoke run did not report SMOKE OK"; }
 grep 'SMOKE OK' "$LOG_DIR/smoke_driver.log"
-fi
 
 step "4/4 unit tests"
 if [ -f tests/TheDeep.Tests/TheDeep.Tests.csproj ]; then
