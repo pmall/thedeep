@@ -1,0 +1,20 @@
+[gd_scene format=3]
+
+[ext_resource type="Script" path="res://scripts/camera/SideCamera.cs" id="1_camera"]
+
+[sub_resource type="CameraAttributesPractical" id="CameraAttributesPractical_dof"]
+dof_blur_far_enabled = true
+dof_blur_far_distance = 30.0
+dof_blur_far_transition = 14.0
+dof_blur_near_enabled = true
+dof_blur_near_distance = 16.0
+dof_blur_near_transition = 4.0
+dof_blur_amount = 0.15
+
+[node name="SideCamera" type="Camera3D"]
+attributes = SubResource("CameraAttributesPractical_dof")
+current = true
+fov = 30.0
+near = 0.5
+far = 200.0
+script = ExtResource("1_camera")
