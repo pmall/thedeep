@@ -1,0 +1,12 @@
+[gd_scene format=3]
+
+[ext_resource type="PackedScene" path="res://scenes/rooms/TestRoom.tscn" id="1_room"]
+
+[node name="Main" type="Node3D"]
+
+[node name="TestRoom" parent="." instance=ExtResource("1_room")]
+
+[node name="OverviewCamera" type="Camera3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 32, 16, 70)
+fov = 30.0
+far = 200.0

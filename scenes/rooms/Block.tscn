@@ -1,0 +1,17 @@
+[gd_scene format=3]
+
+[ext_resource type="Script" path="res://scripts/rooms/Block.cs" id="1_block"]
+[ext_resource type="Material" path="res://assets/materials/rock.tres" id="2_rock"]
+[ext_resource type="Material" path="res://assets/materials/metal.tres" id="3_metal"]
+
+[node name="Block" type="StaticBody3D"]
+collision_mask = 0
+script = ExtResource("1_block")
+RockMaterial = ExtResource("2_rock")
+MetalMaterial = ExtResource("3_metal")
+
+[node name="Mesh" type="MeshInstance3D" parent="."]
+unique_name_in_owner = true
+
+[node name="Shape" type="CollisionShape3D" parent="."]
+unique_name_in_owner = true

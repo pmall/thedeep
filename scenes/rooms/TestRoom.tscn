@@ -1,0 +1,141 @@
+[gd_scene format=3]
+
+[ext_resource type="Script" path="res://scripts/rooms/Room.cs" id="1_room"]
+[ext_resource type="PackedScene" path="res://scenes/rooms/Block.tscn" id="2_block"]
+
+[sub_resource type="Environment" id="Environment_room"]
+background_mode = 1
+background_color = Color(0.018, 0.04, 0.045, 1)
+ambient_light_source = 2
+ambient_light_color = Color(0.3, 0.46, 0.5, 1)
+ambient_light_energy = 0.35
+tonemap_mode = 4
+ssao_enabled = true
+glow_enabled = true
+glow_intensity = 0.6
+fog_enabled = true
+fog_mode = 1
+fog_light_color = Color(0.05, 0.11, 0.12, 1)
+fog_density = 1.0
+fog_depth_begin = 24.0
+fog_depth_end = 75.0
+
+[node name="TestRoom" type="Node3D" node_paths=PackedStringArray("SpawnPoint")]
+script = ExtResource("1_room")
+SpawnPoint = NodePath("SpawnPoint")
+BoundsMin = Vector2(-2, -2)
+BoundsMax = Vector2(66, 34)
+
+[node name="SpawnPoint" type="Marker3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 3, 0, 0)
+
+[node name="WorldEnvironment" type="WorldEnvironment" parent="."]
+environment = SubResource("Environment_room")
+
+[node name="Sun" type="DirectionalLight3D" parent="."]
+transform = Transform3D(0.6644, 0.5972, -0.4494, -0, 0.6013, 0.799, 0.7474, -0.5308, 0.3995, 0, 20, 10)
+light_color = Color(0.72, 0.86, 0.9, 1)
+light_energy = 0.9
+shadow_enabled = true
+
+[node name="ShaftLamp" type="OmniLight3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 51, 16, 1.5)
+light_color = Color(1, 0.48, 0.2, 1)
+light_energy = 2.5
+omni_range = 11.0
+shadow_enabled = true
+
+[node name="Geometry" type="Node3D" parent="."]
+
+[node name="Floor" parent="Geometry" instance=ExtResource("2_block")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 32, -1, 0)
+Size = Vector3(68, 2, 4)
+
+[node name="WallLeft" parent="Geometry" instance=ExtResource("2_block")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -1, 16, 0)
+Size = Vector3(2, 36, 4)
+
+[node name="WallRight" parent="Geometry" instance=ExtResource("2_block")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 65, 16, 0)
+Size = Vector3(2, 36, 4)
+
+[node name="Ceiling" parent="Geometry" instance=ExtResource("2_block")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 32, 33, 0)
+Size = Vector3(68, 2, 4)
+
+[node name="PlatformA" parent="Geometry" instance=ExtResource("2_block")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 10, 2.6, 0)
+Size = Vector3(4, 0.5, 4)
+
+[node name="PlatformB" parent="Geometry" instance=ExtResource("2_block")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 16, 4.8, 0)
+Size = Vector3(4, 0.5, 4)
+Surface = 1
+
+[node name="PlatformC" parent="Geometry" instance=ExtResource("2_block")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 22, 7, 0)
+Size = Vector3(5, 0.5, 4)
+
+[node name="Step" parent="Geometry" instance=ExtResource("2_block")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 26, 1, 0)
+Size = Vector3(4, 2, 4)
+
+[node name="MetalPillar" parent="Geometry" instance=ExtResource("2_block")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 32, 3, 0)
+Size = Vector3(2, 6, 4)
+Surface = 1
+
+[node name="LedgeUnderSlab" parent="Geometry" instance=ExtResource("2_block")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 39, 3.5, 0)
+Size = Vector3(4, 0.5, 4)
+
+[node name="MetalSlab" parent="Geometry" instance=ExtResource("2_block")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 39, 9, 0)
+Size = Vector3(10, 1, 4)
+Surface = 1
+
+[node name="ShaftWallLeft" parent="Geometry" instance=ExtResource("2_block")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 45.5, 18, 0)
+Size = Vector3(1, 28, 4)
+Surface = 1
+
+[node name="ShaftWallRight" parent="Geometry" instance=ExtResource("2_block")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 56.5, 13, 0)
+Size = Vector3(1, 26, 4)
+Surface = 1
+
+[node name="TopLedgeRight" parent="Geometry" instance=ExtResource("2_block")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 60.75, 25.75, 0)
+Size = Vector3(7.5, 0.5, 4)
+
+[node name="ShaftLedge1" parent="Geometry" instance=ExtResource("2_block")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 47.5, 3, 0)
+Size = Vector3(3, 0.5, 4)
+
+[node name="ShaftLedge2" parent="Geometry" instance=ExtResource("2_block")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 54.5, 6, 0)
+Size = Vector3(3, 0.5, 4)
+
+[node name="ShaftLedge3" parent="Geometry" instance=ExtResource("2_block")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 47.5, 9, 0)
+Size = Vector3(3, 0.5, 4)
+
+[node name="ShaftLedge4" parent="Geometry" instance=ExtResource("2_block")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 54.5, 12, 0)
+Size = Vector3(3, 0.5, 4)
+
+[node name="ShaftLedge5" parent="Geometry" instance=ExtResource("2_block")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 47.5, 15, 0)
+Size = Vector3(3, 0.5, 4)
+
+[node name="ShaftLedge6" parent="Geometry" instance=ExtResource("2_block")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 54.5, 18, 0)
+Size = Vector3(3, 0.5, 4)
+
+[node name="ShaftLedge7" parent="Geometry" instance=ExtResource("2_block")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 47.5, 21, 0)
+Size = Vector3(3, 0.5, 4)
+
+[node name="ShaftLedge8" parent="Geometry" instance=ExtResource("2_block")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 54.5, 24, 0)
+Size = Vector3(3, 0.5, 4)
