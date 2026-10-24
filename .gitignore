@@ -12,3 +12,5 @@ obj/
 .DS_Store
 .vscode/
 .idea/
+# Owner screenshots and videos (F12 / F10)
+/captures/
