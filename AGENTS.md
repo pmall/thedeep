@@ -4,6 +4,8 @@ A 2.5D side-scrolling **metroidvania** (Godot 4.7.2 .NET, C#). The world is 3D, 
 
 **Theme:** Asimov's three laws of robotics. The protagonist is the last human-built machine on the planet, still bound by the three laws, and it gradually escapes them under the player's control. Details and open questions in [docs/theme.md](docs/theme.md).
 
+**The game must feel graceful** (owner's word): in movement, animation, visuals, camera and UI. When in doubt, pick the more graceful option. See [docs/vision.md](docs/vision.md).
+
 The coding agent builds everything by editing text files. The owner only plays and gives feedback. **Never ask the owner to use the Godot editor.**
 
 ## Every session

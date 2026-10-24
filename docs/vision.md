@@ -2,7 +2,14 @@
 
 ## What the game is
 
-**The Deep** (working title) is a gameplay-first, side-scrolling **metroidvania** with a 2.5D look: the world is real 3D, the camera is fixed to the side, and play happens on a single 2D plane (Z = 0). Visual references: *Ori*, *Hollow Knight: Silksong*, *Castlevania: Belmont's Curse*.
+**The Deep** (working title) is a gameplay-first, side-scrolling **metroidvania** with a 2.5D look: the world is real 3D, the camera is fixed to the side, and play happens on a single 2D plane (Z = 0). Visual references: *Metroid Dread* for the ambiance and *NieR: Automata* for the character (see [art-direction.md](art-direction.md)); earlier also *Ori*, *Hollow Knight: Silksong*, *Castlevania: Belmont's Curse*.
+
+**One word for the whole game: graceful** (owner). Use it as the tiebreaker for every choice:
+- **Movement:** moves chain into each other without hard stops; momentum carries through jumps, dashes and landings. Graceful is not floaty: controls stay tight and precise.
+- **Animation:** fluid and acrobatic, with flowing secondary motion (cloth, hair, cables).
+- **Visuals:** restraint. Clean shapes, a calm palette, one accent color, uncluttered screens.
+- **Camera and UI:** eased, never jerky. Thin, minimal interface, smooth transitions.
+- **Pacing:** calm, deliberate moments between bursts of action, like *Inside*.
 
 Design priorities, in order:
 1. **A finished, playable game.** No novel signature systems. Classic metroidvania structure done well.

@@ -1,5 +1,7 @@
 # Gameplay
 
+**Feel: graceful** ([vision.md](vision.md)). Moves chain without hard stops and momentum carries through transitions, while control stays tight and precise.
+
 ## Base moveset (implemented)
 
 - **Run**
