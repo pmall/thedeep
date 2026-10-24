@@ -2,6 +2,10 @@
 
 [ext_resource type="Script" path="res://scripts/rooms/Room.cs" id="1_room"]
 [ext_resource type="PackedScene" path="res://scenes/rooms/Block.tscn" id="2_block"]
+[ext_resource type="Script" path="res://scripts/rooms/BackdropScatter.cs" id="3_scatter"]
+[ext_resource type="Material" path="res://assets/materials/backdrop_stone.tres" id="4_stone"]
+[ext_resource type="Material" path="res://assets/materials/backdrop_rust.tres" id="5_rust"]
+[ext_resource type="Material" path="res://assets/materials/foreground.tres" id="6_fore"]
 
 [sub_resource type="Environment" id="Environment_room"]
 background_mode = 1
@@ -139,3 +143,50 @@ Size = Vector3(3, 0.5, 4)
 [node name="ShaftLedge8" parent="Geometry" instance=ExtResource("2_block")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 54.5, 24, 0)
 Size = Vector3(3, 0.5, 4)
+
+[node name="Backdrop" type="Node3D" parent="."]
+
+[node name="FarPillars" type="Node3D" parent="Backdrop"]
+script = ExtResource("3_scatter")
+Material = ExtResource("4_stone")
+Count = 34
+AreaMin = Vector2(-12, -4)
+AreaMax = Vector2(78, 4)
+DepthRange = Vector2(-38, -14)
+SizeMin = Vector3(1, 14, 1)
+SizeMax = Vector3(3.5, 40, 3.5)
+Seed = 11
+
+[node name="RustHulks" type="Node3D" parent="Backdrop"]
+script = ExtResource("3_scatter")
+Material = ExtResource("5_rust")
+Count = 18
+AreaMin = Vector2(-8, -2)
+AreaMax = Vector2(74, 30)
+DepthRange = Vector2(-26, -9)
+SizeMin = Vector3(2, 1.5, 1.5)
+SizeMax = Vector3(6, 4.5, 4)
+Seed = 23
+
+[node name="Foreground" type="Node3D" parent="Backdrop"]
+script = ExtResource("3_scatter")
+Material = ExtResource("6_fore")
+Count = 8
+AreaMin = Vector2(-6, -6)
+AreaMax = Vector2(70, -5)
+DepthRange = Vector2(6, 9)
+SizeMin = Vector3(0.6, 3, 0.6)
+SizeMax = Vector3(1.8, 6.5, 1.5)
+Seed = 37
+
+[node name="ForegroundHanging" type="Node3D" parent="Backdrop"]
+script = ExtResource("3_scatter")
+Material = ExtResource("6_fore")
+Count = 5
+AreaMin = Vector2(-6, 36)
+AreaMax = Vector2(70, 37)
+DepthRange = Vector2(6, 9)
+SizeMin = Vector3(0.4, 3, 0.4)
+SizeMax = Vector3(1, 6.5, 1)
+Seed = 41
+Hanging = true
