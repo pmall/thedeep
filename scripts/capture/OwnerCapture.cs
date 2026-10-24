@@ -138,10 +138,7 @@ public partial class OwnerCapture : CanvasLayer
         {
             Directory.CreateDirectory(folder);
             string png = Path.Combine(folder, name + ".png");
-            Image image = Image.CreateFromData(frame.Width, frame.Height, false, Image.Format.Rgba8, bytes.AsSpan(0, frame.ByteCount));
-            FrameGrabber.Buffers.Return(bytes);
-            image.Convert(Image.Format.Rgb8); // the alpha channel of a frame is meaningless
-            Error error = image.SavePng(png);
+            Error error = FramePng.Save(bytes, frame, png);
             if (error != Error.Ok)
             {
                 _messages.Enqueue($"Screenshot failed: {error}");

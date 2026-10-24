@@ -8,11 +8,13 @@
 [ext_resource type="PackedScene" path="res://scenes/camera/SideCamera.tscn" id="6_camera"]
 [ext_resource type="PackedScene" path="res://scenes/ui/OwnerCapture.tscn" id="7_capture"]
 
-[node name="Main" type="Node3D" node_paths=PackedStringArray("Room", "Player", "Capture")]
+[node name="Main" type="Node3D" node_paths=PackedStringArray("Room", "Player", "Capture", "Camera", "Hud")]
 script = ExtResource("1_main")
 Room = NodePath("TestRoom")
 Player = NodePath("Player")
 Capture = NodePath("OwnerCapture")
+Camera = NodePath("SideCamera")
+Hud = NodePath("DebugHud")
 
 [node name="TestRoom" parent="." instance=ExtResource("2_room")]
 

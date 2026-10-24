@@ -23,7 +23,7 @@ scenes/
   ui/DebugHud.tscn         state/velocity/abilities readout + control hints
   ui/OwnerCapture.tscn     F12 screenshot / F10 video: REC dot + saved-file toast
 scripts/
-  Main.cs                  spawns the player; adds SmokeDriver (`-- --smoke`) or CaptureTestDriver (`-- --capture-test`)
+  Main.cs                  spawns the player; adds a test driver from user args (`--smoke`, `--capture-test`, `--lookdev`)
   core/InputActions.cs     input action names (StringName constants)
   core/PhysicsLayers.cs    physics layer bits
   player/Player.cs         body, input sampling, timers, movement helpers, state machine host
@@ -36,7 +36,8 @@ scripts/
   camera/CameraMath.cs     clamp/FOV math
   tuning/PlayerTuning.cs   [GlobalClass] resource holding all movement numbers
   tuning/JumpMath.cs       gravity / take-off speed from jump height + time to apex
-  rooms/Room.cs            spawn point + camera bounds
+  rooms/Room.cs            spawn point, camera bounds, photo spots
+  rooms/PhotoSpot.cs       look-dev camera marker (position = camera) + player placement
   rooms/Block.cs           sizes mesh/shape, sets physics layer from Surface
   rooms/SurfaceKind.cs     Rock / Metal
   rooms/BackdropScatter.cs deterministic out-of-focus boxes (backdrop/foreground)
@@ -46,10 +47,13 @@ scripts/
   capture/VideoEncoder.cs  ffmpeg process fed raw frames from a writer thread
   capture/VideoClock.cs    wall-clock → constant-rate video frames
   capture/FfmpegCommand.cs ffmpeg arguments, codec choice (NVENC, else x264)
+  capture/FramePng.cs      grabbed frame → PNG
   capture/CaptureFiles.cs, CaptureReport.cs   capture names, sidecar text
   debug/DebugCheats.cs     R/Back respawn, F1–F5 toggle abilities (debug builds only)
   debug/SmokeDriver.cs     scripted smoke test
   debug/CaptureTestDriver.cs  windowed capture check + frame times (`-- --capture-test`)
+  debug/LookDevDriver.cs   photo spots + frame times for tools/capture.sh (`-- --lookdev <dir>`)
+  debug/DemoInput.cs       scripted run/jump/dash input for drivers
   util/Motion.cs           Approach / Damp
   util/Countdown.cs        coyote, buffers, cooldowns
   util/FrameTimeStats.cs   average / percentile / worst frame times
@@ -57,6 +61,8 @@ resources/player_tuning.tres   the live PlayerTuning values
 assets/materials/              placeholder materials (rock, metal, backdrop, foreground)
 tests/TheDeep.Tests/           xUnit (has .gdignore so Godot skips the folder)
 tools/check.sh
+tools/capture.sh               look-dev photo spots + frame times + before/after sheet
+tools/lookdev_compare.py       the before/after sheet (python3-pil)
 ```
 
 ## Design patterns

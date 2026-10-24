@@ -12,9 +12,15 @@ public partial class Main : Node3D
     /// <summary>User argument that runs the windowed capture check (see CaptureTestDriver).</summary>
     private const string CaptureTestArgument = "--capture-test";
 
+    /// <summary>`--lookdev &lt;dir&gt; [--size WxH]`: look-dev run for tools/capture.sh (see LookDevDriver).</summary>
+    private const string LookDevArgument = "--lookdev";
+    private const string SizeArgument = "--size";
+
     [Export] public Room Room { get; set; } = null!;
     [Export] public Player Player { get; set; } = null!;
     [Export] public OwnerCapture Capture { get; set; } = null!;
+    [Export] public SideCamera Camera { get; set; } = null!;
+    [Export] public DebugHud Hud { get; set; } = null!;
 
     public override void _Ready()
     {
@@ -29,5 +35,27 @@ public partial class Main : Node3D
         {
             AddChild(new CaptureTestDriver { Capture = Capture });
         }
+        else if (ArgumentValue(args, LookDevArgument) is { } outputDir)
+        {
+            var driver = new LookDevDriver
+            {
+                Player = Player, Room = Room, Camera = Camera, Overlays = new CanvasLayer[] { Hud, Capture },
+                OutputDir = outputDir,
+            };
+            if (ArgumentValue(args, SizeArgument) is { } size && size.Split('x') is [var w, var h]
+                && int.TryParse(w, out int width) && int.TryParse(h, out int height))
+            {
+                driver.RenderSize = new Vector2I(width, height);
+            }
+
+            AddChild(driver);
+        }
+    }
+
+    /// <summary>The argument following <paramref name="name"/>, or null.</summary>
+    private static string? ArgumentValue(string[] args, string name)
+    {
+        int index = Array.IndexOf(args, name);
+        return index >= 0 && index + 1 < args.Length ? args[index + 1] : null;
     }
 }

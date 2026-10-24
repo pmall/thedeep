@@ -26,7 +26,7 @@ public partial class CaptureTestDriver : Node
     private readonly FrameTimeStats _recordingCpu = new();
     private ulong _startMsec;
     private ulong _lastMsec;
-    private int _tick;
+    private readonly DemoInput _demo = new();
     private string? _screenshot;
     private string? _video;
 
@@ -92,28 +92,7 @@ public partial class CaptureTestDriver : Node
 
     public override void _PhysicsProcess(double delta)
     {
-        // Run right and left in turns, hopping now and then, so the camera and the frames change.
-        _tick++;
-        int phase = _tick % 240;
-        if (phase == 0)
-        {
-            Input.ActionRelease(InputActions.MoveLeft);
-            Input.ActionPress(InputActions.MoveRight);
-        }
-        else if (phase == 120)
-        {
-            Input.ActionRelease(InputActions.MoveRight);
-            Input.ActionPress(InputActions.MoveLeft);
-        }
-
-        if (_tick % 50 == 0)
-        {
-            Input.ActionPress(InputActions.Jump);
-        }
-        else if (_tick % 50 == 20)
-        {
-            Input.ActionRelease(InputActions.Jump);
-        }
+        _demo.Tick();
     }
 
     private static bool Crossed(ulong last, ulong now, ulong mark) => last < mark && now >= mark;

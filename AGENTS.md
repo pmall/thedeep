@@ -49,4 +49,4 @@ The coding agent builds everything by editing text files. The owner only plays a
 |---|---|
 | Check (build, import, smoke, tests) | `tools/check.sh` |
 | Run the game | `godot --path .` |
-| Render frames to look at | see [docs/testing.md](docs/testing.md) |
+| Render photo spots + frame times, compare with last run | `tools/capture.sh [label]` (see [docs/testing.md](docs/testing.md)) |

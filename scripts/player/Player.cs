@@ -89,10 +89,18 @@ public partial class Player : CharacterBody3D
         }
     }
 
-    /// <summary>Teleports to <paramref name="position"/>, standing still and idle.</summary>
-    public void Respawn(Vector3 position)
+    /// <summary>
+    /// Teleports to <paramref name="position"/>, standing still and idle, turned toward
+    /// <paramref name="facing"/> (+1 right, -1 left, 0 keeps the current facing).
+    /// </summary>
+    public void Respawn(Vector3 position, int facing = 0)
     {
         ChangeState(States.Idle);
+        if (facing != 0)
+        {
+            SetFacing(facing);
+        }
+
         GlobalPosition = position with { Z = 0f };
         Velocity = Vector3.Zero;
         _coyote.Clear();

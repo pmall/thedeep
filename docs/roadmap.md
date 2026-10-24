@@ -48,10 +48,10 @@ Without a reliable way to see the game, art work is blind. This comes first, rig
   - **F12: screenshot.** Saves a PNG to `captures/` at the project root (git-ignored), plus a small text file with the same name: time, room, player position and state, abilities, FPS. That way a report like "look at the last screenshot" is enough for the agent to find and reproduce it.
   - **F10: start/stop video recording.** In-engine capture of the game viewport, piped to `ffmpeg` (installed), saved as MP4 to `captures/`. A small red "REC" dot shows while recording. It must not change gameplay timing. Measure the cost and drop to 30 fps or a lower resolution if needed. (External screen recorders are unreliable here: the owner's desktop runs Wayland, and Godot's Movie Maker mode cannot be toggled at runtime.)
   - Key names go in `InputActions`. Document the keys in the hand-over and in [testing.md](testing.md).
-- [ ] `tools/capture.sh`: renders named **photo spots** (camera position + game state) to PNGs, using Movie Maker mode with vsync off. Output goes to a fresh folder per run.
-- [ ] Photo spots defined per room as marker nodes (for example "shaft bottom", "wide view", "player close-up").
-- [ ] Side-by-side before/after sheet, so changes are judged by comparison.
-- [ ] Performance readout: average and worst frame time over a scripted run. Budget: 1080p at 60 fps on the owner's RTX 3060, with headroom (target ≤ 10 ms).
+- [x] `tools/capture.sh`: renders named **photo spots** (camera position + game state) to PNGs with vsync off and fixed 60 fps game time (deterministic; Movie Maker was dropped because it writes every frame). Output goes to a fresh folder per run.
+- [x] Photo spots defined per room as marker nodes (`PhotoSpot`; the test room has Start, CloseUp, Platforms, Shaft, Wide).
+- [x] Side-by-side before/after sheet, so changes are judged by comparison (automatic against the previous run).
+- [x] Performance readout: average, p99 and worst frame time over a scripted run (`perf.json`). Budget: 1080p at 60 fps on the owner's RTX 3060, with headroom (target ≤ 10 ms). Test room today: 2.3 ms average.
 - [ ] `BiomeProfile` resource: palette, fog, light colors, grading and particle tint for one depth layer. Rooms reference a profile; the test room uses "Flooded".
 - **Done when:** one command produces a comparable set of screenshots plus frame times, changing a `BiomeProfile` visibly re-themes the room, and the owner can press F12 for a screenshot and F10 to record a video while playing.
 

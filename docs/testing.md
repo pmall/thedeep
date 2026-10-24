@@ -27,15 +27,33 @@ Other commands:
 
 ## Seeing the game (visual verification)
 
-Headless runs render nothing. To get real frames, use Movie Maker mode (it opens a window briefly):
+Headless runs render nothing. For any visual change, use the look-dev captures (they open a small window for a few seconds):
+
+```
+tools/capture.sh before-fog        # before the change (optional label)
+# … make the change …
+tools/capture.sh after-fog         # renders, then compares with the previous run
+```
+
+Each run makes a fresh `lookdev/<date>_<time>[-label]/` (git-ignored) with:
+- `<Room>-<Spot>.png`: every **photo spot** of the room at 1920×1080, no HUD;
+- `perf.json`: frame, GPU and CPU render times (average, p99, worst) over a 900-frame scripted run with the gameplay camera, checked against the 10 ms budget;
+- `run.txt` (commit, label), `godot.log`;
+- `compare/`: before/after images against the previous run (or `--against DIR`), one per spot plus `sheet.png` with all of them, and the share of pixels that changed. Look at `compare/sheet.png`.
+
+`tools/capture.sh --compare A B` rebuilds a sheet for two existing runs. Runs are deterministic (fixed 60 fps game time, vsync off): two runs of the same build are pixel-identical, so any change in the sheet is real. The sheet needs `python3-pil` (installed).
+
+**Photo spots** are `PhotoSpot` markers under `PhotoSpots` in each room scene (`scripts/rooms/PhotoSpot.cs`). The marker *is* the camera: X/Y is where it looks, Z its distance from the play plane (gameplay uses 22). It also sets where the player stands, which way they face, and an optional FOV. Depth of field is refocused on the play plane at the spot's distance. Keep a spot's camera out of the foreground layer (Z 6–9 in the test room) unless that is the point. Add spots for anything a visual change should be judged on; the test room has Start, CloseUp, Platforms, Shaft and Wide.
+
+How it works: `-- --lookdev <dir> [--size WxH]` adds `LookDevDriver`, which renders at a fixed size whatever the window (viewport stretch mode), grabs the settled frame of each spot with `FrameGrabber`, then plays `DemoInput` while measuring. Movie Maker mode is not used: it would write every frame, while `--fixed-fps 60` gives the same deterministic timing.
+
+For a raw frame sequence (an animation, say), Movie Maker still works:
 
 ```
 godot --path . --disable-vsync --fixed-fps 60 --quit-after 240 --write-movie /path/to/out/f.png -- --smoke
 ```
 
-- `--disable-vsync` matters. With vsync on, the compositor throttles a background window to about 1 fps and the run looks hung.
-- Write into a fresh directory each time rather than deleting old frames.
-- Look at the frames (and compare before and after) for any visual change. Roadmap M0 turns this into `tools/capture.sh` with named photo spots and frame-time measurement.
+`--disable-vsync` matters: with vsync on, the compositor throttles a background window to about 1 fps and the run looks hung.
 
 ## Owner capture keys (F12 / F10)
 

@@ -30,6 +30,9 @@ public partial class SideCamera : Camera3D
     [Export] public float LookAheadMinSpeed { get; set; } = 1f;
 
     private Vector2 _focus;
+    private bool _framingShot;
+    private float _followFov;
+    private CameraAttributes? _followAttributes;
     private float _lookAhead;
     private float _lookAheadTarget;
 
@@ -48,6 +51,11 @@ public partial class SideCamera : Camera3D
 
     public override void _Process(double delta)
     {
+        if (_framingShot)
+        {
+            return;
+        }
+
         float dt = (float)delta;
         Vector3 target = Target.GetGlobalTransformInterpolated().Origin;
 
@@ -69,11 +77,60 @@ public partial class SideCamera : Camera3D
     /// <summary>Jumps straight to the target with no smoothing (on start and respawn).</summary>
     public void SnapToTarget()
     {
+        if (_framingShot)
+        {
+            return;
+        }
+
         Vector3 target = Target.GlobalPosition;
         _lookAheadTarget = Target.Facing * LookAhead;
         _lookAhead = _lookAheadTarget;
         _focus = ClampToRoom(new Vector2(target.X + _lookAhead, target.Y + VerticalOffset));
         ApplyFocus();
+    }
+
+    /// <summary>
+    /// Stops following and holds a fixed shot from <paramref name="position"/> (looking down -Z),
+    /// ignoring the room bounds. Depth of field is refocused on the play plane at that distance.
+    /// <paramref name="fov"/> of 0 keeps the follow camera's field of view.
+    /// </summary>
+    public void FrameShot(Vector3 position, float fov)
+    {
+        if (!_framingShot)
+        {
+            _framingShot = true;
+            _followFov = Fov;
+            _followAttributes = Attributes;
+        }
+
+        GlobalPosition = position;
+        Fov = fov > 0f ? fov : _followFov;
+        Attributes = _followAttributes is CameraAttributesPractical practical
+            ? RefocusedOnPlayPlane(practical, position.Z - Distance)
+            : _followAttributes;
+    }
+
+    /// <summary>Goes back to following the target after <see cref="FrameShot"/>.</summary>
+    public void ResumeFollow()
+    {
+        if (!_framingShot)
+        {
+            return;
+        }
+
+        _framingShot = false;
+        Fov = _followFov;
+        Attributes = _followAttributes;
+        SnapToTarget();
+    }
+
+    /// <summary>The same blur bands, moved by <paramref name="shift"/> meters so the play plane stays sharp.</summary>
+    private static CameraAttributesPractical RefocusedOnPlayPlane(CameraAttributesPractical source, float shift)
+    {
+        var attributes = (CameraAttributesPractical)source.Duplicate();
+        attributes.DofBlurFarDistance = Mathf.Max(source.DofBlurFarDistance + shift, 1f);
+        attributes.DofBlurNearDistance = Mathf.Max(source.DofBlurNearDistance + shift, 0.1f);
+        return attributes;
     }
 
     private void ApplyFocus()

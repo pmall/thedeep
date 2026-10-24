@@ -6,6 +6,7 @@
 [ext_resource type="Material" path="res://assets/materials/backdrop_stone.tres" id="4_stone"]
 [ext_resource type="Material" path="res://assets/materials/backdrop_rust.tres" id="5_rust"]
 [ext_resource type="Material" path="res://assets/materials/foreground.tres" id="6_fore"]
+[ext_resource type="Script" path="res://scripts/rooms/PhotoSpot.cs" id="7_spot"]
 
 [sub_resource type="Environment" id="Environment_room"]
 background_mode = 1
@@ -190,3 +191,38 @@ SizeMin = Vector3(0.4, 3, 0.4)
 SizeMax = Vector3(1, 6.5, 1)
 Seed = 41
 Hanging = true
+
+; Look-dev shots for tools/capture.sh: each marker is a camera (Z = distance from the play plane).
+[node name="PhotoSpots" type="Node3D" parent="."]
+
+; gameplay framing at the spawn point
+[node name="Start" type="Marker3D" parent="PhotoSpots"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 8.5, 3.9, 22)
+script = ExtResource("7_spot")
+PlayerPosition = Vector3(3, 0, 0)
+
+; the player up close (in front of the foreground layer, which starts at Z = 6)
+[node name="CloseUp" type="Marker3D" parent="PhotoSpots"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 5.2, 0.95, 5.5)
+script = ExtResource("7_spot")
+PlayerPosition = Vector3(5, 0, 0)
+
+; rock and metal platforms side by side
+[node name="Platforms" type="Marker3D" parent="PhotoSpots"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 20, 5, 22)
+script = ExtResource("7_spot")
+PlayerPosition = Vector3(22, 7.5, 0)
+PlayerFacing = -1
+
+; the metal shaft from its bottom, lamp included
+[node name="Shaft" type="Marker3D" parent="PhotoSpots"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 51, 12.5, 50)
+script = ExtResource("7_spot")
+PlayerPosition = Vector3(51, 0, 0)
+
+; the whole room
+[node name="Wide" type="Marker3D" parent="PhotoSpots"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 32, 16, 31)
+script = ExtResource("7_spot")
+PlayerPosition = Vector3(16, 5.5, 0)
+Fov = 62.0
