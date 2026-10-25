@@ -2,8 +2,6 @@
 
 [ext_resource type="Script" path="res://scripts/rooms/Room.cs" id="1_room"]
 [ext_resource type="PackedScene" path="res://scenes/kit/Block.tscn" id="2_block"]
-[ext_resource type="Script" path="res://scripts/rooms/BackdropScatter.cs" id="3_scatter"]
-[ext_resource type="Material" path="res://assets/materials/backdrop_stone.tres" id="4_stone"]
 [ext_resource type="Material" path="res://assets/materials/backdrop_rust.tres" id="5_rust"]
 [ext_resource type="Material" path="res://assets/materials/foreground.tres" id="6_fore"]
 [ext_resource type="Script" path="res://scripts/rooms/PhotoSpot.cs" id="7_spot"]
@@ -12,7 +10,6 @@
 [ext_resource type="Material" path="res://assets/materials/rust.tres" id="10_rust"]
 [ext_resource type="Material" path="res://assets/materials/glyphs.tres" id="11_glyphs"]
 [ext_resource type="Script" path="res://scripts/rooms/RoomExit.cs" id="12_exit"]
-[ext_resource type="Material" path="res://assets/materials/rock.tres" id="13_rock"]
 [ext_resource type="Material" path="res://assets/materials/metal.tres" id="14_metal"]
 [ext_resource type="Material" path="res://assets/materials/cable.tres" id="15_cable"]
 [ext_resource type="Script" path="res://scripts/kit/ColumnMesh.cs" id="16_column"]
@@ -26,44 +23,15 @@
 [ext_resource type="Material" path="res://assets/materials/stone_mid.tres" id="24_stone_mid"]
 [ext_resource type="Material" path="res://assets/materials/metal_mid.tres" id="25_metal_mid"]
 [ext_resource type="Material" path="res://assets/materials/rust_mid.tres" id="26_rust_mid"]
-[ext_resource type="Material" path="res://assets/materials/fog_clear.tres" id="27_fog_clear"]
 [ext_resource type="PackedScene" path="res://scenes/fx/Dust.tscn" id="28_dust"]
 [ext_resource type="PackedScene" path="res://scenes/fx/Silt.tscn" id="29_silt"]
 [ext_resource type="PackedScene" path="res://scenes/fx/Drips.tscn" id="30_drips"]
 [ext_resource type="Script" path="res://scripts/rooms/WaterBody.cs" id="31_water"]
 [ext_resource type="Material" path="res://assets/materials/water.tres" id="32_water"]
 [ext_resource type="Material" path="res://assets/materials/underwater.tres" id="33_underwater"]
-[ext_resource type="Material" path="res://assets/materials/backdrop_cathedral.tres" id="34_cathedral"]
-[ext_resource type="Material" path="res://assets/materials/backdrop_halls.tres" id="35_halls"]
-
-[sub_resource type="Environment" id="Environment_room"]
-background_mode = 1
-background_color = Color(0.018, 0.04, 0.045, 1)
-ambient_light_source = 2
-ambient_light_color = Color(0.3, 0.46, 0.5, 1)
-ambient_light_energy = 0.35
-tonemap_mode = 4
-ssr_enabled = true
-ssr_max_steps = 48
-ssao_enabled = true
-glow_enabled = true
-glow_levels/2 = 0.6
-glow_levels/3 = 1.0
-glow_levels/4 = 0.7
-glow_levels/5 = 0.4
-glow_intensity = 0.6
-glow_bloom = 0.02
-glow_hdr_threshold = 0.9
-fog_enabled = true
-fog_mode = 1
-fog_light_color = Color(0.05, 0.11, 0.12, 1)
-fog_density = 1.0
-fog_depth_begin = 24.0
-fog_depth_end = 75.0
-volumetric_fog_enabled = true
-volumetric_fog_length = 72.0
-volumetric_fog_detail_spread = 1.5
-
+[ext_resource type="PackedScene" path="res://scenes/stage/RoomStage.tscn" id="36_stage"]
+[ext_resource type="Script" path="res://scripts/rooms/dressing/Colonnade.cs" id="37_colonnade"]
+[ext_resource type="Script" path="res://scripts/rooms/dressing/RackRow.cs" id="38_rackrow"]
 [sub_resource type="QuadMesh" id="QuadMesh_glyph_row"]
 size = Vector2(3.2, 0.62)
 
@@ -112,11 +80,6 @@ Thickness = 0.7
 Depth = 0.7
 Flange = 0.6
 Segments = 64
-
-[sub_resource type="PrimitiveMesh" id="Beam"]
-script = ExtResource("18_blockmesh")
-Size = Vector3(68, 1, 1.25)
-Bevel = 0.08
 
 [sub_resource type="PrimitiveMesh" id="BackFloor"]
 script = ExtResource("18_blockmesh")
@@ -195,14 +158,6 @@ Radius = 0.07
 Strands = 3
 Seed = 5
 
-[sub_resource type="QuadMesh" id="Skyline_far"]
-size = Vector2(240, 90)
-center_offset = Vector3(0, 45, 0)
-
-[sub_resource type="QuadMesh" id="Skyline_near"]
-size = Vector2(200, 60)
-center_offset = Vector3(0, 30, 0)
-
 [sub_resource type="PrimitiveMesh" id="Cables_low"]
 script = ExtResource("23_cable")
 End = Vector3(8, 0, 0)
@@ -219,12 +174,11 @@ Radius = 0.03
 Strands = 2
 Seed = 2
 
-[node name="TestRoom" type="Node3D" node_paths=PackedStringArray("SpawnPoint", "Environment", "KeyLight", "Lamps", "Shafts", "GlyphLights")]
+[node name="TestRoom" type="Node3D" node_paths=PackedStringArray("SpawnPoint", "Stage", "Lamps", "Shafts", "GlyphLights")]
 script = ExtResource("1_room")
 SpawnPoint = NodePath("SpawnPoint")
+Stage = NodePath("Stage")
 Biome = ExtResource("8_biome")
-Environment = NodePath("WorldEnvironment")
-KeyLight = NodePath("Sun")
 Lamps = [NodePath("ShaftLamp")]
 Shafts = [NodePath("Shafts/Arcade"), NodePath("Shafts/Shaft")]
 GlyphLights = [NodePath("Glyphs/StepLight"), NodePath("Glyphs/ShaftLight")]
@@ -234,14 +188,10 @@ BoundsMax = Vector2(66, 34)
 [node name="SpawnPoint" type="Marker3D" parent="."]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 3, 0, 0)
 
-[node name="WorldEnvironment" type="WorldEnvironment" parent="."]
-environment = SubResource("Environment_room")
-
-[node name="Sun" type="DirectionalLight3D" parent="."]
-transform = Transform3D(0.6644, 0.5972, -0.4494, -0, 0.6013, 0.799, 0.7474, -0.5308, 0.3995, 0, 20, 10)
-light_color = Color(0.72, 0.86, 0.9, 1)
-light_energy = 0.9
-shadow_enabled = true
+; The shared atmosphere stack (environment, key light, clear front air, skylines, far pillars, frame, dust).
+[node name="Stage" parent="." instance=ExtResource("36_stage")]
+DustDensity = 2.4
+Seed = 1
 
 [node name="ShaftLamp" type="OmniLight3D" parent="."]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 51, 16, 1.5)
@@ -281,13 +231,6 @@ spot_attenuation = 0.25
 spot_angle = 9.0
 spot_angle_attenuation = 2.0
 
-; Clear air in front of the play plane (Z 2 to 26): the volumetric haze stays behind gameplay.
-[node name="ClearFront" type="FogVolume" parent="."]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 33, 18, 14)
-size = Vector3(100, 60, 24)
-shape = 3
-material = ExtResource("27_fog_clear")
-
 ; The drowned back of the hall: water from the play floor's back edge (Z = -2) to the far wall, 1.25 m
 ; over the sunken back floor; the racks, piers and wrecks stand in it.
 [node name="Water" type="Node3D" parent="."]
@@ -300,11 +243,6 @@ UnderwaterMaterial = ExtResource("33_underwater")
 
 ; Ambient particles (scenes/fx): dust in the air (lit by the shafts), silt over the back floor, drips.
 [node name="Particles" type="Node3D" parent="."]
-
-[node name="HallDust" parent="Particles" instance=ExtResource("28_dust")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 24, 13, -5.5)
-Extents = Vector3(34, 14, 6.5)
-Density = 2.4
 
 [node name="ShaftDust" parent="Particles" instance=ExtResource("28_dust")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 51, 16, -1)
@@ -497,483 +435,66 @@ material_override = ExtResource("9_wet")
 ; lower arcade: clustered piers, pointed arches, a beam on top; upper gallery: slim columns, round arches
 [node name="Arcade" type="Node3D" parent="Kit"]
 
-[node name="Pier0" type="MeshInstance3D" parent="Kit/Arcade"]
+[node name="Lower" type="Node3D" parent="Kit/Arcade"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -1.5, -4.5)
-mesh = SubResource("Column_arcade")
-material_override = ExtResource("24_stone_mid")
+script = ExtResource("37_colonnade")
+Pier = SubResource("Column_arcade")
+Arch = SubResource("Arch_arcade")
+Material = ExtResource("24_stone_mid")
+Bays = 8
+Span = 8.0
+ArchHeight = 8.5
+BeamHeight = 14.25
+Cables = SubResource("Cables_low")
+CableMaterial = ExtResource("15_cable")
+CableChance = 0.5
+CableOffset = Vector3(0, 8.25, 0.75)
+Seed = 3
 
-[node name="Pier1" type="MeshInstance3D" parent="Kit/Arcade"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 8, -1.5, -4.5)
-mesh = SubResource("Column_arcade")
-material_override = ExtResource("24_stone_mid")
-
-[node name="Pier2" type="MeshInstance3D" parent="Kit/Arcade"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 16, -1.5, -4.5)
-mesh = SubResource("Column_arcade")
-material_override = ExtResource("24_stone_mid")
-
-[node name="Pier3" type="MeshInstance3D" parent="Kit/Arcade"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 24, -1.5, -4.5)
-mesh = SubResource("Column_arcade")
-material_override = ExtResource("24_stone_mid")
-
-[node name="Pier4" type="MeshInstance3D" parent="Kit/Arcade"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 32, -1.5, -4.5)
-mesh = SubResource("Column_arcade")
-material_override = ExtResource("24_stone_mid")
-
-[node name="Pier5" type="MeshInstance3D" parent="Kit/Arcade"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 40, -1.5, -4.5)
-mesh = SubResource("Column_arcade")
-material_override = ExtResource("24_stone_mid")
-
-[node name="Pier6" type="MeshInstance3D" parent="Kit/Arcade"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 48, -1.5, -4.5)
-mesh = SubResource("Column_arcade")
-material_override = ExtResource("24_stone_mid")
-
-[node name="Pier7" type="MeshInstance3D" parent="Kit/Arcade"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 56, -1.5, -4.5)
-mesh = SubResource("Column_arcade")
-material_override = ExtResource("24_stone_mid")
-
-[node name="Pier8" type="MeshInstance3D" parent="Kit/Arcade"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 64, -1.5, -4.5)
-mesh = SubResource("Column_arcade")
-material_override = ExtResource("24_stone_mid")
-
-[node name="Arch0" type="MeshInstance3D" parent="Kit/Arcade"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 4, 7, -4.5)
-mesh = SubResource("Arch_arcade")
-material_override = ExtResource("24_stone_mid")
-
-[node name="Arch1" type="MeshInstance3D" parent="Kit/Arcade"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 12, 7, -4.5)
-mesh = SubResource("Arch_arcade")
-material_override = ExtResource("24_stone_mid")
-
-[node name="Arch2" type="MeshInstance3D" parent="Kit/Arcade"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 20, 7, -4.5)
-mesh = SubResource("Arch_arcade")
-material_override = ExtResource("24_stone_mid")
-
-[node name="Arch3" type="MeshInstance3D" parent="Kit/Arcade"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 28, 7, -4.5)
-mesh = SubResource("Arch_arcade")
-material_override = ExtResource("24_stone_mid")
-
-[node name="Arch4" type="MeshInstance3D" parent="Kit/Arcade"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 36, 7, -4.5)
-mesh = SubResource("Arch_arcade")
-material_override = ExtResource("24_stone_mid")
-
-[node name="Arch5" type="MeshInstance3D" parent="Kit/Arcade"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 44, 7, -4.5)
-mesh = SubResource("Arch_arcade")
-material_override = ExtResource("24_stone_mid")
-
-[node name="Arch6" type="MeshInstance3D" parent="Kit/Arcade"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 52, 7, -4.5)
-mesh = SubResource("Arch_arcade")
-material_override = ExtResource("24_stone_mid")
-
-[node name="Arch7" type="MeshInstance3D" parent="Kit/Arcade"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 60, 7, -4.5)
-mesh = SubResource("Arch_arcade")
-material_override = ExtResource("24_stone_mid")
-
-[node name="Beam" type="MeshInstance3D" parent="Kit/Arcade"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 32, 12.75, -4.5)
-mesh = SubResource("Beam")
-material_override = ExtResource("24_stone_mid")
-
-[node name="GalleryColumn0" type="MeshInstance3D" parent="Kit/Arcade"]
+[node name="Gallery" type="Node3D" parent="Kit/Arcade"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 13.25, -4.5)
-mesh = SubResource("Column_gallery")
-material_override = ExtResource("24_stone_mid")
-
-[node name="GalleryColumn1" type="MeshInstance3D" parent="Kit/Arcade"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 8, 13.25, -4.5)
-mesh = SubResource("Column_gallery")
-material_override = ExtResource("24_stone_mid")
-
-[node name="GalleryColumn2" type="MeshInstance3D" parent="Kit/Arcade"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 16, 13.25, -4.5)
-mesh = SubResource("Column_gallery")
-material_override = ExtResource("24_stone_mid")
-
-[node name="GalleryColumn3" type="MeshInstance3D" parent="Kit/Arcade"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 24, 13.25, -4.5)
-mesh = SubResource("Column_gallery")
-material_override = ExtResource("24_stone_mid")
-
-[node name="GalleryColumn4" type="MeshInstance3D" parent="Kit/Arcade"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 32, 13.25, -4.5)
-mesh = SubResource("Column_gallery")
-material_override = ExtResource("24_stone_mid")
-
-[node name="GalleryColumn5" type="MeshInstance3D" parent="Kit/Arcade"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 40, 13.25, -4.5)
-mesh = SubResource("Column_gallery")
-material_override = ExtResource("24_stone_mid")
-
-[node name="GalleryColumn6" type="MeshInstance3D" parent="Kit/Arcade"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 48, 13.25, -4.5)
-mesh = SubResource("Column_gallery")
-material_override = ExtResource("24_stone_mid")
-
-[node name="GalleryColumn7" type="MeshInstance3D" parent="Kit/Arcade"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 56, 13.25, -4.5)
-mesh = SubResource("Column_gallery")
-material_override = ExtResource("24_stone_mid")
-
-[node name="GalleryColumn8" type="MeshInstance3D" parent="Kit/Arcade"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 64, 13.25, -4.5)
-mesh = SubResource("Column_gallery")
-material_override = ExtResource("24_stone_mid")
-
-[node name="GalleryArch0" type="MeshInstance3D" parent="Kit/Arcade"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 4, 19.25, -4.5)
-mesh = SubResource("Arch_gallery")
-material_override = ExtResource("24_stone_mid")
-
-[node name="GalleryArch1" type="MeshInstance3D" parent="Kit/Arcade"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 12, 19.25, -4.5)
-mesh = SubResource("Arch_gallery")
-material_override = ExtResource("24_stone_mid")
-
-[node name="GalleryArch2" type="MeshInstance3D" parent="Kit/Arcade"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 20, 19.25, -4.5)
-mesh = SubResource("Arch_gallery")
-material_override = ExtResource("24_stone_mid")
-
-[node name="GalleryArch3" type="MeshInstance3D" parent="Kit/Arcade"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 28, 19.25, -4.5)
-mesh = SubResource("Arch_gallery")
-material_override = ExtResource("24_stone_mid")
-
-[node name="GalleryArch4" type="MeshInstance3D" parent="Kit/Arcade"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 36, 19.25, -4.5)
-mesh = SubResource("Arch_gallery")
-material_override = ExtResource("24_stone_mid")
-
-[node name="GalleryArch5" type="MeshInstance3D" parent="Kit/Arcade"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 44, 19.25, -4.5)
-mesh = SubResource("Arch_gallery")
-material_override = ExtResource("24_stone_mid")
-
-[node name="GalleryArch6" type="MeshInstance3D" parent="Kit/Arcade"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 52, 19.25, -4.5)
-mesh = SubResource("Arch_gallery")
-material_override = ExtResource("24_stone_mid")
-
-[node name="GalleryArch7" type="MeshInstance3D" parent="Kit/Arcade"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 60, 19.25, -4.5)
-mesh = SubResource("Arch_gallery")
-material_override = ExtResource("24_stone_mid")
-
-[node name="GalleryBeam" type="MeshInstance3D" parent="Kit/Arcade"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 32, 23.75, -4.5)
-mesh = SubResource("Beam")
-material_override = ExtResource("24_stone_mid")
+script = ExtResource("37_colonnade")
+Pier = SubResource("Column_gallery")
+Arch = SubResource("Arch_gallery")
+Material = ExtResource("24_stone_mid")
+Bays = 8
+Span = 8.0
+ArchHeight = 6.0
+BeamHeight = 10.5
+Cables = SubResource("Cables_high")
+CableMaterial = ExtResource("15_cable")
+CableChance = 0.4
+CableOffset = Vector3(0, 5.5, 0.75)
+Seed = 4
 
 ; the drowned server hall behind the arcade: two rows, some racks missing, one toppled
 [node name="Racks" type="Node3D" parent="Kit"]
 
-[node name="Rack1" type="MeshInstance3D" parent="Kit/Racks"]
+; the front row, clear of the piers
+[node name="Front" type="Node3D" parent="Kit/Racks"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 2.5, -1.5, -7.25)
-mesh = SubResource("Rack_2")
-material_override = ExtResource("25_metal_mid")
+script = ExtResource("38_rackrow")
+Variants = [SubResource("Rack_1"), SubResource("Rack_2"), SubResource("Rack_3")]
+Material = ExtResource("25_metal_mid")
+Count = 59
+GapChance = 0.12
+ToppleChance = 0.04
+ClearEvery = 8.0
+ClearOffset = 5.5
+Seed = 1
 
-[node name="Rack2" type="MeshInstance3D" parent="Kit/Racks"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 3.5, -1.5, -7.25)
-mesh = SubResource("Rack_3")
-material_override = ExtResource("25_metal_mid")
-
-[node name="Rack3" type="MeshInstance3D" parent="Kit/Racks"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 4.5, -1.5, -7.25)
-mesh = SubResource("Rack_1")
-material_override = ExtResource("25_metal_mid")
-
-[node name="Rack4" type="MeshInstance3D" parent="Kit/Racks"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 5.5, -1.5, -7.25)
-mesh = SubResource("Rack_2")
-material_override = ExtResource("25_metal_mid")
-
-[node name="Rack5" type="MeshInstance3D" parent="Kit/Racks"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 10.5, -1.5, -7.25)
-mesh = SubResource("Rack_3")
-material_override = ExtResource("25_metal_mid")
-
-[node name="Rack6" type="MeshInstance3D" parent="Kit/Racks"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 11.5, -1.5, -7.25)
-mesh = SubResource("Rack_1")
-material_override = ExtResource("25_metal_mid")
-
-[node name="Rack7" type="MeshInstance3D" parent="Kit/Racks"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 12.5, -1.5, -7.25)
-mesh = SubResource("Rack_2")
-material_override = ExtResource("25_metal_mid")
-
-[node name="Rack8" type="MeshInstance3D" parent="Kit/Racks"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 18.5, -1.5, -7.25)
-mesh = SubResource("Rack_3")
-material_override = ExtResource("25_metal_mid")
-
-[node name="Rack9" type="MeshInstance3D" parent="Kit/Racks"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 19.5, -1.5, -7.25)
-mesh = SubResource("Rack_1")
-material_override = ExtResource("25_metal_mid")
-
-[node name="Rack10" type="MeshInstance3D" parent="Kit/Racks"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 20.5, -1.5, -7.25)
-mesh = SubResource("Rack_2")
-material_override = ExtResource("25_metal_mid")
-
-[node name="Rack11" type="MeshInstance3D" parent="Kit/Racks"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 21.5, -1.5, -7.25)
-mesh = SubResource("Rack_3")
-material_override = ExtResource("25_metal_mid")
-
-[node name="Rack12" type="MeshInstance3D" parent="Kit/Racks"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 26.5, -1.5, -7.25)
-mesh = SubResource("Rack_1")
-material_override = ExtResource("25_metal_mid")
-
-[node name="Rack13" type="MeshInstance3D" parent="Kit/Racks"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 27.5, -1.5, -7.25)
-mesh = SubResource("Rack_2")
-material_override = ExtResource("25_metal_mid")
-
-[node name="Rack14" type="MeshInstance3D" parent="Kit/Racks"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 34.5, -1.5, -7.25)
-mesh = SubResource("Rack_3")
-material_override = ExtResource("25_metal_mid")
-
-[node name="Rack15" type="MeshInstance3D" parent="Kit/Racks"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 35.5, -1.5, -7.25)
-mesh = SubResource("Rack_1")
-material_override = ExtResource("25_metal_mid")
-
-[node name="Rack16" type="MeshInstance3D" parent="Kit/Racks"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 36.5, -1.5, -7.25)
-mesh = SubResource("Rack_2")
-material_override = ExtResource("25_metal_mid")
-
-[node name="Rack17" type="MeshInstance3D" parent="Kit/Racks"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 37.5, -1.5, -7.25)
-mesh = SubResource("Rack_3")
-material_override = ExtResource("25_metal_mid")
-
-[node name="Rack18" type="MeshInstance3D" parent="Kit/Racks"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 42.5, -1.5, -7.25)
-mesh = SubResource("Rack_1")
-material_override = ExtResource("25_metal_mid")
-
-[node name="Rack19" type="MeshInstance3D" parent="Kit/Racks"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 43.5, -1.5, -7.25)
-mesh = SubResource("Rack_2")
-material_override = ExtResource("25_metal_mid")
-
-[node name="Rack20" type="MeshInstance3D" parent="Kit/Racks"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 44.5, -1.5, -7.25)
-mesh = SubResource("Rack_3")
-material_override = ExtResource("25_metal_mid")
-
-[node name="Rack21" type="MeshInstance3D" parent="Kit/Racks"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 50.5, -1.5, -7.25)
-mesh = SubResource("Rack_1")
-material_override = ExtResource("25_metal_mid")
-
-[node name="Rack22" type="MeshInstance3D" parent="Kit/Racks"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 51.5, -1.5, -7.25)
-mesh = SubResource("Rack_2")
-material_override = ExtResource("25_metal_mid")
-
-[node name="Rack23" type="MeshInstance3D" parent="Kit/Racks"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 52.5, -1.5, -7.25)
-mesh = SubResource("Rack_3")
-material_override = ExtResource("25_metal_mid")
-
-[node name="Rack24" type="MeshInstance3D" parent="Kit/Racks"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 58.5, -1.5, -7.25)
-mesh = SubResource("Rack_1")
-material_override = ExtResource("25_metal_mid")
-
-[node name="Rack25" type="MeshInstance3D" parent="Kit/Racks"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 59.5, -1.5, -7.25)
-mesh = SubResource("Rack_2")
-material_override = ExtResource("25_metal_mid")
-
-[node name="Rack26" type="MeshInstance3D" parent="Kit/Racks"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 60.5, -1.5, -7.25)
-mesh = SubResource("Rack_3")
-material_override = ExtResource("25_metal_mid")
-
-[node name="Rack27" type="MeshInstance3D" parent="Kit/Racks"]
+[node name="Back" type="Node3D" parent="Kit/Racks"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 1.5, -1.5, -10.5)
-mesh = SubResource("Rack_1")
-material_override = ExtResource("25_metal_mid")
-
-[node name="Rack28" type="MeshInstance3D" parent="Kit/Racks"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 2.5, -1.5, -10.5)
-mesh = SubResource("Rack_2")
-material_override = ExtResource("25_metal_mid")
-
-[node name="Rack29" type="MeshInstance3D" parent="Kit/Racks"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 3.5, -1.5, -10.5)
-mesh = SubResource("Rack_3")
-material_override = ExtResource("25_metal_mid")
-
-[node name="Rack30" type="MeshInstance3D" parent="Kit/Racks"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 4.5, -1.5, -10.5)
-mesh = SubResource("Rack_1")
-material_override = ExtResource("25_metal_mid")
-
-[node name="Rack31" type="MeshInstance3D" parent="Kit/Racks"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 5.5, -1.5, -10.5)
-mesh = SubResource("Rack_2")
-material_override = ExtResource("25_metal_mid")
-
-[node name="Rack32" type="MeshInstance3D" parent="Kit/Racks"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 9.5, -1.5, -10.5)
-mesh = SubResource("Rack_3")
-material_override = ExtResource("25_metal_mid")
-
-[node name="Rack33" type="MeshInstance3D" parent="Kit/Racks"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 10.5, -1.5, -10.5)
-mesh = SubResource("Rack_1")
-material_override = ExtResource("25_metal_mid")
-
-[node name="Rack34" type="MeshInstance3D" parent="Kit/Racks"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 11.5, -1.5, -10.5)
-mesh = SubResource("Rack_2")
-material_override = ExtResource("25_metal_mid")
-
-[node name="Rack35" type="MeshInstance3D" parent="Kit/Racks"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 12.5, -1.5, -10.5)
-mesh = SubResource("Rack_3")
-material_override = ExtResource("25_metal_mid")
-
-[node name="Rack36" type="MeshInstance3D" parent="Kit/Racks"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 13.5, -1.5, -10.5)
-mesh = SubResource("Rack_1")
-material_override = ExtResource("25_metal_mid")
-
-[node name="Rack37" type="MeshInstance3D" parent="Kit/Racks"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 17.5, -1.5, -10.5)
-mesh = SubResource("Rack_2")
-material_override = ExtResource("25_metal_mid")
-
-[node name="Rack38" type="MeshInstance3D" parent="Kit/Racks"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 18.5, -1.5, -10.5)
-mesh = SubResource("Rack_3")
-material_override = ExtResource("25_metal_mid")
-
-[node name="Rack39" type="MeshInstance3D" parent="Kit/Racks"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 20.5, -1.5, -10.5)
-mesh = SubResource("Rack_1")
-material_override = ExtResource("25_metal_mid")
-
-[node name="Rack40" type="MeshInstance3D" parent="Kit/Racks"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 21.5, -1.5, -10.5)
-mesh = SubResource("Rack_2")
-material_override = ExtResource("25_metal_mid")
-
-[node name="Rack41" type="MeshInstance3D" parent="Kit/Racks"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 25.5, -1.5, -10.5)
-mesh = SubResource("Rack_3")
-material_override = ExtResource("25_metal_mid")
-
-[node name="Rack42" type="MeshInstance3D" parent="Kit/Racks"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 26.5, -1.5, -10.5)
-mesh = SubResource("Rack_1")
-material_override = ExtResource("25_metal_mid")
-
-[node name="Rack43" type="MeshInstance3D" parent="Kit/Racks"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 27.5, -1.5, -10.5)
-mesh = SubResource("Rack_2")
-material_override = ExtResource("25_metal_mid")
-
-[node name="Rack44" type="MeshInstance3D" parent="Kit/Racks"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 28.5, -1.5, -10.5)
-mesh = SubResource("Rack_3")
-material_override = ExtResource("25_metal_mid")
-
-[node name="Rack45" type="MeshInstance3D" parent="Kit/Racks"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 33.5, -1.5, -10.5)
-mesh = SubResource("Rack_1")
-material_override = ExtResource("25_metal_mid")
-
-[node name="Rack46" type="MeshInstance3D" parent="Kit/Racks"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 34.5, -1.5, -10.5)
-mesh = SubResource("Rack_2")
-material_override = ExtResource("25_metal_mid")
-
-[node name="Rack47" type="MeshInstance3D" parent="Kit/Racks"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 35.5, -1.5, -10.5)
-mesh = SubResource("Rack_3")
-material_override = ExtResource("25_metal_mid")
-
-[node name="Rack48" type="MeshInstance3D" parent="Kit/Racks"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 41.5, -1.5, -10.5)
-mesh = SubResource("Rack_1")
-material_override = ExtResource("25_metal_mid")
-
-[node name="Rack49" type="MeshInstance3D" parent="Kit/Racks"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 42.5, -1.5, -10.5)
-mesh = SubResource("Rack_2")
-material_override = ExtResource("25_metal_mid")
-
-[node name="Rack50" type="MeshInstance3D" parent="Kit/Racks"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 43.5, -1.5, -10.5)
-mesh = SubResource("Rack_3")
-material_override = ExtResource("25_metal_mid")
-
-[node name="Rack51" type="MeshInstance3D" parent="Kit/Racks"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 44.5, -1.5, -10.5)
-mesh = SubResource("Rack_1")
-material_override = ExtResource("25_metal_mid")
-
-[node name="Rack52" type="MeshInstance3D" parent="Kit/Racks"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 49.5, -1.5, -10.5)
-mesh = SubResource("Rack_2")
-material_override = ExtResource("25_metal_mid")
-
-[node name="Rack53" type="MeshInstance3D" parent="Kit/Racks"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 50.5, -1.5, -10.5)
-mesh = SubResource("Rack_3")
-material_override = ExtResource("25_metal_mid")
-
-[node name="Rack54" type="MeshInstance3D" parent="Kit/Racks"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 51.5, -1.5, -10.5)
-mesh = SubResource("Rack_1")
-material_override = ExtResource("25_metal_mid")
-
-[node name="Rack55" type="MeshInstance3D" parent="Kit/Racks"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 57.5, -1.5, -10.5)
-mesh = SubResource("Rack_2")
-material_override = ExtResource("25_metal_mid")
-
-[node name="Rack56" type="MeshInstance3D" parent="Kit/Racks"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 58.5, -1.5, -10.5)
-mesh = SubResource("Rack_3")
-material_override = ExtResource("25_metal_mid")
-
-[node name="Rack57" type="MeshInstance3D" parent="Kit/Racks"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 59.5, -1.5, -10.5)
-mesh = SubResource("Rack_1")
-material_override = ExtResource("25_metal_mid")
-
-[node name="Rack58" type="MeshInstance3D" parent="Kit/Racks"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 61.5, -1.5, -10.5)
-mesh = SubResource("Rack_2")
-material_override = ExtResource("25_metal_mid")
-
-[node name="RackToppled" type="MeshInstance3D" parent="Kit/Racks"]
-transform = Transform3D(0, 1, 0, -1, 0, 0, 0, 0, 1, 30.5, -1, -7.25)
-mesh = SubResource("Rack_2")
-material_override = ExtResource("25_metal_mid")
+script = ExtResource("38_rackrow")
+Variants = [SubResource("Rack_1"), SubResource("Rack_2"), SubResource("Rack_3")]
+Material = ExtResource("25_metal_mid")
+Count = 61
+GapChance = 0.15
+ToppleChance = 0.0
+ClearEvery = 8.0
+ClearOffset = 6.5
+ClearRadius = 1.0
+Seed = 2
 
 ; broken machinery on the back floor, between the piers
 [node name="Wrecks" type="Node3D" parent="Kit"]
@@ -1010,51 +531,6 @@ material_override = ExtResource("25_metal_mid")
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 51.5, -1.5, -3.25)
 mesh = SubResource("Pipe_riser")
 material_override = ExtResource("26_rust_mid")
-
-; cables slung between the capitals
-[node name="Cables" type="Node3D" parent="Kit"]
-
-[node name="CablesLow0" type="MeshInstance3D" parent="Kit/Cables"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 6.75, -3.75)
-mesh = SubResource("Cables_low")
-material_override = ExtResource("15_cable")
-cast_shadow = 0
-
-[node name="CablesLow1" type="MeshInstance3D" parent="Kit/Cables"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 16, 6.75, -3.75)
-mesh = SubResource("Cables_low")
-material_override = ExtResource("15_cable")
-cast_shadow = 0
-
-[node name="CablesLow2" type="MeshInstance3D" parent="Kit/Cables"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 40, 6.75, -3.75)
-mesh = SubResource("Cables_low")
-material_override = ExtResource("15_cable")
-cast_shadow = 0
-
-[node name="CablesLow3" type="MeshInstance3D" parent="Kit/Cables"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 48, 6.75, -3.75)
-mesh = SubResource("Cables_low")
-material_override = ExtResource("15_cable")
-cast_shadow = 0
-
-[node name="CablesHigh0" type="MeshInstance3D" parent="Kit/Cables"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 8, 18.75, -3.75)
-mesh = SubResource("Cables_high")
-material_override = ExtResource("15_cable")
-cast_shadow = 0
-
-[node name="CablesHigh1" type="MeshInstance3D" parent="Kit/Cables"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 24, 18.75, -3.75)
-mesh = SubResource("Cables_high")
-material_override = ExtResource("15_cable")
-cast_shadow = 0
-
-[node name="CablesHigh2" type="MeshInstance3D" parent="Kit/Cables"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 56, 18.75, -3.75)
-mesh = SubResource("Cables_high")
-material_override = ExtResource("15_cable")
-cast_shadow = 0
 
 ; the cathedral's iron ribs, far back in the haze
 [node name="Ribs" type="Node3D" parent="Kit"]
@@ -1107,30 +583,6 @@ cast_shadow = 0
 
 [node name="Backdrop" type="Node3D" parent="."]
 
-; skylines far behind everything (own haze, no distance fog): the cathedral, then the server halls
-[node name="CathedralSkyline" type="MeshInstance3D" parent="Backdrop"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 32, -8, -70)
-mesh = SubResource("Skyline_far")
-material_override = ExtResource("34_cathedral")
-cast_shadow = 0
-
-[node name="HallSkyline" type="MeshInstance3D" parent="Backdrop"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 32, -6, -48)
-mesh = SubResource("Skyline_near")
-material_override = ExtResource("35_halls")
-cast_shadow = 0
-
-[node name="FarPillars" type="Node3D" parent="Backdrop"]
-script = ExtResource("3_scatter")
-Material = ExtResource("4_stone")
-Count = 34
-AreaMin = Vector2(-12, -4)
-AreaMax = Vector2(78, 4)
-DepthRange = Vector2(-38, -14)
-SizeMin = Vector3(1, 14, 1)
-SizeMax = Vector3(3.5, 40, 3.5)
-Seed = 11
-
 ; the framing foreground (dark, blurred by depth of field): a pipe along the bottom of the frame and cables
 ; slung under the ceiling, kept out of the play area
 [node name="ForePipe" type="MeshInstance3D" parent="Backdrop"]
@@ -1156,29 +608,6 @@ transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 44, 32.5, 7)
 mesh = SubResource("Cables_fore")
 material_override = ExtResource("6_fore")
 cast_shadow = 0
-
-[node name="Foreground" type="Node3D" parent="Backdrop"]
-script = ExtResource("3_scatter")
-Material = ExtResource("6_fore")
-Count = 8
-AreaMin = Vector2(-6, -6)
-AreaMax = Vector2(70, -5)
-DepthRange = Vector2(6, 9)
-SizeMin = Vector3(0.6, 3, 0.6)
-SizeMax = Vector3(1.8, 6.5, 1.5)
-Seed = 37
-
-[node name="ForegroundHanging" type="Node3D" parent="Backdrop"]
-script = ExtResource("3_scatter")
-Material = ExtResource("6_fore")
-Count = 5
-AreaMin = Vector2(-6, 36)
-AreaMax = Vector2(70, 37)
-DepthRange = Vector2(6, 9)
-SizeMin = Vector3(0.4, 3, 0.4)
-SizeMax = Vector3(1, 6.5, 1)
-Seed = 41
-Hanging = true
 
 ; Look-dev shots for tools/capture.sh: each marker is a camera (Z = distance from the play plane).
 [node name="PhotoSpots" type="Node3D" parent="."]

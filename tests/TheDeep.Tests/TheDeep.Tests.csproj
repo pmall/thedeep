@@ -30,6 +30,7 @@
     <Compile Include="../../scripts/kit/KitShapes.cs" Link="Shared/KitShapes.cs" />
     <Compile Include="../../scripts/map/Requirement.cs" Link="Shared/Requirement.cs" />
     <Compile Include="../../scripts/map/GridSnap.cs" Link="Shared/GridSnap.cs" />
+    <Compile Include="../../scripts/rooms/dressing/DressingLayout.cs" Link="Shared/DressingLayout.cs" />
     <Compile Include="../../scripts/parts/PartShapes.cs" Link="Shared/PartShapes.cs" />
     <Compile Include="../../scripts/parts/PlanarIk.cs" Link="Shared/PlanarIk.cs" />
     <Compile Include="../../scripts/parts/VerletChain.cs" Link="Shared/VerletChain.cs" />

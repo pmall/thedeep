@@ -10,16 +10,11 @@
 [ext_resource type="Script" path="res://scripts/rooms/PhotoSpot.cs" id="3_spot"]
 [ext_resource type="Resource" path="res://resources/biomes/flooded.tres" id="4_biome"]
 [ext_resource type="Material" path="res://assets/materials/wet_stone.tres" id="5_wet"]
-[ext_resource type="Material" path="res://assets/materials/rock.tres" id="6_rock"]
 [ext_resource type="Material" path="res://assets/materials/glyphs.tres" id="7_glyphs"]
 [ext_resource type="Material" path="res://assets/materials/stone_mid.tres" id="8_stone_mid"]
 [ext_resource type="Material" path="res://assets/materials/metal_mid.tres" id="9_metal_mid"]
 [ext_resource type="Material" path="res://assets/materials/rust_mid.tres" id="10_rust_mid"]
 [ext_resource type="Material" path="res://assets/materials/cable.tres" id="11_cable"]
-[ext_resource type="Material" path="res://assets/materials/fog_clear.tres" id="12_fog_clear"]
-[ext_resource type="Material" path="res://assets/materials/backdrop_stone.tres" id="13_backdrop_stone"]
-[ext_resource type="Material" path="res://assets/materials/backdrop_cathedral.tres" id="14_cathedral"]
-[ext_resource type="Material" path="res://assets/materials/backdrop_halls.tres" id="15_halls"]
 [ext_resource type="Material" path="res://assets/materials/foreground.tres" id="16_fore"]
 [ext_resource type="Script" path="res://scripts/kit/ColumnMesh.cs" id="17_column"]
 [ext_resource type="Script" path="res://scripts/kit/ArchMesh.cs" id="18_arch"]
@@ -28,42 +23,14 @@
 [ext_resource type="Script" path="res://scripts/kit/WreckMesh.cs" id="21_wreck"]
 [ext_resource type="Script" path="res://scripts/kit/PipeMesh.cs" id="22_pipe"]
 [ext_resource type="Script" path="res://scripts/kit/CableMesh.cs" id="23_cables"]
-[ext_resource type="Script" path="res://scripts/rooms/BackdropScatter.cs" id="24_scatter"]
-[ext_resource type="PackedScene" path="res://scenes/fx/Dust.tscn" id="25_dust"]
 [ext_resource type="Script" path="res://scripts/machines/Machine.cs" id="26_machine"]
 [ext_resource type="Resource" path="res://resources/machines/votary.tres" id="27_votary"]
 [ext_resource type="Resource" path="res://resources/machines/gleaner.tres" id="28_gleaner"]
 [ext_resource type="Resource" path="res://resources/machines/lamplighter.tres" id="29_lamplighter"]
 [ext_resource type="Resource" path="res://resources/machines/limpet.tres" id="30_limpet"]
 
-[sub_resource type="Environment" id="Environment_room"]
-background_mode = 1
-background_color = Color(0.018, 0.04, 0.045, 1)
-ambient_light_source = 2
-ambient_light_color = Color(0.3, 0.46, 0.5, 1)
-ambient_light_energy = 0.35
-tonemap_mode = 4
-ssr_enabled = true
-ssr_max_steps = 48
-ssao_enabled = true
-glow_enabled = true
-glow_levels/2 = 0.6
-glow_levels/3 = 1.0
-glow_levels/4 = 0.7
-glow_levels/5 = 0.4
-glow_intensity = 0.6
-glow_bloom = 0.02
-glow_hdr_threshold = 0.9
-fog_enabled = true
-fog_mode = 1
-fog_light_color = Color(0.05, 0.11, 0.12, 1)
-fog_density = 1.0
-fog_depth_begin = 24.0
-fog_depth_end = 75.0
-volumetric_fog_enabled = true
-volumetric_fog_length = 72.0
-volumetric_fog_detail_spread = 1.5
-
+[ext_resource type="PackedScene" path="res://scenes/stage/RoomStage.tscn" id="31_stage"]
+[ext_resource type="Script" path="res://scripts/rooms/dressing/Colonnade.cs" id="32_colonnade"]
 [sub_resource type="QuadMesh" id="QuadMesh_shrine"]
 size = Vector2(0.5, 3.2)
 
@@ -100,11 +67,6 @@ Sides = 12
 Shafts = 1
 Plinth = 0.3
 Capital = 0.25
-
-[sub_resource type="PrimitiveMesh" id="Beam"]
-script = ExtResource("19_blockmesh")
-Size = Vector3(64, 1, 1.25)
-Bevel = 0.08
 
 [sub_resource type="PrimitiveMesh" id="BackFloor"]
 script = ExtResource("19_blockmesh")
@@ -153,20 +115,11 @@ Radius = 0.5
 BendRadius = 1.4
 FlangeSpacing = 4
 
-[sub_resource type="QuadMesh" id="Skyline_far"]
-size = Vector2(240, 90)
-center_offset = Vector3(0, 45, 0)
-
-[sub_resource type="QuadMesh" id="Skyline_near"]
-size = Vector2(200, 60)
-center_offset = Vector3(0, 30, 0)
-
-[node name="MachineArena" type="Node3D" node_paths=PackedStringArray("SpawnPoint", "Environment", "KeyLight", "Shafts", "GlyphLights")]
+[node name="MachineArena" type="Node3D" node_paths=PackedStringArray("SpawnPoint", "Stage", "Shafts", "GlyphLights")]
 script = ExtResource("1_room")
 SpawnPoint = NodePath("SpawnPoint")
+Stage = NodePath("Stage")
 Biome = ExtResource("4_biome")
-Environment = NodePath("WorldEnvironment")
-KeyLight = NodePath("Sun")
 Shafts = [NodePath("Shafts/Shrine"), NodePath("Shafts/Reliquary")]
 GlyphLights = [NodePath("Shrine/Light")]
 BoundsMin = Vector2(-2, -2)
@@ -175,14 +128,12 @@ BoundsMax = Vector2(58, 18)
 [node name="SpawnPoint" type="Marker3D" parent="."]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 2, 0, 0)
 
-[node name="WorldEnvironment" type="WorldEnvironment" parent="."]
-environment = SubResource("Environment_room")
-
-[node name="Sun" type="DirectionalLight3D" parent="."]
-transform = Transform3D(0.6644, 0.5972, -0.4494, -0, 0.6013, 0.799, 0.7474, -0.5308, 0.3995, 0, 20, 10)
-light_color = Color(0.72, 0.86, 0.9, 1)
-light_energy = 0.9
-shadow_enabled = true
+; The shared atmosphere stack.
+[node name="Stage" parent="." instance=ExtResource("31_stage")]
+FrameBelow = false
+FrameAbove = false
+DustDensity = 2.2
+Seed = 2
 
 ; Light shafts: one from the upper left onto the shrine and its congregation, one straight down onto the reliquary.
 [node name="Shafts" type="Node3D" parent="."]
@@ -207,19 +158,7 @@ spot_attenuation = 0.25
 spot_angle = 7.0
 spot_angle_attenuation = 2.0
 
-; Clear air in front of the play plane: the volumetric haze stays behind gameplay.
-[node name="ClearFront" type="FogVolume" parent="."]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 28, 10, 14)
-size = Vector3(90, 40, 24)
-shape = 3
-material = ExtResource("12_fog_clear")
-
 [node name="Particles" type="Node3D" parent="."]
-
-[node name="HallDust" parent="Particles" instance=ExtResource("25_dust")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 28, 8, -4.5)
-Extents = Vector3(30, 9, 5)
-Density = 2.2
 
 ; Gameplay geometry: box colliders with their edges on the 0.5 m grid (RoomValidator checks it).
 [node name="Geometry" type="Node3D" parent="."]
@@ -329,85 +268,22 @@ transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 28, -1.5, -9)
 mesh = SubResource("BackFloor")
 material_override = ExtResource("5_wet")
 
-[node name="Pier0" type="MeshInstance3D" parent="Kit"]
+; the arcade behind the floor, cables slung between its capitals
+[node name="Arcade" type="Node3D" parent="Kit"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.5, -5)
-mesh = SubResource("Column_arcade")
-material_override = ExtResource("8_stone_mid")
-
-[node name="Pier1" type="MeshInstance3D" parent="Kit"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 8, -0.5, -5)
-mesh = SubResource("Column_arcade")
-material_override = ExtResource("8_stone_mid")
-
-[node name="Pier2" type="MeshInstance3D" parent="Kit"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 16, -0.5, -5)
-mesh = SubResource("Column_arcade")
-material_override = ExtResource("8_stone_mid")
-
-[node name="Pier3" type="MeshInstance3D" parent="Kit"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 24, -0.5, -5)
-mesh = SubResource("Column_arcade")
-material_override = ExtResource("8_stone_mid")
-
-[node name="Pier4" type="MeshInstance3D" parent="Kit"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 32, -0.5, -5)
-mesh = SubResource("Column_arcade")
-material_override = ExtResource("8_stone_mid")
-
-[node name="Pier5" type="MeshInstance3D" parent="Kit"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 40, -0.5, -5)
-mesh = SubResource("Column_arcade")
-material_override = ExtResource("8_stone_mid")
-
-[node name="Pier6" type="MeshInstance3D" parent="Kit"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 48, -0.5, -5)
-mesh = SubResource("Column_arcade")
-material_override = ExtResource("8_stone_mid")
-
-[node name="Pier7" type="MeshInstance3D" parent="Kit"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 56, -0.5, -5)
-mesh = SubResource("Column_arcade")
-material_override = ExtResource("8_stone_mid")
-
-[node name="Arch0" type="MeshInstance3D" parent="Kit"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 4, 8, -5)
-mesh = SubResource("Arch_arcade")
-material_override = ExtResource("8_stone_mid")
-
-[node name="Arch1" type="MeshInstance3D" parent="Kit"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 12, 8, -5)
-mesh = SubResource("Arch_arcade")
-material_override = ExtResource("8_stone_mid")
-
-[node name="Arch2" type="MeshInstance3D" parent="Kit"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 20, 8, -5)
-mesh = SubResource("Arch_arcade")
-material_override = ExtResource("8_stone_mid")
-
-[node name="Arch3" type="MeshInstance3D" parent="Kit"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 28, 8, -5)
-mesh = SubResource("Arch_arcade")
-material_override = ExtResource("8_stone_mid")
-
-[node name="Arch4" type="MeshInstance3D" parent="Kit"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 36, 8, -5)
-mesh = SubResource("Arch_arcade")
-material_override = ExtResource("8_stone_mid")
-
-[node name="Arch5" type="MeshInstance3D" parent="Kit"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 44, 8, -5)
-mesh = SubResource("Arch_arcade")
-material_override = ExtResource("8_stone_mid")
-
-[node name="Arch6" type="MeshInstance3D" parent="Kit"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 52, 8, -5)
-mesh = SubResource("Arch_arcade")
-material_override = ExtResource("8_stone_mid")
-
-[node name="Beam" type="MeshInstance3D" parent="Kit"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 28, 13.5, -5)
-mesh = SubResource("Beam")
-material_override = ExtResource("8_stone_mid")
+script = ExtResource("32_colonnade")
+Pier = SubResource("Column_arcade")
+Arch = SubResource("Arch_arcade")
+Material = ExtResource("8_stone_mid")
+Bays = 7
+Span = 8.0
+ArchHeight = 8.5
+BeamHeight = 14.0
+Cables = SubResource("Cables_low")
+CableMaterial = ExtResource("11_cable")
+CableChance = 0.5
+CableOffset = Vector3(0, 7.25, 0.75)
+Seed = 5
 
 [node name="Rack0" type="MeshInstance3D" parent="Kit"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 21.5, -0.5, -8.5)
@@ -464,54 +340,7 @@ transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 33, 0, -1)
 mesh = SubResource("Scrap_2")
 material_override = ExtResource("10_rust_mid")
 
-[node name="Cables0" type="MeshInstance3D" parent="Kit"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 6.75, -4.25)
-mesh = SubResource("Cables_low")
-material_override = ExtResource("11_cable")
-cast_shadow = 0
-
-[node name="Cables1" type="MeshInstance3D" parent="Kit"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 16, 6.75, -4.25)
-mesh = SubResource("Cables_low")
-material_override = ExtResource("11_cable")
-cast_shadow = 0
-
-[node name="Cables2" type="MeshInstance3D" parent="Kit"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 32, 6.75, -4.25)
-mesh = SubResource("Cables_low")
-material_override = ExtResource("11_cable")
-cast_shadow = 0
-
-[node name="Cables3" type="MeshInstance3D" parent="Kit"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 48, 6.75, -4.25)
-mesh = SubResource("Cables_low")
-material_override = ExtResource("11_cable")
-cast_shadow = 0
-
 [node name="Backdrop" type="Node3D" parent="."]
-
-[node name="CathedralSkyline" type="MeshInstance3D" parent="Backdrop"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 28, -8, -70)
-mesh = SubResource("Skyline_far")
-material_override = ExtResource("14_cathedral")
-cast_shadow = 0
-
-[node name="HallSkyline" type="MeshInstance3D" parent="Backdrop"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 28, -6, -48)
-mesh = SubResource("Skyline_near")
-material_override = ExtResource("15_halls")
-cast_shadow = 0
-
-[node name="FarPillars" type="Node3D" parent="Backdrop"]
-script = ExtResource("24_scatter")
-Material = ExtResource("13_backdrop_stone")
-Count = 30
-AreaMin = Vector2(-12, -4)
-AreaMax = Vector2(70, 4)
-DepthRange = Vector2(-38, -14)
-SizeMin = Vector3(1, 14, 1)
-SizeMax = Vector3(3.5, 40, 3.5)
-Seed = 23
 
 [node name="ForePipe" type="MeshInstance3D" parent="Backdrop"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.25, 7.5)

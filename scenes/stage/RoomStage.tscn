@@ -1,0 +1,34 @@
+[gd_scene format=3]
+; The atmosphere stack every room shares (scripts/rooms/RoomStage.cs): environment, key light, clear front
+; air, skylines, far pillars, framing foreground and dust, sized from the room's bounds. A room instances
+; it as "Stage" and overrides only its choices (skylines, pillar density, frame, dust, seed).
+
+[ext_resource type="Script" path="res://scripts/rooms/RoomStage.cs" id="1_stage"]
+[ext_resource type="Environment" path="res://resources/stage/room_environment.tres" id="2_env"]
+[ext_resource type="Material" path="res://assets/materials/fog_clear.tres" id="3_clear"]
+[ext_resource type="Material" path="res://assets/materials/backdrop_cathedral.tres" id="4_cathedral"]
+[ext_resource type="Material" path="res://assets/materials/backdrop_halls.tres" id="5_halls"]
+[ext_resource type="Material" path="res://assets/materials/backdrop_stone.tres" id="6_stone"]
+[ext_resource type="Material" path="res://assets/materials/foreground.tres" id="7_fore"]
+[ext_resource type="PackedScene" path="res://scenes/fx/Dust.tscn" id="8_dust"]
+
+[node name="RoomStage" type="Node3D" node_paths=PackedStringArray("Environment", "KeyLight")]
+script = ExtResource("1_stage")
+Environment = NodePath("WorldEnvironment")
+KeyLight = NodePath("Sun")
+ClearFrontMaterial = ExtResource("3_clear")
+FarSkyline = ExtResource("4_cathedral")
+NearSkyline = ExtResource("5_halls")
+PillarMaterial = ExtResource("6_stone")
+FrameMaterial = ExtResource("7_fore")
+Dust = ExtResource("8_dust")
+
+[node name="WorldEnvironment" type="WorldEnvironment" parent="."]
+environment = ExtResource("2_env")
+
+; from the upper front left, so block faces facing the camera are lit and tops catch the light
+[node name="Sun" type="DirectionalLight3D" parent="."]
+transform = Transform3D(0.6644, 0.5972, -0.4494, -0, 0.6013, 0.799, 0.7474, -0.5308, 0.3995, 0, 20, 10)
+light_color = Color(0.72, 0.86, 0.9, 1)
+light_energy = 0.9
+shadow_enabled = true

@@ -18,8 +18,8 @@ scenes/
   Main.tscn                world (loads the start room), player, machine director, camera, HUD, debug cheats
   player/Player.tscn       capsule placeholder + emissive visor showing facing
   rooms/                   room scenes only (RoomValidator checks every .tscn here)
-  rooms/TestRoom.tscn      the first kit room: gameplay blocks, exits, kit dressing, lighting, shafts, fog volumes,
-                           water, particles, backdrop skylines, framing foreground
+  rooms/TestRoom.tscn      the first kit room: gameplay blocks, exits, kit dressing, shafts, water, particles
+  stage/RoomStage.tscn     the atmosphere stack every room instances as "Stage" (see RoomStage.cs)
   rooms/MachineArena.tscn  the machine arena (M5): the four prototype species side by side, a shrine, a metal reliquary
   kit/Block.tscn           one gameplay block (Size + Surface; collider + bevelled kit mesh)
   camera/SideCamera.tscn   camera + depth-of-field attributes
@@ -45,7 +45,11 @@ scripts/
   tuning/PlayerTuning.cs   [GlobalClass] resource holding all movement numbers
   tuning/JumpMath.cs       gravity / take-off speed from jump height + time to apex
   rooms/World.cs           holds the current room: loads room scenes (StartRoom, `--room`), RoomLoaded event
-  rooms/Room.cs            spawn point, camera bounds, biome (ApplyBiome), photo spots
+  rooms/Room.cs            spawn point, camera bounds, biome (ApplyBiome), photo spots, its Stage
+  rooms/RoomStage.cs       shared atmosphere stack sized from the room's bounds: environment, key light, clear front
+                           fog, two skylines, far pillars, framing foreground above and below, dust
+  rooms/dressing/          dressing generators (visual only, seeded): Colonnade (piers + arches + beam + cables),
+                           RackRow (a row of variants with gaps and toppled pieces); pure DressingLayout
   rooms/RoomExit.cs        connection marker: target room + exit, requirement expression, one-way flag
   rooms/PhotoSpot.cs       look-dev camera marker (position = camera) + player placement
   rooms/Block.cs           gameplay box: collider, physics layer from Surface, kit mesh (or CollisionOnly), look override
@@ -144,6 +148,7 @@ tools/motion_sheet.py          contact sheet of a look-dev reel (Motion.png, Mac
 - **Materials:** a material is a `.tres` (`ShaderMaterial`) referenced by blocks and scenes, never a shader assigned in code, so an authored material can replace it. Shaders read colors from the biome palette and the piece's **surface frame** from its mesh (`lib/surface.gdshaderinc`): UV is the position on a rectangular patch (a box face, one side of a swept profile) in meters, UV2 the patch size (negative along an axis that wraps, like a pipe's girth), TANGENT/BINORMAL the patch directions, COLOR.r the height above the piece's bottom (/ 8 m, 8-bit) and COLOR.g a per-part variation. Panels, seams and edge wear follow any kit piece that way, curved or not, with no texture UVs and no triplanar blending. A block's look can be overridden (`Block.Material`: wet stone, rust…) without touching its `Surface`, which alone decides the physics layer. Pieces behind the play plane use the `*_mid` materials (`shade` < 1), so the play plane stays the brightest layer and only grippable metal reads as bright metal.
 - **Environment kit:** each piece is a `[GlobalClass]` mesh resource (`ColumnMesh`, `ArchMesh`, `PipeMesh`…) deriving from `KitMesh : PrimitiveMesh`, used by a plain `MeshInstance3D`. Its geometry is pure C# (`KitShapes`, `MeshBuilder`), unit tested. Rooms place pieces as sub-resources (pieces sharing one resource share one generated mesh). Swapping in authored art means replacing the mesh resource; an authored mesh keeps the procedural materials only if it carries the same surface frame. Kit pieces are visual only: gameplay collision is `Block` boxes (`CollisionOnly` when a kit piece shows the block, like the grate platform).
 - **Biomes:** a room references a `BiomeProfile`. `Room.ApplyBiome` pushes the palette into global shader uniforms (`[shader_globals]` in `project.godot`, names in `ShaderGlobals`) and sets the room's environment, key light and lamps. Materials read the palette from those globals, so they follow the biome without per-room copies, and an authored material can replace a procedural one and still use them. Machines take their colors from the same palette (`machine.gdshader`). The biome also sets the volumetric fog, the color of the room's light shafts (`Room.Shafts`) and glyph lights (`Room.GlyphLights`), the far haze, water colors and caustics, and the finishing pass (vignette, grain) through `post_*` globals.
+- **Level toolkit** (M6): a room instances `scenes/stage/RoomStage.tscn` as `Stage`; `Room._Ready` calls `Stage.Build(room)`, which sizes the shared stack from the camera bounds (environment `resources/stage/room_environment.tres`, key light, `ClearFront`, skylines, far pillars, frame above and below, dust). A room overrides only the stage's choices (skyline materials, pillar density, frame on/off, dust density, seed) and adds what is its own: shafts, lamps, water, extra particles, framing pieces like a pipe. Repeated dressing comes from generators in `scripts/rooms/dressing/` (`Colonnade`, `RackRow`) placing swappable mesh resources from a seed; their layouts are pure (`DressingLayout`) and tested. Generated nodes are not owned by the room, so `RoomValidator` checks only the generator node's own origin.
 - **Atmosphere in a room** (M3): light shafts are shadowed `SpotLight3D`s listed in `Room.Shafts`; a negative-density `FogVolume` (`fog_clear.tres`) keeps volumetric fog off the space in front of the play plane; ambient particles are instances of `scenes/fx/*.tscn` with `Extents` and `Density` set; water is a `WaterBody` (one per room for now: the water globals hold one level and area). Visual only: nothing here touches gameplay or collision.
 - **Rooms:** each room is its own scene in `scenes/rooms/` with a `Room` root: spawn point, camera bounds, biome, photo spots, and `RoomExit` markers. `World` (in `Main`) loads one; nodes that need the room (camera, cheats, capture) reference `World` and read `World.Room`. An exit's `Requires` is for leaving through it; the way back is the target exit's own, and a two-way exit's target must lead back (`OneWay` otherwise). `RoomValidator` (in `tools/check.sh`) checks every room: block edges on the 0.5 m grid and axis-aligned, kit piece origins on the 0.25 m grid, spawn and exits inside the bounds, exit requirements parse, targets exist and lead back, at least one photo spot. Room transitions come in M6, the map graph extractor in M7.
 
@@ -178,7 +183,7 @@ Code with no Godot types is compiled straight into the xUnit project via `<Compi
 - `capture/CaptureFiles.cs`, `capture/CaptureReport.cs`, `capture/VideoClock.cs`, `capture/FfmpegCommand.cs`
 - `capture/VideoEncoder.cs` (plain .NET; its tests run the real ffmpeg)
 - `kit/MeshData.cs`, `kit/MeshBuilder.cs`, `kit/Profile.cs`, `kit/PathFrame.cs`, `kit/SweepPath.cs`, `kit/KitShapes.cs` (System.Numerics)
-- `map/Requirement.cs`, `map/GridSnap.cs`
+- `map/Requirement.cs`, `map/GridSnap.cs`, `rooms/dressing/DressingLayout.cs`
 - `parts/PartShapes.cs`, `parts/PlanarIk.cs`, `parts/VerletChain.cs`, `parts/Humanoid*.cs`, `parts/PartCategory.cs`, `player/MotionMode.cs`, `player/PilgrimMotion.cs`
 - `machines/MachineAct.cs`, `Perception.cs`, `Intent.cs`, `Senses.cs`, `Steering.cs`, `PrayerCycle.cs`, `StrikeAction.cs`, `MachineBrain.cs`, `SurfacePath.cs`, `LegGait.cs`, `machines/brains/*.cs`
 

@@ -11,8 +11,8 @@ public partial class Room : Node3D
     /// <summary>The depth layer's look, applied on ready (see <see cref="ApplyBiome"/>).</summary>
     [Export] public BiomeProfile Biome { get; set; } = null!;
 
-    [Export] public WorldEnvironment Environment { get; set; } = null!;
-    [Export] public DirectionalLight3D KeyLight { get; set; } = null!;
+    /// <summary>The shared atmosphere stack (scenes/stage/RoomStage.tscn): environment, key light, backdrop, frame, dust.</summary>
+    [Export] public RoomStage Stage { get; set; } = null!;
 
     /// <summary>Lamps that take the biome's lamp color.</summary>
     [Export] public Light3D[] Lamps { get; set; } = System.Array.Empty<Light3D>();
@@ -31,6 +31,7 @@ public partial class Room : Node3D
 
     public override void _Ready()
     {
+        Stage.Build(this);
         ApplyBiome(Biome);
     }
 
@@ -38,7 +39,7 @@ public partial class Room : Node3D
     public void ApplyBiome(BiomeProfile biome)
     {
         Biome = biome;
-        biome.Apply(Environment.Environment, KeyLight, Lamps, Shafts, GlyphLights);
+        biome.Apply(Stage.Environment.Environment, Stage.KeyLight, Lamps, Shafts, GlyphLights);
     }
 
     /// <summary>The room's look-dev camera spots (tools/capture.sh), in scene order.</summary>
