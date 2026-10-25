@@ -28,6 +28,12 @@ public partial class RoomExit : Marker3D
     /// </summary>
     [Export] public bool OneWay { get; set; }
 
+    /// <summary>
+    /// Arriving up through this exit (a hatch in the floor), the player is carried this way (−1 west, +1 east)
+    /// until it lands, onto the floor beside the opening; 0 for none. Keep that floor within 1.5 m above the marker.
+    /// </summary>
+    [Export] public int ArrivalSide { get; set; }
+
     /// <summary>Trigger area on the play plane (width, height), centered on the marker.</summary>
     [Export] public Vector2 Size { get; set; } = new(1f, 3f);
 

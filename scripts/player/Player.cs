@@ -25,6 +25,8 @@ public partial class Player : CharacterBody3D
     private readonly Countdown _dashCooldown = new();
     private readonly Countdown _regrab = new();
     private int _airDashesLeft;
+    private readonly Countdown _steer = new();
+    private int _steerDirection;
     private CapsuleShape3D _capsule = null!;
     private Vector3 _capsuleOffset;
 
@@ -124,6 +126,7 @@ public partial class Player : CharacterBody3D
         _dashBuffer.Tick(dt);
         _dashCooldown.Tick(dt);
         _regrab.Tick(dt);
+        _steer.Tick(dt);
 
         ReadInput();
         if (_state.AllowsTurning && CurrentInput.MoveX != 0)
@@ -190,6 +193,7 @@ public partial class Player : CharacterBody3D
         _jumpBuffer.Clear();
         _dashBuffer.Clear();
         _dashCooldown.Clear();
+        _steer.Clear();
         _airDashesLeft = Tuning.AirDashes;
         ResetPhysicsInterpolation();
         Visual.Snap();
@@ -322,6 +326,16 @@ public partial class Player : CharacterBody3D
         return GetWorld3D().DirectSpaceState.IntersectShape(query, 1).Count == 0;
     }
 
+    /// <summary>
+    /// Holds the horizontal input toward <paramref name="direction"/> for up to <paramref name="seconds"/>, or until
+    /// the player lands (an upward arrival through a hatch, carried onto the floor beside it).
+    /// </summary>
+    public void Steer(int direction, float seconds)
+    {
+        _steerDirection = Math.Sign(direction);
+        _steer.Start(seconds);
+    }
+
     /// <summary>Accelerates horizontal velocity toward the held direction at run speed.</summary>
     public void ApplyRunControl(float delta, bool grounded)
     {
@@ -382,8 +396,13 @@ public partial class Player : CharacterBody3D
     {
         float axisX = Input.GetAxis(InputActions.MoveLeft, InputActions.MoveRight);
         float axisY = Input.GetAxis(InputActions.MoveDown, InputActions.MoveUp);
+        if (_steer.Active && IsOnFloor() && Velocity.Y <= 0f)
+        {
+            _steer.Clear();
+        }
+
         CurrentInput = new PlayerInput(
-            MoveX: Mathf.Abs(axisX) < StickThreshold ? 0 : Math.Sign(axisX),
+            MoveX: _steer.Active ? _steerDirection : Mathf.Abs(axisX) < StickThreshold ? 0 : Math.Sign(axisX),
             MoveY: Mathf.Abs(axisY) < StickThreshold ? 0 : Math.Sign(axisY),
             JumpHeld: Input.IsActionPressed(InputActions.Jump));
 

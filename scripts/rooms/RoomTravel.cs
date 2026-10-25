@@ -22,6 +22,9 @@ public partial class RoomTravel : Node
     /// <summary>Upward speed kept at least when climbing up through a hatch, as a share of the jump's take-off speed.</summary>
     [Export] public float ClimbRise { get; set; } = 0.85f;
 
+    /// <summary>How long an upward arrival carries the player sideways onto the floor (it ends on landing).</summary>
+    [Export] public float SteerTime { get; set; } = 0.9f;
+
     private bool _travelling;
 
     /// <summary>Raised after the player arrived in a new room through an exit.</summary>
@@ -103,6 +106,10 @@ public partial class RoomTravel : Node
         NVector2 keep = ExitMath.ArrivalVelocity(velocity, ToN(arrival.Size), ClimbRise * Player.Tuning.JumpTakeOffSpeed);
         arrival.Disarm();
         Player.Arrive(new Vector3(position.X, position.Y, 0f), new Vector3(keep.X, keep.Y, 0f));
+        if (arrival.ArrivalSide != 0 && keep.Y > 0f)
+        {
+            Player.Steer(arrival.ArrivalSide, SteerTime);
+        }
         return arrival;
     }
 

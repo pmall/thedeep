@@ -42,6 +42,7 @@ EXT = {
     'silt': ('PackedScene', 'res://scenes/fx/Silt.tscn'),
     'drips': ('PackedScene', 'res://scenes/fx/Drips.tscn'),
     'shrine': ('PackedScene', 'res://scenes/props/Shrine.tscn'),
+    'relic': ('PackedScene', 'res://scenes/props/AbilityRelic.tscn'),
     # resources
     'flooded': ('Resource', 'res://resources/biomes/flooded.tres'),
     'votary': ('Resource', 'res://resources/machines/votary.tres'),
@@ -181,7 +182,13 @@ class Room:
         p.update(props)
         return self.node(path, type='Node3D', comment=comment, **p)
 
-    def exit(self, name, pos, size, target='', target_exit='', requires='', one_way=False, comment=''):
+    def relic(self, name, pos, ability='MagGrip', comment=''):
+        """An ability relic standing on the floor at `pos` (Ability: MagGrip, Harpoon, Drill, Ballast, HeatPlating)."""
+        values = {'MagGrip': 1, 'Harpoon': 2, 'Drill': 4, 'Ballast': 8, 'HeatPlating': 16}
+        return self.node('Props/' + name, instance='relic', comment=comment, transform=Raw(transform((pos[0], pos[1], 0))),
+                         Ability=values[ability])
+
+    def exit(self, name, pos, size, target='', target_exit='', requires='', one_way=False, arrival_side=0, comment=''):
         props = {'transform': Raw(transform((pos[0], pos[1], 0))), 'script': self.ext('exit')}
         if target:
             props['TargetRoom'] = f'res://scenes/rooms/{target}.tscn'
@@ -190,6 +197,8 @@ class Room:
             props['Requires'] = requires
         if one_way:
             props['OneWay'] = True
+        if arrival_side:
+            props['ArrivalSide'] = arrival_side
         props['Size'] = Raw(vec(*size))
         return self.node('Exits/' + name, type='Marker3D', comment=comment, **props)
 
