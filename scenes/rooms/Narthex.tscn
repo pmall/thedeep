@@ -1,0 +1,270 @@
+[gd_scene format=3]
+
+; The Narthex (slice room 1, the start): the porch of the drowned cathedral, where the pilgrim wakes. Calm:
+; a shrine to rest at (save point), a Lamplighter that comes to meet the pilgrim, a fallen column to hop.
+; The arcade behind opens onto the cathedral skyline. East, a low doorway into the Drowned Hall.
+
+[ext_resource type="Script" path="res://scripts/kit/ColumnMesh.cs" id="1_column"]
+[ext_resource type="Script" path="res://scripts/kit/ArchMesh.cs" id="2_arch"]
+[ext_resource type="Script" path="res://scripts/kit/CableMesh.cs" id="3_cables"]
+[ext_resource type="Script" path="res://scripts/kit/BlockMesh.cs" id="4_blockmesh"]
+[ext_resource type="Script" path="res://scripts/kit/WreckMesh.cs" id="5_wreck"]
+[ext_resource type="Script" path="res://scripts/kit/PipeMesh.cs" id="6_pipe"]
+[ext_resource type="Material" path="res://assets/materials/wet_stone.tres" id="7_wet_stone"]
+[ext_resource type="PackedScene" path="res://scenes/kit/Block.tscn" id="8_block"]
+[ext_resource type="Script" path="res://scripts/rooms/RoomExit.cs" id="9_exit"]
+[ext_resource type="PackedScene" path="res://scenes/props/Shrine.tscn" id="10_shrine"]
+[ext_resource type="Material" path="res://assets/materials/glyphs.tres" id="11_glyphs"]
+[ext_resource type="Script" path="res://scripts/machines/Machine.cs" id="12_machine"]
+[ext_resource type="Resource" path="res://resources/machines/lamplighter.tres" id="13_lamplighter"]
+[ext_resource type="Material" path="res://assets/materials/stone_mid.tres" id="14_stone_mid"]
+[ext_resource type="Material" path="res://assets/materials/cable.tres" id="15_cable"]
+[ext_resource type="Script" path="res://scripts/rooms/dressing/Colonnade.cs" id="16_colonnade"]
+[ext_resource type="Material" path="res://assets/materials/rust_mid.tres" id="17_rust_mid"]
+[ext_resource type="PackedScene" path="res://scenes/fx/Drips.tscn" id="18_drips"]
+[ext_resource type="Script" path="res://scripts/rooms/PhotoSpot.cs" id="19_spot"]
+[ext_resource type="Script" path="res://scripts/rooms/Room.cs" id="20_room"]
+[ext_resource type="Resource" path="res://resources/biomes/flooded.tres" id="21_flooded"]
+[ext_resource type="PackedScene" path="res://scenes/stage/RoomStage.tscn" id="22_stage"]
+
+[sub_resource type="PrimitiveMesh" id="column_1"]
+script = ExtResource("1_column")
+Height = 8.5
+Radius = 0.42
+Sides = 20
+Shafts = 4
+Plinth = 0.6
+Capital = 0.45
+
+[sub_resource type="PrimitiveMesh" id="arch_2"]
+script = ExtResource("2_arch")
+Span = 8
+Rise = 5
+Thickness = 0.6
+Depth = 1
+Segments = 32
+
+[sub_resource type="PrimitiveMesh" id="cables_3"]
+script = ExtResource("3_cables")
+End = Vector3(8, 0, 0)
+Sag = 1.6
+Radius = 0.035
+Strands = 3
+Seed = 1
+
+[sub_resource type="PrimitiveMesh" id="blockmesh_4"]
+script = ExtResource("4_blockmesh")
+Size = Vector3(48, 1, 12)
+Bevel = 0.1
+
+[sub_resource type="PrimitiveMesh" id="blockmesh_5"]
+script = ExtResource("4_blockmesh")
+Size = Vector3(48, 6, 1.5)
+Bevel = 0.1
+
+[sub_resource type="PrimitiveMesh" id="column_6"]
+script = ExtResource("1_column")
+Height = 2.5
+Radius = 0.5
+Sides = 20
+Shafts = 4
+Plinth = 0
+Capital = 0
+
+[sub_resource type="PrimitiveMesh" id="wreck_7"]
+script = ExtResource("5_wreck")
+Size = 2
+Seed = 11
+
+[sub_resource type="PrimitiveMesh" id="pipe_8"]
+script = ExtResource("6_pipe")
+Points = PackedVector3Array(0, 0, 0, 30, 0, 0, 31.5, -1.5, 0, 31.5, -18, 0)
+Radius = 0.24
+BendRadius = 1.2
+FlangeSpacing = 3
+
+[sub_resource type="QuadMesh" id="QuadMesh_9"]
+size = Vector2(5, 0.3)
+
+[node name="Narthex" type="Node3D" node_paths=PackedStringArray("SpawnPoint", "Stage", "Shafts", "GlyphLights")]
+script = ExtResource("20_room")
+SpawnPoint = NodePath("SpawnPoint")
+Stage = NodePath("Stage")
+Biome = ExtResource("21_flooded")
+Shafts = [NodePath("Shafts/Shrine")]
+GlyphLights = [NodePath("Props/Shrine/Light"), NodePath("Glyphs/DaisLight")]
+BoundsMin = Vector2(-2, -2)
+BoundsMax = Vector2(38, 22)
+
+[node name="SpawnPoint" type="Marker3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 4, 0, 0)
+
+; The shared atmosphere stack (environment, key light, clear front air, skylines, far pillars, frame, dust).
+[node name="Stage" parent="." instance=ExtResource("22_stage")]
+Seed = 3
+DustDensity = 2
+PillarDensity = 3.2
+
+[node name="Geometry" type="Node3D" parent="."]
+
+[node name="Floor" parent="Geometry" instance=ExtResource("8_block")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 18, -1, 0)
+Size = Vector3(44, 2, 4)
+Material = ExtResource("7_wet_stone")
+
+[node name="WallLeft" parent="Geometry" instance=ExtResource("8_block")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -2, 12, 0)
+Size = Vector3(4, 24, 4)
+
+[node name="Ceiling" parent="Geometry" instance=ExtResource("8_block")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 20, 22, 0)
+Size = Vector3(40, 4, 4)
+
+; east wall above the doorway into the hall
+[node name="WallRight" parent="Geometry" instance=ExtResource("8_block")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 38, 12, 0)
+Size = Vector3(4, 16, 4)
+
+; the shrine stands on a low dais
+[node name="Dais" parent="Geometry" instance=ExtResource("8_block")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 13, 0.25, 0)
+Size = Vector3(6, 0.5, 4)
+
+; a fallen column drum to hop over
+[node name="FallenColumn" parent="Geometry" instance=ExtResource("8_block")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 23.75, 0.75, 0)
+Size = Vector3(3.5, 1.5, 4)
+
+; a stone lintel over the way to the doorway
+[node name="Lintel" parent="Geometry" instance=ExtResource("8_block")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 33, 4.5, 0)
+Size = Vector3(6, 1, 4)
+
+[node name="Exits" type="Node3D" parent="."]
+
+; east doorway into the Drowned Hall
+[node name="East" type="Marker3D" parent="Exits"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 37, 0, 0)
+script = ExtResource("9_exit")
+TargetRoom = "res://scenes/rooms/DrownedHall.tscn"
+TargetExit = "WestGate"
+Size = Vector2(1, 4)
+
+[node name="Props" type="Node3D" parent="."]
+
+; a pilgrim shrine on the dais: rest here to save and heal
+[node name="Shrine" parent="Props" instance=ExtResource("10_shrine")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 13, 0.5, 0)
+
+[node name="Glyphs" type="Node3D" parent="."]
+
+; faith glyphs along the dais
+[node name="Dais" type="MeshInstance3D" parent="Glyphs"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 13, 0.25, 2.01)
+mesh = SubResource("QuadMesh_9")
+material_override = ExtResource("11_glyphs")
+cast_shadow = 0
+
+[node name="DaisLight" type="OmniLight3D" parent="Glyphs"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 13, 0.25, 2.71)
+light_energy = 0.4
+light_volumetric_fog_energy = 0
+omni_range = 2
+
+[node name="Machines" type="Node3D" parent="."]
+
+; a Lamplighter waits over the fallen column and follows the pilgrim
+[node name="Lamplighter" type="CharacterBody3D" parent="Machines"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 20, 5.5, 0)
+script = ExtResource("12_machine")
+Species = ExtResource("13_lamplighter")
+StartFacing = -1
+
+[node name="Shafts" type="Node3D" parent="."]
+
+; from the upper left through the arcade onto the shrine
+[node name="Shrine" type="SpotLight3D" parent="Shafts"]
+transform = Transform3D(-0.7071, 0.6288, -0.3234, 0, 0.4573, 0.8893, 0.7071, 0.6288, -0.3234, -6, 40, -14)
+light_energy = 6
+light_volumetric_fog_energy = 12
+shadow_enabled = true
+spot_range = 80
+spot_attenuation = 0.25
+spot_angle = 10
+spot_angle_attenuation = 2
+
+[node name="Kit" type="Node3D" parent="."]
+
+; an arcade behind the play floor, cables between its capitals
+[node name="Arcade" type="Node3D" parent="Kit"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 2, 0, -4.5)
+script = ExtResource("16_colonnade")
+Pier = SubResource("column_1")
+Arch = SubResource("arch_2")
+Material = ExtResource("14_stone_mid")
+Bays = 4
+Span = 8
+ArchHeight = 8.5
+BeamHeight = 14.25
+Cables = SubResource("cables_3")
+CableMaterial = ExtResource("15_cable")
+CableChance = 0.5
+CableOffset = Vector3(0, 8.25, 0.75)
+Seed = 7
+
+[node name="BackFloor" type="MeshInstance3D" parent="Kit"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 18, -0.5, -8.5)
+mesh = SubResource("blockmesh_4")
+material_override = ExtResource("14_stone_mid")
+
+; a low parapet at the back of the porch
+[node name="BackWall" type="MeshInstance3D" parent="Kit"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 18, 2.5, -14.25)
+mesh = SubResource("blockmesh_5")
+material_override = ExtResource("14_stone_mid")
+
+; a column drum fallen behind the arcade
+[node name="Drum" type="MeshInstance3D" parent="Kit"]
+transform = Transform3D(0, -1, 0, 1, 0, 0, 0, 0, 1, 27.5, 0, -6.5)
+mesh = SubResource("column_6")
+material_override = ExtResource("14_stone_mid")
+
+[node name="Wreck" type="MeshInstance3D" parent="Kit"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 6, 0, -7)
+mesh = SubResource("wreck_7")
+material_override = ExtResource("17_rust_mid")
+
+; a rust pipe under the ceiling, dropping behind the doorway
+[node name="Pipe" type="MeshInstance3D" parent="Kit"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 2, 18.5, -2.75)
+mesh = SubResource("pipe_8")
+material_override = ExtResource("17_rust_mid")
+
+[node name="Particles" type="Node3D" parent="."]
+
+[node name="Drips" parent="Particles" instance=ExtResource("18_drips")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 18, 19.5, -1)
+Extents = Vector3(12, 0.05, 0.8)
+amount = 5
+lifetime = 1.95
+
+[node name="PhotoSpots" type="Node3D" parent="."]
+
+; gameplay framing at the spawn point
+[node name="Start" type="Marker3D" parent="PhotoSpots"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 8.5, 3.9, 22)
+script = ExtResource("19_spot")
+PlayerPosition = Vector3(4, 0, 0)
+
+; the shrine up close, in its shaft of light
+[node name="Shrine" type="Marker3D" parent="PhotoSpots"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 13, 2, 8)
+script = ExtResource("19_spot")
+PlayerPosition = Vector3(11, 0.5, 0)
+
+; the whole porch
+[node name="Wide" type="Marker3D" parent="PhotoSpots"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 18, 10, 40)
+script = ExtResource("19_spot")
+PlayerPosition = Vector3(18, 0, 0)
+Fov = 50

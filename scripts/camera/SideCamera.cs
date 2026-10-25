@@ -57,6 +57,7 @@ public partial class SideCamera : Camera3D
         // Moved in _Process from the target's interpolated transform, so it must not be interpolated itself.
         PhysicsInterpolationMode = PhysicsInterpolationModeEnum.Off;
         Target.Respawned += SnapToTarget;
+        Target.Arrived += SnapToTarget;
         Target.Landed += OnLanded;
         SnapToTarget();
     }
@@ -64,6 +65,7 @@ public partial class SideCamera : Camera3D
     public override void _ExitTree()
     {
         Target.Respawned -= SnapToTarget;
+        Target.Arrived -= SnapToTarget;
         Target.Landed -= OnLanded;
     }
 

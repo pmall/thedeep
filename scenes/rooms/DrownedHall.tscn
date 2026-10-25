@@ -174,7 +174,7 @@ Radius = 0.03
 Strands = 2
 Seed = 2
 
-[node name="TestRoom" type="Node3D" node_paths=PackedStringArray("SpawnPoint", "Stage", "Lamps", "Shafts", "GlyphLights")]
+[node name="DrownedHall" type="Node3D" node_paths=PackedStringArray("SpawnPoint", "Stage", "Lamps", "Shafts", "GlyphLights")]
 script = ExtResource("1_room")
 SpawnPoint = NodePath("SpawnPoint")
 Stage = NodePath("Stage")
@@ -279,13 +279,6 @@ Material = ExtResource("9_wet")
 [node name="WallLeft" parent="Geometry" instance=ExtResource("2_block")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -1, 19, 0)
 Size = Vector3(2, 30, 4)
-
-; sealed gate where the WestGate exit will open (M6)
-[node name="WestGate" parent="Geometry" instance=ExtResource("2_block")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -1, 2, 0)
-Size = Vector3(2, 4, 4)
-Surface = 1
-Material = ExtResource("10_rust")
 
 [node name="WallRight" parent="Geometry" instance=ExtResource("2_block")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 65, 12, 0)
@@ -396,13 +389,15 @@ Size = Vector3(3, 0.5, 4)
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 54.5, 24.25, 0)
 Size = Vector3(3, 0.5, 4)
 
-; Connections to other rooms (none built yet: TargetRoom stays empty). The marker is where the player arrives.
+; Connections to other rooms (an empty TargetRoom is sealed: a room not built yet). The marker is where the player arrives.
 [node name="Exits" type="Node3D" parent="."]
 
-; west, at floor level
+; west doorway into the Narthex
 [node name="WestGate" type="Marker3D" parent="Exits"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 1, 0, 0)
 script = ExtResource("12_exit")
+TargetRoom = "res://scenes/rooms/Narthex.tscn"
+TargetExit = "East"
 Size = Vector2(1, 4)
 
 ; east, from the ledge at the top of the shaft

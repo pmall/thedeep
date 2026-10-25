@@ -45,6 +45,23 @@ public partial class Room : Node3D
     /// <summary>The room's look-dev camera spots (tools/capture.sh), in scene order.</summary>
     public IEnumerable<PhotoSpot> PhotoSpots() => Find<PhotoSpot>(this);
 
+    /// <summary>The room's connection markers, in scene order.</summary>
+    public IEnumerable<RoomExit> Exits() => Find<RoomExit>(this);
+
+    /// <summary>The exit named <paramref name="name"/>, or null.</summary>
+    public RoomExit? FindExit(string name)
+    {
+        foreach (RoomExit exit in Exits())
+        {
+            if (exit.Name == name)
+            {
+                return exit;
+            }
+        }
+
+        return null;
+    }
+
     /// <summary>The room's gameplay blocks, in scene order.</summary>
     public IEnumerable<Block> Blocks() => Find<Block>(this);
 

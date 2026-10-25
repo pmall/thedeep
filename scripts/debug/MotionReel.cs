@@ -17,7 +17,7 @@ public static class MotionReel
 {
     public static readonly Reel[] Reels =
     {
-        new("TestRoom", "motion", "Motion", 10f, new Segment[]
+        new("DrownedHall", "motion", "Motion", 10f, new Segment[]
         {
             new(new Vector3(3f, 0f, 0f), 1, 112,
                 new Press[]

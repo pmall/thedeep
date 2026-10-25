@@ -15,6 +15,7 @@ public static class InputActions
     public static readonly StringName Dash = "dash";
     public static readonly StringName Attack = "attack";
     public static readonly StringName Interact = "interact";
+    public static readonly StringName Map = "map";
 
     // Owner capture keys (OwnerCapture), available in every build.
     public static readonly StringName CaptureScreenshot = "capture_screenshot";

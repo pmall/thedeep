@@ -1,3 +1,4 @@
+using System;
 using Godot;
 
 namespace TheDeep;
@@ -31,4 +32,55 @@ public partial class RoomExit : Marker3D
     [Export] public Vector2 Size { get; set; } = new(1f, 3f);
 
     public Requirement Requirement => Requirement.Parse(Requires);
+
+    /// <summary>The player walked into the exit's area (only while armed): travel through it.</summary>
+    public event Action<RoomExit>? Crossed;
+
+    /// <summary>Whether entering the area travels. False until the player has left it, after arriving through it.</summary>
+    public bool Armed { get; private set; } = true;
+
+    /// <summary>An exit with a target room has a trigger area; one leading to a room not built yet stays sealed.</summary>
+    public bool Open => TargetRoom != "";
+
+    /// <summary>The marker's position in its room, on the play plane (rooms are loaded at the world origin).</summary>
+    public Vector2 RoomPosition => new(GlobalPosition.X, GlobalPosition.Y);
+
+    public override void _Ready()
+    {
+        if (!Open)
+        {
+            return;
+        }
+
+        var area = new Area3D
+        {
+            Name = "Trigger",
+            CollisionLayer = PhysicsLayers.Trigger,
+            CollisionMask = PhysicsLayers.Player,
+            Monitorable = false,
+        };
+        area.AddChild(new CollisionShape3D { Shape = new BoxShape3D { Size = new Vector3(Size.X, Size.Y, 2f) } });
+        area.BodyEntered += OnBodyEntered;
+        area.BodyExited += OnBodyExited;
+        AddChild(area);
+    }
+
+    /// <summary>The player just arrived through here: entering again only counts after leaving the area.</summary>
+    public void Disarm() => Armed = false;
+
+    private void OnBodyEntered(Node3D body)
+    {
+        if (Armed && body is Player)
+        {
+            Crossed?.Invoke(this);
+        }
+    }
+
+    private void OnBodyExited(Node3D body)
+    {
+        if (body is Player)
+        {
+            Armed = true;
+        }
+    }
 }

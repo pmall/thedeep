@@ -62,13 +62,13 @@ touch "$ROOT/.gdignore" # Godot must not import the captures
 # godot runs the last built assembly, so build first.
 dotnet build TheDeep.sln -v q -nologo >"$out/build.log" 2>&1 || { tail -20 "$out/build.log"; fail "dotnet build"; }
 
-# The rooms rendered: the start room (perf.json, compared run to run), then the machine arena.
-ROOMS=("" MachineArena)
+# The rooms rendered: the drowned hall first (perf.json, compared run to run), then the others.
+ROOMS=(DrownedHall Narthex MachineArena)
 for room in "${ROOMS[@]}"; do
-    name="${room:-start room}"
-    room_args=() perf="perf.json" log="$out/godot.log"
-    if [ -n "$room" ]; then
-        room_args=(--room "$room") perf="perf-$room.json" log="$out/godot-$room.log"
+    name="$room"
+    room_args=(--room "$room") perf="perf-$room.json" log="$out/godot-$room.log"
+    if [ "$room" = "${ROOMS[0]}" ]; then
+        perf="perf.json" log="$out/godot.log"
     fi
     printf '\033[1mrendering %s: photo spots, reels and frame times into %s\033[0m\n' "$name" "$out"
     "$GODOT" --path . --disable-vsync --fixed-fps 60 --resolution 960x540 -- --lookdev "$out" --size "$SIZE" --perf "$perf" \

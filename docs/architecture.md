@@ -18,7 +18,7 @@ scenes/
   Main.tscn                world (loads the start room), player, machine director, camera, HUD, debug cheats
   player/Player.tscn       capsule placeholder + emissive visor showing facing
   rooms/                   room scenes only (RoomValidator checks every .tscn here)
-  rooms/TestRoom.tscn      the first kit room: gameplay blocks, exits, kit dressing, shafts, water, particles
+  rooms/DrownedHall.tscn   the first kit room (was TestRoom): gameplay blocks, exits, kit dressing, shafts, water, particles
   stage/RoomStage.tscn     the atmosphere stack every room instances as "Stage" (see RoomStage.cs)
   rooms/MachineArena.tscn  the machine arena (M5): the four prototype species side by side, a shrine, a metal reliquary
   kit/Block.tscn           one gameplay block (Size + Surface; collider + bevelled kit mesh)

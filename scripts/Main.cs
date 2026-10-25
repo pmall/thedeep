@@ -28,6 +28,9 @@ public partial class Main : Node3D
     /// <summary>User argument that checks every room scene and quits (see RoomValidator), used by tools/check.sh.</summary>
     private const string ValidateRoomsArgument = "--validate-rooms";
 
+    /// <summary>User argument that crosses every open exit and quits (see TravelValidator), used by tools/check.sh.</summary>
+    private const string ValidateTravelArgument = "--validate-travel";
+
     /// <summary>User argument that checks every machine species and quits (see SpeciesValidator), used by tools/check.sh.</summary>
     private const string ValidateSpeciesArgument = "--validate-species";
 
@@ -37,6 +40,7 @@ public partial class Main : Node3D
     [Export] public OwnerCapture Capture { get; set; } = null!;
     [Export] public SideCamera Camera { get; set; } = null!;
     [Export] public DebugHud Hud { get; set; } = null!;
+    [Export] public RoomTravel Travel { get; set; } = null!;
 
     public override void _EnterTree()
     {
@@ -77,6 +81,10 @@ public partial class Main : Node3D
         {
             AddChild(new RoomValidator());
         }
+        else if (Array.IndexOf(args, ValidateTravelArgument) >= 0)
+        {
+            AddChild(new TravelValidator { World = World, Player = Player, Travel = Travel });
+        }
         else if (Array.IndexOf(args, ValidateSpeciesArgument) >= 0)
         {
             AddChild(new SpeciesValidator { Room = room, Player = Player, Machines = Machines });
@@ -91,6 +99,7 @@ public partial class Main : Node3D
         }
         else if (ArgumentValue(args, LookDevArgument) is { } outputDir)
         {
+            Travel.Enabled = false;
             var driver = new LookDevDriver
             {
                 Player = Player, Room = room, Camera = Camera, Machines = Machines, Overlays = new CanvasLayer[] { Hud, Capture },

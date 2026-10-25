@@ -1,0 +1,61 @@
+[gd_scene format=3]
+; A pilgrim shrine (scripts/props/Shrine.cs): a pointed niche between two slim columns, a column of faith glyphs
+; and their light. Place it with its origin on the floor; the niche sits 1.75 m behind the play plane. List
+; its Light in the room's GlyphLights so it takes the biome's glyph color.
+
+[ext_resource type="Script" path="res://scripts/props/Shrine.cs" id="1_shrine"]
+[ext_resource type="Script" path="res://scripts/kit/ArchMesh.cs" id="2_arch"]
+[ext_resource type="Script" path="res://scripts/kit/ColumnMesh.cs" id="3_column"]
+[ext_resource type="Material" path="res://assets/materials/stone_mid.tres" id="4_stone_mid"]
+[ext_resource type="Material" path="res://assets/materials/glyphs.tres" id="5_glyphs"]
+
+[sub_resource type="PrimitiveMesh" id="Arch_niche"]
+script = ExtResource("2_arch")
+Span = 2.5
+Rise = 3.5
+Thickness = 0.35
+Depth = 0.6
+Segments = 24
+
+[sub_resource type="PrimitiveMesh" id="Column_niche"]
+script = ExtResource("3_column")
+Height = 3
+Radius = 0.22
+Sides = 12
+Shafts = 1
+Plinth = 0.3
+Capital = 0.25
+
+[sub_resource type="QuadMesh" id="Glyphs"]
+size = Vector2(0.5, 3.2)
+
+[node name="Shrine" type="Node3D" node_paths=PackedStringArray("Light")]
+script = ExtResource("1_shrine")
+Light = NodePath("Light")
+
+[node name="Niche" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, -1.75)
+mesh = SubResource("Arch_niche")
+material_override = ExtResource("4_stone_mid")
+
+[node name="ColumnLeft" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -1.25, 0, -1.75)
+mesh = SubResource("Column_niche")
+material_override = ExtResource("4_stone_mid")
+
+[node name="ColumnRight" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 1.25, 0, -1.75)
+mesh = SubResource("Column_niche")
+material_override = ExtResource("4_stone_mid")
+
+[node name="Glyphs" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.75, -1.7)
+mesh = SubResource("Glyphs")
+material_override = ExtResource("5_glyphs")
+cast_shadow = 0
+
+[node name="Light" type="OmniLight3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.75, -1)
+light_energy = 0.8
+light_volumetric_fog_energy = 0.0
+omni_range = 4.0

@@ -43,7 +43,7 @@ step "3/4 smoke test, room and species checks (main scene, headless)"
 scan_log "$LOG_DIR/smoke_idle.log" "idle smoke run"
 echo "idle boot: ok"
 # b) Scripted run: SmokeDriver presses run/jump/dash and asserts the player actually moved.
-"$GODOT" --headless --path . --fixed-fps 60 --quit-after 900 -- --smoke >"$LOG_DIR/smoke_driver.log" 2>&1 \
+"$GODOT" --headless --path . --fixed-fps 60 --quit-after 900 -- --room DrownedHall --smoke >"$LOG_DIR/smoke_driver.log" 2>&1 \
     || { tail -20 "$LOG_DIR/smoke_driver.log"; fail "scripted smoke run exited non-zero"; }
 scan_log "$LOG_DIR/smoke_driver.log" "scripted smoke run"
 grep -q 'SMOKE OK' "$LOG_DIR/smoke_driver.log" || { tail -20 "$LOG_DIR/smoke_driver.log"; fail "scripted smoke run did not report SMOKE OK"; }
@@ -54,7 +54,13 @@ grep 'SMOKE OK' "$LOG_DIR/smoke_driver.log"
 scan_log "$LOG_DIR/rooms.log" "room check"
 grep -q 'ROOMS OK' "$LOG_DIR/rooms.log" || { tail -20 "$LOG_DIR/rooms.log"; fail "room check did not report ROOMS OK"; }
 grep 'ROOMS OK' "$LOG_DIR/rooms.log"
-# d) Machine species: data, then each one alive in the arena without and with the player (SpeciesValidator).
+# d) Room travel: every open exit crossed, arriving in the target room and staying there (TravelValidator).
+"$GODOT" --headless --path . --fixed-fps 60 --quit-after 20000 -- --validate-travel >"$LOG_DIR/travel.log" 2>&1 \
+    || { grep -E 'TRAVEL CHECK|ERROR' "$LOG_DIR/travel.log" | head -40; fail "travel check failed (full log: $LOG_DIR/travel.log)"; }
+scan_log "$LOG_DIR/travel.log" "travel check"
+grep -q 'TRAVEL OK' "$LOG_DIR/travel.log" || { tail -20 "$LOG_DIR/travel.log"; fail "travel check did not report TRAVEL OK"; }
+grep 'TRAVEL OK' "$LOG_DIR/travel.log"
+# e) Machine species: data, then each one alive in the arena without and with the player (SpeciesValidator).
 "$GODOT" --headless --path . --fixed-fps 60 --quit-after 9000 -- --room MachineArena --validate-species >"$LOG_DIR/species.log" 2>&1 \
     || { grep -E 'SPECIES CHECK|ERROR' "$LOG_DIR/species.log" | head -40; fail "species check failed (full log: $LOG_DIR/species.log)"; }
 scan_log "$LOG_DIR/species.log" "species check"

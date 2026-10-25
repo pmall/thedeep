@@ -27,6 +27,9 @@ public partial class Player : CharacterBody3D
     /// <summary>Raised after <see cref="Respawn"/> teleports the player.</summary>
     public event Action? Respawned;
 
+    /// <summary>Raised after <see cref="Arrive"/> places the player in a new room.</summary>
+    public event Action? Arrived;
+
     /// <summary>Raised on touching down, with the downward speed (m/s) just before.</summary>
     public event Action<float>? Landed;
 
@@ -34,6 +37,9 @@ public partial class Player : CharacterBody3D
     public event Action<int>? Dashed;
 
     public AbilitySet Abilities { get; } = new();
+
+    /// <summary>Held still, velocity kept, no input read (during a room transition's fade).</summary>
+    public bool Frozen { get; set; }
 
     public PlayerStateSet States { get; private set; } = null!;
 
@@ -71,6 +77,11 @@ public partial class Player : CharacterBody3D
 
     public override void _PhysicsProcess(double delta)
     {
+        if (Frozen)
+        {
+            return;
+        }
+
         float dt = (float)delta;
 
         _coyote.Tick(dt);
@@ -136,6 +147,18 @@ public partial class Player : CharacterBody3D
         ResetPhysicsInterpolation();
         Visual.Snap();
         Respawned?.Invoke();
+    }
+
+    /// <summary>
+    /// Places the player in a newly loaded room, keeping its state, velocity and momentum (crossing a
+    /// doorway at a run keeps running).
+    /// </summary>
+    public void Arrive(Vector3 position, Vector3 velocity)
+    {
+        GlobalPosition = position with { Z = 0f };
+        Velocity = velocity with { Z = 0f };
+        ResetPhysicsInterpolation();
+        Arrived?.Invoke();
     }
 
     /// <summary>Accelerates horizontal velocity toward the held direction at run speed.</summary>

@@ -2,7 +2,7 @@
 
 [ext_resource type="Script" path="res://scripts/Main.cs" id="1_main"]
 [ext_resource type="Script" path="res://scripts/rooms/World.cs" id="2_world"]
-[ext_resource type="PackedScene" path="res://scenes/rooms/TestRoom.tscn" id="2_room"]
+[ext_resource type="PackedScene" path="res://scenes/rooms/Narthex.tscn" id="2_room"]
 [ext_resource type="PackedScene" path="res://scenes/player/Player.tscn" id="3_player"]
 [ext_resource type="PackedScene" path="res://scenes/ui/DebugHud.tscn" id="4_hud"]
 [ext_resource type="Script" path="res://scripts/debug/DebugCheats.cs" id="5_cheats"]
@@ -14,8 +14,11 @@
 [ext_resource type="Script" path="res://scripts/machines/MachineDirector.cs" id="11_machines"]
 [ext_resource type="Script" path="res://scripts/player/BurstPool.cs" id="12_pool"]
 [ext_resource type="PackedScene" path="res://scenes/fx/Sparks.tscn" id="13_sparks"]
+[ext_resource type="Script" path="res://scripts/rooms/RoomTravel.cs" id="14_travel"]
+[ext_resource type="Script" path="res://scripts/ui/ScreenFade.cs" id="15_fade"]
+[ext_resource type="Script" path="res://scripts/ui/MapScreen.cs" id="16_map"]
 
-[node name="Main" type="Node3D" node_paths=PackedStringArray("World", "Player", "Machines", "Capture", "Camera", "Hud")]
+[node name="Main" type="Node3D" node_paths=PackedStringArray("World", "Player", "Machines", "Capture", "Camera", "Hud", "Travel")]
 script = ExtResource("1_main")
 World = NodePath("World")
 Player = NodePath("Player")
@@ -23,6 +26,7 @@ Machines = NodePath("Machines")
 Capture = NodePath("OwnerCapture")
 Camera = NodePath("SideCamera")
 Hud = NodePath("DebugHud")
+Travel = NodePath("RoomTravel")
 
 ; Loads the room scenes (first child, so the room exists before the camera and HUD are ready).
 [node name="World" type="Node3D" parent="."]
@@ -44,11 +48,26 @@ script = ExtResource("12_pool")
 Effect = ExtResource("13_sparks")
 Count = 3
 
+; Moves the player between rooms through their exits, under a short fade.
+[node name="RoomTravel" type="Node" parent="." node_paths=PackedStringArray("World", "Player", "Fade")]
+script = ExtResource("14_travel")
+World = NodePath("../World")
+Player = NodePath("../Player")
+Fade = NodePath("../ScreenFade")
+
 [node name="SideCamera" parent="." node_paths=PackedStringArray("Target", "World") instance=ExtResource("6_camera")]
 Target = NodePath("../Player")
 World = NodePath("../World")
 
 [node name="ScreenGrade" parent="." instance=ExtResource("10_grade")]
+
+[node name="ScreenFade" type="CanvasLayer" parent="."]
+script = ExtResource("15_fade")
+
+[node name="MapScreen" type="CanvasLayer" parent="." node_paths=PackedStringArray("World", "Player")]
+script = ExtResource("16_map")
+World = NodePath("../World")
+Player = NodePath("../Player")
 
 [node name="DebugHud" parent="." node_paths=PackedStringArray("Player") instance=ExtResource("4_hud")]
 Player = NodePath("../Player")
