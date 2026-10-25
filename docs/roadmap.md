@@ -9,6 +9,7 @@ The plan we follow from session to session. Each milestone is one to three sessi
 3. **Two long-term objectives shape the architecture from now on** (details in [long-term.md](long-term.md)):
    - **No two machines alike:** 150–200 behaviorally distinct machine species, built from modular parts and a shared behavior vocabulary.
    - **Any order, proven on every build:** abilities collectable in many orders, never a softlock, checked by a solver on every build.
+4. **Levels and mechanisms first, characters later** (2026-10-25). First make the code structure ready for the whole game and the environment code able to build great-looking levels. The pilgrim and the machines stay as they are: working placeholders, used but not polished. A full design, art and gameplay pass on them comes once structure and levels are ready (see "Character pass").
 
 ## Status
 
@@ -19,7 +20,7 @@ The plan we follow from session to session. Each milestone is one to three sessi
 - **M2 done (2026-10-24), pending the owner's eye.** Environment kit as generated meshes (blocks, columns, pipes, cables, arches and ribs, grates, server racks, wrecks), each a swappable mesh resource over pure, unit-tested geometry. Materials now read a surface frame from the mesh instead of a box uniform. Rooms are their own scenes, loaded by `World`; `RoomExit` markers carry a requirement expression (`MagGrip | Harpoon`) and a one-way flag; `RoomValidator` checks every room in `tools/check.sh`. The test room is rebuilt as a drowned cathedral hall (same gameplay, snapped to the grid, three sealed exits). New `Hall` and `Arcade` photo spots. Frame time 4.5 → 5.8 ms average.
 - **M3 done (2026-10-24), pending the owner's eye.** Volumetric fog set by the biome, with clear air in front of the play plane; two light shafts (the arcade one cut into rays); dust, silt and drips; the back of the hall flooded (water with reflections, underwater haze, caustics); two procedural backdrop skylines; a dark framing foreground; vignette and grain; tuned glow and glyph lights. SDFGI rejected on cost. Frame time 5.8 → 6.9 ms average (p99 7.8). Details in [art-direction.md](art-direction.md#current-state).
 - **M4 first pass (2026-10-24), pending the owner's eye.** Shared part system (`PartAssembly`: rig joints, rigid parts, flowing chains; `PartBody` builds it) over pure, tested geometry (pods, plates, rings). The pilgrim (`resources/parts/pilgrim.tres`): black android with white trim, swallowtail coat, white braid, violet visor slit, a lantern at the hip carrying a warm light. Procedural animation (`PilgrimMotion`, pure and tested): run cycle with planted feet by IK, lean into acceleration, landing compression, leap/fall/dash poses, breathing idle, turning through the camera. Effects: grit on rock, sparks on metal, landing and dash dust, dash trail, camera shake on hard landings. Look-dev now renders a **motion reel** (`Motion.png`). Frame time 6.9 → 7.0 ms. Owner (2026-10-25): movement and look need a lot of work, **deferred to the end** (Phase 4, "Pilgrim polish"); don't block on it.
-- **M5 first pass (2026-10-25), pending the owner's eye.** Part library grown (claws, horns and antennas as curled pods, rotors, treads with rolling cleats, drills) and a machine shader on the biome palette. `MachineSpecies` (`.tres`): body, locomotion (walk, hover, crawl over metal), stats, palette, behavior, creed line (in `resources/text/lines.tres`), and animation as data (joint drivers bound to the brain's channels, IK legs with planted feet). Behavior vocabulary v0 as pure tested logic: senses (sees the player, feels them near, hears impacts, notices neighbors), movement (arrive, flee, loiter, crawl along a block's faces), actions (pray in step with neighbors, a strike with a readable wind-up). Four prototypes in `MachineArena`: Votary (prays, strikes whoever lingers in front of it), Gleaner (gleans scrap, bolts with it, cowers when cornered), Lamplighter (follows at a distance, never attacks), Limpet (sleeps on metal until a landing shakes the room, then crawls to it and drills). Machine checks in `tools/check.sh` (species data, each species alive in the arena without and with the player, report per layer). Look-dev renders the arena and a **machine reel** (`Machines.png`). Arena frame time 6.2 ms average. **Next:** M6.
+- **M5 first pass (2026-10-25), pending the owner's eye.** Part library grown (claws, horns and antennas as curled pods, rotors, treads with rolling cleats, drills) and a machine shader on the biome palette. `MachineSpecies` (`.tres`): body, locomotion (walk, hover, crawl over metal), stats, palette, behavior, creed line (in `resources/text/lines.tres`), and animation as data (joint drivers bound to the brain's channels, IK legs with planted feet). Behavior vocabulary v0 as pure tested logic: senses (sees the player, feels them near, hears impacts, notices neighbors), movement (arrive, flee, loiter, crawl along a block's faces), actions (pray in step with neighbors, a strike with a readable wind-up). Four prototypes in `MachineArena`: Votary (prays, strikes whoever lingers in front of it), Gleaner (gleans scrap, bolts with it, cowers when cornered), Lamplighter (follows at a distance, never attacks), Limpet (sleeps on metal until a landing shakes the room, then crawls to it and drills). Machine checks in `tools/check.sh` (species data, each species alive in the arena without and with the player, report per layer). Look-dev renders the arena and a **machine reel** (`Machines.png`). Arena frame time 6.2 ms average. **Next:** M6, focused on levels and mechanisms (direction 4).
 - Theme ingested into [theme.md](theme.md): Asimov's three laws; the android protagonist escapes them under the player's control. The act structure is only a proposed direction.
 - Decided: about **2 hours** of play, dense rather than wide (reference: *Inside*, about 2 h and rich in gameplay and story). Audio: deferred, the owner will decide later.
 
@@ -108,13 +109,14 @@ Objective 1 starts here ([long-term.md](long-term.md): "prototype the modular ma
 ## Phase 2: vertical slice (playable, final quality)
 
 ### M6 — The slice
-6–8 rooms of the first layer (flooded), at the quality bar set in Phase 1.
+6–8 rooms of the first layer (flooded). Levels and mechanisms come first (direction 4): environments at the Phase 1 quality bar, characters stay placeholders.
+- [ ] **Level-building toolkit:** making a good-looking room is quick and consistent. The atmosphere stack every room repeats (environment, key light, shafts, clear-front fog, particles, backdrop skylines, framing foreground) becomes shared pieces, so a room only states its layout and its few choices. Kit additions as the slice's rooms need them.
 - [ ] Room transitions (doors, shafts, drops), a camera per room, a minimal map of visited rooms.
 - [ ] **Mag-grip**: snap corners first, then smoothing; metal detected by physics layer only.
 - [ ] A basic attack, health, damage, death and respawn, and a save point (a pilgrim shrine).
-- [ ] About 5 species living in the slice, a third of them non-hostile.
+- [ ] The existing species placed in the slice as placeholders (no new species work).
 - [ ] Connection markers carry real requirements in every slice room.
-- **Done when:** the owner plays the slice start to finish and it feels like the real game.
+- **Done when:** the owner plays the slice start to finish and its levels and mechanisms feel like the real game.
 
 ### M7 — Whole-game design and the order solver
 Objective 2's tools are built **before** content production, so the map is designed with the solver, not checked after the fact.
@@ -126,6 +128,11 @@ Objective 2's tools are built **before** content production, so the map is desig
 - [ ] Debug command that prints the graph and achievable orders. Solver and checks added to `tools/check.sh`.
 - [ ] Scope locked: about 2 hours of play (decided). Dense rather than wide, like *Inside*: fewer rooms, each one with a purpose. Estimate 40–60 rooms, 5 abilities, 3–4 bosses.
 - **Done when:** the slice passes the solver and geometry checks inside `tools/check.sh`, and the full-map design passes the solver as a *draft planning graph*. That draft is only a design aid: during production, each room's real markers replace their part of it, and the markers stay the source of truth.
+
+### Character pass — the pilgrim and the machines
+Once the code structure is ready for the whole game and the environment code makes great-looking levels (direction 4; owner, 2026-10-25). A full design, art and gameplay pass on the characters:
+- [ ] The pilgrim: movement feel and animation (owner: "needs a lot of work"), its look (the hair reads like a helmet; contrast against dark backdrops), its effects. Movement numbers stay in `player_tuning.tres`.
+- [ ] The machines: design, art and gameplay of the species, then growing the bestiary (about 10 good species first, docs/long-term.md).
 
 ## Phase 3: production
 
@@ -147,7 +154,6 @@ Species growth follows [long-term.md](long-term.md): about 10 good ones first, t
 
 ## Phase 4: complete game
 
-- [ ] **Pilgrim polish** (owner decision, 2026-10-25: the pilgrim's movement and look need a lot of work, tackled at the end): movement feel and animation, the look (hair reads like a helmet, contrast against dark backdrops), effects. Movement numbers stay in `player_tuning.tres`.
 - [ ] Main menu, pause, settings (graphics quality tiers, audio, controls remapping), save slots
 - [ ] Map screen, bestiary screen
 - [ ] Ending
