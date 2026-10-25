@@ -1,6 +1,7 @@
 using System;
 using Godot;
 using TheDeep.States;
+using NVector2 = System.Numerics.Vector2;
 
 namespace TheDeep;
 
@@ -22,7 +23,10 @@ public partial class Player : CharacterBody3D
     private readonly Countdown _jumpBuffer = new();
     private readonly Countdown _dashBuffer = new();
     private readonly Countdown _dashCooldown = new();
+    private readonly Countdown _regrab = new();
     private int _airDashesLeft;
+    private CapsuleShape3D _capsule = null!;
+    private Vector3 _capsuleOffset;
 
     /// <summary>Raised after <see cref="Respawn"/> teleports the player.</summary>
     public event Action? Respawned;
@@ -60,11 +64,42 @@ public partial class Player : CharacterBody3D
     /// <summary>A buffered jump press and the ground (or coyote time) to jump from.</summary>
     public bool WantsJump => _jumpBuffer.Active && _coyote.Active;
 
+    /// <summary>A buffered jump press, wherever the player is (leaping off a Mag-grip surface).</summary>
+    public bool JumpPressed => _jumpBuffer.Active;
+
     /// <summary>A buffered dash press, off cooldown, and an air dash left if airborne.</summary>
     public bool WantsDash => _dashBuffer.Active && !_dashCooldown.Active && (IsOnFloor() || _airDashesLeft > 0);
 
+    /// <summary>The way the body's feet point away from (the surface's normal): world up, except on Mag-grip.</summary>
+    public NVector2 SurfaceUp => new(UpDirection.X, UpDirection.Y);
+
+    /// <summary>Whether the body stands the normal way up (not gripping a wall or ceiling).</summary>
+    public bool IsUpright => UpDirection.Y > 0.5f;
+
+    /// <summary>The feet (the body's origin) on the play plane.</summary>
+    public NVector2 Feet => new(GlobalPosition.X, GlobalPosition.Y);
+
+    /// <summary>Height of the body's center above the feet.</summary>
+    public float CenterHeight => _capsuleOffset.Y;
+
+    /// <summary>How far the feet stay from a surface the body lies along after a corner: the body's radius and a little air.</summary>
+    public float GripClearance => _capsule.Radius + 0.02f;
+
+    /// <summary>The facing as the world sees it: +1 toward +X, -1 toward -X (on a wall, the way the head points along X, else the local facing).</summary>
+    public int WorldFacing
+    {
+        get
+        {
+            float x = GripMath.Tangent(SurfaceUp).X * Facing;
+            return x > 0.1f ? 1 : x < -0.1f ? -1 : Facing;
+        }
+    }
+
     public override void _Ready()
     {
+        var collision = GetNode<CollisionShape3D>("Collision");
+        _capsule = (CapsuleShape3D)collision.Shape;
+        _capsuleOffset = collision.Position;
         CollisionLayer = PhysicsLayers.Player;
         CollisionMask = PhysicsLayers.Solid;
         States = new PlayerStateSet(this);
@@ -88,6 +123,7 @@ public partial class Player : CharacterBody3D
         _jumpBuffer.Tick(dt);
         _dashBuffer.Tick(dt);
         _dashCooldown.Tick(dt);
+        _regrab.Tick(dt);
 
         ReadInput();
         if (_state.AllowsTurning && CurrentInput.MoveX != 0)
@@ -105,8 +141,12 @@ public partial class Player : CharacterBody3D
         float fallSpeed = -Velocity.Y;
         MoveAndSlide();
         StayOnPlayPlane();
+        if (_state.AfterMove() is { } after && after != _state)
+        {
+            ChangeState(after);
+        }
 
-        if (IsOnFloor())
+        if (IsOnFloor() && IsUpright)
         {
             _coyote.Start(Tuning.CoyoteTime);
             _airDashesLeft = Tuning.AirDashes;
@@ -119,10 +159,16 @@ public partial class Player : CharacterBody3D
         }
         else
         {
-            FloorSurface = null;
+            FloorSurface = IsOnFloor() ? SurfaceKind.Metal : null;
+            if (FloorSurface is not null)
+            {
+                _airDashesLeft = Tuning.AirDashes; // a Mag-grip surface refills the air dash like a floor
+            }
         }
 
-        Visual.Animate(dt, Velocity, _state.Motion, IsOnFloor(), GlobalPosition.Y);
+        // The animation sees the body's own frame: on a wall, walking up it is walking forward.
+        Vector3 localVelocity = GlobalBasis.Inverse() * Velocity;
+        Visual.Animate(dt, localVelocity, _state.Motion, IsOnFloor(), IsUpright ? GlobalPosition.Y : float.NaN);
     }
 
     /// <summary>
@@ -132,6 +178,7 @@ public partial class Player : CharacterBody3D
     public void Respawn(Vector3 position, int facing = 0)
     {
         ChangeState(States.Idle);
+        StandUpright();
         if (facing != 0)
         {
             SetFacing(facing);
@@ -155,10 +202,124 @@ public partial class Player : CharacterBody3D
     /// </summary>
     public void Arrive(Vector3 position, Vector3 velocity)
     {
+        if (!IsUpright)
+        {
+            ChangeState(States.Fall);
+        }
+
         GlobalPosition = position with { Z = 0f };
         Velocity = velocity with { Z = 0f };
         ResetPhysicsInterpolation();
         Arrived?.Invoke();
+    }
+
+    /// <summary>
+    /// Mag-grip, if it applies now: rising into a metal ceiling, or pressing into a metal wall. Returns the
+    /// grip state, prepared to attach, or null. Called by the upright states before they move.
+    /// </summary>
+    public GripState? GripAttach()
+    {
+        if (!Abilities.Has(Ability.MagGrip) || _regrab.Active || !IsUpright)
+        {
+            return null;
+        }
+
+        GripPose? pose = null;
+        if (IsOnCeiling() && Velocity.Y >= 0f && MetalContact(n => n.Y < -0.5f) is { } ceiling)
+        {
+            pose = GripMath.OntoCeiling(Feet, ceiling.Point.Y);
+        }
+        else if (IsOnWall() && CurrentInput.MoveX != 0 && MetalContact(n => n.X * CurrentInput.MoveX < -0.5f) is { } wall)
+        {
+            pose = GripMath.OntoWall(Feet, CenterHeight, wall.Point.X, wall.Normal);
+        }
+
+        if (pose is not { } p || !Fits(p))
+        {
+            return null;
+        }
+
+        States.Grip.Prepare(p);
+        return States.Grip;
+    }
+
+    /// <summary>Puts the body at <paramref name="pose"/> (feet and up), keeping the visible body where it was so it eases into place.</summary>
+    public void Orient(GripPose pose)
+    {
+        Transform3D before = Visual.GlobalTransform;
+        GlobalTransform = new Transform3D(new Basis(Vector3.Back, GripMath.Angle(pose.Up)), new Vector3(pose.Feet.X, pose.Feet.Y, 0f));
+        UpDirection = new Vector3(pose.Up.X, pose.Up.Y, 0f);
+        ResetPhysicsInterpolation();
+        Visual.CarryOver(before);
+    }
+
+    /// <summary>Back to the normal way up after Mag-grip, turned about the body's center; facing kept as the world sees it.</summary>
+    public void StandUpright()
+    {
+        if (IsUpright && GlobalBasis.IsEqualApprox(Basis.Identity))
+        {
+            return;
+        }
+
+        int facing = WorldFacing;
+        Orient(new GripPose(GripMath.Upright(Feet, SurfaceUp, CenterHeight), new NVector2(0f, 1f)));
+        SetFacing(facing);
+    }
+
+    /// <summary>No grip for a moment (after letting go or leaping off), so the same surface doesn't catch the player again.</summary>
+    public void HoldOffGrip() => _regrab.Start(Tuning.GripRegrabDelay);
+
+    /// <summary>Faces along the body's own forward (+1) or backward (-1).</summary>
+    public void SetLocalFacing(int direction) => SetFacing(direction);
+
+    /// <summary>Faces +X (+1) or -X (-1); only meaningful upright.</summary>
+    public void SetWorldFacing(int direction) => SetFacing(direction);
+
+    /// <summary>A contact from the last move with a metal surface whose (axis-snapped) normal passes <paramref name="accept"/>.</summary>
+    public (NVector2 Normal, NVector2 Point)? MetalContact(Func<NVector2, bool> accept)
+    {
+        for (int i = 0; i < GetSlideCollisionCount(); i++)
+        {
+            KinematicCollision3D collision = GetSlideCollision(i);
+            Vector3 n = collision.GetNormal();
+            NVector2 normal = GripMath.Snap(new NVector2(n.X, n.Y));
+            if (collision.GetCollider() is CollisionObject3D body && (body.CollisionLayer & PhysicsLayers.WorldMetal) != 0 && accept(normal))
+            {
+                Vector3 p = collision.GetPosition();
+                return (normal, new NVector2(p.X, p.Y));
+            }
+        }
+
+        return null;
+    }
+
+    /// <summary>Where a ray on the play plane first hits metal, or null (rock, or nothing, in the way).</summary>
+    public NVector2? MetalRay(NVector2 from, NVector2 to)
+    {
+        var query = PhysicsRayQueryParameters3D.Create(new Vector3(from.X, from.Y, 0f), new Vector3(to.X, to.Y, 0f), PhysicsLayers.Solid);
+        Godot.Collections.Dictionary hit = GetWorld3D().DirectSpaceState.IntersectRay(query);
+        if (hit.Count == 0 || hit["collider"].AsGodotObject() is not CollisionObject3D body || (body.CollisionLayer & PhysicsLayers.WorldMetal) == 0)
+        {
+            return null;
+        }
+
+        Vector3 p = hit["position"].AsVector3();
+        return new NVector2(p.X, p.Y);
+    }
+
+    /// <summary>Whether the body fits at <paramref name="pose"/> (tested a little off the surface it stands on).</summary>
+    private bool Fits(GripPose pose)
+    {
+        var basis = new Basis(Vector3.Back, GripMath.Angle(pose.Up));
+        var origin = new Vector3(pose.Feet.X + pose.Up.X * 0.05f, pose.Feet.Y + pose.Up.Y * 0.05f, 0f);
+        var query = new PhysicsShapeQueryParameters3D
+        {
+            Shape = _capsule,
+            Transform = new Transform3D(basis, origin) * new Transform3D(Basis.Identity, _capsuleOffset),
+            CollisionMask = PhysicsLayers.Solid,
+            Margin = 0f,
+        };
+        return GetWorld3D().DirectSpaceState.IntersectShape(query, 1).Count == 0;
     }
 
     /// <summary>Accelerates horizontal velocity toward the held direction at run speed.</summary>

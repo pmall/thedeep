@@ -46,6 +46,17 @@ public partial class PlayerTuning : Resource
     /// <summary>Dashes allowed per airtime; refilled on landing.</summary>
     [Export] public int AirDashes { get; set; } = 1;
 
+    /// <summary>Walking speed on metal walls and ceilings (Mag-grip).</summary>
+    [ExportGroup("Mag-grip")]
+    [Export] public float GripSpeed { get; set; } = 5.5f;
+    [Export] public float GripAcceleration { get; set; } = 45f;
+    [Export] public float GripDeceleration { get; set; } = 60f;
+    /// <summary>Leaping off a wall: speed away from it, and upward speed as a fraction of the jump's take-off speed.</summary>
+    [Export] public float GripLeapAwaySpeed { get; set; } = 6.5f;
+    [Export] public float GripLeapUpFactor { get; set; } = 0.85f;
+    /// <summary>After letting go or leaping off, the same surface can't be gripped again for this long.</summary>
+    [Export] public float GripRegrabDelay { get; set; } = 0.25f;
+
     public float Gravity => JumpMath.Gravity(JumpHeight, JumpTimeToApex);
 
     public float JumpTakeOffSpeed => JumpMath.TakeOffSpeed(JumpHeight, JumpTimeToApex);

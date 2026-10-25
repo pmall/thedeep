@@ -1,0 +1,73 @@
+[gd_scene format=3]
+
+; The mechanics lab: not part of the game. A plain room where the headless checks (GripCheck, and later
+; combat) drive the player through the mechanics with the real input actions: a metal wall rising into a
+; metal ceiling slab, and a floating metal block to hang under and wrap around.
+
+[ext_resource type="PackedScene" path="res://scenes/kit/Block.tscn" id="1_block"]
+[ext_resource type="Script" path="res://scripts/rooms/PhotoSpot.cs" id="2_spot"]
+[ext_resource type="Script" path="res://scripts/rooms/Room.cs" id="3_room"]
+[ext_resource type="Resource" path="res://resources/biomes/flooded.tres" id="4_flooded"]
+[ext_resource type="PackedScene" path="res://scenes/stage/RoomStage.tscn" id="5_stage"]
+
+[node name="MechanicsLab" type="Node3D" node_paths=PackedStringArray("SpawnPoint", "Stage")]
+script = ExtResource("3_room")
+SpawnPoint = NodePath("SpawnPoint")
+Stage = NodePath("Stage")
+Biome = ExtResource("4_flooded")
+BoundsMin = Vector2(-2, -2)
+BoundsMax = Vector2(34, 18)
+
+[node name="SpawnPoint" type="Marker3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 3, 0, 0)
+
+; The shared atmosphere stack (environment, key light, clear front air, skylines, far pillars, frame, dust).
+[node name="Stage" parent="." instance=ExtResource("5_stage")]
+Seed = 9
+DustDensity = 1
+PillarDensity = 2
+
+[node name="Geometry" type="Node3D" parent="."]
+
+[node name="Floor" parent="Geometry" instance=ExtResource("1_block")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 16, -1, 0)
+Size = Vector3(40, 2, 4)
+
+[node name="WallLeft" parent="Geometry" instance=ExtResource("1_block")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -2, 10, 0)
+Size = Vector3(4, 20, 4)
+
+[node name="WallRight" parent="Geometry" instance=ExtResource("1_block")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 34, 10, 0)
+Size = Vector3(4, 20, 4)
+
+[node name="Roof" parent="Geometry" instance=ExtResource("1_block")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 16, 19, 0)
+Size = Vector3(32, 2, 4)
+
+; a metal wall rising into the slab: climb it, turn under the slab
+[node name="MetalWall" parent="Geometry" instance=ExtResource("1_block")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 25, 6, 0)
+Size = Vector3(2, 12, 4)
+Surface = 1
+
+; a metal slab: hang under it, wrap around its west end onto its top
+[node name="MetalSlab" parent="Geometry" instance=ExtResource("1_block")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 18, 12.5, 0)
+Size = Vector3(16, 1, 4)
+Surface = 1
+
+; a floating metal block, its underside in jump reach from the floor
+[node name="MetalBlock" parent="Geometry" instance=ExtResource("1_block")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 8, 5.25, 0)
+Size = Vector3(4, 2.5, 4)
+Surface = 1
+
+[node name="PhotoSpots" type="Node3D" parent="."]
+
+; the whole lab
+[node name="Wide" type="Marker3D" parent="PhotoSpots"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 16, 8, 34)
+script = ExtResource("2_spot")
+PlayerPosition = Vector3(3, 0, 0)
+Fov = 45

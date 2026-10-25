@@ -20,6 +20,11 @@ public sealed class JumpState : PlayerState
 
     public override PlayerState? PhysicsUpdate(float delta)
     {
+        if (Player.GripAttach() is { } grip)
+        {
+            return grip;
+        }
+
         if (!_cut && !Player.CurrentInput.JumpHeld)
         {
             Player.Velocity = Player.Velocity with { Y = Player.Velocity.Y * Tuning.JumpCutFactor };

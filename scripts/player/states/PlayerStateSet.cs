@@ -10,6 +10,7 @@ public sealed class PlayerStateSet
         Jump = new JumpState(player);
         Fall = new FallState(player);
         Dash = new DashState(player);
+        Grip = new GripState(player);
     }
 
     public IdleState Idle { get; }
@@ -17,4 +18,5 @@ public sealed class PlayerStateSet
     public JumpState Jump { get; }
     public FallState Fall { get; }
     public DashState Dash { get; }
+    public GripState Grip { get; }
 }

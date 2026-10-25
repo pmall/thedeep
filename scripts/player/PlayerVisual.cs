@@ -23,10 +23,16 @@ public partial class PlayerVisual : Node3D
     /// <summary>How fast the body turns around when the facing flips, 1/s (higher is snappier).</summary>
     [Export] public float TurnSharpness { get; set; } = 20f;
 
+    /// <summary>How fast the body eases into a new pose after the collider snapped (a Mag-grip corner), 1/s.</summary>
+    [Export] public float CarrySharpness { get; set; } = 16f;
+
     private HumanoidRig? _rig;
     private PilgrimMotion? _motion;
     private int _facing = 1;
     private float _yaw;
+
+    /// <summary>Where the visible body still is relative to the collider after a snap; eases back to identity.</summary>
+    private Transform3D _carry = Transform3D.Identity;
 
     /// <summary>A foot was planted at this world position, on the near (+1) or far (-1) side.</summary>
     public event Action<Vector3, int>? Footfall;
@@ -59,11 +65,27 @@ public partial class PlayerVisual : Node3D
     /// <summary>Kicks the landing compression; <paramref name="impactSpeed"/> is the downward speed at touchdown.</summary>
     public void Land(float impactSpeed) => _motion?.Land(impactSpeed);
 
-    /// <summary>One physics tick of animation, after the body moved.</summary>
+    /// <summary>
+    /// The body (the parent) just snapped to a new pose: keep the visible body at <paramref name="previousGlobal"/>
+    /// for now, so it eases into the new pose instead of jumping.
+    /// </summary>
+    public void CarryOver(Transform3D previousGlobal)
+    {
+        _carry = GetParentNode3D().GlobalTransform.AffineInverse() * previousGlobal * new Transform3D(new Basis(Vector3.Up, _yaw), Vector3.Zero).AffineInverse();
+        Transform = _carry * new Transform3D(new Basis(Vector3.Up, _yaw), Vector3.Zero);
+        ResetPhysicsInterpolation();
+    }
+
+    /// <summary>
+    /// One physics tick of animation, after the body moved. <paramref name="velocity"/> is in the body's own
+    /// frame; <paramref name="floorY"/> is NaN when the body isn't upright (Mag-grip).
+    /// </summary>
     public void Animate(float delta, Vector3 velocity, MotionMode mode, bool onFloor, float floorY)
     {
         _yaw = Motion.Damp(_yaw, TargetYaw, TurnSharpness, delta);
-        Basis = new Basis(Vector3.Up, _yaw);
+        float k = 1f - Mathf.Exp(-CarrySharpness * delta);
+        _carry = new Transform3D(new Basis(_carry.Basis.GetRotationQuaternion().Slerp(Quaternion.Identity, k)), _carry.Origin.Lerp(Vector3.Zero, k));
+        Transform = _carry * new Transform3D(new Basis(Vector3.Up, _yaw), Vector3.Zero);
         if (_rig is null || _motion is null)
         {
             return;
@@ -71,11 +93,11 @@ public partial class PlayerVisual : Node3D
 
         _motion.Update(delta, new NVector2(velocity.X, velocity.Y), _facing, mode);
         _rig.Apply(_motion.Pose);
-        Body.StepChains(delta, onFloor ? floorY + 0.02f : float.NaN);
+        Body.StepChains(delta, onFloor && !float.IsNaN(floorY) ? floorY + 0.02f : float.NaN);
 
         if (_motion.Footfall != 0 && Body.Joint(_motion.Footfall > 0 ? "FootR" : "FootL") is { } foot)
         {
-            Footfall?.Invoke(foot.GlobalPosition with { Y = floorY }, _motion.Footfall);
+            Footfall?.Invoke(float.IsNaN(floorY) ? foot.GlobalPosition : foot.GlobalPosition with { Y = floorY }, _motion.Footfall);
         }
     }
 
@@ -83,7 +105,8 @@ public partial class PlayerVisual : Node3D
     public void Snap()
     {
         _yaw = TargetYaw;
-        Basis = new Basis(Vector3.Up, _yaw);
+        _carry = Transform3D.Identity;
+        Transform = new Transform3D(new Basis(Vector3.Up, _yaw), Vector3.Zero);
         if (_rig is not null && _motion is not null)
         {
             _motion.Reset();

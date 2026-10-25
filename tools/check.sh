@@ -60,7 +60,13 @@ grep 'ROOMS OK' "$LOG_DIR/rooms.log"
 scan_log "$LOG_DIR/travel.log" "travel check"
 grep -q 'TRAVEL OK' "$LOG_DIR/travel.log" || { tail -20 "$LOG_DIR/travel.log"; fail "travel check did not report TRAVEL OK"; }
 grep 'TRAVEL OK' "$LOG_DIR/travel.log"
-# e) Machine species: data, then each one alive in the arena without and with the player (SpeciesValidator).
+# e) Mag-grip: walls, ceilings, inner and outer corners, leaping off, letting go (GripCheck, in the mechanics lab).
+"$GODOT" --headless --path . --fixed-fps 60 --quit-after 4000 -- --room MechanicsLab --grip-check >"$LOG_DIR/grip.log" 2>&1 \
+    || { grep -E 'GRIP CHECK|ERROR' "$LOG_DIR/grip.log" | head -40; fail "grip check failed (full log: $LOG_DIR/grip.log)"; }
+scan_log "$LOG_DIR/grip.log" "grip check"
+grep -q 'GRIP OK' "$LOG_DIR/grip.log" || { tail -20 "$LOG_DIR/grip.log"; fail "grip check did not report GRIP OK"; }
+grep 'GRIP OK' "$LOG_DIR/grip.log"
+# f) Machine species: data, then each one alive in the arena without and with the player (SpeciesValidator).
 "$GODOT" --headless --path . --fixed-fps 60 --quit-after 9000 -- --room MachineArena --validate-species >"$LOG_DIR/species.log" 2>&1 \
     || { grep -E 'SPECIES CHECK|ERROR' "$LOG_DIR/species.log" | head -40; fail "species check failed (full log: $LOG_DIR/species.log)"; }
 scan_log "$LOG_DIR/species.log" "species check"

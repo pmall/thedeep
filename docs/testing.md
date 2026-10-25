@@ -11,6 +11,8 @@ Run it after every change and before every commit. It stops at the first failure
    - (b) A scripted run (`-- --smoke`, `scripts/debug/SmokeDriver.cs`) presses run, jump and dash through the real input actions. It must print `SMOKE OK`: moved ≥ 10 m, full jump ≥ 2.9 m, every base state entered, never left Z = 0.
    - (c) Room check (`-- --validate-rooms`, `scripts/debug/RoomValidator.cs`): every scene in `scenes/rooms/` must print no `ROOM CHECK` error and the run `ROOMS OK`. It checks the grid (block edges 0.5 m, kit piece origins 0.25 m), axis-aligned blocks, spawn and exits inside the camera bounds, exit requirements, exit targets that exist and lead back, and at least one photo spot.
    - (d) Species check (`-- --room MachineArena --validate-species`, `scripts/debug/SpeciesValidator.cs`): every `resources/machines/*.tres` loads, its id is its file name, it has a behavior, its parts, chains, drivers and legs name existing joints (and no driver poses a leg joint), and its creed line is in `resources/text/lines.tres`. Then each species lives alone in the arena for 4 s without the player and 6 s with the player running, jumping and dashing next to it; any error, or a machine leaving the room, fails. It prints one line per species (layer, hostile or not, behavior, the acts seen) and `SPECIES OK` with the count per layer, the non-hostile count and likely duplicates (same behavior and same body).
+   - (e) Travel check (`-- --validate-travel`, `scripts/debug/TravelValidator.cs`): every open exit of every room is crossed (the player put in its area, moving out); the player must arrive in the target room, the room must be placed on the map, and the player must stay there a second (no bounce back). Prints `TRAVEL OK`.
+   - (f) Grip check (`-- --room MechanicsLab --grip-check`, `scripts/debug/GripCheck.cs`): Mag-grip through the real inputs in the mechanics lab: stick to a wall, climb, turn under a slab, wrap its end onto its top, hang under a block and wrap onto it, leap off, let go. Prints `GRIP OK`.
 4. xUnit tests in `tests/TheDeep.Tests`.
 
 The unit tests include `VideoEncoderTests`, which run the real `ffmpeg` (a required tool, see [toolchain.md](toolchain.md)).
@@ -37,9 +39,10 @@ tools/capture.sh before-fog        # before the change (optional label)
 tools/capture.sh after-fog         # renders, then compares with the previous run
 ```
 
-Each run renders the start room (TestRoom) then the machine arena, into a fresh `lookdev/<date>_<time>[-label]/` (git-ignored) with:
+Each run renders the drowned hall, the Narthex, the machine arena and the mechanics lab (`ROOMS` in `tools/capture.sh`; the first one's frame times go to `perf.json`), into a fresh `lookdev/<date>_<time>[-label]/` (git-ignored) with:
 - `<Room>-<Spot>.png`: every **photo spot** of both rooms at 1920×1080, no HUD. The room's machines are reset before each spot, so they are caught in the same pose every run;
 - `Motion.png`: the **motion reel** (test room only, `scripts/debug/MotionReel.cs`): idle, run start, run cycle, stop, turn, jump, dash off a ledge and a hard landing, shot close and laid out as a contact sheet (frames in `motion/`). Judge animation changes on it;
+- `Grip.png`: the **grip reel** (mechanics lab): onto a metal wall, up it, under the slab and around its end; a jump into a block's underside, along it and over; a leap off the wall;
 - `Machines.png`: the **machine reel** (arena, same file): a Votary striking the pilgrim who steps in front of it, the Gleaner bolting, the Limpet waking to a landing, crawling down its reliquary and drilling, the Lamplighter following and swapping sides; frames in `machines/`. Judge machine looks and behaviors on it;
 - `perf.json` (test room) and `perf-MachineArena.json`: frame, GPU and CPU render times (average, p99, worst) over a 900-frame scripted run with the gameplay camera, checked against the 10 ms budget;
 - `run.txt` (commit, label), `godot.log` and `godot-MachineArena.log`;

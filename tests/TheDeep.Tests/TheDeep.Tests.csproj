@@ -31,6 +31,7 @@
     <Compile Include="../../scripts/map/Requirement.cs" Link="Shared/Requirement.cs" />
     <Compile Include="../../scripts/map/GridSnap.cs" Link="Shared/GridSnap.cs" />
     <Compile Include="../../scripts/map/ExitMath.cs" Link="Shared/ExitMath.cs" />
+    <Compile Include="../../scripts/player/GripMath.cs" Link="Shared/GripMath.cs" />
     <Compile Include="../../scripts/map/MapState.cs" Link="Shared/MapState.cs" />
     <Compile Include="../../scripts/rooms/dressing/DressingLayout.cs" Link="Shared/DressingLayout.cs" />
     <Compile Include="../../scripts/parts/PartShapes.cs" Link="Shared/PartShapes.cs" />

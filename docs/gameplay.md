@@ -24,10 +24,13 @@ These gate the map. Every ability is one simple state or rule: no systemic or em
 
 The player can collect them in many orders, and that freedom is proven by a solver ([long-term.md](long-term.md), objective 2).
 
-**Mag-grip implementation note.** Rotating the player around corners is the hard part:
-- Use raycasts toward the surface, plus `up_direction` aligned to the surface normal.
-- Make corner transitions snap rather than flow at first, and smooth them only once everything else works.
-- Metal versus rock is a data property, the **physics layer** (`world_metal` vs `world_rock`, set by `Block.Surface`). Never infer it from visuals.
+**Mag-grip (implemented, M6).** `GripState` with pure geometry in `GripMath` (unit tested). Metal is the physics layer only (`world_metal`, set by `Block.Surface`).
+- **Attach:** press into a metal wall (on the ground or in the air), or rise into a metal ceiling (a jump). The body turns about its center so it swings out from the wall; its up becomes the surface normal (`UpDirection` and the body's rotation about Z, so the collider turns with it).
+- **Move:** held input along the surface (up/down on a wall, left/right under a ceiling, in screen terms) at `GripSpeed`. **Pull away** from the surface to let go, **jump** to leap off (away from a wall at `GripLeapAwaySpeed` and up at `GripLeapUpFactor` of a jump; downward from a ceiling), **dash** to let go and dash. `GripRegrabDelay` keeps the same surface from catching the player straight back.
+- **Corners snap** (a later pass may smooth them): a metal wall ahead turns the player onto it (inner corner); a surface's end wraps the player around the edge onto the end face (outer corner); reaching a floor stands it up. After a corner, the input that led there keeps meaning "keep going" until it changes, so holding up climbs a wall, turns under the ceiling and walks along it. A rock face ahead just stops the player; a rock end face lets go.
+- **The visible body eases** into each new pose (`PlayerVisual.CarryOver`): the collider snaps, the body follows in about a tenth of a second. Animation sees the body's own frame, so walking on a wall plays the run cycle; the coat and braid still hang toward the world's floor.
+- A grip surface refills the air dash. Travelling through an exit while gripping stands the player up first.
+- Checked headless in `scenes/rooms/MechanicsLab.tscn` (`GripCheck`, in `tools/check.sh`); look-dev shoots a grip reel there (`Grip.png`).
 
 Abilities are flags in `AbilitySet` (`Player.Abilities`). In debug builds, F1–F5 toggle them.
 

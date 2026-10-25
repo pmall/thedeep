@@ -31,6 +31,9 @@ public partial class Main : Node3D
     /// <summary>User argument that crosses every open exit and quits (see TravelValidator), used by tools/check.sh.</summary>
     private const string ValidateTravelArgument = "--validate-travel";
 
+    /// <summary>User argument that runs the scripted Mag-grip check (see GripCheck), used by tools/check.sh.</summary>
+    private const string GripCheckArgument = "--grip-check";
+
     /// <summary>User argument that checks every machine species and quits (see SpeciesValidator), used by tools/check.sh.</summary>
     private const string ValidateSpeciesArgument = "--validate-species";
 
@@ -84,6 +87,10 @@ public partial class Main : Node3D
         else if (Array.IndexOf(args, ValidateTravelArgument) >= 0)
         {
             AddChild(new TravelValidator { World = World, Player = Player, Travel = Travel });
+        }
+        else if (Array.IndexOf(args, GripCheckArgument) >= 0)
+        {
+            AddChild(new GripCheck { Player = Player });
         }
         else if (Array.IndexOf(args, ValidateSpeciesArgument) >= 0)
         {

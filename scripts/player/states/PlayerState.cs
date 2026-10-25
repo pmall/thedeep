@@ -33,4 +33,7 @@ public abstract class PlayerState
     }
 
     public abstract PlayerState? PhysicsUpdate(float delta);
+
+    /// <summary>After the player moved this tick: the state to switch to (or null), for states that react to contacts.</summary>
+    public virtual PlayerState? AfterMove() => null;
 }

@@ -170,6 +170,7 @@ public partial class LookDevDriver : Node
             string reelDir = Path.Combine(OutputDir, reel.Folder);
             Directory.CreateDirectory(reelDir);
             int shotCount = 0;
+            Player.Abilities.Set(reel.Abilities, true);
             foreach (MotionReel.Segment segment in reel.Segments)
             {
                 DemoInput.ReleaseAll();
@@ -212,6 +213,7 @@ public partial class LookDevDriver : Node
 
             _segment = null;
             DemoInput.ReleaseAll();
+            Player.Abilities.Set(reel.Abilities, false);
         }
 
         // 3. Frame times over a scripted run with the gameplay camera.

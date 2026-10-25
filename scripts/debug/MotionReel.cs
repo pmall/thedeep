@@ -95,6 +95,46 @@ public static class MotionReel
                 },
                 Subject: "Lamplighter"),
         }),
+        new("MechanicsLab", "grip", "Grip", 11f, new Segment[]
+        {
+            // Into the metal wall, up it, under the slab and around its end onto its top.
+            new(new Vector3(20f, 0f, 0f), 1, 360,
+                new Press[]
+                {
+                    new(10, InputActions.MoveRight, true), new(62, InputActions.MoveRight, false), new(62, InputActions.MoveUp, true),
+                    new(370, InputActions.MoveUp, false),
+                },
+                new Shot[]
+                {
+                    new(30, "run"), new(44, "stick"), new(50, "stick"), new(70, "climb"), new(100, "climb"), new(130, "climb"),
+                    new(162, "corner"), new(166, "corner"), new(170, "corner"), new(185, "hang"), new(240, "hang"),
+                    new(295, "edge"), new(300, "edge"), new(310, "edge"), new(320, "over"), new(350, "stand"),
+                }),
+            // A jump into the block's underside, a walk under it and around its end.
+            new(new Vector3(8f, 0f, 0f), 1, 150,
+                new Press[]
+                {
+                    new(10, InputActions.Jump, true), new(40, InputActions.Jump, false),
+                    new(45, InputActions.MoveRight, true), new(145, InputActions.MoveRight, false),
+                },
+                new Shot[]
+                {
+                    new(14, "jump"), new(24, "catch"), new(30, "catch"), new(38, "hang"), new(55, "walk"), new(68, "walk"),
+                    new(78, "edge"), new(84, "edge"), new(92, "side"), new(104, "over"), new(118, "stand"), new(140, "stand"),
+                }),
+            // A leap off the wall.
+            new(new Vector3(20f, 0f, 0f), 1, 110,
+                new Press[]
+                {
+                    new(5, InputActions.MoveRight, true), new(60, InputActions.MoveRight, false),
+                    new(60, InputActions.Jump, true), new(75, InputActions.Jump, false),
+                },
+                new Shot[]
+                {
+                    new(50, "cling"), new(62, "leap"), new(65, "leap"), new(69, "leap"), new(74, "air"), new(82, "air"),
+                    new(92, "fall"), new(105, "land"),
+                }),
+        }, Abilities: Ability.MagGrip),
     };
 
     /// <summary>A room's reels.</summary>
@@ -113,7 +153,9 @@ public static class MotionReel
     /// <param name="Folder">Where its frames go in the run directory.</param>
     /// <param name="Sheet">The contact sheet's name (&lt;Sheet&gt;.png).</param>
     /// <param name="CameraDistance">Camera distance from the play plane when following the player or a machine.</param>
-    public sealed record Reel(string Room, string Folder, string Sheet, float CameraDistance, IReadOnlyList<Segment> Segments);
+    /// <param name="Abilities">Abilities unlocked while the reel is shot.</param>
+    public sealed record Reel(string Room, string Folder, string Sheet, float CameraDistance, IReadOnlyList<Segment> Segments,
+        Ability Abilities = Ability.None);
 
     /// <param name="Tick">Physics tick within the segment.</param>
     public readonly record struct Press(int Tick, StringName Action, bool Down);

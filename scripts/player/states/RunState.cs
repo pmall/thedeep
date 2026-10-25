@@ -9,6 +9,11 @@ public sealed class RunState : PlayerState
 
     public override PlayerState? PhysicsUpdate(float delta)
     {
+        if (Player.GripAttach() is { } grip)
+        {
+            return grip;
+        }
+
         Player.ApplyRunControl(delta, grounded: true);
         Player.ApplyGravity(delta);
 
