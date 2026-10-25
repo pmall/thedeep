@@ -15,8 +15,11 @@ public partial class SideCamera : Camera3D
     /// <summary>Distance from the play plane (Z = 0) to the camera.</summary>
     [Export] public float Distance { get; set; } = 22f;
 
-    /// <summary>Frames the player slightly below the center of the screen.</summary>
+    /// <summary>Frames the player slightly below the center of the screen: the focus sits this far above its feet when upright.</summary>
     [Export] public float VerticalOffset { get; set; } = 1.5f;
+
+    /// <summary>The body's center above its feet: the camera follows the center, so a pilgrim on a wall or ceiling stays framed.</summary>
+    [Export] public float BodyCenter { get; set; } = 0.8f;
 
     /// <summary>Follow speeds in 1/s; higher is tighter.</summary>
     [Export] public float HorizontalSharpness { get; set; } = 5f;
@@ -82,7 +85,7 @@ public partial class SideCamera : Camera3D
         float dt = (float)delta;
         _trauma = Mathf.Max(0f, _trauma - ShakeDecay * dt);
         _shakeTime += dt;
-        Vector3 target = Target.GetGlobalTransformInterpolated().Origin;
+        Vector3 target = Target.GetGlobalTransformInterpolated() * new Vector3(0f, BodyCenter, 0f) - new Vector3(0f, BodyCenter, 0f);
 
         float vx = Target.Velocity.X;
         if (Mathf.Abs(vx) > LookAheadMinSpeed)
@@ -107,7 +110,7 @@ public partial class SideCamera : Camera3D
             return;
         }
 
-        Vector3 target = Target.GlobalPosition;
+        Vector3 target = Target.GlobalTransform * new Vector3(0f, BodyCenter, 0f) - new Vector3(0f, BodyCenter, 0f);
         _lookAheadTarget = Target.Facing * LookAhead;
         _lookAhead = _lookAheadTarget;
         _focus = ClampToRoom(new Vector2(target.X + _lookAhead, target.Y + VerticalOffset));
