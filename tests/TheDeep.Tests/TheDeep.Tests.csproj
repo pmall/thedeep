@@ -39,6 +39,7 @@
     <Compile Include="../../scripts/map/MapGraph.cs" Link="Shared/MapGraph.cs" />
     <Compile Include="../../scripts/map/MapSolver.cs" Link="Shared/MapSolver.cs" />
     <Compile Include="../../scripts/map/MapLayout.cs" Link="Shared/MapLayout.cs" />
+    <Compile Include="../../scripts/map/ReachPlanner.cs" Link="Shared/ReachPlanner.cs" />
     <Compile Include="../../scripts/rooms/dressing/DressingLayout.cs" Link="Shared/DressingLayout.cs" />
     <Compile Include="../../scripts/parts/PartShapes.cs" Link="Shared/PartShapes.cs" />
     <Compile Include="../../scripts/parts/PlanarIk.cs" Link="Shared/PlanarIk.cs" />

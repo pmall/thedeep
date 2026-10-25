@@ -29,6 +29,12 @@ public partial class RoomValidator : Node
     private readonly MapGraph _graph = new();
     private readonly List<MapLink> _links = new();
     private readonly Dictionary<string, (System.Numerics.Vector2, System.Numerics.Vector2)> _bounds = new();
+    private readonly Dictionary<string, RoomShape> _shapes = new();
+
+    /// <summary>What the geometry check needs of a room: its solids, its open exits, and where the pilgrim can wake.</summary>
+    private sealed record RoomShape(List<Box> Solids, List<ExitShape> Exits, List<System.Numerics.Vector2> Wakes);
+
+    private sealed record ExitShape(string Name, System.Numerics.Vector2 Position, System.Numerics.Vector2 Size, string Requires, int ArrivalSide);
     private bool _done;
 
     /// <summary>The start room's scene path (the world's start room).</summary>
@@ -165,6 +171,17 @@ public partial class RoomValidator : Node
             _graph.AddItem(new MapItem(name, relic.Name, relic.Ability));
         }
 
+        var solids = room.Blocks().Select(b => Box.Around(N(new Vector2(b.GlobalPosition.X, b.GlobalPosition.Y)), N(new Vector2(b.Size.X, b.Size.Y)))).ToList();
+        var exitShapes = exits.Where(e => e.TargetRoom != "")
+            .Select(e => new ExitShape(e.Name, N(e.RoomPosition), N(e.Size), e.Requires, e.ArrivalSide)).ToList();
+        var wakes = room.All<Shrine>().Select(s => N(new Vector2(s.GlobalPosition.X, s.GlobalPosition.Y))).ToList();
+        if (World.RoomPath(name) == StartRoom)
+        {
+            wakes.Add(N(new Vector2(room.SpawnPoint.GlobalPosition.X, room.SpawnPoint.GlobalPosition.Y)));
+        }
+
+        _shapes[name] = new RoomShape(solids, exitShapes, wakes);
+
         if (room.All<MapGoal>().Any())
         {
             _graph.AddGoal(name);
@@ -218,6 +235,7 @@ public partial class RoomValidator : Node
             _problems.Add($"map layout: {problem}");
         }
 
+        CheckGeometry();
         MapReport report = MapSolver.Solve(_graph);
         foreach (string room in report.UnreachableRooms)
         {
@@ -241,7 +259,8 @@ public partial class RoomValidator : Node
 
         var text = new System.Text.StringBuilder();
         text.Append($"MAP OK: {_graph.Rooms.Count} rooms, {_graph.Edges.Count} exits, {_graph.Items.Count} relics, ")
-            .Append($"{report.ReachableStates} states, no softlock, {report.Orders.Count} of {report.PossibleOrders} ability orders");
+            .Append($"{report.ReachableStates} states, no softlock, ")
+            .Append(report.AbilityCount == 0 ? "no abilities on the map" : $"{report.Orders.Count} of {report.PossibleOrders} ability orders");
         foreach ((Ability ability, SortedSet<int> at) in report.Positions)
         {
             text.Append($"; {ability} at {string.Join("/", at.Select(i => i + 1))}");
@@ -273,6 +292,68 @@ public partial class RoomValidator : Node
         }
 
         return text.ToString();
+    }
+
+    /// <summary>
+    /// The geometry sanity check (M7): the base moveset, simulated with the live tuning (<see cref="ReachPlanner"/>), must reach
+    /// every exit marked for the base moveset from some way into its room, and must not reach an exit that needs an ability
+    /// from a way in that needed none (that requirement would be a lie, or the geometry drifted from it).
+    /// </summary>
+    private void CheckGeometry()
+    {
+        var tuning = GD.Load<PlayerTuning>("res://resources/player_tuning.tres");
+        var limits = new MoveLimits(tuning.RunSpeed, tuning.AirAcceleration, tuning.AirDeceleration, tuning.JumpHeight, tuning.JumpTimeToApex,
+            tuning.JumpCutFactor, tuning.FallGravityMultiplier, tuning.ApexHangThreshold, tuning.ApexGravityMultiplier, tuning.MaxFallSpeed,
+            tuning.DashDistance, tuning.DashDuration, tuning.DashExitSpeedFactor, tuning.AirDashes);
+        float rise = 0.85f * tuning.JumpTakeOffSpeed;
+        foreach ((string room, RoomShape shape) in _shapes.OrderBy(r => r.Key, System.StringComparer.Ordinal))
+        {
+            var planner = new ReachPlanner(limits, shape.Solids);
+            var triggers = shape.Exits.Select(e => Box.Around(e.Position, e.Size)).ToList();
+
+            // Ways in: arriving through an exit (by the edge leading here: its requirement is what the pilgrim has at least), or waking.
+            var entries = new List<(string What, System.Numerics.Vector2 At, System.Numerics.Vector2 Velocity, int Steer, bool Base, int Exit)>();
+            foreach (MapEdge edge in _graph.Edges.Where(e => e.To == room))
+            {
+                int index = shape.Exits.FindIndex(x => x.Name == edge.ToExit);
+                if (index < 0)
+                {
+                    continue;
+                }
+
+                ExitShape x = shape.Exits[index];
+                bool vertical = ExitMath.IsVertical(x.Size);
+                var velocity = !vertical ? System.Numerics.Vector2.Zero
+                    : x.ArrivalSide != 0 ? new System.Numerics.Vector2(0f, rise) : new System.Numerics.Vector2(0f, -5f);
+                entries.Add(($"arriving through {x.Name}", x.Position, velocity, vertical ? x.ArrivalSide : 0,
+                    edge.Requires.IsMetBy(Ability.None), index));
+            }
+
+            foreach (System.Numerics.Vector2 wake in shape.Wakes)
+            {
+                entries.Add(($"waking at ({wake.X:0.#}, {wake.Y:0.#})", wake, System.Numerics.Vector2.Zero, 0, true, -1));
+            }
+
+            var reachedFrom = entries.Select(e => planner.Reach(e.At, e.Velocity, triggers, e.Steer).Triggers).ToList();
+            for (int i = 0; i < shape.Exits.Count; i++)
+            {
+                ExitShape x = shape.Exits[i];
+                bool baseExit = Requirement.TryParse(x.Requires, out Requirement r, out _) && r.IsMetBy(Ability.None);
+                if (baseExit && entries.Count > 0 && !Enumerable.Range(0, entries.Count).Any(e => entries[e].Exit != i && reachedFrom[e].Contains(i))
+                    && entries.Any(e => e.Exit != i))
+                {
+                    _problems.Add($"{room}: exit {x.Name} needs nothing, but the base moveset reaches it from no way into the room");
+                }
+
+                if (!baseExit)
+                {
+                    foreach (int e in Enumerable.Range(0, entries.Count).Where(e => entries[e].Base && entries[e].Exit != i && reachedFrom[e].Contains(i)))
+                    {
+                        _problems.Add($"{room}: exit {x.Name} needs {x.Requires}, but the base moveset reaches it {entries[e].What}");
+                    }
+                }
+            }
+        }
     }
 
     private static void CheckExit(RoomExit exit, string path, bool inside, System.Action<string> problem)
