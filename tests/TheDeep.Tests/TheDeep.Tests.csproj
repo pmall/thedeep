@@ -40,6 +40,20 @@
     <Compile Include="../../scripts/parts/PartCategory.cs" Link="Shared/PartCategory.cs" />
     <Compile Include="../../scripts/player/MotionMode.cs" Link="Shared/MotionMode.cs" />
     <Compile Include="../../scripts/player/PilgrimMotion.cs" Link="Shared/PilgrimMotion.cs" />
+    <Compile Include="../../scripts/machines/MachineAct.cs" Link="Shared/MachineAct.cs" />
+    <Compile Include="../../scripts/machines/Perception.cs" Link="Shared/Perception.cs" />
+    <Compile Include="../../scripts/machines/Intent.cs" Link="Shared/Intent.cs" />
+    <Compile Include="../../scripts/machines/Senses.cs" Link="Shared/Senses.cs" />
+    <Compile Include="../../scripts/machines/Steering.cs" Link="Shared/Steering.cs" />
+    <Compile Include="../../scripts/machines/PrayerCycle.cs" Link="Shared/PrayerCycle.cs" />
+    <Compile Include="../../scripts/machines/StrikeAction.cs" Link="Shared/StrikeAction.cs" />
+    <Compile Include="../../scripts/machines/MachineBrain.cs" Link="Shared/MachineBrain.cs" />
+    <Compile Include="../../scripts/machines/SurfacePath.cs" Link="Shared/SurfacePath.cs" />
+    <Compile Include="../../scripts/machines/LegGait.cs" Link="Shared/LegGait.cs" />
+    <Compile Include="../../scripts/machines/brains/PrayerBrain.cs" Link="Shared/PrayerBrain.cs" />
+    <Compile Include="../../scripts/machines/brains/HoarderBrain.cs" Link="Shared/HoarderBrain.cs" />
+    <Compile Include="../../scripts/machines/brains/FollowerBrain.cs" Link="Shared/FollowerBrain.cs" />
+    <Compile Include="../../scripts/machines/brains/SleeperBrain.cs" Link="Shared/SleeperBrain.cs" />
   </ItemGroup>
   <ItemGroup>
     <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.12.0" />

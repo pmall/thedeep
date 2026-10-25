@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# The check step: build, headless import, smoke test and room check, unit tests. Stops at the first failure.
+# The check step: build, headless import, smoke test, room and species checks, unit tests. Stops at the first failure.
 # Run after every change and before every commit:  tools/check.sh
 set -euo pipefail
 
@@ -36,7 +36,7 @@ step "2/4 headless import"
 scan_log "$LOG_DIR/import.log" "import"
 echo "ok"
 
-step "3/4 smoke test and room check (main scene, headless)"
+step "3/4 smoke test, room and species checks (main scene, headless)"
 # a) Idle boot of the main scene, exactly as the owner launches it.
 "$GODOT" --headless --path . --fixed-fps 60 --quit-after 300 >"$LOG_DIR/smoke_idle.log" 2>&1 \
     || { tail -20 "$LOG_DIR/smoke_idle.log"; fail "main scene exited non-zero"; }
@@ -54,6 +54,12 @@ grep 'SMOKE OK' "$LOG_DIR/smoke_driver.log"
 scan_log "$LOG_DIR/rooms.log" "room check"
 grep -q 'ROOMS OK' "$LOG_DIR/rooms.log" || { tail -20 "$LOG_DIR/rooms.log"; fail "room check did not report ROOMS OK"; }
 grep 'ROOMS OK' "$LOG_DIR/rooms.log"
+# d) Machine species: data, then each one alive in the arena without and with the player (SpeciesValidator).
+"$GODOT" --headless --path . --fixed-fps 60 --quit-after 9000 -- --room MachineArena --validate-species >"$LOG_DIR/species.log" 2>&1 \
+    || { grep -E 'SPECIES CHECK|ERROR' "$LOG_DIR/species.log" | head -40; fail "species check failed (full log: $LOG_DIR/species.log)"; }
+scan_log "$LOG_DIR/species.log" "species check"
+grep -q 'SPECIES OK' "$LOG_DIR/species.log" || { tail -20 "$LOG_DIR/species.log"; fail "species check did not report SPECIES OK"; }
+grep -E '^  [a-z]|SPECIES OK' "$LOG_DIR/species.log"
 
 step "4/4 unit tests"
 if [ -f tests/TheDeep.Tests/TheDeep.Tests.csproj ]; then

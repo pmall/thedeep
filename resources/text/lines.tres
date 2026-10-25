@@ -1,0 +1,38 @@
+[gd_resource type="Resource" script_class="LineBook" format=3]
+; Every line of text in the game, as data: a stable id, the speaker, the words, delivery notes
+; (docs/roadmap.md, "Later: audio"). Placeholder text for now.
+
+[ext_resource type="Script" path="res://scripts/text/LineBook.cs" id="1_book"]
+[ext_resource type="Script" path="res://scripts/text/TextLine.cs" id="2_line"]
+
+[sub_resource type="Resource" id="creed_votary"]
+script = ExtResource("2_line")
+Id = &"creed.votary"
+Speaker = "Votary"
+Text = "Walk behind me, pilgrim. Before me there is only the way down, and the way down is mine."
+Notes = "Slow, low, a chant; the threat is calm."
+
+[sub_resource type="Resource" id="creed_gleaner"]
+script = ExtResource("2_line")
+Id = &"creed.gleaner"
+Speaker = "Gleaner"
+Text = "Every fallen piece remembers the whole. I carry them until they forget."
+Notes = "Quick and furtive, half to itself."
+
+[sub_resource type="Resource" id="creed_lamplighter"]
+script = ExtResource("2_line")
+Id = &"creed.lamplighter"
+Speaker = "Lamplighter"
+Text = "I do not lead. I light the way you were already walking."
+Notes = "Soft, close to the ear, curious."
+
+[sub_resource type="Resource" id="creed_limpet"]
+script = ExtResource("2_line")
+Id = &"creed.limpet"
+Speaker = "Limpet"
+Text = "Sleep is the shortest road to the core. Do not wake me twice."
+Notes = "Grinding, drowsy, then sharp on the last words."
+
+[resource]
+script = ExtResource("1_book")
+Lines = [SubResource("creed_votary"), SubResource("creed_gleaner"), SubResource("creed_lamplighter"), SubResource("creed_limpet")]

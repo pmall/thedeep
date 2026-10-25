@@ -1,0 +1,81 @@
+[gd_resource type="Resource" script_class="MachineSpecies" format=3]
+; The Lamplighter (FollowerBehavior): once it has seen the player it follows them through the room
+; at a respectful distance, behind and above, arcing over their head to change sides and darting
+; back when approached. It never attacks.
+
+[ext_resource type="Script" path="res://scripts/machines/MachineSpecies.cs" id="1_species"]
+[ext_resource type="Script" path="res://scripts/machines/behaviors/FollowerBehavior.cs" id="2_behavior"]
+[ext_resource type="Script" path="res://scripts/machines/JointDriver.cs" id="3_driver"]
+[ext_resource type="Resource" path="res://resources/parts/lamplighter.tres" id="5_assembly"]
+
+[sub_resource type="Resource" id="Behavior"]
+script = ExtResource("2_behavior")
+SightRange = 12
+Distance = 3.8
+Height = 1.4
+Shy = 2
+Speed = 6
+
+; floating
+[sub_resource type="Resource" id="Driver_0"]
+script = ExtResource("3_driver")
+Joint = &"Core"
+Mode = 1
+Channel = 0
+Angle = 3
+Offset = Vector3(0, 0.07, 0)
+Rate = 0.55
+
+[sub_resource type="Resource" id="Driver_1"]
+script = ExtResource("3_driver")
+Joint = &"Rotor"
+Mode = 2
+Channel = 5
+Base = 0.4
+Axis = Vector3(0, 1, 0)
+Angle = 1300
+
+[sub_resource type="Resource" id="Driver_2"]
+script = ExtResource("3_driver")
+Joint = &"Eye"
+Mode = 3
+Channel = 0
+Angle = 60
+Sharpness = 6
+
+[sub_resource type="Resource" id="Driver_3"]
+script = ExtResource("3_driver")
+Joint = &"FinN"
+Mode = 1
+Channel = 0
+Angle = 14
+Rate = 1.1
+
+[sub_resource type="Resource" id="Driver_4"]
+script = ExtResource("3_driver")
+Joint = &"FinF"
+Mode = 1
+Channel = 0
+Angle = 14
+Rate = 1.1
+Phase = 0.5
+
+[resource]
+script = ExtResource("1_species")
+Id = &"lamplighter"
+DisplayName = "Lamplighter"
+Layer = 0
+Hostile = false
+CreedLine = &"creed.lamplighter"
+Assembly = ExtResource("5_assembly")
+Locomotion = 1
+BodySize = Vector2(0.6, 0.7)
+SensorHeight = 0
+TurnSharpness = 5
+MaxSpeed = 6
+Acceleration = 12
+Health = 1
+Wear = 0.12
+Tone = 1.05
+Behavior = SubResource("Behavior")
+Drivers = [SubResource("Driver_0"), SubResource("Driver_1"), SubResource("Driver_2"), SubResource("Driver_3"), SubResource("Driver_4")]

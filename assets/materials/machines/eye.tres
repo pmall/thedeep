@@ -1,0 +1,14 @@
+[gd_resource type="ShaderMaterial" format=3]
+
+[ext_resource type="Shader" path="res://assets/shaders/machine.gdshader" id="1_shader"]
+
+; Eyes and sensors: glowing calm (accent toward white), turning the hazard color when the machine is alert.
+[resource]
+shader = ExtResource("1_shader")
+shader_parameter/slot = 4
+shader_parameter/tone = 1.0
+shader_parameter/roughness = 0.1
+shader_parameter/clearcoat = 1.0
+shader_parameter/glow_pattern = 1
+shader_parameter/glow_energy = 4.0
+shader_parameter/wear_response = 0.0

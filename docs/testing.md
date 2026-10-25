@@ -10,6 +10,7 @@ Run it after every change and before every commit. It stops at the first failure
    - (a) The main scene boots headless for 300 frames with no errors.
    - (b) A scripted run (`-- --smoke`, `scripts/debug/SmokeDriver.cs`) presses run, jump and dash through the real input actions. It must print `SMOKE OK`: moved ≥ 10 m, full jump ≥ 2.9 m, every base state entered, never left Z = 0.
    - (c) Room check (`-- --validate-rooms`, `scripts/debug/RoomValidator.cs`): every scene in `scenes/rooms/` must print no `ROOM CHECK` error and the run `ROOMS OK`. It checks the grid (block edges 0.5 m, kit piece origins 0.25 m), axis-aligned blocks, spawn and exits inside the camera bounds, exit requirements, exit targets that exist and lead back, and at least one photo spot.
+   - (d) Species check (`-- --room MachineArena --validate-species`, `scripts/debug/SpeciesValidator.cs`): every `resources/machines/*.tres` loads, its id is its file name, it has a behavior, its parts, chains, drivers and legs name existing joints (and no driver poses a leg joint), and its creed line is in `resources/text/lines.tres`. Then each species lives alone in the arena for 4 s without the player and 6 s with the player running, jumping and dashing next to it; any error, or a machine leaving the room, fails. It prints one line per species (layer, hostile or not, behavior, the acts seen) and `SPECIES OK` with the count per layer, the non-hostile count and likely duplicates (same behavior and same body).
 4. xUnit tests in `tests/TheDeep.Tests`.
 
 The unit tests include `VideoEncoderTests`, which run the real `ffmpeg` (a required tool, see [toolchain.md](toolchain.md)).
@@ -36,11 +37,12 @@ tools/capture.sh before-fog        # before the change (optional label)
 tools/capture.sh after-fog         # renders, then compares with the previous run
 ```
 
-Each run makes a fresh `lookdev/<date>_<time>[-label]/` (git-ignored) with:
-- `<Room>-<Spot>.png`: every **photo spot** of the room at 1920×1080, no HUD;
+Each run renders the start room (TestRoom) then the machine arena, into a fresh `lookdev/<date>_<time>[-label]/` (git-ignored) with:
+- `<Room>-<Spot>.png`: every **photo spot** of both rooms at 1920×1080, no HUD. The room's machines are reset before each spot, so they are caught in the same pose every run;
 - `Motion.png`: the **motion reel** (test room only, `scripts/debug/MotionReel.cs`): idle, run start, run cycle, stop, turn, jump, dash off a ledge and a hard landing, shot close and laid out as a contact sheet (frames in `motion/`). Judge animation changes on it;
-- `perf.json`: frame, GPU and CPU render times (average, p99, worst) over a 900-frame scripted run with the gameplay camera, checked against the 10 ms budget;
-- `run.txt` (commit, label), `godot.log`;
+- `Machines.png`: the **machine reel** (arena, same file): a Votary striking the pilgrim who steps in front of it, the Gleaner bolting, the Limpet waking to a landing, crawling down its reliquary and drilling, the Lamplighter following and swapping sides; frames in `machines/`. Judge machine looks and behaviors on it;
+- `perf.json` (test room) and `perf-MachineArena.json`: frame, GPU and CPU render times (average, p99, worst) over a 900-frame scripted run with the gameplay camera, checked against the 10 ms budget;
+- `run.txt` (commit, label), `godot.log` and `godot-MachineArena.log`;
 - `compare/`: before/after images against the previous run (or `--against DIR`), one per spot plus `sheet.png` with all of them, and the share of pixels that changed. Look at `compare/sheet.png`.
 
 `tools/capture.sh label --biome volcanic` renders with another `BiomeProfile` (from `resources/biomes/`). `tools/capture.sh --compare A B` rebuilds a sheet for two existing runs. Runs are deterministic (fixed 60 fps game time, vsync off): two runs of the same build are pixel-identical except for a few GPU particles (a few thousand pixels, shown as 0.0%), so any visible change in the sheet is real. The sheet needs `python3-pil` (installed).
@@ -93,7 +95,8 @@ What the owner does to test a build. Remind them of this when handing over:
    | Screenshot | F12 | Share |
    | Start/stop video | F10 | — |
 
-3. In debug builds, F6 cycles the room through the biome profiles (Flooded, Volcanic draft). `godot --path . -- --biome volcanic` starts with one, and `-- --room <Name>` starts in `scenes/rooms/<Name>.tscn`.
-4. The top-left readout shows the movement state, velocity, floor contact and dash cooldown.
-5. To report something, press F12 (or record with F10) and say "look at the last screenshot". Files land in `captures/`.
-6. Feedback is given in plain words ("floaty jump", "camera lags"). The agent translates it into tuning changes. The owner may also edit `resources/player_tuning.tres` and relaunch, which needs no rebuild.
+3. To watch the machines: `godot --path . -- --room MachineArena`. Walk right from the start: three Votaries pray toward a shrine (whoever lingers in front of one is struck after a wind-up: run or dash past, or take the gallery over them), then a Gleaner picking at scrap (it flees), then a Limpet asleep on a metal block (land a jump near it to wake it). A Lamplighter floats near the start and follows you once it has seen you. Hits only throw sparks for now: damage comes with M6.
+4. In debug builds, F6 cycles the room through the biome profiles (Flooded, Volcanic draft). `godot --path . -- --biome volcanic` starts with one, and `-- --room <Name>` starts in `scenes/rooms/<Name>.tscn`.
+5. The top-left readout shows the movement state, velocity, floor contact and dash cooldown.
+6. To report something, press F12 (or record with F10) and say "look at the last screenshot". Files land in `captures/`.
+7. Feedback is given in plain words ("floaty jump", "camera lags"). The agent translates it into tuning changes. The owner may also edit `resources/player_tuning.tres` and relaunch, which needs no rebuild.

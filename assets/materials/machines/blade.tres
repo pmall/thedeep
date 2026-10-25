@@ -1,0 +1,14 @@
+[gd_resource type="ShaderMaterial" format=3]
+
+[ext_resource type="Shader" path="res://assets/shaders/machine.gdshader" id="1_shader"]
+
+; Blades, claws and drill bits: bright worn steel, sharp highlights.
+[resource]
+shader = ExtResource("1_shader")
+shader_parameter/slot = 6
+shader_parameter/tone = 1.2
+shader_parameter/roughness = 0.18
+shader_parameter/metallic = 0.8
+shader_parameter/clearcoat = 0.3
+shader_parameter/rim = 0.3
+shader_parameter/wear_response = 0.4

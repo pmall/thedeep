@@ -1,0 +1,17 @@
+[gd_resource type="ShaderMaterial" format=3]
+
+[ext_resource type="Shader" path="res://assets/shaders/machine.gdshader" id="1_shader"]
+
+; Cloth (tabards, sashes): dark backdrop blue-grey, matte, piped with the backdrop accent.
+[resource]
+shader = ExtResource("1_shader")
+shader_parameter/slot = 2
+shader_parameter/tone = 1.1
+shader_parameter/roughness = 0.85
+shader_parameter/metallic = 0.0
+shader_parameter/clearcoat = 0.0
+shader_parameter/rim = 0.35
+shader_parameter/trim_width = 0.018
+shader_parameter/trim_slot = 3
+shader_parameter/trim_tone = 1.1
+shader_parameter/wear_response = 0.3

@@ -1,0 +1,103 @@
+[gd_resource type="Resource" script_class="MachineSpecies" format=3]
+; The Limpet (SleeperBehavior): sleeps folded on a metal block until a hard landing shakes the
+; room nearby; then it unfolds, its eye going the hazard color, and crawls over the metal on its
+; mag-treads toward the noise and the player, drilling at whoever comes in reach.
+
+[ext_resource type="Script" path="res://scripts/machines/MachineSpecies.cs" id="1_species"]
+[ext_resource type="Script" path="res://scripts/machines/behaviors/SleeperBehavior.cs" id="2_behavior"]
+[ext_resource type="Script" path="res://scripts/machines/JointDriver.cs" id="3_driver"]
+[ext_resource type="Resource" path="res://resources/parts/limpet.tres" id="5_assembly"]
+
+[sub_resource type="Resource" id="Behavior"]
+script = ExtResource("2_behavior")
+HearingRange = 11
+WakeThreshold = 7
+TrackRange = 9
+Speed = 3
+Reach = 1.4
+WakeTime = 0.8
+Patience = 5
+
+; asleep: the dome sinks onto the treads
+[sub_resource type="Resource" id="Driver_0"]
+script = ExtResource("3_driver")
+Joint = &"Dome"
+Mode = 0
+Channel = 5
+Invert = true
+Offset = Vector3(0, -0.09, 0)
+
+; and the drill folds under
+[sub_resource type="Resource" id="Driver_1"]
+script = ExtResource("3_driver")
+Joint = &"Arm"
+Mode = 0
+Channel = 5
+Invert = true
+Angle = -30
+Offset = Vector3(-0.2, -0.03, 0)
+
+; the thrust
+[sub_resource type="Resource" id="Driver_2"]
+script = ExtResource("3_driver")
+Joint = &"Arm"
+Mode = 0
+Channel = 3
+Angle = -10
+Offset = Vector3(0.22, 0, 0)
+WindUp = 25
+
+[sub_resource type="Resource" id="Driver_3"]
+script = ExtResource("3_driver")
+Joint = &"Drill"
+Mode = 2
+Channel = 5
+Axis = Vector3(1, 0, 0)
+Angle = 900
+
+; prays in its sleep, slowly
+[sub_resource type="Resource" id="Driver_4"]
+script = ExtResource("3_driver")
+Joint = &"Wheel"
+Mode = 2
+Channel = 5
+Base = 0.12
+Axis = Vector3(0, 1, 0)
+Angle = 260
+
+; the hum of its treads
+[sub_resource type="Resource" id="Driver_5"]
+script = ExtResource("3_driver")
+Joint = &"Hull"
+Mode = 1
+Channel = 1
+Offset = Vector3(0, 0.008, 0)
+Rate = 17
+
+[sub_resource type="Resource" id="Driver_6"]
+script = ExtResource("3_driver")
+Joint = &"Eye"
+Mode = 3
+Channel = 5
+Angle = 25
+Sharpness = 6
+
+[resource]
+script = ExtResource("1_species")
+Id = &"limpet"
+DisplayName = "Limpet"
+Layer = 0
+Hostile = true
+CreedLine = &"creed.limpet"
+Assembly = ExtResource("5_assembly")
+Locomotion = 2
+BodySize = Vector2(0.9, 0.6)
+SensorHeight = 0.4
+TurnSharpness = 6
+MaxSpeed = 3
+Acceleration = 10
+Health = 3
+Wear = 0.45
+Tone = 0.9
+Behavior = SubResource("Behavior")
+Drivers = [SubResource("Driver_0"), SubResource("Driver_1"), SubResource("Driver_2"), SubResource("Driver_3"), SubResource("Driver_4"), SubResource("Driver_5"), SubResource("Driver_6")]

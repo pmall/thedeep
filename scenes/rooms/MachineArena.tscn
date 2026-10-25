@@ -1,0 +1,565 @@
+[gd_scene format=3]
+
+; The machine arena (M5): the first species living side by side on a flooded hall floor, for look-dev
+; and for watching their behaviors. West to east: a congregation of Votaries praying toward a shrine
+; (a gallery above lets the player pass over their reach), a Gleaner picking over scrap, and a Limpet
+; asleep on a metal reliquary; a Lamplighter waits near the start. Run it with `-- --room MachineArena`.
+
+[ext_resource type="Script" path="res://scripts/rooms/Room.cs" id="1_room"]
+[ext_resource type="PackedScene" path="res://scenes/kit/Block.tscn" id="2_block"]
+[ext_resource type="Script" path="res://scripts/rooms/PhotoSpot.cs" id="3_spot"]
+[ext_resource type="Resource" path="res://resources/biomes/flooded.tres" id="4_biome"]
+[ext_resource type="Material" path="res://assets/materials/wet_stone.tres" id="5_wet"]
+[ext_resource type="Material" path="res://assets/materials/rock.tres" id="6_rock"]
+[ext_resource type="Material" path="res://assets/materials/glyphs.tres" id="7_glyphs"]
+[ext_resource type="Material" path="res://assets/materials/stone_mid.tres" id="8_stone_mid"]
+[ext_resource type="Material" path="res://assets/materials/metal_mid.tres" id="9_metal_mid"]
+[ext_resource type="Material" path="res://assets/materials/rust_mid.tres" id="10_rust_mid"]
+[ext_resource type="Material" path="res://assets/materials/cable.tres" id="11_cable"]
+[ext_resource type="Material" path="res://assets/materials/fog_clear.tres" id="12_fog_clear"]
+[ext_resource type="Material" path="res://assets/materials/backdrop_stone.tres" id="13_backdrop_stone"]
+[ext_resource type="Material" path="res://assets/materials/backdrop_cathedral.tres" id="14_cathedral"]
+[ext_resource type="Material" path="res://assets/materials/backdrop_halls.tres" id="15_halls"]
+[ext_resource type="Material" path="res://assets/materials/foreground.tres" id="16_fore"]
+[ext_resource type="Script" path="res://scripts/kit/ColumnMesh.cs" id="17_column"]
+[ext_resource type="Script" path="res://scripts/kit/ArchMesh.cs" id="18_arch"]
+[ext_resource type="Script" path="res://scripts/kit/BlockMesh.cs" id="19_blockmesh"]
+[ext_resource type="Script" path="res://scripts/kit/RackMesh.cs" id="20_rack"]
+[ext_resource type="Script" path="res://scripts/kit/WreckMesh.cs" id="21_wreck"]
+[ext_resource type="Script" path="res://scripts/kit/PipeMesh.cs" id="22_pipe"]
+[ext_resource type="Script" path="res://scripts/kit/CableMesh.cs" id="23_cables"]
+[ext_resource type="Script" path="res://scripts/rooms/BackdropScatter.cs" id="24_scatter"]
+[ext_resource type="PackedScene" path="res://scenes/fx/Dust.tscn" id="25_dust"]
+[ext_resource type="Script" path="res://scripts/machines/Machine.cs" id="26_machine"]
+[ext_resource type="Resource" path="res://resources/machines/votary.tres" id="27_votary"]
+[ext_resource type="Resource" path="res://resources/machines/gleaner.tres" id="28_gleaner"]
+[ext_resource type="Resource" path="res://resources/machines/lamplighter.tres" id="29_lamplighter"]
+[ext_resource type="Resource" path="res://resources/machines/limpet.tres" id="30_limpet"]
+
+[sub_resource type="Environment" id="Environment_room"]
+background_mode = 1
+background_color = Color(0.018, 0.04, 0.045, 1)
+ambient_light_source = 2
+ambient_light_color = Color(0.3, 0.46, 0.5, 1)
+ambient_light_energy = 0.35
+tonemap_mode = 4
+ssr_enabled = true
+ssr_max_steps = 48
+ssao_enabled = true
+glow_enabled = true
+glow_levels/2 = 0.6
+glow_levels/3 = 1.0
+glow_levels/4 = 0.7
+glow_levels/5 = 0.4
+glow_intensity = 0.6
+glow_bloom = 0.02
+glow_hdr_threshold = 0.9
+fog_enabled = true
+fog_mode = 1
+fog_light_color = Color(0.05, 0.11, 0.12, 1)
+fog_density = 1.0
+fog_depth_begin = 24.0
+fog_depth_end = 75.0
+volumetric_fog_enabled = true
+volumetric_fog_length = 72.0
+volumetric_fog_detail_spread = 1.5
+
+[sub_resource type="QuadMesh" id="QuadMesh_shrine"]
+size = Vector2(0.5, 3.2)
+
+[sub_resource type="PrimitiveMesh" id="Column_arcade"]
+script = ExtResource("17_column")
+Height = 8.5
+Radius = 0.42
+Sides = 20
+Shafts = 4
+Plinth = 0.6
+Capital = 0.45
+
+[sub_resource type="PrimitiveMesh" id="Arch_arcade"]
+script = ExtResource("18_arch")
+Span = 8
+Rise = 5
+Thickness = 0.6
+Depth = 1
+Segments = 32
+
+[sub_resource type="PrimitiveMesh" id="Arch_shrine"]
+script = ExtResource("18_arch")
+Span = 2.5
+Rise = 3.5
+Thickness = 0.35
+Depth = 0.6
+Segments = 24
+
+[sub_resource type="PrimitiveMesh" id="Column_shrine"]
+script = ExtResource("17_column")
+Height = 3
+Radius = 0.22
+Sides = 12
+Shafts = 1
+Plinth = 0.3
+Capital = 0.25
+
+[sub_resource type="PrimitiveMesh" id="Beam"]
+script = ExtResource("19_blockmesh")
+Size = Vector3(64, 1, 1.25)
+Bevel = 0.08
+
+[sub_resource type="PrimitiveMesh" id="BackFloor"]
+script = ExtResource("19_blockmesh")
+Size = Vector3(64, 2, 14)
+Bevel = 0.1
+
+[sub_resource type="PrimitiveMesh" id="Rack_1"]
+script = ExtResource("20_rack")
+Size = Vector3(1, 2.5, 1)
+Units = 12
+Seed = 1
+
+[sub_resource type="PrimitiveMesh" id="Rack_2"]
+script = ExtResource("20_rack")
+Size = Vector3(1, 2.5, 1)
+Units = 12
+Seed = 2
+
+[sub_resource type="PrimitiveMesh" id="Scrap_1"]
+script = ExtResource("21_wreck")
+Size = 1.25
+Seed = 5
+
+[sub_resource type="PrimitiveMesh" id="Scrap_2"]
+script = ExtResource("21_wreck")
+Size = 1
+Seed = 6
+
+[sub_resource type="PrimitiveMesh" id="Scrap_3"]
+script = ExtResource("21_wreck")
+Size = 1.5
+Seed = 7
+
+[sub_resource type="PrimitiveMesh" id="Cables_low"]
+script = ExtResource("23_cables")
+End = Vector3(8, 0, 0)
+Sag = 1.6
+Radius = 0.035
+Strands = 3
+Seed = 1
+
+[sub_resource type="PrimitiveMesh" id="Pipe_fore"]
+script = ExtResource("22_pipe")
+Points = PackedVector3Array(0, -4, 0, 0, 0, 0, 30, 0, 0, 31, 0.5, 0, 56, 0.5, 0, 56, -4, 0)
+Radius = 0.5
+BendRadius = 1.4
+FlangeSpacing = 4
+
+[sub_resource type="QuadMesh" id="Skyline_far"]
+size = Vector2(240, 90)
+center_offset = Vector3(0, 45, 0)
+
+[sub_resource type="QuadMesh" id="Skyline_near"]
+size = Vector2(200, 60)
+center_offset = Vector3(0, 30, 0)
+
+[node name="MachineArena" type="Node3D" node_paths=PackedStringArray("SpawnPoint", "Environment", "KeyLight", "Shafts", "GlyphLights")]
+script = ExtResource("1_room")
+SpawnPoint = NodePath("SpawnPoint")
+Biome = ExtResource("4_biome")
+Environment = NodePath("WorldEnvironment")
+KeyLight = NodePath("Sun")
+Shafts = [NodePath("Shafts/Shrine"), NodePath("Shafts/Reliquary")]
+GlyphLights = [NodePath("Shrine/Light")]
+BoundsMin = Vector2(-2, -2)
+BoundsMax = Vector2(58, 18)
+
+[node name="SpawnPoint" type="Marker3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 2, 0, 0)
+
+[node name="WorldEnvironment" type="WorldEnvironment" parent="."]
+environment = SubResource("Environment_room")
+
+[node name="Sun" type="DirectionalLight3D" parent="."]
+transform = Transform3D(0.6644, 0.5972, -0.4494, -0, 0.6013, 0.799, 0.7474, -0.5308, 0.3995, 0, 20, 10)
+light_color = Color(0.72, 0.86, 0.9, 1)
+light_energy = 0.9
+shadow_enabled = true
+
+; Light shafts: one from the upper left onto the shrine and its congregation, one straight down onto the reliquary.
+[node name="Shafts" type="Node3D" parent="."]
+
+[node name="Shrine" type="SpotLight3D" parent="Shafts"]
+transform = Transform3D(-0.7071, 0.6288, -0.3234, 0, 0.4573, 0.8893, 0.7071, 0.6288, -0.3234, -2, 40, -14)
+light_energy = 6.0
+light_volumetric_fog_energy = 12.0
+shadow_enabled = true
+spot_range = 80.0
+spot_attenuation = 0.25
+spot_angle = 10.0
+spot_angle_attenuation = 2.0
+
+[node name="Reliquary" type="SpotLight3D" parent="Shafts"]
+transform = Transform3D(-1, 0, 0, 0, 0.1414, 0.9899, 0, 0.9899, -0.1414, 47, 42, -6)
+light_energy = 4.0
+light_volumetric_fog_energy = 8.0
+shadow_enabled = true
+spot_range = 70.0
+spot_attenuation = 0.25
+spot_angle = 7.0
+spot_angle_attenuation = 2.0
+
+; Clear air in front of the play plane: the volumetric haze stays behind gameplay.
+[node name="ClearFront" type="FogVolume" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 28, 10, 14)
+size = Vector3(90, 40, 24)
+shape = 3
+material = ExtResource("12_fog_clear")
+
+[node name="Particles" type="Node3D" parent="."]
+
+[node name="HallDust" parent="Particles" instance=ExtResource("25_dust")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 28, 8, -4.5)
+Extents = Vector3(30, 9, 5)
+Density = 2.2
+
+; Gameplay geometry: box colliders with their edges on the 0.5 m grid (RoomValidator checks it).
+[node name="Geometry" type="Node3D" parent="."]
+
+[node name="Floor" parent="Geometry" instance=ExtResource("2_block")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 28, -1, 0)
+Size = Vector3(62, 2, 4)
+Material = ExtResource("5_wet")
+
+[node name="WallLeft" parent="Geometry" instance=ExtResource("2_block")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -1, 8, 0)
+Size = Vector3(2, 20, 4)
+
+[node name="WallRight" parent="Geometry" instance=ExtResource("2_block")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 57, 8, 0)
+Size = Vector3(2, 20, 4)
+
+[node name="Ceiling" parent="Geometry" instance=ExtResource("2_block")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 28, 17, 0)
+Size = Vector3(60, 2, 4)
+
+; a gallery over the congregation: the way past them out of reach
+[node name="Gallery" parent="Geometry" instance=ExtResource("2_block")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 9, 2.75, 0)
+Size = Vector3(7, 0.5, 4)
+
+; the metal reliquary the Limpet sleeps on
+[node name="Reliquary" parent="Geometry" instance=ExtResource("2_block")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 47, 2.5, 0)
+Size = Vector3(3, 5, 4)
+Surface = 1
+
+; The machines: every one is the same Machine node, pointing at its species (resources/machines/).
+[node name="Machines" type="Node3D" parent="."]
+
+[node name="Votary1" type="CharacterBody3D" parent="Machines"]
+script = ExtResource("26_machine")
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 5, 0, 0)
+Species = ExtResource("27_votary")
+StartFacing = 1
+
+[node name="Votary2" type="CharacterBody3D" parent="Machines"]
+script = ExtResource("26_machine")
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 8.5, 0, 0)
+Species = ExtResource("27_votary")
+StartFacing = 1
+
+[node name="Votary3" type="CharacterBody3D" parent="Machines"]
+script = ExtResource("26_machine")
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 12, 0, 0)
+Species = ExtResource("27_votary")
+StartFacing = 1
+
+[node name="Gleaner" type="CharacterBody3D" parent="Machines"]
+script = ExtResource("26_machine")
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 28, 0, 0)
+Species = ExtResource("28_gleaner")
+StartFacing = -1
+
+[node name="Limpet" type="CharacterBody3D" parent="Machines"]
+script = ExtResource("26_machine")
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 47, 5, 0)
+Species = ExtResource("30_limpet")
+StartFacing = -1
+
+[node name="Lamplighter" type="CharacterBody3D" parent="Machines"]
+script = ExtResource("26_machine")
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 5, 5.5, 0)
+Species = ExtResource("29_lamplighter")
+StartFacing = 1
+
+; The shrine the Votaries pray toward: a niche in the back wall of the floor, with glowing glyphs.
+[node name="Shrine" type="Node3D" parent="."]
+
+[node name="Niche" type="MeshInstance3D" parent="Shrine"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 16, 0, -1.75)
+mesh = SubResource("Arch_shrine")
+material_override = ExtResource("8_stone_mid")
+
+[node name="ColumnLeft" type="MeshInstance3D" parent="Shrine"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 14.75, 0, -1.75)
+mesh = SubResource("Column_shrine")
+material_override = ExtResource("8_stone_mid")
+
+[node name="ColumnRight" type="MeshInstance3D" parent="Shrine"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 17.25, 0, -1.75)
+mesh = SubResource("Column_shrine")
+material_override = ExtResource("8_stone_mid")
+
+[node name="Glyphs" type="MeshInstance3D" parent="Shrine"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 16, 1.75, -1.7)
+mesh = SubResource("QuadMesh_shrine")
+material_override = ExtResource("7_glyphs")
+cast_shadow = 0
+
+[node name="Light" type="OmniLight3D" parent="Shrine"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 16, 1.75, -1)
+light_energy = 0.8
+light_volumetric_fog_energy = 0.0
+omni_range = 4.0
+
+; Kit dressing (visual only): an arcade behind the floor, racks, scrap heaps around the Gleaner, cables.
+[node name="Kit" type="Node3D" parent="."]
+
+[node name="BackFloor" type="MeshInstance3D" parent="Kit"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 28, -1.5, -9)
+mesh = SubResource("BackFloor")
+material_override = ExtResource("5_wet")
+
+[node name="Pier0" type="MeshInstance3D" parent="Kit"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.5, -5)
+mesh = SubResource("Column_arcade")
+material_override = ExtResource("8_stone_mid")
+
+[node name="Pier1" type="MeshInstance3D" parent="Kit"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 8, -0.5, -5)
+mesh = SubResource("Column_arcade")
+material_override = ExtResource("8_stone_mid")
+
+[node name="Pier2" type="MeshInstance3D" parent="Kit"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 16, -0.5, -5)
+mesh = SubResource("Column_arcade")
+material_override = ExtResource("8_stone_mid")
+
+[node name="Pier3" type="MeshInstance3D" parent="Kit"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 24, -0.5, -5)
+mesh = SubResource("Column_arcade")
+material_override = ExtResource("8_stone_mid")
+
+[node name="Pier4" type="MeshInstance3D" parent="Kit"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 32, -0.5, -5)
+mesh = SubResource("Column_arcade")
+material_override = ExtResource("8_stone_mid")
+
+[node name="Pier5" type="MeshInstance3D" parent="Kit"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 40, -0.5, -5)
+mesh = SubResource("Column_arcade")
+material_override = ExtResource("8_stone_mid")
+
+[node name="Pier6" type="MeshInstance3D" parent="Kit"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 48, -0.5, -5)
+mesh = SubResource("Column_arcade")
+material_override = ExtResource("8_stone_mid")
+
+[node name="Pier7" type="MeshInstance3D" parent="Kit"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 56, -0.5, -5)
+mesh = SubResource("Column_arcade")
+material_override = ExtResource("8_stone_mid")
+
+[node name="Arch0" type="MeshInstance3D" parent="Kit"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 4, 8, -5)
+mesh = SubResource("Arch_arcade")
+material_override = ExtResource("8_stone_mid")
+
+[node name="Arch1" type="MeshInstance3D" parent="Kit"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 12, 8, -5)
+mesh = SubResource("Arch_arcade")
+material_override = ExtResource("8_stone_mid")
+
+[node name="Arch2" type="MeshInstance3D" parent="Kit"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 20, 8, -5)
+mesh = SubResource("Arch_arcade")
+material_override = ExtResource("8_stone_mid")
+
+[node name="Arch3" type="MeshInstance3D" parent="Kit"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 28, 8, -5)
+mesh = SubResource("Arch_arcade")
+material_override = ExtResource("8_stone_mid")
+
+[node name="Arch4" type="MeshInstance3D" parent="Kit"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 36, 8, -5)
+mesh = SubResource("Arch_arcade")
+material_override = ExtResource("8_stone_mid")
+
+[node name="Arch5" type="MeshInstance3D" parent="Kit"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 44, 8, -5)
+mesh = SubResource("Arch_arcade")
+material_override = ExtResource("8_stone_mid")
+
+[node name="Arch6" type="MeshInstance3D" parent="Kit"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 52, 8, -5)
+mesh = SubResource("Arch_arcade")
+material_override = ExtResource("8_stone_mid")
+
+[node name="Beam" type="MeshInstance3D" parent="Kit"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 28, 13.5, -5)
+mesh = SubResource("Beam")
+material_override = ExtResource("8_stone_mid")
+
+[node name="Rack0" type="MeshInstance3D" parent="Kit"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 21.5, -0.5, -8.5)
+mesh = SubResource("Rack_1")
+material_override = ExtResource("9_metal_mid")
+
+[node name="Rack1" type="MeshInstance3D" parent="Kit"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 22.5, -0.5, -8.5)
+mesh = SubResource("Rack_2")
+material_override = ExtResource("9_metal_mid")
+
+[node name="Rack2" type="MeshInstance3D" parent="Kit"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 23.5, -0.5, -8.5)
+mesh = SubResource("Rack_1")
+material_override = ExtResource("9_metal_mid")
+
+[node name="Rack3" type="MeshInstance3D" parent="Kit"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 33.5, -0.5, -8.5)
+mesh = SubResource("Rack_2")
+material_override = ExtResource("9_metal_mid")
+
+[node name="Rack4" type="MeshInstance3D" parent="Kit"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 34.5, -0.5, -8.5)
+mesh = SubResource("Rack_1")
+material_override = ExtResource("9_metal_mid")
+
+[node name="Rack5" type="MeshInstance3D" parent="Kit"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 38.5, -0.5, -8.5)
+mesh = SubResource("Rack_2")
+material_override = ExtResource("9_metal_mid")
+
+[node name="Rack6" type="MeshInstance3D" parent="Kit"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 39.5, -0.5, -8.5)
+mesh = SubResource("Rack_1")
+material_override = ExtResource("9_metal_mid")
+
+[node name="Rack7" type="MeshInstance3D" parent="Kit"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 40.5, -0.5, -8.5)
+mesh = SubResource("Rack_2")
+material_override = ExtResource("9_metal_mid")
+
+[node name="Scrap0" type="MeshInstance3D" parent="Kit"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 24.5, 0, -1.25)
+mesh = SubResource("Scrap_1")
+material_override = ExtResource("10_rust_mid")
+
+[node name="Scrap1" type="MeshInstance3D" parent="Kit"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 30.25, 0, -1.5)
+mesh = SubResource("Scrap_3")
+material_override = ExtResource("9_metal_mid")
+
+[node name="Scrap2" type="MeshInstance3D" parent="Kit"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 33, 0, -1)
+mesh = SubResource("Scrap_2")
+material_override = ExtResource("10_rust_mid")
+
+[node name="Cables0" type="MeshInstance3D" parent="Kit"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 6.75, -4.25)
+mesh = SubResource("Cables_low")
+material_override = ExtResource("11_cable")
+cast_shadow = 0
+
+[node name="Cables1" type="MeshInstance3D" parent="Kit"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 16, 6.75, -4.25)
+mesh = SubResource("Cables_low")
+material_override = ExtResource("11_cable")
+cast_shadow = 0
+
+[node name="Cables2" type="MeshInstance3D" parent="Kit"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 32, 6.75, -4.25)
+mesh = SubResource("Cables_low")
+material_override = ExtResource("11_cable")
+cast_shadow = 0
+
+[node name="Cables3" type="MeshInstance3D" parent="Kit"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 48, 6.75, -4.25)
+mesh = SubResource("Cables_low")
+material_override = ExtResource("11_cable")
+cast_shadow = 0
+
+[node name="Backdrop" type="Node3D" parent="."]
+
+[node name="CathedralSkyline" type="MeshInstance3D" parent="Backdrop"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 28, -8, -70)
+mesh = SubResource("Skyline_far")
+material_override = ExtResource("14_cathedral")
+cast_shadow = 0
+
+[node name="HallSkyline" type="MeshInstance3D" parent="Backdrop"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 28, -6, -48)
+mesh = SubResource("Skyline_near")
+material_override = ExtResource("15_halls")
+cast_shadow = 0
+
+[node name="FarPillars" type="Node3D" parent="Backdrop"]
+script = ExtResource("24_scatter")
+Material = ExtResource("13_backdrop_stone")
+Count = 30
+AreaMin = Vector2(-12, -4)
+AreaMax = Vector2(70, 4)
+DepthRange = Vector2(-38, -14)
+SizeMin = Vector3(1, 14, 1)
+SizeMax = Vector3(3.5, 40, 3.5)
+Seed = 23
+
+[node name="ForePipe" type="MeshInstance3D" parent="Backdrop"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.25, 7.5)
+mesh = SubResource("Pipe_fore")
+material_override = ExtResource("16_fore")
+cast_shadow = 0
+
+; Look-dev shots (tools/capture.sh). Machines are reset before each one, so every shot is the same from run to run.
+[node name="PhotoSpots" type="Node3D" parent="."]
+
+; the Votaries bowing toward the shrine
+[node name="Congregation" type="Marker3D" parent="PhotoSpots"]
+script = ExtResource("3_spot")
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 9, 2.4, 11)
+PlayerPosition = Vector3(1.5, 0, 0)
+PlayerFacing = 1
+
+; one Votary up close
+[node name="Votary" type="Marker3D" parent="PhotoSpots"]
+script = ExtResource("3_spot")
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 6, 1.4, 5.5)
+PlayerPosition = Vector3(2, 0, 0)
+PlayerFacing = 1
+
+; the Gleaner pecking at its scrap
+[node name="Gleaner" type="Marker3D" parent="PhotoSpots"]
+script = ExtResource("3_spot")
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 28, 1, 5.5)
+PlayerPosition = Vector3(16, 0, 0)
+PlayerFacing = 1
+
+; the Limpet asleep on the reliquary
+[node name="Limpet" type="Marker3D" parent="PhotoSpots"]
+script = ExtResource("3_spot")
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 47, 5.3, 6.5)
+PlayerPosition = Vector3(38, 0, 0)
+PlayerFacing = 1
+
+; the Lamplighter before it has seen anyone
+[node name="Lamplighter" type="Marker3D" parent="PhotoSpots"]
+script = ExtResource("3_spot")
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 5, 5.2, 5)
+PlayerPosition = Vector3(20, 0, 0)
+PlayerFacing = 1
+
+; the whole arena
+[node name="Wide" type="Marker3D" parent="PhotoSpots"]
+script = ExtResource("3_spot")
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 28, 7, 56)
+PlayerPosition = Vector3(2, 0, 0)
+PlayerFacing = 1

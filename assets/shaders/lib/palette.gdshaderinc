@@ -15,7 +15,8 @@ vec3 srgb_to_linear(vec3 c) {
 	return mix(c / 12.92, pow((c + 0.055) / 1.055, vec3(2.4)), step(vec3(0.04045), c));
 }
 
-// The base color of a palette slot, linear. Slot order matches the materials' `slot` hint_enum.
+// The base color of a palette slot, linear. Slot order matches the materials' `slot` hint_enum
+// (slots 5–7 only for materials that list them, like the machines').
 vec3 palette_color(int slot) {
 	vec4 color = biome_rock;
 	if (slot == 1) {
@@ -26,6 +27,12 @@ vec3 palette_color(int slot) {
 		color = biome_backdrop_accent;
 	} else if (slot == 4) {
 		color = biome_foreground;
+	} else if (slot == 5) {
+		color = biome_rust;
+	} else if (slot == 6) {
+		color = biome_silt;
+	} else if (slot == 7) {
+		color = biome_accent;
 	}
 	return srgb_to_linear(color.rgb);
 }

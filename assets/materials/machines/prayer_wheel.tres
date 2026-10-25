@@ -1,0 +1,16 @@
+[gd_resource type="ShaderMaterial" format=3]
+
+[ext_resource type="Shader" path="res://assets/shaders/machine.gdshader" id="1_shader"]
+
+; A prayer wheel or devotional drum: brass-pale body with a glowing band of glyphs between two rims.
+[resource]
+shader = ExtResource("1_shader")
+shader_parameter/slot = 6
+shader_parameter/tone = 0.95
+shader_parameter/roughness = 0.3
+shader_parameter/metallic = 0.5
+shader_parameter/clearcoat = 0.4
+shader_parameter/pattern = 2
+shader_parameter/glow_pattern = 3
+shader_parameter/glow_energy = 2.5
+shader_parameter/wear_response = 0.5

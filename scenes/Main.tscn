@@ -11,11 +11,15 @@
 [ext_resource type="Resource" path="res://resources/biomes/flooded.tres" id="8_flooded"]
 [ext_resource type="Resource" path="res://resources/biomes/volcanic.tres" id="9_volcanic"]
 [ext_resource type="PackedScene" path="res://scenes/camera/ScreenGrade.tscn" id="10_grade"]
+[ext_resource type="Script" path="res://scripts/machines/MachineDirector.cs" id="11_machines"]
+[ext_resource type="Script" path="res://scripts/player/BurstPool.cs" id="12_pool"]
+[ext_resource type="PackedScene" path="res://scenes/fx/Sparks.tscn" id="13_sparks"]
 
-[node name="Main" type="Node3D" node_paths=PackedStringArray("World", "Player", "Capture", "Camera", "Hud")]
+[node name="Main" type="Node3D" node_paths=PackedStringArray("World", "Player", "Machines", "Capture", "Camera", "Hud")]
 script = ExtResource("1_main")
 World = NodePath("World")
 Player = NodePath("Player")
+Machines = NodePath("Machines")
 Capture = NodePath("OwnerCapture")
 Camera = NodePath("SideCamera")
 Hud = NodePath("DebugHud")
@@ -26,6 +30,19 @@ script = ExtResource("2_world")
 StartRoom = ExtResource("2_room")
 
 [node name="Player" parent="." instance=ExtResource("3_player")]
+
+; Runs the room's machines: their perception (player, impacts, neighbors) and their physics ticks.
+[node name="Machines" type="Node" parent="." node_paths=PackedStringArray("World", "Player", "HitSparks", "Camera")]
+script = ExtResource("11_machines")
+World = NodePath("../World")
+Player = NodePath("../Player")
+HitSparks = NodePath("HitSparks")
+Camera = NodePath("../SideCamera")
+
+[node name="HitSparks" type="Node3D" parent="Machines"]
+script = ExtResource("12_pool")
+Effect = ExtResource("13_sparks")
+Count = 3
 
 [node name="SideCamera" parent="." node_paths=PackedStringArray("Target", "World") instance=ExtResource("6_camera")]
 Target = NodePath("../Player")

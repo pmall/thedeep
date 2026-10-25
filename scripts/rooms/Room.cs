@@ -42,18 +42,21 @@ public partial class Room : Node3D
     }
 
     /// <summary>The room's look-dev camera spots (tools/capture.sh), in scene order.</summary>
-    public IEnumerable<PhotoSpot> PhotoSpots() => FindPhotoSpots(this);
+    public IEnumerable<PhotoSpot> PhotoSpots() => Find<PhotoSpot>(this);
 
-    private static IEnumerable<PhotoSpot> FindPhotoSpots(Node parent)
+    /// <summary>The room's gameplay blocks, in scene order.</summary>
+    public IEnumerable<Block> Blocks() => Find<Block>(this);
+
+    private static IEnumerable<T> Find<T>(Node parent) where T : Node
     {
         foreach (Node child in parent.GetChildren())
         {
-            if (child is PhotoSpot spot)
+            if (child is T match)
             {
-                yield return spot;
+                yield return match;
             }
 
-            foreach (PhotoSpot nested in FindPhotoSpots(child))
+            foreach (T nested in Find<T>(child))
             {
                 yield return nested;
             }

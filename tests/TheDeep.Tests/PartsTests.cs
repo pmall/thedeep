@@ -152,6 +152,62 @@ public class PartsTests
         Assert.Equal(0.05f, bottom, 3);
     }
 
+    [Fact]
+    public void CurledPodHooksForwardAndKeepsItsLength()
+    {
+        var b = new MeshBuilder();
+        var stations = new[] { new Vector4(0f, 0.06f, 0.06f, 0f), new Vector4(1f, 0f, 0f, 0f) };
+        PartShapes.Pod(b, -Vector3.UnitY, 0.5f, stations, 10, 16, MathF.PI * 0.5f);
+        MeshData mesh = b.Finish();
+        AssertValidFrames(mesh);
+        (Vector3 min, Vector3 max) = mesh.Bounds();
+        // A quarter turn over 0.5 m: the tip ends about 2/π × 0.5 m forward and down.
+        float r = 0.5f / (MathF.PI * 0.5f);
+        Assert.InRange(max.X, r - 0.02f, r + 0.04f);
+        Assert.InRange(min.Y, -r - 0.04f, -r + 0.02f);
+    }
+
+    [Fact]
+    public void RotorHasItsBladesOutToItsRadius()
+    {
+        var b = new MeshBuilder();
+        PartShapes.Rotor(b, 0.5f, 4, 0.1f, 0.2f, 0.06f, 0.05f);
+        MeshData mesh = b.Finish();
+        AssertValidFrames(mesh);
+        (Vector3 min, Vector3 max) = mesh.Bounds();
+        Assert.InRange(max.X, 0.49f, 0.52f);
+        Assert.InRange(min.Z, -0.52f, -0.49f);
+        Assert.True(max.Y - min.Y < 0.1f, "flat");
+    }
+
+    [Fact]
+    public void TreadRestsOnTheGroundAndWrapsAlongItsLoop()
+    {
+        var b = new MeshBuilder();
+        PartShapes.Tread(b, 0.6f, 0.15f, 0.12f, 0.03f, 3);
+        MeshData mesh = b.Finish();
+        AssertValidFrames(mesh);
+        (Vector3 min, Vector3 max) = mesh.Bounds();
+        Assert.Equal(0f, min.Y, 2);
+        Assert.Equal(0.3f, max.Y, 2);
+        Assert.Equal(0.9f, max.X - min.X, 2);
+        Assert.Contains(mesh.PatchSizes, size => size.X < -1f);
+    }
+
+    [Fact]
+    public void DrillPointsDown()
+    {
+        var b = new MeshBuilder();
+        PartShapes.Drill(b, 0.4f, 0.08f, 2, 2.5f);
+        MeshData mesh = b.Finish();
+        AssertValidFrames(mesh);
+        (Vector3 min, Vector3 max) = mesh.Bounds();
+        Assert.Equal(-0.4f, min.Y, 2);
+        Assert.Equal(0f, max.Y, 3);
+        float nearTip = mesh.Positions.Where(p => p.Y < -0.38f).Max(p => MathF.Abs(p.X));
+        Assert.True(nearTip < 0.03f, "tapers to a point");
+    }
+
     private static void AssertLinks(VerletChain chain)
     {
         for (int i = 1; i < chain.Points.Length; i++)

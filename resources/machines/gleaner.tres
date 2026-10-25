@@ -1,0 +1,184 @@
+[gd_resource type="Resource" script_class="MachineSpecies" format=3]
+; The Gleaner (HoarderBehavior): picks over the scrap around its home, pecking with its claws. It
+; never fights: when the player comes near it bolts with its hoard on its back, and cowers when
+; cornered.
+
+[ext_resource type="Script" path="res://scripts/machines/MachineSpecies.cs" id="1_species"]
+[ext_resource type="Script" path="res://scripts/machines/behaviors/HoarderBehavior.cs" id="2_behavior"]
+[ext_resource type="Script" path="res://scripts/machines/JointDriver.cs" id="3_driver"]
+[ext_resource type="Script" path="res://scripts/machines/MachineLeg.cs" id="4_leg"]
+[ext_resource type="Resource" path="res://resources/parts/gleaner.tres" id="5_assembly"]
+
+[sub_resource type="Resource" id="Behavior"]
+script = ExtResource("2_behavior")
+HomeRange = 3.5
+WalkSpeed = 1.3
+FleeSpeed = 6.5
+Wary = 4.5
+Safe = 10
+
+; bobbing with its steps
+[sub_resource type="Resource" id="Driver_0"]
+script = ExtResource("3_driver")
+Joint = &"Body"
+Mode = 1
+Channel = 1
+Angle = 2
+Offset = Vector3(0, 0.025, 0)
+Clock = 1
+Rate = 3.6
+
+; low and fast when it bolts
+[sub_resource type="Resource" id="Driver_1"]
+script = ExtResource("3_driver")
+Joint = &"Body"
+Mode = 0
+Channel = 4
+Angle = 4
+Offset = Vector3(0, -0.08, 0)
+
+; cowering: flattened
+[sub_resource type="Resource" id="Driver_2"]
+script = ExtResource("3_driver")
+Joint = &"Body"
+Mode = 0
+Channel = 5
+Invert = true
+Angle = -6
+Offset = Vector3(0, -0.22, 0)
+
+; pecking
+[sub_resource type="Resource" id="Driver_3"]
+script = ExtResource("3_driver")
+Joint = &"Head"
+Mode = 0
+Channel = 6
+Angle = -22
+
+[sub_resource type="Resource" id="Driver_4"]
+script = ExtResource("3_driver")
+Joint = &"ClawN"
+Mode = 0
+Channel = 6
+Angle = 40
+
+[sub_resource type="Resource" id="Driver_5"]
+script = ExtResource("3_driver")
+Joint = &"ClawF"
+Mode = 0
+Channel = 6
+Angle = 40
+
+; claws tucked when fleeing
+[sub_resource type="Resource" id="Driver_6"]
+script = ExtResource("3_driver")
+Joint = &"ClawN"
+Mode = 0
+Channel = 4
+Angle = -50
+
+[sub_resource type="Resource" id="Driver_7"]
+script = ExtResource("3_driver")
+Joint = &"ClawF"
+Mode = 0
+Channel = 4
+Angle = -50
+
+; eye stalk pulled back
+[sub_resource type="Resource" id="Driver_8"]
+script = ExtResource("3_driver")
+Joint = &"Stalk"
+Mode = 0
+Channel = 4
+Angle = 50
+
+[sub_resource type="Resource" id="Driver_9"]
+script = ExtResource("3_driver")
+Joint = &"Stalk"
+Mode = 1
+Channel = 0
+Angle = 6
+Rate = 0.4
+
+[sub_resource type="Resource" id="Driver_10"]
+script = ExtResource("3_driver")
+Joint = &"Eye"
+Mode = 3
+Channel = 0
+Angle = 70
+Sharpness = 8
+
+; its prayer wheel turns as it walks
+[sub_resource type="Resource" id="Driver_11"]
+script = ExtResource("3_driver")
+Joint = &"Wheel"
+Mode = 2
+Channel = 1
+Base = 0.15
+Axis = Vector3(0, 1, 0)
+Angle = 400
+
+[sub_resource type="Resource" id="Leg_0"]
+script = ExtResource("4_leg")
+Upper = &"HipFrontN"
+Lower = &"KneeFrontN"
+Foot = &"FootFrontN"
+Phase = 0
+Stride = 0.36
+Lift = 0.12
+Stance = 0.55
+Bend = 1
+
+[sub_resource type="Resource" id="Leg_1"]
+script = ExtResource("4_leg")
+Upper = &"HipFrontF"
+Lower = &"KneeFrontF"
+Foot = &"FootFrontF"
+Phase = 0.5
+Stride = 0.36
+Lift = 0.12
+Stance = 0.55
+Bend = 1
+
+[sub_resource type="Resource" id="Leg_2"]
+script = ExtResource("4_leg")
+Upper = &"HipBackN"
+Lower = &"KneeBackN"
+Foot = &"FootBackN"
+Phase = 0.5
+Stride = 0.36
+Lift = 0.12
+Stance = 0.55
+Bend = -1
+
+[sub_resource type="Resource" id="Leg_3"]
+script = ExtResource("4_leg")
+Upper = &"HipBackF"
+Lower = &"KneeBackF"
+Foot = &"FootBackF"
+Phase = 0
+Stride = 0.36
+Lift = 0.12
+Stance = 0.55
+Bend = -1
+
+[resource]
+script = ExtResource("1_species")
+Id = &"gleaner"
+DisplayName = "Gleaner"
+Layer = 0
+Hostile = false
+CreedLine = &"creed.gleaner"
+Assembly = ExtResource("5_assembly")
+Locomotion = 0
+BodySize = Vector2(1.1, 0.8)
+SensorHeight = 0.95
+TurnSharpness = 10
+MaxSpeed = 6.5
+Acceleration = 30
+Health = 2
+Wear = 0.6
+Tone = 0.92
+Behavior = SubResource("Behavior")
+Drivers = [SubResource("Driver_0"), SubResource("Driver_1"), SubResource("Driver_2"), SubResource("Driver_3"), SubResource("Driver_4"), SubResource("Driver_5"), SubResource("Driver_6"), SubResource("Driver_7"), SubResource("Driver_8"), SubResource("Driver_9"), SubResource("Driver_10"), SubResource("Driver_11")]
+Legs = [SubResource("Leg_0"), SubResource("Leg_1"), SubResource("Leg_2"), SubResource("Leg_3")]

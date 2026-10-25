@@ -1,0 +1,238 @@
+[gd_resource type="Resource" script_class="PartAssembly" format=3]
+; The Lamplighter: a small floating reliquary under a rotor, one round eye, two fins, and three
+; cables trailing little lights. Origin at its center. Joints: X forward, Y up, Z toward the camera.
+
+[ext_resource type="Script" path="res://scripts/parts/PartAssembly.cs" id="1_PartAssembly"]
+[ext_resource type="Script" path="res://scripts/parts/RigJoint.cs" id="2_RigJoint"]
+[ext_resource type="Script" path="res://scripts/parts/PartSlot.cs" id="3_PartSlot"]
+[ext_resource type="Script" path="res://scripts/parts/PartChain.cs" id="4_PartChain"]
+[ext_resource type="Script" path="res://scripts/parts/PlateMesh.cs" id="5_PlateMesh"]
+[ext_resource type="Script" path="res://scripts/parts/PodMesh.cs" id="6_PodMesh"]
+[ext_resource type="Script" path="res://scripts/parts/RingMesh.cs" id="7_RingMesh"]
+[ext_resource type="Script" path="res://scripts/parts/RotorMesh.cs" id="8_RotorMesh"]
+[ext_resource type="Material" path="res://assets/materials/machines/shell.tres" id="9_shell"]
+[ext_resource type="Material" path="res://assets/materials/machines/frame.tres" id="10_frame"]
+[ext_resource type="Material" path="res://assets/materials/machines/robe.tres" id="11_robe"]
+[ext_resource type="Material" path="res://assets/materials/machines/eye.tres" id="12_eye"]
+[ext_resource type="Material" path="res://assets/materials/machines/prayer_wheel.tres" id="13_prayer_wheel"]
+[ext_resource type="Material" path="res://assets/materials/machines/blade.tres" id="14_blade"]
+[ext_resource type="Material" path="res://assets/materials/machines/cable.tres" id="15_cable"]
+[ext_resource type="Material" path="res://assets/materials/machines/ember.tres" id="16_ember"]
+
+[sub_resource type="Resource" id="Joint_Core"]
+script = ExtResource("2_RigJoint")
+Name = &"Core"
+Parent = &""
+Offset = Vector3(0, 0, 0)
+
+[sub_resource type="Resource" id="Joint_Rotor"]
+script = ExtResource("2_RigJoint")
+Name = &"Rotor"
+Parent = &"Core"
+Offset = Vector3(0, 0.36, 0)
+
+[sub_resource type="Resource" id="Joint_Eye"]
+script = ExtResource("2_RigJoint")
+Name = &"Eye"
+Parent = &"Core"
+Offset = Vector3(0.1, 0, 0)
+
+[sub_resource type="Resource" id="Joint_FinN"]
+script = ExtResource("2_RigJoint")
+Name = &"FinN"
+Parent = &"Core"
+Offset = Vector3(-0.06, 0.04, 0.18)
+
+[sub_resource type="Resource" id="Joint_FinF"]
+script = ExtResource("2_RigJoint")
+Name = &"FinF"
+Parent = &"Core"
+Offset = Vector3(-0.06, 0.04, -0.18)
+
+[sub_resource type="PrimitiveMesh" id="Mesh_body"]
+script = ExtResource("6_PodMesh")
+Length = 0.62
+Stations = PackedVector4Array(0, 0, 0, 0, 0.12, 0.2, 0.2, 0, 0.45, 0.34, 0.34, 0, 0.8, 0.24, 0.24, 0, 1, 0, 0, 0)
+Rings = 14
+Sides = 18
+
+[sub_resource type="PrimitiveMesh" id="Mesh_band"]
+script = ExtResource("7_RingMesh")
+RadiusX = 0.175
+RadiusZ = 0.175
+Height = 0.06
+Thickness = 0.025
+Segments = 32
+
+[sub_resource type="PrimitiveMesh" id="Mesh_mast"]
+script = ExtResource("6_PodMesh")
+Axis = Vector3(0, 1, 0)
+Length = 0.14
+Stations = PackedVector4Array(0, 0.05, 0.05, 0, 1, 0.03, 0.03, 0)
+Rings = 4
+Sides = 8
+
+[sub_resource type="PrimitiveMesh" id="Mesh_rotor"]
+script = ExtResource("8_RotorMesh")
+Radius = 0.42
+Blades = 3
+Chord = 0.075
+Pitch = 14
+HubRadius = 0.05
+HubHeight = 0.05
+
+[sub_resource type="PrimitiveMesh" id="Mesh_socket"]
+script = ExtResource("6_PodMesh")
+Axis = Vector3(1, 0, 0)
+Length = 0.1
+Stations = PackedVector4Array(0, 0.2, 0.2, 0, 1, 0.17, 0.17, 0)
+Rings = 4
+
+[sub_resource type="PrimitiveMesh" id="Mesh_eye"]
+script = ExtResource("6_PodMesh")
+Axis = Vector3(1, 0, 0)
+Length = 0.09
+Stations = PackedVector4Array(0, 0.14, 0.14, 0, 0.6, 0.12, 0.12, 0, 1, 0, 0, 0)
+Rings = 6
+
+[sub_resource type="PrimitiveMesh" id="Mesh_fin"]
+script = ExtResource("5_PlateMesh")
+Width = 0.16
+Length = 0.32
+Thickness = 0.012
+Taper = 0.3
+Curve = -25
+Bevel = 0.004
+
+[sub_resource type="PrimitiveMesh" id="Mesh_bulb"]
+script = ExtResource("6_PodMesh")
+Length = 0.08
+Stations = PackedVector4Array(0, 0, 0, 0, 0.5, 0.06, 0.06, 0, 1, 0, 0, 0)
+Rings = 6
+Sides = 10
+
+[sub_resource type="Resource" id="Part_Body"]
+script = ExtResource("3_PartSlot")
+Joint = &"Core"
+Category = 0
+Mesh = SubResource("Mesh_body")
+Material = ExtResource("9_shell")
+Position = Vector3(0, 0.28, 0)
+
+[sub_resource type="Resource" id="Part_Band"]
+script = ExtResource("3_PartSlot")
+Joint = &"Core"
+Category = 4
+Mesh = SubResource("Mesh_band")
+Material = ExtResource("13_prayer_wheel")
+Position = Vector3(0, 0.02, 0)
+
+[sub_resource type="Resource" id="Part_Mast"]
+script = ExtResource("3_PartSlot")
+Joint = &"Core"
+Category = 0
+Mesh = SubResource("Mesh_mast")
+Material = ExtResource("10_frame")
+Position = Vector3(0, 0.25, 0)
+
+[sub_resource type="Resource" id="Part_Rotor"]
+script = ExtResource("3_PartSlot")
+Joint = &"Rotor"
+Category = 1
+Mesh = SubResource("Mesh_rotor")
+Material = ExtResource("14_blade")
+
+[sub_resource type="Resource" id="Part_Socket"]
+script = ExtResource("3_PartSlot")
+Joint = &"Eye"
+Category = 2
+Mesh = SubResource("Mesh_socket")
+Material = ExtResource("10_frame")
+Position = Vector3(-0.02, 0, 0)
+
+[sub_resource type="Resource" id="Part_Eye"]
+script = ExtResource("3_PartSlot")
+Joint = &"Eye"
+Category = 2
+Mesh = SubResource("Mesh_eye")
+Material = ExtResource("12_eye")
+Position = Vector3(0.06, 0, 0)
+
+[sub_resource type="Resource" id="Part_FinN"]
+script = ExtResource("3_PartSlot")
+Joint = &"FinN"
+Category = 1
+Mesh = SubResource("Mesh_fin")
+Material = ExtResource("11_robe")
+Rotation = Vector3(0, 0, -55)
+
+[sub_resource type="Resource" id="Part_FinF"]
+script = ExtResource("3_PartSlot")
+Joint = &"FinF"
+Category = 1
+Mesh = SubResource("Mesh_fin")
+Material = ExtResource("11_robe")
+Rotation = Vector3(0, 0, -55)
+
+[sub_resource type="Resource" id="Chain_Tail0"]
+script = ExtResource("4_PartChain")
+Name = &"Tail0"
+Joint = &"Core"
+Category = 4
+Offset = Vector3(-0.04, -0.32, 0.05)
+RestDirection = Vector3(0, -1, 0)
+Links = 7
+Length = 0.8
+Shape = 1
+Material = ExtResource("15_cable")
+Width = 0.018
+Taper = 0.5
+Pendant = SubResource("Mesh_bulb")
+PendantMaterial = ExtResource("16_ember")
+Drag = 3
+Stiffness = 0.6
+StaysAboveFloor = false
+
+[sub_resource type="Resource" id="Chain_Tail1"]
+script = ExtResource("4_PartChain")
+Name = &"Tail1"
+Joint = &"Core"
+Category = 4
+Offset = Vector3(0.03, -0.32, -0.05)
+RestDirection = Vector3(0, -1, 0)
+Links = 7
+Length = 1
+Shape = 1
+Material = ExtResource("15_cable")
+Width = 0.018
+Taper = 0.5
+Pendant = SubResource("Mesh_bulb")
+PendantMaterial = ExtResource("16_ember")
+Drag = 3
+Stiffness = 0.6
+StaysAboveFloor = false
+
+[sub_resource type="Resource" id="Chain_Tail2"]
+script = ExtResource("4_PartChain")
+Name = &"Tail2"
+Joint = &"Core"
+Category = 4
+Offset = Vector3(-0.08, -0.32, -0.02)
+RestDirection = Vector3(0, -1, 0)
+Links = 7
+Length = 0.62
+Shape = 1
+Material = ExtResource("15_cable")
+Width = 0.018
+Taper = 0.5
+Pendant = SubResource("Mesh_bulb")
+PendantMaterial = ExtResource("16_ember")
+Drag = 3
+Stiffness = 0.6
+StaysAboveFloor = false
+
+[resource]
+script = ExtResource("1_PartAssembly")
+Joints = [SubResource("Joint_Core"), SubResource("Joint_Rotor"), SubResource("Joint_Eye"), SubResource("Joint_FinN"), SubResource("Joint_FinF")]
+Parts = [SubResource("Part_Body"), SubResource("Part_Band"), SubResource("Part_Mast"), SubResource("Part_Rotor"), SubResource("Part_Socket"), SubResource("Part_Eye"), SubResource("Part_FinN"), SubResource("Part_FinF")]
+Chains = [SubResource("Chain_Tail0"), SubResource("Chain_Tail1"), SubResource("Chain_Tail2")]

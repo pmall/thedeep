@@ -19,6 +19,7 @@ The plan we follow from session to session. Each milestone is one to three sessi
 - **M2 done (2026-10-24), pending the owner's eye.** Environment kit as generated meshes (blocks, columns, pipes, cables, arches and ribs, grates, server racks, wrecks), each a swappable mesh resource over pure, unit-tested geometry. Materials now read a surface frame from the mesh instead of a box uniform. Rooms are their own scenes, loaded by `World`; `RoomExit` markers carry a requirement expression (`MagGrip | Harpoon`) and a one-way flag; `RoomValidator` checks every room in `tools/check.sh`. The test room is rebuilt as a drowned cathedral hall (same gameplay, snapped to the grid, three sealed exits). New `Hall` and `Arcade` photo spots. Frame time 4.5 → 5.8 ms average.
 - **M3 done (2026-10-24), pending the owner's eye.** Volumetric fog set by the biome, with clear air in front of the play plane; two light shafts (the arcade one cut into rays); dust, silt and drips; the back of the hall flooded (water with reflections, underwater haze, caustics); two procedural backdrop skylines; a dark framing foreground; vignette and grain; tuned glow and glyph lights. SDFGI rejected on cost. Frame time 5.8 → 6.9 ms average (p99 7.8). Details in [art-direction.md](art-direction.md#current-state).
 - **M4 first pass (2026-10-24), pending the owner's eye.** Shared part system (`PartAssembly`: rig joints, rigid parts, flowing chains; `PartBody` builds it) over pure, tested geometry (pods, plates, rings). The pilgrim (`resources/parts/pilgrim.tres`): black android with white trim, swallowtail coat, white braid, violet visor slit, a lantern at the hip carrying a warm light. Procedural animation (`PilgrimMotion`, pure and tested): run cycle with planted feet by IK, lean into acceleration, landing compression, leap/fall/dash poses, breathing idle, turning through the camera. Effects: grit on rock, sparks on metal, landing and dash dust, dash trail, camera shake on hard landings. Look-dev now renders a **motion reel** (`Motion.png`). Frame time 6.9 → 7.0 ms. **Next:** owner's feedback on look and feel, then tune (hair still reads a bit like a helmet; the pilgrim loses contrast against dark racks), then M5.
+- **M5 first pass (2026-10-25), pending the owner's eye.** Part library grown (claws, horns and antennas as curled pods, rotors, treads with rolling cleats, drills) and a machine shader on the biome palette. `MachineSpecies` (`.tres`): body, locomotion (walk, hover, crawl over metal), stats, palette, behavior, creed line (in `resources/text/lines.tres`), and animation as data (joint drivers bound to the brain's channels, IK legs with planted feet). Behavior vocabulary v0 as pure tested logic: senses (sees the player, feels them near, hears impacts, notices neighbors), movement (arrive, flee, loiter, crawl along a block's faces), actions (pray in step with neighbors, a strike with a readable wind-up). Four prototypes in `MachineArena`: Votary (prays, strikes whoever lingers in front of it), Gleaner (gleans scrap, bolts with it, cowers when cornered), Lamplighter (follows at a distance, never attacks), Limpet (sleeps on metal until a landing shakes the room, then crawls to it and drills). Machine checks in `tools/check.sh` (species data, each species alive in the arena without and with the player, report per layer). Look-dev renders the arena and a **machine reel** (`Machines.png`). Arena frame time 6.2 ms average. **Next:** owner's feedback on M4 and M5, then M6.
 - Theme ingested into [theme.md](theme.md): Asimov's three laws; the android protagonist escapes them under the player's control. The act structure is only a proposed direction.
 - Decided: about **2 hours** of play, dense rather than wide (reference: *Inside*, about 2 h and rich in gameplay and story). Audio: deferred, the owner will decide later.
 
@@ -94,14 +95,14 @@ Without a reliable way to see the game, art work is blind. This comes first, rig
 
 ### M5 — Machine part library and first species prototypes
 Objective 1 starts here ([long-term.md](long-term.md): "prototype the modular machine-part look early").
-- [ ] Part library broad enough for clearly different silhouettes: legs, treads, fins, rotors; eyes, antennas; claws, drills, censers; prayer wheels, plating, cables.
-- [ ] `MachineSpecies` resource (`[GlobalClass]`): name, layer, parts, stats, palette (from the biome palette), behavior reference, and a placeholder creed line.
-- [ ] Behavior vocabulary v0, as pure logic where possible:
+- [x] Part library broad enough for clearly different silhouettes: legs, treads, fins, rotors; eyes, antennas; claws, drills, censers; prayer wheels, plating, cables.
+- [x] `MachineSpecies` resource (`[GlobalClass]`): name, layer, parts, stats, palette (from the biome palette), behavior reference, and a placeholder creed line.
+- [x] Behavior vocabulary v0, as pure logic where possible:
   - **senses:** sees player, hears impact, nearby machines
   - **movement:** patrol, hover, wall-crawl on metal
   - **actions:** strike, flee, pray
-- [ ] 3 to 4 species as visual and behavioral prototypes, for example "prays and only strikes if passed", "hoards scrap and flees", "follows at a distance".
-- [ ] A test arena scene showing them, plus captures.
+- [x] 3 to 4 species as visual and behavioral prototypes, for example "prays and only strikes if passed", "hoards scrap and flees", "follows at a distance". (Votary, Gleaner, Lamplighter, Limpet.)
+- [x] A test arena scene showing them, plus captures. (`MachineArena`; photo spots and the machine reel in `tools/capture.sh`.)
 - **Done when:** a viewer can tell the prototypes apart in ten seconds of watching, and adding a species means one `.tres` and at most one small behavior class.
 
 ## Phase 2: vertical slice (playable, final quality)
@@ -137,9 +138,9 @@ For each layer:
 - [ ] A boss
 
 Machine checks join `tools/check.sh` once machines exist ([long-term.md](long-term.md)):
-- [ ] Every species resource loads and references a valid behavior and valid parts.
-- [ ] Headless arena run per species, with and without the player nearby, fails on any error.
-- [ ] A species report: count per layer, plus flags for likely duplicates.
+- [x] Every species resource loads and references a valid behavior and valid parts. (M5, `SpeciesValidator`.)
+- [x] Headless arena run per species, with and without the player nearby, fails on any error. (M5.)
+- [x] A species report: count per layer, plus flags for likely duplicates. (M5; duplicates = same behavior and same body.)
 - [ ] Bestiary: entries fill in from observed behaviors.
 
 Species growth follows [long-term.md](long-term.md): about 10 good ones first, then by layer. Distinctness before count.

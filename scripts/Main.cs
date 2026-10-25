@@ -16,6 +16,9 @@ public partial class Main : Node3D
     private const string LookDevArgument = "--lookdev";
     private const string SizeArgument = "--size";
 
+    /// <summary>`--perf &lt;file&gt;`: file name of the look-dev frame times (default perf.json).</summary>
+    private const string PerfArgument = "--perf";
+
     /// <summary>`--biome &lt;name&gt;`: start with resources/biomes/&lt;name&gt;.tres instead of the room's own.</summary>
     private const string BiomeArgument = "--biome";
 
@@ -25,8 +28,12 @@ public partial class Main : Node3D
     /// <summary>User argument that checks every room scene and quits (see RoomValidator), used by tools/check.sh.</summary>
     private const string ValidateRoomsArgument = "--validate-rooms";
 
+    /// <summary>User argument that checks every machine species and quits (see SpeciesValidator), used by tools/check.sh.</summary>
+    private const string ValidateSpeciesArgument = "--validate-species";
+
     [Export] public World World { get; set; } = null!;
     [Export] public Player Player { get; set; } = null!;
+    [Export] public MachineDirector Machines { get; set; } = null!;
     [Export] public OwnerCapture Capture { get; set; } = null!;
     [Export] public SideCamera Camera { get; set; } = null!;
     [Export] public DebugHud Hud { get; set; } = null!;
@@ -70,6 +77,10 @@ public partial class Main : Node3D
         {
             AddChild(new RoomValidator());
         }
+        else if (Array.IndexOf(args, ValidateSpeciesArgument) >= 0)
+        {
+            AddChild(new SpeciesValidator { Room = room, Player = Player, Machines = Machines });
+        }
         else if (Array.IndexOf(args, SmokeArgument) >= 0)
         {
             AddChild(new SmokeDriver { Player = Player });
@@ -82,8 +93,8 @@ public partial class Main : Node3D
         {
             var driver = new LookDevDriver
             {
-                Player = Player, Room = room, Camera = Camera, Overlays = new CanvasLayer[] { Hud, Capture },
-                OutputDir = outputDir,
+                Player = Player, Room = room, Camera = Camera, Machines = Machines, Overlays = new CanvasLayer[] { Hud, Capture },
+                OutputDir = outputDir, PerfFile = ArgumentValue(args, PerfArgument) ?? "perf.json",
             };
             if (ArgumentValue(args, SizeArgument) is { } size && size.Split('x') is [var w, var h]
                 && int.TryParse(w, out int width) && int.TryParse(h, out int height))

@@ -1,0 +1,13 @@
+[gd_resource type="ShaderMaterial" format=3]
+
+[ext_resource type="Shader" path="res://assets/shaders/machine.gdshader" id="1_shader"]
+
+; Cables and hoses: dark, matte.
+[resource]
+shader = ExtResource("1_shader")
+shader_parameter/slot = 4
+shader_parameter/tone = 2.5
+shader_parameter/roughness = 0.6
+shader_parameter/metallic = 0.1
+shader_parameter/clearcoat = 0.1
+shader_parameter/wear_response = 0.0

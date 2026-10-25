@@ -17,8 +17,11 @@ public static class PartShapes
     /// Each station is (t from 0 to 1 along the length, width along X, depth along Z, shift along X), full
     /// sizes in meters; between stations the outline follows a smooth curve. Zero width and depth make a
     /// rounded pole. <paramref name="rings"/> stations are generated along the length.
+    /// <paramref name="curl"/> bends the pod counterclockwise around Z (as the camera sees it) by that many
+    /// radians over its length: a claw or a horn hooking forward, an antenna arching back. Width and shift
+    /// then follow the bend.
     /// </summary>
-    public static void Pod(MeshBuilder b, Vector3 axis, float length, IReadOnlyList<Vector4> stations, int sides, int rings)
+    public static void Pod(MeshBuilder b, Vector3 axis, float length, IReadOnlyList<Vector4> stations, int sides, int rings, float curl = 0f)
     {
         if (stations.Count < 2)
         {
@@ -29,16 +32,139 @@ public static class PartShapes
         rings = Math.Max(2, rings);
         var points = new Vector3[rings];
         var radii = new Vector2[rings];
+        Vector3 along = Vector3.Zero;
         for (int i = 0; i < rings; i++)
         {
             float t = (float)i / (rings - 1);
+            if (i > 0)
+            {
+                along += Arc(axis, curl, (float)(i - 1) / (rings - 1), t, length);
+            }
+
             Vector4 s = Sample(stations, t);
-            points[i] = axis * (t * length) + Vector3.UnitX * s.W;
+            Vector3 direction = CurlAround(axis, curl * t);
+            Vector3 shiftAxis = MathF.Abs(curl) > 1e-5f && MathF.Abs(direction.Z) < 0.99f
+                ? Vector3.Normalize(new Vector3(-direction.Y, direction.X, 0f))
+                : Vector3.UnitX;
+            points[i] = along + shiftAxis * s.W;
             // Profile X runs along the frame's side (Z here), profile Y along its up (X, the silhouette).
             radii[i] = new Vector2(MathF.Max(0f, s.Z) * 0.5f, MathF.Max(0f, s.Y) * 0.5f);
         }
 
         b.Pod(SweepPath.FromPoints(points, UpHint(axis)), radii, sides);
+    }
+
+    /// <summary>
+    /// A rotor spinning around Y at the origin: a hub <paramref name="hubRadius"/> wide and
+    /// <paramref name="hubHeight"/> tall, and <paramref name="blades"/> blades out to <paramref name="radius"/>,
+    /// <paramref name="chord"/> wide at the root and narrowing to the tip, pitched by <paramref name="pitch"/> radians.
+    /// </summary>
+    public static void Rotor(MeshBuilder b, float radius, int blades, float chord, float pitch, float hubRadius, float hubHeight)
+    {
+        b.Sweep(SweepPath.Line(new Vector3(0f, -hubHeight * 0.5f, 0f), new Vector3(0f, hubHeight * 0.5f, 0f), Vector3.UnitX),
+            Profile.Circle(hubRadius, 16));
+        blades = Math.Max(1, blades);
+        float thickness = MathF.Max(0.006f, chord * 0.08f);
+        var scales = new[] { Vector2.One, new Vector2(0.55f, 0.6f) };
+        for (int k = 0; k < blades; k++)
+        {
+            float a = MathF.Tau * k / blades;
+            var direction = new Vector3(MathF.Cos(a), 0f, MathF.Sin(a));
+            Vector3 trailing = Vector3.Cross(Vector3.UnitY, direction);
+            Vector3 up = Vector3.UnitY * MathF.Cos(pitch) + trailing * MathF.Sin(pitch);
+            b.Variation = (float)k / blades;
+            b.Sweep(SweepPath.Line(direction * hubRadius * 0.8f, direction * radius, up),
+                Profile.Rect(chord, thickness, thickness * 0.45f), scales: scales);
+        }
+
+        b.Variation = 0f;
+    }
+
+    /// <summary>
+    /// A track loop seen from the side, resting on the origin: <paramref name="length"/> between its wheel
+    /// centers, <paramref name="radius"/> high to the wheels' center, <paramref name="width"/> deep along Z,
+    /// the belt <paramref name="thickness"/> thick, with its road wheels inside. The belt is one patch that
+    /// wraps along the loop (U runs around it), so a material can scroll cleats along it.
+    /// </summary>
+    public static void Tread(MeshBuilder b, float length, float radius, float width, float thickness, int wheels)
+    {
+        const int ArcSegments = 12;
+        float r = MathF.Max(radius - thickness * 0.5f, 0.01f);
+        float half = length * 0.5f;
+        var points = new List<Vector3>();
+        // Counterclockwise as the camera sees it: along the ground forward, up and around the front wheel,
+        // back along the top, around the rear wheel.
+        points.Add(new Vector3(-half, radius - r, 0f));
+        for (int i = 0; i <= ArcSegments; i++)
+        {
+            float a = -MathF.PI * 0.5f + MathF.PI * i / ArcSegments;
+            points.Add(new Vector3(half + MathF.Cos(a) * r, radius + MathF.Sin(a) * r, 0f));
+        }
+
+        for (int i = 0; i <= ArcSegments; i++)
+        {
+            float a = MathF.PI * 0.5f + MathF.PI * i / ArcSegments;
+            points.Add(new Vector3(-half + MathF.Cos(a) * r, radius + MathF.Sin(a) * r, 0f));
+        }
+
+        points[^1] = points[0];
+        List<PathFrame> path = SweepPath.FromPoints(points, Vector3.UnitZ);
+        // The loop closes where it starts, on a straight run: both ends share the forward direction.
+        path[0] = path[0] with { Tangent = Vector3.UnitX, Side = Vector3.UnitY, SideOffset = Vector3.UnitY, Up = Vector3.UnitZ };
+        path[^1] = path[^1] with { Tangent = Vector3.UnitX, Side = Vector3.UnitY, SideOffset = Vector3.UnitY, Up = Vector3.UnitZ };
+        b.Sweep(path, Profile.Rect(thickness, width, thickness * 0.3f), capStart: false, capEnd: false, wrapsAlong: true);
+
+        wheels = Math.Max(2, wheels);
+        float wheelRadius = MathF.Max(r - thickness * 0.6f, 0.01f);
+        for (int i = 0; i < wheels; i++)
+        {
+            float x = -half + length * i / (wheels - 1);
+            float wr = i == 0 || i == wheels - 1 ? wheelRadius : wheelRadius * 0.8f;
+            float y = i == 0 || i == wheels - 1 ? radius : thickness + wr;
+            b.Variation = 0.2f + 0.6f * i / (wheels - 1);
+            b.Sweep(SweepPath.Line(new Vector3(x, y, -width * 0.42f), new Vector3(x, y, width * 0.42f), Vector3.UnitY),
+                Profile.Circle(wr, 16));
+            b.Sweep(SweepPath.Line(new Vector3(x, y, -width * 0.52f), new Vector3(x, y, width * 0.52f), Vector3.UnitY),
+                Profile.Circle(wr * 0.35f, 10));
+        }
+
+        b.Variation = 0f;
+    }
+
+    /// <summary>
+    /// A drill bit pointing down -Y from the origin: a cone <paramref name="radius"/> wide at its collar,
+    /// <paramref name="length"/> long, wound by <paramref name="flutes"/> helical ridges making
+    /// <paramref name="turns"/> turns down to the tip.
+    /// </summary>
+    public static void Drill(MeshBuilder b, float length, float radius, int flutes, float turns)
+    {
+        float collar = length * 0.12f;
+        b.Sweep(SweepPath.Line(Vector3.Zero, new Vector3(0f, -collar, 0f), Vector3.UnitX), Profile.Circle(radius * 1.1f, 20));
+        float cone = length - collar;
+        Matrix4x4 placement = b.Transform;
+        b.Transform = Matrix4x4.CreateTranslation(0f, -collar, 0f) * placement;
+        Pod(b, -Vector3.UnitY, cone, new[] { new Vector4(0f, radius * 1.7f, radius * 1.7f, 0f), new Vector4(1f, 0f, 0f, 0f) }, 16, 8);
+        b.Transform = placement;
+        flutes = Math.Max(1, flutes);
+        const int Steps = 40;
+        for (int f = 0; f < flutes; f++)
+        {
+            var points = new Vector3[Steps + 1];
+            var scales = new Vector2[Steps + 1];
+            for (int i = 0; i <= Steps; i++)
+            {
+                float t = (float)i / Steps * 0.94f;
+                float a = MathF.Tau * (turns * t + (float)f / flutes);
+                float r = radius * 0.85f * (1f - t);
+                points[i] = new Vector3(MathF.Cos(a) * r, -collar - t * cone, MathF.Sin(a) * r);
+                scales[i] = new Vector2(1f - 0.85f * t, 1f - 0.85f * t);
+            }
+
+            b.Variation = (float)f / flutes;
+            b.Sweep(SweepPath.FromPoints(points, Vector3.UnitY), Profile.Circle(radius * 0.22f, 8), scales: scales);
+        }
+
+        b.Variation = 0f;
     }
 
     /// <summary>
@@ -141,6 +267,27 @@ public static class PartShapes
         float radius = length / curve;
         float a = s / radius;
         return new Vector3(0f, -MathF.Sin(a) * radius, (1f - MathF.Cos(a)) * radius);
+    }
+
+    /// <summary><paramref name="axis"/> turned counterclockwise around Z by <paramref name="angle"/> radians.</summary>
+    private static Vector3 CurlAround(Vector3 axis, float angle)
+    {
+        float c = MathF.Cos(angle), s = MathF.Sin(angle);
+        return new Vector3(c * axis.X - s * axis.Y, s * axis.X + c * axis.Y, axis.Z);
+    }
+
+    /// <summary>The way travelled from <paramref name="t0"/> to <paramref name="t1"/> (shares of the length) along a curling axis.</summary>
+    private static Vector3 Arc(Vector3 axis, float curl, float t0, float t1, float length)
+    {
+        const int Steps = 8;
+        Vector3 sum = Vector3.Zero;
+        for (int i = 0; i < Steps; i++)
+        {
+            float t = t0 + (t1 - t0) * (i + 0.5f) / Steps;
+            sum += CurlAround(axis, curl * t);
+        }
+
+        return sum * ((t1 - t0) * length / Steps);
     }
 
     /// <summary>Keeps the profile's up axis on X (the silhouette the camera sees), unless the axis runs along X.</summary>

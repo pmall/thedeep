@@ -25,6 +25,7 @@ public partial class PartBody : Node3D
     private readonly Dictionary<StringName, Node3D> _joints = new();
     private readonly Dictionary<StringName, Vector3> _rest = new();
     private readonly List<Chain> _chains = new();
+    private readonly List<GeometryInstance3D> _geometry = new();
 
     public override void _Ready()
     {
@@ -49,6 +50,15 @@ public partial class PartBody : Node3D
         }
 
         return null;
+    }
+
+    /// <summary>Sets a per-instance shader parameter on every part, chain and pendant (a machine's wear, how alert it is).</summary>
+    public void SetShaderParameter(StringName name, Variant value)
+    {
+        foreach (GeometryInstance3D geometry in _geometry)
+        {
+            geometry.SetInstanceShaderParameter(name, value);
+        }
     }
 
     /// <summary>Advances every chain by one physics tick, after the joints are posed. <paramref name="floorY"/>: NaN for none.</summary>
@@ -109,12 +119,14 @@ public partial class PartBody : Node3D
             }
 
             Vector3 radians = slot.Rotation * (Mathf.Pi / 180f);
-            joint.AddChild(new MeshInstance3D
+            var part = new MeshInstance3D
             {
                 Mesh = slot.Mesh,
                 MaterialOverride = slot.Material,
                 Transform = new Transform3D(Basis.FromEuler(radians).Scaled(slot.Scale), slot.Position),
-            });
+            };
+            joint.AddChild(part);
+            _geometry.Add(part);
         }
 
         foreach (PartChain spec in Assembly.Chains)
@@ -141,11 +153,14 @@ public partial class PartBody : Node3D
                 PhysicsInterpolationMode = PhysicsInterpolationModeEnum.Off,
             };
             AddChild(skin);
+            _geometry.Add(skin);
             var end = new Node3D { TopLevel = true, PhysicsInterpolationMode = PhysicsInterpolationModeEnum.Off };
             AddChild(end);
             if (spec.Pendant is not null)
             {
-                end.AddChild(new MeshInstance3D { Mesh = spec.Pendant, MaterialOverride = spec.PendantMaterial });
+                var pendant = new MeshInstance3D { Mesh = spec.Pendant, MaterialOverride = spec.PendantMaterial };
+                end.AddChild(pendant);
+                _geometry.Add(pendant);
             }
 
             _chains.Add(new Chain(spec, joint, sim, skin, end, new NVector3[sim.Points.Length]));

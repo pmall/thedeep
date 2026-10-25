@@ -1,0 +1,14 @@
+[gd_resource type="ShaderMaterial" format=3]
+
+[ext_resource type="Shader" path="res://assets/shaders/machine.gdshader" id="1_shader"]
+
+; Pale ceramic plating in the biome's metal color, with panel lines and a silt trim: the shell of most machines.
+[resource]
+shader = ExtResource("1_shader")
+shader_parameter/slot = 1
+shader_parameter/tone = 0.5
+shader_parameter/roughness = 0.3
+shader_parameter/clearcoat = 0.6
+shader_parameter/rim = 0.25
+shader_parameter/line_spacing = 0.22
+shader_parameter/trim_width = 0.015

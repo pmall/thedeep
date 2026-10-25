@@ -14,9 +14,10 @@ namespace TheDeep;
 /// Look-dev run for tools/capture.sh (`-- --lookdev &lt;dir&gt;`). Renders at a fixed size (1080p by
 /// default) whatever the window size, without HUD:
 /// 1. every <see cref="PhotoSpot"/> of the room to &lt;dir&gt;/&lt;Room&gt;-&lt;Spot&gt;.png;
-/// 2. in the test room, the <see cref="MotionReel"/>: scripted moves shot close, a frame per shot to
-///    &lt;dir&gt;/motion/ (tools/motion_sheet.py makes them a contact sheet);
-/// 3. a scripted run with the gameplay camera, measuring frame times into &lt;dir&gt;/perf.json.
+/// 2. the room's reels (<see cref="MotionReel"/>): scripted moves shot close, a frame per shot to
+///    &lt;dir&gt;/&lt;reel folder&gt;/ (tools/motion_sheet.py makes them a contact sheet);
+/// 3. a scripted run with the gameplay camera, measuring frame times into &lt;dir&gt;/&lt;PerfFile&gt;.
+/// The room's machines are reset before every shot and segment, so they act the same from run to run.
 /// Meant to run with `--fixed-fps 60 --disable-vsync`, so game time is identical from run to run
 /// and frame times show the real cost. Prints "LOOKDEV OK" and quits, or quits with code 1.
 /// </summary>
@@ -48,11 +49,15 @@ public partial class LookDevDriver : Node
     public Player Player { get; set; } = null!;
     public Room Room { get; set; } = null!;
     public SideCamera Camera { get; set; } = null!;
+    public MachineDirector Machines { get; set; } = null!;
 
     /// <summary>Layers hidden during the run (HUD, capture overlay).</summary>
     public CanvasLayer[] Overlays { get; set; } = Array.Empty<CanvasLayer>();
 
     public string OutputDir { get; set; } = "";
+
+    /// <summary>File name of the frame times in <see cref="OutputDir"/>.</summary>
+    public string PerfFile { get; set; } = "perf.json";
     public Vector2I RenderSize { get; set; } = new(1920, 1080);
 
     public LookDevDriver()
@@ -140,6 +145,7 @@ public partial class LookDevDriver : Node
         foreach (PhotoSpot spot in Room.PhotoSpots())
         {
             Player.Respawn(Room.ToGlobal(spot.PlayerPosition), spot.PlayerFacing);
+            Machines.ResetMachines();
             Camera.FrameShot(spot.GlobalPosition, spot.Fov);
             for (int i = 0; i < SettleFrames; i++)
             {
@@ -158,27 +164,43 @@ public partial class LookDevDriver : Node
             _problems.Enqueue($"room {Room.Name} has no PhotoSpot");
         }
 
-        // 2. Motion reel, followed by a close camera.
-        if (Room.Name == MotionReel.Room)
+        // 2. Reels, shot with a close camera.
+        foreach (MotionReel.Reel reel in MotionReel.For(Room.Name))
         {
-            string reelDir = Path.Combine(OutputDir, "motion");
+            string reelDir = Path.Combine(OutputDir, reel.Folder);
             Directory.CreateDirectory(reelDir);
             int shotCount = 0;
-            foreach (MotionReel.Segment segment in MotionReel.Segments)
+            foreach (MotionReel.Segment segment in reel.Segments)
             {
                 DemoInput.ReleaseAll();
                 Player.Respawn(Room.ToGlobal(segment.Start), segment.Facing);
+                Machines.ResetMachines();
+                Machine? subject = segment.Subject is { } name ? Room.FindChild(name, true, false) as Machine : null;
+                if (segment.Subject is not null && subject is null)
+                {
+                    _problems.Enqueue($"reel {reel.Folder}: no machine named {segment.Subject} in {Room.Name}");
+                }
+
                 _segment = segment;
                 _segmentTick = 0;
                 while (_segmentTick < segment.Length)
                 {
-                    Vector3 p = Player.GetGlobalTransformInterpolated().Origin;
-                    Camera.FrameShot(new Vector3(p.X, p.Y + 0.9f, MotionReel.CameraDistance), 0f);
+                    if (segment.Camera is { } fixedCamera)
+                    {
+                        Camera.FrameShot(Room.ToGlobal(fixedCamera), 0f);
+                    }
+                    else
+                    {
+                        Vector3 p = subject?.GetGlobalTransformInterpolated().Origin ?? Player.GetGlobalTransformInterpolated().Origin;
+                        float lift = subject is null ? 0.9f : 0.4f;
+                        Camera.FrameShot(new Vector3(p.X, p.Y + lift, reel.CameraDistance), 0f);
+                    }
+
                     foreach (MotionReel.Shot shot in segment.Shots)
                     {
                         if (shot.Tick == _segmentTick)
                         {
-                            string path = Path.Combine(reelDir, $"{shotCount++:00}-{shot.Label}.png");
+                            string path = Path.Combine(reelDir, $"{shotCount++:00}-{shot.Label.Replace(' ', '-')}.png");
                             Interlocked.Increment(ref _pendingSaves);
                             _grabber.Request(bytes => Task.Run(() => Save(bytes, format, path)));
                         }
@@ -194,6 +216,7 @@ public partial class LookDevDriver : Node
 
         // 3. Frame times over a scripted run with the gameplay camera.
         Player.Respawn(Room.SpawnPoint.GlobalPosition, 1);
+        Machines.ResetMachines();
         Camera.ResumeFollow();
         _demo = new DemoInput();
         for (int i = 0; i < WarmupFrames; i++)
@@ -253,7 +276,7 @@ public partial class LookDevDriver : Node
             ["gpu_name"] = RenderingServer.GetVideoAdapterName(),
             ["godot"] = (string)Engine.GetVersionInfo()["string"],
         };
-        File.WriteAllText(Path.Combine(OutputDir, "perf.json"), JsonSerializer.Serialize(perf, new JsonSerializerOptions { WriteIndented = true }));
+        File.WriteAllText(Path.Combine(OutputDir, PerfFile), JsonSerializer.Serialize(perf, new JsonSerializerOptions { WriteIndented = true }));
 
         bool withinBudget = _frame.Average <= BudgetMs && _frame.Percentile(99) <= BudgetMs;
         GD.Print($"frame {_frame}");

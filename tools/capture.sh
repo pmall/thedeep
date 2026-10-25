@@ -1,13 +1,14 @@
 #!/usr/bin/env bash
-# Look-dev captures: renders every photo spot of the room to PNG at 1080p, measures frame times over
-# a scripted run, and compares with the previous run (before/after sheet).
+# Look-dev captures: renders every photo spot and reel of the start room and the machine arena to PNG at
+# 1080p, measures frame times over a scripted run in each, and compares with the previous run (before/after sheet).
 #
 #   tools/capture.sh [label]                 new run in lookdev/<date>_<time>[-label]/, compared with the latest run
 #   tools/capture.sh [label] --against DIR   compare with DIR instead
 #   tools/capture.sh [label] --biome NAME    render with resources/biomes/NAME.tres instead of each room's own
+# (the start room's frame times go to perf.json, the arena's to perf-MachineArena.json)
 #   tools/capture.sh --compare BEFORE AFTER  only build the sheet for two existing runs
 #
-# Opens a small window for about half a minute (rendering needs a GPU). See docs/testing.md.
+# Opens a small window for about a minute (rendering needs a GPU). See docs/testing.md.
 set -euo pipefail
 
 cd "$(dirname "$0")/.."
@@ -61,16 +62,26 @@ touch "$ROOT/.gdignore" # Godot must not import the captures
 # godot runs the last built assembly, so build first.
 dotnet build TheDeep.sln -v q -nologo >"$out/build.log" 2>&1 || { tail -20 "$out/build.log"; fail "dotnet build"; }
 
-printf '\033[1mrendering photo spots and frame times into %s\033[0m\n' "$out"
-"$GODOT" --path . --disable-vsync --fixed-fps 60 --resolution 960x540 -- --lookdev "$out" --size "$SIZE" "${biome_args[@]}" \
-    >"$out/godot.log" 2>&1 || { tail -20 "$out/godot.log"; fail "look-dev run exited non-zero (log: $out/godot.log)"; }
-if grep -E "$FAIL_PATTERN" "$out/godot.log" >/dev/null; then
-    grep -n -E -A3 "$FAIL_PATTERN" "$out/godot.log" | head -40
-    fail "look-dev run printed errors (log: $out/godot.log)"
-fi
-grep -q 'LOOKDEV OK' "$out/godot.log" || { tail -20 "$out/godot.log"; fail "look-dev run did not report LOOKDEV OK"; }
-grep -E '^(frame|gpu|cpu) |budget' "$out/godot.log"
+# The rooms rendered: the start room (perf.json, compared run to run), then the machine arena.
+ROOMS=("" MachineArena)
+for room in "${ROOMS[@]}"; do
+    name="${room:-start room}"
+    room_args=() perf="perf.json" log="$out/godot.log"
+    if [ -n "$room" ]; then
+        room_args=(--room "$room") perf="perf-$room.json" log="$out/godot-$room.log"
+    fi
+    printf '\033[1mrendering %s: photo spots, reels and frame times into %s\033[0m\n' "$name" "$out"
+    "$GODOT" --path . --disable-vsync --fixed-fps 60 --resolution 960x540 -- --lookdev "$out" --size "$SIZE" --perf "$perf" \
+        "${room_args[@]}" "${biome_args[@]}" >"$log" 2>&1 || { tail -20 "$log"; fail "look-dev run exited non-zero (log: $log)"; }
+    if grep -E "$FAIL_PATTERN" "$log" >/dev/null; then
+        grep -n -E -A3 "$FAIL_PATTERN" "$log" | head -40
+        fail "look-dev run printed errors (log: $log)"
+    fi
+    grep -q 'LOOKDEV OK' "$log" || { tail -20 "$log"; fail "look-dev run did not report LOOKDEV OK"; }
+    grep -E '^(frame|gpu|cpu) |budget' "$log"
+done
 if [ -d "$out/motion" ]; then python3 -I tools/motion_sheet.py "$out"; fi
+if [ -d "$out/machines" ]; then python3 -I tools/motion_sheet.py "$out" machines Machines 6x6 1440x810; fi
 ls "$out"/*.png | sed 's/^/  /'
 
 if [ -n "$previous" ] && [ -d "$previous" ]; then
