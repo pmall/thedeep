@@ -16,3 +16,4 @@ obj/
 /captures/
 # Look-dev runs (tools/capture.sh)
 /lookdev/
+.claude/worktrees/

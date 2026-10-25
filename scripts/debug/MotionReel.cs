@@ -135,6 +135,37 @@ public static class MotionReel
                     new(92, "fall"), new(105, "land"),
                 }),
         }, Abilities: Ability.MagGrip),
+        new("MechanicsLab", "combat", "Combat", 8f, new Segment[]
+        {
+            // Swings at the Votary: the crescent, the hit flash and knockback, then it breaks.
+            new(new Vector3(27.4f, 0f, 0f), 1, 130,
+                new Press[]
+                {
+                    new(10, InputActions.Attack, true), new(12, InputActions.Attack, false),
+                    new(32, InputActions.Attack, true), new(34, InputActions.Attack, false),
+                    new(50, InputActions.MoveRight, true), new(56, InputActions.MoveRight, false),
+                    new(58, InputActions.Attack, true), new(60, InputActions.Attack, false),
+                    new(80, InputActions.MoveRight, true), new(86, InputActions.MoveRight, false),
+                    new(88, InputActions.Attack, true), new(90, InputActions.Attack, false),
+                },
+                new Shot[]
+                {
+                    new(10, "ready"), new(12, "swing"), new(14, "swing"), new(16, "swing"), new(18, "swing"), new(21, "swing"),
+                    new(25, "hit"), new(34, "swing"), new(37, "swing"), new(60, "swing"), new(64, "hit"), new(90, "swing"),
+                    new(93, "break"), new(100, "break"), new(110, "break"), new(125, "gone"),
+                },
+                Camera: new Vector3(28.5f, 1.4f, 7f)),
+            // Lingering in front of the Votary: its wind-up, the blow, the pilgrim thrown back and shimmering.
+            new(new Vector3(27.4f, 0f, 0f), 1, 150,
+                new Press[0],
+                new Shot[]
+                {
+                    new(10, "linger"), new(30, "wind-up"), new(45, "wind-up"), new(55, "blow"), new(60, "blow"), new(66, "thrown"),
+                    new(74, "thrown"), new(84, "shimmer"), new(96, "shimmer"), new(110, "shimmer"), new(130, "shimmer"),
+                    new(145, "calm"),
+                },
+                Camera: new Vector3(27f, 1.6f, 9f)),
+        }),
     };
 
     /// <summary>A room's reels.</summary>

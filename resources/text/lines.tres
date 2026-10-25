@@ -33,6 +33,27 @@ Speaker = "Limpet"
 Text = "Sleep is the shortest road to the core. Do not wake me twice."
 Notes = "Grinding, drowsy, then sharp on the last words."
 
+[sub_resource type="Resource" id="ui_rest"]
+script = ExtResource("2_line")
+Id = &"ui.rest"
+Speaker = "UI"
+Text = "Rest"
+Notes = "The prompt at a pilgrim shrine."
+
+[sub_resource type="Resource" id="ability_mag_grip_name"]
+script = ExtResource("2_line")
+Id = &"ability.mag_grip.name"
+Speaker = "UI"
+Text = "Mag-grip"
+Notes = "Banner title when the relic is taken."
+
+[sub_resource type="Resource" id="ability_mag_grip_hint"]
+script = ExtResource("2_line")
+Id = &"ability.mag_grip.hint"
+Speaker = "UI"
+Text = "Press into metal to walk its walls and ceilings. Jump to leap away."
+Notes = "Banner line under the title."
+
 [resource]
 script = ExtResource("1_book")
-Lines = [SubResource("creed_votary"), SubResource("creed_gleaner"), SubResource("creed_lamplighter"), SubResource("creed_limpet")]
+Lines = [SubResource("creed_votary"), SubResource("creed_gleaner"), SubResource("creed_lamplighter"), SubResource("creed_limpet"), SubResource("ui_rest"), SubResource("ability_mag_grip_name"), SubResource("ability_mag_grip_hint")]

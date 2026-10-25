@@ -49,6 +49,8 @@ instance uniform float machine_seed = 0.0;
 instance uniform float alert : hint_range(0.0, 1.0) = 0.0;
 instance uniform float rouse : hint_range(0.0, 1.0) = 1.0;
 instance uniform float scroll = 0.0;
+// A white flash when hurt (a machine taking a blow, the pilgrim shimmering in its grace period), 0 to 1.
+instance uniform float hurt : hint_range(0.0, 1.0) = 0.0;
 
 void vertex() {
 	v_world_pos = (MODEL_MATRIX * vec4(VERTEX, 1.0)).xyz;
@@ -133,7 +135,7 @@ void fragment() {
 	// Dormant machines barely glow; alert ones glow hotter.
 	glow *= (0.08 + 0.92 * rouse) * (1.0 + 0.6 * alert);
 
-	ALBEDO = mix(albedo, glow_color, min(glow, 1.0) * 0.6);
+	ALBEDO = mix(mix(albedo, glow_color, min(glow, 1.0) * 0.6), vec3(1.0), hurt * 0.35);
 	NORMAL = n;
 	ROUGHNESS = rough;
 	METALLIC = metal;
@@ -141,5 +143,5 @@ void fragment() {
 	CLEARCOAT_ROUGHNESS = 0.2;
 	RIM = rim;
 	RIM_TINT = 0.4;
-	EMISSION = glow_color * glow * glow_energy;
+	EMISSION = glow_color * glow * glow_energy + vec3(0.95, 0.92, 1.0) * hurt * 0.9;
 }

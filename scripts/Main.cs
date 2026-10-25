@@ -1,4 +1,5 @@
 using System;
+using System.Linq;
 using Godot;
 
 namespace TheDeep;
@@ -34,6 +35,9 @@ public partial class Main : Node3D
     /// <summary>User argument that runs the scripted Mag-grip check (see GripCheck), used by tools/check.sh.</summary>
     private const string GripCheckArgument = "--grip-check";
 
+    /// <summary>User argument that runs the scripted combat and session check (see CombatCheck), used by tools/check.sh.</summary>
+    private const string CombatCheckArgument = "--combat-check";
+
     /// <summary>User argument that checks every machine species and quits (see SpeciesValidator), used by tools/check.sh.</summary>
     private const string ValidateSpeciesArgument = "--validate-species";
 
@@ -44,11 +48,39 @@ public partial class Main : Node3D
     [Export] public SideCamera Camera { get; set; } = null!;
     [Export] public DebugHud Hud { get; set; } = null!;
     [Export] public RoomTravel Travel { get; set; } = null!;
+    [Export] public Session Session { get; set; } = null!;
+    [Export] public HealthHud Health { get; set; } = null!;
+
+    /// <summary>`--new`: start a new game, ignoring (and not touching) the save until the first rest.</summary>
+    private const string NewGameArgument = "--new";
+
+    /// <summary>Arguments that run a check or a look-dev driver: those runs never read or write the save.</summary>
+    private static readonly string[] DriverArguments =
+    {
+        SmokeArgument, CaptureTestArgument, LookDevArgument, ValidateRoomsArgument, ValidateTravelArgument, ValidateSpeciesArgument,
+        GripCheckArgument, CombatCheckArgument,
+    };
+
+    private SaveData? _resume;
 
     public override void _EnterTree()
     {
+        string[] args = OS.GetCmdlineUserArgs();
+        bool driven = DriverArguments.Any(a => Array.IndexOf(args, a) >= 0);
+        bool pickedRoom = Array.IndexOf(args, RoomArgument) >= 0;
+
+        // A normal launch resumes from the save: the world starts in the room of the last shrine rested at.
+        if (!driven && !pickedRoom && Array.IndexOf(args, NewGameArgument) < 0 && SaveFile.Read() is { } save
+            && ResourceLoader.Exists(World.RoomPath(save.Room)))
+        {
+            _resume = save;
+            World.StartRoom = GD.Load<PackedScene>(World.RoomPath(save.Room));
+        }
+
+        Session.Persist = !driven && !pickedRoom;
+
         // Before the world is ready, so it loads the requested room instead of its start room.
-        if (ArgumentValue(OS.GetCmdlineUserArgs(), RoomArgument) is { } roomName)
+        if (ArgumentValue(args, RoomArgument) is { } roomName)
         {
             string path = World.RoomPath(roomName);
             if (ResourceLoader.Exists(path))
@@ -66,6 +98,10 @@ public partial class Main : Node3D
     {
         Room room = World.Room;
         Player.Respawn(room.SpawnPoint.GlobalPosition);
+        if (_resume is not null)
+        {
+            Session.Resume(_resume);
+        }
 
         string[] args = OS.GetCmdlineUserArgs();
         if (ArgumentValue(args, BiomeArgument) is { } biomeName)
@@ -92,6 +128,10 @@ public partial class Main : Node3D
         {
             AddChild(new GripCheck { Player = Player });
         }
+        else if (Array.IndexOf(args, CombatCheckArgument) >= 0)
+        {
+            AddChild(new CombatCheck { Player = Player, World = World, Session = Session });
+        }
         else if (Array.IndexOf(args, ValidateSpeciesArgument) >= 0)
         {
             AddChild(new SpeciesValidator { Room = room, Player = Player, Machines = Machines });
@@ -109,7 +149,7 @@ public partial class Main : Node3D
             Travel.Enabled = false;
             var driver = new LookDevDriver
             {
-                Player = Player, Room = room, Camera = Camera, Machines = Machines, Overlays = new CanvasLayer[] { Hud, Capture },
+                Player = Player, Room = room, Camera = Camera, Machines = Machines, Overlays = new CanvasLayer[] { Hud, Capture, Health },
                 OutputDir = outputDir, PerfFile = ArgumentValue(args, PerfArgument) ?? "perf.json",
             };
             if (ArgumentValue(args, SizeArgument) is { } size && size.Split('x') is [var w, var h]

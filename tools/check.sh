@@ -66,7 +66,13 @@ grep 'TRAVEL OK' "$LOG_DIR/travel.log"
 scan_log "$LOG_DIR/grip.log" "grip check"
 grep -q 'GRIP OK' "$LOG_DIR/grip.log" || { tail -20 "$LOG_DIR/grip.log"; fail "grip check did not report GRIP OK"; }
 grep 'GRIP OK' "$LOG_DIR/grip.log"
-# f) Machine species: data, then each one alive in the arena without and with the player (SpeciesValidator).
+# f) Combat and session: struck, swings break a machine, death and return, rest, relic (CombatCheck, in the lab).
+"$GODOT" --headless --path . --fixed-fps 60 --quit-after 4000 -- --room MechanicsLab --combat-check >"$LOG_DIR/combat.log" 2>&1 \
+    || { grep -E 'COMBAT CHECK|ERROR' "$LOG_DIR/combat.log" | head -40; fail "combat check failed (full log: $LOG_DIR/combat.log)"; }
+scan_log "$LOG_DIR/combat.log" "combat check"
+grep -q 'COMBAT OK' "$LOG_DIR/combat.log" || { tail -20 "$LOG_DIR/combat.log"; fail "combat check did not report COMBAT OK"; }
+grep 'COMBAT OK' "$LOG_DIR/combat.log"
+# g) Machine species: data, then each one alive in the arena without and with the player (SpeciesValidator).
 "$GODOT" --headless --path . --fixed-fps 60 --quit-after 9000 -- --room MachineArena --validate-species >"$LOG_DIR/species.log" 2>&1 \
     || { grep -E 'SPECIES CHECK|ERROR' "$LOG_DIR/species.log" | head -40; fail "species check failed (full log: $LOG_DIR/species.log)"; }
 scan_log "$LOG_DIR/species.log" "species check"

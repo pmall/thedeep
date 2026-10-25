@@ -13,6 +13,7 @@ Run it after every change and before every commit. It stops at the first failure
    - (d) Species check (`-- --room MachineArena --validate-species`, `scripts/debug/SpeciesValidator.cs`): every `resources/machines/*.tres` loads, its id is its file name, it has a behavior, its parts, chains, drivers and legs name existing joints (and no driver poses a leg joint), and its creed line is in `resources/text/lines.tres`. Then each species lives alone in the arena for 4 s without the player and 6 s with the player running, jumping and dashing next to it; any error, or a machine leaving the room, fails. It prints one line per species (layer, hostile or not, behavior, the acts seen) and `SPECIES OK` with the count per layer, the non-hostile count and likely duplicates (same behavior and same body).
    - (e) Travel check (`-- --validate-travel`, `scripts/debug/TravelValidator.cs`): every open exit of every room is crossed (the player put in its area, moving out); the player must arrive in the target room, the room must be placed on the map, and the player must stay there a second (no bounce back). Prints `TRAVEL OK`.
    - (f) Grip check (`-- --room MechanicsLab --grip-check`, `scripts/debug/GripCheck.cs`): Mag-grip through the real inputs in the mechanics lab: stick to a wall, climb, turn under a slab, wrap its end onto its top, hang under a block and wrap onto it, leap off, let go. Prints `GRIP OK`.
+   - (g) Combat check (`-- --room MechanicsLab --combat-check`, `scripts/debug/CombatCheck.cs`): lingering before the lab's Votary gets the pilgrim struck; swings break it; a deadly blow brings the pilgrim back whole at the spawn with the Votary renewed; resting at the shrine heals and makes it the return point (a second death comes back there); walking into the relic takes its ability. Prints `COMBAT OK`.
 4. xUnit tests in `tests/TheDeep.Tests`.
 
 The unit tests include `VideoEncoderTests`, which run the real `ffmpeg` (a required tool, see [toolchain.md](toolchain.md)).
@@ -42,6 +43,7 @@ tools/capture.sh after-fog         # renders, then compares with the previous ru
 Each run renders the drowned hall, the Narthex, the machine arena and the mechanics lab (`ROOMS` in `tools/capture.sh`; the first one's frame times go to `perf.json`), into a fresh `lookdev/<date>_<time>[-label]/` (git-ignored) with:
 - `<Room>-<Spot>.png`: every **photo spot** of both rooms at 1920×1080, no HUD. The room's machines are reset before each spot, so they are caught in the same pose every run;
 - `Motion.png`: the **motion reel** (test room only, `scripts/debug/MotionReel.cs`): idle, run start, run cycle, stop, turn, jump, dash off a ledge and a hard landing, shot close and laid out as a contact sheet (frames in `motion/`). Judge animation changes on it;
+- `Combat.png`: the **combat reel** (mechanics lab): swings at a Votary until it breaks, then lingering in front of it: its wind-up, the blow, the pilgrim thrown back and shimmering;
 - `Grip.png`: the **grip reel** (mechanics lab): onto a metal wall, up it, under the slab and around its end; a jump into a block's underside, along it and over; a leap off the wall;
 - `Machines.png`: the **machine reel** (arena, same file): a Votary striking the pilgrim who steps in front of it, the Gleaner bolting, the Limpet waking to a landing, crawling down its reliquary and drilling, the Lamplighter following and swapping sides; frames in `machines/`. Judge machine looks and behaviors on it;
 - `perf.json` (test room) and `perf-MachineArena.json`: frame, GPU and CPU render times (average, p99, worst) over a 900-frame scripted run with the gameplay camera, checked against the 10 ms budget;
@@ -94,12 +96,15 @@ What the owner does to test a build. Remind them of this when handing over:
    | Move | A / D or arrows | Stick or d-pad |
    | Jump (hold for height) | Space or Z | A |
    | Dash | Shift or C | RB or RT |
+   | Attack | J or X | X |
+   | Rest at a shrine | E | Y |
+   | Map | M or Tab | LB |
    | Respawn | R | Back |
    | Screenshot | F12 | Share |
    | Start/stop video | F10 | — |
 
 3. To watch the machines: `godot --path . -- --room MachineArena`. Walk right from the start: three Votaries pray toward a shrine (whoever lingers in front of one is struck after a wind-up: run or dash past, or take the gallery over them), then a Gleaner picking at scrap (it flees), then a Limpet asleep on a metal block (land a jump near it to wake it). A Lamplighter floats near the start and follows you once it has seen you. Hits only throw sparks for now: damage comes with M6.
 4. In debug builds, F6 cycles the room through the biome profiles (Flooded, Volcanic draft). `godot --path . -- --biome volcanic` starts with one, and `-- --room <Name>` starts in `scenes/rooms/<Name>.tscn`.
-5. The top-left readout shows the movement state, velocity, floor contact and dash cooldown.
+5. The game resumes from the last shrine rested at; `godot --path . -- --new` starts over. F3 shows the debug readout (movement state, velocity, floor contact, dash cooldown, abilities).
 6. To report something, press F12 (or record with F10) and say "look at the last screenshot". Files land in `captures/`.
 7. Feedback is given in plain words ("floaty jump", "camera lags"). The agent translates it into tuning changes. The owner may also edit `resources/player_tuning.tres` and relaunch, which needs no rebuild.

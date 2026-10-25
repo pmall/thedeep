@@ -44,6 +44,9 @@ uniform int windows : hint_range(1, 12) = 4;
 uniform float pulse : hint_range(0.0, 1.0) = 0.0;
 group_uniforms;
 
+// A white flash when hurt (a machine taking a blow, the pilgrim shimmering in its grace period), 0 to 1.
+instance uniform float hurt : hint_range(0.0, 1.0) = 0.0;
+
 void vertex() {
 	SURFACE_VERTEX
 }
@@ -100,7 +103,7 @@ void fragment() {
 	}
 	glow *= 1.0 - pulse * (0.5 + 0.5 * sin(TIME * 1.3));
 
-	ALBEDO = mix(albedo, glow_color, glow * 0.6);
+	ALBEDO = mix(mix(albedo, glow_color, glow * 0.6), vec3(1.0), hurt * 0.5);
 	ROUGHNESS = rough;
 	METALLIC = metal;
 	CLEARCOAT = coat * (1.0 - trim);
@@ -111,5 +114,5 @@ void fragment() {
 		ANISOTROPY = anisotropy;
 		ANISOTROPY_FLOW = vec2(1.0, 0.0);
 	}
-	EMISSION = glow_color * glow * glow_energy;
+	EMISSION = glow_color * glow * glow_energy + vec3(0.95, 0.92, 1.0) * hurt * 0.8;
 }

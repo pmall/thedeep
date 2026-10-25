@@ -49,7 +49,13 @@ scripts/
   tuning/JumpMath.cs       gravity / take-off speed from jump height + time to apex
   rooms/World.cs           holds the current room: loads room scenes (StartRoom, `--room`), RoomLoaded event, the map
   rooms/RoomTravel.cs      crossing an exit: fade, load the target room, place the player at the arrival exit
-  props/Shrine.cs          a pilgrim shrine (save point); scenes/props/Shrine.tscn
+  props/Shrine.cs          a pilgrim shrine (rest: heal, save), with its "Rest" prompt; scenes/props/Shrine.tscn
+  props/AbilityRelic.cs    an ability relic: taken by walking into it; scenes/props/AbilityRelic.tscn
+  combat/                  pure: Vitality (health + grace), Swing (swing timing); PlayerAttack (the swing, its crescent,
+                           the area it hits), SlashMesh (the crescent mesh)
+  game/Session.cs          the flow: shrines, relics, death and return, resuming from the save
+  game/SaveData.cs, SaveFile.cs   pure save data (JSON) and user://save.json
+  ui/HealthHud.cs, ui/Banner.cs   health diamonds top left; a title and line for an ability taken
   rooms/Room.cs            spawn point, camera bounds, biome (ApplyBiome), photo spots, its Stage
   rooms/RoomStage.cs       shared atmosphere stack sized from the room's bounds: environment, key light, clear front
                            fog, two skylines, far pillars, framing foreground above and below, dust
@@ -110,6 +116,7 @@ scripts/
   debug/RoomValidator.cs   checks every room scene (grid, exits, bounds), `-- --validate-rooms`
   debug/TravelValidator.cs crosses every open exit, `-- --validate-travel`
   debug/GripCheck.cs       scripted Mag-grip run in the mechanics lab, `-- --room MechanicsLab --grip-check`
+  debug/CombatCheck.cs     scripted combat and session run in the lab, `-- --room MechanicsLab --combat-check`
   debug/CaptureTestDriver.cs  windowed capture check + frame times (`-- --capture-test`)
   debug/LookDevDriver.cs   photo spots + frame times for tools/capture.sh (`-- --lookdev <dir>`)
   debug/DemoInput.cs       scripted run/jump/dash input for drivers
@@ -162,6 +169,7 @@ tools/motion_sheet.py          contact sheet of a look-dev reel (Motion.png, Mac
 - **Rooms:** each room is its own scene in `scenes/rooms/` with a `Room` root: spawn point, camera bounds, biome, photo spots, and `RoomExit` markers. `World` (in `Main`) loads one; nodes that need the room (camera, cheats, capture) reference `World` and read `World.Room`. An exit's `Requires` is for leaving through it; the way back is the target exit's own, and a two-way exit's target must lead back (`OneWay` otherwise). `RoomValidator` (in `tools/check.sh`) checks every room: block edges on the 0.5 m grid and axis-aligned, kit piece origins on the 0.25 m grid, spawn and exits inside the bounds, exit requirements parse, targets exist and lead back, at least one photo spot. **Travel** (M6): an open exit (with a `TargetRoom`) makes a trigger area on the `trigger` layer; walking into it raises `Crossed`, and `RoomTravel` holds the player under a short fade (`ScreenFade`), loads the target room (rooms always sit at the world origin), places the player at the arrival exit keeping its momentum (`ExitMath`: the offset along a wide hatch is kept, a doorway keeps the height), disarms the arrival exit until the player leaves it, and fades back in. The camera snaps on `Player.Arrived`; each room's camera bounds are its own. `World.Map` places each visited room from the exits crossed (no hand list): the map screen draws them. `TravelValidator` crosses every open exit in `tools/check.sh`. The map graph extractor comes in M7.
 
 - **Machines** (M5): one `Machine` node type for every species; a room places `Machine` nodes (in `Machines`) pointing at a `MachineSpecies` `.tres`. The species holds everything else: its body (a `PartAssembly` in `resources/parts/`, the same part system as the pilgrim), its locomotion (`Walk` on the ground, `Hover` in the plane, `Crawl` over the faces of the metal block it starts on, found from the physics layer), its stats and palette, its behavior and its animation. The behavior is a `MachineBehavior` resource exporting the knobs of one **brain**: a pure class (`machines/brains/`) that turns a `Perception` into an `Intent` each tick, built from the vocabulary (`Senses`, `Steering`, `PrayerCycle`, `StrikeAction`) and unit tested without the engine. The intent's channels (`Pray`, `Strike`, `Alert`, `Rouse`, `Work`) and the machine's speed drive its animation as data: `JointDriver`s pose, wave, spin or aim joints, `MachineLeg`s step by IK with planted feet. `MachineDirector` (in `Main`) collects the room's machines when it loads, builds their perception (the player's chest and line of sight on the world layers, impacts from the player's landings and dashes, neighbors and what they broadcast) and steps them in scene order, so look-dev and checks are deterministic. Adding a species is one `.tres` (and its body); a brain only for a truly new behavior. A strike's wind-up always comes before the blow, and only hostile species' eyes turn the hazard color. `SpeciesValidator` (in `tools/check.sh`) checks every species' data and runs each one alone in the arena, without and with the player.
+- **Combat and session** (M6): `PlayerAttack` (a child of the player) raises `Striking(area, swing)` while a swing's hit window is open; `MachineDirector` hits each machine whose `BodyRect` the area reaches once per swing (`Machine.TakeHit`: flash through the `hurt` instance uniform of machine.gdshader, stagger, knockback, breaking) and turns machine blows into `Player.TakeHit`. `Session` (in Main) handles shrines, relics, death and the return to the last shrine, and the save (`SaveData` ↔ `user://save.json`); `Main` resumes from the save on a normal launch. Text shown (the "Rest" prompt, ability banners) comes from the line book.
 - **Text** is data: `resources/text/lines.tres` (`LineBook`) holds every line with a stable id, a speaker and delivery notes; species point at their creed by id.
 
 ## Physics layers
@@ -192,7 +200,7 @@ Code with no Godot types is compiled straight into the xUnit project via `<Compi
 - `capture/CaptureFiles.cs`, `capture/CaptureReport.cs`, `capture/VideoClock.cs`, `capture/FfmpegCommand.cs`
 - `capture/VideoEncoder.cs` (plain .NET; its tests run the real ffmpeg)
 - `kit/MeshData.cs`, `kit/MeshBuilder.cs`, `kit/Profile.cs`, `kit/PathFrame.cs`, `kit/SweepPath.cs`, `kit/KitShapes.cs` (System.Numerics)
-- `map/Requirement.cs`, `map/GridSnap.cs`, `map/ExitMath.cs`, `map/MapState.cs`, `rooms/dressing/DressingLayout.cs`, `player/GripMath.cs`
+- `map/Requirement.cs`, `map/GridSnap.cs`, `map/ExitMath.cs`, `map/MapState.cs`, `rooms/dressing/DressingLayout.cs`, `player/GripMath.cs`, `combat/Vitality.cs`, `combat/Swing.cs`, `game/SaveData.cs`
 - `parts/PartShapes.cs`, `parts/PlanarIk.cs`, `parts/VerletChain.cs`, `parts/Humanoid*.cs`, `parts/PartCategory.cs`, `player/MotionMode.cs`, `player/PilgrimMotion.cs`
 - `machines/MachineAct.cs`, `Perception.cs`, `Intent.cs`, `Senses.cs`, `Steering.cs`, `PrayerCycle.cs`, `StrikeAction.cs`, `MachineBrain.cs`, `SurfacePath.cs`, `LegGait.cs`, `machines/brains/*.cs`
 

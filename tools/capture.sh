@@ -83,6 +83,7 @@ done
 if [ -d "$out/motion" ]; then python3 -I tools/motion_sheet.py "$out"; fi
 if [ -d "$out/machines" ]; then python3 -I tools/motion_sheet.py "$out" machines Machines 6x6 1440x810; fi
 if [ -d "$out/grip" ]; then python3 -I tools/motion_sheet.py "$out" grip Grip 6x6 1440x810; fi
+if [ -d "$out/combat" ]; then python3 -I tools/motion_sheet.py "$out" combat Combat 7x4 1440x810; fi
 ls "$out"/*.png | sed 's/^/  /'
 
 if [ -n "$previous" ] && [ -d "$previous" ]; then

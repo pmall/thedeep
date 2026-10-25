@@ -12,12 +12,14 @@
 [ext_resource type="PackedScene" path="res://scenes/fx/Puff.tscn" id="10_puff"]
 [ext_resource type="PackedScene" path="res://scenes/fx/Sparks.tscn" id="11_sparks"]
 [ext_resource type="Material" path="res://assets/materials/pilgrim/dash_trail.tres" id="12_trail_material"]
+[ext_resource type="Script" path="res://scripts/combat/PlayerAttack.cs" id="13_attack"]
+[ext_resource type="Material" path="res://assets/materials/pilgrim/slash.tres" id="15_slash"]
 
 [sub_resource type="CapsuleShape3D" id="CapsuleShape3D_body"]
 radius = 0.35
 height = 1.6
 
-[node name="Player" type="CharacterBody3D" node_paths=PackedStringArray("Visual")]
+[node name="Player" type="CharacterBody3D" node_paths=PackedStringArray("Visual", "Attack")]
 collision_layer = 4
 collision_mask = 3
 axis_lock_linear_z = true
@@ -25,6 +27,7 @@ floor_snap_length = 0.25
 script = ExtResource("1_player")
 Tuning = ExtResource("2_tuning")
 Visual = NodePath("Visual")
+Attack = NodePath("Attack")
 
 [node name="Collision" type="CollisionShape3D" parent="."]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.8, 0)
@@ -82,3 +85,16 @@ Count = 4
 [node name="DashTrail" type="MeshInstance3D" parent="Effects"]
 material_override = ExtResource("12_trail_material")
 script = ExtResource("8_trail")
+
+; The swing (attack): times it, draws the crescent, reports the area it hits (the machine director resolves hits).
+[node name="Attack" type="Node3D" parent="." node_paths=PackedStringArray("Player", "Slash")]
+script = ExtResource("13_attack")
+Player = NodePath("..")
+Slash = NodePath("Slash")
+
+; centered on the chest, a little toward the camera so it draws over the body; its mesh is a SlashMesh made on ready
+; (a procedural mesh sub-resource here would be built by the headless import, where C# scripts do not run)
+[node name="Slash" type="MeshInstance3D" parent="Attack"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.45, 0.95, 0.35)
+material_override = ExtResource("15_slash")
+cast_shadow = 0

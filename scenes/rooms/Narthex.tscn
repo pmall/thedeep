@@ -260,7 +260,8 @@ PlayerPosition = Vector3(4, 0, 0)
 [node name="Shrine" type="Marker3D" parent="PhotoSpots"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 13, 2, 8)
 script = ExtResource("19_spot")
-PlayerPosition = Vector3(11, 0.5, 0)
+PlayerPosition = Vector3(12.5, 0.5, 0)
+ShowHud = true
 
 ; the whole porch
 [node name="Wide" type="Marker3D" parent="PhotoSpots"]

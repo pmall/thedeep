@@ -1,0 +1,10 @@
+[gd_resource type="ShaderMaterial" format=3]
+; The pilgrim's swing (assets/shaders/slash.gdshader); PlayerAttack drives progress and strength.
+
+[ext_resource type="Shader" path="res://assets/shaders/slash.gdshader" id="1_shader"]
+
+[resource]
+render_priority = 1
+shader = ExtResource("1_shader")
+shader_parameter/progress = 0.0
+shader_parameter/strength = 0.0

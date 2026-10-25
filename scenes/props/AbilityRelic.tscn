@@ -22,8 +22,10 @@ height = 0.36
 radial_segments = 16
 rings = 8
 
-[node name="AbilityRelic" type="Node3D"]
+[node name="AbilityRelic" type="Node3D" node_paths=PackedStringArray("Core", "Light")]
 script = ExtResource("1_relic")
+Core = NodePath("Core")
+Light = NodePath("Light")
 
 [node name="Pedestal" type="MeshInstance3D" parent="."]
 mesh = SubResource("Pedestal")

@@ -57,6 +57,29 @@ public partial class PlayerTuning : Resource
     /// <summary>After letting go or leaping off, the same surface can't be gripped again for this long.</summary>
     [Export] public float GripRegrabDelay { get; set; } = 0.25f;
 
+    /// <summary>The swing: wind-up, the window in which it hits, recovery, then a short cooldown (seconds).</summary>
+    [ExportGroup("Attack")]
+    [Export] public float AttackWindUp { get; set; } = 0.04f;
+    [Export] public float AttackActive { get; set; } = 0.1f;
+    [Export] public float AttackRecover { get; set; } = 0.14f;
+    [Export] public float AttackCooldown { get; set; } = 0.05f;
+    /// <summary>The area a swing hits, in front of the chest: its length forward and its height.</summary>
+    [Export] public float AttackReach { get; set; } = 1.8f;
+    [Export] public float AttackHeight { get; set; } = 1.5f;
+    [Export] public int AttackDamage { get; set; } = 1;
+    /// <summary>Speed a hit machine is pushed back with (walkers and flyers).</summary>
+    [Export] public float AttackKnockback { get; set; } = 3f;
+
+    /// <summary>Hits the pilgrim can take.</summary>
+    [ExportGroup("Hurt")]
+    [Export] public int MaxHealth { get; set; } = 5;
+    /// <summary>After a hit, nothing hurts for this long.</summary>
+    [Export] public float HurtGrace { get; set; } = 1.2f;
+    /// <summary>A hit throws the pilgrim back (away from the blow) and up, and takes control away briefly.</summary>
+    [Export] public float HurtKnockback { get; set; } = 6f;
+    [Export] public float HurtLift { get; set; } = 6f;
+    [Export] public float HurtStun { get; set; } = 0.22f;
+
     public float Gravity => JumpMath.Gravity(JumpHeight, JumpTimeToApex);
 
     public float JumpTakeOffSpeed => JumpMath.TakeOffSpeed(JumpHeight, JumpTimeToApex);

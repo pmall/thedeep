@@ -10,7 +10,18 @@
 
 All numbers live in `resources/player_tuning.tres` (see "Tuning" below).
 
-## Unlockable abilities (not implemented yet)
+## Combat, health and the pilgrimage (M6)
+
+- **Attack** (J / X, pad X): a quick swing, a pale crescent sweeping from above to the front (`PlayerAttack`, timing in `Swing`, pure). It never stops the pilgrim: momentum carries through. Upright and on Mag-grip surfaces. A press during the recovery is buffered, so swings chain. Each machine the hit window reaches takes one hit per swing (`MachineDirector` resolves hits against each machine's body box): it flashes, reels (its brain stunned 0.35 s, a wind-up lost) and is pushed back; when its health (`MachineSpecies.Health`) is gone it folds down and is gone until the room is entered again.
+- **Health:** `MaxHealth` hits (5), shown top left as thin diamonds. A machine's blow (`MachineSpecies.Damage`) takes health, throws the pilgrim back and up, takes control away for `HurtStun`, then nothing hurts for `HurtGrace` (the body shimmers).
+- **Death:** the veil falls slowly; the pilgrim wakes at the last shrine it rested at, whole, the room renewed (its machines back).
+- **Pilgrim shrines** (save points, `scenes/props/Shrine.tscn`): standing at one shows "Rest"; **E** (pad Y) rests: full health, the glyphs flare, the game is saved there.
+- **Ability relics** (`scenes/props/AbilityRelic.tscn`): walking into one takes it: the pilgrim stands still while the core drifts in, the ability unlocks, a banner names it and says how to use it, and the game saves. A taken relic stays taken.
+- **Saving:** `user://save.json` (`SaveData`, pure; on Linux `~/.local/share/godot/app_userdata/The Deep/save.json`): the last shrine rested at, abilities, relics taken, the map. A normal launch resumes there; `godot --path . -- --new` starts fresh (the save is overwritten at the first rest). Checks, look-dev and `--room` runs never read or write it.
+- **Map** (M / Tab, pad LB): the visited rooms, placed from the exits crossed; pauses the game.
+- All combat numbers are in `player_tuning.tres` (Attack, Hurt groups), next to the movement ones.
+
+## Unlockable abilities
 
 These gate the map. Every ability is one simple state or rule: no systemic or emergent mechanics.
 
@@ -52,9 +63,11 @@ Input actions are defined in `project.godot` and mirrored in `scripts/core/Input
 | `jump` | Space, Z | A |
 | `dash` | Shift, C | RB, RT |
 | `attack` | J, X | X |
-| `interact` | E | Y |
+| `interact` (rest at a shrine) | E | Y |
+| `map` | M, Tab | LB |
 | `capture_screenshot` | F12 | Share / Misc |
 | `capture_video` (start/stop) | F10 | — |
 | `debug_respawn` | R | Back |
 | `debug_toggle_{mag_grip,harpoon,drill,ballast,heat_plating}` | F1–F5 | — |
 | `debug_cycle_biome` | F6 | — |
+| `debug_toggle_hud` (state readout) | F3 | — |

@@ -47,6 +47,9 @@ public partial class MachineSpecies : Resource
     /// <summary>Hits it takes (combat comes with M6).</summary>
     [Export] public int Health { get; set; } = 3;
 
+    /// <summary>Health a landed blow takes from the pilgrim.</summary>
+    [Export] public int Damage { get; set; } = 1;
+
     /// <summary>Rust on its edges and in its grooves, 0 to 1. Its colors come from the biome palette through its materials.</summary>
     [ExportGroup("Palette")]
     [Export(PropertyHint.Range, "0,1")] public float Wear { get; set; } = 0.3f;

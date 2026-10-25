@@ -29,9 +29,10 @@ Capital = 0.25
 [sub_resource type="QuadMesh" id="Glyphs"]
 size = Vector2(0.5, 3.2)
 
-[node name="Shrine" type="Node3D" node_paths=PackedStringArray("Light")]
+[node name="Shrine" type="Node3D" node_paths=PackedStringArray("Light", "Prompt")]
 script = ExtResource("1_shrine")
 Light = NodePath("Light")
+Prompt = NodePath("Prompt")
 
 [node name="Niche" type="MeshInstance3D" parent="."]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, -1.75)
@@ -59,3 +60,13 @@ transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.75, -1)
 light_energy = 0.8
 light_volumetric_fog_energy = 0.0
 omni_range = 4.0
+
+; "Rest", shown when the pilgrim stands close enough (text from the line ui.rest)
+[node name="Prompt" type="Label3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 2.6, 0.6)
+pixel_size = 0.004
+billboard = 1
+modulate = Color(0.94, 0.92, 1, 0)
+outline_modulate = Color(0.05, 0.04, 0.08, 0.6)
+font_size = 48
+outline_size = 8

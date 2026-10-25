@@ -22,6 +22,13 @@ public partial class Machine : CharacterBody3D
     private static readonly StringName AlertParameter = "alert";
     private static readonly StringName RouseParameter = "rouse";
     private static readonly StringName ScrollParameter = "scroll";
+    private static readonly StringName HurtParameter = "hurt";
+
+    /// <summary>A hit stuns the brain this long, seconds (a wind-up in progress is lost).</summary>
+    private const float StaggerTime = 0.35f;
+
+    /// <summary>A broken machine folds down and sinks over this long, then is gone.</summary>
+    private const float BreakTime = 0.6f;
 
     /// <summary>A crawler looks for its metal block this far around its origin, meters.</summary>
     private const float PerchSearch = 1.5f;
@@ -52,6 +59,11 @@ public partial class Machine : CharacterBody3D
     private float _walked;
     private float _stepping;
     private bool _blockedLeft, _blockedRight;
+    private Vitality _vitality = null!;
+    private float _stagger;
+    private float _flash;
+    private float _breaking = -1f;
+    private Vector3 _frameScale = Vector3.One;
 
     public MachineBrain Brain { get; private set; } = null!;
 
@@ -59,6 +71,22 @@ public partial class Machine : CharacterBody3D
     public Intent Intent { get; private set; }
 
     public int Facing { get; private set; } = 1;
+
+    /// <summary>Broken by the pilgrim: folding down, then gone until the room is entered again.</summary>
+    public bool Broken => _breaking >= 0f;
+
+    /// <summary>The box the body fills on the play plane (what a swing must reach).</summary>
+    public Rect2 BodyRect
+    {
+        get
+        {
+            Vector2 up = _path is not null ? _normal : new Vector2(0f, 1f);
+            Vector2 size = Species.BodySize;
+            Vector2 center = PlanePosition + (Species.Locomotion == Locomotion.Hover ? Vector2.Zero : up * size.Y * 0.5f);
+            Vector2 extent = Mathf.Abs(up.X) > 0.5f ? new Vector2(size.Y, size.X) : size;
+            return new Rect2(center - extent * 0.5f, extent);
+        }
+    }
 
     /// <summary>Where the machine is on the play plane: its feet on its surface, or its center for flyers.</summary>
     public Vector2 PlanePosition => _path is not null ? Flat(_path.At(_s).Point) : new Vector2(GlobalPosition.X, GlobalPosition.Y);
@@ -109,6 +137,13 @@ public partial class Machine : CharacterBody3D
     public void Reset()
     {
         Brain = Species.Behavior.CreateBrain(Species, Seed);
+        _vitality = new Vitality(Species.Health);
+        _stagger = 0f;
+        _flash = 0f;
+        _breaking = -1f;
+        Visible = true;
+        _frame.Scale = Vector3.One;
+        _body.SetShaderParameter(HurtParameter, 0f);
         GlobalPosition = _spawn;
         Velocity = Vector3.Zero;
         Facing = StartFacing < 0 ? -1 : 1;
@@ -135,16 +170,66 @@ public partial class Machine : CharacterBody3D
     public Perception Perceive(PlayerTrace? player, IReadOnlyList<Impact> impacts, IReadOnlyList<Neighbor> neighbors) =>
         new(_time, ToNumerics(PlanePosition), Facing, player, impacts, neighbors, _blockedLeft, _blockedRight);
 
+    /// <summary>
+    /// A blow from <paramref name="from"/> (on the play plane): flashes, staggers, is pushed away, and breaks when
+    /// its health is gone. Returns true if this blow broke it.
+    /// </summary>
+    public bool TakeHit(int damage, Vector2 from, float knockback)
+    {
+        if (Broken)
+        {
+            return false;
+        }
+
+        _vitality.Damage(damage);
+        _flash = 1f;
+        _stagger = StaggerTime;
+        float away = PlanePosition.X >= from.X ? 1f : -1f;
+        if (Species.Locomotion != Locomotion.Crawl)
+        {
+            Velocity = new Vector3(away * knockback, Species.Locomotion == Locomotion.Hover ? 1f : 2f, 0f);
+        }
+
+        if (_vitality.Dead)
+        {
+            _breaking = 0f;
+            _frameScale = _frame.Scale;
+            return true;
+        }
+
+        return false;
+    }
+
     /// <summary>One physics tick: think, move, animate.</summary>
     public void Step(float delta, in Perception perception)
     {
+        if (Broken)
+        {
+            Fold(delta);
+            return;
+        }
+
+        _flash = Mathf.Max(0f, _flash - delta * 5f);
+        _body.SetShaderParameter(HurtParameter, _flash);
         if (Species.Locomotion == Locomotion.Crawl && !_pathSearched)
         {
             FindPerch();
         }
 
         _time += delta;
-        Intent intent = Brain.Think(perception, delta);
+        Intent intent;
+        if (_stagger > 0f)
+        {
+            // Reeling: the brain is stunned, the body slides to a stop from its knockback.
+            _stagger -= delta;
+            intent = default;
+            intent.Rouse = Intent.Rouse;
+        }
+        else
+        {
+            intent = Brain.Think(perception, delta);
+        }
+
         Intent = intent;
         Vector2 wanted = new(intent.Velocity.X, intent.Velocity.Y);
         float travelled = Species.Locomotion switch
@@ -176,6 +261,21 @@ public partial class Machine : CharacterBody3D
         _body.SetShaderParameter(RouseParameter, intent.Rouse);
         // A machine faces the way it moves, so its treads always roll forward.
         _body.SetShaderParameter(ScrollParameter, _walked);
+    }
+
+    /// <summary>Breaking apart: the body folds down and sinks, its glow dying, then the machine is gone.</summary>
+    private void Fold(float delta)
+    {
+        _breaking += delta;
+        float k = Mathf.Clamp(_breaking / BreakTime, 0f, 1f);
+        float ease = k * k * (3f - 2f * k);
+        _frame.Scale = new Vector3(_frameScale.X * (1f + 0.15f * ease), _frameScale.Y * (1f - 0.75f * ease), _frameScale.Z);
+        _body.SetShaderParameter(HurtParameter, 1f - ease);
+        _body.SetShaderParameter(RouseParameter, 1f - ease);
+        if (k >= 1f)
+        {
+            Visible = false;
+        }
     }
 
     /// <summary>Walks along X under gravity; returns the distance moved this tick (signed, world X).</summary>

@@ -30,6 +30,8 @@ public partial class PlayerVisual : Node3D
     private PilgrimMotion? _motion;
     private int _facing = 1;
     private float _yaw;
+    private int _blinkTime;
+    private float _shimmer;
 
     /// <summary>Where the visible body still is relative to the collider after a snap; eases back to identity.</summary>
     private Transform3D _carry = Transform3D.Identity;
@@ -58,6 +60,21 @@ public partial class PlayerVisual : Node3D
         {
             _motion = new PilgrimMotion(_rig.Dims, runSpeed);
         }
+    }
+
+    private static readonly StringName HurtParameter = "hurt";
+
+    /// <summary>A pale shimmer over the body while the pilgrim can't be hurt (after a hit); false clears it. Per physics tick.</summary>
+    public void Blink(bool on)
+    {
+        _blinkTime = on ? _blinkTime + 1 : 0;
+        float shimmer = on ? 0.05f + 0.05f * Mathf.Sin(_blinkTime * 0.45f) : 0f;
+        if (on || _blinkTime == 0 && _shimmer != 0f)
+        {
+            Body.SetShaderParameter(HurtParameter, shimmer);
+        }
+
+        _shimmer = shimmer;
     }
 
     public void SetFacing(int facing) => _facing = facing < 0 ? -1 : 1;

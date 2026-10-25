@@ -17,8 +17,11 @@
 [ext_resource type="Script" path="res://scripts/rooms/RoomTravel.cs" id="14_travel"]
 [ext_resource type="Script" path="res://scripts/ui/ScreenFade.cs" id="15_fade"]
 [ext_resource type="Script" path="res://scripts/ui/MapScreen.cs" id="16_map"]
+[ext_resource type="Script" path="res://scripts/game/Session.cs" id="17_session"]
+[ext_resource type="Script" path="res://scripts/ui/HealthHud.cs" id="18_health"]
+[ext_resource type="Script" path="res://scripts/ui/Banner.cs" id="19_banner"]
 
-[node name="Main" type="Node3D" node_paths=PackedStringArray("World", "Player", "Machines", "Capture", "Camera", "Hud", "Travel")]
+[node name="Main" type="Node3D" node_paths=PackedStringArray("World", "Player", "Machines", "Capture", "Camera", "Hud", "Travel", "Session", "Health")]
 script = ExtResource("1_main")
 World = NodePath("World")
 Player = NodePath("Player")
@@ -27,6 +30,8 @@ Capture = NodePath("OwnerCapture")
 Camera = NodePath("SideCamera")
 Hud = NodePath("DebugHud")
 Travel = NodePath("RoomTravel")
+Session = NodePath("Session")
+Health = NodePath("HealthHud")
 
 ; Loads the room scenes (first child, so the room exists before the camera and HUD are ready).
 [node name="World" type="Node3D" parent="."]
@@ -55,6 +60,14 @@ World = NodePath("../World")
 Player = NodePath("../Player")
 Fade = NodePath("../ScreenFade")
 
+; Shrines (rest: heal and save), relics, death and the return to the last shrine, the save.
+[node name="Session" type="Node" parent="." node_paths=PackedStringArray("World", "Player", "Fade", "Banner")]
+script = ExtResource("17_session")
+World = NodePath("../World")
+Player = NodePath("../Player")
+Fade = NodePath("../ScreenFade")
+Banner = NodePath("../Banner")
+
 [node name="SideCamera" parent="." node_paths=PackedStringArray("Target", "World") instance=ExtResource("6_camera")]
 Target = NodePath("../Player")
 World = NodePath("../World")
@@ -63,6 +76,13 @@ World = NodePath("../World")
 
 [node name="ScreenFade" type="CanvasLayer" parent="."]
 script = ExtResource("15_fade")
+
+[node name="HealthHud" type="CanvasLayer" parent="." node_paths=PackedStringArray("Player")]
+script = ExtResource("18_health")
+Player = NodePath("../Player")
+
+[node name="Banner" type="CanvasLayer" parent="."]
+script = ExtResource("19_banner")
 
 [node name="MapScreen" type="CanvasLayer" parent="." node_paths=PackedStringArray("World", "Player")]
 script = ExtResource("16_map")

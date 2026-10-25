@@ -29,4 +29,5 @@ public static class InputActions
     public static readonly StringName DebugToggleBallast = "debug_toggle_ballast";
     public static readonly StringName DebugToggleHeatPlating = "debug_toggle_heat_plating";
     public static readonly StringName DebugCycleBiome = "debug_cycle_biome";
+    public static readonly StringName DebugToggleHud = "debug_toggle_hud";
 }

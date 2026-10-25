@@ -146,6 +146,11 @@ public partial class LookDevDriver : Node
         {
             Player.Respawn(Room.ToGlobal(spot.PlayerPosition), spot.PlayerFacing);
             Machines.ResetMachines();
+            foreach (CanvasLayer overlay in Overlays)
+            {
+                overlay.Visible = spot.ShowHud && overlay is HealthHud;
+            }
+
             Camera.FrameShot(spot.GlobalPosition, spot.Fov);
             for (int i = 0; i < SettleFrames; i++)
             {

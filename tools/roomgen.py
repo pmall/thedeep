@@ -246,12 +246,14 @@ class Room:
                          Size=Raw(vec(*size)), Depth=float(depth), SurfaceMaterial=self.ext('water'),
                          UnderwaterMaterial=self.ext('underwater'))
 
-    def photo(self, name, cam, player, facing=1, fov=None, comment=''):
+    def photo(self, name, cam, player, facing=1, fov=None, comment='', hud=False):
         props = {'transform': Raw(transform(cam)), 'script': self.ext('spot'), 'PlayerPosition': Raw(vec(player[0], player[1], 0))}
         if facing != 1:
             props['PlayerFacing'] = facing
         if fov:
             props['Fov'] = float(fov)
+        if hud:
+            props['ShowHud'] = True
         return self.node('PhotoSpots/' + name, type='Marker3D', comment=comment, **props)
 
     # ---- output

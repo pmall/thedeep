@@ -41,10 +41,16 @@ public partial class MachineDirector : Node
     private readonly List<Impact> _heard = new();
     private readonly List<Neighbor> _neighbors = new();
 
+    /// <summary>Machines already hit by a swing (by the swing's number), so a swing hits each once.</summary>
+    private readonly HashSet<(Machine, int)> _struck = new();
+
     /// <summary>False hides the player from every machine (the species check runs them alone).</summary>
     public bool PlayerPresent { get; set; } = true;
 
     public IReadOnlyList<Machine> Machines => _machines;
+
+    /// <summary>The pilgrim's swing hit a machine (true: and broke it).</summary>
+    public event Action<Machine, bool>? MachineHit;
 
     /// <summary>A machine's blow landed on the player.</summary>
     public event Action<Machine>? PlayerStruck;
@@ -54,6 +60,7 @@ public partial class MachineDirector : Node
         World.RoomLoaded += OnRoomLoaded;
         Player.Landed += OnLanded;
         Player.Dashed += OnDashed;
+        Player.Attack.Striking += OnStriking;
         OnRoomLoaded(World.Room);
     }
 
@@ -62,6 +69,7 @@ public partial class MachineDirector : Node
         World.RoomLoaded -= OnRoomLoaded;
         Player.Landed -= OnLanded;
         Player.Dashed -= OnDashed;
+        Player.Attack.Striking -= OnStriking;
     }
 
     /// <summary>Takes charge of a machine added after the room loaded (the species check spawns them).</summary>
@@ -90,6 +98,12 @@ public partial class MachineDirector : Node
         PhysicsDirectSpaceState3D space = Player.GetWorld3D().DirectSpaceState;
         foreach (Machine machine in _machines)
         {
+            if (machine.Broken)
+            {
+                machine.Step(dt, default);
+                continue;
+            }
+
             PlayerTrace? player = null;
             if (PlayerPresent)
             {
@@ -102,7 +116,7 @@ public partial class MachineDirector : Node
             Vector2 here = machine.PlanePosition;
             foreach (Machine other in _machines)
             {
-                if (other != machine && other.PlanePosition.DistanceTo(here) <= NeighborRange)
+                if (other != machine && !other.Broken && other.PlanePosition.DistanceTo(here) <= NeighborRange)
                 {
                     _neighbors.Add(new Neighbor(Flat(other.PlanePosition), other.Species.Id, other.Intent.Signal));
                 }
@@ -113,13 +127,35 @@ public partial class MachineDirector : Node
             {
                 HitSparks?.Emit(chest, 1f);
                 Camera?.AddShake(HitShake);
+                Player.TakeHit(machine.Species.Damage, new System.Numerics.Vector2(machine.PlanePosition.X, machine.PlanePosition.Y));
                 PlayerStruck?.Invoke(machine);
             }
         }
     }
 
+    /// <summary>The pilgrim's swing covers <paramref name="area"/>: every machine it reaches takes one hit per swing.</summary>
+    private void OnStriking(Rect2 area, int swing)
+    {
+        foreach (Machine machine in _machines)
+        {
+            if (machine.Broken || !machine.BodyRect.Intersects(area) || !_struck.Add((machine, swing)))
+            {
+                continue;
+            }
+
+            Rect2 body = machine.BodyRect.Intersection(area);
+            Vector2 at = body.GetCenter();
+            bool broke = machine.TakeHit(Player.Tuning.AttackDamage, new Vector2(Player.GlobalPosition.X, Player.GlobalPosition.Y),
+                Player.Tuning.AttackKnockback);
+            HitSparks?.Emit(new Vector3(at.X, at.Y, 0.3f), broke ? 1.5f : 0.7f);
+            Camera?.AddShake(broke ? 0.3f : 0.12f);
+            MachineHit?.Invoke(machine, broke);
+        }
+    }
+
     private void OnRoomLoaded(Room room)
     {
+        _struck.Clear();
         _machines.Clear();
         _impacts.Clear();
         Collect(room);

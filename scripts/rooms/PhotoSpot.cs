@@ -17,4 +17,7 @@ public partial class PhotoSpot : Marker3D
 
     /// <summary>Vertical field of view in degrees; 0 keeps the gameplay camera's.</summary>
     [Export] public float Fov { get; set; }
+
+    /// <summary>Shows the game's own HUD (health) in this shot, to judge it; the shots are otherwise clean.</summary>
+    [Export] public bool ShowHud { get; set; }
 }

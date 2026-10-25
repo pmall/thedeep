@@ -65,6 +65,9 @@ public partial class Room : Node3D
     /// <summary>The room's gameplay blocks, in scene order.</summary>
     public IEnumerable<Block> Blocks() => Find<Block>(this);
 
+    /// <summary>Every node of type <typeparamref name="T"/> in the room, in scene order (shrines, relics…).</summary>
+    public IEnumerable<T> All<T>() where T : Node => Find<T>(this);
+
     private static IEnumerable<T> Find<T>(Node parent) where T : Node
     {
         foreach (Node child in parent.GetChildren())

@@ -17,6 +17,7 @@ public partial class Player : CharacterBody3D
 
     [Export] public PlayerTuning Tuning { get; set; } = null!;
     [Export] public PlayerVisual Visual { get; set; } = null!;
+    [Export] public PlayerAttack Attack { get; set; } = null!;
 
     private PlayerState _state = null!;
     private readonly Countdown _coyote = new();
@@ -26,12 +27,19 @@ public partial class Player : CharacterBody3D
     private readonly Countdown _regrab = new();
     private int _airDashesLeft;
     private readonly Countdown _steer = new();
+    private readonly Countdown _stun = new();
     private int _steerDirection;
     private CapsuleShape3D _capsule = null!;
     private Vector3 _capsuleOffset;
 
     /// <summary>Raised after <see cref="Respawn"/> teleports the player.</summary>
     public event Action? Respawned;
+
+    /// <summary>Raised when a blow hurts the pilgrim (health already taken).</summary>
+    public event Action? Hurt;
+
+    /// <summary>Raised when the last health is lost.</summary>
+    public event Action? Died;
 
     /// <summary>Raised after <see cref="Arrive"/> places the player in a new room.</summary>
     public event Action? Arrived;
@@ -43,6 +51,12 @@ public partial class Player : CharacterBody3D
     public event Action<int>? Dashed;
 
     public AbilitySet Abilities { get; } = new();
+
+    /// <summary>The pilgrim's health (MaxHealth hits, a grace period after each).</summary>
+    public Vitality Vitality { get; private set; } = null!;
+
+    /// <summary>Whether the player's input counts now (not frozen by a transition, not reeling from a hit).</summary>
+    public bool InControl => !Frozen && !_stun.Active && !Vitality.Dead;
 
     /// <summary>Held still, velocity kept, no input read (during a room transition's fade).</summary>
     public bool Frozen { get; set; }
@@ -108,6 +122,7 @@ public partial class Player : CharacterBody3D
         _state = States.Idle;
         _state.Enter();
         _airDashesLeft = Tuning.AirDashes;
+        Vitality = new Vitality(Tuning.MaxHealth, Tuning.HurtGrace);
         Visual.Setup(Tuning.RunSpeed);
         Visual.Snap();
     }
@@ -127,6 +142,9 @@ public partial class Player : CharacterBody3D
         _dashCooldown.Tick(dt);
         _regrab.Tick(dt);
         _steer.Tick(dt);
+        _stun.Tick(dt);
+        Vitality.Tick(dt);
+        Visual.Blink(Vitality.Grace > 0f && !Vitality.Dead);
 
         ReadInput();
         if (_state.AllowsTurning && CurrentInput.MoveX != 0)
@@ -194,6 +212,7 @@ public partial class Player : CharacterBody3D
         _dashBuffer.Clear();
         _dashCooldown.Clear();
         _steer.Clear();
+        _stun.Clear();
         _airDashesLeft = Tuning.AirDashes;
         ResetPhysicsInterpolation();
         Visual.Snap();
@@ -327,6 +346,32 @@ public partial class Player : CharacterBody3D
     }
 
     /// <summary>
+    /// A blow from <paramref name="from"/> (on the play plane): takes <paramref name="damage"/> health unless in the
+    /// grace period, throws the pilgrim back and up, and briefly takes control away. Returns whether it hurt.
+    /// </summary>
+    public bool TakeHit(int damage, NVector2 from)
+    {
+        if (!Vitality.Damage(damage))
+        {
+            return false;
+        }
+
+        float away = GlobalPosition.X >= from.X ? 1f : -1f;
+        ChangeState(States.Fall);
+        Velocity = new Vector3(away * Tuning.HurtKnockback, Tuning.HurtLift, 0f);
+        _stun.Start(Tuning.HurtStun);
+        _jumpBuffer.Clear();
+        _dashBuffer.Clear();
+        Hurt?.Invoke();
+        if (Vitality.Dead)
+        {
+            Died?.Invoke();
+        }
+
+        return true;
+    }
+
+    /// <summary>
     /// Holds the horizontal input toward <paramref name="direction"/> for up to <paramref name="seconds"/>, or until
     /// the player lands (an upward arrival through a hatch, carried onto the floor beside it).
     /// </summary>
@@ -399,6 +444,12 @@ public partial class Player : CharacterBody3D
         if (_steer.Active && IsOnFloor() && Velocity.Y <= 0f)
         {
             _steer.Clear();
+        }
+
+        if (_stun.Active || Frozen)
+        {
+            CurrentInput = default;
+            return;
         }
 
         CurrentInput = new PlayerInput(
