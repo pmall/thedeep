@@ -12,11 +12,30 @@ namespace TheDeep;
 /// - exits have unique names, a valid requirement, an existing target room and exit, and a target that leads
 ///   back unless they are one-way;
 /// - the room has at least one photo spot.
+/// Then the map (M7, docs/long-term.md objective 2), extracted from the rooms in the game (<see cref="Room.InGame"/>):
+/// - the rooms placed from their exits line up around every loop and don't overlap (<see cref="MapLayout"/>);
+/// - every room is reachable from the start, a goal (<see cref="MapGoal"/>) is, and no reachable state is a
+///   softlock (<see cref="MapSolver"/>); prints the achievable ability orders (`--map-report`: the whole graph).
 /// </summary>
 public partial class RoomValidator : Node
 {
+    /// <summary>Two rooms' bounds may overlap this much on the map (their walls at a shared doorway), meters.</summary>
+    private const float DoorwayOverlap = 6f;
+
+    /// <summary>Order freedom target once all five abilities are on the map (docs/long-term.md): at least this many of the 120 orders.</summary>
+    private const int OrderTarget = 24;
+
     private readonly List<string> _problems = new();
+    private readonly MapGraph _graph = new();
+    private readonly List<MapLink> _links = new();
+    private readonly Dictionary<string, (System.Numerics.Vector2, System.Numerics.Vector2)> _bounds = new();
     private bool _done;
+
+    /// <summary>The start room's scene path (the world's start room).</summary>
+    public string StartRoom { get; set; } = "";
+
+    /// <summary>Print the whole map graph and every achievable order.</summary>
+    public bool Report { get; set; }
 
     public override void _Process(double delta)
     {
@@ -42,6 +61,7 @@ public partial class RoomValidator : Node
             room.Free();
         }
 
+        string map = CheckMap();
         foreach (string problem in _problems)
         {
             GD.PushError($"ROOM CHECK: {problem}");
@@ -50,6 +70,7 @@ public partial class RoomValidator : Node
         if (_problems.Count == 0)
         {
             GD.Print($"ROOMS OK: {rooms} rooms, {exits} exits");
+            GD.Print(map);
         }
 
         GetTree().Quit(_problems.Count == 0 ? 0 : 1);
@@ -109,7 +130,149 @@ public partial class RoomValidator : Node
             Problem("no PhotoSpot (tools/capture.sh needs at least one)");
         }
 
+        if (room.InGame)
+        {
+            Extract(room, World.NameOf(path), exits);
+        }
+
         return exits.Count;
+    }
+
+    /// <summary>The room's part of the map graph: its exits (one edge each, for leaving through it), relics and goals.</summary>
+    private void Extract(Room room, string name, List<RoomExit> exits)
+    {
+        static System.Numerics.Vector2 N(Vector2 v) => new(v.X, v.Y);
+        _graph.AddRoom(name);
+        _bounds[name] = (N(room.BoundsMin), N(room.BoundsMax));
+        foreach (RoomExit exit in exits.Where(e => e.TargetRoom != "" && ResourceLoader.Exists(e.TargetRoom)))
+        {
+            string target = World.NameOf(exit.TargetRoom);
+            if (!Requirement.TryParse(exit.Requires, out Requirement requires, out _))
+            {
+                continue;
+            }
+
+            _graph.AddEdge(new MapEdge(name, exit.Name, target, exit.TargetExit, requires));
+            Vector2? arrival = ArrivalPosition(exit.TargetRoom, exit.TargetExit);
+            if (arrival is { } to)
+            {
+                _links.Add(new MapLink(name, exit.Name, N(exit.RoomPosition), target, exit.TargetExit, N(to)));
+            }
+        }
+
+        foreach (AbilityRelic relic in room.All<AbilityRelic>())
+        {
+            _graph.AddItem(new MapItem(name, relic.Name, relic.Ability));
+        }
+
+        if (room.All<MapGoal>().Any())
+        {
+            _graph.AddGoal(name);
+        }
+    }
+
+    /// <summary>Where an exit sits in its room (the scene instanced but not run).</summary>
+    private static Vector2? ArrivalPosition(string scene, string exitName)
+    {
+        Node target = GD.Load<PackedScene>(scene).Instantiate();
+        try
+        {
+            if (target.FindChild(exitName, recursive: true, owned: true) is not RoomExit arrival)
+            {
+                return null;
+            }
+
+            Vector3 p = Vector3.Zero;
+            for (Node3D? n = arrival; n is not null && n != target; n = n.GetParent() as Node3D)
+            {
+                p = n.Transform * p;
+            }
+
+            return new Vector2(p.X, p.Y);
+        }
+        finally
+        {
+            target.Free();
+        }
+    }
+
+    /// <summary>Solves the extracted map and lays it out; adds problems; returns the summary line(s).</summary>
+    private string CheckMap()
+    {
+        string start = World.NameOf(StartRoom);
+        if (!_graph.Rooms.Contains(start))
+        {
+            _problems.Add($"map: the start room {start} is not a room in the game");
+            return "";
+        }
+
+        _graph.Start = start;
+        if (_graph.Goals.Count == 0)
+        {
+            _problems.Add("map: no room holds a MapGoal (where the journey ends)");
+        }
+
+        MapLayout.Result layout = MapLayout.Place(start, _links, _bounds, DoorwayOverlap);
+        foreach (string problem in layout.Problems)
+        {
+            _problems.Add($"map layout: {problem}");
+        }
+
+        MapReport report = MapSolver.Solve(_graph);
+        foreach (string room in report.UnreachableRooms)
+        {
+            _problems.Add($"map: {room} can't be reached from {start}");
+        }
+
+        if (!report.GoalReachable)
+        {
+            _problems.Add($"map: no goal can be reached from {start}");
+        }
+
+        foreach ((SolverState state, IReadOnlyList<SolverState> path) in report.Softlocks.Take(5))
+        {
+            _problems.Add($"map: softlock at {state}: no goal can be reached from there; reached by {string.Join(" → ", path)}");
+        }
+
+        if (report.AbilityCount == 5 && report.Orders.Count < OrderTarget)
+        {
+            _problems.Add($"map: only {report.Orders.Count} of {report.PossibleOrders} ability orders are achievable (target {OrderTarget})");
+        }
+
+        var text = new System.Text.StringBuilder();
+        text.Append($"MAP OK: {_graph.Rooms.Count} rooms, {_graph.Edges.Count} exits, {_graph.Items.Count} relics, ")
+            .Append($"{report.ReachableStates} states, no softlock, {report.Orders.Count} of {report.PossibleOrders} ability orders");
+        foreach ((Ability ability, SortedSet<int> at) in report.Positions)
+        {
+            text.Append($"; {ability} at {string.Join("/", at.Select(i => i + 1))}");
+        }
+
+        if (Report)
+        {
+            text.Append("\nmap graph (leaving through an exit needs its requirement):");
+            foreach (MapEdge e in _graph.Edges)
+            {
+                string needs = e.Requires.ToString();
+                text.Append($"\n  {e.From}:{e.FromExit} → {e.To}:{e.ToExit}{(needs == "" ? "" : $"  needs {needs}")}");
+            }
+
+            foreach (MapItem item in _graph.Items)
+            {
+                text.Append($"\n  relic {item.Ability} in {item.Room} ({item.Name})");
+            }
+
+            foreach ((string room, System.Numerics.Vector2 offset) in layout.Offsets.OrderBy(o => o.Key, System.StringComparer.Ordinal))
+            {
+                text.Append($"\n  {room} at ({offset.X:0.##}, {offset.Y:0.##})");
+            }
+
+            foreach (Ability[] order in report.Orders)
+            {
+                text.Append($"\n  order: {string.Join(" → ", order)}");
+            }
+        }
+
+        return text.ToString();
     }
 
     private static void CheckExit(RoomExit exit, string path, bool inside, System.Action<string> problem)

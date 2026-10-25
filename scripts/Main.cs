@@ -118,7 +118,7 @@ public partial class Main : Node3D
 
         if (Array.IndexOf(args, ValidateRoomsArgument) >= 0)
         {
-            AddChild(new RoomValidator());
+            AddChild(new RoomValidator { StartRoom = World.StartRoom.ResourcePath, Report = Array.IndexOf(args, "--map-report") >= 0 });
         }
         else if (Array.IndexOf(args, ValidateTravelArgument) >= 0)
         {

@@ -21,6 +21,7 @@ SpawnPoint = NodePath("SpawnPoint")
 Stage = NodePath("Stage")
 Biome = ExtResource("8_flooded")
 GlyphLights = [NodePath("Props/Shrine/Light")]
+InGame = false
 BoundsMin = Vector2(-2, -2)
 BoundsMax = Vector2(34, 18)
 

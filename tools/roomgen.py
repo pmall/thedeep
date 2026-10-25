@@ -21,6 +21,7 @@ EXT = {
     # scripts
     'room': ('Script', 'res://scripts/rooms/Room.cs'),
     'exit': ('Script', 'res://scripts/rooms/RoomExit.cs'),
+    'goal': ('Script', 'res://scripts/map/MapGoal.cs'),
     'spot': ('Script', 'res://scripts/rooms/PhotoSpot.cs'),
     'machine': ('Script', 'res://scripts/machines/Machine.cs'),
     'water_body': ('Script', 'res://scripts/rooms/WaterBody.cs'),
@@ -96,8 +97,8 @@ class Raw(str):
 
 
 class Room:
-    def __init__(self, name, bounds, spawn, doc='', biome='flooded'):
-        self.name, self.bounds, self.spawn, self.doc, self.biome = name, bounds, spawn, doc, biome
+    def __init__(self, name, bounds, spawn, doc='', biome='flooded', in_game=True):
+        self.name, self.bounds, self.spawn, self.doc, self.biome, self.in_game = name, bounds, spawn, doc, biome, in_game
         self.ext_ids = {}
         self.subs = []          # (id, type, props)
         self.nodes = []         # (comment, header, props)
@@ -202,6 +203,11 @@ class Room:
         props['Size'] = Raw(vec(*size))
         return self.node('Exits/' + name, type='Marker3D', comment=comment, **props)
 
+    def goal(self, name, pos, comment=''):
+        """Where the journey ends, for the map solver (a MapGoal marker)."""
+        return self.node('Exits/' + name, type='Marker3D', comment=comment, transform=Raw(transform((pos[0], pos[1], 0))),
+                         script=self.ext('goal'))
+
     def machine(self, name, species, pos, facing=1, comment='', **props):
         p = {'transform': Raw(transform((pos[0], pos[1], 0))), 'script': self.ext('machine'),
              'Species': self.ext(species), 'StartFacing': facing}
@@ -281,6 +287,8 @@ class Room:
             root['Shafts'] = Raw('[' + ', '.join(f'NodePath("{p}")' for p in self.shafts) + ']')
         if self.glyph_lights:
             root['GlyphLights'] = Raw('[' + ', '.join(f'NodePath("{p}")' for p in self.glyph_lights) + ']')
+        if not self.in_game:
+            root['InGame'] = False
         (x0, y0), (x1, y1) = self.bounds
         root['BoundsMin'] = Raw(vec(x0, y0))
         root['BoundsMax'] = Raw(vec(x1, y1))

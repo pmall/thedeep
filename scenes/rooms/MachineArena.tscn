@@ -122,6 +122,7 @@ Stage = NodePath("Stage")
 Biome = ExtResource("4_biome")
 Shafts = [NodePath("Shafts/Shrine"), NodePath("Shafts/Reliquary")]
 GlyphLights = [NodePath("Shrine/Light")]
+InGame = false
 BoundsMin = Vector2(-2, -2)
 BoundsMax = Vector2(58, 18)
 

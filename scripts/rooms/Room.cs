@@ -23,6 +23,9 @@ public partial class Room : Node3D
     /// <summary>Small lights at emissive decor (faith glyphs) that take the biome's glyph color.</summary>
     [Export] public Light3D[] GlyphLights { get; set; } = System.Array.Empty<Light3D>();
 
+    /// <summary>False for rooms that are not part of the game (the machine arena, the mechanics lab): the map solver leaves them out.</summary>
+    [Export] public bool InGame { get; set; } = true;
+
     /// <summary>Lower-left corner (X, Y) of the area the camera is allowed to show, on the play plane.</summary>
     [Export] public Vector2 BoundsMin { get; set; } = new(-10f, -10f);
 
