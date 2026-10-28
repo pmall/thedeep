@@ -57,6 +57,21 @@ public partial class PlayerTuning : Resource
     /// <summary>After letting go or leaping off, the same surface can't be gripped again for this long.</summary>
     [Export] public float GripRegrabDelay { get; set; } = 0.25f;
 
+    /// <summary>How far from the pilgrim's center an anchor can be fired at, and how near it must not be.</summary>
+    [ExportGroup("Harpoon")]
+    [Export] public float HarpoonRange { get; set; } = 9f;
+    [Export] public float HarpoonMinDistance { get; set; } = 1.2f;
+    /// <summary>Speed of the line flying out to the anchor; the pilgrim hangs, slowing, until it bites.</summary>
+    [Export] public float HarpoonThrowSpeed { get; set; } = 70f;
+    /// <summary>Top speed of the pull toward the anchor, and how fast the pull reaches it.</summary>
+    [Export] public float HarpoonZipSpeed { get; set; } = 17f;
+    [Export] public float HarpoonZipAcceleration { get; set; } = 110f;
+    /// <summary>Letting go at the anchor: the pull's speed kept, as a fraction, and at least this much upward speed.</summary>
+    [Export] public float HarpoonExitSpeedFactor { get; set; } = 0.5f;
+    [Export] public float HarpoonExitLift { get; set; } = 6f;
+    /// <summary>A harpoon pressed this long before an anchor comes into sight still fires.</summary>
+    [Export] public float HarpoonBufferTime { get; set; } = 0.1f;
+
     /// <summary>The swing: wind-up, the window in which it hits, recovery, then a short cooldown (seconds).</summary>
     [ExportGroup("Attack")]
     [Export] public float AttackWindUp { get; set; } = 0.04f;

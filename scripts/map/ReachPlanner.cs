@@ -16,6 +16,12 @@ public sealed record MoveLimits(
     public float TakeOff => JumpMath.TakeOffSpeed(JumpHeight, JumpTimeToApex);
 }
 
+/// <summary>
+/// The Harpoon's numbers (from <c>player_tuning.tres</c>), for a planner that may also zip to anchors: range from the body's
+/// center, the nearest an anchor may be, the pull's top speed and acceleration, and the release (speed kept, lift).
+/// </summary>
+public sealed record HarpoonLimits(float Range, float MinDistance, float ZipSpeed, float ZipAcceleration, float ExitSpeedFactor, float ExitLift);
+
 /// <summary>An axis-aligned solid on the play plane.</summary>
 public readonly record struct Box(float MinX, float MinY, float MaxX, float MaxY)
 {
@@ -36,6 +42,9 @@ public readonly record struct Ledge(float Y, float MinX, float MaxX);
 /// enter. Conservative where it must be: the body is a box (the real capsule slips off edges a little
 /// more easily), take-offs are sampled (ledge ends and every 2 m), so a gap the planner can't cross may
 /// still be crossable by a hair; the check treats "reached" as proof, "not reached" as the designer's claim.
+/// Given <see cref="HarpoonLimits"/> and anchors, it also fires the Harpoon: from standing (and from the top of a
+/// full jump) at every take-off point, and from each anchor reached, at every anchor in range and in clear sight,
+/// then lets go there (drifting either way or not, jumping off or not, dashing or not).
 /// </summary>
 public sealed class ReachPlanner
 {
@@ -43,15 +52,22 @@ public sealed class ReachPlanner
     private const int MaxTicks = 240;
     private const float Skin = 0.001f;
 
+    /// <summary>Sight to an anchor stops this short of it (an anchor may hang by a wall's face).</summary>
+    private const float SightMargin = 0.3f;
+
     private readonly MoveLimits _m;
     private readonly List<Box> _solids;
     private readonly List<Ledge> _ledges;
+    private readonly HarpoonLimits? _harpoon;
+    private readonly List<Vector2> _anchors;
 
-    public ReachPlanner(MoveLimits limits, IEnumerable<Box> solids)
+    public ReachPlanner(MoveLimits limits, IEnumerable<Box> solids, HarpoonLimits? harpoon = null, IEnumerable<Vector2>? anchors = null)
     {
         _m = limits;
         _solids = solids.ToList();
         _ledges = FindLedges();
+        _harpoon = harpoon;
+        _anchors = harpoon is null ? new List<Vector2>() : anchors?.ToList() ?? new List<Vector2>();
     }
 
     public IReadOnlyList<Ledge> Ledges => _ledges;
@@ -65,6 +81,22 @@ public sealed class ReachPlanner
         var reachedTriggers = new HashSet<int>();
         var reachedLedges = new HashSet<int>();
         var queue = new Queue<int>();
+        var reachedAnchors = new HashSet<int>();
+        var anchorQueue = new Queue<(int Anchor, Vector2 From)>();
+
+        // The Harpoon from a body center: every anchor in range and in sight.
+        void Fire(Vector2 center)
+        {
+            for (int a = 0; a < _anchors.Count; a++)
+            {
+                float d = Vector2.Distance(center, _anchors[a]);
+                if (d <= _harpoon!.Range && d >= _harpoon.MinDistance && !reachedAnchors.Contains(a) && InSight(center, _anchors[a]))
+                {
+                    reachedAnchors.Add(a);
+                    anchorQueue.Enqueue((a, center));
+                }
+            }
+        }
 
         void Land(int ledge)
         {
@@ -90,12 +122,26 @@ public sealed class ReachPlanner
             Simulate(arrival, velocity, dir, jumpTicks: 0, dashTick: -1, triggers, reachedTriggers, Land);
         }
 
-        while (queue.Count > 0)
+        while (queue.Count > 0 || anchorQueue.Count > 0)
         {
+            if (queue.Count == 0)
+            {
+                (int a, Vector2 from) = anchorQueue.Dequeue();
+                LetGo(_anchors[a], from, triggers, reachedTriggers, Land);
+                Fire(_anchors[a]);
+                continue;
+            }
+
             Ledge l = _ledges[queue.Dequeue()];
             foreach (float x in TakeOffs(l))
             {
                 var at = new Vector2(x, l.Y);
+                if (_anchors.Count > 0)
+                {
+                    Fire(at + new Vector2(0f, _m.Height * 0.5f));
+                    Fire(at + new Vector2(0f, _m.Height * 0.5f + _m.JumpHeight));
+                }
+
                 foreach (int dir in new[] { -1, 0, 1 })
                 {
                     var running = new Vector2(dir * _m.RunSpeed, 0f);
@@ -122,6 +168,49 @@ public sealed class ReachPlanner
         return (reachedTriggers, reachedLedges);
     }
 
+    /// <summary>Pulled from <paramref name="from"/> to <paramref name="anchor"/> (the body's center), then letting go there.</summary>
+    private void LetGo(Vector2 anchor, Vector2 from, IReadOnlyList<Box> triggers, HashSet<int> reachedTriggers, Action<int> land)
+    {
+        HarpoonLimits h = _harpoon!;
+        float distance = Vector2.Distance(from, anchor);
+        float speed = MathF.Min(h.ZipSpeed, MathF.Sqrt(2f * h.ZipAcceleration * distance));
+        Vector2 release = HarpoonAim.Release(Vector2.Normalize(anchor - from), speed, h.ExitSpeedFactor, h.ExitLift);
+        var feet = anchor - new Vector2(0f, _m.Height * 0.5f);
+        Touch(feet, triggers, reachedTriggers);
+        foreach (int dir in new[] { -1, 0, 1 })
+        {
+            foreach (int jump in new[] { 0, -1 })
+            {
+                foreach (int dash in new[] { -1, 6, 14 })
+                {
+                    Simulate(feet, release, dir, jump, dash, triggers, reachedTriggers, land, airborne: true);
+                }
+            }
+        }
+    }
+
+    /// <summary>Whether nothing solid lies between two points on the play plane (stopping a little short of <paramref name="to"/>).</summary>
+    private bool InSight(Vector2 from, Vector2 to)
+    {
+        float length = Vector2.Distance(from, to) - SightMargin;
+        if (length <= 0f)
+        {
+            return true;
+        }
+
+        Vector2 dir = Vector2.Normalize(to - from);
+        for (float t = 0f; t <= length; t += 0.1f)
+        {
+            Vector2 p = from + dir * t;
+            if (_solids.Any(s => p.X > s.MinX && p.X < s.MaxX && p.Y > s.MinY && p.Y < s.MaxY))
+            {
+                return false;
+            }
+        }
+
+        return true;
+    }
+
     /// <summary>Where on a ledge to take off: its ends, and every 2 m between.</summary>
     private IEnumerable<float> TakeOffs(Ledge l)
     {
@@ -144,10 +233,11 @@ public sealed class ReachPlanner
     /// <paramref name="dashTick"/> (−1: none). Ends on landing (reported) or after a time limit.
     /// </summary>
     private void Simulate(Vector2 start, Vector2 velocity, int dir, int jumpTicks, int dashTick, IReadOnlyList<Box> triggers,
-        HashSet<int> reachedTriggers, Action<int> land)
+        HashSet<int> reachedTriggers, Action<int> land, bool airborne = false)
     {
         Vector2 p = start, v = velocity;
-        bool jumping = jumpTicks != 0, cut = false, airborne = jumping;
+        bool jumping = jumpTicks != 0, cut = false;
+        airborne |= jumping;
         if (jumping)
         {
             v.Y = _m.TakeOff;

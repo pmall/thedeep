@@ -1,0 +1,75 @@
+[gd_scene format=3]
+; A harpoon anchor (scripts/props/HarpoonAnchor.cs): an old mooring ring hanging from a short rod, crossed by a
+; second ring like a gimbal, around a glowing core. The origin is the point the pilgrim's center is pulled to:
+; place it in open air, at least a body's height below any ceiling. The rod reaches 1.3 m up; hang it under a
+; beam, or add a cable above it.
+
+[ext_resource type="Script" path="res://scripts/props/HarpoonAnchor.cs" id="1_anchor"]
+[ext_resource type="Script" path="res://scripts/parts/RingMesh.cs" id="2_ring"]
+[ext_resource type="Script" path="res://scripts/parts/PodMesh.cs" id="3_pod"]
+[ext_resource type="Material" path="res://assets/materials/machines/frame.tres" id="4_frame"]
+[ext_resource type="Material" path="res://assets/materials/glyphs.tres" id="5_glyphs"]
+
+[sub_resource type="PrimitiveMesh" id="Ring"]
+script = ExtResource("2_ring")
+RadiusX = 0.34
+RadiusZ = 0.34
+Height = 0.07
+Thickness = 0.06
+Segments = 28
+
+[sub_resource type="PrimitiveMesh" id="Gimbal"]
+script = ExtResource("2_ring")
+RadiusX = 0.27
+RadiusZ = 0.27
+Height = 0.05
+Thickness = 0.04
+Segments = 24
+
+[sub_resource type="PrimitiveMesh" id="Rod"]
+script = ExtResource("3_pod")
+Axis = Vector3(0, 1, 0)
+Length = 1.0
+Stations = PackedVector4Array(0, 0.07, 0.07, 0, 0.12, 0.045, 0.045, 0, 1, 0.035, 0.035, 0)
+Sides = 10
+Rings = 4
+
+[sub_resource type="SphereMesh" id="Core"]
+radius = 0.11
+height = 0.22
+radial_segments = 16
+rings = 8
+
+[node name="HarpoonAnchor" type="Node3D" node_paths=PackedStringArray("Core", "Light")]
+script = ExtResource("1_anchor")
+Core = NodePath("Core")
+Light = NodePath("Light")
+
+; the ring faces the camera
+[node name="Ring" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 0, -1, 0, 1, 0, 0, 0, 0)
+mesh = SubResource("Ring")
+material_override = ExtResource("4_frame")
+
+; the gimbal ring, turned edge-on
+[node name="Gimbal" type="MeshInstance3D" parent="."]
+transform = Transform3D(0, 1, 0, -1, 0, 0, 0, 0, 1, 0, 0, 0)
+mesh = SubResource("Gimbal")
+material_override = ExtResource("4_frame")
+
+[node name="Rod" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.32, 0)
+mesh = SubResource("Rod")
+material_override = ExtResource("4_frame")
+
+[node name="Core" type="MeshInstance3D" parent="."]
+mesh = SubResource("Core")
+material_override = ExtResource("5_glyphs")
+cast_shadow = 0
+
+[node name="Light" type="OmniLight3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0.5)
+light_color = Color(0.85, 0.75, 1, 1)
+light_energy = 0.6
+light_volumetric_fog_energy = 0.3
+omni_range = 3.0

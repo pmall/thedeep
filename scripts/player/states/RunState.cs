@@ -9,6 +9,11 @@ public sealed class RunState : PlayerState
 
     public override PlayerState? PhysicsUpdate(float delta)
     {
+        if (Player.HarpoonFire() is { } harpoon)
+        {
+            return harpoon;
+        }
+
         if (Player.GripAttach() is { } grip)
         {
             return grip;

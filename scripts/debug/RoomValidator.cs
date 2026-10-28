@@ -33,7 +33,7 @@ public partial class RoomValidator : Node
     private readonly Dictionary<string, RoomShape> _shapes = new();
 
     /// <summary>What the geometry check needs of a room: its solids, its open exits, and where the pilgrim can wake.</summary>
-    private sealed record RoomShape(List<Box> Solids, List<ExitShape> Exits, List<System.Numerics.Vector2> Wakes);
+    private sealed record RoomShape(List<Box> Solids, List<ExitShape> Exits, List<System.Numerics.Vector2> Wakes, List<System.Numerics.Vector2> Anchors);
 
     private sealed record ExitShape(string Name, System.Numerics.Vector2 Position, System.Numerics.Vector2 Size, string Requires, int ArrivalSide);
     private bool _done;
@@ -186,7 +186,8 @@ public partial class RoomValidator : Node
             wakes.Add(N(new Vector2(room.SpawnPoint.GlobalPosition.X, room.SpawnPoint.GlobalPosition.Y)));
         }
 
-        _shapes[name] = new RoomShape(solids, exitShapes, wakes);
+        var anchors = room.All<HarpoonAnchor>().Select(a => N(new Vector2(a.GlobalPosition.X, a.GlobalPosition.Y))).ToList();
+        _shapes[name] = new RoomShape(solids, exitShapes, wakes, anchors);
 
         if (room.All<MapGoal>().Any())
         {
@@ -340,7 +341,9 @@ public partial class RoomValidator : Node
     /// <summary>
     /// The geometry sanity check (M7): the base moveset, simulated with the live tuning (<see cref="ReachPlanner"/>), must reach
     /// every exit marked for the base moveset from some way into its room, and must not reach an exit that needs an ability
-    /// from a way in that needed none (that requirement would be a lie, or the geometry drifted from it).
+    /// from a way in that needed none (that requirement would be a lie, or the geometry drifted from it). An exit the Harpoon
+    /// opens must be reached by the base moveset and the Harpoon, zipping between the room's anchors, from some way in the
+    /// Harpoon allows (the anchors are where the requirement says they are).
     /// </summary>
     private void CheckGeometry()
     {
@@ -348,14 +351,17 @@ public partial class RoomValidator : Node
         var limits = new MoveLimits(tuning.RunSpeed, tuning.AirAcceleration, tuning.AirDeceleration, tuning.JumpHeight, tuning.JumpTimeToApex,
             tuning.JumpCutFactor, tuning.FallGravityMultiplier, tuning.ApexHangThreshold, tuning.ApexGravityMultiplier, tuning.MaxFallSpeed,
             tuning.DashDistance, tuning.DashDuration, tuning.DashExitSpeedFactor, tuning.AirDashes);
+        var harpoon = new HarpoonLimits(tuning.HarpoonRange, tuning.HarpoonMinDistance, tuning.HarpoonZipSpeed, tuning.HarpoonZipAcceleration,
+            tuning.HarpoonExitSpeedFactor, tuning.HarpoonExitLift);
         float rise = 0.85f * tuning.JumpTakeOffSpeed;
         foreach ((string room, RoomShape shape) in _shapes.OrderBy(r => r.Key, System.StringComparer.Ordinal))
         {
             var planner = new ReachPlanner(limits, shape.Solids);
+            var harpooner = new ReachPlanner(limits, shape.Solids, harpoon, shape.Anchors);
             var triggers = shape.Exits.Select(e => Box.Around(e.Position, e.Size)).ToList();
 
             // Ways in: arriving through an exit (by the edge leading here: its requirement is what the pilgrim has at least), or waking.
-            var entries = new List<(string What, System.Numerics.Vector2 At, System.Numerics.Vector2 Velocity, int Steer, bool Base, int Exit)>();
+            var entries = new List<(string What, System.Numerics.Vector2 At, System.Numerics.Vector2 Velocity, int Steer, bool Base, bool Harpoon, int Exit)>();
             foreach (MapEdge edge in _graph.Edges.Where(e => e.To == room))
             {
                 int index = shape.Exits.FindIndex(x => x.Name == edge.ToExit);
@@ -369,15 +375,17 @@ public partial class RoomValidator : Node
                 var velocity = !vertical ? System.Numerics.Vector2.Zero
                     : x.ArrivalSide != 0 ? new System.Numerics.Vector2(0f, rise) : new System.Numerics.Vector2(0f, -5f);
                 entries.Add(($"arriving through {x.Name}", x.Position, velocity, vertical ? x.ArrivalSide : 0,
-                    edge.Requires.IsMetBy(Ability.None), index));
+                    edge.Requires.IsMetBy(Ability.None), edge.Requires.IsMetBy(Ability.Harpoon), index));
             }
 
             foreach (System.Numerics.Vector2 wake in shape.Wakes)
             {
-                entries.Add(($"waking at ({wake.X:0.#}, {wake.Y:0.#})", wake, System.Numerics.Vector2.Zero, 0, true, -1));
+                entries.Add(($"waking at ({wake.X:0.#}, {wake.Y:0.#})", wake, System.Numerics.Vector2.Zero, 0, true, true, -1));
             }
 
             var reachedFrom = entries.Select(e => planner.Reach(e.At, e.Velocity, triggers, e.Steer).Triggers).ToList();
+            var zippedFrom = shape.Anchors.Count == 0 ? reachedFrom
+                : entries.Select(e => harpooner.Reach(e.At, e.Velocity, triggers, e.Steer).Triggers).ToList();
             for (int i = 0; i < shape.Exits.Count; i++)
             {
                 ExitShape x = shape.Exits[i];
@@ -386,6 +394,14 @@ public partial class RoomValidator : Node
                     && entries.Any(e => e.Exit != i))
                 {
                     _problems.Add($"{room}: exit {x.Name} needs nothing, but the base moveset reaches it from no way into the room");
+                }
+
+                if (!baseExit && Requirement.TryParse(x.Requires, out Requirement needs, out _) && needs.IsMetBy(Ability.Harpoon)
+                    && entries.Any(e => e.Harpoon && e.Exit != i)
+                    && !Enumerable.Range(0, entries.Count).Any(e => entries[e].Harpoon && entries[e].Exit != i && zippedFrom[e].Contains(i)))
+                {
+                    _problems.Add($"{room}: exit {x.Name} needs {x.Requires}, but the Harpoon reaches it from no way into the room " +
+                                  $"({shape.Anchors.Count} anchors)");
                 }
 
                 if (!baseExit)

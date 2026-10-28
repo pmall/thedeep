@@ -37,6 +37,11 @@ public sealed class DashState : PlayerState
         float speed = Tuning.DashDistance / Tuning.DashDuration;
         Player.Velocity = new Godot.Vector3(_direction * speed, 0f, 0f);
 
+        if (Player.HarpoonFire() is { } harpoon)
+        {
+            return harpoon;
+        }
+
         bool grounded = Player.IsOnFloor();
         if (grounded && Player.WantsJump)
         {

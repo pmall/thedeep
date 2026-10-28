@@ -20,6 +20,24 @@
 [ext_resource type="Script" path="res://scripts/game/Session.cs" id="17_session"]
 [ext_resource type="Script" path="res://scripts/ui/HealthHud.cs" id="18_health"]
 [ext_resource type="Script" path="res://scripts/ui/Banner.cs" id="19_banner"]
+[ext_resource type="Script" path="res://scripts/player/HarpoonRig.cs" id="20_harpoon"]
+[ext_resource type="Material" path="res://assets/materials/harpoon_line.tres" id="21_line"]
+
+[sub_resource type="CylinderMesh" id="HarpoonLine"]
+top_radius = 0.016
+bottom_radius = 0.016
+height = 1.0
+radial_segments = 6
+rings = 1
+cap_top = false
+cap_bottom = false
+
+[sub_resource type="CylinderMesh" id="HarpoonHead"]
+top_radius = 0.0
+bottom_radius = 0.06
+height = 0.3
+radial_segments = 8
+rings = 1
 
 [node name="Main" type="Node3D" node_paths=PackedStringArray("World", "Player", "Machines", "Capture", "Camera", "Hud", "Travel", "Session", "Health")]
 script = ExtResource("1_main")
@@ -39,6 +57,24 @@ script = ExtResource("2_world")
 StartRoom = ExtResource("2_room")
 
 [node name="Player" parent="." instance=ExtResource("3_player")]
+
+; The Harpoon: picks the anchor in sight each tick (after the player moved) and draws the line.
+[node name="Harpoon" type="Node3D" parent="." node_paths=PackedStringArray("World", "Player", "Line", "Head")]
+script = ExtResource("20_harpoon")
+World = NodePath("../World")
+Player = NodePath("../Player")
+Line = NodePath("Line")
+Head = NodePath("Head")
+
+[node name="Line" type="MeshInstance3D" parent="Harpoon"]
+mesh = SubResource("HarpoonLine")
+material_override = ExtResource("21_line")
+cast_shadow = 0
+
+[node name="Head" type="MeshInstance3D" parent="Harpoon"]
+mesh = SubResource("HarpoonHead")
+material_override = ExtResource("21_line")
+cast_shadow = 0
 
 ; Runs the room's machines: their perception (player, impacts, neighbors) and their physics ticks.
 [node name="Machines" type="Node" parent="." node_paths=PackedStringArray("World", "Player", "HitSparks", "Camera")]

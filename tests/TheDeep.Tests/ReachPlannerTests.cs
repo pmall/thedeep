@@ -69,4 +69,39 @@ public class ReachPlannerTests
         var (_, ledges) = planner.Reach(new Vector2(5f, 20f), new Vector2(0f, -5f), new Box[0]);
         Assert.Single(ledges);
     }
+
+    private static readonly HarpoonLimits Harpoon = new(Range: 9f, MinDistance: 1.2f, ZipSpeed: 17f, ZipAcceleration: 110f,
+        ExitSpeedFactor: 0.5f, ExitLift: 6f);
+
+    [Fact]
+    public void AnAnchorLiftsThePilgrimOntoAHighLedge()
+    {
+        // A ledge 8 m up, out of any jump's reach; an anchor hangs over its lip.
+        var solids = new[] { B(-10f, -2f, 30f, 0f), B(10f, 0f, 20f, 8f) };
+        Box top = B(14f, 8.2f, 15f, 9f);
+        var anchors = new[] { new Vector2(9f, 9.5f) };
+        Assert.DoesNotContain(0, new ReachPlanner(Limits, solids).Reach(Vector2.Zero, Vector2.Zero, new[] { top }).Triggers);
+        Assert.Contains(0, new ReachPlanner(Limits, solids, Harpoon, anchors).Reach(Vector2.Zero, Vector2.Zero, new[] { top }).Triggers);
+    }
+
+    [Fact]
+    public void AnchorsChainAcrossAGapAndNeedSight()
+    {
+        // A 26 m chasm: no jump crosses it; two anchors 8 m apart do. A wall between them breaks the chain.
+        var solids = new List<Box> { B(-10f, -2f, 0f, 0f), B(26f, -2f, 36f, 0f), B(-10f, -40f, 40f, -39f) };
+        Box far = B(30f, 0.1f, 31f, 1f);
+        var anchors = new[] { new Vector2(6f, 5f), new Vector2(13f, 5.5f), new Vector2(20f, 5f) };
+        Assert.Contains(0, new ReachPlanner(Limits, solids, Harpoon, anchors).Reach(new Vector2(-1f, 0f), Vector2.Zero, new[] { far }).Triggers);
+        solids.Add(B(16f, 2f, 17f, 12f));
+        Assert.DoesNotContain(0, new ReachPlanner(Limits, solids, Harpoon, anchors).Reach(new Vector2(-1f, 0f), Vector2.Zero, new[] { far }).Triggers);
+    }
+
+    [Fact]
+    public void AnchorsOutOfRangeAreNotReached()
+    {
+        var solids = new[] { B(-10f, -2f, 30f, 0f), B(10f, 0f, 20f, 8f) };
+        Box top = B(14f, 8.2f, 15f, 9f);
+        var anchors = new[] { new Vector2(9f, 16f) };
+        Assert.DoesNotContain(0, new ReachPlanner(Limits, solids, Harpoon, anchors).Reach(Vector2.Zero, Vector2.Zero, new[] { top }).Triggers);
+    }
 }

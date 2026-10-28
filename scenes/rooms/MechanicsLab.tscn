@@ -1,9 +1,9 @@
 [gd_scene format=3]
 
-; The mechanics lab: not part of the game. A plain room where the headless checks (GripCheck, and later
-; CombatCheck) drive the player through the mechanics with the real input actions: a metal wall rising into a
-; metal ceiling slab, a floating metal block to hang under and wrap around, a shrine, a relic (Drill, so the
-; grip check's Mag-grip stays its own) and a Votary praying toward the west wall.
+; The mechanics lab: not part of the game. A plain room where the headless checks (GripCheck, CombatCheck,
+; HarpoonCheck) drive the player through the mechanics with the real input actions: a metal wall rising into a
+; metal ceiling slab, a floating metal block to hang under and wrap around, two harpoon anchors under the slab,
+; a shrine, a relic (Drill, so the grip check's Mag-grip stays its own) and a Votary praying toward the west wall.
 
 [ext_resource type="PackedScene" path="res://scenes/kit/Block.tscn" id="1_block"]
 [ext_resource type="PackedScene" path="res://scenes/props/Shrine.tscn" id="2_shrine"]
@@ -14,6 +14,7 @@
 [ext_resource type="Script" path="res://scripts/rooms/Room.cs" id="7_room"]
 [ext_resource type="Resource" path="res://resources/biomes/flooded.tres" id="8_flooded"]
 [ext_resource type="PackedScene" path="res://scenes/stage/RoomStage.tscn" id="9_stage"]
+[ext_resource type="PackedScene" path="res://scenes/props/HarpoonAnchor.tscn" id="10_anchor"]
 
 [node name="MechanicsLab" type="Node3D" node_paths=PackedStringArray("SpawnPoint", "Stage", "GlyphLights")]
 script = ExtResource("7_room")
@@ -80,6 +81,13 @@ transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 4, 0, 0)
 [node name="Relic" parent="Props" instance=ExtResource("3_relic")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 16, 0, 0)
 Ability = 4
+
+; harpoon anchors under the slab: one in reach from the floor, the next from the first (HarpoonCheck)
+[node name="AnchorA" parent="Props" instance=ExtResource("10_anchor")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 15, 8.5, 0)
+
+[node name="AnchorB" parent="Props" instance=ExtResource("10_anchor")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 20, 9.5, 0)
 
 [node name="Machines" type="Node3D" parent="."]
 

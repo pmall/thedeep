@@ -54,6 +54,20 @@ Speaker = "UI"
 Text = "Press into metal to walk its walls and ceilings. Jump to leap away."
 Notes = "Banner line under the title."
 
+[sub_resource type="Resource" id="ability_harpoon_name"]
+script = ExtResource("2_line")
+Id = &"ability.harpoon.name"
+Speaker = "UI"
+Text = "Harpoon"
+Notes = "Banner title when the relic is taken."
+
+[sub_resource type="Resource" id="ability_harpoon_hint"]
+script = ExtResource("2_line")
+Id = &"ability.harpoon.hint"
+Speaker = "UI"
+Text = "K or V (pad B) fires at a glowing ring in sight and pulls you to it. Hold up or down to aim."
+Notes = "Banner line under the title. Names the keys: the Harpoon is the first ability with its own button."
+
 [resource]
 script = ExtResource("1_book")
-Lines = [SubResource("creed_votary"), SubResource("creed_gleaner"), SubResource("creed_lamplighter"), SubResource("creed_limpet"), SubResource("ui_rest"), SubResource("ability_mag_grip_name"), SubResource("ability_mag_grip_hint")]
+Lines = [SubResource("creed_votary"), SubResource("creed_gleaner"), SubResource("creed_lamplighter"), SubResource("creed_limpet"), SubResource("ui_rest"), SubResource("ability_mag_grip_name"), SubResource("ability_mag_grip_hint"), SubResource("ability_harpoon_name"), SubResource("ability_harpoon_hint")]

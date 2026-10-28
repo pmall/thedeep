@@ -10,6 +10,7 @@
 [ext_resource type="Material" path="res://assets/materials/rust.tres" id="10_rust"]
 [ext_resource type="Material" path="res://assets/materials/glyphs.tres" id="11_glyphs"]
 [ext_resource type="Script" path="res://scripts/rooms/RoomExit.cs" id="12_exit"]
+[ext_resource type="PackedScene" path="res://scenes/props/HarpoonAnchor.tscn" id="40_anchor"]
 [ext_resource type="Material" path="res://assets/materials/metal.tres" id="14_metal"]
 [ext_resource type="Material" path="res://assets/materials/cable.tres" id="15_cable"]
 [ext_resource type="Script" path="res://scripts/kit/ColumnMesh.cs" id="16_column"]
@@ -378,6 +379,13 @@ Size = Vector3(3, 0.5, 4)
 [node name="ShaftLedge8" parent="Geometry" instance=ExtResource("2_block")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 54.5, 23.75, 0)
 Size = Vector3(3, 0.5, 4)
+
+[node name="Anchors" type="Node3D" parent="."]
+
+; a mooring ring in the mouth of the open hatch: from the top of the ladder the Harpoon pulls the pilgrim up
+; into the Belfry (the other way up is Mag-grip on the shaft's metal walls)
+[node name="Hatch" parent="Anchors" instance=ExtResource("40_anchor")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 51, 30.5, 0)
 
 ; Connections to other rooms (an empty TargetRoom is sealed: a room not built yet). The marker is where the player arrives.
 [node name="Exits" type="Node3D" parent="."]

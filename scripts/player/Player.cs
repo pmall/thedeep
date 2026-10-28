@@ -25,6 +25,7 @@ public partial class Player : CharacterBody3D
     private readonly Countdown _dashBuffer = new();
     private readonly Countdown _dashCooldown = new();
     private readonly Countdown _regrab = new();
+    private readonly Countdown _harpoonBuffer = new();
     private int _airDashesLeft;
     private readonly Countdown _steer = new();
     private readonly Countdown _stun = new();
@@ -86,6 +87,18 @@ public partial class Player : CharacterBody3D
     /// <summary>A buffered dash press, off cooldown, and an air dash left if airborne.</summary>
     public bool WantsDash => _dashBuffer.Active && !_dashCooldown.Active && (IsOnFloor() || _airDashesLeft > 0);
 
+    /// <summary>The anchor the Harpoon would fire at now (in range and in sight), kept current by <see cref="HarpoonRig"/>.</summary>
+    public HarpoonAnchor? AnchorInSight { get; set; }
+
+    /// <summary>The anchor last zipped to: not a target again until the pilgrim stands or grips somewhere.</summary>
+    public HarpoonAnchor? LastAnchor { get; set; }
+
+    /// <summary>A buffered harpoon press, the ability, and an anchor in sight.</summary>
+    public bool WantsHarpoon => _harpoonBuffer.Active && AnchorInSight is not null && Abilities.Has(Ability.Harpoon);
+
+    /// <summary>The middle of the body on the play plane (what the harpoon aims from and pulls to an anchor).</summary>
+    public NVector2 Center => Feet + SurfaceUp * CenterHeight;
+
     /// <summary>The way the body's feet point away from (the surface's normal): world up, except on Mag-grip.</summary>
     public NVector2 SurfaceUp => new(UpDirection.X, UpDirection.Y);
 
@@ -141,6 +154,7 @@ public partial class Player : CharacterBody3D
         _dashBuffer.Tick(dt);
         _dashCooldown.Tick(dt);
         _regrab.Tick(dt);
+        _harpoonBuffer.Tick(dt);
         _steer.Tick(dt);
         _stun.Tick(dt);
         Vitality.Tick(dt);
@@ -165,6 +179,11 @@ public partial class Player : CharacterBody3D
         if (_state.AfterMove() is { } after && after != _state)
         {
             ChangeState(after);
+        }
+
+        if (IsOnFloor())
+        {
+            LastAnchor = null;
         }
 
         if (IsOnFloor() && IsUpright)
@@ -211,6 +230,8 @@ public partial class Player : CharacterBody3D
         _jumpBuffer.Clear();
         _dashBuffer.Clear();
         _dashCooldown.Clear();
+        _harpoonBuffer.Clear();
+        LastAnchor = null;
         _steer.Clear();
         _stun.Clear();
         _airDashesLeft = Tuning.AirDashes;
@@ -265,6 +286,25 @@ public partial class Player : CharacterBody3D
         States.Grip.Prepare(p);
         return States.Grip;
     }
+
+    /// <summary>
+    /// The Harpoon, if it fires now (pressed, an anchor in sight): returns the harpoon state, aimed, or null. Called by every
+    /// state the pilgrim can fire from, before anything else.
+    /// </summary>
+    public HarpoonState? HarpoonFire()
+    {
+        if (!WantsHarpoon)
+        {
+            return null;
+        }
+
+        _harpoonBuffer.Clear();
+        States.Harpoon.Prepare(AnchorInSight!);
+        return States.Harpoon;
+    }
+
+    /// <summary>An anchor reached: the air dash is back, like on a landing.</summary>
+    public void RefillAirDash() => _airDashesLeft = Tuning.AirDashes;
 
     /// <summary>Puts the body at <paramref name="pose"/> (feet and up), keeping the visible body where it was so it eases into place.</summary>
     public void Orient(GripPose pose)
@@ -465,6 +505,11 @@ public partial class Player : CharacterBody3D
         if (Input.IsActionJustPressed(InputActions.Dash))
         {
             _dashBuffer.Start(Tuning.DashBufferTime);
+        }
+
+        if (Input.IsActionJustPressed(InputActions.Harpoon))
+        {
+            _harpoonBuffer.Start(Tuning.HarpoonBufferTime);
         }
     }
 

@@ -14,6 +14,7 @@ public static class InputActions
     public static readonly StringName Jump = "jump";
     public static readonly StringName Dash = "dash";
     public static readonly StringName Attack = "attack";
+    public static readonly StringName Harpoon = "harpoon";
     public static readonly StringName Interact = "interact";
     public static readonly StringName Map = "map";
 

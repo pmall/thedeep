@@ -68,6 +68,12 @@ grep 'TRAVEL OK' "$LOG_DIR/travel.log"
 scan_log "$LOG_DIR/grip.log" "grip check"
 grep -q 'GRIP OK' "$LOG_DIR/grip.log" || { tail -20 "$LOG_DIR/grip.log"; fail "grip check did not report GRIP OK"; }
 grep 'GRIP OK' "$LOG_DIR/grip.log"
+# e2) Harpoon: anchor in sight, fire, pull, release, chain, blocked sight, range, jump cancel (HarpoonCheck, in the lab).
+"$GODOT" --headless --path . --fixed-fps 60 --quit-after 4000 -- --room MechanicsLab --harpoon-check >"$LOG_DIR/harpoon.log" 2>&1 \
+    || { grep -E 'HARPOON CHECK|ERROR' "$LOG_DIR/harpoon.log" | head -40; fail "harpoon check failed (full log: $LOG_DIR/harpoon.log)"; }
+scan_log "$LOG_DIR/harpoon.log" "harpoon check"
+grep -q 'HARPOON OK' "$LOG_DIR/harpoon.log" || { tail -20 "$LOG_DIR/harpoon.log"; fail "harpoon check did not report HARPOON OK"; }
+grep 'HARPOON OK' "$LOG_DIR/harpoon.log"
 # f) Combat and session: struck, swings break a machine, death and return, rest, relic (CombatCheck, in the lab).
 "$GODOT" --headless --path . --fixed-fps 60 --quit-after 4000 -- --room MechanicsLab --combat-check >"$LOG_DIR/combat.log" 2>&1 \
     || { grep -E 'COMBAT CHECK|ERROR' "$LOG_DIR/combat.log" | head -40; fail "combat check failed (full log: $LOG_DIR/combat.log)"; }

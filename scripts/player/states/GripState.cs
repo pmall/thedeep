@@ -61,6 +61,11 @@ public sealed class GripState : PlayerState
             return LetGo();
         }
 
+        if (Player.HarpoonFire() is { } harpoon)
+        {
+            return harpoon;
+        }
+
         if (Player.JumpPressed)
         {
             return Leap(up);
