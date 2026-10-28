@@ -55,7 +55,7 @@ grep 'SMOKE OK' "$LOG_DIR/smoke_driver.log"
     || { grep -E 'ROOM CHECK|ERROR' "$LOG_DIR/rooms.log" | head -40; fail "room check failed (full log: $LOG_DIR/rooms.log)"; }
 scan_log "$LOG_DIR/rooms.log" "room check"
 grep -q 'ROOMS OK' "$LOG_DIR/rooms.log" || { tail -20 "$LOG_DIR/rooms.log"; fail "room check did not report ROOMS OK"; }
-grep -E 'ROOMS OK|MAP OK' "$LOG_DIR/rooms.log"
+grep -E 'ROOMS OK|MAP OK|DRAFT OK' "$LOG_DIR/rooms.log"
 # d) Room travel: every open exit crossed, arriving in the target room and staying there (TravelValidator).
 "$GODOT" --headless --path . --fixed-fps 60 --quit-after 20000 -- --validate-travel >"$LOG_DIR/travel.log" 2>&1 \
     || { grep -E 'TRAVEL CHECK|ERROR' "$LOG_DIR/travel.log" | head -40; fail "travel check failed (full log: $LOG_DIR/travel.log)"; }

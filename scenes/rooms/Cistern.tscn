@@ -276,6 +276,12 @@ TargetRoom = "res://scenes/rooms/Reliquary.tscn"
 TargetExit = "East"
 Size = Vector2(1, 4)
 
+; the floodgate east into the Sluice (sealed: a room not built yet, docs/map-draft.md)
+[node name="East" type="Marker3D" parent="Exits"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 39.5, 0, 0)
+script = ExtResource("6_exit")
+Size = Vector2(1, 4)
+
 [node name="Machines" type="Node3D" parent="."]
 
 ; a Gleaner picking over scrap by the doorway

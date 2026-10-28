@@ -110,6 +110,8 @@ scripts/
   map/ExitMath.cs, map/MapState.cs   pure: arrival through an exit, room placement, the visited rooms
   map/MapGraph.cs, MapSolver.cs, MapLayout.cs, ReachPlanner.cs   pure (M7): the map graph, the order solver (softlocks,
                            achievable orders), the layout check, the base-moveset reach planner (geometry check)
+  map/MapDraft.cs          pure (M7): the whole game's draft map (the `map` blocks of docs/map-draft.md): parser,
+                           its targets (orders, positions, scope, law-break milestones), its agreement with built rooms
   map/MapGoal.cs           marker: where the journey ends (for the solver)
   capture/OwnerCapture.cs  owner capture keys (every build): files + state report to captures/
   capture/FrameGrabber.cs  async GPU readback of the viewport into pooled buffers
@@ -207,7 +209,7 @@ Code with no Godot types is compiled straight into the xUnit project via `<Compi
 - `capture/CaptureFiles.cs`, `capture/CaptureReport.cs`, `capture/VideoClock.cs`, `capture/FfmpegCommand.cs`
 - `capture/VideoEncoder.cs` (plain .NET; its tests run the real ffmpeg)
 - `kit/MeshData.cs`, `kit/MeshBuilder.cs`, `kit/Profile.cs`, `kit/PathFrame.cs`, `kit/SweepPath.cs`, `kit/KitShapes.cs` (System.Numerics)
-- `map/Requirement.cs`, `map/GridSnap.cs`, `map/ExitMath.cs`, `map/MapState.cs`, `map/MapGraph.cs`, `map/MapSolver.cs`, `map/MapLayout.cs`, `map/ReachPlanner.cs`, `rooms/dressing/DressingLayout.cs`, `player/GripMath.cs`, `combat/Vitality.cs`, `combat/Swing.cs`, `game/SaveData.cs`
+- `map/Requirement.cs`, `map/GridSnap.cs`, `map/ExitMath.cs`, `map/MapState.cs`, `map/MapGraph.cs`, `map/MapSolver.cs`, `map/MapDraft.cs`, `map/MapLayout.cs`, `map/ReachPlanner.cs`, `rooms/dressing/DressingLayout.cs`, `player/GripMath.cs`, `combat/Vitality.cs`, `combat/Swing.cs`, `game/SaveData.cs`
 - `parts/PartShapes.cs`, `parts/PlanarIk.cs`, `parts/VerletChain.cs`, `parts/Humanoid*.cs`, `parts/PartCategory.cs`, `player/MotionMode.cs`, `player/PilgrimMotion.cs`
 - `machines/MachineAct.cs`, `Perception.cs`, `Intent.cs`, `Senses.cs`, `Steering.cs`, `PrayerCycle.cs`, `StrikeAction.cs`, `MachineBrain.cs`, `SurfacePath.cs`, `LegGait.cs`, `machines/brains/*.cs`
 

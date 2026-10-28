@@ -22,11 +22,12 @@ public partial class RoomValidator : Node
     /// <summary>Two rooms' bounds may overlap this much on the map (their walls at a shared doorway), meters.</summary>
     private const float DoorwayOverlap = 6f;
 
-    /// <summary>Order freedom target once all five abilities are on the map (docs/long-term.md): at least this many of the 120 orders.</summary>
-    private const int OrderTarget = 24;
+    /// <summary>The whole game's draft map (M7), with design notes around its `map` blocks.</summary>
+    private const string DraftPath = "res://docs/map-draft.md";
 
     private readonly List<string> _problems = new();
     private readonly MapGraph _graph = new();
+    private readonly List<(string Room, Requirement Requires)> _sealed = new();
     private readonly List<MapLink> _links = new();
     private readonly Dictionary<string, (System.Numerics.Vector2, System.Numerics.Vector2)> _bounds = new();
     private readonly Dictionary<string, RoomShape> _shapes = new();
@@ -67,7 +68,7 @@ public partial class RoomValidator : Node
             room.Free();
         }
 
-        string map = CheckMap();
+        string map = CheckMap() + "\n" + CheckDraft();
         foreach (string problem in _problems)
         {
             GD.PushError($"ROOM CHECK: {problem}");
@@ -166,6 +167,11 @@ public partial class RoomValidator : Node
             }
         }
 
+        foreach (RoomExit exit in exits.Where(e => !e.Open && Requirement.TryParse(e.Requires, out _, out _)))
+        {
+            _sealed.Add((name, exit.Requirement));
+        }
+
         foreach (AbilityRelic relic in room.All<AbilityRelic>())
         {
             _graph.AddItem(new MapItem(name, relic.Name, relic.Ability));
@@ -252,9 +258,9 @@ public partial class RoomValidator : Node
             _problems.Add($"map: softlock at {state}: no goal can be reached from there; reached by {string.Join(" → ", path)}");
         }
 
-        if (report.AbilityCount == 5 && report.Orders.Count < OrderTarget)
+        if (report.AbilityCount == 5 && report.Orders.Count < MapDraft.OrderTarget)
         {
-            _problems.Add($"map: only {report.Orders.Count} of {report.PossibleOrders} ability orders are achievable (target {OrderTarget})");
+            _problems.Add($"map: only {report.Orders.Count} of {report.PossibleOrders} ability orders are achievable (target {MapDraft.OrderTarget})");
         }
 
         var text = new System.Text.StringBuilder();
@@ -288,6 +294,43 @@ public partial class RoomValidator : Node
             foreach (Ability[] order in report.Orders)
             {
                 text.Append($"\n  order: {string.Join(" → ", order)}");
+            }
+        }
+
+        return text.ToString();
+    }
+
+    /// <summary>The whole game's draft: its targets (<see cref="MapDraft.Check"/>) and its agreement with the built rooms; returns the summary line(s).</summary>
+    private string CheckDraft()
+    {
+        MapDraft draft;
+        try
+        {
+            draft = MapDraft.FromMarkdown(FileAccess.GetFileAsString(DraftPath));
+        }
+        catch (System.FormatException e)
+        {
+            _problems.Add($"map draft ({DraftPath}): {e.Message}");
+            return "";
+        }
+
+        (MapReport report, List<string> problems) = draft.Check();
+        _problems.AddRange(problems.Select(p => $"map draft: {p}"));
+        _problems.AddRange(draft.Differences(_graph, _sealed).Select(p => $"map draft differs from the rooms: {p}"));
+
+        var text = new System.Text.StringBuilder($"DRAFT OK: {draft.Summary(report)}");
+        if (Report)
+        {
+            text.Append("\ndraft ways:");
+            foreach (MapEdge e in draft.Graph.Edges)
+            {
+                string needs = e.Requires.ToString();
+                text.Append($"\n  {e.From} → {e.To}{(needs == "" ? "" : $"  needs {needs}")}");
+            }
+
+            foreach (Ability[] order in report.Orders)
+            {
+                text.Append($"\n  draft order: {string.Join(" → ", order)}");
             }
         }
 

@@ -28,6 +28,7 @@ The coding agent builds everything by editing text files. The owner only plays a
 | Run, test, capture screenshots, or hand over to the owner | [docs/testing.md](docs/testing.md) |
 | Deal with versions, paths, .NET environment or upgrades | [docs/toolchain.md](docs/toolchain.md) |
 | Work on machines/enemies, rooms, connections or the map | [docs/long-term.md](docs/long-term.md) (owner-written) |
+| Build or change a room, an exit or a relic; plan the map | [docs/map-draft.md](docs/map-draft.md) (the whole game's draft map; keep it in step with built rooms) |
 
 ## Rules that always apply
 
@@ -49,4 +50,5 @@ The coding agent builds everything by editing text files. The owner only plays a
 |---|---|
 | Check (build, import, smoke, room and species checks, tests) | `tools/check.sh` |
 | Run the game | `godot --path .` |
+| Print the map graph and ability orders (built rooms and the draft) | `tools/map.sh` |
 | Render photo spots + frame times, compare with last run | `tools/capture.sh [label]` (see [docs/testing.md](docs/testing.md)) |

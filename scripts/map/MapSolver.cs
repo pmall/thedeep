@@ -122,6 +122,43 @@ public static class MapSolver
         };
     }
 
+    /// <summary>
+    /// Whether some state in one of <paramref name="targets"/> can be reached from the start without ever entering
+    /// <paramref name="avoiding"/> (for story milestones: a room no route can skip).
+    /// </summary>
+    public static bool Reaches(MapGraph map, IEnumerable<string> targets, string avoiding)
+    {
+        var goals = new HashSet<string>(targets);
+        if (map.Start == avoiding)
+        {
+            return false;
+        }
+
+        SolverState start = Enter(map, map.Start, Ability.None);
+        var seen = new HashSet<SolverState> { start };
+        var queue = new Queue<SolverState>();
+        queue.Enqueue(start);
+        while (queue.Count > 0)
+        {
+            SolverState s = queue.Dequeue();
+            if (goals.Contains(s.Room))
+            {
+                return true;
+            }
+
+            foreach (MapEdge edge in map.From(s.Room).Where(e => e.To != avoiding && e.Requires.IsMetBy(s.Owned)))
+            {
+                SolverState t = Enter(map, edge.To, s.Owned);
+                if (seen.Add(t))
+                {
+                    queue.Enqueue(t);
+                }
+            }
+        }
+
+        return false;
+    }
+
     /// <summary>Arriving in <paramref name="room"/> with <paramref name="owned"/>: its relics are taken.</summary>
     private static SolverState Enter(MapGraph map, string room, Ability owned) =>
         new(room, map.In(room).Aggregate(owned, (o, item) => o | item.Ability));
