@@ -49,7 +49,9 @@ scan_log "$LOG_DIR/smoke_driver.log" "scripted smoke run"
 grep -q 'SMOKE OK' "$LOG_DIR/smoke_driver.log" || { tail -20 "$LOG_DIR/smoke_driver.log"; fail "scripted smoke run did not report SMOKE OK"; }
 grep 'SMOKE OK' "$LOG_DIR/smoke_driver.log"
 # c) Room scenes: grid, exits and their requirements, bounds; then the map: layout, reachability, softlocks, ability orders (RoomValidator).
-"$GODOT" --headless --path . --fixed-fps 60 --quit-after 600 -- --validate-rooms >"$LOG_DIR/rooms.log" 2>&1 \
+# Run from the lab (no machines), so the rooms are checked alone: next to a live room with machines, the
+# rooms added and freed in one frame intermittently crashed the engine (a GC finalizer fatal error).
+"$GODOT" --headless --path . --fixed-fps 60 --quit-after 600 -- --room MechanicsLab --validate-rooms >"$LOG_DIR/rooms.log" 2>&1 \
     || { grep -E 'ROOM CHECK|ERROR' "$LOG_DIR/rooms.log" | head -40; fail "room check failed (full log: $LOG_DIR/rooms.log)"; }
 scan_log "$LOG_DIR/rooms.log" "room check"
 grep -q 'ROOMS OK' "$LOG_DIR/rooms.log" || { tail -20 "$LOG_DIR/rooms.log"; fail "room check did not report ROOMS OK"; }

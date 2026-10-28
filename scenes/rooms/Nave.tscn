@@ -1,0 +1,641 @@
+[gd_scene format=3]
+
+; The Nave: the long nave of the drowned cathedral, east of the Drowned Hall (map offset (62, 26)). West to
+; east: the doorway from the hall, a congregation of three Votaries praying toward an altar in a shaft of
+; light (a gallery passes over their reach), a hatch in the floor dropping into the Cistern, and a tall
+; metal wall only Mag-grip can climb, to the choir ledge and the east doorway into the Descent. Without
+; Mag-grip the hatch is the only way on.
+
+[ext_resource type="Script" path="res://scripts/kit/ColumnMesh.cs" id="1_column"]
+[ext_resource type="Script" path="res://scripts/kit/ArchMesh.cs" id="2_arch"]
+[ext_resource type="Script" path="res://scripts/kit/CableMesh.cs" id="3_cables"]
+[ext_resource type="Material" path="res://assets/materials/wet_stone.tres" id="4_wet_stone"]
+[ext_resource type="PackedScene" path="res://scenes/kit/Block.tscn" id="5_block"]
+[ext_resource type="Script" path="res://scripts/rooms/RoomExit.cs" id="6_exit"]
+[ext_resource type="Script" path="res://scripts/machines/Machine.cs" id="7_machine"]
+[ext_resource type="Resource" path="res://resources/machines/votary.tres" id="8_votary"]
+[ext_resource type="Material" path="res://assets/materials/glyphs.tres" id="9_glyphs"]
+[ext_resource type="Script" path="res://scripts/kit/BlockMesh.cs" id="10_blockmesh"]
+[ext_resource type="Script" path="res://scripts/rooms/WaterBody.cs" id="11_water_body"]
+[ext_resource type="Material" path="res://assets/materials/water.tres" id="12_water"]
+[ext_resource type="Material" path="res://assets/materials/underwater.tres" id="13_underwater"]
+[ext_resource type="Material" path="res://assets/materials/stone_mid.tres" id="14_stone_mid"]
+[ext_resource type="Material" path="res://assets/materials/cable.tres" id="15_cable"]
+[ext_resource type="Script" path="res://scripts/rooms/dressing/Colonnade.cs" id="16_colonnade"]
+[ext_resource type="Script" path="res://scripts/kit/RackMesh.cs" id="17_rack"]
+[ext_resource type="Material" path="res://assets/materials/metal_mid.tres" id="18_metal_mid"]
+[ext_resource type="Script" path="res://scripts/rooms/dressing/RackRow.cs" id="19_rackrow"]
+[ext_resource type="Material" path="res://assets/materials/backdrop_rust.tres" id="20_backdrop_rust"]
+[ext_resource type="Script" path="res://scripts/kit/PipeMesh.cs" id="21_pipe"]
+[ext_resource type="Material" path="res://assets/materials/rust_mid.tres" id="22_rust_mid"]
+[ext_resource type="Script" path="res://scripts/kit/WreckMesh.cs" id="23_wreck"]
+[ext_resource type="Script" path="res://scripts/kit/GrateMesh.cs" id="24_grate"]
+[ext_resource type="PackedScene" path="res://scenes/fx/Dust.tscn" id="25_dust"]
+[ext_resource type="PackedScene" path="res://scenes/fx/Silt.tscn" id="26_silt"]
+[ext_resource type="PackedScene" path="res://scenes/fx/Drips.tscn" id="27_drips"]
+[ext_resource type="Material" path="res://assets/materials/foreground.tres" id="28_foreground"]
+[ext_resource type="Script" path="res://scripts/rooms/PhotoSpot.cs" id="29_spot"]
+[ext_resource type="Script" path="res://scripts/rooms/Room.cs" id="30_room"]
+[ext_resource type="Resource" path="res://resources/biomes/flooded.tres" id="31_flooded"]
+[ext_resource type="PackedScene" path="res://scenes/stage/RoomStage.tscn" id="32_stage"]
+
+[sub_resource type="PrimitiveMesh" id="column_1"]
+script = ExtResource("1_column")
+Height = 8.5
+Radius = 0.42
+Sides = 20
+Shafts = 4
+Plinth = 0.6
+Capital = 0.45
+
+[sub_resource type="PrimitiveMesh" id="column_2"]
+script = ExtResource("1_column")
+Height = 6
+Radius = 0.3
+Sides = 8
+Shafts = 1
+Plinth = 0.4
+Capital = 0.35
+
+[sub_resource type="PrimitiveMesh" id="arch_3"]
+script = ExtResource("2_arch")
+Span = 8
+Rise = 5
+Thickness = 0.6
+Depth = 1
+Segments = 32
+
+[sub_resource type="PrimitiveMesh" id="arch_4"]
+script = ExtResource("2_arch")
+Span = 8
+Rise = 4
+Thickness = 0.45
+Depth = 0.8
+Segments = 32
+
+[sub_resource type="PrimitiveMesh" id="cables_5"]
+script = ExtResource("3_cables")
+End = Vector3(8, 0, 0)
+Sag = 1.6
+Radius = 0.035
+Strands = 3
+Seed = 1
+
+[sub_resource type="PrimitiveMesh" id="cables_6"]
+script = ExtResource("3_cables")
+End = Vector3(8, 0.5, 0)
+Sag = 2.2
+Radius = 0.03
+Strands = 2
+Seed = 2
+
+[sub_resource type="PrimitiveMesh" id="cables_7"]
+script = ExtResource("3_cables")
+End = Vector3(14, -0.5, 0)
+Sag = 2.6
+Radius = 0.07
+Strands = 3
+Seed = 5
+
+[sub_resource type="QuadMesh" id="QuadMesh_8"]
+size = Vector2(3.4, 0.3)
+
+[sub_resource type="QuadMesh" id="QuadMesh_9"]
+size = Vector2(6, 0.4)
+
+[sub_resource type="QuadMesh" id="QuadMesh_10"]
+size = Vector2(3, 0.3)
+
+[sub_resource type="PrimitiveMesh" id="blockmesh_11"]
+script = ExtResource("10_blockmesh")
+Size = Vector3(96, 2, 18)
+Bevel = 0.1
+
+[sub_resource type="PrimitiveMesh" id="rack_12"]
+script = ExtResource("17_rack")
+Size = Vector3(1, 1.25, 0.8)
+Units = 5
+Seed = 4
+
+[sub_resource type="PrimitiveMesh" id="rack_13"]
+script = ExtResource("17_rack")
+Size = Vector3(1, 1.25, 0.8)
+Units = 5
+Seed = 5
+
+[sub_resource type="PrimitiveMesh" id="rack_14"]
+script = ExtResource("17_rack")
+Size = Vector3(1, 1.25, 0.8)
+Units = 5
+Seed = 6
+
+[sub_resource type="PrimitiveMesh" id="arch_15"]
+script = ExtResource("2_arch")
+Span = 5
+Rise = 7.5
+Thickness = 0.45
+Depth = 0.6
+Segments = 32
+
+[sub_resource type="PrimitiveMesh" id="column_16"]
+script = ExtResource("1_column")
+Height = 5.5
+Radius = 0.28
+Sides = 12
+Shafts = 1
+Plinth = 0.4
+Capital = 0.3
+
+[sub_resource type="PrimitiveMesh" id="blockmesh_17"]
+script = ExtResource("10_blockmesh")
+Size = Vector3(5, 10, 0.4)
+Bevel = 0.08
+
+[sub_resource type="QuadMesh" id="QuadMesh_18"]
+size = Vector2(0.6, 4.5)
+
+[sub_resource type="PrimitiveMesh" id="arch_19"]
+script = ExtResource("2_arch")
+Span = 26
+Rise = 30
+Thickness = 0.7
+Depth = 0.7
+Flange = 0.6
+Segments = 64
+
+[sub_resource type="PrimitiveMesh" id="pipe_20"]
+script = ExtResource("21_pipe")
+Points = PackedVector3Array(0, 0, 0, 56, 0, 0, 57.5, -1.5, 0, 57.5, -13, 0)
+Radius = 0.28
+BendRadius = 1.2
+FlangeSpacing = 3
+
+[sub_resource type="PrimitiveMesh" id="pipe_21"]
+script = ExtResource("21_pipe")
+Points = PackedVector3Array(0, 0, 0, 0, 12, 0, 1.5, 13.5, 0, 1.5, 24, 0)
+Radius = 0.2
+BendRadius = 1
+FlangeSpacing = 2.5
+
+[sub_resource type="PrimitiveMesh" id="wreck_22"]
+script = ExtResource("23_wreck")
+Size = 2.6
+Seed = 4
+
+[sub_resource type="PrimitiveMesh" id="grate_23"]
+script = ExtResource("24_grate")
+Size = Vector3(3.5, 0.3, 3)
+
+[sub_resource type="PrimitiveMesh" id="pipe_24"]
+script = ExtResource("21_pipe")
+Points = PackedVector3Array(0, -4, 0, 0, 0, 0, 40, 0, 0, 41, 0.5, 0, 90, 0.5, 0, 90, -4, 0)
+Radius = 0.5
+BendRadius = 1.4
+FlangeSpacing = 4
+
+[node name="Nave" type="Node3D" node_paths=PackedStringArray("SpawnPoint", "Stage", "Lamps", "Shafts", "GlyphLights")]
+script = ExtResource("30_room")
+SpawnPoint = NodePath("SpawnPoint")
+Stage = NodePath("Stage")
+Biome = ExtResource("31_flooded")
+Lamps = [NodePath("Lamps/Hatch")]
+Shafts = [NodePath("Shafts/Altar"), NodePath("Shafts/Choir")]
+GlyphLights = [NodePath("Glyphs/AltarLight"), NodePath("Glyphs/ChoirLight"), NodePath("Glyphs/HatchWestLight"), NodePath("Glyphs/ReredosLight")]
+BoundsMin = Vector2(-1, -1.5)
+BoundsMax = Vector2(86.5, 24)
+
+[node name="SpawnPoint" type="Marker3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 4, 0, 0)
+
+; The shared atmosphere stack (environment, key light, clear front air, skylines, far pillars, frame, dust).
+[node name="Stage" parent="." instance=ExtResource("32_stage")]
+Seed = 5
+DustDensity = 2.2
+PillarDensity = 3.4
+
+[node name="Geometry" type="Node3D" parent="."]
+
+[node name="Floor" parent="Geometry" instance=ExtResource("5_block")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 27.75, -1, 0)
+Size = Vector3(61.5, 2, 4)
+Material = ExtResource("4_wet_stone")
+
+; the strip of floor between the hatch and the metal wall
+[node name="FloorEast" parent="Geometry" instance=ExtResource("5_block")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 63.75, -1, 0)
+Size = Vector3(4.5, 2, 4)
+Material = ExtResource("4_wet_stone")
+
+; west wall above the doorway from the hall
+[node name="WallWest" parent="Geometry" instance=ExtResource("5_block")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -1.5, 15, 0)
+Size = Vector3(3, 22, 4)
+
+[node name="Ceiling" parent="Geometry" instance=ExtResource("5_block")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 43, 24, 0)
+Size = Vector3(92, 4, 4)
+
+; a fallen column drum: the step up onto the gallery
+[node name="Drum" parent="Geometry" instance=ExtResource("5_block")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 24.75, 0.75, 0)
+Size = Vector3(3.5, 1.5, 4)
+
+; a gallery over the congregation, out of their reach
+[node name="Gallery" parent="Geometry" instance=ExtResource("5_block")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 35.25, 3.75, 0)
+Size = Vector3(16.5, 0.5, 4)
+
+; the altar the Votaries pray toward
+[node name="Altar" parent="Geometry" instance=ExtResource("5_block")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 47.5, 0.5, 0)
+Size = Vector3(4, 1, 4)
+
+; the metal face of the choir: only Mag-grip climbs it
+[node name="MetalWall" parent="Geometry" instance=ExtResource("5_block")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 67, 7, 0)
+Size = Vector3(2, 14, 4)
+Surface = 1
+
+; the raised choir; its top is the ledge to the east doorway
+[node name="Choir" parent="Geometry" instance=ExtResource("5_block")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 78.5, 6, 0)
+Size = Vector3(21, 16, 4)
+
+; east wall above the doorway into the Descent
+[node name="WallEast" parent="Geometry" instance=ExtResource("5_block")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 87.5, 22, 0)
+Size = Vector3(3, 8, 4)
+
+[node name="Exits" type="Node3D" parent="."]
+
+; west doorway into the Drowned Hall
+[node name="West" type="Marker3D" parent="Exits"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 1, 0, 0)
+script = ExtResource("6_exit")
+TargetRoom = "res://scenes/rooms/DrownedHall.tscn"
+TargetExit = "EastGate"
+Size = Vector2(1, 4)
+
+; a hole in the floor: drop into the Cistern; climbing back up lands west of the hole
+[node name="Hatch" type="Marker3D" parent="Exits"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 60, -0.5, 0)
+script = ExtResource("6_exit")
+TargetRoom = "res://scenes/rooms/Cistern.tscn"
+TargetExit = "Top"
+ArrivalSide = -1
+Size = Vector2(2, 1)
+
+; east doorway off the choir ledge: only Mag-grip climbs the metal wall to it
+[node name="East" type="Marker3D" parent="Exits"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 85, 14, 0)
+script = ExtResource("6_exit")
+TargetRoom = "res://scenes/rooms/Descent.tscn"
+TargetExit = "West"
+Requires = "MagGrip"
+Size = Vector2(1, 4)
+
+[node name="Machines" type="Node3D" parent="."]
+
+; three Votaries praying toward the altar; they strike whoever lingers in front of them
+[node name="Votary1" type="CharacterBody3D" parent="Machines"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 33, 0, 0)
+script = ExtResource("7_machine")
+Species = ExtResource("8_votary")
+StartFacing = 1
+
+[node name="Votary2" type="CharacterBody3D" parent="Machines"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 37, 0, 0)
+script = ExtResource("7_machine")
+Species = ExtResource("8_votary")
+StartFacing = 1
+
+[node name="Votary3" type="CharacterBody3D" parent="Machines"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 41, 0, 0)
+script = ExtResource("7_machine")
+Species = ExtResource("8_votary")
+StartFacing = 1
+
+[node name="Shafts" type="Node3D" parent="."]
+
+; from the upper left through the arcade onto the altar
+[node name="Altar" type="SpotLight3D" parent="Shafts"]
+transform = Transform3D(-0.7071, 0.6288, -0.3234, 0, 0.4573, 0.8893, 0.7071, 0.6288, -0.3234, 31.75, 44, -15.75)
+light_energy = 6
+light_volumetric_fog_energy = 14
+shadow_enabled = true
+spot_range = 80
+spot_attenuation = 0.25
+spot_angle = 10
+spot_angle_attenuation = 2
+
+; straight down onto the choir ledge: the goal
+[node name="Choir" type="SpotLight3D" parent="Shafts"]
+transform = Transform3D(-0.7071, 0.6288, -0.3234, 0, 0.4573, 0.8893, 0.7071, 0.6288, -0.3234, 77, 46, -4.5)
+light_energy = 5
+light_volumetric_fog_energy = 10
+shadow_enabled = true
+spot_range = 80
+spot_attenuation = 0.25
+spot_angle = 9
+spot_angle_attenuation = 2
+
+[node name="Lamps" type="Node3D" parent="."]
+
+; a warm glow over the hatch
+[node name="Hatch" type="OmniLight3D" parent="Lamps"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 60, 4.5, 1.5)
+light_energy = 1.6
+omni_range = 8
+shadow_enabled = false
+
+[node name="Glyphs" type="Node3D" parent="."]
+
+; faith glyphs along the altar
+[node name="Altar" type="MeshInstance3D" parent="Glyphs"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 47.5, 0.5, 2.01)
+mesh = SubResource("QuadMesh_8")
+material_override = ExtResource("9_glyphs")
+cast_shadow = 0
+
+[node name="AltarLight" type="OmniLight3D" parent="Glyphs"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 47.5, 0.5, 2.71)
+light_energy = 0.4
+light_volumetric_fog_energy = 0
+omni_range = 2
+
+; glyphs under the choir ledge
+[node name="Choir" type="MeshInstance3D" parent="Glyphs"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 73, 12.75, 2.01)
+mesh = SubResource("QuadMesh_9")
+material_override = ExtResource("9_glyphs")
+cast_shadow = 0
+
+[node name="ChoirLight" type="OmniLight3D" parent="Glyphs"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 73, 12.75, 2.71)
+light_energy = 0.5
+light_volumetric_fog_energy = 0
+omni_range = 3
+
+; glyphs on the lip of the hatch
+[node name="HatchWest" type="MeshInstance3D" parent="Glyphs"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 56.5, -0.75, 2.01)
+mesh = SubResource("QuadMesh_10")
+material_override = ExtResource("9_glyphs")
+cast_shadow = 0
+
+[node name="HatchWestLight" type="OmniLight3D" parent="Glyphs"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 56.5, -0.75, 2.71)
+light_energy = 0.3
+light_volumetric_fog_energy = 0
+omni_range = 2
+
+[node name="Kit" type="Node3D" parent="."]
+
+[node name="BackFloor" type="MeshInstance3D" parent="Kit"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 43, -2.5, -11)
+mesh = SubResource("blockmesh_11")
+material_override = ExtResource("4_wet_stone")
+
+; the drowned back of the nave, like the hall
+[node name="Water" type="Node3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 43, -0.25, -11)
+script = ExtResource("11_water_body")
+Size = Vector2(96, 18)
+Depth = 2.5
+SurfaceMaterial = ExtResource("12_water")
+UnderwaterMaterial = ExtResource("13_underwater")
+
+[node name="Arcade" type="Node3D" parent="Kit"]
+
+; lower arcade: clustered piers, pointed arches
+[node name="Lower" type="Node3D" parent="Kit/Arcade"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -1.5, -4.5)
+script = ExtResource("16_colonnade")
+Pier = SubResource("column_1")
+Arch = SubResource("arch_3")
+Material = ExtResource("14_stone_mid")
+Bays = 11
+Span = 8
+ArchHeight = 8.5
+BeamHeight = 14.25
+Cables = SubResource("cables_5")
+CableMaterial = ExtResource("15_cable")
+CableChance = 0.45
+CableOffset = Vector3(0, 8.25, 0.75)
+Seed = 8
+
+; upper gallery: slim columns, round arches
+[node name="Gallery" type="Node3D" parent="Kit/Arcade"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 13.25, -4.5)
+script = ExtResource("16_colonnade")
+Pier = SubResource("column_2")
+Arch = SubResource("arch_4")
+Material = ExtResource("14_stone_mid")
+Bays = 11
+Span = 8
+ArchHeight = 6
+BeamHeight = 10.5
+Cables = SubResource("cables_6")
+CableMaterial = ExtResource("15_cable")
+CableChance = 0.35
+CableOffset = Vector3(0, 5.5, 0.75)
+Seed = 9
+
+; low reliquary racks in rows, half drowned, like pews
+[node name="Pews" type="Node3D" parent="Kit"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 2, -1.5, -7.25)
+script = ExtResource("19_rackrow")
+Variants = [SubResource("rack_12"), SubResource("rack_13"), SubResource("rack_14")]
+Material = ExtResource("18_metal_mid")
+Count = 84
+GapChance = 0.2
+ToppleChance = 0.03
+ClearEvery = 8
+ClearOffset = 6
+Seed = 3
+
+[node name="Reredos" type="Node3D" parent="Kit"]
+
+[node name="Arch" type="MeshInstance3D" parent="Kit/Reredos"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 47.5, 0, -2.75)
+mesh = SubResource("arch_15")
+material_override = ExtResource("14_stone_mid")
+
+[node name="ColumnL" type="MeshInstance3D" parent="Kit/Reredos"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 45, 0, -2.75)
+mesh = SubResource("column_16")
+material_override = ExtResource("14_stone_mid")
+
+[node name="ColumnR" type="MeshInstance3D" parent="Kit/Reredos"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 50, 0, -2.75)
+mesh = SubResource("column_16")
+material_override = ExtResource("14_stone_mid")
+
+[node name="Back" type="MeshInstance3D" parent="Kit/Reredos"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 47.5, 0, -3.25)
+mesh = SubResource("blockmesh_17")
+material_override = ExtResource("14_stone_mid")
+
+; a column of glyphs in the niche
+[node name="Reredos" type="MeshInstance3D" parent="Glyphs"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 47.5, 3.5, -3)
+mesh = SubResource("QuadMesh_18")
+material_override = ExtResource("9_glyphs")
+cast_shadow = 0
+
+[node name="ReredosLight" type="OmniLight3D" parent="Glyphs"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 47.5, 3.5, -2.3)
+light_energy = 0.6
+light_volumetric_fog_energy = 0
+omni_range = 3.5
+
+[node name="Ribs" type="Node3D" parent="Kit"]
+
+[node name="Rib1" type="MeshInstance3D" parent="Kit/Ribs"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 22, -2, -16)
+mesh = SubResource("arch_19")
+material_override = ExtResource("20_backdrop_rust")
+cast_shadow = 0
+
+[node name="Rib2" type="MeshInstance3D" parent="Kit/Ribs"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 66, -2, -16)
+mesh = SubResource("arch_19")
+material_override = ExtResource("20_backdrop_rust")
+cast_shadow = 0
+
+[node name="Rib3" type="MeshInstance3D" parent="Kit/Ribs"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 44, -2, -24)
+mesh = SubResource("arch_19")
+material_override = ExtResource("20_backdrop_rust")
+cast_shadow = 0
+
+[node name="Pipes" type="Node3D" parent="Kit"]
+
+; a pipe along the arcade, dropping into the hatch pit
+[node name="Main" type="MeshInstance3D" parent="Kit/Pipes"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 11.5, -3.25)
+mesh = SubResource("pipe_20")
+material_override = ExtResource("22_rust_mid")
+
+; risers behind the metal wall
+[node name="Riser1" type="MeshInstance3D" parent="Kit/Pipes"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 70, -1.5, -2.75)
+mesh = SubResource("pipe_21")
+material_override = ExtResource("18_metal_mid")
+
+[node name="Riser2" type="MeshInstance3D" parent="Kit/Pipes"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 73.5, -1.5, -3.25)
+mesh = SubResource("pipe_21")
+material_override = ExtResource("22_rust_mid")
+
+[node name="Wreck" type="MeshInstance3D" parent="Kit"]
+transform = Transform3D(0.9063, 0, 0.4226, 0, 1, 0, -0.4226, 0, 0.9063, 14, -1.25, -6)
+mesh = SubResource("wreck_22")
+material_override = ExtResource("22_rust_mid")
+
+; the hatch grate, torn off and fallen behind
+[node name="HatchGrate" type="MeshInstance3D" parent="Kit"]
+transform = Transform3D(0.9397, 0.342, 0, -0.342, 0.9397, 0, 0, 0, 1, 62.5, -1.25, -4.5)
+mesh = SubResource("grate_23")
+material_override = ExtResource("18_metal_mid")
+
+[node name="Particles" type="Node3D" parent="."]
+
+[node name="AltarDust" parent="Particles" instance=ExtResource("25_dust")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 47, 8, -1)
+Extents = Vector3(5, 8, 2.5)
+Density = 2.5
+
+[node name="ChoirDust" parent="Particles" instance=ExtResource("25_dust")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 77, 17, -1)
+Extents = Vector3(4, 5, 2.5)
+Density = 2.5
+
+[node name="Silt" parent="Particles" instance=ExtResource("26_silt")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 43, 0.5, -8)
+Extents = Vector3(44, 1.5, 6)
+Density = 1.5
+
+[node name="HatchDrips" parent="Particles" instance=ExtResource("27_drips")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 60, 21.5, -0.5)
+Extents = Vector3(1.2, 0.05, 0.6)
+amount = 4
+lifetime = 2.12
+
+[node name="GalleryDrips" parent="Particles" instance=ExtResource("27_drips")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 24, 23, -4.5)
+Extents = Vector3(16, 0.05, 0.4)
+amount = 8
+lifetime = 2.17
+
+[node name="Backdrop" type="Node3D" parent="."]
+
+[node name="ForePipe" type="MeshInstance3D" parent="Backdrop"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -2, -0.75, 7.5)
+mesh = SubResource("pipe_24")
+material_override = ExtResource("28_foreground")
+cast_shadow = 0
+
+[node name="ForeCables0" type="MeshInstance3D" parent="Backdrop"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -2, 21.5, 7)
+mesh = SubResource("cables_7")
+material_override = ExtResource("28_foreground")
+cast_shadow = 0
+
+[node name="ForeCables1" type="MeshInstance3D" parent="Backdrop"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 20, 22, 7.5)
+mesh = SubResource("cables_7")
+material_override = ExtResource("28_foreground")
+cast_shadow = 0
+
+[node name="ForeCables2" type="MeshInstance3D" parent="Backdrop"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 42, 21.5, 7)
+mesh = SubResource("cables_7")
+material_override = ExtResource("28_foreground")
+cast_shadow = 0
+
+[node name="ForeCables3" type="MeshInstance3D" parent="Backdrop"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 64, 22, 7.5)
+mesh = SubResource("cables_7")
+material_override = ExtResource("28_foreground")
+cast_shadow = 0
+
+[node name="PhotoSpots" type="Node3D" parent="."]
+
+; gameplay framing at the doorway from the hall
+[node name="Start" type="Marker3D" parent="PhotoSpots"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 8.5, 3.9, 22)
+script = ExtResource("29_spot")
+PlayerPosition = Vector3(4, 0, 0)
+
+; gameplay framing on the gallery over the Votaries
+[node name="Congregation" type="Marker3D" parent="PhotoSpots"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 37, 5.5, 22)
+script = ExtResource("29_spot")
+PlayerPosition = Vector3(30, 4, 0)
+
+; the altar and its reredos up close, in the shaft
+[node name="Altar" type="Marker3D" parent="PhotoSpots"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 46.5, 2.6, 9)
+script = ExtResource("29_spot")
+PlayerPosition = Vector3(51.5, 0, 0)
+PlayerFacing = -1
+
+; the hatch and the metal wall up to the choir
+[node name="Wall" type="Marker3D" parent="PhotoSpots"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 64, 7, 24)
+script = ExtResource("29_spot")
+PlayerPosition = Vector3(63.5, 0, 0)
+
+; gameplay framing on the choir ledge, the east doorway
+[node name="Choir" type="Marker3D" parent="PhotoSpots"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 77, 17.5, 22)
+script = ExtResource("29_spot")
+PlayerPosition = Vector3(80, 14, 0)
+
+; the eastern half of the nave
+[node name="Wide" type="Marker3D" parent="PhotoSpots"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 58, 11, 50)
+script = ExtResource("29_spot")
+PlayerPosition = Vector3(30, 4, 0)
+Fov = 34

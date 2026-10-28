@@ -284,26 +284,15 @@ Size = Vector3(2, 30, 4)
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 65, 12, 0)
 Size = Vector3(2, 28, 4)
 
-; sealed gate where the EastGate exit will open (M6)
-[node name="EastGate" parent="Geometry" instance=ExtResource("2_block")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 65, 28, 0)
-Size = Vector3(2, 4, 4)
-Surface = 1
-Material = ExtResource("10_rust")
-
+; the east doorway into the Nave is the gap between WallRight and WallRightTop (Y 26 to 30)
 [node name="WallRightTop" parent="Geometry" instance=ExtResource("2_block")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 65, 32, 0)
 Size = Vector3(2, 4, 4)
 
+; the shaft's top is open (X 46 to 56) up into the Belfry, between CeilingLeft and CeilingRight
 [node name="CeilingLeft" parent="Geometry" instance=ExtResource("2_block")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 22, 33, 0)
-Size = Vector3(48, 2, 4)
-
-; hatch over the shaft, where the ShaftHatch exit will open (M6)
-[node name="ShaftHatch" parent="Geometry" instance=ExtResource("2_block")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 51, 33, 0)
-Size = Vector3(10, 2, 4)
-Surface = 1
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 21.5, 33, 0)
+Size = Vector3(47, 2, 4)
 
 [node name="CeilingRight" parent="Geometry" instance=ExtResource("2_block")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 61, 33, 0)
@@ -334,7 +323,7 @@ Size = Vector3(2, 6, 4)
 Surface = 1
 
 [node name="LedgeUnderSlab" parent="Geometry" instance=ExtResource("2_block")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 39, 3.75, 0)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 39, 2.75, 0)
 Size = Vector3(4, 0.5, 4)
 
 [node name="MetalSlab" parent="Geometry" instance=ExtResource("2_block")]
@@ -342,9 +331,10 @@ transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 39, 9, 0)
 Size = Vector3(10, 1, 4)
 Surface = 1
 
+; up to the top of the ceiling, so a grip climbs it straight out through the open hatch
 [node name="ShaftWallLeft" parent="Geometry" instance=ExtResource("2_block")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 45.5, 18, 0)
-Size = Vector3(1, 28, 4)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 45.5, 19, 0)
+Size = Vector3(1, 30, 4)
 Surface = 1
 
 [node name="ShaftWallRight" parent="Geometry" instance=ExtResource("2_block")]
@@ -358,35 +348,35 @@ transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 60.75, 25.75, 0)
 Size = Vector3(7.5, 0.5, 4)
 
 [node name="ShaftLedge1" parent="Geometry" instance=ExtResource("2_block")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 47.5, 3.25, 0)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 47.5, 2.75, 0)
 Size = Vector3(3, 0.5, 4)
 
 [node name="ShaftLedge2" parent="Geometry" instance=ExtResource("2_block")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 54.5, 6.25, 0)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 54.5, 5.75, 0)
 Size = Vector3(3, 0.5, 4)
 
 [node name="ShaftLedge3" parent="Geometry" instance=ExtResource("2_block")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 47.5, 9.25, 0)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 47.5, 8.75, 0)
 Size = Vector3(3, 0.5, 4)
 
 [node name="ShaftLedge4" parent="Geometry" instance=ExtResource("2_block")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 54.5, 12.25, 0)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 54.5, 11.75, 0)
 Size = Vector3(3, 0.5, 4)
 
 [node name="ShaftLedge5" parent="Geometry" instance=ExtResource("2_block")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 47.5, 15.25, 0)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 47.5, 14.75, 0)
 Size = Vector3(3, 0.5, 4)
 
 [node name="ShaftLedge6" parent="Geometry" instance=ExtResource("2_block")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 54.5, 18.25, 0)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 54.5, 17.75, 0)
 Size = Vector3(3, 0.5, 4)
 
 [node name="ShaftLedge7" parent="Geometry" instance=ExtResource("2_block")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 47.5, 21.25, 0)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 47.5, 20.75, 0)
 Size = Vector3(3, 0.5, 4)
 
 [node name="ShaftLedge8" parent="Geometry" instance=ExtResource("2_block")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 54.5, 24.25, 0)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 54.5, 23.75, 0)
 Size = Vector3(3, 0.5, 4)
 
 ; Connections to other rooms (an empty TargetRoom is sealed: a room not built yet). The marker is where the player arrives.
@@ -400,18 +390,23 @@ TargetRoom = "res://scenes/rooms/Narthex.tscn"
 TargetExit = "East"
 Size = Vector2(1, 4)
 
-; east, from the ledge at the top of the shaft
+; up through the open top of the shaft into the Belfry: its area starts above the highest jump from the
+; east ledge (Y 26 + 3.4 + the body), so only a grip or a harpoon reaches it
+[node name="ShaftHatch" type="Marker3D" parent="Exits"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 51, 32, 0)
+script = ExtResource("12_exit")
+TargetRoom = "res://scenes/rooms/Belfry.tscn"
+TargetExit = "Floor"
+Requires = "MagGrip | Harpoon"
+Size = Vector2(10, 1)
+
+; east doorway into the Nave, from the ledge at the top of the shaft
 [node name="EastGate" type="Marker3D" parent="Exits"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 63, 26, 0)
 script = ExtResource("12_exit")
+TargetRoom = "res://scenes/rooms/Nave.tscn"
+TargetExit = "West"
 Size = Vector2(1, 4)
-
-; up through the hatch: past the last ledge, only grip or a harpoon reaches it
-[node name="ShaftHatch" type="Marker3D" parent="Exits"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 51, 31, 0)
-script = ExtResource("12_exit")
-Requires = "MagGrip | Harpoon"
-Size = Vector2(10, 1)
 
 ; Kit dressing (visual only): a two-tier arcade behind the play plane, drowned server racks on a wet back
 ; floor, pipes, cables, wrecks, and iron ribs far back. Origins on the 0.25 m grid (RoomValidator checks it).

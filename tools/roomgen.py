@@ -36,6 +36,10 @@ EXT = {
     'wreck': ('Script', 'res://scripts/kit/WreckMesh.cs'),
     'pipe': ('Script', 'res://scripts/kit/PipeMesh.cs'),
     'cables': ('Script', 'res://scripts/kit/CableMesh.cs'),
+    # part meshes, usable as dressing too (a bell is a pod, its lip a ring)
+    'pod': ('Script', 'res://scripts/parts/PodMesh.cs'),
+    'ring': ('Script', 'res://scripts/parts/RingMesh.cs'),
+    'plate': ('Script', 'res://scripts/parts/PlateMesh.cs'),
     # scenes
     'block': ('PackedScene', 'res://scenes/kit/Block.tscn'),
     'stage': ('PackedScene', 'res://scenes/stage/RoomStage.tscn'),

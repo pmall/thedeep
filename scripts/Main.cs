@@ -63,8 +63,12 @@ public partial class Main : Node3D
 
     private SaveData? _resume;
 
+    /// <summary>Where a new game starts (the world's start room before a save or `--room` replaces it): the map check's start.</summary>
+    private string _gameStart = "";
+
     public override void _EnterTree()
     {
+        _gameStart = World.StartRoom.ResourcePath;
         string[] args = OS.GetCmdlineUserArgs();
         bool driven = DriverArguments.Any(a => Array.IndexOf(args, a) >= 0);
         bool pickedRoom = Array.IndexOf(args, RoomArgument) >= 0;
@@ -118,7 +122,7 @@ public partial class Main : Node3D
 
         if (Array.IndexOf(args, ValidateRoomsArgument) >= 0)
         {
-            AddChild(new RoomValidator { StartRoom = World.StartRoom.ResourcePath, Report = Array.IndexOf(args, "--map-report") >= 0 });
+            AddChild(new RoomValidator { StartRoom = _gameStart, Report = Array.IndexOf(args, "--map-report") >= 0 });
         }
         else if (Array.IndexOf(args, ValidateTravelArgument) >= 0)
         {

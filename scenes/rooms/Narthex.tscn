@@ -26,7 +26,6 @@
 [ext_resource type="Script" path="res://scripts/rooms/Room.cs" id="20_room"]
 [ext_resource type="Resource" path="res://resources/biomes/flooded.tres" id="21_flooded"]
 [ext_resource type="PackedScene" path="res://scenes/stage/RoomStage.tscn" id="22_stage"]
-[ext_resource type="Script" path="res://scripts/map/MapGoal.cs" id="23_goal"]
 
 [sub_resource type="PrimitiveMesh" id="column_1"]
 script = ExtResource("1_column")
@@ -150,11 +149,6 @@ script = ExtResource("9_exit")
 TargetRoom = "res://scenes/rooms/DrownedHall.tscn"
 TargetExit = "WestGate"
 Size = Vector2(1, 4)
-
-; for the map solver, until the slice's end (the Descent) is built: the journey's end
-[node name="JourneyEnd" type="Marker3D" parent="Exits"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 20, 0, 0)
-script = ExtResource("23_goal")
 
 [node name="Props" type="Node3D" parent="."]
 

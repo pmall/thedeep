@@ -62,8 +62,8 @@ touch "$ROOT/.gdignore" # Godot must not import the captures
 # godot runs the last built assembly, so build first.
 dotnet build TheDeep.sln -v q -nologo >"$out/build.log" 2>&1 || { tail -20 "$out/build.log"; fail "dotnet build"; }
 
-# The rooms rendered: the drowned hall first (perf.json, compared run to run), then the others.
-ROOMS=(DrownedHall Narthex MachineArena MechanicsLab)
+# The rooms rendered: the drowned hall first (perf.json, compared run to run), then the slice rooms, the arena and the lab.
+ROOMS=(DrownedHall Narthex Belfry Nave Cistern Reliquary Descent MachineArena MechanicsLab)
 for room in "${ROOMS[@]}"; do
     name="$room"
     room_args=(--room "$room") perf="perf-$room.json" log="$out/godot-$room.log"

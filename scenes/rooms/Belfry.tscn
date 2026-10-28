@@ -1,0 +1,462 @@
+[gd_scene format=3]
+
+; The Belfry, the bell loft over the Drowned Hall (map offset (15, 32)): reached up the hall's metal shaft,
+; through a hole in the loft floor; dropping back down the hole is free. A dead end that rewards the climb:
+; a pilgrim shrine, a Lamplighter, and a great bell hanging in its frame against tall openings onto the
+; skyline. Steps lead up to a lookout under the bell.
+
+[ext_resource type="Script" path="res://scripts/kit/ColumnMesh.cs" id="1_column"]
+[ext_resource type="Script" path="res://scripts/kit/ArchMesh.cs" id="2_arch"]
+[ext_resource type="Script" path="res://scripts/kit/CableMesh.cs" id="3_cables"]
+[ext_resource type="PackedScene" path="res://scenes/kit/Block.tscn" id="4_block"]
+[ext_resource type="Script" path="res://scripts/rooms/RoomExit.cs" id="5_exit"]
+[ext_resource type="PackedScene" path="res://scenes/props/Shrine.tscn" id="6_shrine"]
+[ext_resource type="Script" path="res://scripts/machines/Machine.cs" id="7_machine"]
+[ext_resource type="Resource" path="res://resources/machines/lamplighter.tres" id="8_lamplighter"]
+[ext_resource type="Material" path="res://assets/materials/glyphs.tres" id="9_glyphs"]
+[ext_resource type="Script" path="res://scripts/parts/PodMesh.cs" id="10_pod"]
+[ext_resource type="Script" path="res://scripts/parts/RingMesh.cs" id="11_ring"]
+[ext_resource type="Material" path="res://assets/materials/metal_mid.tres" id="12_metal_mid"]
+[ext_resource type="Script" path="res://scripts/kit/BlockMesh.cs" id="13_blockmesh"]
+[ext_resource type="Material" path="res://assets/materials/rust_mid.tres" id="14_rust_mid"]
+[ext_resource type="Material" path="res://assets/materials/cable.tres" id="15_cable"]
+[ext_resource type="Material" path="res://assets/materials/stone_mid.tres" id="16_stone_mid"]
+[ext_resource type="Script" path="res://scripts/rooms/dressing/Colonnade.cs" id="17_colonnade"]
+[ext_resource type="Material" path="res://assets/materials/backdrop_rust.tres" id="18_backdrop_rust"]
+[ext_resource type="PackedScene" path="res://scenes/fx/Dust.tscn" id="19_dust"]
+[ext_resource type="Material" path="res://assets/materials/foreground.tres" id="20_foreground"]
+[ext_resource type="Script" path="res://scripts/rooms/PhotoSpot.cs" id="21_spot"]
+[ext_resource type="Script" path="res://scripts/rooms/Room.cs" id="22_room"]
+[ext_resource type="Resource" path="res://resources/biomes/flooded.tres" id="23_flooded"]
+[ext_resource type="PackedScene" path="res://scenes/stage/RoomStage.tscn" id="24_stage"]
+
+[sub_resource type="PrimitiveMesh" id="column_1"]
+script = ExtResource("1_column")
+Height = 8.5
+Radius = 0.42
+Sides = 20
+Shafts = 4
+Plinth = 0.6
+Capital = 0.45
+
+[sub_resource type="PrimitiveMesh" id="column_2"]
+script = ExtResource("1_column")
+Height = 6
+Radius = 0.3
+Sides = 8
+Shafts = 1
+Plinth = 0.4
+Capital = 0.35
+
+[sub_resource type="PrimitiveMesh" id="arch_3"]
+script = ExtResource("2_arch")
+Span = 8
+Rise = 5
+Thickness = 0.6
+Depth = 1
+Segments = 32
+
+[sub_resource type="PrimitiveMesh" id="arch_4"]
+script = ExtResource("2_arch")
+Span = 8
+Rise = 4
+Thickness = 0.45
+Depth = 0.8
+Segments = 32
+
+[sub_resource type="PrimitiveMesh" id="cables_5"]
+script = ExtResource("3_cables")
+End = Vector3(8, 0, 0)
+Sag = 1.6
+Radius = 0.035
+Strands = 3
+Seed = 1
+
+[sub_resource type="PrimitiveMesh" id="cables_6"]
+script = ExtResource("3_cables")
+End = Vector3(8, 0.5, 0)
+Sag = 2.2
+Radius = 0.03
+Strands = 2
+Seed = 2
+
+[sub_resource type="PrimitiveMesh" id="cables_7"]
+script = ExtResource("3_cables")
+End = Vector3(14, -0.5, 0)
+Sag = 2.6
+Radius = 0.07
+Strands = 3
+Seed = 5
+
+[sub_resource type="QuadMesh" id="QuadMesh_8"]
+size = Vector2(8, 0.3)
+
+[sub_resource type="QuadMesh" id="QuadMesh_9"]
+size = Vector2(3, 0.3)
+
+[sub_resource type="PrimitiveMesh" id="pod_10"]
+script = ExtResource("10_pod")
+Axis = Vector3(0, -1, 0)
+Length = 6
+Stations = PackedVector4Array(0, 1.4, 1.4, 0, 0.06, 2.4, 2.4, 0, 0.25, 2.9, 2.9, 0, 0.6, 3.3, 3.3, 0, 0.85, 4.3, 4.3, 0, 0.96, 5.4, 5.4, 0, 1, 5.5, 5.5, 0)
+Sides = 48
+Rings = 28
+
+[sub_resource type="PrimitiveMesh" id="ring_11"]
+script = ExtResource("11_ring")
+RadiusX = 2.72
+RadiusZ = 2.72
+Height = 0.35
+Thickness = 0.22
+Segments = 64
+
+[sub_resource type="PrimitiveMesh" id="ring_12"]
+script = ExtResource("11_ring")
+RadiusX = 0.45
+RadiusZ = 0.18
+Height = 0.9
+Thickness = 0.18
+Segments = 24
+
+[sub_resource type="PrimitiveMesh" id="blockmesh_13"]
+script = ExtResource("13_blockmesh")
+Size = Vector3(0.9, 24, 0.9)
+Bevel = 0.08
+
+[sub_resource type="PrimitiveMesh" id="blockmesh_14"]
+script = ExtResource("13_blockmesh")
+Size = Vector3(16, 1, 1.2)
+Bevel = 0.08
+
+[sub_resource type="PrimitiveMesh" id="blockmesh_15"]
+script = ExtResource("13_blockmesh")
+Size = Vector3(0.5, 6, 0.5)
+Bevel = 0.05
+
+[sub_resource type="PrimitiveMesh" id="cables_16"]
+script = ExtResource("3_cables")
+End = Vector3(0.5, -11, 0)
+Sag = 0.3
+Radius = 0.05
+Strands = 1
+Seed = 3
+
+[sub_resource type="PrimitiveMesh" id="blockmesh_17"]
+script = ExtResource("13_blockmesh")
+Size = Vector3(50, 1, 12)
+Bevel = 0.1
+
+[sub_resource type="PrimitiveMesh" id="column_18"]
+script = ExtResource("1_column")
+Height = 17
+Radius = 0.5
+Sides = 20
+Shafts = 4
+Plinth = 0.8
+Capital = 0.6
+
+[sub_resource type="PrimitiveMesh" id="arch_19"]
+script = ExtResource("2_arch")
+Span = 8
+Rise = 6
+Thickness = 0.7
+Depth = 1.2
+Segments = 32
+
+[sub_resource type="PrimitiveMesh" id="arch_20"]
+script = ExtResource("2_arch")
+Span = 26
+Rise = 30
+Thickness = 0.7
+Depth = 0.7
+Flange = 0.6
+Segments = 64
+
+[node name="Belfry" type="Node3D" node_paths=PackedStringArray("SpawnPoint", "Stage", "Shafts", "GlyphLights")]
+script = ExtResource("22_room")
+SpawnPoint = NodePath("SpawnPoint")
+Stage = NodePath("Stage")
+Biome = ExtResource("23_flooded")
+Shafts = [NodePath("Shafts/Openings"), NodePath("Shafts/Lookout")]
+GlyphLights = [NodePath("Props/Shrine/Light"), NodePath("Glyphs/LookoutLight"), NodePath("Glyphs/HoleLight")]
+BoundsMin = Vector2(-2, -1)
+BoundsMax = Vector2(44, 26)
+
+[node name="SpawnPoint" type="Marker3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 31, 0, 0)
+
+; The shared atmosphere stack (environment, key light, clear front air, skylines, far pillars, frame, dust).
+[node name="Stage" parent="." instance=ExtResource("24_stage")]
+Seed = 17
+DustDensity = 1.8
+PillarDensity = 4
+
+[node name="Geometry" type="Node3D" parent="."]
+
+[node name="FloorWest" parent="Geometry" instance=ExtResource("4_block")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 15.25, -1, 0)
+Size = Vector3(38.5, 2, 4)
+
+[node name="FloorEast" parent="Geometry" instance=ExtResource("4_block")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 41.75, -1, 0)
+Size = Vector3(8.5, 2, 4)
+
+[node name="WallWest" parent="Geometry" instance=ExtResource("4_block")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -2, 14, 0)
+Size = Vector3(4, 28, 4)
+
+[node name="WallEast" parent="Geometry" instance=ExtResource("4_block")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 44, 14, 0)
+Size = Vector3(4, 28, 4)
+
+[node name="Ceiling" parent="Geometry" instance=ExtResource("4_block")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 21, 26, 0)
+Size = Vector3(50, 4, 4)
+
+; steps up to the lookout under the bell
+[node name="Step1" parent="Geometry" instance=ExtResource("4_block")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 27.25, 2.25, 0)
+Size = Vector3(3.5, 0.5, 4)
+
+[node name="Step2" parent="Geometry" instance=ExtResource("4_block")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 21.75, 4.75, 0)
+Size = Vector3(3.5, 0.5, 4)
+
+[node name="Step3" parent="Geometry" instance=ExtResource("4_block")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 27.25, 7.25, 0)
+Size = Vector3(3.5, 0.5, 4)
+
+; the lookout: the bell overhead, the skyline through the openings
+[node name="Lookout" parent="Geometry" instance=ExtResource("4_block")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 12.5, 9.75, 0)
+Size = Vector3(19, 0.5, 4)
+
+[node name="Exits" type="Node3D" parent="."]
+
+; the hole in the loft floor over the hall's shaft: climbing up lands west of it, dropping in is free
+[node name="Floor" type="Marker3D" parent="Exits"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 36, -1, 0)
+script = ExtResource("5_exit")
+TargetRoom = "res://scenes/rooms/DrownedHall.tscn"
+TargetExit = "ShaftHatch"
+ArrivalSide = -1
+Size = Vector2(2, 1)
+
+[node name="Props" type="Node3D" parent="."]
+
+; a pilgrim shrine beside the hole: rest here to save and heal
+[node name="Shrine" parent="Props" instance=ExtResource("6_shrine")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 31.5, 0, 0)
+
+[node name="Machines" type="Node3D" parent="."]
+
+; a Lamplighter keeps the bell company
+[node name="Lamplighter" type="CharacterBody3D" parent="Machines"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 12, 4.5, 0)
+script = ExtResource("7_machine")
+Species = ExtResource("8_lamplighter")
+StartFacing = 1
+
+[node name="Shafts" type="Node3D" parent="."]
+
+; from the upper left past the bell onto the floor
+[node name="Openings" type="SpotLight3D" parent="Shafts"]
+transform = Transform3D(-0.7071, 0.6288, -0.3234, 0, 0.4573, 0.8893, 0.7071, 0.6288, -0.3234, 8, 44, -16)
+light_energy = 6
+light_volumetric_fog_energy = 14
+shadow_enabled = true
+spot_range = 80
+spot_attenuation = 0.25
+spot_angle = 12
+spot_angle_attenuation = 2
+
+; down onto the lookout
+[node name="Lookout" type="SpotLight3D" parent="Shafts"]
+transform = Transform3D(-0.7071, 0.6288, -0.3234, 0, 0.4573, 0.8893, 0.7071, 0.6288, -0.3234, 10, 44, -4.75)
+light_energy = 4
+light_volumetric_fog_energy = 9
+shadow_enabled = true
+spot_range = 80
+spot_attenuation = 0.25
+spot_angle = 8
+spot_angle_attenuation = 2
+
+[node name="Glyphs" type="Node3D" parent="."]
+
+; glyphs along the lookout
+[node name="Lookout" type="MeshInstance3D" parent="Glyphs"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 12.5, 9.75, 2.01)
+mesh = SubResource("QuadMesh_8")
+material_override = ExtResource("9_glyphs")
+cast_shadow = 0
+
+[node name="LookoutLight" type="OmniLight3D" parent="Glyphs"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 12.5, 9.75, 2.71)
+light_energy = 0.45
+light_volumetric_fog_energy = 0
+omni_range = 3
+
+; glyphs on the floor lip by the hole
+[node name="Hole" type="MeshInstance3D" parent="Glyphs"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 32, -0.6, 2.01)
+mesh = SubResource("QuadMesh_9")
+material_override = ExtResource("9_glyphs")
+cast_shadow = 0
+
+[node name="HoleLight" type="OmniLight3D" parent="Glyphs"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 32, -0.6, 2.71)
+light_energy = 0.3
+light_volumetric_fog_energy = 0
+omni_range = 2
+
+[node name="Kit" type="Node3D" parent="."]
+
+[node name="Bell" type="Node3D" parent="Kit"]
+
+; the great bell, hanging from its yoke
+[node name="Bell" type="MeshInstance3D" parent="Kit/Bell"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 13, 20.75, -5)
+mesh = SubResource("pod_10")
+material_override = ExtResource("12_metal_mid")
+
+[node name="Lip" type="MeshInstance3D" parent="Kit/Bell"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 13, 15, -5)
+mesh = SubResource("ring_11")
+material_override = ExtResource("12_metal_mid")
+
+[node name="Crown" type="MeshInstance3D" parent="Kit/Bell"]
+transform = Transform3D(0, -1, 0, 1, 0, 0, 0, 0, 1, 13, 21.25, -5)
+mesh = SubResource("ring_12")
+material_override = ExtResource("12_metal_mid")
+
+; the bell frame: two posts, a yoke beam, braces
+[node name="PostL" type="MeshInstance3D" parent="Kit/Bell"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 5, 12, -5)
+mesh = SubResource("blockmesh_13")
+material_override = ExtResource("14_rust_mid")
+
+[node name="PostR" type="MeshInstance3D" parent="Kit/Bell"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 21, 12, -5)
+mesh = SubResource("blockmesh_13")
+material_override = ExtResource("14_rust_mid")
+
+[node name="Yoke" type="MeshInstance3D" parent="Kit/Bell"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 13, 21.75, -5)
+mesh = SubResource("blockmesh_14")
+material_override = ExtResource("14_rust_mid")
+
+[node name="BraceL" type="MeshInstance3D" parent="Kit/Bell"]
+transform = Transform3D(0.7071, 0.7071, 0, -0.7071, 0.7071, 0, 0, 0, 1, 7, 19.75, -5)
+mesh = SubResource("blockmesh_15")
+material_override = ExtResource("14_rust_mid")
+
+[node name="BraceR" type="MeshInstance3D" parent="Kit/Bell"]
+transform = Transform3D(0.7071, -0.7071, 0, 0.7071, 0.7071, 0, 0, 0, 1, 19, 19.75, -5)
+mesh = SubResource("blockmesh_15")
+material_override = ExtResource("14_rust_mid")
+
+; the bell rope, hanging down past the lookout
+[node name="Rope" type="MeshInstance3D" parent="Kit/Bell"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 13.5, 15.25, -5)
+mesh = SubResource("cables_16")
+material_override = ExtResource("15_cable")
+
+[node name="BackFloor" type="MeshInstance3D" parent="Kit"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 21, -0.5, -8)
+mesh = SubResource("blockmesh_17")
+material_override = ExtResource("16_stone_mid")
+
+; tall openings at the back of the loft
+[node name="Openings" type="Node3D" parent="Kit"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -3, 0, -12.5)
+script = ExtResource("17_colonnade")
+Pier = SubResource("column_18")
+Arch = SubResource("arch_19")
+Material = ExtResource("16_stone_mid")
+Bays = 6
+Span = 8
+ArchHeight = 17
+BeamHeight = 23.5
+BeamSection = Vector2(1.5, 2)
+Seed = 18
+
+; a low arcade behind the play floor
+[node name="Arcade" type="Node3D" parent="Kit"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 1, 0, -2.75)
+script = ExtResource("17_colonnade")
+Pier = SubResource("column_2")
+Arch = SubResource("arch_4")
+Material = ExtResource("16_stone_mid")
+Bays = 5
+Span = 8
+ArchHeight = 6
+BeamHeight = 0
+Cables = SubResource("cables_6")
+CableMaterial = ExtResource("15_cable")
+CableChance = 0.5
+CableOffset = Vector3(0, 5.5, 0.5)
+Seed = 19
+
+[node name="Ribs" type="Node3D" parent="Kit"]
+
+[node name="Rib1" type="MeshInstance3D" parent="Kit/Ribs"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 30, -6, -26)
+mesh = SubResource("arch_20")
+material_override = ExtResource("18_backdrop_rust")
+cast_shadow = 0
+
+[node name="Particles" type="Node3D" parent="."]
+
+[node name="ShaftDust" parent="Particles" instance=ExtResource("19_dust")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 18, 10, -2)
+Extents = Vector3(8, 9, 3)
+Density = 2.5
+
+[node name="Backdrop" type="Node3D" parent="."]
+
+[node name="ForeCables0" type="MeshInstance3D" parent="Backdrop"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -4, 23.5, 7)
+mesh = SubResource("cables_7")
+material_override = ExtResource("20_foreground")
+cast_shadow = 0
+
+[node name="ForeCables1" type="MeshInstance3D" parent="Backdrop"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 18, 24, 7.5)
+mesh = SubResource("cables_7")
+material_override = ExtResource("20_foreground")
+cast_shadow = 0
+
+[node name="ForeCables2" type="MeshInstance3D" parent="Backdrop"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 38, 23.5, 7)
+mesh = SubResource("cables_7")
+material_override = ExtResource("20_foreground")
+cast_shadow = 0
+
+[node name="PhotoSpots" type="Node3D" parent="."]
+
+; gameplay framing beside the hole, the shrine
+[node name="Arrival" type="Marker3D" parent="PhotoSpots"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 30, 3.9, 22)
+script = ExtResource("21_spot")
+PlayerPosition = Vector3(32.5, 0, 0)
+PlayerFacing = -1
+
+; gameplay framing on the lookout under the bell
+[node name="Bell" type="Marker3D" parent="PhotoSpots"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 13, 14.5, 22)
+script = ExtResource("21_spot")
+PlayerPosition = Vector3(15, 10, 0)
+PlayerFacing = -1
+
+; the shrine up close
+[node name="Shrine" type="Marker3D" parent="PhotoSpots"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 31.5, 2, 8)
+script = ExtResource("21_spot")
+PlayerPosition = Vector3(29, 0, 0)
+
+; the whole loft
+[node name="Wide" type="Marker3D" parent="PhotoSpots"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 21, 12, 44)
+script = ExtResource("21_spot")
+PlayerPosition = Vector3(15, 10, 0)
+Fov = 36

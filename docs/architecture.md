@@ -21,6 +21,10 @@ scenes/
   rooms/DrownedHall.tscn   the first kit room (was TestRoom): gameplay blocks, exits, kit dressing, shafts, water, particles
   stage/RoomStage.tscn     the atmosphere stack every room instances as "Stage" (see RoomStage.cs)
   rooms/Narthex.tscn       the start room (slice room 1): a shrine, a Lamplighter, the doorway east into the hall
+  rooms/Nave.tscn, Cistern.tscn, Reliquary.tscn, Belfry.tscn, Descent.tscn   the rest of the M6 slice: the Nave
+                           (Votaries; a hatch down; a metal wall up, MagGrip), the Cistern under it (a metal flue,
+                           a Gleaner, a Limpet), the Reliquary (shrine, the Mag-grip relic), the Belfry over the
+                           hall's shaft (shrine, bell, Lamplighter), the Descent (the well, the slice's MapGoal)
   rooms/MechanicsLab.tscn  not part of the game: metal wall, slab and block for the headless mechanics checks
   rooms/MachineArena.tscn  the machine arena (M5): the four prototype species side by side, a shrine, a metal reliquary
   kit/Block.tscn           one gameplay block (Size + Surface; collider + bevelled kit mesh)
