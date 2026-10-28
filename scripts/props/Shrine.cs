@@ -23,7 +23,7 @@ public partial class Shrine : Node3D
     public override void _Ready()
     {
         _baseEnergy = Light.LightEnergy;
-        Prompt.Text = GD.Load<LineBook>(LineBook.Path).Find("ui.rest")?.Text ?? "";
+        Prompt.Text = LineBook.Shared.Find("ui.rest")?.Text ?? "";
         Prompt.Modulate = Prompt.Modulate with { A = 0f };
     }
 

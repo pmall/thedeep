@@ -1,0 +1,511 @@
+[gd_scene format=3]
+
+; The Ossuary, east of the Undercroft (map offset (292.5, -8.5)): where the dead machines are kept like relics,
+; racked in rows down a sunken nave. Steps lead down to a dais at the far end where the Harpoon relic rests in
+; a shaft of light. Taking it teaches it at once: a mooring ring over the dais, and a second one higher up,
+; pull the pilgrim onto a gallery (an optional ledge with glyphs) that runs back west over the steps.
+; A dead end: the way out is the west doorway.
+
+[ext_resource type="Material" path="res://assets/materials/wet_stone.tres" id="1_wet_stone"]
+[ext_resource type="PackedScene" path="res://scenes/kit/Block.tscn" id="2_block"]
+[ext_resource type="Script" path="res://scripts/rooms/RoomExit.cs" id="3_exit"]
+[ext_resource type="PackedScene" path="res://scenes/props/AbilityRelic.tscn" id="4_relic"]
+[ext_resource type="PackedScene" path="res://scenes/props/HarpoonAnchor.tscn" id="5_anchor"]
+[ext_resource type="Script" path="res://scripts/machines/Machine.cs" id="6_machine"]
+[ext_resource type="Resource" path="res://resources/machines/gleaner.tres" id="7_gleaner"]
+[ext_resource type="Material" path="res://assets/materials/glyphs.tres" id="8_glyphs"]
+[ext_resource type="Script" path="res://scripts/kit/BlockMesh.cs" id="9_blockmesh"]
+[ext_resource type="Script" path="res://scripts/kit/RackMesh.cs" id="10_rack"]
+[ext_resource type="Material" path="res://assets/materials/metal_mid.tres" id="11_metal_mid"]
+[ext_resource type="Script" path="res://scripts/rooms/dressing/RackRow.cs" id="12_rackrow"]
+[ext_resource type="Script" path="res://scripts/kit/ColumnMesh.cs" id="13_column"]
+[ext_resource type="Script" path="res://scripts/kit/ArchMesh.cs" id="14_arch"]
+[ext_resource type="Material" path="res://assets/materials/stone_mid.tres" id="15_stone_mid"]
+[ext_resource type="Script" path="res://scripts/rooms/dressing/Colonnade.cs" id="16_colonnade"]
+[ext_resource type="Script" path="res://scripts/kit/WreckMesh.cs" id="17_wreck"]
+[ext_resource type="Material" path="res://assets/materials/rust_mid.tres" id="18_rust_mid"]
+[ext_resource type="Script" path="res://scripts/kit/CableMesh.cs" id="19_cables"]
+[ext_resource type="Material" path="res://assets/materials/cable.tres" id="20_cable"]
+[ext_resource type="PackedScene" path="res://scenes/fx/Dust.tscn" id="21_dust"]
+[ext_resource type="PackedScene" path="res://scenes/fx/Silt.tscn" id="22_silt"]
+[ext_resource type="PackedScene" path="res://scenes/fx/Drips.tscn" id="23_drips"]
+[ext_resource type="Script" path="res://scripts/kit/PipeMesh.cs" id="24_pipe"]
+[ext_resource type="Material" path="res://assets/materials/foreground.tres" id="25_foreground"]
+[ext_resource type="Script" path="res://scripts/rooms/PhotoSpot.cs" id="26_spot"]
+[ext_resource type="Script" path="res://scripts/rooms/Room.cs" id="27_room"]
+[ext_resource type="Resource" path="res://resources/biomes/flooded.tres" id="28_flooded"]
+[ext_resource type="PackedScene" path="res://scenes/stage/RoomStage.tscn" id="29_stage"]
+
+[sub_resource type="QuadMesh" id="QuadMesh_1"]
+size = Vector2(3, 0.3)
+
+[sub_resource type="QuadMesh" id="QuadMesh_2"]
+size = Vector2(7, 0.3)
+
+[sub_resource type="QuadMesh" id="QuadMesh_3"]
+size = Vector2(5, 1.2)
+
+[sub_resource type="PrimitiveMesh" id="blockmesh_4"]
+script = ExtResource("9_blockmesh")
+Size = Vector3(36, 1, 12)
+Bevel = 0.1
+
+[sub_resource type="PrimitiveMesh" id="blockmesh_5"]
+script = ExtResource("9_blockmesh")
+Size = Vector3(17, 1, 12)
+Bevel = 0.1
+
+[sub_resource type="PrimitiveMesh" id="rack_6"]
+script = ExtResource("10_rack")
+Size = Vector3(1.4, 3.2, 1)
+Units = 7
+Seed = 61
+
+[sub_resource type="PrimitiveMesh" id="rack_7"]
+script = ExtResource("10_rack")
+Size = Vector3(1.4, 2.6, 1)
+Units = 6
+Seed = 62
+
+[sub_resource type="PrimitiveMesh" id="rack_8"]
+script = ExtResource("10_rack")
+Size = Vector3(1.4, 3.6, 1)
+Units = 8
+Seed = 63
+
+[sub_resource type="PrimitiveMesh" id="column_9"]
+script = ExtResource("13_column")
+Height = 21
+Radius = 0.4
+Sides = 12
+Shafts = 4
+Plinth = 0.6
+Capital = 0.45
+
+[sub_resource type="PrimitiveMesh" id="arch_10"]
+script = ExtResource("14_arch")
+Span = 8
+Rise = 6
+Thickness = 0.55
+Depth = 0.9
+Segments = 32
+
+[sub_resource type="PrimitiveMesh" id="arch_11"]
+script = ExtResource("14_arch")
+Span = 7
+Rise = 11
+Thickness = 0.6
+Depth = 0.8
+Segments = 40
+
+[sub_resource type="PrimitiveMesh" id="blockmesh_12"]
+script = ExtResource("9_blockmesh")
+Size = Vector3(7, 4, 0.5)
+Bevel = 0.08
+
+[sub_resource type="PrimitiveMesh" id="wreck_13"]
+script = ExtResource("17_wreck")
+Size = 1.3
+Seed = 71
+
+[sub_resource type="PrimitiveMesh" id="wreck_14"]
+script = ExtResource("17_wreck")
+Size = 0.9
+Seed = 72
+
+[sub_resource type="PrimitiveMesh" id="cables_15"]
+script = ExtResource("19_cables")
+End = Vector3(8, 0.5, 0)
+Sag = 2.2
+Radius = 0.03
+Strands = 2
+Seed = 11
+
+[sub_resource type="PrimitiveMesh" id="cables_16"]
+script = ExtResource("19_cables")
+End = Vector3(0, 12.75, 0)
+Sag = 0
+Radius = 0.03
+Strands = 1
+Seed = 12
+
+[sub_resource type="PrimitiveMesh" id="cables_17"]
+script = ExtResource("19_cables")
+End = Vector3(0, 5.25, 0)
+Sag = 0
+Radius = 0.03
+Strands = 1
+Seed = 13
+
+[sub_resource type="PrimitiveMesh" id="pipe_18"]
+script = ExtResource("24_pipe")
+Points = PackedVector3Array(0, -4, 0, 0, 0, 0, 21, 0, 0, 22, 0.5, 0, 52, 0.5, 0, 52, -4, 0)
+Radius = 0.5
+BendRadius = 1.4
+FlangeSpacing = 4
+
+[sub_resource type="PrimitiveMesh" id="cables_19"]
+script = ExtResource("19_cables")
+End = Vector3(14, -0.5, 0)
+Sag = 2.6
+Radius = 0.07
+Strands = 3
+Seed = 7
+
+[node name="Ossuary" type="Node3D" node_paths=PackedStringArray("SpawnPoint", "Stage", "Lamps", "Shafts", "GlyphLights")]
+script = ExtResource("27_room")
+SpawnPoint = NodePath("SpawnPoint")
+Stage = NodePath("Stage")
+Biome = ExtResource("28_flooded")
+Lamps = [NodePath("Lamps/Gallery")]
+Shafts = [NodePath("Shafts/Relic"), NodePath("Shafts/Nave")]
+GlyphLights = [NodePath("Glyphs/DoorLight"), NodePath("Glyphs/DaisLight"), NodePath("Glyphs/GalleryLight")]
+BoundsMin = Vector2(-1, -6)
+BoundsMax = Vector2(47.5, 18)
+
+[node name="SpawnPoint" type="Marker3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 5, 0, 0)
+
+; The shared atmosphere stack (environment, key light, clear front air, skylines, far pillars, frame, dust).
+[node name="Stage" parent="." instance=ExtResource("29_stage")]
+Seed = 41
+DustDensity = 1.6
+PillarDensity = 2
+
+[node name="Geometry" type="Node3D" parent="."]
+
+[node name="FloorUpper" parent="Geometry" instance=ExtResource("2_block")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 5.5, -3, 0)
+Size = Vector3(17, 6, 4)
+Material = ExtResource("1_wet_stone")
+
+[node name="StepA" parent="Geometry" instance=ExtResource("2_block")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 14.75, -4.5, 0)
+Size = Vector3(1.5, 7, 4)
+
+[node name="StepB" parent="Geometry" instance=ExtResource("2_block")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 16.25, -5, 0)
+Size = Vector3(1.5, 6, 4)
+
+[node name="StepC" parent="Geometry" instance=ExtResource("2_block")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 17.75, -5.5, 0)
+Size = Vector3(1.5, 5, 4)
+
+; the sunken nave of racks
+[node name="FloorLower" parent="Geometry" instance=ExtResource("2_block")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 33.75, -6, 0)
+Size = Vector3(30.5, 4, 4)
+Material = ExtResource("1_wet_stone")
+
+; the relic's dais
+[node name="Dais" parent="Geometry" instance=ExtResource("2_block")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 41, -3.75, 0)
+Size = Vector3(8, 0.5, 4)
+
+; west wall above the doorway
+[node name="WallWest" parent="Geometry" instance=ExtResource("2_block")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -1.5, 12, 0)
+Size = Vector3(3, 16, 4)
+
+[node name="WallEast" parent="Geometry" instance=ExtResource("2_block")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 47.5, 8, 0)
+Size = Vector3(3, 24, 4)
+
+[node name="Ceiling" parent="Geometry" instance=ExtResource("2_block")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 23, 18.5, 0)
+Size = Vector3(52, 3, 4)
+
+; the gallery: only the Harpoon reaches it
+[node name="Gallery" parent="Geometry" instance=ExtResource("2_block")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 26.5, 7, 0)
+Size = Vector3(13, 1, 4)
+
+[node name="Exits" type="Node3D" parent="."]
+
+; west doorway back into the Undercroft
+[node name="West" type="Marker3D" parent="Exits"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 1, 0, 0)
+script = ExtResource("3_exit")
+TargetRoom = "res://scenes/rooms/Undercroft.tscn"
+TargetExit = "East"
+Size = Vector2(1, 4)
+
+[node name="Props" type="Node3D" parent="."]
+
+; the Harpoon relic on its dais, in the shaft of light
+[node name="Harpoon" parent="Props" instance=ExtResource("4_relic")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 41, -3.5, 0)
+Ability = 2
+NameLine = &"ability.harpoon.name"
+HintLine = &"ability.harpoon.hint"
+
+[node name="Anchors" type="Node3D" parent="."]
+
+; a mooring ring over the dais, then one higher: up to the gallery
+[node name="Dais" parent="Anchors" instance=ExtResource("5_anchor")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 38.5, 3, 0)
+
+[node name="Gallery" parent="Anchors" instance=ExtResource("5_anchor")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 34.5, 10.5, 0)
+
+[node name="Machines" type="Node3D" parent="."]
+
+; a Gleaner picking over the dead
+[node name="Gleaner" type="CharacterBody3D" parent="Machines"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 26, -4, 0)
+script = ExtResource("6_machine")
+Species = ExtResource("7_gleaner")
+StartFacing = -1
+
+[node name="Shafts" type="Node3D" parent="."]
+
+; a single shaft onto the relic
+[node name="Relic" type="SpotLight3D" parent="Shafts"]
+transform = Transform3D(-0.7071, 0.6288, -0.3234, 0, 0.4573, 0.8893, 0.7071, 0.6288, -0.3234, 27, 40, -14.25)
+light_energy = 5
+light_volumetric_fog_energy = 8
+shadow_enabled = true
+spot_range = 80
+spot_attenuation = 0.25
+spot_angle = 7
+spot_angle_attenuation = 2
+
+; a soft one down the steps
+[node name="Nave" type="SpotLight3D" parent="Shafts"]
+transform = Transform3D(-0.7071, 0.6288, -0.3234, 0, 0.4573, 0.8893, 0.7071, 0.6288, -0.3234, 8, 40, -8)
+light_energy = 3
+light_volumetric_fog_energy = 7
+shadow_enabled = true
+spot_range = 80
+spot_attenuation = 0.25
+spot_angle = 10
+spot_angle_attenuation = 2
+
+[node name="Lamps" type="Node3D" parent="."]
+
+; a lamp over the gallery
+[node name="Gallery" type="OmniLight3D" parent="Lamps"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 27, 10, -1)
+light_energy = 0.9
+omni_range = 6
+shadow_enabled = false
+
+[node name="Glyphs" type="Node3D" parent="."]
+
+; glyphs on the floor lip by the doorway
+[node name="Door" type="MeshInstance3D" parent="Glyphs"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 3.5, -0.6, 2.01)
+mesh = SubResource("QuadMesh_1")
+material_override = ExtResource("8_glyphs")
+cast_shadow = 0
+
+[node name="DoorLight" type="OmniLight3D" parent="Glyphs"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 3.5, -0.6, 2.71)
+light_energy = 0.35
+light_volumetric_fog_energy = 0
+omni_range = 2
+
+; glyphs along the dais
+[node name="Dais" type="MeshInstance3D" parent="Glyphs"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 41, -3.75, 2.01)
+mesh = SubResource("QuadMesh_2")
+material_override = ExtResource("8_glyphs")
+cast_shadow = 0
+
+[node name="DaisLight" type="OmniLight3D" parent="Glyphs"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 41, -3.75, 2.71)
+light_energy = 0.4
+light_volumetric_fog_energy = 0
+omni_range = 2
+
+; the glyph panel over the gallery: the reward
+[node name="Gallery" type="MeshInstance3D" parent="Glyphs"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 26.5, 10, -2.7)
+mesh = SubResource("QuadMesh_3")
+material_override = ExtResource("8_glyphs")
+cast_shadow = 0
+
+[node name="GalleryLight" type="OmniLight3D" parent="Glyphs"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 26.5, 10, -2)
+light_energy = 0.7
+light_volumetric_fog_energy = 0
+omni_range = 3.5
+
+[node name="Kit" type="Node3D" parent="."]
+
+[node name="BackFloor" type="MeshInstance3D" parent="Kit"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 31, -4.5, -8)
+mesh = SubResource("blockmesh_4")
+material_override = ExtResource("1_wet_stone")
+
+[node name="BackFloorUpper" type="MeshInstance3D" parent="Kit"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 5.5, -0.5, -8)
+mesh = SubResource("blockmesh_5")
+material_override = ExtResource("1_wet_stone")
+
+[node name="Racks" type="Node3D" parent="Kit"]
+
+; the racks of the dead: rows down the nave
+[node name="Front" type="Node3D" parent="Kit/Racks"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 19.5, -4, -3.5)
+script = ExtResource("12_rackrow")
+Variants = [SubResource("rack_6"), SubResource("rack_7"), SubResource("rack_8")]
+Material = ExtResource("11_metal_mid")
+Count = 11
+Pitch = 1.6
+GapChance = 0.15
+ToppleChance = 0.08
+ClearEvery = 0
+Seed = 64
+
+[node name="Middle" type="Node3D" parent="Kit/Racks"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 20.5, -4, -6.5)
+script = ExtResource("12_rackrow")
+Variants = [SubResource("rack_6"), SubResource("rack_7"), SubResource("rack_8")]
+Material = ExtResource("11_metal_mid")
+Count = 14
+Pitch = 1.6
+GapChance = 0.1
+ToppleChance = 0.05
+Seed = 65
+
+[node name="Back" type="Node3D" parent="Kit/Racks"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 19, -4, -9.5)
+script = ExtResource("12_rackrow")
+Variants = [SubResource("rack_6"), SubResource("rack_7"), SubResource("rack_8")]
+Material = ExtResource("11_metal_mid")
+Count = 16
+Pitch = 1.6
+GapChance = 0.1
+ToppleChance = 0
+Seed = 66
+
+; the nave arcade behind the racks
+[node name="Arcade" type="Node3D" parent="Kit"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 14, -4, -12.5)
+script = ExtResource("16_colonnade")
+Pier = SubResource("column_9")
+Arch = SubResource("arch_10")
+Material = ExtResource("15_stone_mid")
+Bays = 5
+Span = 8
+ArchHeight = 15
+BeamHeight = 21
+BeamSection = Vector2(1.5, 4)
+Seed = 67
+
+; the apse framing the relic
+[node name="Apse" type="MeshInstance3D" parent="Kit"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 41, -3.5, -2.75)
+mesh = SubResource("arch_11")
+material_override = ExtResource("15_stone_mid")
+
+; a panel behind the gallery for the glyphs
+[node name="GalleryPanel" type="MeshInstance3D" parent="Kit"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 26.5, 9.5, -3.25)
+mesh = SubResource("blockmesh_12")
+material_override = ExtResource("15_stone_mid")
+
+; machines laid out on the floor
+[node name="Dead0" type="MeshInstance3D" parent="Kit"]
+transform = Transform3D(0.9063, 0, 0.4226, 0, 1, 0, -0.4226, 0, 0.9063, 23, -4, -1.25)
+mesh = SubResource("wreck_13")
+material_override = ExtResource("18_rust_mid")
+
+[node name="Dead1" type="MeshInstance3D" parent="Kit"]
+transform = Transform3D(0.766, 0, -0.6428, 0, 1, 0, 0.6428, 0, 0.766, 30, -4, -1.5)
+mesh = SubResource("wreck_14")
+material_override = ExtResource("11_metal_mid")
+
+[node name="Dead2" type="MeshInstance3D" parent="Kit"]
+transform = Transform3D(0.342, 0, 0.9397, 0, 1, 0, -0.9397, 0, 0.342, 9, 0, -1.5)
+mesh = SubResource("wreck_14")
+material_override = ExtResource("18_rust_mid")
+
+[node name="Cables0" type="MeshInstance3D" parent="Kit"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 12, 14, -3)
+mesh = SubResource("cables_15")
+material_override = ExtResource("20_cable")
+
+; the rings hang on cables from the ceiling
+[node name="DaisRingCable" type="MeshInstance3D" parent="Kit"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 38.5, 4.25, 0)
+mesh = SubResource("cables_16")
+material_override = ExtResource("20_cable")
+
+[node name="GalleryRingCable" type="MeshInstance3D" parent="Kit"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 34.5, 11.75, 0)
+mesh = SubResource("cables_17")
+material_override = ExtResource("20_cable")
+
+[node name="Particles" type="Node3D" parent="."]
+
+[node name="RelicDust" parent="Particles" instance=ExtResource("21_dust")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 41, 6, -1.5)
+Extents = Vector3(3.5, 8, 2)
+Density = 1.6
+
+[node name="Silt" parent="Particles" instance=ExtResource("22_silt")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 30, -3.5, -5)
+Extents = Vector3(12, 1, 4)
+Density = 1.2
+
+[node name="Drips" parent="Particles" instance=ExtResource("23_drips")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 24, 16.9, -2)
+Extents = Vector3(8, 0.05, 1)
+amount = 4
+lifetime = 2.2
+
+[node name="Backdrop" type="Node3D" parent="."]
+
+[node name="ForePipe" type="MeshInstance3D" parent="Backdrop"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -3, -6.75, 7.5)
+mesh = SubResource("pipe_18")
+material_override = ExtResource("25_foreground")
+cast_shadow = 0
+
+[node name="ForeCables0" type="MeshInstance3D" parent="Backdrop"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -1, 15, 7)
+mesh = SubResource("cables_19")
+material_override = ExtResource("25_foreground")
+cast_shadow = 0
+
+[node name="ForeCables1" type="MeshInstance3D" parent="Backdrop"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 25.5, 15.5, 7.5)
+mesh = SubResource("cables_19")
+material_override = ExtResource("25_foreground")
+cast_shadow = 0
+
+[node name="PhotoSpots" type="Node3D" parent="."]
+
+; gameplay framing at the doorway, the steps down
+[node name="Entry" type="Marker3D" parent="PhotoSpots"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 8, 2.4, 22)
+script = ExtResource("26_spot")
+PlayerPosition = Vector3(4, 0, 0)
+
+; the relic up close in its shaft of light, the pilgrim before it
+[node name="Relic" type="Marker3D" parent="PhotoSpots"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 40, -1.6, 9)
+script = ExtResource("26_spot")
+PlayerPosition = Vector3(37.5, -3.5, 0)
+
+; the racks of the dead
+[node name="Racks" type="Marker3D" parent="PhotoSpots"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 25, -1, 13)
+script = ExtResource("26_spot")
+PlayerPosition = Vector3(22, -4, 0)
+
+; gameplay framing: the rings and the gallery
+[node name="Gallery" type="Marker3D" parent="PhotoSpots"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 32, 5, 22)
+script = ExtResource("26_spot")
+PlayerPosition = Vector3(28, 7.5, 0)
+PlayerFacing = -1
+
+; the whole ossuary
+[node name="Wide" type="Marker3D" parent="PhotoSpots"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 23, 6, 40)
+script = ExtResource("26_spot")
+PlayerPosition = Vector3(10, 0, 0)
+Fov = 40

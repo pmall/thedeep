@@ -25,6 +25,10 @@ scenes/
                            (Votaries; a hatch down; a metal wall up, MagGrip), the Cistern under it (a metal flue,
                            a Gleaner, a Limpet), the Reliquary (shrine, the Mag-grip relic), the Belfry over the
                            hall's shaft (shrine, bell, Lamplighter), the Descent (the well, the slice's MapGoal)
+  rooms/Sluice.tscn, Undercroft.tscn, Ossuary.tscn   the crypts under the cathedral (M8): the floodgate channel east
+                           of the Cistern, the second hub (shrine; sealed high ways to the Chapterhouse and the
+                           Scriptorium), the Ossuary (the Harpoon relic, two rings up to a gallery)
+  props/HarpoonAnchor.tscn a mooring ring the Harpoon fires at (the origin is where the pilgrim's center is pulled)
   rooms/MechanicsLab.tscn  not part of the game: metal wall, slab and block for the headless mechanics checks
   rooms/MachineArena.tscn  the machine arena (M5): the four prototype species side by side, a shrine, a metal reliquary
   kit/Block.tscn           one gameplay block (Size + Surface; collider + bevelled kit mesh)
@@ -43,8 +47,11 @@ scripts/
   player/Player.cs         body, input sampling, timers, movement helpers, state machine host
   player/PlayerInput.cs    held input for one tick
   player/PlayerVisual.cs   facing + squash/stretch (on physics ticks)
-  player/states/           PlayerState base + Idle, Run, Jump, Fall, Dash, Grip (Mag-grip); PlayerStateSet
+  player/states/           PlayerState base + Idle, Run, Jump, Fall, Dash, Grip (Mag-grip), Harpoon; PlayerStateSet
   player/GripMath.cs       pure: Mag-grip geometry on axis-aligned surfaces (attach, inner and outer corners, upright)
+  player/HarpoonAim.cs     pure: which anchor the Harpoon fires at, and the release velocity
+  player/HarpoonRig.cs     in Main: the room's anchors, the one in sight each tick (Player.AnchorInSight), the line
+  props/HarpoonAnchor.cs   a harpoon anchor: a point, brightened when in sight
   abilities/Ability.cs     [Flags] enum of the five abilities
   abilities/AbilitySet.cs  which abilities are unlocked (flags + Changed event)
   camera/SideCamera.cs     follow, look-ahead, room-bounds clamping
@@ -125,6 +132,7 @@ scripts/
   debug/RoomValidator.cs   checks every room scene (grid, exits, bounds), `-- --validate-rooms`
   debug/TravelValidator.cs crosses every open exit, `-- --validate-travel`
   debug/GripCheck.cs       scripted Mag-grip run in the mechanics lab, `-- --room MechanicsLab --grip-check`
+  debug/HarpoonCheck.cs    scripted Harpoon run in the lab, `-- --room MechanicsLab --harpoon-check`
   debug/CombatCheck.cs     scripted combat and session run in the lab, `-- --room MechanicsLab --combat-check`
   debug/CaptureTestDriver.cs  windowed capture check + frame times (`-- --capture-test`)
   debug/LookDevDriver.cs   photo spots + frame times for tools/capture.sh (`-- --lookdev <dir>`)
@@ -209,7 +217,7 @@ Code with no Godot types is compiled straight into the xUnit project via `<Compi
 - `capture/CaptureFiles.cs`, `capture/CaptureReport.cs`, `capture/VideoClock.cs`, `capture/FfmpegCommand.cs`
 - `capture/VideoEncoder.cs` (plain .NET; its tests run the real ffmpeg)
 - `kit/MeshData.cs`, `kit/MeshBuilder.cs`, `kit/Profile.cs`, `kit/PathFrame.cs`, `kit/SweepPath.cs`, `kit/KitShapes.cs` (System.Numerics)
-- `map/Requirement.cs`, `map/GridSnap.cs`, `map/ExitMath.cs`, `map/MapState.cs`, `map/MapGraph.cs`, `map/MapSolver.cs`, `map/MapDraft.cs`, `map/MapLayout.cs`, `map/ReachPlanner.cs`, `rooms/dressing/DressingLayout.cs`, `player/GripMath.cs`, `combat/Vitality.cs`, `combat/Swing.cs`, `game/SaveData.cs`
+- `map/Requirement.cs`, `map/GridSnap.cs`, `map/ExitMath.cs`, `map/MapState.cs`, `map/MapGraph.cs`, `map/MapSolver.cs`, `map/MapDraft.cs`, `map/MapLayout.cs`, `map/ReachPlanner.cs`, `rooms/dressing/DressingLayout.cs`, `player/GripMath.cs`, `player/HarpoonAim.cs`, `combat/Vitality.cs`, `combat/Swing.cs`, `game/SaveData.cs`
 - `parts/PartShapes.cs`, `parts/PlanarIk.cs`, `parts/VerletChain.cs`, `parts/Humanoid*.cs`, `parts/PartCategory.cs`, `player/MotionMode.cs`, `player/PilgrimMotion.cs`
 - `machines/MachineAct.cs`, `Perception.cs`, `Intent.cs`, `Senses.cs`, `Steering.cs`, `PrayerCycle.cs`, `StrikeAction.cs`, `MachineBrain.cs`, `SurfacePath.cs`, `LegGait.cs`, `machines/brains/*.cs`
 

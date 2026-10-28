@@ -1,0 +1,550 @@
+[gd_scene format=3]
+
+; The Sluice, east of the Cistern (map offset (176.5, -4.5)): the floodgate channel that drained the cathedral.
+; A long low gallery stepping down eastward beside the channel, under three gates. The first hangs half-raised
+; (walk under it); the walkway then breaks over a culvert pit (jump it, or climb out of the shallow water at its
+; east side); the last gate stands closed to its waist between two buttresses, the water spilling over it (climb
+; the buttresses and cross its top). A Limpet sleeps on that gate; a Gleaner picks at scrap by the far door.
+; Everything here is the base moveset: this is the road to the Harpoon for a pilgrim without Mag-grip.
+
+[ext_resource type="Material" path="res://assets/materials/wet_stone.tres" id="1_wet_stone"]
+[ext_resource type="PackedScene" path="res://scenes/kit/Block.tscn" id="2_block"]
+[ext_resource type="Script" path="res://scripts/rooms/RoomExit.cs" id="3_exit"]
+[ext_resource type="Script" path="res://scripts/machines/Machine.cs" id="4_machine"]
+[ext_resource type="Resource" path="res://resources/machines/limpet.tres" id="5_limpet"]
+[ext_resource type="Resource" path="res://resources/machines/gleaner.tres" id="6_gleaner"]
+[ext_resource type="Script" path="res://scripts/rooms/WaterBody.cs" id="7_water_body"]
+[ext_resource type="Material" path="res://assets/materials/water.tres" id="8_water"]
+[ext_resource type="Material" path="res://assets/materials/underwater.tres" id="9_underwater"]
+[ext_resource type="Material" path="res://assets/materials/glyphs.tres" id="10_glyphs"]
+[ext_resource type="Script" path="res://scripts/kit/BlockMesh.cs" id="11_blockmesh"]
+[ext_resource type="Script" path="res://scripts/kit/ColumnMesh.cs" id="12_column"]
+[ext_resource type="Script" path="res://scripts/kit/ArchMesh.cs" id="13_arch"]
+[ext_resource type="Material" path="res://assets/materials/stone_mid.tres" id="14_stone_mid"]
+[ext_resource type="Script" path="res://scripts/rooms/dressing/Colonnade.cs" id="15_colonnade"]
+[ext_resource type="Script" path="res://scripts/kit/PipeMesh.cs" id="16_pipe"]
+[ext_resource type="Material" path="res://assets/materials/rust_mid.tres" id="17_rust_mid"]
+[ext_resource type="Script" path="res://scripts/parts/RingMesh.cs" id="18_ring"]
+[ext_resource type="Script" path="res://scripts/kit/CableMesh.cs" id="19_cables"]
+[ext_resource type="Material" path="res://assets/materials/cable.tres" id="20_cable"]
+[ext_resource type="Script" path="res://scripts/kit/WreckMesh.cs" id="21_wreck"]
+[ext_resource type="Material" path="res://assets/materials/metal_mid.tres" id="22_metal_mid"]
+[ext_resource type="Material" path="res://assets/materials/backdrop_rust.tres" id="23_backdrop_rust"]
+[ext_resource type="PackedScene" path="res://scenes/fx/Dust.tscn" id="24_dust"]
+[ext_resource type="PackedScene" path="res://scenes/fx/Silt.tscn" id="25_silt"]
+[ext_resource type="PackedScene" path="res://scenes/fx/Drips.tscn" id="26_drips"]
+[ext_resource type="Material" path="res://assets/materials/foreground.tres" id="27_foreground"]
+[ext_resource type="Script" path="res://scripts/rooms/PhotoSpot.cs" id="28_spot"]
+[ext_resource type="Script" path="res://scripts/rooms/Room.cs" id="29_room"]
+[ext_resource type="Resource" path="res://resources/biomes/flooded.tres" id="30_flooded"]
+[ext_resource type="PackedScene" path="res://scenes/stage/RoomStage.tscn" id="31_stage"]
+
+[sub_resource type="QuadMesh" id="QuadMesh_1"]
+size = Vector2(3, 0.3)
+
+[sub_resource type="QuadMesh" id="QuadMesh_2"]
+size = Vector2(0.5, 3.5)
+
+[sub_resource type="QuadMesh" id="QuadMesh_3"]
+size = Vector2(0.45, 3.2)
+
+[sub_resource type="PrimitiveMesh" id="blockmesh_4"]
+script = ExtResource("11_blockmesh")
+Size = Vector3(70, 1, 4)
+Bevel = 0.1
+
+[sub_resource type="PrimitiveMesh" id="column_5"]
+script = ExtResource("12_column")
+Height = 12
+Radius = 0.45
+Sides = 12
+Shafts = 1
+Plinth = 0.6
+Capital = 0.5
+
+[sub_resource type="PrimitiveMesh" id="arch_6"]
+script = ExtResource("13_arch")
+Span = 6
+Rise = 9
+Thickness = 0.55
+Depth = 0.9
+Segments = 40
+
+[sub_resource type="PrimitiveMesh" id="arch_7"]
+script = ExtResource("13_arch")
+Span = 4
+Rise = 2.5
+Thickness = 0.5
+Depth = 1.6
+Segments = 24
+
+[sub_resource type="PrimitiveMesh" id="pipe_8"]
+script = ExtResource("16_pipe")
+Points = PackedVector3Array(0, 0, 0, 0, 13, 0)
+Radius = 0.16
+BendRadius = 0.5
+FlangeSpacing = 2
+
+[sub_resource type="PrimitiveMesh" id="ring_9"]
+script = ExtResource("18_ring")
+RadiusX = 1.3
+RadiusZ = 1.3
+Height = 0.18
+Thickness = 0.16
+Segments = 40
+
+[sub_resource type="PrimitiveMesh" id="ring_10"]
+script = ExtResource("18_ring")
+RadiusX = 0.35
+RadiusZ = 0.35
+Height = 0.3
+Thickness = 0.12
+Segments = 20
+
+[sub_resource type="PrimitiveMesh" id="cables_11"]
+script = ExtResource("19_cables")
+End = Vector3(0.5, -4.5, 0)
+Sag = 0.2
+Radius = 0.05
+Strands = 2
+Seed = 7
+
+[sub_resource type="PrimitiveMesh" id="pipe_12"]
+script = ExtResource("16_pipe")
+Points = PackedVector3Array(0, 0, 0, 30, 0, 0, 31.5, -1.5, 0, 31.5, -8, 0)
+Radius = 0.3
+BendRadius = 1.2
+FlangeSpacing = 3
+
+[sub_resource type="PrimitiveMesh" id="wreck_13"]
+script = ExtResource("21_wreck")
+Size = 1.2
+Seed = 31
+
+[sub_resource type="PrimitiveMesh" id="wreck_14"]
+script = ExtResource("21_wreck")
+Size = 0.9
+Seed = 32
+
+[sub_resource type="PrimitiveMesh" id="arch_15"]
+script = ExtResource("13_arch")
+Span = 26
+Rise = 30
+Thickness = 0.7
+Depth = 0.7
+Flange = 0.6
+Segments = 64
+
+[sub_resource type="PrimitiveMesh" id="pipe_16"]
+script = ExtResource("16_pipe")
+Points = PackedVector3Array(0, -4, 0, 0, 0, 0, 26, 0, 0, 27, 0.5, 0, 66, 0.5, 0, 66, -4, 0)
+Radius = 0.5
+BendRadius = 1.4
+FlangeSpacing = 4
+
+[sub_resource type="PrimitiveMesh" id="cables_17"]
+script = ExtResource("19_cables")
+End = Vector3(14, -0.5, 0)
+Sag = 2.6
+Radius = 0.07
+Strands = 3
+Seed = 5
+
+[node name="Sluice" type="Node3D" node_paths=PackedStringArray("SpawnPoint", "Stage", "Lamps", "Shafts", "GlyphLights")]
+script = ExtResource("29_room")
+SpawnPoint = NodePath("SpawnPoint")
+Stage = NodePath("Stage")
+Biome = ExtResource("30_flooded")
+Lamps = [NodePath("Lamps/Gate")]
+Shafts = [NodePath("Shafts/Pit"), NodePath("Shafts/Gate")]
+GlyphLights = [NodePath("Glyphs/DoorLight"), NodePath("Glyphs/GateLight"), NodePath("Glyphs/LowLight")]
+BoundsMin = Vector2(-1, -8)
+BoundsMax = Vector2(62.5, 11)
+
+[node name="SpawnPoint" type="Marker3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 4, 0, 0)
+
+; The shared atmosphere stack (environment, key light, clear front air, skylines, far pillars, frame, dust).
+[node name="Stage" parent="." instance=ExtResource("31_stage")]
+Seed = 21
+DustDensity = 1.5
+PillarDensity = 2.4
+
+[node name="Geometry" type="Node3D" parent="."]
+
+; the landing by the Cistern doorway
+[node name="FloorWest" parent="Geometry" instance=ExtResource("2_block")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 6.5, -3, 0)
+Size = Vector3(19, 6, 4)
+Material = ExtResource("1_wet_stone")
+
+; a step down under the first gate; its east face is the pit wall
+[node name="FloorMid" parent="Geometry" instance=ExtResource("2_block")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 22, -6, 0)
+Size = Vector3(12, 8, 4)
+Material = ExtResource("1_wet_stone")
+
+; the culvert pit: wade through, climb out either side
+[node name="PitBed" parent="Geometry" instance=ExtResource("2_block")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 30.5, -7.5, 0)
+Size = Vector3(5, 5, 4)
+Material = ExtResource("1_wet_stone")
+
+[node name="FloorEast" parent="Geometry" instance=ExtResource("2_block")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 48.5, -7, 0)
+Size = Vector3(31, 6, 4)
+Material = ExtResource("1_wet_stone")
+
+; west wall above the doorway into the Cistern
+[node name="WallWest" parent="Geometry" instance=ExtResource("2_block")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -2, 8, 0)
+Size = Vector3(2, 8, 4)
+
+; east wall above the doorway down to the Undercroft
+[node name="WallEast" parent="Geometry" instance=ExtResource("2_block")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 63, 6, 0)
+Size = Vector3(2, 12, 4)
+
+[node name="Ceiling" parent="Geometry" instance=ExtResource("2_block")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 30.5, 10.5, 0)
+Size = Vector3(67, 3, 4)
+
+; the first floodgate, raised: walk under it
+[node name="GateHigh" parent="Geometry" instance=ExtResource("2_block")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 15.5, 6.25, 0)
+Size = Vector3(1, 5.5, 4)
+Surface = 1
+
+; buttresses either side of the closed gate
+[node name="ButtressWest" parent="Geometry" instance=ExtResource("2_block")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 38.5, -2.5, 0)
+Size = Vector3(3, 3, 4)
+
+; the last floodgate, closed to its waist: climb over
+[node name="GateLow" parent="Geometry" instance=ExtResource("2_block")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 41, -1.5, 0)
+Size = Vector3(2, 5, 4)
+Surface = 1
+
+[node name="ButtressEast" parent="Geometry" instance=ExtResource("2_block")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 43.5, -2.5, 0)
+Size = Vector3(3, 3, 4)
+
+[node name="Exits" type="Node3D" parent="."]
+
+; west doorway back into the Cistern
+[node name="West" type="Marker3D" parent="Exits"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 1, 0, 0)
+script = ExtResource("3_exit")
+TargetRoom = "res://scenes/rooms/Cistern.tscn"
+TargetExit = "East"
+Size = Vector2(1, 4)
+
+; east doorway down to the Undercroft
+[node name="East" type="Marker3D" parent="Exits"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 61, -4, 0)
+script = ExtResource("3_exit")
+TargetRoom = "res://scenes/rooms/Undercroft.tscn"
+TargetExit = "West"
+Size = Vector2(1, 4)
+
+[node name="Machines" type="Node3D" parent="."]
+
+; a Limpet asleep on the closed gate
+[node name="Limpet" type="CharacterBody3D" parent="Machines"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 41, 1, 0)
+script = ExtResource("4_machine")
+Species = ExtResource("5_limpet")
+StartFacing = -1
+
+; a Gleaner picking at scrap by the far door
+[node name="Gleaner" type="CharacterBody3D" parent="Machines"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 53, -4, 0)
+script = ExtResource("4_machine")
+Species = ExtResource("6_gleaner")
+StartFacing = 1
+
+; the channel: still water behind the walkway and in the pit
+[node name="Water" type="Node3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 30, -4.25, -6)
+script = ExtResource("7_water_body")
+Size = Vector2(70, 16)
+Depth = 3
+SurfaceMaterial = ExtResource("8_water")
+UnderwaterMaterial = ExtResource("9_underwater")
+
+[node name="Shafts" type="Node3D" parent="."]
+
+; from the upper left through the channel vault onto the pit
+[node name="Pit" type="SpotLight3D" parent="Shafts"]
+transform = Transform3D(-0.7071, 0.6288, -0.3234, 0, 0.4573, 0.8893, 0.7071, 0.6288, -0.3234, 16, 40, -12)
+light_energy = 6
+light_volumetric_fog_energy = 12
+shadow_enabled = true
+spot_range = 80
+spot_attenuation = 0.25
+spot_angle = 10
+spot_angle_attenuation = 2
+
+; a soft one onto the closed gate
+[node name="Gate" type="SpotLight3D" parent="Shafts"]
+transform = Transform3D(-0.7071, 0.6288, -0.3234, 0, 0.4573, 0.8893, 0.7071, 0.6288, -0.3234, 30, 40, -6)
+light_energy = 3.5
+light_volumetric_fog_energy = 7
+shadow_enabled = true
+spot_range = 80
+spot_attenuation = 0.25
+spot_angle = 8
+spot_angle_attenuation = 2
+
+[node name="Lamps" type="Node3D" parent="."]
+
+; a warm glow over the closed gate
+[node name="Gate" type="OmniLight3D" parent="Lamps"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 41, 4.5, 1.5)
+light_energy = 1.1
+omni_range = 6.5
+shadow_enabled = false
+
+[node name="Glyphs" type="Node3D" parent="."]
+
+; glyphs on the floor lip by the doorway
+[node name="Door" type="MeshInstance3D" parent="Glyphs"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 3.5, -0.6, 2.01)
+mesh = SubResource("QuadMesh_1")
+material_override = ExtResource("10_glyphs")
+cast_shadow = 0
+
+[node name="DoorLight" type="OmniLight3D" parent="Glyphs"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 3.5, -0.6, 2.71)
+light_energy = 0.35
+light_volumetric_fog_energy = 0
+omni_range = 2
+
+; glyphs down the face of the raised gate
+[node name="Gate" type="MeshInstance3D" parent="Glyphs"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 15.5, 6.5, 2.01)
+mesh = SubResource("QuadMesh_2")
+material_override = ExtResource("10_glyphs")
+cast_shadow = 0
+
+[node name="GateLight" type="OmniLight3D" parent="Glyphs"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 15.5, 6.5, 2.71)
+light_energy = 0.45
+light_volumetric_fog_energy = 0
+omni_range = 2.5
+
+; a column of glyphs on the closed gate
+[node name="Low" type="MeshInstance3D" parent="Glyphs"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 41, -1.5, 2.01)
+mesh = SubResource("QuadMesh_3")
+material_override = ExtResource("10_glyphs")
+cast_shadow = 0
+
+[node name="LowLight" type="OmniLight3D" parent="Glyphs"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 41, -1.5, 2.71)
+light_energy = 0.45
+light_volumetric_fog_energy = 0
+omni_range = 2.5
+
+[node name="Kit" type="Node3D" parent="."]
+
+; the far bank of the channel
+[node name="ChannelBank" type="MeshInstance3D" parent="Kit"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 30, -6.75, -14.5)
+mesh = SubResource("blockmesh_4")
+material_override = ExtResource("1_wet_stone")
+
+; the channel vault: piers rising from the water
+[node name="Vault" type="Node3D" parent="Kit"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -3, -7.75, -9)
+script = ExtResource("15_colonnade")
+Pier = SubResource("column_5")
+Arch = SubResource("arch_6")
+Material = ExtResource("14_stone_mid")
+Bays = 12
+Span = 6
+ArchHeight = 12
+BeamHeight = 15
+BeamSection = Vector2(1.2, 1.25)
+Seed = 22
+
+[node name="Culverts" type="Node3D" parent="Kit"]
+
+; culverts under the walkway
+[node name="Culvert0" type="MeshInstance3D" parent="Kit/Culverts"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 6, -8.5, -3.25)
+mesh = SubResource("arch_7")
+material_override = ExtResource("14_stone_mid")
+
+[node name="Culvert1" type="MeshInstance3D" parent="Kit/Culverts"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 22, -8.5, -3.25)
+mesh = SubResource("arch_7")
+material_override = ExtResource("14_stone_mid")
+
+[node name="Culvert2" type="MeshInstance3D" parent="Kit/Culverts"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 36, -8.5, -3.25)
+mesh = SubResource("arch_7")
+material_override = ExtResource("14_stone_mid")
+
+[node name="Culvert3" type="MeshInstance3D" parent="Kit/Culverts"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 50, -8.5, -3.25)
+mesh = SubResource("arch_7")
+material_override = ExtResource("14_stone_mid")
+
+[node name="Gates" type="Node3D" parent="Kit"]
+
+[node name="HighRailWest" type="MeshInstance3D" parent="Kit/Gates"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 14.75, -2, -2.5)
+mesh = SubResource("pipe_8")
+material_override = ExtResource("17_rust_mid")
+
+[node name="HighRailEast" type="MeshInstance3D" parent="Kit/Gates"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 16.25, -2, -2.5)
+mesh = SubResource("pipe_8")
+material_override = ExtResource("17_rust_mid")
+
+[node name="LowRailWest" type="MeshInstance3D" parent="Kit/Gates"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 39.75, -4, -2.5)
+mesh = SubResource("pipe_8")
+material_override = ExtResource("17_rust_mid")
+
+[node name="LowRailEast" type="MeshInstance3D" parent="Kit/Gates"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 42.25, -4, -2.5)
+mesh = SubResource("pipe_8")
+material_override = ExtResource("17_rust_mid")
+
+; the winding wheel of the raised gate
+[node name="HighWheel" type="MeshInstance3D" parent="Kit/Gates"]
+transform = Transform3D(1, 0, 0, 0, 0, -1, 0, 1, 0, 15.5, 7.5, -2.75)
+mesh = SubResource("ring_9")
+material_override = ExtResource("17_rust_mid")
+
+[node name="HighHub" type="MeshInstance3D" parent="Kit/Gates"]
+transform = Transform3D(1, 0, 0, 0, 0, -1, 0, 1, 0, 15.5, 7.5, -2.75)
+mesh = SubResource("ring_10")
+material_override = ExtResource("17_rust_mid")
+
+[node name="LowWheel" type="MeshInstance3D" parent="Kit/Gates"]
+transform = Transform3D(1, 0, 0, 0, 0, -1, 0, 1, 0, 41, 3, -2.75)
+mesh = SubResource("ring_9")
+material_override = ExtResource("17_rust_mid")
+
+[node name="LowHub" type="MeshInstance3D" parent="Kit/Gates"]
+transform = Transform3D(1, 0, 0, 0, 0, -1, 0, 1, 0, 41, 3, -2.75)
+mesh = SubResource("ring_10")
+material_override = ExtResource("17_rust_mid")
+
+; the chain the raised gate hangs from
+[node name="HighChain" type="MeshInstance3D" parent="Kit/Gates"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 15, 9, -1.5)
+mesh = SubResource("cables_11")
+material_override = ExtResource("20_cable")
+
+; an old main along the vault, dropping into the channel
+[node name="Main" type="MeshInstance3D" parent="Kit"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 10, 8, -3)
+mesh = SubResource("pipe_12")
+material_override = ExtResource("17_rust_mid")
+
+; scrap the Gleaner picks at
+[node name="Scrap0" type="MeshInstance3D" parent="Kit"]
+transform = Transform3D(0.9397, 0, 0.342, 0, 1, 0, -0.342, 0, 0.9397, 51, -4, -1.25)
+mesh = SubResource("wreck_13")
+material_override = ExtResource("17_rust_mid")
+
+[node name="Scrap1" type="MeshInstance3D" parent="Kit"]
+transform = Transform3D(0.8192, 0, -0.5736, 0, 1, 0, 0.5736, 0, 0.8192, 56, -4, -1.5)
+mesh = SubResource("wreck_14")
+material_override = ExtResource("22_metal_mid")
+
+[node name="Scrap2" type="MeshInstance3D" parent="Kit"]
+transform = Transform3D(0.5, 0, 0.866, 0, 1, 0, -0.866, 0, 0.5, 8, 0, -1.5)
+mesh = SubResource("wreck_14")
+material_override = ExtResource("17_rust_mid")
+
+[node name="Ribs" type="Node3D" parent="Kit"]
+
+[node name="Rib1" type="MeshInstance3D" parent="Kit/Ribs"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 14, -8, -22)
+mesh = SubResource("arch_15")
+material_override = ExtResource("23_backdrop_rust")
+cast_shadow = 0
+
+[node name="Rib2" type="MeshInstance3D" parent="Kit/Ribs"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 46, -8, -24)
+mesh = SubResource("arch_15")
+material_override = ExtResource("23_backdrop_rust")
+cast_shadow = 0
+
+[node name="Particles" type="Node3D" parent="."]
+
+[node name="PitDust" parent="Particles" instance=ExtResource("24_dust")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 30, 2, -1)
+Extents = Vector3(5, 6, 2.5)
+Density = 2.5
+
+[node name="Silt" parent="Particles" instance=ExtResource("25_silt")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 30, -3.75, -7)
+Extents = Vector3(32, 1, 6)
+Density = 1.4
+
+; water spilling from the vault onto the closed gate
+[node name="Spill" parent="Particles" instance=ExtResource("26_drips")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 41, 8.9, -1)
+Extents = Vector3(1, 0.05, 1.5)
+amount = 6
+lifetime = 1.2
+
+[node name="VaultDrips" parent="Particles" instance=ExtResource("26_drips")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 24, 8.9, -3)
+Extents = Vector3(14, 0.05, 1.5)
+amount = 6
+lifetime = 1.6
+
+[node name="Backdrop" type="Node3D" parent="."]
+
+[node name="ForePipe" type="MeshInstance3D" parent="Backdrop"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -3, -6.75, 7.5)
+mesh = SubResource("pipe_16")
+material_override = ExtResource("27_foreground")
+cast_shadow = 0
+
+[node name="ForeCables0" type="MeshInstance3D" parent="Backdrop"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -1, 9.5, 7)
+mesh = SubResource("cables_17")
+material_override = ExtResource("27_foreground")
+cast_shadow = 0
+
+[node name="ForeCables1" type="MeshInstance3D" parent="Backdrop"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 33.25, 10, 7.5)
+mesh = SubResource("cables_17")
+material_override = ExtResource("27_foreground")
+cast_shadow = 0
+
+[node name="PhotoSpots" type="Node3D" parent="."]
+
+; gameplay framing at the doorway, the raised gate ahead
+[node name="Entry" type="Marker3D" parent="PhotoSpots"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 10, 3.6, 22)
+script = ExtResource("28_spot")
+PlayerPosition = Vector3(5, 0, 0)
+
+; the culvert pit, wading water
+[node name="Pit" type="Marker3D" parent="PhotoSpots"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 29, -0.5, 22)
+script = ExtResource("28_spot")
+PlayerPosition = Vector3(25, -2, 0)
+
+; the closed gate, the Limpet asleep on it
+[node name="Gate" type="Marker3D" parent="PhotoSpots"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 40, 0, 13)
+script = ExtResource("28_spot")
+PlayerPosition = Vector3(36, -4, 0)
+
+; the whole channel
+[node name="Wide" type="Marker3D" parent="PhotoSpots"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 31, 1, 44)
+script = ExtResource("28_spot")
+PlayerPosition = Vector3(12, 0, 0)
+Fov = 40

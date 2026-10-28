@@ -35,7 +35,7 @@ public partial class RoomValidator : Node
     /// <summary>What the geometry check needs of a room: its solids, its open exits, and where the pilgrim can wake.</summary>
     private sealed record RoomShape(List<Box> Solids, List<ExitShape> Exits, List<System.Numerics.Vector2> Wakes, List<System.Numerics.Vector2> Anchors);
 
-    private sealed record ExitShape(string Name, System.Numerics.Vector2 Position, System.Numerics.Vector2 Size, string Requires, int ArrivalSide);
+    private sealed record ExitShape(string Name, System.Numerics.Vector2 Position, System.Numerics.Vector2 Size, string Requires, int ArrivalSide, bool Sealed);
     private bool _done;
 
     /// <summary>The start room's scene path (the world's start room).</summary>
@@ -66,6 +66,11 @@ public partial class RoomValidator : Node
             exits += Check(room, path);
             RemoveChild(room);
             room.Free();
+
+            // Let the freed room's C# wrappers finalize now, while nothing else touches the engine: left to the
+            // finalizer thread during the next room's setup, they intermittently crashed Godot (gchandle.is_released).
+            System.GC.Collect();
+            System.GC.WaitForPendingFinalizers();
         }
 
         string map = CheckMap() + "\n" + CheckDraft();
@@ -178,8 +183,8 @@ public partial class RoomValidator : Node
         }
 
         var solids = room.Blocks().Select(b => Box.Around(N(new Vector2(b.GlobalPosition.X, b.GlobalPosition.Y)), N(new Vector2(b.Size.X, b.Size.Y)))).ToList();
-        var exitShapes = exits.Where(e => e.TargetRoom != "")
-            .Select(e => new ExitShape(e.Name, N(e.RoomPosition), N(e.Size), e.Requires, e.ArrivalSide)).ToList();
+        var exitShapes = exits.Where(e => e.TargetRoom == "" || ResourceLoader.Exists(e.TargetRoom))
+            .Select(e => new ExitShape(e.Name, N(e.RoomPosition), N(e.Size), e.Requires, e.ArrivalSide, e.TargetRoom == "")).ToList();
         var wakes = room.All<Shrine>().Select(s => N(new Vector2(s.GlobalPosition.X, s.GlobalPosition.Y))).ToList();
         if (World.RoomPath(name) == StartRoom)
         {
@@ -343,7 +348,8 @@ public partial class RoomValidator : Node
     /// every exit marked for the base moveset from some way into its room, and must not reach an exit that needs an ability
     /// from a way in that needed none (that requirement would be a lie, or the geometry drifted from it). An exit the Harpoon
     /// opens must be reached by the base moveset and the Harpoon, zipping between the room's anchors, from some way in the
-    /// Harpoon allows (the anchors are where the requirement says they are).
+    /// Harpoon allows (the anchors are where the requirement says they are). Sealed exits (rooms not built yet) are held to
+    /// their requirement too, so a gate is right before the room behind it exists.
     /// </summary>
     private void CheckGeometry()
     {
@@ -390,7 +396,7 @@ public partial class RoomValidator : Node
             {
                 ExitShape x = shape.Exits[i];
                 bool baseExit = Requirement.TryParse(x.Requires, out Requirement r, out _) && r.IsMetBy(Ability.None);
-                if (baseExit && entries.Count > 0 && !Enumerable.Range(0, entries.Count).Any(e => entries[e].Exit != i && reachedFrom[e].Contains(i))
+                if (baseExit && !x.Sealed && entries.Count > 0 && !Enumerable.Range(0, entries.Count).Any(e => entries[e].Exit != i && reachedFrom[e].Contains(i))
                     && entries.Any(e => e.Exit != i))
                 {
                     _problems.Add($"{room}: exit {x.Name} needs nothing, but the base moveset reaches it from no way into the room");

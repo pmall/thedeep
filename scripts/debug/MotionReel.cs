@@ -7,6 +7,7 @@ namespace TheDeep;
 /// The scripted reels shot by look-dev (LookDevDriver, tools/capture.sh), one or more per room:
 /// - the pilgrim's motion reel in the test room: idle, run start, a run cycle, stopping and turning, then
 ///   a jump, a dash off a ledge and a hard landing from the metal slab;
+/// - the grip, harpoon and combat reels in the mechanics lab;
 /// - the machine reel in the arena: each prototype species reacting to the player (a Votary striking who
 ///   passes in front of it, the Gleaner bolting, the Limpet waking to a landing, the Lamplighter following).
 /// Each segment starts with a respawn and a reset of the room's machines; inputs and shots are listed by
@@ -135,6 +136,24 @@ public static class MotionReel
                     new(92, "fall"), new(105, "land"),
                 }),
         }, Abilities: Ability.MagGrip),
+        new("MechanicsLab", "harpoon", "Harpoon", 11f, new Segment[]
+        {
+            // The near ring in sight, fired at: the line flies, bites, the pull, the release; then on to the next ring.
+            new(new Vector3(11f, 0f, 0f), 1, 130,
+                new Press[]
+                {
+                    new(10, InputActions.Harpoon, true), new(12, InputActions.Harpoon, false),
+                    new(58, InputActions.MoveRight, true), new(58, InputActions.Harpoon, true), new(60, InputActions.Harpoon, false),
+                    new(100, InputActions.MoveRight, false),
+                },
+                new Shot[]
+                {
+                    new(8, "sighted"), new(13, "throw"), new(16, "throw"), new(22, "pull"), new(30, "pull"), new(40, "pull"),
+                    new(50, "arrive"), new(55, "release"), new(62, "chain"), new(68, "pull"), new(76, "pull"), new(86, "release"),
+                    new(96, "fall"), new(120, "land"),
+                },
+                Camera: new Vector3(17f, 6f, 20f)),
+        }, Abilities: Ability.Harpoon),
         new("MechanicsLab", "combat", "Combat", 8f, new Segment[]
         {
             // Swings at the Votary: the crescent, the hit flash and knockback, then it breaks.

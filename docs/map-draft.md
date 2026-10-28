@@ -85,9 +85,9 @@ The slice (built, M6) plus the crypts under it and the road down. Pale white, a 
 | Reliquary | **Mag-grip** and a first shrine. *(built)* |
 | Belfry | Over the hall's shaft, by grip or harpoon: shrine, bell, Lamplighter. *(built)* |
 | Descent | The drowned well: sealed Ballast and Drill ways down, shortcuts once the frozen layer is open. *(built)* |
-| Sluice | The floodgate channel east of the Cistern: currents, the first lesson in water. |
-| Undercroft | Crypts under the cathedral, the second hub: shrine, the lift from below arrives here. |
-| Ossuary | Racks of dead machines, kept like relics: **Harpoon**. |
+| Sluice | The floodgate channel east of the Cistern: under a raised gate, over a culvert pit, over a closed gate (a Limpet asleep on it). *(built)* |
+| Undercroft | Crypts under the cathedral, the second hub: shrine, a Votary over the tombs; the high way on to the Chapterhouse by grip or rings, the flue up to the Scriptorium by grip (both sealed until built); the lift from below will arrive here. *(built)* |
+| Ossuary | Racks of dead machines, kept like relics: **Harpoon**, then two rings up to a gallery. *(built)* |
 | Scriptorium | Behind a metal ceiling (Mag-grip): machines copying scripture onto plates. Lore, a shrine. |
 | Chapterhouse | A drowned chapter house crossed by its metal vault or its anchors. **Boss: the Precentor.** |
 | Brink | The lip of the first deep descent. **Third law.** One way down. |
@@ -121,8 +121,8 @@ relic Reliquary MagGrip
 way Descent <-> Cryptwater : Ballast             # sealed: the flooded gate
 way Descent <-> Fissure : Drill                  # sealed: the cracked wall
 
-# under the cathedral
-way Cistern <-> Sluice                           # sealed in the Cistern
+# under the cathedral (built: Sluice, Undercroft, Ossuary)
+way Cistern <-> Sluice
 way Sluice <-> Undercroft
 way Undercroft <-> Ossuary
 relic Ossuary Harpoon

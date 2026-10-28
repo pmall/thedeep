@@ -46,6 +46,8 @@ Span = 8
 Rise = 5
 ```
 
+Don't put a C# `PrimitiveMesh` sub-resource in `scenes/Main.tscn`: the headless import opens the main scene before the C# scripts are ready, and each one logs "_create_mesh_array must return at least a vertex array" (the check fails on it). Use a built-in mesh there (the Harpoon's head is a `CylinderMesh` cone), or put the piece in a scene that is instanced at run time.
+
 Every exported property's setter calls `RequestUpdate()`, so the mesh rebuilds when it changes. Front faces are **clockwise** in Godot; `MeshBuilder` orients triangles from the vertex normals, so geometry code only has to get normals right.
 
 ## Physics interpolation

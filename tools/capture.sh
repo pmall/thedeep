@@ -63,7 +63,7 @@ touch "$ROOT/.gdignore" # Godot must not import the captures
 dotnet build TheDeep.sln -v q -nologo >"$out/build.log" 2>&1 || { tail -20 "$out/build.log"; fail "dotnet build"; }
 
 # The rooms rendered: the drowned hall first (perf.json, compared run to run), then the slice rooms, the arena and the lab.
-ROOMS=(DrownedHall Narthex Belfry Nave Cistern Reliquary Descent MachineArena MechanicsLab)
+ROOMS=(DrownedHall Narthex Belfry Nave Cistern Reliquary Descent Sluice Undercroft Ossuary MachineArena MechanicsLab)
 for room in "${ROOMS[@]}"; do
     name="$room"
     room_args=(--room "$room") perf="perf-$room.json" log="$out/godot-$room.log"
@@ -83,6 +83,7 @@ done
 if [ -d "$out/motion" ]; then python3 -I tools/motion_sheet.py "$out"; fi
 if [ -d "$out/machines" ]; then python3 -I tools/motion_sheet.py "$out" machines Machines 6x6 1440x810; fi
 if [ -d "$out/grip" ]; then python3 -I tools/motion_sheet.py "$out" grip Grip 6x6 1440x810; fi
+if [ -d "$out/harpoon" ]; then python3 -I tools/motion_sheet.py "$out" harpoon Harpoon 5x3 1440x810; fi
 if [ -d "$out/combat" ]; then python3 -I tools/motion_sheet.py "$out" combat Combat 7x4 1440x810; fi
 ls "$out"/*.png | sed 's/^/  /'
 

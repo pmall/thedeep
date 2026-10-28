@@ -48,6 +48,7 @@ EXT = {
     'drips': ('PackedScene', 'res://scenes/fx/Drips.tscn'),
     'shrine': ('PackedScene', 'res://scenes/props/Shrine.tscn'),
     'relic': ('PackedScene', 'res://scenes/props/AbilityRelic.tscn'),
+    'anchor': ('PackedScene', 'res://scenes/props/HarpoonAnchor.tscn'),
     # resources
     'flooded': ('Resource', 'res://resources/biomes/flooded.tres'),
     'votary': ('Resource', 'res://resources/machines/votary.tres'),
@@ -190,8 +191,16 @@ class Room:
     def relic(self, name, pos, ability='MagGrip', comment=''):
         """An ability relic standing on the floor at `pos` (Ability: MagGrip, Harpoon, Drill, Ballast, HeatPlating)."""
         values = {'MagGrip': 1, 'Harpoon': 2, 'Drill': 4, 'Ballast': 8, 'HeatPlating': 16}
-        return self.node('Props/' + name, instance='relic', comment=comment, transform=Raw(transform((pos[0], pos[1], 0))),
-                         Ability=values[ability])
+        lines = {'MagGrip': 'mag_grip', 'Harpoon': 'harpoon', 'Drill': 'drill', 'Ballast': 'ballast', 'HeatPlating': 'heat_plating'}
+        props = {'transform': Raw(transform((pos[0], pos[1], 0))), 'Ability': values[ability]}
+        if ability != 'MagGrip':  # the scene's defaults are Mag-grip's lines
+            props['NameLine'] = Raw(f'&"ability.{lines[ability]}.name"')
+            props['HintLine'] = Raw(f'&"ability.{lines[ability]}.hint"')
+        return self.node('Props/' + name, instance='relic', comment=comment, **props)
+
+    def anchor(self, name, pos, comment=''):
+        """A harpoon anchor: its origin is where the pilgrim's center is pulled to (keep a body's height of air below it)."""
+        return self.node('Anchors/' + name, instance='anchor', comment=comment, transform=Raw(transform((pos[0], pos[1], 0))))
 
     def exit(self, name, pos, size, target='', target_exit='', requires='', one_way=False, arrival_side=0, comment=''):
         props = {'transform': Raw(transform((pos[0], pos[1], 0))), 'script': self.ext('exit')}

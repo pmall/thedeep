@@ -41,7 +41,7 @@ public partial class Banner : CanvasLayer
     /// <summary>Shows the lines <paramref name="titleId"/> and <paramref name="lineId"/> for <paramref name="hold"/> seconds.</summary>
     public async Task Show(StringName titleId, StringName lineId, float hold = 3.5f)
     {
-        var book = GD.Load<LineBook>(LineBook.Path);
+        var book = LineBook.Shared;
         _title.Text = book.Find(titleId)?.Text ?? "";
         _line.Text = book.Find(lineId)?.Text ?? "";
         _tween?.Kill();

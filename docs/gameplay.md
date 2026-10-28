@@ -43,6 +43,12 @@ The player can collect them in many orders, and that freedom is proven by a solv
 - A grip surface refills the air dash. Travelling through an exit while gripping stands the player up first.
 - Checked headless in `scenes/rooms/MechanicsLab.tscn` (`GripCheck`, in `tools/check.sh`); look-dev shoots a grip reel there (`Grip.png`).
 
+**Harpoon (implemented, M8).** `HarpoonState`, aiming in `HarpoonAim` (pure, unit tested), the eye and the line in `HarpoonRig` (in Main).
+- **Anchors** are mooring rings placed in rooms (`scenes/props/HarpoonAnchor.tscn`): the node's origin is where the pilgrim's center is pulled to. They are only a position (no collision); keep a body's height of air below one.
+- **Sight:** each tick the rig picks the anchor the pilgrim would fire at: within `HarpoonRange` of the body's center (not nearer than `HarpoonMinDistance`), in clear sight (a ray on the solid layers). Holding up or down **aims** (only anchors within about 70° of the held direction); otherwise anchors ahead beat anchors above, which beat anchors behind, nearer first. The anchor just zipped to is skipped until the pilgrim stands or grips somewhere. The anchor in sight brightens.
+- **Fire** (K / V, pad B or LT): from the ground, the air, a dash or a Mag-grip surface. The line flies out at `HarpoonThrowSpeed` while the pilgrim hangs, slowing; once it bites, the pull gathers speed (`HarpoonZipAcceleration`) up to `HarpoonZipSpeed` until the body's center reaches the anchor. Then it lets go with `HarpoonExitSpeedFactor` of the pull's speed and at least `HarpoonExitLift` upward (unless the pull went steeply down), and the air dash is back. Jump or dash during the pull cancel into them, keeping momentum; a pull blocked by a solid lets go where it stands.
+- Checked headless in the mechanics lab (`HarpoonCheck`, in `tools/check.sh`): sight, fire, pull, release, chaining to a second anchor, blocked sight, range, jump cancel. The room check's geometry pass also zips between each room's anchors (`ReachPlanner` with `HarpoonLimits`): a way the Harpoon opens must be reached that way.
+
 Abilities are flags in `AbilitySet` (`Player.Abilities`). In debug builds, F1–F5 toggle them.
 
 ## Tuning
@@ -63,6 +69,7 @@ Input actions are defined in `project.godot` and mirrored in `scripts/core/Input
 | `jump` | Space, Z | A |
 | `dash` | Shift, C | RB, RT |
 | `attack` | J, X | X |
+| `harpoon` | K, V | B, LT |
 | `interact` (rest at a shrine) | E | Y |
 | `map` | M, Tab | LB |
 | `capture_screenshot` | F12 | Share / Misc |

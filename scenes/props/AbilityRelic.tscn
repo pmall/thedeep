@@ -5,7 +5,7 @@
 [ext_resource type="Script" path="res://scripts/props/AbilityRelic.cs" id="1_relic"]
 [ext_resource type="Script" path="res://scripts/kit/ColumnMesh.cs" id="2_column"]
 [ext_resource type="Material" path="res://assets/materials/stone_mid.tres" id="3_stone_mid"]
-[ext_resource type="Material" path="res://assets/materials/glyphs.tres" id="4_glyphs"]
+[ext_resource type="Material" path="res://assets/materials/beacon.tres" id="4_glyphs"]
 
 [sub_resource type="PrimitiveMesh" id="Pedestal"]
 script = ExtResource("2_column")

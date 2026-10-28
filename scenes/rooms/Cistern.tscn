@@ -2,8 +2,9 @@
 
 ; The Cistern, under the Nave (map offset (102, -4.5)): the hatch in the nave floor drops down a tall metal
 ; flue into a flooded vault of columns. The flue's walls are metal, so Mag-grip climbs back up to the hatch;
-; without it the only way on is the west doorway to the Reliquary. A Gleaner picks over scrap by the door;
-; a Limpet sleeps on a metal tank east of the flue, and a hard landing may wake it.
+; without it the ways on are the west doorway to the Reliquary and the east floodgate to the Sluice. A
+; Gleaner picks over scrap by the door; a Limpet sleeps on a metal tank east of the flue, and a hard landing
+; may wake it.
 
 [ext_resource type="Script" path="res://scripts/kit/ColumnMesh.cs" id="1_column"]
 [ext_resource type="Script" path="res://scripts/kit/ArchMesh.cs" id="2_arch"]
@@ -223,9 +224,10 @@ Material = ExtResource("4_wet_stone")
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -2, 18.5, 0)
 Size = Vector3(2, 29, 4)
 
+; east wall above the doorway to the Sluice
 [node name="WallEast" parent="Geometry" instance=ExtResource("5_block")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 42, 16.5, 0)
-Size = Vector3(4, 33, 4)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 42, 18.5, 0)
+Size = Vector3(4, 29, 4)
 
 [node name="CeilingWest" parent="Geometry" instance=ExtResource("5_block")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 6.75, 31, 0)
@@ -276,10 +278,12 @@ TargetRoom = "res://scenes/rooms/Reliquary.tscn"
 TargetExit = "East"
 Size = Vector2(1, 4)
 
-; the floodgate east into the Sluice (sealed: a room not built yet, docs/map-draft.md)
+; the floodgate east into the Sluice
 [node name="East" type="Marker3D" parent="Exits"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 39.5, 0, 0)
 script = ExtResource("6_exit")
+TargetRoom = "res://scenes/rooms/Sluice.tscn"
+TargetExit = "West"
 Size = Vector2(1, 4)
 
 [node name="Machines" type="Node3D" parent="."]

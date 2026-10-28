@@ -1,0 +1,10 @@
+[gd_resource type="StandardMaterial3D" format=3]
+; The glow of things the pilgrim can use: harpoon anchors and ability relics. Color means gameplay
+; (docs/art-direction.md), so it is the one saturated, bright emissive in a room besides hazards.
+
+[resource]
+albedo_color = Color(0.86, 0.74, 1, 1)
+roughness = 0.3
+emission_enabled = true
+emission = Color(0.78, 0.6, 1, 1)
+emission_energy_multiplier = 5.0
