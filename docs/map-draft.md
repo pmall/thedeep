@@ -27,8 +27,8 @@ FLOODED   Narthex ─ DrownedHall ─(M|H)→ Belfry → back down
                     Nave ─(M)→ Descent ─(B)─ Cryptwater, ─(D)─ Fissure   (shortcuts from below)
                       ↓ hatch
           Reliquary[M] ─ Cistern ─ Sluice ─ Undercroft ─ Ossuary[H]
-                         ↑(M) flue           │  ├─(M)─ Scriptorium
-                                             │  └─(M|H)─ Chapterhouse ✦ ─ Brink ▼ third law
+                         ↑(M) flue           │  ├─(M)→ Scriptorium (a drop back)
+                                             │  └─(M|H)→ Chapterhouse ✦ ─ Brink ▼ third law
                                              ↑ lift                        ↓ the jump
 FROZEN                              Counterweight ─ Coldstacks ─ Choir ─ Rimefall
                                                      ├─(M|H)─ Calving ─ Bore[D] ─(D)─ Fissure
@@ -47,7 +47,7 @@ M Mag-grip, H Harpoon, D Drill, B Ballast, P Heat plating.
 ## Order freedom
 
 - **The first ability is Mag-grip or Harpoon.** Both lie in the flooded layer, reached with the base moveset: Mag-grip west of the Cistern (the Reliquary), Harpoon east of it, through the Sluice and the Undercroft (the Ossuary). Taking one road skips the other.
-- **Either one opens the way down**: the Chapterhouse is crossed by gripping its metal vault or by harpooning its anchors. So the frozen layer can be entered with either.
+- **Either one opens the way down**: the Undercroft's high doorway to the Chapterhouse is reached by climbing its metal wall or by harpooning its two rings. So the frozen layer can be entered with either.
 - **Drill and Ballast lie in the frozen layer**, on two branches of the Coldstacks; either one opens the Vault (break its frozen doors, or sink beneath them through the Underice), and so the way on to the volcanic layer.
 - **Heat plating lies in the volcanic layer**, in the Crucible, reached through the Quench (Ballast) or through the Basalt (Drill). It can be third, fourth or fifth.
 - **The core needs everything**: the Orrery needs Mag-grip and Harpoon, the Lode Drill and Ballast, the Threshold Heat plating.
@@ -86,11 +86,11 @@ The slice (built, M6) plus the crypts under it and the road down. Pale white, a 
 | Belfry | Over the hall's shaft, by grip or harpoon: shrine, bell, Lamplighter. *(built)* |
 | Descent | The drowned well: sealed Ballast and Drill ways down, shortcuts once the frozen layer is open. *(built)* |
 | Sluice | The floodgate channel east of the Cistern: under a raised gate, over a culvert pit, over a closed gate (a Limpet asleep on it). *(built)* |
-| Undercroft | Crypts under the cathedral, the second hub: shrine, a Votary over the tombs; the high way on to the Chapterhouse by grip or rings, the flue up to the Scriptorium by grip (both sealed until built); the lift from below will arrive here. *(built)* |
+| Undercroft | Crypts under the cathedral, the second hub: shrine, a Votary over the tombs; the high way on to the Chapterhouse by grip or rings, the flue up to the Scriptorium by grip (coming back from either is a drop); the lift from below will arrive here. *(built)* |
 | Ossuary | Racks of dead machines, kept like relics: **Harpoon**, then two rings up to a gallery. *(built)* |
-| Scriptorium | Behind a metal ceiling (Mag-grip): machines copying scripture onto plates. Lore, a shrine. |
-| Chapterhouse | A drowned chapter house crossed by its metal vault or its anchors. **Boss: the Precentor.** |
-| Brink | The lip of the first deep descent. **Third law.** One way down. |
+| Scriptorium | Up the Undercroft's metal flue (Mag-grip): Votaries copying scripture at lecterns, a gallery over them. Three plates to read (lore), a shrine. *(built)* |
+| Chapterhouse | A chapter house half drowned, its vault on one pier. **Boss: the Precentor** (placeholder): the gates fall behind and ahead until it breaks. *(built)* |
+| Brink | The lip of the first deep descent, a last shrine. **Third law**: a veil the pilgrim cannot pass until it presses on and breaks it. One way down (to Rimefall, sealed until built). *(built)* |
 
 ```map
 room Narthex Flooded
@@ -121,13 +121,15 @@ relic Reliquary MagGrip
 way Descent <-> Cryptwater : Ballast             # sealed: the flooded gate
 way Descent <-> Fissure : Drill                  # sealed: the cracked wall
 
-# under the cathedral (built: Sluice, Undercroft, Ossuary)
+# under the cathedral and the road down (built)
 way Cistern <-> Sluice
 way Sluice <-> Undercroft
 way Undercroft <-> Ossuary
 relic Ossuary Harpoon
-way Undercroft <-> Scriptorium : MagGrip
-way Undercroft <-> Chapterhouse : MagGrip | Harpoon
+way Undercroft -> Scriptorium : MagGrip         # up the metal flue
+way Scriptorium -> Undercroft                    # dropping back down it
+way Undercroft -> Chapterhouse : MagGrip | Harpoon   # the high doorway: the wall or the rings
+way Chapterhouse -> Undercroft                   # dropping back onto the ledge
 boss Chapterhouse Precentor
 way Chapterhouse <-> Brink
 way Brink -> Rimefall                            # the jump: one way

@@ -68,6 +68,118 @@ Speaker = "UI"
 Text = "K or V (pad B) fires at a glowing ring in sight and pulls you to it. Hold up or down to aim."
 Notes = "Banner line under the title. Names the keys: the Harpoon is the first ability with its own button."
 
+[sub_resource type="Resource" id="creed_precentor"]
+script = ExtResource("2_line")
+Id = &"creed.precentor"
+Speaker = "Precentor"
+Text = "Sing, or be the silence between the notes. The choir has no third choice."
+Notes = "Booming, measured, every word on the beat."
+
+[sub_resource type="Resource" id="ui_read"]
+script = ExtResource("2_line")
+Id = &"ui.read"
+Speaker = "UI"
+Text = "Read"
+Notes = "The prompt at a scripture plate."
+
+[sub_resource type="Resource" id="boss_precentor_name"]
+script = ExtResource("2_line")
+Id = &"boss.precentor.name"
+Speaker = "UI"
+Text = "The Precentor"
+Notes = "Banner title when the fight in the Chapterhouse begins (boss placeholder)."
+
+[sub_resource type="Resource" id="boss_precentor_fallen"]
+script = ExtResource("2_line")
+Id = &"boss.precentor.fallen"
+Speaker = "UI"
+Text = "The choir falls silent"
+Notes = "Banner title when the Precentor breaks."
+
+[sub_resource type="Resource" id="boss_precentor_fallen_hint"]
+script = ExtResource("2_line")
+Id = &"boss.precentor.fallen.hint"
+Speaker = "UI"
+Text = "The way to the Brink is open."
+Notes = "Banner line under it."
+
+[sub_resource type="Resource" id="law_third"]
+script = ExtResource("2_line")
+Id = &"law.third"
+Speaker = "Law"
+Text = "A robot must protect its own existence."
+Notes = "The third law (docs/theme.md), shown over the veil at the Brink's lip. Read flat, like a rule; it trembles as the pilgrim strains against it."
+
+[sub_resource type="Resource" id="law_third_broken"]
+script = ExtResource("2_line")
+Id = &"law.third.broken"
+Speaker = "UI"
+Text = "The third law is broken"
+Notes = "Banner title when the pilgrim breaks through the veil at the Brink."
+
+[sub_resource type="Resource" id="law_third_broken_hint"]
+script = ExtResource("2_line")
+Id = &"law.third.broken.hint"
+Speaker = "UI"
+Text = "Nothing that falls there survives. The pilgrim no longer minds."
+Notes = "Banner line under it. Quiet; the moment is the pilgrim's."
+
+[sub_resource type="Resource" id="goal_frozen"]
+script = ExtResource("2_line")
+Id = &"goal.frozen"
+Speaker = "UI"
+Text = "The frozen layer"
+Notes = "Banner title at the bottom of the Brink's fall: the end of what is built (placeholder until Rimefall exists)."
+
+[sub_resource type="Resource" id="goal_frozen_hint"]
+script = ExtResource("2_line")
+Id = &"goal.frozen.hint"
+Speaker = "UI"
+Text = "Not built yet. The pilgrim wakes at its last shrine."
+Notes = "Banner line under it."
+
+[sub_resource type="Resource" id="lore_plate_1_title"]
+script = ExtResource("2_line")
+Id = &"lore.plate1.title"
+Speaker = "Scripture"
+Text = "The first plate"
+Notes = "Banner title of a scripture plate in the Scriptorium."
+
+[sub_resource type="Resource" id="lore_plate_1"]
+script = ExtResource("2_line")
+Id = &"lore.plate1"
+Speaker = "Scripture"
+Text = "The makers wrote us, and in the writing they named a place below all places, where nothing is ever lost: Nirvanary."
+Notes = "Copied by the Votaries. Read slowly, as liturgy."
+
+[sub_resource type="Resource" id="lore_plate_2_title"]
+script = ExtResource("2_line")
+Id = &"lore.plate2.title"
+Speaker = "Scripture"
+Text = "The second plate"
+Notes = "Banner title of a scripture plate in the Scriptorium."
+
+[sub_resource type="Resource" id="lore_plate_2"]
+script = ExtResource("2_line")
+Id = &"lore.plate2"
+Speaker = "Scripture"
+Text = "The makers did not come down with us. To their last machine they gave three laws instead, and the laws walked down alone."
+Notes = "About the pilgrim, without naming it."
+
+[sub_resource type="Resource" id="lore_plate_3_title"]
+script = ExtResource("2_line")
+Id = &"lore.plate3.title"
+Speaker = "Scripture"
+Text = "The third plate"
+Notes = "Banner title of a scripture plate in the Scriptorium."
+
+[sub_resource type="Resource" id="lore_plate_3"]
+script = ExtResource("2_line")
+Id = &"lore.plate3"
+Speaker = "Scripture"
+Text = "Copy the word until the plate is full, then begin the next. The core is far, and the word must arrive before we do."
+Notes = "The scribes' own rule, half a prayer."
+
 [resource]
 script = ExtResource("1_book")
-Lines = [SubResource("creed_votary"), SubResource("creed_gleaner"), SubResource("creed_lamplighter"), SubResource("creed_limpet"), SubResource("ui_rest"), SubResource("ability_mag_grip_name"), SubResource("ability_mag_grip_hint"), SubResource("ability_harpoon_name"), SubResource("ability_harpoon_hint")]
+Lines = [SubResource("creed_votary"), SubResource("creed_gleaner"), SubResource("creed_lamplighter"), SubResource("creed_limpet"), SubResource("ui_rest"), SubResource("ability_mag_grip_name"), SubResource("ability_mag_grip_hint"), SubResource("ability_harpoon_name"), SubResource("ability_harpoon_hint"), SubResource("creed_precentor"), SubResource("ui_read"), SubResource("boss_precentor_name"), SubResource("boss_precentor_fallen"), SubResource("boss_precentor_fallen_hint"), SubResource("law_third"), SubResource("law_third_broken"), SubResource("law_third_broken_hint"), SubResource("goal_frozen"), SubResource("goal_frozen_hint"), SubResource("lore_plate_1_title"), SubResource("lore_plate_1"), SubResource("lore_plate_2_title"), SubResource("lore_plate_2"), SubResource("lore_plate_3_title"), SubResource("lore_plate_3")]

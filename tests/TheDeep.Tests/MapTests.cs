@@ -42,6 +42,28 @@ public class MapTests
     }
 
     [Fact]
+    public void DoorwaysLeadOutTowardTheNearerSide()
+    {
+        Vector2 min = new(-1f, -5f), max = new(57.5f, 26f), door = new(1f, 4f);
+        Assert.Equal(-1, ExitMath.Outward(new Vector2(1f, 0f), door, min, max));
+        Assert.Equal(1, ExitMath.Outward(new Vector2(57f, 14.5f), door, min, max));
+        Assert.Equal(0, ExitMath.Outward(new Vector2(1f, 23.5f), new Vector2(2f, 1f), min, max));
+    }
+
+    [Fact]
+    public void ADoorwayIsLeftOnlyByMovingOut()
+    {
+        // Falling into a west doorway from a flue above, or standing in it: stays.
+        Assert.False(ExitMath.Leaves(-1, 0f, 0));
+        Assert.False(ExitMath.Leaves(-1, 3f, 1));
+        // Running, drifting or pressing west: leaves.
+        Assert.True(ExitMath.Leaves(-1, -6f, 0));
+        Assert.True(ExitMath.Leaves(-1, 0f, -1));
+        // A hatch is always crossed.
+        Assert.True(ExitMath.Leaves(0, 0f, 0));
+    }
+
+    [Fact]
     public void RoomsArePlacedFromTheExitsCrossed()
     {
         // East gate at x 63 of the first room leads to a west gate at x 1 of the next: that room starts 62 m east.

@@ -36,7 +36,6 @@
 [ext_resource type="Script" path="res://scripts/rooms/Room.cs" id="28_room"]
 [ext_resource type="Resource" path="res://resources/biomes/flooded.tres" id="29_flooded"]
 [ext_resource type="PackedScene" path="res://scenes/stage/RoomStage.tscn" id="30_stage"]
-[ext_resource type="Script" path="res://scripts/map/MapGoal.cs" id="31_goal"]
 
 [sub_resource type="PrimitiveMesh" id="column_1"]
 script = ExtResource("1_column")
@@ -328,11 +327,6 @@ transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 43, 0, 0)
 script = ExtResource("7_exit")
 Requires = "Drill"
 Size = Vector2(1, 4)
-
-; the end of the slice: the bottom of the well, before the sealed ways deeper (for the map solver)
-[node name="JourneyEnd" type="Marker3D" parent="Exits"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 39.5, 0, 0)
-script = ExtResource("31_goal")
 
 [node name="Machines" type="Node3D" parent="."]
 

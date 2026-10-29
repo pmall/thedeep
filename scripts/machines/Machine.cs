@@ -25,7 +25,6 @@ public partial class Machine : CharacterBody3D
     private static readonly StringName HurtParameter = "hurt";
 
     /// <summary>A hit stuns the brain this long, seconds (a wind-up in progress is lost).</summary>
-    private const float StaggerTime = 0.35f;
 
     /// <summary>A broken machine folds down and sinks over this long, then is gone.</summary>
     private const float BreakTime = 0.6f;
@@ -166,6 +165,14 @@ public partial class Machine : CharacterBody3D
         ResetPhysicsInterpolation();
     }
 
+    /// <summary>Already broken (a boss beaten before): gone at once, no folding.</summary>
+    public void Gone()
+    {
+        _breaking = BreakTime;
+        _frameScale = _frame.Scale;
+        Visible = false;
+    }
+
     /// <summary>The perception's own part: time, place, facing, and what blocks the way.</summary>
     public Perception Perceive(PlayerTrace? player, IReadOnlyList<Impact> impacts, IReadOnlyList<Neighbor> neighbors) =>
         new(_time, ToNumerics(PlanePosition), Facing, player, impacts, neighbors, _blockedLeft, _blockedRight);
@@ -183,11 +190,11 @@ public partial class Machine : CharacterBody3D
 
         _vitality.Damage(damage);
         _flash = 1f;
-        _stagger = StaggerTime;
+        _stagger = Species.StaggerTime;
         float away = PlanePosition.X >= from.X ? 1f : -1f;
         if (Species.Locomotion != Locomotion.Crawl)
         {
-            Velocity = new Vector3(away * knockback, Species.Locomotion == Locomotion.Hover ? 1f : 2f, 0f);
+            Velocity = new Vector3(away * knockback * Species.Heft, (Species.Locomotion == Locomotion.Hover ? 1f : 2f) * Species.Heft, 0f);
         }
 
         if (_vitality.Dead)

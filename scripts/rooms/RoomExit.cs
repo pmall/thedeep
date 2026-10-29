@@ -39,11 +39,14 @@ public partial class RoomExit : Marker3D
 
     public Requirement Requirement => Requirement.Parse(Requires);
 
-    /// <summary>The player walked into the exit's area (only while armed): travel through it.</summary>
+    /// <summary>The player is leaving through the exit (in its area while armed, and moving out through a doorway): travel through it.</summary>
     public event Action<RoomExit>? Crossed;
 
     /// <summary>Whether entering the area travels. False until the player has left it, after arriving through it.</summary>
     public bool Armed { get; private set; } = true;
+
+    private Player? _inside;
+    private int _outward;
 
     /// <summary>An exit with a target room has a trigger area; one leading to a room not built yet stays sealed.</summary>
     public bool Open => TargetRoom != "";
@@ -69,6 +72,25 @@ public partial class RoomExit : Marker3D
         area.BodyEntered += OnBodyEntered;
         area.BodyExited += OnBodyExited;
         AddChild(area);
+        for (Node? n = GetParent(); n is not null; n = n.GetParent())
+        {
+            if (n is Room room)
+            {
+                _outward = ExitMath.Outward(new System.Numerics.Vector2(RoomPosition.X, RoomPosition.Y), new System.Numerics.Vector2(Size.X, Size.Y),
+                    new System.Numerics.Vector2(room.BoundsMin.X, room.BoundsMin.Y), new System.Numerics.Vector2(room.BoundsMax.X, room.BoundsMax.Y));
+                break;
+            }
+        }
+    }
+
+    public override void _PhysicsProcess(double delta)
+    {
+        // Inside a doorway's area, the player leaves once it moves or presses out of the room (ExitMath.Leaves).
+        if (_inside is not null && Armed && ExitMath.Leaves(_outward, _inside.Velocity.X, _inside.CurrentInput.MoveX))
+        {
+            _inside = null;
+            Crossed?.Invoke(this);
+        }
     }
 
     /// <summary>The player just arrived through here: entering again only counts after leaving the area.</summary>
@@ -76,9 +98,9 @@ public partial class RoomExit : Marker3D
 
     private void OnBodyEntered(Node3D body)
     {
-        if (Armed && body is Player)
+        if (body is Player player)
         {
-            Crossed?.Invoke(this);
+            _inside = player;
         }
     }
 
@@ -86,6 +108,7 @@ public partial class RoomExit : Marker3D
     {
         if (body is Player)
         {
+            _inside = null;
             Armed = true;
         }
     }

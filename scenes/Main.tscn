@@ -97,12 +97,13 @@ Player = NodePath("../Player")
 Fade = NodePath("../ScreenFade")
 
 ; Shrines (rest: heal and save), relics, death and the return to the last shrine, the save.
-[node name="Session" type="Node" parent="." node_paths=PackedStringArray("World", "Player", "Fade", "Banner")]
+[node name="Session" type="Node" parent="." node_paths=PackedStringArray("World", "Player", "Fade", "Banner", "Camera")]
 script = ExtResource("17_session")
 World = NodePath("../World")
 Player = NodePath("../Player")
 Fade = NodePath("../ScreenFade")
 Banner = NodePath("../Banner")
+Camera = NodePath("../SideCamera")
 
 [node name="SideCamera" parent="." node_paths=PackedStringArray("Target", "World") instance=ExtResource("6_camera")]
 Target = NodePath("../Player")

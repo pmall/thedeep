@@ -1,0 +1,406 @@
+[gd_scene format=3]
+
+; The Brink, east of the Chapterhouse (map offset (338.5, 6)): the end of the flooded layer, the lip of the first
+; deep descent. A last pilgrim shrine under a broken dome, then the floor ends over a chasm no machine survives.
+; At the lip stands the third law (LawBreak): a veil of glyphs the pilgrim cannot walk through, the law's words
+; over it. Pressing on toward the drop strains against it until it breaks; then the jump, one way down to the
+; frozen layer (Rimefall, sealed: not built yet). Until it is, falling past the goal's area shows the end of the
+; build and the pilgrim wakes at its last shrine. The MapGoal of the built map is here.
+
+[ext_resource type="Material" path="res://assets/materials/wet_stone.tres" id="1_wet_stone"]
+[ext_resource type="PackedScene" path="res://scenes/kit/Block.tscn" id="2_block"]
+[ext_resource type="Script" path="res://scripts/rooms/RoomExit.cs" id="3_exit"]
+[ext_resource type="Script" path="res://scripts/map/MapGoal.cs" id="4_goal"]
+[ext_resource type="PackedScene" path="res://scenes/props/Shrine.tscn" id="5_shrine"]
+[ext_resource type="PackedScene" path="res://scenes/props/LawBreak.tscn" id="6_law"]
+[ext_resource type="Material" path="res://assets/materials/glyphs.tres" id="7_glyphs"]
+[ext_resource type="Script" path="res://scripts/kit/ColumnMesh.cs" id="8_column"]
+[ext_resource type="Script" path="res://scripts/kit/ArchMesh.cs" id="9_arch"]
+[ext_resource type="Material" path="res://assets/materials/stone_mid.tres" id="10_stone_mid"]
+[ext_resource type="Script" path="res://scripts/rooms/dressing/Colonnade.cs" id="11_colonnade"]
+[ext_resource type="Script" path="res://scripts/kit/BlockMesh.cs" id="12_blockmesh"]
+[ext_resource type="Script" path="res://scripts/kit/CableMesh.cs" id="13_cables"]
+[ext_resource type="Material" path="res://assets/materials/cable.tres" id="14_cable"]
+[ext_resource type="Material" path="res://assets/materials/backdrop_rust.tres" id="15_backdrop_rust"]
+[ext_resource type="PackedScene" path="res://scenes/fx/Dust.tscn" id="16_dust"]
+[ext_resource type="PackedScene" path="res://scenes/fx/Drips.tscn" id="17_drips"]
+[ext_resource type="Script" path="res://scripts/kit/PipeMesh.cs" id="18_pipe"]
+[ext_resource type="Material" path="res://assets/materials/foreground.tres" id="19_foreground"]
+[ext_resource type="Script" path="res://scripts/rooms/PhotoSpot.cs" id="20_spot"]
+[ext_resource type="Script" path="res://scripts/rooms/Room.cs" id="21_room"]
+[ext_resource type="Resource" path="res://resources/biomes/flooded.tres" id="22_flooded"]
+[ext_resource type="PackedScene" path="res://scenes/stage/RoomStage.tscn" id="23_stage"]
+
+[sub_resource type="QuadMesh" id="QuadMesh_1"]
+size = Vector2(6, 0.3)
+
+[sub_resource type="PrimitiveMesh" id="column_2"]
+script = ExtResource("8_column")
+Height = 12
+Radius = 0.35
+Sides = 12
+Shafts = 1
+Plinth = 0.5
+Capital = 0.4
+
+[sub_resource type="PrimitiveMesh" id="arch_3"]
+script = ExtResource("9_arch")
+Span = 4
+Rise = 5
+Thickness = 0.45
+Depth = 0.8
+Segments = 28
+
+[sub_resource type="PrimitiveMesh" id="blockmesh_4"]
+script = ExtResource("12_blockmesh")
+Size = Vector3(26, 1, 10)
+Bevel = 0.1
+
+[sub_resource type="PrimitiveMesh" id="blockmesh_5"]
+script = ExtResource("12_blockmesh")
+Size = Vector3(5, 1.5, 3)
+Bevel = 0.15
+
+[sub_resource type="PrimitiveMesh" id="blockmesh_6"]
+script = ExtResource("12_blockmesh")
+Size = Vector3(4, 0.8, 2.5)
+Bevel = 0.08
+
+[sub_resource type="PrimitiveMesh" id="arch_7"]
+script = ExtResource("9_arch")
+Span = 6
+Rise = 3
+Thickness = 0.5
+Depth = 2.5
+Segments = 24
+
+[sub_resource type="PrimitiveMesh" id="cables_8"]
+script = ExtResource("13_cables")
+End = Vector3(20, 1, 0)
+Sag = 4
+Radius = 0.05
+Strands = 3
+Seed = 14
+
+[sub_resource type="PrimitiveMesh" id="cables_9"]
+script = ExtResource("13_cables")
+End = Vector3(1.5, -14, 0)
+Sag = 0.5
+Radius = 0.05
+Strands = 2
+Seed = 15
+
+[sub_resource type="PrimitiveMesh" id="arch_10"]
+script = ExtResource("9_arch")
+Span = 22
+Rise = 24
+Thickness = 0.7
+Depth = 0.7
+Flange = 0.6
+Segments = 64
+
+[sub_resource type="PrimitiveMesh" id="pipe_11"]
+script = ExtResource("18_pipe")
+Points = PackedVector3Array(0, -4, 0, 0, 0, 0, 14, 0, 0, 15, 0.5, 0, 26, 0.5, 0, 26, -4, 0)
+Radius = 0.5
+BendRadius = 1.4
+FlangeSpacing = 4
+
+[sub_resource type="PrimitiveMesh" id="cables_12"]
+script = ExtResource("13_cables")
+End = Vector3(14, -0.5, 0)
+Sag = 2.6
+Radius = 0.07
+Strands = 3
+Seed = 9
+
+[node name="Brink" type="Node3D" node_paths=PackedStringArray("SpawnPoint", "Stage", "Lamps", "Shafts", "GlyphLights")]
+script = ExtResource("21_room")
+SpawnPoint = NodePath("SpawnPoint")
+Stage = NodePath("Stage")
+Biome = ExtResource("22_flooded")
+Lamps = [NodePath("Lamps/Shrine"), NodePath("Lamps/Deep")]
+Shafts = [NodePath("Shafts/Rift"), NodePath("Shafts/Dome")]
+GlyphLights = [NodePath("Props/Shrine/Light"), NodePath("Props/ThirdLaw/Light"), NodePath("Glyphs/LipLight")]
+BoundsMin = Vector2(-1, -50)
+BoundsMax = Vector2(46, 24)
+
+[node name="SpawnPoint" type="Marker3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 4, 0, 0)
+
+; The shared atmosphere stack (environment, key light, clear front air, skylines, far pillars, frame, dust).
+[node name="Stage" parent="." instance=ExtResource("23_stage")]
+Seed = 71
+DustDensity = 1.4
+PillarDensity = 3.2
+FrameBelow = false
+
+[node name="Geometry" type="Node3D" parent="."]
+
+; the floor ends at the lip (x 24)
+[node name="Floor" parent="Geometry" instance=ExtResource("2_block")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 10.5, -3, 0)
+Size = Vector3(27, 6, 4)
+Material = ExtResource("1_wet_stone")
+
+; the near face of the chasm
+[node name="Cliff" parent="Geometry" instance=ExtResource("2_block")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 19, -29, 0)
+Size = Vector3(10, 46, 4)
+
+; the far face
+[node name="FarWall" parent="Geometry" instance=ExtResource("2_block")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 46.5, -14, 0)
+Size = Vector3(5, 76, 4)
+
+; over the west doorway
+[node name="WallWest" parent="Geometry" instance=ExtResource("2_block")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -1.5, 14, 0)
+Size = Vector3(3, 20, 4)
+
+; what is left of the dome over the shrine
+[node name="Dome" parent="Geometry" instance=ExtResource("2_block")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 9.5, 17.5, 0)
+Size = Vector3(19, 3, 4)
+
+[node name="Exits" type="Node3D" parent="."]
+
+; back into the Chapterhouse
+[node name="West" type="Marker3D" parent="Exits"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 1, 0, 0)
+script = ExtResource("3_exit")
+TargetRoom = "res://scenes/rooms/Chapterhouse.tscn"
+TargetExit = "East"
+Size = Vector2(1, 4)
+
+; the jump: down to Rimefall, the frozen layer (sealed: not built yet)
+[node name="Down" type="Marker3D" parent="Exits"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 34, -48, 0)
+script = ExtResource("3_exit")
+OneWay = true
+Size = Vector2(18, 1)
+
+; the end of what is built: falling through here shows it, then the pilgrim falls out of the room
+[node name="TheFall" type="Marker3D" parent="Exits"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 34, -30, 0)
+script = ExtResource("4_goal")
+Size = Vector2(20, 30)
+TitleLine = &"goal.frozen"
+HintLine = &"goal.frozen.hint"
+
+[node name="Props" type="Node3D" parent="."]
+
+; the last shrine of the flooded layer
+[node name="Shrine" parent="Props" instance=ExtResource("5_shrine")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 8, 0, 0)
+
+; the third law at the lip: a robot must protect its own existence
+[node name="ThirdLaw" parent="Props" instance=ExtResource("6_law")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 24, 0, 0)
+Toward = 1
+LawLine = &"law.third"
+BrokenLine = &"law.third.broken"
+BrokenHintLine = &"law.third.broken.hint"
+
+[node name="Shafts" type="Node3D" parent="."]
+
+; down the chasm from a rift far above
+[node name="Rift" type="SpotLight3D" parent="Shafts"]
+transform = Transform3D(-1, 0, 0, 0, 0.1414, 0.9899, 0, 0.9899, -0.1414, 40, 46, -6)
+light_energy = 4
+light_volumetric_fog_energy = 12
+shadow_enabled = true
+spot_range = 80
+spot_attenuation = 0.25
+spot_angle = 9
+spot_angle_attenuation = 2
+
+; through the broken dome onto the shrine
+[node name="Dome" type="SpotLight3D" parent="Shafts"]
+transform = Transform3D(-0.7071, 0.6288, -0.3234, 0, 0.4573, 0.8893, 0.7071, 0.6288, -0.3234, 2, 40, -10)
+light_energy = 3.5
+light_volumetric_fog_energy = 8
+shadow_enabled = true
+spot_range = 80
+spot_attenuation = 0.25
+spot_angle = 9
+spot_angle_attenuation = 2
+
+[node name="Lamps" type="Node3D" parent="."]
+
+; a candle glow at the shrine
+[node name="Shrine" type="OmniLight3D" parent="Lamps"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 8, 3.5, 1.2)
+light_energy = 0.8
+omni_range = 5
+shadow_enabled = false
+
+; a cold glow far down: the frozen layer
+[node name="Deep" type="OmniLight3D" parent="Lamps"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 34, -36, -4)
+light_energy = 2.2
+omni_range = 18
+shadow_enabled = false
+
+[node name="Glyphs" type="Node3D" parent="."]
+
+; along the floor's lip
+[node name="Lip" type="MeshInstance3D" parent="Glyphs"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 20, -0.6, 2.01)
+mesh = SubResource("QuadMesh_1")
+material_override = ExtResource("7_glyphs")
+cast_shadow = 0
+
+[node name="LipLight" type="OmniLight3D" parent="Glyphs"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 20, -0.6, 2.71)
+light_energy = 0.35
+light_volumetric_fog_energy = 0
+omni_range = 2
+
+[node name="Kit" type="Node3D" parent="."]
+
+; the last wall of the cathedral, behind the shrine
+[node name="Lancets" type="Node3D" parent="Kit"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -2, 0, -10)
+script = ExtResource("11_colonnade")
+Pier = SubResource("column_2")
+Arch = SubResource("arch_3")
+Material = ExtResource("10_stone_mid")
+Bays = 6
+Span = 4
+ArchHeight = 12
+BeamHeight = 17
+BeamSection = Vector2(1.5, 3)
+Seed = 72
+
+[node name="BackFloor" type="MeshInstance3D" parent="Kit"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 10.5, -0.5, -7)
+mesh = SubResource("blockmesh_4")
+material_override = ExtResource("10_stone_mid")
+
+; broken shelves down the chasm walls
+[node name="Shelf0" type="MeshInstance3D" parent="Kit"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 19.5, -14, -3.5)
+mesh = SubResource("blockmesh_5")
+material_override = ExtResource("10_stone_mid")
+
+[node name="Shelf1" type="MeshInstance3D" parent="Kit"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 41.5, -9, -3.5)
+mesh = SubResource("blockmesh_5")
+material_override = ExtResource("10_stone_mid")
+
+[node name="Shelf2" type="MeshInstance3D" parent="Kit"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 18.5, -27, -3.5)
+mesh = SubResource("blockmesh_5")
+material_override = ExtResource("10_stone_mid")
+
+[node name="Shelf3" type="MeshInstance3D" parent="Kit"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 42, -33, -3.5)
+mesh = SubResource("blockmesh_5")
+material_override = ExtResource("10_stone_mid")
+
+[node name="Shelf4" type="MeshInstance3D" parent="Kit"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 20, -41, -3.5)
+mesh = SubResource("blockmesh_5")
+material_override = ExtResource("10_stone_mid")
+
+; the bridge that once crossed, broken at both ends
+[node name="StubNear" type="MeshInstance3D" parent="Kit"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 25.5, -0.5, -2.5)
+mesh = SubResource("blockmesh_6")
+material_override = ExtResource("10_stone_mid")
+
+[node name="StubFar" type="MeshInstance3D" parent="Kit"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 42, -0.5, -2.5)
+mesh = SubResource("blockmesh_6")
+material_override = ExtResource("10_stone_mid")
+
+; and its last arch
+[node name="BridgeArch" type="MeshInstance3D" parent="Kit"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 24.5, -4.5, -2.5)
+mesh = SubResource("arch_7")
+material_override = ExtResource("10_stone_mid")
+
+[node name="Span0" type="MeshInstance3D" parent="Kit"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 24, 12, -3)
+mesh = SubResource("cables_8")
+material_override = ExtResource("14_cable")
+
+[node name="Span1" type="MeshInstance3D" parent="Kit"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 24, 6, -6)
+mesh = SubResource("cables_8")
+material_override = ExtResource("14_cable")
+
+; a cable snapped, hanging down the far wall
+[node name="Snapped" type="MeshInstance3D" parent="Kit"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 43.75, 10, -2)
+mesh = SubResource("cables_9")
+material_override = ExtResource("14_cable")
+
+[node name="Ribs" type="Node3D" parent="Kit"]
+
+[node name="Rib1" type="MeshInstance3D" parent="Kit/Ribs"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 9, -6, -20)
+mesh = SubResource("arch_10")
+material_override = ExtResource("15_backdrop_rust")
+cast_shadow = 0
+
+[node name="Particles" type="Node3D" parent="."]
+
+; motes drifting down the chasm
+[node name="RiftDust" parent="Particles" instance=ExtResource("16_dust")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 36, -10, -2)
+Extents = Vector3(7, 26, 3)
+Density = 1.2
+
+[node name="DomeDust" parent="Particles" instance=ExtResource("16_dust")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 9, 9, -1)
+Extents = Vector3(8, 6, 2.5)
+Density = 2
+
+[node name="Drips" parent="Particles" instance=ExtResource("17_drips")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 10, 15.9, -1)
+Extents = Vector3(8, 0.05, 1.2)
+amount = 4
+lifetime = 2.4
+
+[node name="Backdrop" type="Node3D" parent="."]
+
+[node name="ForePipe" type="MeshInstance3D" parent="Backdrop"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -3, -2.75, 7.5)
+mesh = SubResource("pipe_11")
+material_override = ExtResource("19_foreground")
+cast_shadow = 0
+
+[node name="ForeCables" type="MeshInstance3D" parent="Backdrop"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 1, 19.5, 7)
+mesh = SubResource("cables_12")
+material_override = ExtResource("19_foreground")
+cast_shadow = 0
+
+[node name="PhotoSpots" type="Node3D" parent="."]
+
+; gameplay framing: the shrine under the broken dome
+[node name="Shrine" type="Marker3D" parent="PhotoSpots"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 10, 3.9, 22)
+script = ExtResource("20_spot")
+PlayerPosition = Vector3(6, 0, 0)
+
+; at the lip, the veil of the third law, the words over it
+[node name="Lip" type="Marker3D" parent="PhotoSpots"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 25, 2.5, 16)
+script = ExtResource("20_spot")
+PlayerPosition = Vector3(23.4, 0, 0)
+
+; the chasm falling away below the lip
+[node name="Chasm" type="Marker3D" parent="PhotoSpots"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 30, -10, 36)
+script = ExtResource("20_spot")
+PlayerPosition = Vector3(20, 0, 0)
+
+; the whole brink and the descent
+[node name="Wide" type="Marker3D" parent="PhotoSpots"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 22, -8, 62)
+script = ExtResource("20_spot")
+PlayerPosition = Vector3(12, 0, 0)
+Fov = 40

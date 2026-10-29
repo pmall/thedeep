@@ -17,9 +17,6 @@ public partial class MachineDirector : Node
     /// <summary>Machines within this distance know about each other, meters.</summary>
     private const float NeighborRange = 12f;
 
-    /// <summary>How far from the player's chest a landing blow still counts, meters.</summary>
-    private const float HitRange = 2.6f;
-
     /// <summary>Impact speed of a dash (a landing's is its fall speed): enough to be heard close by, not to wake sleepers.</summary>
     private const float DashImpact = 5f;
 
@@ -123,7 +120,7 @@ public partial class MachineDirector : Node
             }
 
             machine.Step(dt, machine.Perceive(player, _heard, _neighbors));
-            if (machine.Intent.Hit && PlayerPresent && machine.SensorPosition.DistanceTo(chest) <= HitRange)
+            if (machine.Intent.Hit && PlayerPresent && machine.SensorPosition.DistanceTo(chest) <= machine.Species.StrikeRange)
             {
                 HitSparks?.Emit(chest, 1f);
                 Camera?.AddShake(HitShake);

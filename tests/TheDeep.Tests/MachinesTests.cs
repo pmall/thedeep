@@ -260,8 +260,63 @@ public class MachinesTests
         Assert.True(LegGait.Foot(Stance + (1f - Stance) * 0.5f, Stance, Stride, 0.1f).Y > 0.09f, "lifted mid-swing");
     }
 
+    [Fact]
+    public void ConductorBeatsTimeUntilItSeesThePlayer()
+    {
+        var brain = NewConductor();
+        var far = With(Vector2.Zero, 1, new PlayerTrace(new Vector2(30f, 1f), Vector2.Zero, true));
+        List<Intent> ticks = Run(brain, far, 120);
+        Assert.False(brain.Engaged);
+        Assert.Equal(MachineAct.Idle, brain.Act);
+        Assert.All(ticks, i => Assert.Equal(Vector2.Zero, i.Velocity));
+        Assert.True(ticks.Max(i => i.Work) - ticks.Min(i => i.Work) > 0.5f, "the baton beats");
+    }
+
+    [Fact]
+    public void ConductorStalksThenStrikesAfterAWindUpWithALunge()
+    {
+        var brain = NewConductor();
+        // Seen 8 m ahead: it walks toward the player.
+        Intent stalk = Run(brain, With(Vector2.Zero, 1, new PlayerTrace(new Vector2(8f, 1.5f), Vector2.Zero, true)), 2).Last();
+        Assert.True(brain.Engaged);
+        Assert.Equal(MachineAct.Hunt, brain.Act);
+        Assert.True(stalk.Velocity.X > 1f);
+
+        // In reach: a wind-up first (standing still), then the blow lands while it lunges forward.
+        List<Intent> ticks = Run(brain, With(Vector2.Zero, 1, new PlayerTrace(new Vector2(2f, 1.5f), Vector2.Zero, true)), 90);
+        Assert.Equal(MachineAct.WindUp, ticks[0].Act);
+        Assert.Equal(Vector2.Zero, ticks[0].Velocity);
+        int hit = ticks.FindIndex(i => i.Hit);
+        Assert.InRange(hit * Dt, 0.75f, 0.9f);
+        Assert.Contains(ticks, i => i.Act == MachineAct.Strike && i.Velocity.X > 5f);
+    }
+
+    [Fact]
+    public void ConductorStrikesTwiceEveryFewStrikesAndKeepsItsAim()
+    {
+        var brain = NewConductor();
+        var near = With(Vector2.Zero, 1, new PlayerTrace(new Vector2(2f, 1.5f), Vector2.Zero, true));
+        List<Intent> ticks = Run(brain, near, 60 * 12);
+        int hits = ticks.Count(i => i.Hit);
+        Assert.InRange(hits, 4, 12);
+        // The third strike is followed straight away by a quick one: two hits closer together than any others.
+        var at = ticks.Select((i, n) => (i, n)).Where(t => t.i.Hit).Select(t => t.n).ToList();
+        var gaps = at.Zip(at.Skip(1), (a, b) => b - a).ToList();
+        Assert.True(gaps.Min() < gaps.Max() * 0.8f, $"gaps {string.Join(", ", gaps)}");
+
+        // A blow begun facing right stays facing right when the player slips behind it.
+        var fresh = NewConductor();
+        Run(fresh, near, 10);
+        Intent mid = fresh.Think(near with { Player = new PlayerTrace(new Vector2(-2f, 1.5f), Vector2.Zero, true) }, Dt);
+        Assert.Equal(1, mid.Facing);
+    }
+
     private static PrayerBrain NewPrayer(float phase = 0f) =>
         new("votary", 3f, phase, new StrikeAction()) { Reach = 2f, Calm = 1f };
+
+    private static ConductorBrain NewConductor() =>
+        new(new StrikeAction { WindUp = 0.7f, Blow = 0.14f, Recover = 1.1f, Cooldown = 0.5f },
+            new StrikeAction { WindUp = 0.4f, Blow = 0.14f, Recover = 1.3f, Cooldown = 0.5f }) { Reach = 2.8f, ChestHeight = 1.6f };
 
     private static Perception With(Vector2 position, int facing, PlayerTrace player) =>
         Perception.Alone(0f, position, facing) with { Player = player };

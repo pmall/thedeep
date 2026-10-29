@@ -50,6 +50,15 @@ public partial class MachineSpecies : Resource
     /// <summary>Health a landed blow takes from the pilgrim.</summary>
     [Export] public int Damage { get; set; } = 1;
 
+    /// <summary>How long a hit stuns its brain (a wind-up is lost), seconds; 0 for a machine that shrugs hits off (a boss).</summary>
+    [Export] public float StaggerTime { get; set; } = 0.35f;
+
+    /// <summary>How far a hit pushes it, as a share of the swing's knockback (a heavy machine barely moves).</summary>
+    [Export(PropertyHint.Range, "0,1")] public float Heft { get; set; } = 1f;
+
+    /// <summary>How far from the player's chest, measured from its sensors, a landing blow still counts, meters.</summary>
+    [Export] public float StrikeRange { get; set; } = 2.6f;
+
     /// <summary>Rust on its edges and in its grooves, 0 to 1. Its colors come from the biome palette through its materials.</summary>
     [ExportGroup("Palette")]
     [Export(PropertyHint.Range, "0,1")] public float Wear { get; set; } = 0.3f;

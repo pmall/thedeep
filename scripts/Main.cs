@@ -38,6 +38,9 @@ public partial class Main : Node3D
     /// <summary>User argument that runs the scripted combat and session check (see CombatCheck), used by tools/check.sh.</summary>
     private const string CombatCheckArgument = "--combat-check";
 
+    /// <summary>User argument that runs the scripted boss and law-break check (see EncounterCheck), used by tools/check.sh.</summary>
+    private const string EncounterCheckArgument = "--encounter-check";
+
     /// <summary>User argument that runs the scripted Harpoon check (see HarpoonCheck), used by tools/check.sh.</summary>
     private const string HarpoonCheckArgument = "--harpoon-check";
 
@@ -61,7 +64,7 @@ public partial class Main : Node3D
     private static readonly string[] DriverArguments =
     {
         SmokeArgument, CaptureTestArgument, LookDevArgument, ValidateRoomsArgument, ValidateTravelArgument, ValidateSpeciesArgument,
-        GripCheckArgument, CombatCheckArgument, HarpoonCheckArgument,
+        GripCheckArgument, CombatCheckArgument, HarpoonCheckArgument, EncounterCheckArgument,
     };
 
     private SaveData? _resume;
@@ -143,6 +146,10 @@ public partial class Main : Node3D
         {
             AddChild(new CombatCheck { Player = Player, World = World, Session = Session });
         }
+        else if (Array.IndexOf(args, EncounterCheckArgument) >= 0)
+        {
+            AddChild(new EncounterCheck { Player = Player, World = World, Session = Session });
+        }
         else if (Array.IndexOf(args, ValidateSpeciesArgument) >= 0)
         {
             AddChild(new SpeciesValidator { Room = room, Player = Player, Machines = Machines });
@@ -160,7 +167,7 @@ public partial class Main : Node3D
             Travel.Enabled = false;
             var driver = new LookDevDriver
             {
-                Player = Player, Room = room, Camera = Camera, Machines = Machines, Overlays = new CanvasLayer[] { Hud, Capture, Health },
+                Player = Player, Room = room, Camera = Camera, Machines = Machines, Overlays = new CanvasLayer[] { Hud, Capture, Health, Session.Banner },
                 OutputDir = outputDir, PerfFile = ArgumentValue(args, PerfArgument) ?? "perf.json",
             };
             if (ArgumentValue(args, SizeArgument) is { } size && size.Split('x') is [var w, var h]

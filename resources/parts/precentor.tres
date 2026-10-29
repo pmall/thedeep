@@ -1,0 +1,482 @@
+[gd_resource type="Resource" script_class="PartAssembly" format=3]
+; The Precentor (boss placeholder): the choir's conductor, a Votary half again as tall, generated from
+; resources/parts/votary.tres scaled by 1.55, with a long cope, a great glyph halo and a straight baton
+; in place of the curved blade. Placeholder until the character pass (docs/roadmap.md).
+; Joints: X forward, Y up, Z toward the camera (N near side, F far side).
+
+[ext_resource type="Script" path="res://scripts/parts/PartAssembly.cs" id="1_PartAssembly"]
+[ext_resource type="Script" path="res://scripts/parts/RigJoint.cs" id="2_RigJoint"]
+[ext_resource type="Script" path="res://scripts/parts/PartSlot.cs" id="3_PartSlot"]
+[ext_resource type="Script" path="res://scripts/parts/PartChain.cs" id="4_PartChain"]
+[ext_resource type="Script" path="res://scripts/parts/PlateMesh.cs" id="5_PlateMesh"]
+[ext_resource type="Script" path="res://scripts/parts/PodMesh.cs" id="6_PodMesh"]
+[ext_resource type="Script" path="res://scripts/parts/RingMesh.cs" id="7_RingMesh"]
+[ext_resource type="Material" path="res://assets/materials/machines/shell.tres" id="8_shell"]
+[ext_resource type="Material" path="res://assets/materials/machines/frame.tres" id="9_frame"]
+[ext_resource type="Material" path="res://assets/materials/machines/vestment.tres" id="10_vestment"]
+[ext_resource type="Material" path="res://assets/materials/machines/robe.tres" id="11_robe"]
+[ext_resource type="Material" path="res://assets/materials/machines/eye.tres" id="12_eye"]
+[ext_resource type="Material" path="res://assets/materials/machines/prayer_wheel.tres" id="13_prayer_wheel"]
+[ext_resource type="Material" path="res://assets/materials/machines/blade.tres" id="14_blade"]
+[ext_resource type="Material" path="res://assets/materials/machines/cable.tres" id="15_cable"]
+
+[sub_resource type="Resource" id="Joint_Pelvis"]
+script = ExtResource("2_RigJoint")
+Name = &"Pelvis"
+Parent = &""
+Offset = Vector3(0, 1.426, 0)
+
+[sub_resource type="Resource" id="Joint_Spine"]
+script = ExtResource("2_RigJoint")
+Name = &"Spine"
+Parent = &"Pelvis"
+Offset = Vector3(0, 0.124, 0)
+
+[sub_resource type="Resource" id="Joint_Chest"]
+script = ExtResource("2_RigJoint")
+Name = &"Chest"
+Parent = &"Spine"
+Offset = Vector3(0, 0.775, 0)
+
+[sub_resource type="Resource" id="Joint_Head"]
+script = ExtResource("2_RigJoint")
+Name = &"Head"
+Parent = &"Chest"
+Offset = Vector3(0.0775, 0.465, 0)
+
+[sub_resource type="Resource" id="Joint_ShoulderN"]
+script = ExtResource("2_RigJoint")
+Name = &"ShoulderN"
+Parent = &"Chest"
+Offset = Vector3(0.031, 0.031, 0.2635)
+
+[sub_resource type="Resource" id="Joint_ElbowN"]
+script = ExtResource("2_RigJoint")
+Name = &"ElbowN"
+Parent = &"ShoulderN"
+Offset = Vector3(0, -0.558, 0)
+
+[sub_resource type="Resource" id="Joint_ShoulderF"]
+script = ExtResource("2_RigJoint")
+Name = &"ShoulderF"
+Parent = &"Chest"
+Offset = Vector3(0.031, 0.031, -0.2635)
+
+[sub_resource type="Resource" id="Joint_ElbowF"]
+script = ExtResource("2_RigJoint")
+Name = &"ElbowF"
+Parent = &"ShoulderF"
+Offset = Vector3(0, -0.527, 0)
+
+[sub_resource type="Resource" id="Joint_HipN"]
+script = ExtResource("2_RigJoint")
+Name = &"HipN"
+Parent = &"Pelvis"
+Offset = Vector3(0, -0.031, 0.155)
+
+[sub_resource type="Resource" id="Joint_KneeN"]
+script = ExtResource("2_RigJoint")
+Name = &"KneeN"
+Parent = &"HipN"
+Offset = Vector3(0.124, -0.682, 0)
+
+[sub_resource type="Resource" id="Joint_FootN"]
+script = ExtResource("2_RigJoint")
+Name = &"FootN"
+Parent = &"KneeN"
+Offset = Vector3(-0.093, -0.713, 0)
+
+[sub_resource type="Resource" id="Joint_HipF"]
+script = ExtResource("2_RigJoint")
+Name = &"HipF"
+Parent = &"Pelvis"
+Offset = Vector3(0, -0.031, -0.155)
+
+[sub_resource type="Resource" id="Joint_KneeF"]
+script = ExtResource("2_RigJoint")
+Name = &"KneeF"
+Parent = &"HipF"
+Offset = Vector3(0.124, -0.682, 0)
+
+[sub_resource type="Resource" id="Joint_FootF"]
+script = ExtResource("2_RigJoint")
+Name = &"FootF"
+Parent = &"KneeF"
+Offset = Vector3(-0.093, -0.713, 0)
+
+[sub_resource type="PrimitiveMesh" id="Mesh_pelvis"]
+script = ExtResource("6_PodMesh")
+Axis = Vector3(0, 1, 0)
+Length = 0.31
+Stations = PackedVector4Array(0, 0.31, 0.372, 0, 0.5, 0.4185, 0.465, 0, 1, 0.279, 0.372, 0)
+Rings = 8
+
+[sub_resource type="PrimitiveMesh" id="Mesh_torso"]
+script = ExtResource("6_PodMesh")
+Axis = Vector3(0, 1, 0)
+Length = 0.961
+Stations = PackedVector4Array(0, 0.217, 0.31, 0, 0.25, 0.31, 0.403, 0.0155, 0.7, 0.465, 0.558, 0.031, 1, 0.31, 0.465, 0)
+Rings = 12
+
+[sub_resource type="PrimitiveMesh" id="Mesh_breastplate"]
+script = ExtResource("5_PlateMesh")
+Width = 0.31
+Length = 0.651
+Thickness = 0.0465
+Taper = 0.45
+Curve = 18
+Bevel = 0.0124
+
+[sub_resource type="PrimitiveMesh" id="Mesh_hood"]
+script = ExtResource("6_PodMesh")
+Axis = Vector3(0, 1, 0)
+Length = 0.651
+Stations = PackedVector4Array(0, 0.372, 0.372, 0, 0.35, 0.465, 0.4495, -0.031, 0.75, 0.341, 0.341, -0.093, 1, 0, 0, -0.2015)
+Rings = 12
+Sides = 18
+
+[sub_resource type="PrimitiveMesh" id="Mesh_face"]
+script = ExtResource("6_PodMesh")
+Axis = Vector3(0, 1, 0)
+Length = 0.31
+Stations = PackedVector4Array(0, 0, 0, 0, 0.5, 0.186, 0.248, 0, 1, 0, 0, 0)
+Rings = 8
+
+[sub_resource type="PrimitiveMesh" id="Mesh_eye"]
+script = ExtResource("6_PodMesh")
+Axis = Vector3(0, -1, 0)
+Length = 0.186
+Stations = PackedVector4Array(0, 0, 0, 0, 0.5, 0.0388, 0.1085, 0, 1, 0, 0, 0)
+Rings = 8
+
+[sub_resource type="PrimitiveMesh" id="Mesh_halo"]
+script = ExtResource("7_RingMesh")
+RadiusX = 0.7905
+RadiusZ = 0.7905
+Height = 0.0543
+Thickness = 0.0697
+Segments = 48
+
+[sub_resource type="PrimitiveMesh" id="Mesh_pauldron"]
+script = ExtResource("5_PlateMesh")
+Width = 0.31
+Length = 0.31
+Thickness = 0.0388
+Taper = 0.7
+Curve = 40
+Bevel = 0.0124
+
+[sub_resource type="PrimitiveMesh" id="Mesh_upperarm"]
+script = ExtResource("6_PodMesh")
+Length = 0.558
+Stations = PackedVector4Array(0, 0.124, 0.124, 0, 1, 0.093, 0.093, 0)
+Sides = 10
+Rings = 4
+
+[sub_resource type="PrimitiveMesh" id="Mesh_forearm"]
+script = ExtResource("6_PodMesh")
+Length = 0.465
+Stations = PackedVector4Array(0, 0.1008, 0.1008, 0, 0.6, 0.124, 0.1162, 0, 1, 0.0775, 0.0775, 0)
+Sides = 10
+Rings = 6
+
+[sub_resource type="PrimitiveMesh" id="Mesh_blade"]
+script = ExtResource("6_PodMesh")
+Length = 1.8406
+Curl = 18
+Stations = PackedVector4Array(0, 0.1085, 0.0388, 0, 0.15, 0.186, 0.031, 0.031, 0.8, 0.1395, 0.0232, 0.031, 1, 0, 0, 0)
+Sides = 8
+Rings = 16
+
+[sub_resource type="PrimitiveMesh" id="Mesh_censer"]
+script = ExtResource("6_PodMesh")
+Length = 0.372
+Stations = PackedVector4Array(0, 0, 0, 0, 0.15, 0.186, 0.186, 0, 0.6, 0.2635, 0.2635, 0, 0.9, 0.155, 0.155, 0, 1, 0, 0, 0)
+Rings = 10
+
+[sub_resource type="PrimitiveMesh" id="Mesh_thighN"]
+script = ExtResource("6_PodMesh")
+Axis = Vector3(0.1789, -0.9839, 0)
+Length = 0.6932
+Stations = PackedVector4Array(0, 0.186, 0.186, 0, 1, 0.1318, 0.1318, 0)
+Sides = 10
+Rings = 4
+
+[sub_resource type="PrimitiveMesh" id="Mesh_shinN"]
+script = ExtResource("6_PodMesh")
+Axis = Vector3(-0.1293, -0.9916, 0)
+Length = 0.719
+Stations = PackedVector4Array(0, 0.124, 0.124, 0, 1, 0.093, 0.093, 0)
+Sides = 10
+Rings = 4
+
+[sub_resource type="PrimitiveMesh" id="Mesh_greaveN"]
+script = ExtResource("5_PlateMesh")
+Width = 0.1705
+Length = 0.558
+Thickness = 0.031
+Taper = 0.6
+Curve = -10
+Bevel = 0.0093
+
+[sub_resource type="PrimitiveMesh" id="Mesh_thighF"]
+script = ExtResource("6_PodMesh")
+Axis = Vector3(0.1789, -0.9839, 0)
+Length = 0.6932
+Stations = PackedVector4Array(0, 0.186, 0.186, 0, 1, 0.1318, 0.1318, 0)
+Sides = 10
+Rings = 4
+
+[sub_resource type="PrimitiveMesh" id="Mesh_shinF"]
+script = ExtResource("6_PodMesh")
+Axis = Vector3(-0.1293, -0.9916, 0)
+Length = 0.719
+Stations = PackedVector4Array(0, 0.124, 0.124, 0, 1, 0.093, 0.093, 0)
+Sides = 10
+Rings = 4
+
+[sub_resource type="PrimitiveMesh" id="Mesh_greaveF"]
+script = ExtResource("5_PlateMesh")
+Width = 0.1705
+Length = 0.558
+Thickness = 0.031
+Taper = 0.6
+Curve = -10
+Bevel = 0.0093
+
+[sub_resource type="PrimitiveMesh" id="Mesh_foot"]
+script = ExtResource("6_PodMesh")
+Axis = Vector3(1, 0, 0)
+Length = 0.403
+Stations = PackedVector4Array(0, 0.0775, 0.124, 0, 0.6, 0.093, 0.1395, 0, 1, 0, 0, 0)
+Sides = 10
+Rings = 6
+
+[sub_resource type="Resource" id="Part_Pelvis"]
+script = ExtResource("3_PartSlot")
+Joint = &"Pelvis"
+Category = 0
+Mesh = SubResource("Mesh_pelvis")
+Material = ExtResource("9_frame")
+Position = Vector3(0, -0.124, 0)
+
+[sub_resource type="Resource" id="Part_Torso"]
+script = ExtResource("3_PartSlot")
+Joint = &"Spine"
+Category = 0
+Mesh = SubResource("Mesh_torso")
+Material = ExtResource("8_shell")
+
+[sub_resource type="Resource" id="Part_Breastplate"]
+script = ExtResource("3_PartSlot")
+Joint = &"Chest"
+Category = 4
+Mesh = SubResource("Mesh_breastplate")
+Material = ExtResource("10_vestment")
+Position = Vector3(0.217, 0.0775, 0)
+Rotation = Vector3(0, 90, 0)
+
+[sub_resource type="Resource" id="Part_Hood"]
+script = ExtResource("3_PartSlot")
+Joint = &"Head"
+Category = 0
+Mesh = SubResource("Mesh_hood")
+Material = ExtResource("8_shell")
+Position = Vector3(-0.031, -0.093, 0)
+
+[sub_resource type="Resource" id="Part_Face"]
+script = ExtResource("3_PartSlot")
+Joint = &"Head"
+Category = 0
+Mesh = SubResource("Mesh_face")
+Material = ExtResource("9_frame")
+Position = Vector3(0.155, 0, 0)
+
+[sub_resource type="Resource" id="Part_Eye"]
+script = ExtResource("3_PartSlot")
+Joint = &"Head"
+Category = 2
+Mesh = SubResource("Mesh_eye")
+Material = ExtResource("12_eye")
+Position = Vector3(0.2635, 0.248, 0)
+
+[sub_resource type="Resource" id="Part_Halo"]
+script = ExtResource("3_PartSlot")
+Joint = &"Head"
+Category = 4
+Mesh = SubResource("Mesh_halo")
+Material = ExtResource("13_prayer_wheel")
+Position = Vector3(-0.31, 0.2325, 0)
+Rotation = Vector3(90, 0, 0)
+
+[sub_resource type="Resource" id="Part_PauldronN"]
+script = ExtResource("3_PartSlot")
+Joint = &"ShoulderN"
+Category = 4
+Mesh = SubResource("Mesh_pauldron")
+Material = ExtResource("8_shell")
+Position = Vector3(0, 0.1085, 0.062)
+
+[sub_resource type="Resource" id="Part_UpperArmN"]
+script = ExtResource("3_PartSlot")
+Joint = &"ShoulderN"
+Category = 0
+Mesh = SubResource("Mesh_upperarm")
+Material = ExtResource("9_frame")
+
+[sub_resource type="Resource" id="Part_ForearmN"]
+script = ExtResource("3_PartSlot")
+Joint = &"ElbowN"
+Category = 0
+Mesh = SubResource("Mesh_forearm")
+Material = ExtResource("9_frame")
+
+[sub_resource type="Resource" id="Part_PauldronF"]
+script = ExtResource("3_PartSlot")
+Joint = &"ShoulderF"
+Category = 4
+Mesh = SubResource("Mesh_pauldron")
+Material = ExtResource("8_shell")
+Position = Vector3(0, 0.1085, -0.062)
+
+[sub_resource type="Resource" id="Part_UpperArmF"]
+script = ExtResource("3_PartSlot")
+Joint = &"ShoulderF"
+Category = 0
+Mesh = SubResource("Mesh_upperarm")
+Material = ExtResource("9_frame")
+
+[sub_resource type="Resource" id="Part_ForearmF"]
+script = ExtResource("3_PartSlot")
+Joint = &"ElbowF"
+Category = 0
+Mesh = SubResource("Mesh_forearm")
+Material = ExtResource("9_frame")
+
+[sub_resource type="Resource" id="Part_Blade"]
+script = ExtResource("3_PartSlot")
+Joint = &"ElbowN"
+Category = 3
+Mesh = SubResource("Mesh_blade")
+Material = ExtResource("14_blade")
+Position = Vector3(0, -0.434, 0)
+
+[sub_resource type="Resource" id="Part_ThighN"]
+script = ExtResource("3_PartSlot")
+Joint = &"HipN"
+Category = 1
+Mesh = SubResource("Mesh_thighN")
+Material = ExtResource("9_frame")
+
+[sub_resource type="Resource" id="Part_ShinN"]
+script = ExtResource("3_PartSlot")
+Joint = &"KneeN"
+Category = 1
+Mesh = SubResource("Mesh_shinN")
+Material = ExtResource("9_frame")
+
+[sub_resource type="Resource" id="Part_GreaveN"]
+script = ExtResource("3_PartSlot")
+Joint = &"KneeN"
+Category = 4
+Mesh = SubResource("Mesh_greaveN")
+Material = ExtResource("8_shell")
+Position = Vector3(0.0775, 0.031, 0)
+Rotation = Vector3(0, 90, 7)
+
+[sub_resource type="Resource" id="Part_ThighF"]
+script = ExtResource("3_PartSlot")
+Joint = &"HipF"
+Category = 1
+Mesh = SubResource("Mesh_thighF")
+Material = ExtResource("9_frame")
+
+[sub_resource type="Resource" id="Part_ShinF"]
+script = ExtResource("3_PartSlot")
+Joint = &"KneeF"
+Category = 1
+Mesh = SubResource("Mesh_shinF")
+Material = ExtResource("9_frame")
+
+[sub_resource type="Resource" id="Part_GreaveF"]
+script = ExtResource("3_PartSlot")
+Joint = &"KneeF"
+Category = 4
+Mesh = SubResource("Mesh_greaveF")
+Material = ExtResource("8_shell")
+Position = Vector3(0.0775, 0.031, 0)
+Rotation = Vector3(0, 90, 7)
+
+[sub_resource type="Resource" id="Part_FootN"]
+script = ExtResource("3_PartSlot")
+Joint = &"FootN"
+Category = 1
+Mesh = SubResource("Mesh_foot")
+Material = ExtResource("9_frame")
+Position = Vector3(-0.093, 0.0465, 0)
+
+[sub_resource type="Resource" id="Part_FootF"]
+script = ExtResource("3_PartSlot")
+Joint = &"FootF"
+Category = 1
+Mesh = SubResource("Mesh_foot")
+Material = ExtResource("9_frame")
+Position = Vector3(-0.093, 0.0465, 0)
+
+[sub_resource type="Resource" id="Chain_Censer"]
+script = ExtResource("4_PartChain")
+Name = &"Censer"
+Joint = &"ElbowF"
+Category = 3
+Offset = Vector3(0, -0.465, 0)
+RestDirection = Vector3(0, -1, 0)
+Links = 5
+Length = 0.651
+Shape = 1
+Material = ExtResource("15_cable")
+Width = 0.0217
+Taper = 1
+Pendant = SubResource("Mesh_censer")
+PendantMaterial = ExtResource("13_prayer_wheel")
+Drag = 0.6
+Stiffness = 0.4
+
+[sub_resource type="Resource" id="Chain_Tabard"]
+script = ExtResource("4_PartChain")
+Name = &"Tabard"
+Joint = &"Pelvis"
+Category = 4
+Offset = Vector3(-0.2015, 0.031, 0)
+RestDirection = Vector3(0, -1, 0)
+Links = 6
+Length = 1.8135
+Shape = 0
+Material = ExtResource("11_robe")
+Width = 0.372
+Taper = 0.75
+Thickness = 0.0217
+Drag = 1.5
+Stiffness = 2.5
+
+[sub_resource type="Resource" id="Chain_Sash"]
+script = ExtResource("4_PartChain")
+Name = &"Sash"
+Joint = &"Pelvis"
+Category = 4
+Offset = Vector3(0.186, 0, 0.093)
+RestDirection = Vector3(0, -1, 0)
+Links = 5
+Length = 0.775
+Shape = 0
+Material = ExtResource("11_robe")
+Width = 0.2015
+Taper = 0.6
+Thickness = 0.0186
+Drag = 1.5
+Stiffness = 2.5
+
+[resource]
+script = ExtResource("1_PartAssembly")
+Joints = [SubResource("Joint_Pelvis"), SubResource("Joint_Spine"), SubResource("Joint_Chest"), SubResource("Joint_Head"), SubResource("Joint_ShoulderN"), SubResource("Joint_ElbowN"), SubResource("Joint_ShoulderF"), SubResource("Joint_ElbowF"), SubResource("Joint_HipN"), SubResource("Joint_KneeN"), SubResource("Joint_FootN"), SubResource("Joint_HipF"), SubResource("Joint_KneeF"), SubResource("Joint_FootF")]
+Parts = [SubResource("Part_Pelvis"), SubResource("Part_Torso"), SubResource("Part_Breastplate"), SubResource("Part_Hood"), SubResource("Part_Face"), SubResource("Part_Eye"), SubResource("Part_Halo"), SubResource("Part_PauldronN"), SubResource("Part_UpperArmN"), SubResource("Part_ForearmN"), SubResource("Part_PauldronF"), SubResource("Part_UpperArmF"), SubResource("Part_ForearmF"), SubResource("Part_Blade"), SubResource("Part_ThighN"), SubResource("Part_ShinN"), SubResource("Part_GreaveN"), SubResource("Part_ThighF"), SubResource("Part_ShinF"), SubResource("Part_GreaveF"), SubResource("Part_FootN"), SubResource("Part_FootF")]
+Chains = [SubResource("Chain_Censer"), SubResource("Chain_Tabard"), SubResource("Chain_Sash")]

@@ -27,7 +27,7 @@ public sealed class SaveData
     /// <summary>The abilities owned (<see cref="Ability"/> flags).</summary>
     public int Abilities { get; set; }
 
-    /// <summary>Relics taken, as "Room/NodeName".</summary>
+    /// <summary>What is done once and for good, as "Room/NodeName": relics taken, bosses beaten, laws broken.</summary>
     public List<string> Collected { get; set; } = new();
 
     public List<SavedRoom> Map { get; set; } = new();
@@ -69,6 +69,6 @@ public sealed class SaveData
         }
     }
 
-    /// <summary>The id a relic is remembered by.</summary>
+    /// <summary>The id a relic (or a beaten boss's seal, a broken law) is remembered by.</summary>
     public static string RelicId(string room, string node) => $"{room}/{node}";
 }

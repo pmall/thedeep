@@ -22,6 +22,7 @@ EXT = {
     'room': ('Script', 'res://scripts/rooms/Room.cs'),
     'exit': ('Script', 'res://scripts/rooms/RoomExit.cs'),
     'goal': ('Script', 'res://scripts/map/MapGoal.cs'),
+    'bossseal': ('Script', 'res://scripts/props/BossSeal.cs'),
     'spot': ('Script', 'res://scripts/rooms/PhotoSpot.cs'),
     'machine': ('Script', 'res://scripts/machines/Machine.cs'),
     'water_body': ('Script', 'res://scripts/rooms/WaterBody.cs'),
@@ -49,12 +50,16 @@ EXT = {
     'shrine': ('PackedScene', 'res://scenes/props/Shrine.tscn'),
     'relic': ('PackedScene', 'res://scenes/props/AbilityRelic.tscn'),
     'anchor': ('PackedScene', 'res://scenes/props/HarpoonAnchor.tscn'),
+    'portcullis': ('PackedScene', 'res://scenes/props/Portcullis.tscn'),
+    'law': ('PackedScene', 'res://scenes/props/LawBreak.tscn'),
+    'plate': ('PackedScene', 'res://scenes/props/ScripturePlate.tscn'),
     # resources
     'flooded': ('Resource', 'res://resources/biomes/flooded.tres'),
     'votary': ('Resource', 'res://resources/machines/votary.tres'),
     'gleaner': ('Resource', 'res://resources/machines/gleaner.tres'),
     'lamplighter': ('Resource', 'res://resources/machines/lamplighter.tres'),
     'limpet': ('Resource', 'res://resources/machines/limpet.tres'),
+    'precentor': ('Resource', 'res://resources/machines/precentor.tres'),
 }
 for m in ['rock', 'wet_stone', 'metal', 'rust', 'glyphs', 'cable', 'stone_mid', 'metal_mid', 'rust_mid',
           'backdrop_stone', 'backdrop_rust', 'foreground', 'backdrop_cathedral', 'backdrop_halls', 'water', 'underwater']:
@@ -216,10 +221,39 @@ class Room:
         props['Size'] = Raw(vec(*size))
         return self.node('Exits/' + name, type='Marker3D', comment=comment, **props)
 
-    def goal(self, name, pos, comment=''):
-        """Where the journey ends, for the map solver (a MapGoal marker)."""
-        return self.node('Exits/' + name, type='Marker3D', comment=comment, transform=Raw(transform((pos[0], pos[1], 0))),
-                         script=self.ext('goal'))
+    def goal(self, name, pos, size=None, title='', hint='', comment=''):
+        """Where the journey ends, for the map solver (a MapGoal marker); with a size, an area showing the banner lines."""
+        props = {'transform': Raw(transform((pos[0], pos[1], 0))), 'script': self.ext('goal')}
+        if size:
+            props['Size'] = Raw(vec(*size))
+            props['TitleLine'] = Raw(f'&"{title}"')
+            props['HintLine'] = Raw(f'&"{hint}"')
+        return self.node('Exits/' + name, type='Marker3D', comment=comment, **props)
+
+    def portcullis(self, name, pos, comment=''):
+        """A gate that drops across a way (its origin on the floor where it closes; open, it hangs 5.5 m higher)."""
+        return self.node('Props/' + name, instance='portcullis', comment=comment, transform=Raw(transform((pos[0], pos[1], 0))))
+
+    def boss_seal(self, name, boss, gates, arena_min, arena_max, name_line, fallen_line, fallen_hint, comment=''):
+        """A boss's arena: `boss` is the machine's node name under Machines, `gates` portcullis names under Props."""
+        props = {'script': self.ext('bossseal'), 'Boss': Raw(f'NodePath("../Machines/{boss}")'),
+                 'Gates': Raw('[' + ', '.join(f'NodePath("../Props/{g}")' for g in gates) + ']'),
+                 'ArenaMin': Raw(vec(*arena_min)), 'ArenaMax': Raw(vec(*arena_max)),
+                 'NameLine': Raw(f'&"{name_line}"'), 'FallenLine': Raw(f'&"{fallen_line}"'), 'FallenHintLine': Raw(f'&"{fallen_hint}"')}
+        return self.node(name, type='Node3D', comment=comment, node_paths=['Boss', 'Gates'], **props)
+
+    def law(self, name, pos, toward, law_line, broken_line, broken_hint, comment=''):
+        """A law holding the pilgrim back at a lip (LawBreak); its light joins the glyph lights."""
+        self.glyph_lights.append(f'Props/{name}/Light')
+        return self.node('Props/' + name, instance='law', comment=comment, transform=Raw(transform((pos[0], pos[1], 0))),
+                         Toward=toward, LawLine=Raw(f'&"{law_line}"'), BrokenLine=Raw(f'&"{broken_line}"'),
+                         BrokenHintLine=Raw(f'&"{broken_hint}"'))
+
+    def plate(self, name, pos, title, text, comment=''):
+        """A scripture plate on a lectern, read at `pos` (on the floor); its light joins the glyph lights."""
+        self.glyph_lights.append(f'Props/{name}/Light')
+        return self.node('Props/' + name, instance='plate', comment=comment, transform=Raw(transform((pos[0], pos[1], 0))),
+                         TitleLine=Raw(f'&"{title}"'), TextLine=Raw(f'&"{text}"'))
 
     def machine(self, name, species, pos, facing=1, comment='', **props):
         p = {'transform': Raw(transform((pos[0], pos[1], 0))), 'script': self.ext('machine'),

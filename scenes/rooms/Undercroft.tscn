@@ -4,8 +4,8 @@
 ; A low metal vault over the west door, a pilgrim shrine, a sunken crypt with two tombs and a Votary mourning
 ; over them, and a tall east wall. East at floor level: the Ossuary. High in the east wall: the way on to the
 ; Chapterhouse, on a metal ledge: climb the metal wall and wrap around the ledge (Mag-grip), or harpoon the two
-; mooring rings (Harpoon). Above the west door a metal flue rises to the Scriptorium (Mag-grip). Both are
-; sealed until those rooms are built. The lift up from the frozen layer (the Counterweight) will arrive here.
+; mooring rings (Harpoon). Above the west door a metal flue rises to the Scriptorium (Mag-grip). Coming back
+; from either is a drop. The lift up from the frozen layer (the Counterweight) will arrive here.
 
 [ext_resource type="Material" path="res://assets/materials/wet_stone.tres" id="1_wet_stone"]
 [ext_resource type="PackedScene" path="res://scenes/kit/Block.tscn" id="2_block"]
@@ -257,16 +257,6 @@ transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 53, 14, 0)
 Size = Vector3(6, 1, 4)
 Surface = 1
 
-; a fallen slab closing the high doorway, until the Chapterhouse is built
-[node name="ChapterhouseSeal" parent="Geometry" instance=ExtResource("2_block")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 58.5, 16.5, 0)
-Size = Vector3(1, 4, 4)
-
-; rubble choking the top of the flue, until the Scriptorium is built
-[node name="ScriptoriumSeal" parent="Geometry" instance=ExtResource("2_block")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 1, 25.75, 0)
-Size = Vector3(2, 2.5, 4)
-
 [node name="Exits" type="Node3D" parent="."]
 
 ; west doorway back up the Sluice
@@ -285,17 +275,21 @@ TargetRoom = "res://scenes/rooms/Ossuary.tscn"
 TargetExit = "West"
 Size = Vector2(1, 4)
 
-; the high doorway on to the Chapterhouse (sealed: not built yet)
+; the high doorway on to the Chapterhouse (coming back from it is a drop off the ledge)
 [node name="Chapterhouse" type="Marker3D" parent="Exits"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 57, 14.5, 0)
 script = ExtResource("3_exit")
+TargetRoom = "res://scenes/rooms/Chapterhouse.tscn"
+TargetExit = "West"
 Requires = "MagGrip | Harpoon"
 Size = Vector2(1, 4)
 
-; the top of the flue (sealed: not built yet)
+; the top of the flue, up into the Scriptorium (coming back is a drop down the flue)
 [node name="Scriptorium" type="Marker3D" parent="Exits"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 1, 23.5, 0)
 script = ExtResource("3_exit")
+TargetRoom = "res://scenes/rooms/Scriptorium.tscn"
+TargetExit = "Hatch"
 Requires = "MagGrip"
 Size = Vector2(2, 1)
 

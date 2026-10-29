@@ -1,0 +1,60 @@
+[gd_scene format=3]
+; A law holding the pilgrim back (scripts/props/LawBreak.cs): a veil of faith glyphs standing at a lip, the
+; refusal the pilgrim cannot walk through until it presses on long enough, and the law's words over it. Place
+; the origin on the floor at the lip; set Toward to the forbidden side. List Light in the room's GlyphLights.
+
+[ext_resource type="Script" path="res://scripts/props/LawBreak.cs" id="1_law"]
+[ext_resource type="Material" path="res://assets/materials/glyphs.tres" id="2_glyphs"]
+
+[sub_resource type="BoxShape3D" id="Wall"]
+size = Vector3(0.5, 16, 4)
+
+[sub_resource type="QuadMesh" id="Pane"]
+size = Vector2(0.35, 4.5)
+
+[node name="LawBreak" type="Node3D" node_paths=PackedStringArray("Fence", "Words", "Veil", "Light")]
+script = ExtResource("1_law")
+Fence = NodePath("Fence")
+Words = NodePath("Words")
+Veil = NodePath("Veil")
+Light = NodePath("Light")
+
+[node name="Fence" type="StaticBody3D" parent="."]
+
+[node name="Shape" type="CollisionShape3D" parent="Fence"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 8, 0)
+shape = SubResource("Wall")
+
+; two panes of glyphs, either side of the play plane, so the pilgrim stands inside the veil
+[node name="Veil" type="Node3D" parent="."]
+
+[node name="Back" type="MeshInstance3D" parent="Veil"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 2.25, -0.7)
+mesh = SubResource("Pane")
+material_override = ExtResource("2_glyphs")
+cast_shadow = 0
+
+[node name="Front" type="MeshInstance3D" parent="Veil"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 2.25, 0.7)
+mesh = SubResource("Pane")
+material_override = ExtResource("2_glyphs")
+cast_shadow = 0
+
+[node name="Light" type="OmniLight3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 2.2, 0.9)
+light_energy = 1.2
+light_volumetric_fog_energy = 0.0
+omni_range = 6.0
+
+; the law's words (from the line book), over the lip; alpha-discarded so they write depth and depth of field keeps
+; them sharp (they fade in by color, from the dark of the room)
+[node name="Words" type="Label3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 5.2, 0.5)
+pixel_size = 0.004
+alpha_cut = 1
+modulate = Color(0.12, 0.11, 0.16, 1)
+outline_modulate = Color(0.05, 0.04, 0.08, 1)
+font_size = 56
+outline_size = 10
+width = 1400.0
+autowrap_mode = 3

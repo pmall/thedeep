@@ -1,0 +1,34 @@
+[gd_scene format=3]
+; A portcullis (scripts/props/Portcullis.cs): iron bars in a frame, 1.2 m wide and 5 m tall, dropping across a
+; way. Place its origin on the floor where the gate closes; open, it hangs 5.5 m higher (keep a lintel there).
+
+[ext_resource type="Script" path="res://scripts/props/Portcullis.cs" id="1_portcullis"]
+[ext_resource type="Script" path="res://scripts/kit/GrateMesh.cs" id="2_grate"]
+[ext_resource type="Material" path="res://assets/materials/rust.tres" id="3_rust"]
+
+[sub_resource type="PrimitiveMesh" id="Bars"]
+script = ExtResource("2_grate")
+Size = Vector3(1.2, 0.3, 5)
+Spacing = 0.3
+Bar = 0.07
+
+[sub_resource type="BoxShape3D" id="Box"]
+size = Vector3(0.6, 5, 4)
+
+[node name="Portcullis" type="Node3D" node_paths=PackedStringArray("Gate", "Shape")]
+script = ExtResource("1_portcullis")
+Gate = NodePath("Gate")
+Shape = NodePath("Gate/Shape")
+
+[node name="Gate" type="AnimatableBody3D" parent="."]
+sync_to_physics = false
+
+[node name="Shape" type="CollisionShape3D" parent="Gate"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 2.5, 0)
+shape = SubResource("Box")
+
+; the grate stood up: its depth axis turned to the vertical (rotated -90° about X), centered on the gate
+[node name="Bars" type="MeshInstance3D" parent="Gate"]
+transform = Transform3D(1, 0, 0, 0, 0, 1, 0, -1, 0, 0, 2.5, 0.15)
+mesh = SubResource("Bars")
+material_override = ExtResource("3_rust")

@@ -50,6 +50,21 @@ public static class ExitMath
     }
 
     /// <summary>
+    /// The way out through a doorway: −1 west, +1 east, toward the nearer side of the room's camera bounds.
+    /// A hatch (a wide exit) has none: 0.
+    /// </summary>
+    public static int Outward(Vector2 position, Vector2 size, Vector2 boundsMin, Vector2 boundsMax) =>
+        IsVertical(size) ? 0 : position.X - boundsMin.X <= boundsMax.X - position.X ? -1 : 1;
+
+    /// <summary>
+    /// Whether a player inside an exit's area leaves through it: always through a hatch; through a doorway only
+    /// while moving or pressing out of the room (<paramref name="outward"/>). So dropping into a doorway from
+    /// above, or standing in one, never travels: the pilgrim leaves a room by walking out of it.
+    /// </summary>
+    public static bool Leaves(int outward, float velocityX, int moveX) =>
+        outward == 0 || velocityX * outward > 0.1f || moveX == outward;
+
+    /// <summary>
     /// Where a room's origin sits on the map, given the room it was entered from: the departure marker
     /// and the arrival marker are the same place in the world.
     /// </summary>

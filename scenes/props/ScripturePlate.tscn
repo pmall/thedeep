@@ -1,0 +1,66 @@
+[gd_scene format=3]
+; A plate of scripture on a lectern (scripts/props/ScripturePlate.cs): a slim stone post behind the play plane,
+; a slanted metal plate on it with glowing glyphs, their light, and the "Read" prompt. Place the origin on the
+; floor where the pilgrim stands to read. List Light in the room's GlyphLights.
+
+[ext_resource type="Script" path="res://scripts/props/ScripturePlate.cs" id="1_plate"]
+[ext_resource type="Script" path="res://scripts/kit/ColumnMesh.cs" id="2_column"]
+[ext_resource type="Script" path="res://scripts/kit/BlockMesh.cs" id="3_blockmesh"]
+[ext_resource type="Material" path="res://assets/materials/stone_mid.tres" id="4_stone_mid"]
+[ext_resource type="Material" path="res://assets/materials/metal_mid.tres" id="5_metal_mid"]
+[ext_resource type="Material" path="res://assets/materials/glyphs.tres" id="6_glyphs"]
+
+[sub_resource type="PrimitiveMesh" id="Post"]
+script = ExtResource("2_column")
+Height = 1.15
+Radius = 0.11
+Sides = 10
+Shafts = 1
+Plinth = 0.18
+Capital = 0.12
+
+[sub_resource type="PrimitiveMesh" id="Plate"]
+script = ExtResource("3_blockmesh")
+Size = Vector3(1, 0.06, 0.7)
+Bevel = 0.02
+
+[sub_resource type="QuadMesh" id="Glyphs"]
+size = Vector2(0.8, 0.5)
+
+[node name="ScripturePlate" type="Node3D" node_paths=PackedStringArray("Light", "Prompt")]
+script = ExtResource("1_plate")
+Light = NodePath("Light")
+Prompt = NodePath("Prompt")
+
+[node name="Post" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, -1)
+mesh = SubResource("Post")
+material_override = ExtResource("4_stone_mid")
+
+; tilted 35° toward the camera
+[node name="Plate" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 0.8192, -0.5736, 0, 0.5736, 0.8192, 0, 1.2, -1)
+mesh = SubResource("Plate")
+material_override = ExtResource("5_metal_mid")
+
+[node name="Glyphs" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 0.5736, 0.8192, 0, -0.8192, 0.5736, 0, 1.235, -0.975)
+mesh = SubResource("Glyphs")
+material_override = ExtResource("6_glyphs")
+cast_shadow = 0
+
+[node name="Light" type="OmniLight3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.6, -0.5)
+light_energy = 0.5
+light_volumetric_fog_energy = 0.0
+omni_range = 2.5
+
+; "Read", shown when the pilgrim stands close enough (text from the line ui.read)
+[node name="Prompt" type="Label3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 2.3, 0.6)
+pixel_size = 0.004
+billboard = 1
+modulate = Color(0.94, 0.92, 1, 0)
+outline_modulate = Color(0.05, 0.04, 0.08, 0.6)
+font_size = 48
+outline_size = 8

@@ -1,0 +1,183 @@
+[gd_resource type="Resource" script_class="MachineSpecies" format=3]
+; The Precentor (ConductorBehavior), boss of the flooded layer, a placeholder until the character pass:
+; the choir's conductor in the Chapterhouse. It beats time with its baton until it sees the pilgrim, then
+; stalks it and brings the baton down after a long wind-up, lunging into the blow; every third strike a
+; quicker second one follows. The slow recovery after a blow is the opening.
+
+[ext_resource type="Script" path="res://scripts/machines/MachineSpecies.cs" id="1_species"]
+[ext_resource type="Script" path="res://scripts/machines/behaviors/ConductorBehavior.cs" id="2_behavior"]
+[ext_resource type="Script" path="res://scripts/machines/JointDriver.cs" id="3_driver"]
+[ext_resource type="Script" path="res://scripts/machines/MachineLeg.cs" id="4_leg"]
+[ext_resource type="Resource" path="res://resources/parts/precentor.tres" id="5_assembly"]
+
+[sub_resource type="Resource" id="Behavior"]
+script = ExtResource("2_behavior")
+SightRange = 16
+Reach = 3
+Band = 2.2
+ChestHeight = 1.9
+Speed = 1.7
+Lunge = 7
+Flurry = 3
+BeatPeriod = 1.3
+WindUp = 0.75
+Blow = 0.14
+Recover = 1.1
+Cooldown = 0.45
+QuickWindUp = 0.42
+QuickRecover = 1.3
+
+; a nod to the beat
+[sub_resource type="Resource" id="Driver_0"]
+script = ExtResource("3_driver")
+Joint = &"Spine"
+Mode = 0
+Channel = 6
+Angle = -7
+
+; draws back, then throws its weight into the blow
+[sub_resource type="Resource" id="Driver_1"]
+script = ExtResource("3_driver")
+Joint = &"Spine"
+Mode = 0
+Channel = 3
+Angle = -24
+WindUp = 14
+
+; rises to its full height when the fight is on
+[sub_resource type="Resource" id="Driver_2"]
+script = ExtResource("3_driver")
+Joint = &"Spine"
+Mode = 0
+Channel = 4
+Angle = 6
+
+; breathing
+[sub_resource type="Resource" id="Driver_3"]
+script = ExtResource("3_driver")
+Joint = &"Spine"
+Mode = 1
+Channel = 0
+Angle = 1
+Rate = 0.2
+
+[sub_resource type="Resource" id="Driver_4"]
+script = ExtResource("3_driver")
+Joint = &"Head"
+Mode = 0
+Channel = 6
+Angle = -8
+
+; watches its choir, or the intruder
+[sub_resource type="Resource" id="Driver_5"]
+script = ExtResource("3_driver")
+Joint = &"Head"
+Mode = 3
+Channel = 0
+Angle = 35
+Sharpness = 4
+
+; baton arm: raised before it, beating time
+[sub_resource type="Resource" id="Driver_6"]
+script = ExtResource("3_driver")
+Joint = &"ShoulderN"
+Mode = 0
+Channel = 0
+Angle = 55
+
+[sub_resource type="Resource" id="Driver_7"]
+script = ExtResource("3_driver")
+Joint = &"ShoulderN"
+Mode = 0
+Channel = 6
+Angle = 25
+
+; up and back over the head, then down like a gavel
+[sub_resource type="Resource" id="Driver_8"]
+script = ExtResource("3_driver")
+Joint = &"ShoulderN"
+Mode = 0
+Channel = 3
+Angle = 30
+WindUp = -150
+
+[sub_resource type="Resource" id="Driver_9"]
+script = ExtResource("3_driver")
+Joint = &"ElbowN"
+Mode = 0
+Channel = 0
+Angle = 70
+
+[sub_resource type="Resource" id="Driver_10"]
+script = ExtResource("3_driver")
+Joint = &"ElbowN"
+Mode = 0
+Channel = 3
+Angle = -60
+WindUp = 120
+
+; censer arm, held out, keeping the time too
+[sub_resource type="Resource" id="Driver_11"]
+script = ExtResource("3_driver")
+Joint = &"ShoulderF"
+Mode = 0
+Channel = 0
+Angle = 30
+
+[sub_resource type="Resource" id="Driver_12"]
+script = ExtResource("3_driver")
+Joint = &"ShoulderF"
+Mode = 0
+Channel = 6
+Angle = -15
+
+[sub_resource type="Resource" id="Driver_13"]
+script = ExtResource("3_driver")
+Joint = &"ElbowF"
+Mode = 0
+Channel = 0
+Angle = 55
+
+[sub_resource type="Resource" id="Leg_0"]
+script = ExtResource("4_leg")
+Upper = &"HipN"
+Lower = &"KneeN"
+Foot = &"FootN"
+Stride = 0.55
+Lift = 0.12
+Bend = 1
+
+[sub_resource type="Resource" id="Leg_1"]
+script = ExtResource("4_leg")
+Upper = &"HipF"
+Lower = &"KneeF"
+Foot = &"FootF"
+Phase = 0.5
+Stride = 0.55
+Lift = 0.12
+Bend = 1
+
+[resource]
+script = ExtResource("1_species")
+Id = &"precentor"
+DisplayName = "Precentor"
+Layer = 0
+Hostile = true
+CreedLine = &"creed.precentor"
+Assembly = ExtResource("5_assembly")
+Locomotion = 0
+BodySize = Vector2(1.1, 2.9)
+SensorHeight = 2.5
+TurnSharpness = 5
+MaxSpeed = 7
+Acceleration = 40
+Health = 24
+Damage = 1
+StaggerTime = 0
+Heft = 0.15
+StrikeRange = 3.6
+Wear = 0.15
+Tone = 1.2
+Behavior = SubResource("Behavior")
+Drivers = [SubResource("Driver_0"), SubResource("Driver_1"), SubResource("Driver_2"), SubResource("Driver_3"), SubResource("Driver_4"), SubResource("Driver_5"), SubResource("Driver_6"), SubResource("Driver_7"), SubResource("Driver_8"), SubResource("Driver_9"), SubResource("Driver_10"), SubResource("Driver_11"), SubResource("Driver_12"), SubResource("Driver_13")]
+Legs = [SubResource("Leg_0"), SubResource("Leg_1")]

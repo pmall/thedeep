@@ -8,13 +8,17 @@ namespace TheDeep;
 /// Crosses every open exit of every room (`-- --validate-travel`, run by tools/check.sh) and quits. For each
 /// exit: loads its room, puts the player in the exit's area moving out through it, and checks that the
 /// player arrives in the target room inside the arrival exit's area, that the room is placed on the map,
-/// and that the player stays there for a second (no bounce back through the arrival exit). Prints
+/// and that the player is still there once it has landed and stood a second (no bounce back through the
+/// arrival exit, and a drop through a hatch never falls on into a doorway below it). Prints
 /// `TRAVEL OK` or one `TRAVEL CHECK` error per problem.
 /// </summary>
 public partial class TravelValidator : Node
 {
     private const int TimeoutTicks = 120;
     private const int SettleTicks = 60;
+
+    /// <summary>Longest wait for the player to land after arriving (a drop down a flue), ticks.</summary>
+    private const int LandTicks = 360;
 
     public World World { get; set; } = null!;
     public Player Player { get; set; } = null!;
@@ -26,6 +30,7 @@ public partial class TravelValidator : Node
     private int _tick;
     private bool _arrived;
     private int _crossed;
+    private int _standing;
 
     public override void _Ready()
     {
@@ -40,7 +45,12 @@ public partial class TravelValidator : Node
             room.Free();
         }
 
-        Travel.Travelled += _ => _arrived = true;
+        Travel.Travelled += _ =>
+        {
+            _arrived = true;
+            _tick = 0;
+            _standing = 0;
+        };
         Next();
     }
 
@@ -106,7 +116,8 @@ public partial class TravelValidator : Node
             return;
         }
 
-        if (_tick < SettleTicks)
+        _standing = Player.IsOnFloor() ? _standing + 1 : 0;
+        if (_standing < SettleTicks && _tick < LandTicks)
         {
             return;
         }
