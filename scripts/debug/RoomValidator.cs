@@ -172,7 +172,7 @@ public partial class RoomValidator : Node
             }
         }
 
-        foreach (RoomExit exit in exits.Where(e => !e.Open && Requirement.TryParse(e.Requires, out _, out _)))
+        foreach (RoomExit exit in exits.Where(e => e.Sealed && Requirement.TryParse(e.Requires, out _, out _)))
         {
             _sealed.Add((name, exit.Requirement));
         }
@@ -432,6 +432,16 @@ public partial class RoomValidator : Node
         if (!Requirement.TryParse(exit.Requires, out _, out string error))
         {
             problem($"exit {name}: {error}");
+        }
+
+        if (exit.ArrivalOnly)
+        {
+            if (exit.TargetRoom != "" || exit.Requires != "")
+            {
+                problem($"exit {name} is arrival-only, so it has no target and no requirement");
+            }
+
+            return;
         }
 
         if (exit.TargetRoom == "")

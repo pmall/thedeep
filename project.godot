@@ -205,6 +205,14 @@ biome_silt={
 "type": "color",
 "value": Color(0.6, 0.6, 0.62, 1)
 }
+biome_frost={
+"type": "float",
+"value": 0.0
+}
+biome_frost_color={
+"type": "color",
+"value": Color(0.88, 0.92, 0.98, 1)
+}
 biome_haze={
 "type": "color",
 "value": Color(0.3, 0.3, 0.38, 1)

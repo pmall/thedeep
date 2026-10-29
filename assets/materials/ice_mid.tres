@@ -1,0 +1,10 @@
+[gd_resource type="ShaderMaterial" format=3]
+
+[ext_resource type="Shader" path="res://assets/shaders/ice.gdshader" id="1_shader"]
+
+; Ice behind the play plane: darker, fewer fractures, so the play plane reads first.
+[resource]
+shader = ExtResource("1_shader")
+shader_parameter/fractures = 0.35
+shader_parameter/bubbles = 0.2
+shader_parameter/shade = 0.6

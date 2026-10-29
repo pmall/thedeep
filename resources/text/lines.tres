@@ -124,19 +124,12 @@ Speaker = "UI"
 Text = "Nothing that falls there survives. The pilgrim no longer minds."
 Notes = "Banner line under it. Quiet; the moment is the pilgrim's."
 
-[sub_resource type="Resource" id="goal_frozen"]
+[sub_resource type="Resource" id="creed_chorister"]
 script = ExtResource("2_line")
-Id = &"goal.frozen"
-Speaker = "UI"
-Text = "The frozen layer"
-Notes = "Banner title at the bottom of the Brink's fall: the end of what is built (placeholder until Rimefall exists)."
-
-[sub_resource type="Resource" id="goal_frozen_hint"]
-script = ExtResource("2_line")
-Id = &"goal.frozen.hint"
-Speaker = "UI"
-Text = "Not built yet. The pilgrim wakes at its last shrine."
-Notes = "Banner line under it."
+Id = &"creed.chorister"
+Speaker = "Chorister"
+Text = "We stopped singing when the cold came. The song did not stop. Do not wake it."
+Notes = "Barely voiced, a breath through frost; many voices at once, slightly out of step."
 
 [sub_resource type="Resource" id="lore_plate_1_title"]
 script = ExtResource("2_line")
@@ -182,4 +175,4 @@ Notes = "The scribes' own rule, half a prayer."
 
 [resource]
 script = ExtResource("1_book")
-Lines = [SubResource("creed_votary"), SubResource("creed_gleaner"), SubResource("creed_lamplighter"), SubResource("creed_limpet"), SubResource("ui_rest"), SubResource("ability_mag_grip_name"), SubResource("ability_mag_grip_hint"), SubResource("ability_harpoon_name"), SubResource("ability_harpoon_hint"), SubResource("creed_precentor"), SubResource("ui_read"), SubResource("boss_precentor_name"), SubResource("boss_precentor_fallen"), SubResource("boss_precentor_fallen_hint"), SubResource("law_third"), SubResource("law_third_broken"), SubResource("law_third_broken_hint"), SubResource("goal_frozen"), SubResource("goal_frozen_hint"), SubResource("lore_plate_1_title"), SubResource("lore_plate_1"), SubResource("lore_plate_2_title"), SubResource("lore_plate_2"), SubResource("lore_plate_3_title"), SubResource("lore_plate_3")]
+Lines = [SubResource("creed_votary"), SubResource("creed_gleaner"), SubResource("creed_lamplighter"), SubResource("creed_limpet"), SubResource("ui_rest"), SubResource("ability_mag_grip_name"), SubResource("ability_mag_grip_hint"), SubResource("ability_harpoon_name"), SubResource("ability_harpoon_hint"), SubResource("creed_precentor"), SubResource("ui_read"), SubResource("boss_precentor_name"), SubResource("boss_precentor_fallen"), SubResource("boss_precentor_fallen_hint"), SubResource("law_third"), SubResource("law_third_broken"), SubResource("law_third_broken_hint"), SubResource("creed_chorister"), SubResource("lore_plate_1_title"), SubResource("lore_plate_1"), SubResource("lore_plate_2_title"), SubResource("lore_plate_2"), SubResource("lore_plate_3_title"), SubResource("lore_plate_3")]

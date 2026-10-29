@@ -1,0 +1,7 @@
+[gd_resource type="ShaderMaterial" format=3]
+
+[ext_resource type="Shader" path="res://assets/shaders/ice.gdshader" id="1_shader"]
+
+; Ice on the play plane: plugs, sheets, icicles in front.
+[resource]
+shader = ExtResource("1_shader")

@@ -1,0 +1,709 @@
+[gd_scene format=3]
+
+; The Coldstacks, west of the Choir (map offset (204.5, -69)): the frozen layer's hub, the cold archive's
+; endless racks, stacked in stone galleries up to the roof. A pilgrim shrine on the floor. Its ways:
+;   east, the Choir (back toward the Brink's fall);
+;   up the galleries to a hatch in the roof, the Counterweight: an old lift that only rises, to the Undercroft
+;     (sealed: not built yet);
+;   the Calving, a high doorway on the west wall: up the metal buttress by grip, or by two rings (sealed);
+;   down the well and east along the corridor under the floor, the Mere (sealed);
+;   the Vault under the corridor, its way plugged with ice (Drill; sealed);
+;   the Chimney, a vent in the floor capped with slag (Heat plating; sealed).
+; The MapGoal of the built map is here (the end of what is built).
+
+[ext_resource type="PackedScene" path="res://scenes/kit/Block.tscn" id="1_block"]
+[ext_resource type="Material" path="res://assets/materials/rust.tres" id="2_rust"]
+[ext_resource type="Material" path="res://assets/materials/ice.tres" id="3_ice"]
+[ext_resource type="Script" path="res://scripts/rooms/RoomExit.cs" id="4_exit"]
+[ext_resource type="Script" path="res://scripts/map/MapGoal.cs" id="5_goal"]
+[ext_resource type="PackedScene" path="res://scenes/props/HarpoonAnchor.tscn" id="6_anchor"]
+[ext_resource type="PackedScene" path="res://scenes/props/Shrine.tscn" id="7_shrine"]
+[ext_resource type="Script" path="res://scripts/kit/RackMesh.cs" id="8_rack"]
+[ext_resource type="Material" path="res://assets/materials/metal_mid.tres" id="9_metal_mid"]
+[ext_resource type="Script" path="res://scripts/rooms/dressing/RackRow.cs" id="10_rackrow"]
+[ext_resource type="Script" path="res://scripts/kit/BlockMesh.cs" id="11_blockmesh"]
+[ext_resource type="Material" path="res://assets/materials/stone_mid.tres" id="12_stone_mid"]
+[ext_resource type="Script" path="res://scripts/kit/IcicleMesh.cs" id="13_icicles"]
+[ext_resource type="Material" path="res://assets/materials/ice_mid.tres" id="14_ice_mid"]
+[ext_resource type="Material" path="res://assets/materials/glyphs.tres" id="15_glyphs"]
+[ext_resource type="PackedScene" path="res://scenes/fx/Rime.tscn" id="16_rime"]
+[ext_resource type="PackedScene" path="res://scenes/fx/Dust.tscn" id="17_dust"]
+[ext_resource type="Script" path="res://scripts/kit/PipeMesh.cs" id="18_pipe"]
+[ext_resource type="Material" path="res://assets/materials/foreground.tres" id="19_foreground"]
+[ext_resource type="Script" path="res://scripts/kit/CableMesh.cs" id="20_cables"]
+[ext_resource type="Script" path="res://scripts/rooms/PhotoSpot.cs" id="21_spot"]
+[ext_resource type="Script" path="res://scripts/rooms/Room.cs" id="22_room"]
+[ext_resource type="Resource" path="res://resources/biomes/frozen.tres" id="23_frozen"]
+[ext_resource type="PackedScene" path="res://scenes/stage/RoomStage.tscn" id="24_stage"]
+
+[sub_resource type="PrimitiveMesh" id="rack_1"]
+script = ExtResource("8_rack")
+Size = Vector3(1.4, 3.2, 1)
+Units = 7
+Seed = 101
+
+[sub_resource type="PrimitiveMesh" id="rack_2"]
+script = ExtResource("8_rack")
+Size = Vector3(1.4, 2.6, 1)
+Units = 6
+Seed = 102
+
+[sub_resource type="PrimitiveMesh" id="rack_3"]
+script = ExtResource("8_rack")
+Size = Vector3(1.4, 3.6, 1)
+Units = 8
+Seed = 103
+
+[sub_resource type="PrimitiveMesh" id="rack_4"]
+script = ExtResource("8_rack")
+Size = Vector3(1.6, 6, 1.4)
+Units = 14
+Seed = 130
+
+[sub_resource type="PrimitiveMesh" id="blockmesh_5"]
+script = ExtResource("11_blockmesh")
+Size = Vector3(32, 10, 1.5)
+Bevel = 0.1
+
+[sub_resource type="PrimitiveMesh" id="blockmesh_6"]
+script = ExtResource("11_blockmesh")
+Size = Vector3(80, 1, 14)
+Bevel = 0.1
+
+[sub_resource type="PrimitiveMesh" id="icicles_7"]
+script = ExtResource("13_icicles")
+Width = 8
+Length = 1.6
+Count = 18
+Seed = 21
+
+[sub_resource type="PrimitiveMesh" id="icicles_8"]
+script = ExtResource("13_icicles")
+Width = 8
+Length = 0.9
+Count = 16
+Seed = 22
+
+[sub_resource type="PrimitiveMesh" id="icicles_9"]
+script = ExtResource("13_icicles")
+Width = 10
+Length = 2.4
+Count = 22
+Seed = 23
+
+[sub_resource type="PrimitiveMesh" id="icicles_10"]
+script = ExtResource("13_icicles")
+Width = 50
+Length = 2
+Count = 80
+Seed = 24
+
+[sub_resource type="QuadMesh" id="QuadMesh_11"]
+size = Vector2(3, 0.3)
+
+[sub_resource type="PrimitiveMesh" id="pipe_12"]
+script = ExtResource("18_pipe")
+Points = PackedVector3Array(0, -4, 0, 0, 0, 0, 40, 0, 0, 41, 0.5, 0, 84, 0.5, 0)
+Radius = 0.5
+BendRadius = 1.4
+FlangeSpacing = 4
+
+[sub_resource type="PrimitiveMesh" id="cables_13"]
+script = ExtResource("20_cables")
+End = Vector3(22, -1, 0)
+Sag = 3
+Radius = 0.07
+Strands = 3
+Seed = 41
+
+[node name="Coldstacks" type="Node3D" node_paths=PackedStringArray("SpawnPoint", "Stage", "Lamps", "Shafts", "GlyphLights")]
+script = ExtResource("22_room")
+SpawnPoint = NodePath("SpawnPoint")
+Stage = NodePath("Stage")
+Biome = ExtResource("23_frozen")
+Lamps = [NodePath("Lamps/Shrine"), NodePath("Lamps/Well"), NodePath("Lamps/Stacks")]
+Shafts = [NodePath("Shafts/Hatch"), NodePath("Shafts/High")]
+GlyphLights = [NodePath("Props/Shrine/Light"), NodePath("Glyphs/ShrineLight")]
+BoundsMin = Vector2(-1, -16)
+BoundsMax = Vector2(76, 34)
+
+[node name="SpawnPoint" type="Marker3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 30, 0, 0)
+
+; The shared atmosphere stack (environment, key light, clear front air, skylines, far pillars, frame, dust).
+[node name="Stage" parent="." instance=ExtResource("24_stage")]
+Seed = 101
+DustDensity = 0.9
+PillarDensity = 3.4
+FrameBelow = false
+
+[node name="Geometry" type="Node3D" parent="."]
+
+; the floor of the stacks
+[node name="FloorWest" parent="Geometry" instance=ExtResource("1_block")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 3.5, -8, 0)
+Size = Vector3(13, 16, 4)
+
+; slag set hard over the Chimney vent (Heat plating will pass it)
+[node name="VentCap" parent="Geometry" instance=ExtResource("1_block")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 11.5, -0.5, 0)
+Size = Vector3(3, 1, 4)
+Material = ExtResource("2_rust")
+
+[node name="Floor" parent="Geometry" instance=ExtResource("1_block")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 29.5, -8, 0)
+Size = Vector3(33, 16, 4)
+
+; steps down the well
+[node name="Step0" parent="Geometry" instance=ExtResource("1_block")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 47, -9.25, 0)
+Size = Vector3(2, 13.5, 4)
+
+[node name="Step1" parent="Geometry" instance=ExtResource("1_block")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 49, -10.5, 0)
+Size = Vector3(2, 11, 4)
+
+[node name="Step2" parent="Geometry" instance=ExtResource("1_block")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 51, -11.75, 0)
+Size = Vector3(2, 8.5, 4)
+
+; the corridor under the east floor
+[node name="Corridor" parent="Geometry" instance=ExtResource("1_block")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 57, -13, 0)
+Size = Vector3(10, 6, 4)
+
+; the way down to the Vault, plugged with ice (Drill will break it)
+[node name="IcePlug" parent="Geometry" instance=ExtResource("1_block")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 64, -10.5, 0)
+Size = Vector3(4, 1, 4)
+Material = ExtResource("3_ice")
+
+[node name="CorridorEast" parent="Geometry" instance=ExtResource("1_block")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 72.5, -13, 0)
+Size = Vector3(13, 6, 4)
+
+; the east floor, over the corridor
+[node name="Slab" parent="Geometry" instance=ExtResource("1_block")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 67.5, -1, 0)
+Size = Vector3(23, 2, 4)
+
+[node name="WallWest" parent="Geometry" instance=ExtResource("1_block")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -1.5, 6, 0)
+Size = Vector3(3, 12, 4)
+
+; the Calving ledge, high on the west wall
+[node name="Ledge" parent="Geometry" instance=ExtResource("1_block")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 2.25, 13, 0)
+Size = Vector3(10.5, 2, 4)
+
+; a metal buttress under the ledge: grip up it (or take the two rings)
+[node name="Buttress" parent="Geometry" instance=ExtResource("1_block")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 8.5, 9, 0)
+Size = Vector3(2, 10, 4)
+Surface = 1
+
+[node name="WallWestHigh" parent="Geometry" instance=ExtResource("1_block")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -1.5, 26.5, 0)
+Size = Vector3(3, 17, 4)
+
+; sealed: the Calving is not built yet
+[node name="RubbleCalving" parent="Geometry" instance=ExtResource("1_block")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -1.25, 16, 0)
+Size = Vector3(1.5, 4, 4)
+
+[node name="WallEastLow" parent="Geometry" instance=ExtResource("1_block")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 77.5, -4, 0)
+Size = Vector3(3, 4, 4)
+
+; sealed: the Mere is not built yet
+[node name="RubbleMere" parent="Geometry" instance=ExtResource("1_block")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 76.75, -8, 0)
+Size = Vector3(1.5, 4, 4)
+
+[node name="WallEast" parent="Geometry" instance=ExtResource("1_block")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 77.5, 19.5, 0)
+Size = Vector3(3, 31, 4)
+
+; the roof, open over the Counterweight's hatch
+[node name="RoofWest" parent="Geometry" instance=ExtResource("1_block")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 30, 33, 0)
+Size = Vector3(66, 4, 4)
+
+[node name="RoofEast" parent="Geometry" instance=ExtResource("1_block")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 73, 33, 0)
+Size = Vector3(12, 4, 4)
+
+; the galleries, zigzagging up to the roof
+[node name="Gallery0" parent="Geometry" instance=ExtResource("1_block")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 69, 2.75, 0)
+Size = Vector3(10, 0.5, 4)
+
+[node name="Gallery1" parent="Geometry" instance=ExtResource("1_block")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 57, 5.75, 0)
+Size = Vector3(10, 0.5, 4)
+
+[node name="Gallery2" parent="Geometry" instance=ExtResource("1_block")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 68.5, 8.75, 0)
+Size = Vector3(9, 0.5, 4)
+
+[node name="Gallery3" parent="Geometry" instance=ExtResource("1_block")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 57, 11.75, 0)
+Size = Vector3(10, 0.5, 4)
+
+[node name="Gallery4" parent="Geometry" instance=ExtResource("1_block")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 68.5, 14.75, 0)
+Size = Vector3(9, 0.5, 4)
+
+[node name="Gallery5" parent="Geometry" instance=ExtResource("1_block")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 57, 17.75, 0)
+Size = Vector3(10, 0.5, 4)
+
+[node name="Gallery6" parent="Geometry" instance=ExtResource("1_block")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 68.5, 20.75, 0)
+Size = Vector3(9, 0.5, 4)
+
+[node name="Gallery7" parent="Geometry" instance=ExtResource("1_block")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 57, 23.75, 0)
+Size = Vector3(10, 0.5, 4)
+
+[node name="Gallery8" parent="Geometry" instance=ExtResource("1_block")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 66, 26.75, 0)
+Size = Vector3(8, 0.5, 4)
+
+[node name="Exits" type="Node3D" parent="."]
+
+; back to the Choir
+[node name="East" type="Marker3D" parent="Exits"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 75, 0, 0)
+script = ExtResource("4_exit")
+TargetRoom = "res://scenes/rooms/Choir.tscn"
+TargetExit = "West"
+Size = Vector2(1, 4)
+
+; the roof hatch: the Counterweight lift, up to the Undercroft (sealed: not built yet)
+[node name="Counterweight" type="Marker3D" parent="Exits"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 65, 31, 0)
+script = ExtResource("4_exit")
+Size = Vector2(4, 1)
+
+; the high doorway west (sealed: not built yet)
+[node name="Calving" type="Marker3D" parent="Exits"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 1, 14, 0)
+script = ExtResource("4_exit")
+Requires = "MagGrip | Harpoon"
+Size = Vector2(1, 4)
+
+; the corridor's end, east to the frozen lake (sealed: not built yet)
+[node name="Mere" type="Marker3D" parent="Exits"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 75, -10, 0)
+script = ExtResource("4_exit")
+Size = Vector2(1, 4)
+
+; under the ice plug, down to the Vault (sealed: not built yet)
+[node name="Vault" type="Marker3D" parent="Exits"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 64, -14, 0)
+script = ExtResource("4_exit")
+Requires = "Drill"
+Size = Vector2(4, 1)
+
+; down the vent to the volcanic layer (sealed: not built yet)
+[node name="Chimney" type="Marker3D" parent="Exits"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 11.5, -14, 0)
+script = ExtResource("4_exit")
+Requires = "HeatPlating"
+Size = Vector2(3, 1)
+
+; the end of what is built, for the map solver
+[node name="Goal" type="Marker3D" parent="Exits"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 34, 0, 0)
+script = ExtResource("5_goal")
+
+[node name="Anchors" type="Node3D" parent="."]
+
+; two rings up to the Calving ledge (the Harpoon's way)
+[node name="Low" parent="Anchors" instance=ExtResource("6_anchor")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 14, 8, 0)
+
+[node name="High" parent="Anchors" instance=ExtResource("6_anchor")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 9.5, 15.5, 0)
+
+[node name="Props" type="Node3D" parent="."]
+
+; the hub's shrine
+[node name="Shrine" parent="Props" instance=ExtResource("7_shrine")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 30, 0, 0)
+
+[node name="Shafts" type="Node3D" parent="."]
+
+; down through the roof hatch, the length of the galleries
+[node name="Hatch" type="SpotLight3D" parent="Shafts"]
+transform = Transform3D(-1, 0, 0, 0, 0.1414, 0.9899, 0, 0.9899, -0.1414, 65, 52, -4)
+light_energy = 4.5
+light_volumetric_fog_energy = 14
+shadow_enabled = true
+spot_range = 80
+spot_attenuation = 0.25
+spot_angle = 8
+spot_angle_attenuation = 2
+
+; from the upper left onto the shrine
+[node name="High" type="SpotLight3D" parent="Shafts"]
+transform = Transform3D(-0.7071, 0.6288, -0.3234, 0, 0.4573, 0.8893, 0.7071, 0.6288, -0.3234, 6, 48, -12)
+light_energy = 3.5
+light_volumetric_fog_energy = 10
+shadow_enabled = true
+spot_range = 80
+spot_attenuation = 0.25
+spot_angle = 10
+spot_angle_attenuation = 2
+
+[node name="Lamps" type="Node3D" parent="."]
+
+; a candle glow at the shrine
+[node name="Shrine" type="OmniLight3D" parent="Lamps"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 30, 3.5, 1.2)
+light_energy = 0.8
+omni_range = 5
+shadow_enabled = false
+
+; cold light down the well
+[node name="Well" type="OmniLight3D" parent="Lamps"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 56, -6, -1.5)
+light_energy = 1.2
+omni_range = 8
+shadow_enabled = false
+
+; among the galleries
+[node name="Stacks" type="OmniLight3D" parent="Lamps"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 60, 16, -3)
+light_energy = 1.5
+omni_range = 12
+shadow_enabled = false
+
+[node name="Kit" type="Node3D" parent="."]
+
+[node name="Racks" type="Node3D" parent="Kit"]
+
+; the stacks: racks on every floor and gallery, frozen
+[node name="Floor" type="Node3D" parent="Kit/Racks"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 1.5, 0, -3.5)
+script = ExtResource("10_rackrow")
+Variants = [SubResource("rack_1"), SubResource("rack_2"), SubResource("rack_3")]
+Material = ExtResource("9_metal_mid")
+Count = 27
+Pitch = 1.6
+GapChance = 0.12
+ToppleChance = 0.05
+Seed = 111
+
+[node name="FloorBack" type="Node3D" parent="Kit/Racks"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 2.25, 0, -6.5)
+script = ExtResource("10_rackrow")
+Variants = [SubResource("rack_1"), SubResource("rack_2"), SubResource("rack_3")]
+Material = ExtResource("9_metal_mid")
+Count = 30
+Pitch = 1.6
+GapChance = 0.08
+ToppleChance = 0.05
+Seed = 112
+
+[node name="Gallery0" type="Node3D" parent="Kit/Racks"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 65, 3, -1.5)
+script = ExtResource("10_rackrow")
+Variants = [SubResource("rack_1"), SubResource("rack_2"), SubResource("rack_3")]
+Material = ExtResource("9_metal_mid")
+Count = 5
+Pitch = 1.6
+GapChance = 0.2
+ToppleChance = 0
+Seed = 120
+
+[node name="Gallery1" type="Node3D" parent="Kit/Racks"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 53, 6, -1.5)
+script = ExtResource("10_rackrow")
+Variants = [SubResource("rack_1"), SubResource("rack_2"), SubResource("rack_3")]
+Material = ExtResource("9_metal_mid")
+Count = 5
+Pitch = 1.6
+GapChance = 0.2
+ToppleChance = 0
+Seed = 121
+
+[node name="Gallery2" type="Node3D" parent="Kit/Racks"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 65, 9, -1.5)
+script = ExtResource("10_rackrow")
+Variants = [SubResource("rack_1"), SubResource("rack_2"), SubResource("rack_3")]
+Material = ExtResource("9_metal_mid")
+Count = 5
+Pitch = 1.6
+GapChance = 0.2
+ToppleChance = 0
+Seed = 122
+
+[node name="Gallery3" type="Node3D" parent="Kit/Racks"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 53, 12, -1.5)
+script = ExtResource("10_rackrow")
+Variants = [SubResource("rack_1"), SubResource("rack_2"), SubResource("rack_3")]
+Material = ExtResource("9_metal_mid")
+Count = 5
+Pitch = 1.6
+GapChance = 0.2
+ToppleChance = 0
+Seed = 123
+
+[node name="Gallery4" type="Node3D" parent="Kit/Racks"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 65, 15, -1.5)
+script = ExtResource("10_rackrow")
+Variants = [SubResource("rack_1"), SubResource("rack_2"), SubResource("rack_3")]
+Material = ExtResource("9_metal_mid")
+Count = 5
+Pitch = 1.6
+GapChance = 0.2
+ToppleChance = 0
+Seed = 124
+
+[node name="Gallery5" type="Node3D" parent="Kit/Racks"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 53, 18, -1.5)
+script = ExtResource("10_rackrow")
+Variants = [SubResource("rack_1"), SubResource("rack_2"), SubResource("rack_3")]
+Material = ExtResource("9_metal_mid")
+Count = 5
+Pitch = 1.6
+GapChance = 0.2
+ToppleChance = 0
+Seed = 125
+
+[node name="Gallery6" type="Node3D" parent="Kit/Racks"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 65, 21, -1.5)
+script = ExtResource("10_rackrow")
+Variants = [SubResource("rack_1"), SubResource("rack_2"), SubResource("rack_3")]
+Material = ExtResource("9_metal_mid")
+Count = 5
+Pitch = 1.6
+GapChance = 0.2
+ToppleChance = 0
+Seed = 126
+
+[node name="Gallery7" type="Node3D" parent="Kit/Racks"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 53, 24, -1.5)
+script = ExtResource("10_rackrow")
+Variants = [SubResource("rack_1"), SubResource("rack_2"), SubResource("rack_3")]
+Material = ExtResource("9_metal_mid")
+Count = 5
+Pitch = 1.6
+GapChance = 0.2
+ToppleChance = 0
+Seed = 127
+
+[node name="Gallery8" type="Node3D" parent="Kit/Racks"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 63, 27, -1.5)
+script = ExtResource("10_rackrow")
+Variants = [SubResource("rack_1"), SubResource("rack_2"), SubResource("rack_3")]
+Material = ExtResource("9_metal_mid")
+Count = 4
+Pitch = 1.6
+GapChance = 0.2
+ToppleChance = 0
+Seed = 128
+
+; the tower of racks behind the galleries
+[node name="Tower0" type="Node3D" parent="Kit/Racks"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 45, 0, -10)
+script = ExtResource("10_rackrow")
+Variants = [SubResource("rack_4")]
+Material = ExtResource("9_metal_mid")
+Count = 19
+Pitch = 1.75
+GapChance = 0.1
+ToppleChance = 0
+Seed = 140
+
+[node name="Tower1" type="Node3D" parent="Kit/Racks"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 45.75, 6.25, -10)
+script = ExtResource("10_rackrow")
+Variants = [SubResource("rack_4")]
+Material = ExtResource("9_metal_mid")
+Count = 19
+Pitch = 1.75
+GapChance = 0.1
+ToppleChance = 0
+Seed = 141
+
+[node name="Tower2" type="Node3D" parent="Kit/Racks"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 45, 12.5, -10)
+script = ExtResource("10_rackrow")
+Variants = [SubResource("rack_4")]
+Material = ExtResource("9_metal_mid")
+Count = 19
+Pitch = 1.75
+GapChance = 0.1
+ToppleChance = 0
+Seed = 142
+
+[node name="Tower3" type="Node3D" parent="Kit/Racks"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 45.75, 18.75, -10)
+script = ExtResource("10_rackrow")
+Variants = [SubResource("rack_4")]
+Material = ExtResource("9_metal_mid")
+Count = 19
+Pitch = 1.75
+GapChance = 0.1
+ToppleChance = 0
+Seed = 143
+
+[node name="Tower4" type="Node3D" parent="Kit/Racks"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 45, 25, -10)
+script = ExtResource("10_rackrow")
+Variants = [SubResource("rack_4")]
+Material = ExtResource("9_metal_mid")
+Count = 19
+Pitch = 1.75
+GapChance = 0.1
+ToppleChance = 0
+Seed = 144
+
+; the corridor's back wall
+[node name="CorridorWall" type="MeshInstance3D" parent="Kit"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 62, -7, -3)
+mesh = SubResource("blockmesh_5")
+material_override = ExtResource("12_stone_mid")
+
+[node name="BackFloor" type="MeshInstance3D" parent="Kit"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 37.5, -0.5, -9)
+mesh = SubResource("blockmesh_6")
+material_override = ExtResource("12_stone_mid")
+
+[node name="Icicles" type="Node3D" parent="Kit"]
+
+; icicles under the galleries
+[node name="Gallery0" type="MeshInstance3D" parent="Kit/Icicles"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 69, 2.5, 1.25)
+mesh = SubResource("icicles_8")
+material_override = ExtResource("3_ice")
+
+[node name="Gallery1" type="MeshInstance3D" parent="Kit/Icicles"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 57, 5.5, 1.25)
+mesh = SubResource("icicles_7")
+material_override = ExtResource("3_ice")
+
+[node name="Gallery2" type="MeshInstance3D" parent="Kit/Icicles"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 68.5, 8.5, 1.25)
+mesh = SubResource("icicles_8")
+material_override = ExtResource("3_ice")
+
+[node name="Gallery3" type="MeshInstance3D" parent="Kit/Icicles"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 57, 11.5, 1.25)
+mesh = SubResource("icicles_7")
+material_override = ExtResource("3_ice")
+
+[node name="Gallery4" type="MeshInstance3D" parent="Kit/Icicles"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 68.5, 14.5, 1.25)
+mesh = SubResource("icicles_8")
+material_override = ExtResource("3_ice")
+
+[node name="Gallery5" type="MeshInstance3D" parent="Kit/Icicles"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 57, 17.5, 1.25)
+mesh = SubResource("icicles_7")
+material_override = ExtResource("3_ice")
+
+[node name="Gallery6" type="MeshInstance3D" parent="Kit/Icicles"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 68.5, 20.5, 1.25)
+mesh = SubResource("icicles_8")
+material_override = ExtResource("3_ice")
+
+[node name="Gallery7" type="MeshInstance3D" parent="Kit/Icicles"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 57, 23.5, 1.25)
+mesh = SubResource("icicles_7")
+material_override = ExtResource("3_ice")
+
+; and under the Calving ledge
+[node name="Ledge" type="MeshInstance3D" parent="Kit/Icicles"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 3, 12, 1.5)
+mesh = SubResource("icicles_9")
+material_override = ExtResource("3_ice")
+
+[node name="Roof" type="MeshInstance3D" parent="Kit/Icicles"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 30, 31, -2.5)
+mesh = SubResource("icicles_10")
+material_override = ExtResource("14_ice_mid")
+
+[node name="Glyphs" type="Node3D" parent="."]
+
+; along the floor under the shrine
+[node name="Shrine" type="MeshInstance3D" parent="Glyphs"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 30, -1.6, 2.01)
+mesh = SubResource("QuadMesh_11")
+material_override = ExtResource("15_glyphs")
+cast_shadow = 0
+
+[node name="ShrineLight" type="OmniLight3D" parent="Glyphs"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 30, -1.6, 2.71)
+light_energy = 0.3
+light_volumetric_fog_energy = 0
+omni_range = 2.5
+
+[node name="Particles" type="Node3D" parent="."]
+
+; rime sifting down through the roof hatch
+[node name="Hatch" parent="Particles" instance=ExtResource("16_rime")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 65, 22, -1)
+Extents = Vector3(6, 10, 3)
+Density = 0.9
+
+[node name="Stacks" parent="Particles" instance=ExtResource("16_rime")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 30, 18, -2)
+Extents = Vector3(30, 14, 4)
+Density = 0.2
+
+[node name="Motes" parent="Particles" instance=ExtResource("17_dust")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 26, 6, -2)
+Extents = Vector3(10, 5, 2)
+Density = 1.2
+
+[node name="Backdrop" type="Node3D" parent="."]
+
+[node name="ForePipe" type="MeshInstance3D" parent="Backdrop"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -3, -14.75, 7.5)
+mesh = SubResource("pipe_12")
+material_override = ExtResource("19_foreground")
+cast_shadow = 0
+
+[node name="ForeCables" type="MeshInstance3D" parent="Backdrop"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 6, 30, 7)
+mesh = SubResource("cables_13")
+material_override = ExtResource("19_foreground")
+cast_shadow = 0
+
+[node name="PhotoSpots" type="Node3D" parent="."]
+
+; gameplay framing: the shrine among the frozen racks
+[node name="Shrine" type="Marker3D" parent="PhotoSpots"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 30, 3.9, 22)
+script = ExtResource("21_spot")
+PlayerPosition = Vector3(27, 0, 0)
+
+; climbing the galleries
+[node name="Galleries" type="Marker3D" parent="PhotoSpots"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 64, 14, 22)
+script = ExtResource("21_spot")
+PlayerPosition = Vector3(66, 9, 0)
+
+; the metal buttress, the two rings, the Calving ledge
+[node name="Calving" type="Marker3D" parent="PhotoSpots"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 9, 11, 22)
+script = ExtResource("21_spot")
+PlayerPosition = Vector3(11, 0, 0)
+PlayerFacing = -1
+
+; down the well, the corridor, the ice plug over the Vault
+[node name="Well" type="Marker3D" parent="PhotoSpots"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 60, -6, 22)
+script = ExtResource("21_spot")
+PlayerPosition = Vector3(55, -10, 0)
+
+; the whole hub
+[node name="Wide" type="Marker3D" parent="PhotoSpots"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 38, 9, 64)
+script = ExtResource("21_spot")
+PlayerPosition = Vector3(30, 0, 0)
+Fov = 40

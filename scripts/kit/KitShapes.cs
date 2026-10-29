@@ -291,4 +291,38 @@ public static class KitShapes
 
         b.Transform = Matrix4x4.Identity;
     }
+
+    /// <summary>
+    /// A fringe of icicles hanging from y = 0 along X over <paramref name="width"/> meters (centered), each a tapered
+    /// spike ending in a point, the longest <paramref name="length"/>; <paramref name="count"/> of them, a little in
+    /// depth too, different for each <paramref name="seed"/>. Rime under a ledge or a beam. <paramref name="spread"/> 1 makes
+    /// most of them short with now and then a long one; 0 makes them all full length (the columns of a frozen fall).
+    /// </summary>
+    public static void Icicles(MeshBuilder b, float width, float length, int count, int seed, float spread = 1f)
+    {
+        var random = new Random(seed);
+        float R(float min, float max) => min + (max - min) * (float)random.NextDouble();
+        for (int i = 0; i < count; i++)
+        {
+            float x = (count == 1 ? 0f : (i / (float)(count - 1) - 0.5f) * width) + R(-0.4f, 0.4f) * width / MathF.Max(count, 1);
+            // Mostly short ones, now and then a long one.
+            float t = (float)random.NextDouble();
+            float len = length * (1f - spread * 0.85f * (1f - t * t * t));
+            float radius = MathF.Max(0.02f, len * R(0.06f, 0.1f));
+            var points = new List<Vector3>();
+            var radii = new List<Vector2>();
+            const int stations = 6;
+            for (int k = 0; k < stations; k++)
+            {
+                float f = k / (float)(stations - 1);
+                // A slight bulge near the root, then a long taper to a point; a little sway along it.
+                points.Add(new Vector3(x + MathF.Sin(f * 2.1f + i) * radius * 0.4f, -len * f, R(-0.15f, 0.15f) * radius));
+                float r = radius * (f < 0.15f ? 1f + f * 2f : 1.3f * MathF.Pow(1f - (f - 0.15f) / 0.85f, 1.4f));
+                radii.Add(new Vector2(r, r));
+            }
+
+            b.Variation = R(0f, 1f);
+            b.Pod(SweepPath.FromPoints(points, Vector3.UnitZ), radii, 7);
+        }
+    }
 }

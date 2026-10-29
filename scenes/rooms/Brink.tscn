@@ -4,13 +4,11 @@
 ; deep descent. A last pilgrim shrine under a broken dome, then the floor ends over a chasm no machine survives.
 ; At the lip stands the third law (LawBreak): a veil of glyphs the pilgrim cannot walk through, the law's words
 ; over it. Pressing on toward the drop strains against it until it breaks; then the jump, one way down to the
-; frozen layer (Rimefall, sealed: not built yet). Until it is, falling past the goal's area shows the end of the
-; build and the pilgrim wakes at its last shrine. The MapGoal of the built map is here.
+; frozen layer: the fall goes on into Rimefall's sky.
 
 [ext_resource type="Material" path="res://assets/materials/wet_stone.tres" id="1_wet_stone"]
 [ext_resource type="PackedScene" path="res://scenes/kit/Block.tscn" id="2_block"]
 [ext_resource type="Script" path="res://scripts/rooms/RoomExit.cs" id="3_exit"]
-[ext_resource type="Script" path="res://scripts/map/MapGoal.cs" id="4_goal"]
 [ext_resource type="PackedScene" path="res://scenes/props/Shrine.tscn" id="5_shrine"]
 [ext_resource type="PackedScene" path="res://scenes/props/LawBreak.tscn" id="6_law"]
 [ext_resource type="Material" path="res://assets/materials/glyphs.tres" id="7_glyphs"]
@@ -173,20 +171,14 @@ TargetRoom = "res://scenes/rooms/Chapterhouse.tscn"
 TargetExit = "East"
 Size = Vector2(1, 4)
 
-; the jump: down to Rimefall, the frozen layer (sealed: not built yet)
+; the jump: down into Rimefall's sky, the frozen layer (one way)
 [node name="Down" type="Marker3D" parent="Exits"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 34, -48, 0)
 script = ExtResource("3_exit")
+TargetRoom = "res://scenes/rooms/Rimefall.tscn"
+TargetExit = "Sky"
 OneWay = true
 Size = Vector2(18, 1)
-
-; the end of what is built: falling through here shows it, then the pilgrim falls out of the room
-[node name="TheFall" type="Marker3D" parent="Exits"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 34, -30, 0)
-script = ExtResource("4_goal")
-Size = Vector2(20, 30)
-TitleLine = &"goal.frozen"
-HintLine = &"goal.frozen.hint"
 
 [node name="Props" type="Node3D" parent="."]
 

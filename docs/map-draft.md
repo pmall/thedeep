@@ -141,9 +141,9 @@ Server halls frozen in rime, machines asleep in the cold, a black lake under ice
 
 | Room | Purpose |
 |---|---|
-| Rimefall | Where the jump from the Brink lands: a slope of rime under a broken dome. |
-| Choir | Votaries frozen mid-prayer, a silent choir to walk through. |
-| Coldstacks | The hub: endless frozen racks. Shrine. |
+| Rimefall | Where the jump from the Brink lands (its sky is only arrived through): a shelf of rime under a broken dome, a frozen cascade down terraces, a shrine at the foot. *(built)* |
+| Choir | Choristers, Votaries frozen mid-prayer, asleep along a sunken choir: footsteps never wake them, a hard landing close by does. A silent choir to walk through. *(built)* |
+| Coldstacks | The hub: endless frozen racks in stone galleries up to the roof. Shrine. The Counterweight's hatch at the top of the galleries, the Calving ledge high on the west wall (a metal buttress or two rings), the Mere along the corridor under the floor, the Vault under an ice plug (Drill), the Chimney under a slag cap (Heat plating); all sealed until built. *(built)* |
 | Counterweight | An old lift that only rises: back up to the Undercroft. |
 | Calving | An ice cliff that sheds: crossed by grip or harpoon. |
 | Bore | A mining machine frozen mid-bore: **Drill**. |
@@ -170,9 +170,10 @@ room Cryptwater Frozen
 room Vault Frozen
 room Sanctum Frozen
 
+# built: these must match the scenes' markers
 way Rimefall <-> Choir
 way Choir <-> Coldstacks
-way Coldstacks <-> Counterweight
+way Coldstacks <-> Counterweight                 # sealed: the roof hatch at the top of the galleries
 way Counterweight -> Undercroft                  # the lift only rises
 way Coldstacks <-> Calving : MagGrip | Harpoon
 way Calving <-> Bore

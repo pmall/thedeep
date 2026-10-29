@@ -10,6 +10,7 @@
 [ext_resource type="PackedScene" path="res://scenes/ui/OwnerCapture.tscn" id="7_capture"]
 [ext_resource type="Resource" path="res://resources/biomes/flooded.tres" id="8_flooded"]
 [ext_resource type="Resource" path="res://resources/biomes/volcanic.tres" id="9_volcanic"]
+[ext_resource type="Resource" path="res://resources/biomes/frozen.tres" id="9_frozen"]
 [ext_resource type="PackedScene" path="res://scenes/camera/ScreenGrade.tscn" id="10_grade"]
 [ext_resource type="Script" path="res://scripts/machines/MachineDirector.cs" id="11_machines"]
 [ext_resource type="Script" path="res://scripts/player/BurstPool.cs" id="12_pool"]
@@ -133,7 +134,7 @@ Player = NodePath("../Player")
 script = ExtResource("5_cheats")
 Player = NodePath("../Player")
 World = NodePath("../World")
-Biomes = [ExtResource("8_flooded"), ExtResource("9_volcanic")]
+Biomes = [ExtResource("8_flooded"), ExtResource("9_frozen"), ExtResource("9_volcanic")]
 
 [node name="OwnerCapture" parent="." node_paths=PackedStringArray("Player", "World") instance=ExtResource("7_capture")]
 Player = NodePath("../Player")

@@ -34,6 +34,12 @@ public partial class RoomExit : Marker3D
     /// </summary>
     [Export] public int ArrivalSide { get; set; }
 
+    /// <summary>
+    /// Only arrived through, never left by: the far end of a one-way drop from another room (the Brink's jump lands in
+    /// Rimefall's sky). It has no target and no trigger, and it is not a sealed way.
+    /// </summary>
+    [Export] public bool ArrivalOnly { get; set; }
+
     /// <summary>Trigger area on the play plane (width, height), centered on the marker.</summary>
     [Export] public Vector2 Size { get; set; } = new(1f, 3f);
 
@@ -50,6 +56,9 @@ public partial class RoomExit : Marker3D
 
     /// <summary>An exit with a target room has a trigger area; one leading to a room not built yet stays sealed.</summary>
     public bool Open => TargetRoom != "";
+
+    /// <summary>A way out leading to a room not built yet (an arrival-only marker is not one).</summary>
+    public bool Sealed => TargetRoom == "" && !ArrivalOnly;
 
     /// <summary>The marker's position in its room, on the play plane (rooms are loaded at the world origin).</summary>
     public Vector2 RoomPosition => new(GlobalPosition.X, GlobalPosition.Y);

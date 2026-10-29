@@ -1,0 +1,29 @@
+[gd_resource type="ParticleProcessMaterial" format=3]
+; Rime flakes: falling slowly, swaying on the air, turning as they fall. The frozen layer's snow.
+
+[sub_resource type="Gradient" id="Gradient_fade"]
+offsets = PackedFloat32Array(0, 0.1, 0.85, 1)
+colors = PackedColorArray(1, 1, 1, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0)
+
+[sub_resource type="GradientTexture1D" id="GradientTexture1D_fade"]
+gradient = SubResource("Gradient_fade")
+
+[resource]
+emission_shape = 3
+emission_box_extents = Vector3(1, 1, 1)
+direction = Vector3(0.3, -1, 0)
+spread = 20.0
+initial_velocity_min = 0.25
+initial_velocity_max = 0.5
+gravity = Vector3(0, -0.06, 0)
+damping_min = 0.05
+damping_max = 0.1
+scale_min = 0.5
+scale_max = 1.4
+color_ramp = SubResource("GradientTexture1D_fade")
+turbulence_enabled = true
+turbulence_noise_strength = 0.8
+turbulence_noise_scale = 4.0
+turbulence_noise_speed_random = 0.2
+turbulence_influence_min = 0.03
+turbulence_influence_max = 0.08

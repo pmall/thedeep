@@ -10,7 +10,8 @@ namespace TheDeep;
 /// real input actions. In the Chapterhouse: stepping into the arena drops both gates; the Precentor strikes the pilgrim
 /// lingering before it; swings break it; the gates rise and the fight is remembered; entering again, it stays broken and
 /// the gates stay up. At the Brink: the third law holds the pilgrim at the lip; pressing on breaks it (remembered); over
-/// the lip, the fall ends back at the last shrine. Prints `ENCOUNTER OK` or `ENCOUNTER CHECK` errors.
+/// the lip, the jump falls on into Rimefall and lands there. In the Choir: walking past a sleeping Chorister wakes none;
+/// a hard landing beside one wakes it. Prints `ENCOUNTER OK` or `ENCOUNTER CHECK` errors.
 /// </summary>
 public partial class EncounterCheck : Node
 {
@@ -34,6 +35,7 @@ public partial class EncounterCheck : Node
     private BossSeal Seal => World.Room.All<BossSeal>().First();
     private Machine Precentor => World.Room.All<Machine>().First(m => m.Species.Id == "precentor");
     private LawBreak Law => World.Room.All<LawBreak>().First();
+    private IEnumerable<Machine> Choristers => World.Room.All<Machine>().Where(m => m.Species.Id == "chorister");
     private float X => Player.GlobalPosition.X;
 
     private void Hold(StringName action, bool held)
@@ -98,10 +100,24 @@ public partial class EncounterCheck : Node
         _steps.Add(new("pressing on breaks it, and it is remembered", 5f,
             () => { },
             () => Law.Broken && Session.Save.Collected.Contains("Brink/ThirdLaw")));
-        _steps.Add(new("over the lip, the fall ends back at the last shrine", 12f,
+        _steps.Add(new("over the lip, the jump falls on into Rimefall and lands on its shelf", 12f,
             () => { },
-            () => World.RoomName == "Chapterhouse" && Player.InControl && Player.GlobalPosition.DistanceTo(World.Room.SpawnPoint.GlobalPosition) < 0.6f,
+            () => World.RoomName == "Rimefall" && Player.InControl && Player.IsOnFloor() && Player.GlobalPosition.Y > 9f,
             () => Hold(InputActions.MoveRight, World.RoomName == "Brink" && Player.GlobalPosition.Y > -2f)));
+        _steps.Add(new("in the Choir, walking past a sleeping Chorister wakes none", 4f,
+            () =>
+            {
+                Hold(InputActions.MoveRight, false);
+                World.Load(GD.Load<PackedScene>(World.RoomPath("Choir")));
+                Player.Respawn(new Vector3(13f, -2f, 0f), 1);
+                Hold(InputActions.MoveRight, true);
+            },
+            () => X > 20f && Choristers.All(c => c.Brain.Act == MachineAct.Sleep),
+            () => Hold(InputActions.MoveRight, X < 20.5f)));
+        _steps.Add(new("a hard landing beside one wakes it", 3f,
+            () => { Hold(InputActions.MoveRight, false); Player.Respawn(new Vector3(24f, 3f, 0f), 1); },
+            () => Choristers.Single(c => c.Name == "Chorister1").Brain.Act != MachineAct.Sleep
+                  && Choristers.Single(c => c.Name == "Chorister0").Brain.Act == MachineAct.Sleep));
         Next();
     }
 
@@ -157,7 +173,7 @@ public partial class EncounterCheck : Node
 
         if (_problems.Count == 0)
         {
-            GD.Print($"ENCOUNTER OK: {_steps.Count} steps (arena gates, the Precentor struck and broken, remembered; the third law held, broken, the fall)");
+            GD.Print($"ENCOUNTER OK: {_steps.Count} steps (arena gates, the Precentor struck and broken, remembered; the third law held, broken, the fall into Rimefall; the Choir asleep, woken)");
         }
 
         GetTree().Quit(_problems.Count == 0 ? 0 : 1);

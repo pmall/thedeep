@@ -1,0 +1,681 @@
+[gd_scene format=3]
+
+; The Choir, west of Rimefall (map offset (278.5, -69)): a silent choir. Choristers, Votaries frozen
+; mid-prayer, kneel along a sunken choir between low pews, facing the frozen organ at its east end. Footsteps
+; never wake them; a hard landing close by does (the drop into the choir, a jump over a pew landing short), and
+; a woken one walks slowly after the noise and strikes. Tread softly: walk past them, land far from them.
+; West to the Coldstacks, east up the step to Rimefall.
+
+[ext_resource type="PackedScene" path="res://scenes/kit/Block.tscn" id="1_block"]
+[ext_resource type="Script" path="res://scripts/rooms/RoomExit.cs" id="2_exit"]
+[ext_resource type="Script" path="res://scripts/machines/Machine.cs" id="3_machine"]
+[ext_resource type="Resource" path="res://resources/machines/chorister.tres" id="4_chorister"]
+[ext_resource type="Script" path="res://scripts/kit/PipeMesh.cs" id="5_pipe"]
+[ext_resource type="Material" path="res://assets/materials/metal_mid.tres" id="6_metal_mid"]
+[ext_resource type="Script" path="res://scripts/kit/BlockMesh.cs" id="7_blockmesh"]
+[ext_resource type="Material" path="res://assets/materials/stone_mid.tres" id="8_stone_mid"]
+[ext_resource type="Script" path="res://scripts/kit/IcicleMesh.cs" id="9_icicles"]
+[ext_resource type="Material" path="res://assets/materials/ice_mid.tres" id="10_ice_mid"]
+[ext_resource type="Material" path="res://assets/materials/glyphs.tres" id="11_glyphs"]
+[ext_resource type="Script" path="res://scripts/kit/ColumnMesh.cs" id="12_column"]
+[ext_resource type="Script" path="res://scripts/kit/ArchMesh.cs" id="13_arch"]
+[ext_resource type="Script" path="res://scripts/rooms/dressing/Colonnade.cs" id="14_colonnade"]
+[ext_resource type="Material" path="res://assets/materials/ice.tres" id="15_ice"]
+[ext_resource type="PackedScene" path="res://scenes/fx/Rime.tscn" id="16_rime"]
+[ext_resource type="PackedScene" path="res://scenes/fx/Dust.tscn" id="17_dust"]
+[ext_resource type="Material" path="res://assets/materials/foreground.tres" id="18_foreground"]
+[ext_resource type="Script" path="res://scripts/kit/CableMesh.cs" id="19_cables"]
+[ext_resource type="Script" path="res://scripts/rooms/PhotoSpot.cs" id="20_spot"]
+[ext_resource type="Script" path="res://scripts/rooms/Room.cs" id="21_room"]
+[ext_resource type="Resource" path="res://resources/biomes/frozen.tres" id="22_frozen"]
+[ext_resource type="PackedScene" path="res://scenes/stage/RoomStage.tscn" id="23_stage"]
+
+[sub_resource type="PrimitiveMesh" id="pipe_1"]
+script = ExtResource("5_pipe")
+Points = PackedVector3Array(0, 0, 0, 0, 7, 0)
+Radius = 0.304
+BendRadius = 0.5
+FlangeSpacing = 0
+
+[sub_resource type="PrimitiveMesh" id="pipe_2"]
+script = ExtResource("5_pipe")
+Points = PackedVector3Array(0, 0, 0, 0, 8.5, 0)
+Radius = 0.322
+BendRadius = 0.5
+FlangeSpacing = 0
+
+[sub_resource type="PrimitiveMesh" id="pipe_3"]
+script = ExtResource("5_pipe")
+Points = PackedVector3Array(0, 0, 0, 0, 10, 0)
+Radius = 0.34
+BendRadius = 0.5
+FlangeSpacing = 0
+
+[sub_resource type="PrimitiveMesh" id="pipe_4"]
+script = ExtResource("5_pipe")
+Points = PackedVector3Array(0, 0, 0, 0, 12, 0)
+Radius = 0.364
+BendRadius = 0.5
+FlangeSpacing = 0
+
+[sub_resource type="PrimitiveMesh" id="pipe_5"]
+script = ExtResource("5_pipe")
+Points = PackedVector3Array(0, 0, 0, 0, 13.5, 0)
+Radius = 0.382
+BendRadius = 0.5
+FlangeSpacing = 0
+
+[sub_resource type="PrimitiveMesh" id="pipe_6"]
+script = ExtResource("5_pipe")
+Points = PackedVector3Array(0, 0, 0, 0, 12, 0)
+Radius = 0.364
+BendRadius = 0.5
+FlangeSpacing = 0
+
+[sub_resource type="PrimitiveMesh" id="pipe_7"]
+script = ExtResource("5_pipe")
+Points = PackedVector3Array(0, 0, 0, 0, 10, 0)
+Radius = 0.34
+BendRadius = 0.5
+FlangeSpacing = 0
+
+[sub_resource type="PrimitiveMesh" id="pipe_8"]
+script = ExtResource("5_pipe")
+Points = PackedVector3Array(0, 0, 0, 0, 8.5, 0)
+Radius = 0.322
+BendRadius = 0.5
+FlangeSpacing = 0
+
+[sub_resource type="PrimitiveMesh" id="pipe_9"]
+script = ExtResource("5_pipe")
+Points = PackedVector3Array(0, 0, 0, 0, 7, 0)
+Radius = 0.304
+BendRadius = 0.5
+FlangeSpacing = 0
+
+[sub_resource type="PrimitiveMesh" id="pipe_10"]
+script = ExtResource("5_pipe")
+Points = PackedVector3Array(0, 0, 0, 0, 5, 0)
+Radius = 0.16
+BendRadius = 0.5
+FlangeSpacing = 0
+
+[sub_resource type="PrimitiveMesh" id="pipe_11"]
+script = ExtResource("5_pipe")
+Points = PackedVector3Array(0, 0, 0, 0, 6.5, 0)
+Radius = 0.16
+BendRadius = 0.5
+FlangeSpacing = 0
+
+[sub_resource type="PrimitiveMesh" id="pipe_12"]
+script = ExtResource("5_pipe")
+Points = PackedVector3Array(0, 0, 0, 0, 8, 0)
+Radius = 0.16
+BendRadius = 0.5
+FlangeSpacing = 0
+
+[sub_resource type="PrimitiveMesh" id="pipe_13"]
+script = ExtResource("5_pipe")
+Points = PackedVector3Array(0, 0, 0, 0, 9.5, 0)
+Radius = 0.16
+BendRadius = 0.5
+FlangeSpacing = 0
+
+[sub_resource type="PrimitiveMesh" id="pipe_14"]
+script = ExtResource("5_pipe")
+Points = PackedVector3Array(0, 0, 0, 0, 8, 0)
+Radius = 0.16
+BendRadius = 0.5
+FlangeSpacing = 0
+
+[sub_resource type="PrimitiveMesh" id="pipe_15"]
+script = ExtResource("5_pipe")
+Points = PackedVector3Array(0, 0, 0, 0, 6.5, 0)
+Radius = 0.16
+BendRadius = 0.5
+FlangeSpacing = 0
+
+[sub_resource type="PrimitiveMesh" id="pipe_16"]
+script = ExtResource("5_pipe")
+Points = PackedVector3Array(0, 0, 0, 0, 5, 0)
+Radius = 0.16
+BendRadius = 0.5
+FlangeSpacing = 0
+
+[sub_resource type="PrimitiveMesh" id="pipe_17"]
+script = ExtResource("5_pipe")
+Points = PackedVector3Array(0, 0, 0, 0, 6.5, 0)
+Radius = 0.16
+BendRadius = 0.5
+FlangeSpacing = 0
+
+[sub_resource type="PrimitiveMesh" id="pipe_18"]
+script = ExtResource("5_pipe")
+Points = PackedVector3Array(0, 0, 0, 0, 8, 0)
+Radius = 0.16
+BendRadius = 0.5
+FlangeSpacing = 0
+
+[sub_resource type="PrimitiveMesh" id="pipe_19"]
+script = ExtResource("5_pipe")
+Points = PackedVector3Array(0, 0, 0, 0, 9.5, 0)
+Radius = 0.16
+BendRadius = 0.5
+FlangeSpacing = 0
+
+[sub_resource type="PrimitiveMesh" id="pipe_20"]
+script = ExtResource("5_pipe")
+Points = PackedVector3Array(0, 0, 0, 0, 8, 0)
+Radius = 0.16
+BendRadius = 0.5
+FlangeSpacing = 0
+
+[sub_resource type="PrimitiveMesh" id="pipe_21"]
+script = ExtResource("5_pipe")
+Points = PackedVector3Array(0, 0, 0, 0, 6.5, 0)
+Radius = 0.16
+BendRadius = 0.5
+FlangeSpacing = 0
+
+[sub_resource type="PrimitiveMesh" id="pipe_22"]
+script = ExtResource("5_pipe")
+Points = PackedVector3Array(0, 0, 0, 0, 5, 0)
+Radius = 0.16
+BendRadius = 0.5
+FlangeSpacing = 0
+
+[sub_resource type="PrimitiveMesh" id="blockmesh_23"]
+script = ExtResource("7_blockmesh")
+Size = Vector3(11, 1, 3)
+Bevel = 0.1
+
+[sub_resource type="PrimitiveMesh" id="icicles_24"]
+script = ExtResource("9_icicles")
+Width = 10
+Length = 2.2
+Count = 26
+Seed = 5
+
+[sub_resource type="PrimitiveMesh" id="blockmesh_25"]
+script = ExtResource("7_blockmesh")
+Size = Vector3(16, 1, 12)
+Bevel = 0.1
+
+[sub_resource type="PrimitiveMesh" id="blockmesh_26"]
+script = ExtResource("7_blockmesh")
+Size = Vector3(38, 1, 12)
+Bevel = 0.1
+
+[sub_resource type="PrimitiveMesh" id="blockmesh_27"]
+script = ExtResource("7_blockmesh")
+Size = Vector3(14, 1, 12)
+Bevel = 0.1
+
+[sub_resource type="PrimitiveMesh" id="blockmesh_28"]
+script = ExtResource("7_blockmesh")
+Size = Vector3(30, 1, 1.8)
+Bevel = 0.08
+
+[sub_resource type="PrimitiveMesh" id="blockmesh_29"]
+script = ExtResource("7_blockmesh")
+Size = Vector3(30, 2.5, 1.8)
+Bevel = 0.08
+
+[sub_resource type="QuadMesh" id="QuadMesh_30"]
+size = Vector2(26, 0.25)
+
+[sub_resource type="PrimitiveMesh" id="column_31"]
+script = ExtResource("12_column")
+Height = 11
+Radius = 0.4
+Sides = 12
+Shafts = 4
+Plinth = 0.5
+Capital = 0.45
+
+[sub_resource type="PrimitiveMesh" id="arch_32"]
+script = ExtResource("13_arch")
+Span = 6
+Rise = 4
+Thickness = 0.45
+Depth = 0.8
+Segments = 28
+
+[sub_resource type="PrimitiveMesh" id="icicles_33"]
+script = ExtResource("9_icicles")
+Width = 14
+Length = 1.8
+Count = 28
+Seed = 12
+
+[sub_resource type="PrimitiveMesh" id="icicles_34"]
+script = ExtResource("9_icicles")
+Width = 40
+Length = 1.2
+Count = 50
+Seed = 13
+
+[sub_resource type="PrimitiveMesh" id="pipe_35"]
+script = ExtResource("5_pipe")
+Points = PackedVector3Array(0, -4, 0, 0, 0, 0, 30, 0, 0, 31, 0.5, 0, 66, 0.5, 0)
+Radius = 0.5
+BendRadius = 1.4
+FlangeSpacing = 4
+
+[sub_resource type="PrimitiveMesh" id="cables_36"]
+script = ExtResource("19_cables")
+End = Vector3(20, -0.5, 0)
+Sag = 2.8
+Radius = 0.07
+Strands = 3
+Seed = 31
+
+[node name="Choir" type="Node3D" node_paths=PackedStringArray("SpawnPoint", "Stage", "Lamps", "Shafts", "GlyphLights")]
+script = ExtResource("21_room")
+SpawnPoint = NodePath("SpawnPoint")
+Stage = NodePath("Stage")
+Biome = ExtResource("22_frozen")
+Lamps = [NodePath("Lamps/Altar")]
+Shafts = [NodePath("Shafts/Clerestory"), NodePath("Shafts/Organ")]
+GlyphLights = [NodePath("Glyphs/StallFrontLight")]
+BoundsMin = Vector2(-1, -6)
+BoundsMax = Vector2(60, 22)
+
+[node name="SpawnPoint" type="Marker3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 4, 0, 0)
+
+; The shared atmosphere stack (environment, key light, clear front air, skylines, far pillars, frame, dust).
+[node name="Stage" parent="." instance=ExtResource("23_stage")]
+Seed = 91
+DustDensity = 1
+PillarDensity = 3
+FrameBelow = false
+
+[node name="Geometry" type="Node3D" parent="."]
+
+; the screen: a dry walk in from the west
+[node name="FloorWest" parent="Geometry" instance=ExtResource("1_block")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 4.5, -3, 0)
+Size = Vector3(15, 6, 4)
+
+; the sunken choir (a 2 m drop in: land it far from the first Chorister)
+[node name="Choir" parent="Geometry" instance=ExtResource("1_block")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 30, -4, 0)
+Size = Vector3(36, 4, 4)
+
+; the step up to the organ and the doorway east
+[node name="FloorEast" parent="Geometry" instance=ExtResource("1_block")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 55, -3, 0)
+Size = Vector3(14, 6, 4)
+
+; low pews: a hop over each one lands loud enough to wake a Chorister close by
+[node name="Pew0" parent="Geometry" instance=ExtResource("1_block")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 21.75, -1.5, 0)
+Size = Vector3(1.5, 1, 4)
+
+[node name="Pew1" parent="Geometry" instance=ExtResource("1_block")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 32.25, -1.5, 0)
+Size = Vector3(1.5, 1, 4)
+
+[node name="Pew2" parent="Geometry" instance=ExtResource("1_block")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 40.75, -1.5, 0)
+Size = Vector3(1.5, 1, 4)
+
+[node name="WallWest" parent="Geometry" instance=ExtResource("1_block")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -1.5, 14, 0)
+Size = Vector3(3, 20, 4)
+
+[node name="WallEast" parent="Geometry" instance=ExtResource("1_block")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 61.5, 14, 0)
+Size = Vector3(3, 20, 4)
+
+; the vault overhead
+[node name="Vault" parent="Geometry" instance=ExtResource("1_block")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 30, 21, 0)
+Size = Vector3(66, 6, 4)
+
+[node name="Exits" type="Node3D" parent="."]
+
+; on to the Coldstacks
+[node name="West" type="Marker3D" parent="Exits"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 1, 0, 0)
+script = ExtResource("2_exit")
+TargetRoom = "res://scenes/rooms/Coldstacks.tscn"
+TargetExit = "East"
+Size = Vector2(1, 4)
+
+; back to Rimefall
+[node name="East" type="Marker3D" parent="Exits"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 59, 0, 0)
+script = ExtResource("2_exit")
+TargetRoom = "res://scenes/rooms/Rimefall.tscn"
+TargetExit = "West"
+Size = Vector2(1, 4)
+
+[node name="Machines" type="Node3D" parent="."]
+
+; the choir, asleep mid-prayer, facing the organ
+[node name="Chorister0" type="CharacterBody3D" parent="Machines"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 17, -2, 0)
+script = ExtResource("3_machine")
+Species = ExtResource("4_chorister")
+StartFacing = 1
+Seed = 1
+
+[node name="Chorister1" type="CharacterBody3D" parent="Machines"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 26.5, -2, 0)
+script = ExtResource("3_machine")
+Species = ExtResource("4_chorister")
+StartFacing = 1
+Seed = 2
+
+[node name="Chorister2" type="CharacterBody3D" parent="Machines"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 28.5, -2, 0)
+script = ExtResource("3_machine")
+Species = ExtResource("4_chorister")
+StartFacing = 1
+Seed = 3
+
+[node name="Chorister3" type="CharacterBody3D" parent="Machines"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 36.5, -2, 0)
+script = ExtResource("3_machine")
+Species = ExtResource("4_chorister")
+StartFacing = 1
+Seed = 4
+
+[node name="Chorister4" type="CharacterBody3D" parent="Machines"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 45, -2, 0)
+script = ExtResource("3_machine")
+Species = ExtResource("4_chorister")
+StartFacing = 1
+Seed = 5
+
+[node name="Shafts" type="Node3D" parent="."]
+
+; through the clerestory, across the choir
+[node name="Clerestory" type="SpotLight3D" parent="Shafts"]
+transform = Transform3D(-0.7071, 0.6288, -0.3234, 0, 0.4573, 0.8893, 0.7071, 0.6288, -0.3234, 8, 40, -10)
+light_energy = 3.5
+light_volumetric_fog_energy = 10
+shadow_enabled = true
+spot_range = 80
+spot_attenuation = 0.25
+spot_angle = 10
+spot_angle_attenuation = 2
+
+; a pale fall of light on the organ
+[node name="Organ" type="SpotLight3D" parent="Shafts"]
+transform = Transform3D(-1, 0, 0, 0, 0.1414, 0.9899, 0, 0.9899, -0.1414, 52, 42, -6)
+light_energy = 3
+light_volumetric_fog_energy = 10
+shadow_enabled = true
+spot_range = 80
+spot_attenuation = 0.25
+spot_angle = 8
+spot_angle_attenuation = 2
+
+[node name="Lamps" type="Node3D" parent="."]
+
+; a cold glow at the organ console
+[node name="Altar" type="OmniLight3D" parent="Lamps"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 54, 2.5, -1.5)
+light_energy = 1.2
+omni_range = 7
+shadow_enabled = false
+
+[node name="Kit" type="Node3D" parent="."]
+
+[node name="Organ" type="Node3D" parent="Kit"]
+
+; the organ: a front of pipes in towers, frozen silent
+[node name="Pipe0" type="MeshInstance3D" parent="Kit/Organ"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 49.5, 1, -5.5)
+mesh = SubResource("pipe_1")
+material_override = ExtResource("6_metal_mid")
+
+[node name="Pipe1" type="MeshInstance3D" parent="Kit/Organ"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 50.5, 1, -5.5)
+mesh = SubResource("pipe_2")
+material_override = ExtResource("6_metal_mid")
+
+[node name="Pipe2" type="MeshInstance3D" parent="Kit/Organ"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 51.5, 1, -5.5)
+mesh = SubResource("pipe_3")
+material_override = ExtResource("6_metal_mid")
+
+[node name="Pipe3" type="MeshInstance3D" parent="Kit/Organ"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 52.5, 1, -5.5)
+mesh = SubResource("pipe_4")
+material_override = ExtResource("6_metal_mid")
+
+[node name="Pipe4" type="MeshInstance3D" parent="Kit/Organ"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 53.5, 1, -5.5)
+mesh = SubResource("pipe_5")
+material_override = ExtResource("6_metal_mid")
+
+[node name="Pipe5" type="MeshInstance3D" parent="Kit/Organ"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 54.5, 1, -5.5)
+mesh = SubResource("pipe_6")
+material_override = ExtResource("6_metal_mid")
+
+[node name="Pipe6" type="MeshInstance3D" parent="Kit/Organ"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 55.5, 1, -5.5)
+mesh = SubResource("pipe_7")
+material_override = ExtResource("6_metal_mid")
+
+[node name="Pipe7" type="MeshInstance3D" parent="Kit/Organ"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 56.5, 1, -5.5)
+mesh = SubResource("pipe_8")
+material_override = ExtResource("6_metal_mid")
+
+[node name="Pipe8" type="MeshInstance3D" parent="Kit/Organ"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 57.5, 1, -5.5)
+mesh = SubResource("pipe_9")
+material_override = ExtResource("6_metal_mid")
+
+[node name="Back0" type="MeshInstance3D" parent="Kit/Organ"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 48.5, 1, -7.25)
+mesh = SubResource("pipe_10")
+material_override = ExtResource("6_metal_mid")
+
+[node name="Back1" type="MeshInstance3D" parent="Kit/Organ"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 49.25, 1, -7.25)
+mesh = SubResource("pipe_11")
+material_override = ExtResource("6_metal_mid")
+
+[node name="Back2" type="MeshInstance3D" parent="Kit/Organ"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 50, 1, -7.25)
+mesh = SubResource("pipe_12")
+material_override = ExtResource("6_metal_mid")
+
+[node name="Back3" type="MeshInstance3D" parent="Kit/Organ"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 50.75, 1, -7.25)
+mesh = SubResource("pipe_13")
+material_override = ExtResource("6_metal_mid")
+
+[node name="Back4" type="MeshInstance3D" parent="Kit/Organ"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 51.5, 1, -7.25)
+mesh = SubResource("pipe_14")
+material_override = ExtResource("6_metal_mid")
+
+[node name="Back5" type="MeshInstance3D" parent="Kit/Organ"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 52.25, 1, -7.25)
+mesh = SubResource("pipe_15")
+material_override = ExtResource("6_metal_mid")
+
+[node name="Back6" type="MeshInstance3D" parent="Kit/Organ"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 53, 1, -7.25)
+mesh = SubResource("pipe_16")
+material_override = ExtResource("6_metal_mid")
+
+[node name="Back7" type="MeshInstance3D" parent="Kit/Organ"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 53.75, 1, -7.25)
+mesh = SubResource("pipe_17")
+material_override = ExtResource("6_metal_mid")
+
+[node name="Back8" type="MeshInstance3D" parent="Kit/Organ"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 54.5, 1, -7.25)
+mesh = SubResource("pipe_18")
+material_override = ExtResource("6_metal_mid")
+
+[node name="Back9" type="MeshInstance3D" parent="Kit/Organ"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 55.25, 1, -7.25)
+mesh = SubResource("pipe_19")
+material_override = ExtResource("6_metal_mid")
+
+[node name="Back10" type="MeshInstance3D" parent="Kit/Organ"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 56, 1, -7.25)
+mesh = SubResource("pipe_20")
+material_override = ExtResource("6_metal_mid")
+
+[node name="Back11" type="MeshInstance3D" parent="Kit/Organ"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 56.75, 1, -7.25)
+mesh = SubResource("pipe_21")
+material_override = ExtResource("6_metal_mid")
+
+[node name="Back12" type="MeshInstance3D" parent="Kit/Organ"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 57.5, 1, -7.25)
+mesh = SubResource("pipe_22")
+material_override = ExtResource("6_metal_mid")
+
+[node name="Case" type="MeshInstance3D" parent="Kit/Organ"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 53.5, 0.5, -6.5)
+mesh = SubResource("blockmesh_23")
+material_override = ExtResource("8_stone_mid")
+
+; frozen where the pipes once breathed
+[node name="Icicles" type="MeshInstance3D" parent="Kit/Organ"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 53.5, 13.5, -5)
+mesh = SubResource("icicles_24")
+material_override = ExtResource("10_ice_mid")
+
+[node name="BackFloor" type="Node3D" parent="Kit"]
+
+; the floor behind the play plane
+[node name="West" type="MeshInstance3D" parent="Kit/BackFloor"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 5, -0.5, -8)
+mesh = SubResource("blockmesh_25")
+material_override = ExtResource("8_stone_mid")
+
+[node name="Choir" type="MeshInstance3D" parent="Kit/BackFloor"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 30, -2.5, -8)
+mesh = SubResource("blockmesh_26")
+material_override = ExtResource("8_stone_mid")
+
+[node name="East" type="MeshInstance3D" parent="Kit/BackFloor"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 55, -0.5, -8)
+mesh = SubResource("blockmesh_27")
+material_override = ExtResource("8_stone_mid")
+
+[node name="Stalls" type="Node3D" parent="Kit"]
+
+; the choir stalls in tiers behind
+[node name="Low" type="MeshInstance3D" parent="Kit/Stalls"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 30, -1.5, -3.25)
+mesh = SubResource("blockmesh_28")
+material_override = ExtResource("8_stone_mid")
+
+[node name="High" type="MeshInstance3D" parent="Kit/Stalls"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 30, -0.75, -5)
+mesh = SubResource("blockmesh_29")
+material_override = ExtResource("8_stone_mid")
+
+[node name="Glyphs" type="Node3D" parent="."]
+
+; glyphs along the stalls
+[node name="StallFront" type="MeshInstance3D" parent="Glyphs"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 30, -1.5, -2.34)
+mesh = SubResource("QuadMesh_30")
+material_override = ExtResource("11_glyphs")
+cast_shadow = 0
+
+[node name="StallFrontLight" type="OmniLight3D" parent="Glyphs"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 30, -1.5, -1.64)
+light_energy = 0.35
+light_volumetric_fog_energy = 0
+omni_range = 3
+
+; the choir's arcade
+[node name="Arcade" type="Node3D" parent="Kit"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -2, -2, -11)
+script = ExtResource("14_colonnade")
+Pier = SubResource("column_31")
+Arch = SubResource("arch_32")
+Material = ExtResource("8_stone_mid")
+Bays = 10
+Span = 6
+ArchHeight = 11
+BeamHeight = 16
+BeamSection = Vector2(1.5, 2)
+Seed = 92
+
+[node name="Icicles" type="Node3D" parent="Kit"]
+
+; icicles under the vault
+[node name="West" type="MeshInstance3D" parent="Kit/Icicles"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 14, 18, 1.5)
+mesh = SubResource("icicles_33")
+material_override = ExtResource("15_ice")
+
+[node name="East" type="MeshInstance3D" parent="Kit/Icicles"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 38, 18, 1.5)
+mesh = SubResource("icicles_33")
+material_override = ExtResource("15_ice")
+
+[node name="Back" type="MeshInstance3D" parent="Kit/Icicles"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 28, 14.75, -10.25)
+mesh = SubResource("icicles_34")
+material_override = ExtResource("10_ice_mid")
+
+[node name="Particles" type="Node3D" parent="."]
+
+[node name="Rime" parent="Particles" instance=ExtResource("16_rime")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 30, 12, -1)
+Extents = Vector3(28, 8, 3)
+Density = 0.25
+
+[node name="Motes" parent="Particles" instance=ExtResource("17_dust")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 14, 8, -2)
+Extents = Vector3(8, 6, 2)
+Density = 1.5
+
+[node name="Backdrop" type="Node3D" parent="."]
+
+[node name="ForePipe" type="MeshInstance3D" parent="Backdrop"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -3, -4.75, 7.5)
+mesh = SubResource("pipe_35")
+material_override = ExtResource("18_foreground")
+cast_shadow = 0
+
+[node name="ForeCables" type="MeshInstance3D" parent="Backdrop"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 18, 19.5, 7)
+mesh = SubResource("cables_36")
+material_override = ExtResource("18_foreground")
+cast_shadow = 0
+
+[node name="PhotoSpots" type="Node3D" parent="."]
+
+; gameplay framing: walking between the sleeping Choristers
+[node name="Choir" type="Marker3D" parent="PhotoSpots"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 24, 3, 22)
+script = ExtResource("20_spot")
+PlayerPosition = Vector3(19.5, -2, 0)
+
+; the last Chorister before the frozen organ
+[node name="Organ" type="Marker3D" parent="PhotoSpots"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 50, 3, 22)
+script = ExtResource("20_spot")
+PlayerPosition = Vector3(46.5, -2, 0)
+
+; close on two Choristers under their rime
+[node name="Chorister" type="Marker3D" parent="PhotoSpots"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 27.5, 0, 9)
+script = ExtResource("20_spot")
+PlayerPosition = Vector3(23.5, -2, 0)
+
+; the whole choir
+[node name="Wide" type="Marker3D" parent="PhotoSpots"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 30, 7, 58)
+script = ExtResource("20_spot")
+PlayerPosition = Vector3(8, 0, 0)
+Fov = 40

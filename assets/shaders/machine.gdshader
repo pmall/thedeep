@@ -11,6 +11,10 @@ shader_type spatial;
 #include "res://assets/shaders/lib/noise.gdshaderinc"
 #include "res://assets/shaders/lib/palette.gdshaderinc"
 #include "res://assets/shaders/lib/surface.gdshaderinc"
+#include "res://assets/shaders/lib/frost.gdshaderinc"
+
+// The part's own position: rime is laid on in the machine's frame, so it rides along when it moves.
+varying vec3 v_local_pos;
 
 uniform int slot : hint_enum("Rock", "Metal", "Backdrop", "Backdrop accent", "Foreground", "Rust", "Silt", "Accent") = 1;
 /// Multiplies the palette color: below 1 for underbodies and joints, above for bright plating.
@@ -54,6 +58,7 @@ instance uniform float hurt : hint_range(0.0, 1.0) = 0.0;
 
 void vertex() {
 	v_world_pos = (MODEL_MATRIX * vec4(VERTEX, 1.0)).xyz;
+	v_local_pos = VERTEX;
 	// Not the kit's position seed: machines move, so their look must not.
 	v_seed = fract(machine_seed * 0.754877 + COLOR.g * 0.61803);
 }
@@ -119,6 +124,16 @@ void fragment() {
 		rough = mix(rough, 0.85, rust);
 		metal = mix(metal, 0.1, rust);
 		coat *= 1.0 - rust;
+	}
+
+	// In the cold, a dormant machine gathers rime (lib/frost); it falls away as the machine rouses.
+	if (biome_frost > 0.0 && rouse < 1.0) {
+		vec3 world_n = view_to_world(n, INV_VIEW_MATRIX);
+		Frost fr = frost_at(v_local_pos * 3.0 + machine_seed * 13.0, world_n, world_n.y, groove, f.edge, 0.8 * (1.0 - rouse));
+		albedo = mix(albedo, frost_color(groove), fr.cover);
+		rough = mix(mix(rough, 0.6, fr.cover), 0.06, fr.sparkle);
+		metal = mix(metal, 0.0, fr.cover);
+		coat *= 1.0 - fr.cover;
 	}
 
 	vec3 calm = mix(palette_color(7), vec3(1.0), calm_whiteness);

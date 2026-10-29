@@ -1,0 +1,20 @@
+[gd_scene format=3]
+; Rime flakes falling through the cold air (the frozen layer's snow). Place it high in a room, set Extents
+; tall enough for the fall and Density; the lifetime covers a fall of about 8 m.
+
+[ext_resource type="Script" path="res://scripts/rooms/AmbientParticles.cs" id="1_ambient"]
+[ext_resource type="Material" path="res://assets/particles/rime_process.tres" id="2_process"]
+[ext_resource type="Material" path="res://assets/particles/rime_material.tres" id="3_material"]
+
+[sub_resource type="QuadMesh" id="QuadMesh_flake"]
+material = ExtResource("3_material")
+size = Vector2(0.05, 0.05)
+
+[node name="Rime" type="GPUParticles3D"]
+cast_shadow = 0
+amount = 300
+lifetime = 18.0
+process_material = ExtResource("2_process")
+draw_pass_1 = SubResource("QuadMesh_flake")
+script = ExtResource("1_ambient")
+Drift = Vector3(3, 8, 1)

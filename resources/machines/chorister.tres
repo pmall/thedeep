@@ -1,0 +1,173 @@
+[gd_resource type="Resource" script_class="MachineSpecies" format=3]
+; The Chorister (SleeperBehavior): a Votary of the frozen choir, asleep on its knees mid-prayer, bowed under
+; its rime. Footsteps never wake it; a hard landing close by does: it straightens, the rime falling from it,
+; its eye goes the hazard color, and it walks slowly after the noise and whoever made it, striking with
+; the Votary's blade after the same wind-up. Left alone a while, it kneels and sleeps again.
+
+[ext_resource type="Script" path="res://scripts/machines/MachineSpecies.cs" id="1_species"]
+[ext_resource type="Script" path="res://scripts/machines/behaviors/SleeperBehavior.cs" id="2_behavior"]
+[ext_resource type="Script" path="res://scripts/machines/JointDriver.cs" id="3_driver"]
+[ext_resource type="Script" path="res://scripts/machines/MachineLeg.cs" id="4_leg"]
+[ext_resource type="Resource" path="res://resources/parts/votary.tres" id="5_assembly"]
+
+[sub_resource type="Resource" id="Behavior"]
+script = ExtResource("2_behavior")
+HearingRange = 8
+WakeThreshold = 7
+TrackRange = 7
+Speed = 1.4
+Reach = 2
+WakeTime = 1.2
+Patience = 4
+WindUp = 0.55
+Blow = 0.12
+Recover = 0.8
+Cooldown = 0.6
+
+; asleep, it kneels...
+[sub_resource type="Resource" id="Driver_0"]
+script = ExtResource("3_driver")
+Joint = &"Pelvis"
+Mode = 0
+Channel = 5
+Invert = true
+Angle = -6
+Offset = Vector3(-0.03, -0.17, 0)
+
+; ...bowed deep
+[sub_resource type="Resource" id="Driver_1"]
+script = ExtResource("3_driver")
+Joint = &"Spine"
+Mode = 0
+Channel = 5
+Invert = true
+Angle = -48
+
+; draws back, then throws its weight into the blow
+[sub_resource type="Resource" id="Driver_2"]
+script = ExtResource("3_driver")
+Joint = &"Spine"
+Mode = 0
+Channel = 3
+Angle = -22
+WindUp = 12
+
+; it only breathes awake
+[sub_resource type="Resource" id="Driver_3"]
+script = ExtResource("3_driver")
+Joint = &"Spine"
+Mode = 1
+Channel = 5
+Angle = 1.2
+Rate = 0.27
+
+[sub_resource type="Resource" id="Driver_4"]
+script = ExtResource("3_driver")
+Joint = &"Head"
+Mode = 0
+Channel = 5
+Invert = true
+Angle = -22
+
+; awake, it looks at the noise, or at the intruder
+[sub_resource type="Resource" id="Driver_5"]
+script = ExtResource("3_driver")
+Joint = &"Head"
+Mode = 3
+Channel = 5
+Angle = 35
+Sharpness = 5
+
+; blade arm: folded against the chest at rest
+[sub_resource type="Resource" id="Driver_6"]
+script = ExtResource("3_driver")
+Joint = &"ShoulderN"
+Mode = 0
+Channel = 0
+Angle = 30
+
+; up and back over the head, then a chop forward
+[sub_resource type="Resource" id="Driver_7"]
+script = ExtResource("3_driver")
+Joint = &"ShoulderN"
+Mode = 0
+Channel = 3
+Angle = 40
+WindUp = -150
+
+[sub_resource type="Resource" id="Driver_8"]
+script = ExtResource("3_driver")
+Joint = &"ElbowN"
+Mode = 0
+Channel = 0
+Angle = 125
+
+[sub_resource type="Resource" id="Driver_9"]
+script = ExtResource("3_driver")
+Joint = &"ElbowN"
+Mode = 0
+Channel = 3
+Angle = -110
+WindUp = 195
+
+; censer arm, held out
+[sub_resource type="Resource" id="Driver_10"]
+script = ExtResource("3_driver")
+Joint = &"ShoulderF"
+Mode = 0
+Channel = 0
+Angle = 38
+
+[sub_resource type="Resource" id="Driver_11"]
+script = ExtResource("3_driver")
+Joint = &"ShoulderF"
+Mode = 0
+Channel = 2
+Angle = 22
+
+[sub_resource type="Resource" id="Driver_12"]
+script = ExtResource("3_driver")
+Joint = &"ElbowF"
+Mode = 0
+Channel = 0
+Angle = 55
+
+[sub_resource type="Resource" id="Leg_0"]
+script = ExtResource("4_leg")
+Upper = &"HipN"
+Lower = &"KneeN"
+Foot = &"FootN"
+Stride = 0.3
+Lift = 0.08
+Bend = 1
+
+[sub_resource type="Resource" id="Leg_1"]
+script = ExtResource("4_leg")
+Upper = &"HipF"
+Lower = &"KneeF"
+Foot = &"FootF"
+Phase = 0.5
+Stride = 0.3
+Lift = 0.08
+Bend = 1
+
+[resource]
+script = ExtResource("1_species")
+Id = &"chorister"
+DisplayName = "Chorister"
+Layer = 1
+Hostile = true
+CreedLine = &"creed.chorister"
+Assembly = ExtResource("5_assembly")
+Locomotion = 0
+BodySize = Vector2(0.7, 1.9)
+SensorHeight = 1.6
+TurnSharpness = 6
+MaxSpeed = 1.4
+Acceleration = 3
+Health = 4
+Wear = 0.35
+Tone = 0.9
+Behavior = SubResource("Behavior")
+Drivers = [SubResource("Driver_0"), SubResource("Driver_1"), SubResource("Driver_2"), SubResource("Driver_3"), SubResource("Driver_4"), SubResource("Driver_5"), SubResource("Driver_6"), SubResource("Driver_7"), SubResource("Driver_8"), SubResource("Driver_9"), SubResource("Driver_10"), SubResource("Driver_11"), SubResource("Driver_12")]
+Legs = [SubResource("Leg_0"), SubResource("Leg_1")]

@@ -1,0 +1,52 @@
+[gd_resource type="Resource" script_class="BiomeProfile" format=3]
+; Layer 2, the cold archive: rime-white stone under a cold blue light, blue-black depths, the accent
+; warmed from the flooded magenta toward rose (the palette warms with depth, toward the core's amber).
+
+[ext_resource type="Script" path="res://scripts/biome/BiomeProfile.cs" id="1_biome"]
+
+[resource]
+script = ExtResource("1_biome")
+DisplayName = "Frozen"
+Rock = Color(0.42, 0.45, 0.52, 1)
+Metal = Color(0.6, 0.72, 0.9, 1)
+Backdrop = Color(0.08, 0.1, 0.15, 1)
+BackdropAccent = Color(0.48, 0.16, 0.38, 1)
+Rust = Color(0.36, 0.42, 0.48, 1)
+Silt = Color(0.7, 0.75, 0.84, 1)
+Frost = 0.85
+FrostColor = Color(0.86, 0.91, 0.98, 1)
+Foreground = Color(0.015, 0.02, 0.035, 1)
+Accent = Color(0.95, 0.33, 0.66, 1)
+Background = Color(0.03, 0.04, 0.07, 1)
+AmbientColor = Color(0.5, 0.6, 0.78, 1)
+AmbientEnergy = 0.32
+KeyColor = Color(0.8, 0.88, 1, 1)
+KeyEnergy = 1.8
+LampColor = Color(0.86, 0.9, 1, 1)
+ShaftColor = Color(0.9, 0.95, 1, 1)
+KeyFogEnergy = 0.2
+FogColor = Color(0.22, 0.27, 0.38, 1)
+FogDensity = 0.9
+FogDepthBegin = 26.0
+FogDepthEnd = 78.0
+HazeColor = Color(0.5, 0.58, 0.72, 1)
+VolumetricDensity = 0.028
+VolumetricAlbedo = Color(0.82, 0.88, 1, 1)
+VolumetricEmission = Color(0.03, 0.04, 0.065, 1)
+VolumetricEmissionEnergy = 1.0
+VolumetricAnisotropy = 0.4
+Exposure = 1.0
+Brightness = 1.0
+Contrast = 1.14
+Saturation = 0.9
+Lift = Color(0.01, 0.02, 0.045, 1)
+Gain = Color(0.98, 1, 1, 1)
+GlowIntensity = 0.65
+WaterTint = Color(0.36, 0.42, 0.54, 1)
+WaterDeep = Color(0.02, 0.03, 0.06, 1)
+CausticColor = Color(0.8, 0.88, 1, 1)
+CausticStrength = 1.2
+Vignette = 0.8
+VignetteColor = Color(0.1, 0.13, 0.22, 1)
+Grain = 0.035
+ParticleTint = Color(0.92, 0.95, 1, 1)

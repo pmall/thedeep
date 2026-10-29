@@ -232,7 +232,7 @@ public class KitGeometryTests
     }
 
     public static IEnumerable<object[]> Pieces() =>
-        new[] { "column", "cluster", "pipe", "cables", "arch", "rib", "grate", "rack", "wreck" }.Select(n => new object[] { n });
+        new[] { "column", "cluster", "pipe", "cables", "arch", "rib", "grate", "rack", "wreck", "icicles" }.Select(n => new object[] { n });
 
     [Fact]
     public void SeededPiecesAreRepeatableAndVary()
@@ -253,6 +253,16 @@ public class KitGeometryTests
         }
     }
 
+    [Fact]
+    public void IciclesHangBelowTheirRootAndVaryBySeed()
+    {
+        MeshData a = BuildPiece("icicles", seed: 3), other = BuildPiece("icicles", seed: 4);
+        (Vector3 min, Vector3 max) = a.Bounds();
+        Assert.True(max.Y < 0.05f, $"icicles rise above their root to {max.Y}");
+        Assert.True(min.Y < -0.2f && min.Y >= -1.5f - 0.01f, $"the longest reaches {min.Y}");
+        Assert.NotEqual(a.Positions[10], other.Positions[10]);
+    }
+
     private static MeshData BuildPiece(string name, int seed)
     {
         var b = new MeshBuilder();
@@ -267,6 +277,7 @@ public class KitGeometryTests
             case "grate": KitShapes.Grate(b, new Vector3(4f, 0.25f, 3f), 0.15f, 0.04f); break;
             case "rack": KitShapes.Rack(b, new Vector3(1f, 2.4f, 1f), 12, seed); break;
             case "wreck": KitShapes.Wreck(b, 3f, seed); break;
+            case "icicles": KitShapes.Icicles(b, 3f, 1.5f, 9, seed); break;
             default: throw new ArgumentException(name);
         }
 

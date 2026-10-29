@@ -37,6 +37,7 @@ EXT = {
     'wreck': ('Script', 'res://scripts/kit/WreckMesh.cs'),
     'pipe': ('Script', 'res://scripts/kit/PipeMesh.cs'),
     'cables': ('Script', 'res://scripts/kit/CableMesh.cs'),
+    'icicles': ('Script', 'res://scripts/kit/IcicleMesh.cs'),
     # part meshes, usable as dressing too (a bell is a pod, its lip a ring)
     'pod': ('Script', 'res://scripts/parts/PodMesh.cs'),
     'ring': ('Script', 'res://scripts/parts/RingMesh.cs'),
@@ -47,6 +48,7 @@ EXT = {
     'dust': ('PackedScene', 'res://scenes/fx/Dust.tscn'),
     'silt': ('PackedScene', 'res://scenes/fx/Silt.tscn'),
     'drips': ('PackedScene', 'res://scenes/fx/Drips.tscn'),
+    'rime': ('PackedScene', 'res://scenes/fx/Rime.tscn'),
     'shrine': ('PackedScene', 'res://scenes/props/Shrine.tscn'),
     'relic': ('PackedScene', 'res://scenes/props/AbilityRelic.tscn'),
     'anchor': ('PackedScene', 'res://scenes/props/HarpoonAnchor.tscn'),
@@ -55,14 +57,17 @@ EXT = {
     'plate': ('PackedScene', 'res://scenes/props/ScripturePlate.tscn'),
     # resources
     'flooded': ('Resource', 'res://resources/biomes/flooded.tres'),
+    'frozen': ('Resource', 'res://resources/biomes/frozen.tres'),
     'votary': ('Resource', 'res://resources/machines/votary.tres'),
     'gleaner': ('Resource', 'res://resources/machines/gleaner.tres'),
     'lamplighter': ('Resource', 'res://resources/machines/lamplighter.tres'),
     'limpet': ('Resource', 'res://resources/machines/limpet.tres'),
     'precentor': ('Resource', 'res://resources/machines/precentor.tres'),
+    'chorister': ('Resource', 'res://resources/machines/chorister.tres'),
 }
 for m in ['rock', 'wet_stone', 'metal', 'rust', 'glyphs', 'cable', 'stone_mid', 'metal_mid', 'rust_mid',
-          'backdrop_stone', 'backdrop_rust', 'foreground', 'backdrop_cathedral', 'backdrop_halls', 'water', 'underwater']:
+          'backdrop_stone', 'backdrop_rust', 'foreground', 'backdrop_cathedral', 'backdrop_halls', 'water', 'underwater',
+          'ice', 'ice_mid']:
     EXT[m] = ('Material', f'res://assets/materials/{m}.tres')
 
 IDENTITY = (1, 0, 0, 0, 1, 0, 0, 0, 1)
@@ -207,7 +212,9 @@ class Room:
         """A harpoon anchor: its origin is where the pilgrim's center is pulled to (keep a body's height of air below it)."""
         return self.node('Anchors/' + name, instance='anchor', comment=comment, transform=Raw(transform((pos[0], pos[1], 0))))
 
-    def exit(self, name, pos, size, target='', target_exit='', requires='', one_way=False, arrival_side=0, comment=''):
+    def exit(self, name, pos, size, target='', target_exit='', requires='', one_way=False, arrival_side=0, arrival_only=False,
+             comment=''):
+        """An exit marker; `arrival_only` for the far end of a one-way drop from another room (no target, no trigger)."""
         props = {'transform': Raw(transform((pos[0], pos[1], 0))), 'script': self.ext('exit')}
         if target:
             props['TargetRoom'] = f'res://scenes/rooms/{target}.tscn'
@@ -218,6 +225,8 @@ class Room:
             props['OneWay'] = True
         if arrival_side:
             props['ArrivalSide'] = arrival_side
+        if arrival_only:
+            props['ArrivalOnly'] = True
         props['Size'] = Raw(vec(*size))
         return self.node('Exits/' + name, type='Marker3D', comment=comment, **props)
 

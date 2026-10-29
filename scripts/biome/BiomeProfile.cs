@@ -41,6 +41,15 @@ public partial class BiomeProfile : Resource
     /// <summary>Silt or moss settled in rock crevices and on ledges.</summary>
     [Export] public Color Silt { get; set; } = new(0.6f, 0.6f, 0.62f);
 
+    /// <summary>
+    /// Rime on rock and metal (lib/frost.gdshaderinc): 0 none, 1 caps on every ledge and hoarfrost in the crevices.
+    /// Metal takes a smaller share, so grippable metal stays readable.
+    /// </summary>
+    [Export(PropertyHint.Range, "0,1")] public float Frost { get; set; }
+
+    /// <summary>The rime's color.</summary>
+    [Export] public Color FrostColor { get; set; } = new(0.88f, 0.92f, 0.98f);
+
     /// <summary>The void behind everything.</summary>
     [ExportGroup("Light")]
     [Export] public Color Background { get; set; } = new(0.05f, 0.05f, 0.07f);
@@ -150,6 +159,8 @@ public partial class BiomeProfile : Resource
         RenderingServer.GlobalShaderParameterSet(ShaderGlobals.BiomeParticle, ParticleTint);
         RenderingServer.GlobalShaderParameterSet(ShaderGlobals.BiomeRust, Rust);
         RenderingServer.GlobalShaderParameterSet(ShaderGlobals.BiomeSilt, Silt);
+        RenderingServer.GlobalShaderParameterSet(ShaderGlobals.BiomeFrost, Frost);
+        RenderingServer.GlobalShaderParameterSet(ShaderGlobals.BiomeFrostColor, FrostColor);
         RenderingServer.GlobalShaderParameterSet(ShaderGlobals.BiomeHaze, HazeColor);
         RenderingServer.GlobalShaderParameterSet(ShaderGlobals.BiomeShaft, ShaftColor);
         RenderingServer.GlobalShaderParameterSet(ShaderGlobals.BiomeWater, WaterTint);

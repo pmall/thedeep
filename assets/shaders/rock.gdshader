@@ -8,6 +8,7 @@ shader_type spatial;
 #include "res://assets/shaders/lib/palette.gdshaderinc"
 #include "res://assets/shaders/lib/surface.gdshaderinc"
 #include "res://assets/shaders/lib/water.gdshaderinc"
+#include "res://assets/shaders/lib/frost.gdshaderinc"
 
 uniform int slot : hint_enum("Rock", "Metal", "Backdrop", "Backdrop accent", "Foreground") = 0;
 
@@ -48,6 +49,8 @@ uniform bool detail = true;
 /// Albedo multiplier. Below 1 pushes a piece back behind the play plane (midground), so the play
 /// plane stays the brightest, most readable layer.
 uniform float shade : hint_range(0.0, 1.0) = 1.0;
+/// Share of the biome's rime this material takes (lib/frost).
+uniform float frost_share : hint_range(0.0, 1.0) = 1.0;
 group_uniforms;
 
 struct Rock {
@@ -152,11 +155,16 @@ void fragment() {
 	float rough = mix(roughness, side ? 0.32 : 0.28, wet);
 	rough = mix(rough, 0.04, puddle * wetness);
 
+	// Rime over it all: matte and pale, glinting where a crystal catches the light.
+	Frost fr = frost_at(p, world_n, face_world_n.y, r.cavity, detail ? f.edge : 1e3, frost_share);
+	albedo = mix(albedo, frost_color(r.cavity), fr.cover);
+	rough = mix(mix(rough, 0.62, fr.cover), 0.06, fr.sparkle);
+
 	ALBEDO = albedo * shade;
 	EMISSION = ALBEDO * caustics_at(v_world_pos, view_to_world(f.normal, INV_VIEW_MATRIX), TIME);
 	ROUGHNESS = rough;
 	METALLIC = 0.0;
-	SPECULAR = mix(0.35, 0.5, wet);
+	SPECULAR = mix(mix(0.35, 0.5, wet), 0.9, fr.sparkle);
 	AO = 1.0 - r.cavity * 0.6;
 	AO_LIGHT_AFFECT = 0.25;
 	NORMAL = n;

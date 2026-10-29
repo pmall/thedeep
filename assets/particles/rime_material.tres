@@ -1,0 +1,11 @@
+[gd_resource type="ShaderMaterial" format=3]
+; Rime flakes catch more of the key light than dust does: snow reads everywhere, brightest in the shafts.
+
+[ext_resource type="Shader" path="res://assets/shaders/particle.gdshader" id="1_shader"]
+
+[resource]
+shader = ExtResource("1_shader")
+shader_parameter/shape = 0
+shader_parameter/opacity = 0.85
+shader_parameter/glow = 0.04
+shader_parameter/key_light = 0.3

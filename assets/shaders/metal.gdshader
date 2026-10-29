@@ -9,6 +9,7 @@ shader_type spatial;
 #include "res://assets/shaders/lib/palette.gdshaderinc"
 #include "res://assets/shaders/lib/surface.gdshaderinc"
 #include "res://assets/shaders/lib/water.gdshaderinc"
+#include "res://assets/shaders/lib/frost.gdshaderinc"
 
 uniform int slot : hint_enum("Rock", "Metal", "Backdrop", "Backdrop accent", "Foreground") = 1;
 
@@ -41,6 +42,8 @@ uniform float rim : hint_range(0.0, 1.0) = 0.25;
 /// Albedo multiplier. Below 1 pushes a piece back behind the play plane (midground), so grippable
 /// metal on the play plane stays the brightest metal on screen.
 uniform float shade : hint_range(0.0, 1.0) = 1.0;
+/// Share of the biome's rime this material takes (lib/frost): low, so grippable metal keeps its gloss.
+uniform float frost_share : hint_range(0.0, 1.0) = 0.45;
 group_uniforms;
 
 struct Panels {
@@ -153,13 +156,21 @@ void fragment() {
 	albedo *= 1.0 - pn.seam * 0.65;
 	albedo = mix(albedo, coat * 1.08, pn.rivet * (1.0 - rust));
 
+	// Rime gathers in the seams and on top faces; the panels between stay bare and glossy.
+	vec3 world_n = view_to_world(n, INV_VIEW_MATRIX);
+	Frost fr = frost_at(p, world_n, view_to_world(f.normal, INV_VIEW_MATRIX).y, max(pn.seam, pn.crease * 0.6), f.edge, frost_share);
+	albedo = mix(albedo, frost_color(pn.crease), fr.cover);
+	rough = mix(mix(rough, 0.6, fr.cover), 0.06, fr.sparkle);
+	metal = mix(metal, 0.0, fr.cover);
+	coat_amount *= 1.0 - fr.cover;
+
 	ALBEDO = albedo * shade;
 	EMISSION = ALBEDO * caustics_at(v_world_pos, view_to_world(f.normal, INV_VIEW_MATRIX), TIME);
 	ROUGHNESS = clamp(rough, 0.05, 1.0);
 	METALLIC = metal;
 	CLEARCOAT = coat_amount;
 	CLEARCOAT_ROUGHNESS = 0.15;
-	RIM = rim * (1.0 - rust);
+	RIM = rim * (1.0 - rust) * (1.0 - fr.cover);
 	RIM_TINT = 0.6;
 	AO = 1.0 - pn.seam * 0.7 - pn.crease * 0.15;
 	AO_LIGHT_AFFECT = 0.2;

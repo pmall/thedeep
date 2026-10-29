@@ -31,6 +31,10 @@ scenes/
   rooms/Scriptorium.tscn, Chapterhouse.tscn, Brink.tscn   the flooded layer's end (M8): the Scriptorium up the Undercroft's
                            flue (copyists, three scripture plates, a shrine), the Chapterhouse (the Precentor's arena),
                            the Brink (a last shrine, the third law at the lip, the drop; the built map's MapGoal)
+  rooms/Rimefall.tscn, Choir.tscn, Coldstacks.tscn   the frozen layer's start (M8): where the Brink's jump lands (its sky
+                           an arrival-only exit; a frozen fall, terraces, a shrine), the Choir (Choristers asleep mid-prayer),
+                           the Coldstacks hub (shrine; galleries up to the Counterweight's roof hatch; the Calving ledge by
+                           grip or two rings; the Mere, the Vault and the Chimney sealed; the built map's MapGoal)
   props/HarpoonAnchor.tscn a mooring ring the Harpoon fires at (the origin is where the pilgrim's center is pulled)
   props/Portcullis.tscn    a gate of bars dropping across a way (a boss's arena)
   props/LawBreak.tscn      a law holding the pilgrim back at a lip: a veil of glyphs, the law's words, its collision
@@ -40,7 +44,7 @@ scenes/
   kit/Block.tscn           one gameplay block (Size + Surface; collider + bevelled kit mesh)
   camera/SideCamera.tscn   camera + depth-of-field attributes
   camera/ScreenGrade.tscn  finishing pass over the 3D view: vignette + grain (strengths from the biome)
-  fx/                      ambient particle effects (AmbientParticles): Dust, Silt, Drips
+  fx/                      ambient particle effects (AmbientParticles): Dust, Silt, Drips, Rime (falling flakes)
   ui/DebugHud.tscn         state/velocity/abilities readout + control hints
   ui/OwnerCapture.tscn     F12 screenshot / F10 video: REC dot + saved-file toast
 scripts/
@@ -82,7 +86,8 @@ scripts/
                            fog, two skylines, far pillars, framing foreground above and below, dust
   rooms/dressing/          dressing generators (visual only, seeded): Colonnade (piers + arches + beam + cables),
                            RackRow (a row of variants with gaps and toppled pieces); pure DressingLayout
-  rooms/RoomExit.cs        connection marker: target room + exit, requirement expression, one-way flag
+  rooms/RoomExit.cs        connection marker: target room + exit, requirement expression, one-way flag; ArrivalOnly for the
+                           far end of a one-way drop from another room (no target, no trigger, not a sealed way)
   rooms/PhotoSpot.cs       look-dev camera marker (position = camera) + player placement
   rooms/Block.cs           gameplay box: collider, physics layer from Surface, kit mesh (or CollisionOnly), look override
   rooms/SurfaceKind.cs     Rock / Metal
@@ -94,7 +99,7 @@ scripts/
     Profile.cs, PathFrame.cs, SweepPath.cs   cross-sections and paths (lines, bends, cables, arches)
     KitShapes.cs           the pieces as pure geometry: block, column, pipe, cables, arch/rib, grate, rack, wreck
     KitMesh.cs             PrimitiveMesh base: MeshData → mesh arrays (swappable for an authored mesh)
-    BlockMesh.cs … WreckMesh.cs   one [GlobalClass] mesh resource per piece, parameters exported
+    BlockMesh.cs … WreckMesh.cs, IcicleMesh.cs   one [GlobalClass] mesh resource per piece, parameters exported
   parts/                   the modular part system (M4), shared by the pilgrim and the machines:
     PartAssembly.cs, RigJoint.cs, PartSlot.cs, PartChain.cs   data: joints, rigid parts on joints, flowing chains
     PartBody.cs            Node3D that builds an assembly; chains simulated on physics ticks, drawn per frame;
@@ -144,7 +149,8 @@ scripts/
   debug/GripCheck.cs       scripted Mag-grip run in the mechanics lab, `-- --room MechanicsLab --grip-check`
   debug/HarpoonCheck.cs    scripted Harpoon run in the lab, `-- --room MechanicsLab --harpoon-check`
   debug/CombatCheck.cs     scripted combat and session run in the lab, `-- --room MechanicsLab --combat-check`
-  debug/EncounterCheck.cs  scripted boss fight and law break, `-- --room Chapterhouse --encounter-check`
+  debug/EncounterCheck.cs  scripted boss fight, law break, the jump into Rimefall and the Choir's sleepers,
+                           `-- --room Chapterhouse --encounter-check`
   debug/CaptureTestDriver.cs  windowed capture check + frame times (`-- --capture-test`)
   debug/LookDevDriver.cs   photo spots + frame times for tools/capture.sh (`-- --lookdev <dir>`)
   debug/DemoInput.cs       scripted run/jump/dash input for drivers
@@ -152,7 +158,7 @@ scripts/
   util/Countdown.cs        coyote, buffers, cooldowns
   util/FrameTimeStats.cs   average / percentile / worst frame times
 resources/player_tuning.tres   the live PlayerTuning values
-resources/biomes/              BiomeProfile per depth layer (flooded, volcanic draft)
+resources/biomes/              BiomeProfile per depth layer (flooded, frozen, volcanic draft)
 resources/parts/               part assemblies: the pilgrim, and one body per machine species
 resources/machines/            MachineSpecies, one file per species (its id is its file name)
 resources/text/lines.tres      the LineBook: creeds for now
@@ -161,9 +167,13 @@ assets/shaders/                the material library (M1), procedural, no UVs or 
   lib/palette.gdshaderinc      the biome palette globals + srgb_to_linear
   lib/surface.gdshaderinc      the kit's surface frame from mesh attributes: patch UV, edge distance, height, bump, seed
   lib/water.gdshaderinc        water globals + caustics (rock and metal include it)
+  lib/frost.gdshaderinc        rime from the biome (`Frost`): caps on what faces up, hoarfrost in crevices, glints; rock,
+                               metal (a smaller share), ice and dormant machines include it
   rock.gdshader                strata, cracks, silt, chipped edges, grime; `wetness` → wet stone
   metal.gdshader               ceramic-metal panels, seams, rivets, rust, streaks, chipped coating; `corrosion` → rust
   glyph.gdshader               emissive faith glyphs on a quad
+  ice.gdshader                 old clear ice, opaque with faked depth: a dark body paling at grazing angles, fractures,
+                               bubbles, a glossy skin (icicles, plugs)
   water.gdshader               water surface: depth absorption, own screen-space reflections, ripples
   underwater.gdshader          fog shader for the volume under a water surface
   particle.gdshader            ambient particles on camera-facing quads (mote, streak, bubble), lit only by direct light
@@ -173,7 +183,7 @@ assets/shaders/                the material library (M1), procedural, no UVs or 
   machine.gdshader             native machines: palette shells, trim, panel lines, wear, tread cleats, glyph bands,
                                eyes from calm to the hazard color (instance uniforms per machine)
   android.gdshader, trail.gdshader   the pilgrim's own materials and its dash trail
-assets/materials/              rock, wet_stone, metal, rust, glyphs, cable; *_mid for the midground behind the
+assets/materials/              rock, wet_stone, metal, rust, glyphs, cable, ice (ice_mid); *_mid for the midground behind the
                                play plane (stone_mid, metal_mid, rust_mid); backdrop_stone, backdrop_rust, foreground;
                                backdrop_cathedral, backdrop_halls; water, underwater, fog_clear; screen_grade
 assets/materials/machines/     shell, frame, corroded, vestment, robe, tread, eye, prayer_wheel, blade, cable, ember
@@ -191,7 +201,7 @@ tools/motion_sheet.py          contact sheet of a look-dev reel (Motion.png, Mac
 - **Composition:** scenes are small, with one responsibility each. `Main.tscn` wires the room, player, camera, HUD and cheats together through typed `[Export]` node references.
 - **Materials:** a material is a `.tres` (`ShaderMaterial`) referenced by blocks and scenes, never a shader assigned in code, so an authored material can replace it. Shaders read colors from the biome palette and the piece's **surface frame** from its mesh (`lib/surface.gdshaderinc`): UV is the position on a rectangular patch (a box face, one side of a swept profile) in meters, UV2 the patch size (negative along an axis that wraps, like a pipe's girth), TANGENT/BINORMAL the patch directions, COLOR.r the height above the piece's bottom (/ 8 m, 8-bit) and COLOR.g a per-part variation. Panels, seams and edge wear follow any kit piece that way, curved or not, with no texture UVs and no triplanar blending. A block's look can be overridden (`Block.Material`: wet stone, rust…) without touching its `Surface`, which alone decides the physics layer. Pieces behind the play plane use the `*_mid` materials (`shade` < 1), so the play plane stays the brightest layer and only grippable metal reads as bright metal.
 - **Environment kit:** each piece is a `[GlobalClass]` mesh resource (`ColumnMesh`, `ArchMesh`, `PipeMesh`…) deriving from `KitMesh : PrimitiveMesh`, used by a plain `MeshInstance3D`. Its geometry is pure C# (`KitShapes`, `MeshBuilder`), unit tested. Rooms place pieces as sub-resources (pieces sharing one resource share one generated mesh). Swapping in authored art means replacing the mesh resource; an authored mesh keeps the procedural materials only if it carries the same surface frame. Kit pieces are visual only: gameplay collision is `Block` boxes (`CollisionOnly` when a kit piece shows the block, like the grate platform).
-- **Biomes:** a room references a `BiomeProfile`. `Room.ApplyBiome` pushes the palette into global shader uniforms (`[shader_globals]` in `project.godot`, names in `ShaderGlobals`) and sets the room's environment, key light and lamps. Materials read the palette from those globals, so they follow the biome without per-room copies, and an authored material can replace a procedural one and still use them. Machines take their colors from the same palette (`machine.gdshader`). The biome also sets the volumetric fog, the color of the room's light shafts (`Room.Shafts`) and glyph lights (`Room.GlyphLights`), the far haze, water colors and caustics, and the finishing pass (vignette, grain) through `post_*` globals.
+- **Biomes:** a room references a `BiomeProfile`. `Room.ApplyBiome` pushes the palette into global shader uniforms (`[shader_globals]` in `project.godot`, names in `ShaderGlobals`) and sets the room's environment, key light and lamps. Materials read the palette from those globals, so they follow the biome without per-room copies, and an authored material can replace a procedural one and still use them. Machines take their colors from the same palette (`machine.gdshader`). The biome's `Frost` lays rime on rock, metal (a smaller share, so grippable metal keeps its gloss) and ice through `lib/frost.gdshaderinc`, and on machines while they are dormant (it falls away as they rouse); 0 in the flooded layer. The biome also sets the volumetric fog, the color of the room's light shafts (`Room.Shafts`) and glyph lights (`Room.GlyphLights`), the far haze, water colors and caustics, and the finishing pass (vignette, grain) through `post_*` globals.
 - **Level toolkit** (M6): a room instances `scenes/stage/RoomStage.tscn` as `Stage`; `Room._Ready` calls `Stage.Build(room)`, which sizes the shared stack from the camera bounds (environment `resources/stage/room_environment.tres`, key light, `ClearFront`, skylines, far pillars, frame above and below, dust). A room overrides only the stage's choices (skyline materials, pillar density, frame on/off, dust density, seed) and adds what is its own: shafts, lamps, water, extra particles, framing pieces like a pipe. Repeated dressing comes from generators in `scripts/rooms/dressing/` (`Colonnade`, `RackRow`) placing swappable mesh resources from a seed; their layouts are pure (`DressingLayout`) and tested. Generated nodes are not owned by the room, so `RoomValidator` checks only the generator node's own origin.
 - **Atmosphere in a room** (M3): light shafts are shadowed `SpotLight3D`s listed in `Room.Shafts`; a negative-density `FogVolume` (`fog_clear.tres`) keeps volumetric fog off the space in front of the play plane; ambient particles are instances of `scenes/fx/*.tscn` with `Extents` and `Density` set; water is a `WaterBody` (one per room for now: the water globals hold one level and area). Visual only: nothing here touches gameplay or collision.
 - **Rooms:** each room is its own scene in `scenes/rooms/` with a `Room` root: spawn point, camera bounds, biome, photo spots, and `RoomExit` markers. `World` (in `Main`) loads one; nodes that need the room (camera, cheats, capture) reference `World` and read `World.Room`. An exit's `Requires` is for leaving through it; the way back is the target exit's own, and a two-way exit's target must lead back (`OneWay` otherwise). `RoomValidator` (in `tools/check.sh`) checks every room: block edges on the 0.5 m grid and axis-aligned, kit piece origins on the 0.25 m grid, spawn and exits inside the bounds, exit requirements parse, targets exist and lead back, at least one photo spot. **Travel** (M6): an open exit (with a `TargetRoom`) makes a trigger area on the `trigger` layer; walking into it raises `Crossed`, and `RoomTravel` holds the player under a short fade (`ScreenFade`), loads the target room (rooms always sit at the world origin), places the player at the arrival exit keeping its momentum (`ExitMath`: the offset along a wide hatch is kept, a doorway keeps the height), disarms the arrival exit until the player leaves it, and fades back in. The camera snaps on `Player.Arrived`; each room's camera bounds are its own. A doorway (a tall exit) is only left by moving or pressing out of the room, toward the nearer side of its bounds (`ExitMath.Leaves`): dropping into one from a flue above, or standing in one, never travels; a hatch is crossed whatever the way. `World.Map` places each visited room from the exits crossed (no hand list): the map screen draws them. `TravelValidator` crosses every open exit in `tools/check.sh`. The map graph extractor comes in M7.
@@ -228,7 +238,7 @@ Code with no Godot types is compiled straight into the xUnit project via `<Compi
 - `util/FrameTimeStats.cs`
 - `capture/CaptureFiles.cs`, `capture/CaptureReport.cs`, `capture/VideoClock.cs`, `capture/FfmpegCommand.cs`
 - `capture/VideoEncoder.cs` (plain .NET; its tests run the real ffmpeg)
-- `kit/MeshData.cs`, `kit/MeshBuilder.cs`, `kit/Profile.cs`, `kit/PathFrame.cs`, `kit/SweepPath.cs`, `kit/KitShapes.cs` (System.Numerics)
+- `kit/MeshData.cs`, `kit/MeshBuilder.cs`, `kit/Profile.cs`, `kit/PathFrame.cs`, `kit/SweepPath.cs`, `kit/KitShapes.cs` (System.Numerics; icicles too)
 - `map/Requirement.cs`, `map/GridSnap.cs`, `map/ExitMath.cs`, `map/MapState.cs`, `map/MapGraph.cs`, `map/MapSolver.cs`, `map/MapDraft.cs`, `map/MapLayout.cs`, `map/ReachPlanner.cs`, `rooms/dressing/DressingLayout.cs`, `player/GripMath.cs`, `player/HarpoonAim.cs`, `combat/Vitality.cs`, `combat/Swing.cs`, `game/SaveData.cs`
 - `parts/PartShapes.cs`, `parts/PlanarIk.cs`, `parts/VerletChain.cs`, `parts/Humanoid*.cs`, `parts/PartCategory.cs`, `player/MotionMode.cs`, `player/PilgrimMotion.cs`
 - `machines/MachineAct.cs`, `Perception.cs`, `Intent.cs`, `Senses.cs`, `Steering.cs`, `PrayerCycle.cs`, `StrikeAction.cs`, `MachineBrain.cs`, `SurfacePath.cs`, `LegGait.cs`, `machines/brains/*.cs` (including `ConductorBrain`)
