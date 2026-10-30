@@ -1,0 +1,20 @@
+[gd_scene format=3]
+; One-shot dust cloud when the Drill shatters cracked rock (scripts/rooms/Shatter.cs fires it, sized to the block).
+
+[ext_resource type="Material" path="res://assets/particles/rubble_process.tres" id="1_process"]
+[ext_resource type="Material" path="res://assets/particles/grit_material.tres" id="2_material"]
+
+[sub_resource type="QuadMesh" id="QuadMesh_particle"]
+material = ExtResource("2_material")
+size = Vector2(0.45, 0.45)
+
+[node name="Rubble" type="GPUParticles3D"]
+cast_shadow = 0
+emitting = false
+amount = 40
+lifetime = 1.6
+one_shot = true
+explosiveness = 0.9
+visibility_aabb = AABB(-5, -5, -3, 10, 10, 6)
+process_material = ExtResource("1_process")
+draw_pass_1 = SubResource("QuadMesh_particle")

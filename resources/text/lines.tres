@@ -68,6 +68,20 @@ Speaker = "UI"
 Text = "K or V (pad B) fires at a glowing ring in sight and pulls you to it. Hold up or down to aim."
 Notes = "Banner line under the title. Names the keys: the Harpoon is the first ability with its own button."
 
+[sub_resource type="Resource" id="ability_drill_name"]
+script = ExtResource("2_line")
+Id = &"ability.drill.name"
+Speaker = "UI"
+Text = "Drill"
+Notes = "Banner title when the relic is taken."
+
+[sub_resource type="Resource" id="ability_drill_hint"]
+script = ExtResource("2_line")
+Id = &"ability.drill.hint"
+Speaker = "UI"
+Text = "Dash into cracked rock to bore through it. Hold down and dash to dive."
+Notes = "Banner line under the title."
+
 [sub_resource type="Resource" id="creed_precentor"]
 script = ExtResource("2_line")
 Id = &"creed.precentor"
@@ -175,4 +189,4 @@ Notes = "The scribes' own rule, half a prayer."
 
 [resource]
 script = ExtResource("1_book")
-Lines = [SubResource("creed_votary"), SubResource("creed_gleaner"), SubResource("creed_lamplighter"), SubResource("creed_limpet"), SubResource("ui_rest"), SubResource("ability_mag_grip_name"), SubResource("ability_mag_grip_hint"), SubResource("ability_harpoon_name"), SubResource("ability_harpoon_hint"), SubResource("creed_precentor"), SubResource("ui_read"), SubResource("boss_precentor_name"), SubResource("boss_precentor_fallen"), SubResource("boss_precentor_fallen_hint"), SubResource("law_third"), SubResource("law_third_broken"), SubResource("law_third_broken_hint"), SubResource("creed_chorister"), SubResource("lore_plate_1_title"), SubResource("lore_plate_1"), SubResource("lore_plate_2_title"), SubResource("lore_plate_2"), SubResource("lore_plate_3_title"), SubResource("lore_plate_3")]
+Lines = [SubResource("creed_votary"), SubResource("creed_gleaner"), SubResource("creed_lamplighter"), SubResource("creed_limpet"), SubResource("ui_rest"), SubResource("ability_mag_grip_name"), SubResource("ability_mag_grip_hint"), SubResource("ability_harpoon_name"), SubResource("ability_harpoon_hint"), SubResource("ability_drill_name"), SubResource("ability_drill_hint"), SubResource("creed_precentor"), SubResource("ui_read"), SubResource("boss_precentor_name"), SubResource("boss_precentor_fallen"), SubResource("boss_precentor_fallen_hint"), SubResource("law_third"), SubResource("law_third_broken"), SubResource("law_third_broken_hint"), SubResource("creed_chorister"), SubResource("lore_plate_1_title"), SubResource("lore_plate_1"), SubResource("lore_plate_2_title"), SubResource("lore_plate_2"), SubResource("lore_plate_3_title"), SubResource("lore_plate_3")]

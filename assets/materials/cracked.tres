@@ -1,0 +1,10 @@
+[gd_resource type="ShaderMaterial" format=3]
+; Cracked rock: the Drill bores through it. Deep fissures web the whole face (rock.gdshader's `fracture`), so it reads
+; at a glance against sound rock.
+
+[ext_resource type="Shader" path="res://assets/shaders/rock.gdshader" id="1_shader"]
+
+[resource]
+shader = ExtResource("1_shader")
+shader_parameter/fracture = 1.0
+shader_parameter/crack_amount = 0.0

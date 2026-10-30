@@ -41,7 +41,7 @@ public sealed class JumpState : PlayerState
 
         if (Player.WantsDash)
         {
-            return Player.States.Dash;
+            return Player.DashMove();
         }
 
         return Player.Velocity.Y <= 0f || Player.IsOnCeiling() ? Player.States.Fall : null;

@@ -3,6 +3,7 @@ namespace TheDeep.States;
 /// <summary>
 /// A fixed-distance horizontal burst, on the ground or in the air, with no gravity.
 /// Ends after DashDuration or on hitting a wall; a grounded dash can be cancelled into a jump.
+/// With the Drill it bores through cracked rock and carries on.
 /// </summary>
 public sealed class DashState : PlayerState
 {
@@ -15,6 +16,8 @@ public sealed class DashState : PlayerState
     }
 
     public override bool AllowsTurning => false;
+
+    public override bool Bores => true;
 
     public override MotionMode Motion => MotionMode.Dash;
 

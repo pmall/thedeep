@@ -12,8 +12,10 @@ namespace TheDeep;
 /// the gates stay up. At the Brink: the third law holds the pilgrim at the lip; pressing on breaks it (remembered); over
 /// the lip, the jump falls on into Rimefall and lands there. In the Choir: walking past a sleeping Chorister wakes none;
 /// a hard landing beside one wakes it. In the Counterweight: standing in the cage lets go of its brake, and it carries the
-/// pilgrim (standing on its floor all the way) up into the Undercroft, onto the grate. Prints `ENCOUNTER OK` or
-/// `ENCOUNTER CHECK` errors.
+/// pilgrim (standing on its floor all the way) up into the Undercroft, onto the grate. In the Calving: Mag-grip climbs the
+/// girder up the ice cliff and the cliff's top leads back into the Coldstacks. In the Bore: the shaft drops into the
+/// chamber, the relic gives the Drill, a dash bores the cracked wall (remembered), the tunnel's steps climb back to the
+/// hall. Prints `ENCOUNTER OK` or `ENCOUNTER CHECK` errors.
 /// </summary>
 public partial class EncounterCheck : Node
 {
@@ -42,6 +44,7 @@ public partial class EncounterCheck : Node
     private float X => Player.GlobalPosition.X;
     private float _rodeTo;
     private bool _rideProblem;
+    private int _jumpHeld;
 
     private void Hold(StringName action, bool held)
     {
@@ -152,6 +155,49 @@ public partial class EncounterCheck : Node
                     _problems.Add($"the pilgrim left the cage floor on the way up ({above:0.00} m from it, the cage {Cage.Travel.Offset:0.0} m up)");
                 }
             }));
+        _steps.Add(new("in the Calving, the girder climbs the ice cliff back to the Coldstacks' doorway (Mag-grip)", 10f,
+            () =>
+            {
+                World.Load(GD.Load<PackedScene>(World.RoomPath("Calving")));
+                Player.Abilities.Unlock(Ability.MagGrip);
+                Player.Respawn(new Vector3(25f, 0f, 0f), 1);
+                Hold(InputActions.MoveRight, true);
+            },
+            () => World.RoomName == "Coldstacks",
+            () =>
+            {
+                // Into the girder, up it, then east along the cliff's top to the doorway.
+                bool climbing = Player.CurrentState == Player.States.Grip;
+                Hold(InputActions.MoveUp, climbing);
+                Hold(InputActions.MoveRight, !climbing || Player.GlobalPosition.Y > 15.5f);
+            }));
+        _steps.Add(new("in the Bore, the shaft drops into the chamber and the relic gives the Drill", 10f,
+            () =>
+            {
+                Hold(InputActions.MoveUp, false);
+                Hold(InputActions.MoveRight, false);
+                Player.Abilities.Lock(Ability.MagGrip);
+                World.Load(GD.Load<PackedScene>(World.RoomPath("Bore")));
+                Player.Respawn(new Vector3(22f, 0f, 0f), -1);
+                Hold(InputActions.MoveLeft, true);
+            },
+            () => Player.Abilities.Has(Ability.Drill) && Player.InControl,
+            () => Hold(InputActions.MoveLeft, Player.InControl && X > 4.5f)));
+        _steps.Add(new("a dash bores through the cracked wall, remembered; the tunnel's steps climb back to the hall", 10f,
+            () => { Hold(InputActions.MoveLeft, false); Hold(InputActions.MoveRight, true); },
+            () => X > 43f && X < 46f && Player.IsOnFloor() && Mathf.Abs(Player.GlobalPosition.Y) < 0.05f
+                  && Session.Save.Collected.Contains("Bore/CrackedWall"),
+            () =>
+            {
+                Hold(InputActions.Dash, X > 16.5f && X < 19f && _ticks % 20 < 2);
+                // Full jumps up each step: pressed on the floor, held a while.
+                if (X > 26f && X < 41f && Player.IsOnFloor() && _jumpHeld <= 0)
+                {
+                    _jumpHeld = 26;
+                }
+
+                Hold(InputActions.Jump, --_jumpHeld > 0);
+            }));
         Next();
     }
 
@@ -195,7 +241,8 @@ public partial class EncounterCheck : Node
     private void Finish()
     {
         _index = _steps.Count;
-        foreach (StringName action in new[] { InputActions.Attack, InputActions.MoveRight, InputActions.MoveLeft })
+        foreach (StringName action in new[] { InputActions.Attack, InputActions.MoveRight, InputActions.MoveLeft, InputActions.MoveUp,
+                     InputActions.Dash, InputActions.Jump })
         {
             Input.ActionRelease(action);
         }
@@ -207,7 +254,7 @@ public partial class EncounterCheck : Node
 
         if (_problems.Count == 0)
         {
-            GD.Print($"ENCOUNTER OK: {_steps.Count} steps (arena gates, the Precentor struck and broken, remembered; the third law held, broken, the fall into Rimefall; the Choir asleep, woken; the Counterweight's ride up)");
+            GD.Print($"ENCOUNTER OK: {_steps.Count} steps (arena gates, the Precentor struck and broken, remembered; the third law held, broken, the fall into Rimefall; the Choir asleep, woken; the Counterweight's ride up; the Calving's girder; the Bore's relic, its cracked wall, its steps)");
         }
 
         GetTree().Quit(_problems.Count == 0 ? 0 : 1);

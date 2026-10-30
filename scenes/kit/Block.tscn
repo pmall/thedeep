@@ -3,12 +3,16 @@
 [ext_resource type="Script" path="res://scripts/rooms/Block.cs" id="1_block"]
 [ext_resource type="Material" path="res://assets/materials/rock.tres" id="2_rock"]
 [ext_resource type="Material" path="res://assets/materials/metal.tres" id="3_metal"]
+[ext_resource type="Material" path="res://assets/materials/cracked.tres" id="4_cracked"]
+[ext_resource type="PackedScene" path="res://scenes/fx/Rubble.tscn" id="5_rubble"]
 
 [node name="Block" type="StaticBody3D"]
 collision_mask = 0
 script = ExtResource("1_block")
 RockMaterial = ExtResource("2_rock")
 MetalMaterial = ExtResource("3_metal")
+CrackedMaterial = ExtResource("4_cracked")
+ShatterDust = ExtResource("5_rubble")
 
 [node name="Mesh" type="MeshInstance3D" parent="."]
 unique_name_in_owner = true

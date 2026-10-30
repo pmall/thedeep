@@ -26,7 +26,7 @@ public sealed class FallState : PlayerState
 
         if (Player.WantsDash)
         {
-            return Player.States.Dash;
+            return Player.DashMove();
         }
 
         if (Player.WantsJump)

@@ -34,7 +34,7 @@ public partial class RoomValidator : Node
 
     /// <summary>What the geometry check needs of a room: its solids, its open exits, and where the pilgrim can wake.</summary>
     private sealed record RoomShape(List<Box> Solids, List<ExitShape> Exits, List<System.Numerics.Vector2> Wakes, List<System.Numerics.Vector2> Anchors,
-        List<LiftPath> Lifts);
+        List<LiftPath> Lifts, List<Box> Sound);
 
     private sealed record ExitShape(string Name, System.Numerics.Vector2 Position, System.Numerics.Vector2 Size, string Requires, int ArrivalSide, bool Sealed);
     private bool _done;
@@ -183,7 +183,9 @@ public partial class RoomValidator : Node
             _graph.AddItem(new MapItem(name, relic.Name, relic.Ability));
         }
 
-        var solids = room.Blocks().Select(b => Box.Around(N(new Vector2(b.GlobalPosition.X, b.GlobalPosition.Y)), N(new Vector2(b.Size.X, b.Size.Y)))).ToList();
+        static Box BoxOf(Block b) => Box.Around(N(new Vector2(b.GlobalPosition.X, b.GlobalPosition.Y)), N(new Vector2(b.Size.X, b.Size.Y)));
+        var solids = room.Blocks().Select(BoxOf).ToList();
+        var sound = room.Blocks().Where(b => !b.Cracked).Select(BoxOf).ToList();
         var exitShapes = exits.Where(e => e.TargetRoom == "" || ResourceLoader.Exists(e.TargetRoom))
             .Select(e => new ExitShape(e.Name, N(e.RoomPosition), N(e.Size), e.Requires, e.ArrivalSide, e.TargetRoom == "")).ToList();
         var wakes = room.All<Shrine>().Select(s => N(new Vector2(s.GlobalPosition.X, s.GlobalPosition.Y))).ToList();
@@ -193,7 +195,7 @@ public partial class RoomValidator : Node
         }
 
         var anchors = room.All<HarpoonAnchor>().Select(a => N(new Vector2(a.GlobalPosition.X, a.GlobalPosition.Y))).ToList();
-        _shapes[name] = new RoomShape(solids, exitShapes, wakes, anchors, room.All<Lift>().Select(l => l.Path).ToList());
+        _shapes[name] = new RoomShape(solids, exitShapes, wakes, anchors, room.All<Lift>().Select(l => l.Path).ToList(), sound);
 
         if (room.All<MapGoal>().Any())
         {
@@ -350,7 +352,9 @@ public partial class RoomValidator : Node
     /// from a way in that needed none (that requirement would be a lie, or the geometry drifted from it). An exit the Harpoon
     /// opens must be reached by the base moveset and the Harpoon, zipping between the room's anchors, from some way in the
     /// Harpoon allows (the anchors are where the requirement says they are). Sealed exits (rooms not built yet) are held to
-    /// their requirement too, so a gate is right before the room behind it exists. Lifts are ridden from their lower stop.
+    /// their requirement too, so a gate is right before the room behind it exists. Lifts are ridden from their lower stop. An exit
+    /// the Drill opens must be reached by the base moveset with every cracked block gone, from some way in (abilities accumulate,
+    /// so whatever a way in needed, the pilgrim may hold the Drill there too; a rule of thumb: it bores any cracked rock it reaches).
     /// </summary>
     private void CheckGeometry()
     {
@@ -365,10 +369,13 @@ public partial class RoomValidator : Node
         {
             var planner = new ReachPlanner(limits, shape.Solids, lifts: shape.Lifts);
             var harpooner = new ReachPlanner(limits, shape.Solids, harpoon, shape.Anchors, shape.Lifts);
+            var driller = new ReachPlanner(limits, shape.Sound, lifts: shape.Lifts);
+            bool cracked = shape.Sound.Count < shape.Solids.Count;
             var triggers = shape.Exits.Select(e => Box.Around(e.Position, e.Size)).ToList();
 
             // Ways in: arriving through an exit (by the edge leading here: its requirement is what the pilgrim has at least), or waking.
-            var entries = new List<(string What, System.Numerics.Vector2 At, System.Numerics.Vector2 Velocity, int Steer, bool Base, bool Harpoon, int Exit)>();
+            var entries = new List<(string What, System.Numerics.Vector2 At, System.Numerics.Vector2 Velocity, int Steer, bool Base, bool Harpoon, bool Drill,
+                int Exit)>();
             foreach (MapEdge edge in _graph.Edges.Where(e => e.To == room))
             {
                 int index = shape.Exits.FindIndex(x => x.Name == edge.ToExit);
@@ -382,17 +389,18 @@ public partial class RoomValidator : Node
                 var velocity = !vertical ? System.Numerics.Vector2.Zero
                     : x.ArrivalSide != 0 ? new System.Numerics.Vector2(0f, rise) : new System.Numerics.Vector2(0f, -5f);
                 entries.Add(($"arriving through {x.Name}", x.Position, velocity, vertical ? x.ArrivalSide : 0,
-                    edge.Requires.IsMetBy(Ability.None), edge.Requires.IsMetBy(Ability.Harpoon), index));
+                    edge.Requires.IsMetBy(Ability.None), edge.Requires.IsMetBy(Ability.Harpoon), true, index));
             }
 
             foreach (System.Numerics.Vector2 wake in shape.Wakes)
             {
-                entries.Add(($"waking at ({wake.X:0.#}, {wake.Y:0.#})", wake, System.Numerics.Vector2.Zero, 0, true, true, -1));
+                entries.Add(($"waking at ({wake.X:0.#}, {wake.Y:0.#})", wake, System.Numerics.Vector2.Zero, 0, true, true, true, -1));
             }
 
             var reachedFrom = entries.Select(e => planner.Reach(e.At, e.Velocity, triggers, e.Steer).Triggers).ToList();
             var zippedFrom = shape.Anchors.Count == 0 ? reachedFrom
                 : entries.Select(e => harpooner.Reach(e.At, e.Velocity, triggers, e.Steer).Triggers).ToList();
+            var boredFrom = !cracked ? reachedFrom : entries.Select(e => driller.Reach(e.At, e.Velocity, triggers, e.Steer).Triggers).ToList();
             for (int i = 0; i < shape.Exits.Count; i++)
             {
                 ExitShape x = shape.Exits[i];
@@ -409,6 +417,14 @@ public partial class RoomValidator : Node
                 {
                     _problems.Add($"{room}: exit {x.Name} needs {x.Requires}, but the Harpoon reaches it from no way into the room " +
                                   $"({shape.Anchors.Count} anchors)");
+                }
+
+                if (!baseExit && Requirement.TryParse(x.Requires, out Requirement drill, out _) && drill.IsMetBy(Ability.Drill)
+                    && entries.Any(e => e.Drill && e.Exit != i)
+                    && !Enumerable.Range(0, entries.Count).Any(e => entries[e].Drill && entries[e].Exit != i && boredFrom[e].Contains(i)))
+                {
+                    _problems.Add($"{room}: exit {x.Name} needs {x.Requires}, but the Drill reaches it from no way into the room " +
+                                  $"({shape.Solids.Count - shape.Sound.Count} cracked blocks)");
                 }
 
                 if (!baseExit)

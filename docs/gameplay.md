@@ -55,6 +55,10 @@ The player can collect them in many orders, and that freedom is proven by a solv
 - **Fire** (K / V, pad B or LT): from the ground, the air, a dash or a Mag-grip surface. The line flies out at `HarpoonThrowSpeed` while the pilgrim hangs, slowing; once it bites, the pull gathers speed (`HarpoonZipAcceleration`) up to `HarpoonZipSpeed` until the body's center reaches the anchor. Then it lets go with `HarpoonExitSpeedFactor` of the pull's speed and at least `HarpoonExitLift` upward (unless the pull went steeply down), and the air dash is back. Jump or dash during the pull cancel into them, keeping momentum; a pull blocked by a solid lets go where it stands.
 - Checked headless in the mechanics lab (`HarpoonCheck`, in `tools/check.sh`): sight, fire, pull, release, chaining to a second anchor, blocked sight, range, jump cancel. The room check's geometry pass also zips between each room's anchors (`ReachPlanner` with `HarpoonLimits`): a way the Harpoon opens must be reached that way.
 
+**Drill (implemented, M8).** One rule on the dash: with the Drill, a dash bores through **cracked rock** and carries on, and **down + dash** dives (`DiveState`): straight down at `DiveSpeed` until the pilgrim lands (at most `DiveMaxTime`), boring through cracked floors on the way. From the air the dive spends the air dash like a dash; from the ground only standing on cracked rock (down + dash on sound rock is a plain dash). Landing from a dive is a hard landing (it wakes sleepers). Numbers in `player_tuning.tres` (Drill group).
+- **Cracked rock** is a `Block` with `Cracked`: always on the rock layer (never grippable), shown by `assets/materials/cracked.tres` (deep fissures webbing the face; rock.gdshader's `fracture`) unless its look is overridden (the Coldstacks' plug of cracked ice). The moving body tests ahead each tick (`Player.Bore`, from any state whose `Bores` is true: the dash and the dive), so the dash never stops against it. It shatters (`Shatter`: chunks of its own material flung along the way, a dust cloud from `scenes/fx/Rubble.tscn`), the camera shakes, and it stays broken: `Session` remembers it at once, like a relic.
+- Checked headless in the mechanics lab (`DrillCheck`, in `tools/check.sh`), against cracked blocks it places itself. The geometry check removes cracked rock for ways the Drill opens.
+
 Abilities are flags in `AbilitySet` (`Player.Abilities`). In debug builds, F1–F5 toggle them.
 
 ## Tuning
@@ -73,7 +77,7 @@ Input actions are defined in `project.godot` and mirrored in `scripts/core/Input
 | `move_left` / `move_right` | A / D, ← / → | Left stick, d-pad |
 | `move_up` / `move_down` | W / S, ↑ / ↓ | Left stick, d-pad |
 | `jump` | Space, Z | A |
-| `dash` | Shift, C | RB, RT |
+| `dash` (with the Drill, down + dash dives) | Shift, C | RB, RT |
 | `attack` | J, X | X |
 | `harpoon` | K, V | B, LT |
 | `interact` (rest at a shrine) | E | Y |
@@ -83,4 +87,4 @@ Input actions are defined in `project.godot` and mirrored in `scripts/core/Input
 | `debug_respawn` | R | Back |
 | `debug_toggle_{mag_grip,harpoon,drill,ballast,heat_plating}` | F1–F5 | — |
 | `debug_cycle_biome` | F6 | — |
-| `debug_toggle_hud` (state readout) | F3 | — |
+| `debug_toggle_hud` (state readout) | F7 | — |

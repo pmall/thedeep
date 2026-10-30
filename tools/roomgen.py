@@ -42,6 +42,8 @@ EXT = {
     'pod': ('Script', 'res://scripts/parts/PodMesh.cs'),
     'ring': ('Script', 'res://scripts/parts/RingMesh.cs'),
     'plate': ('Script', 'res://scripts/parts/PlateMesh.cs'),
+    'tread': ('Script', 'res://scripts/parts/TreadMesh.cs'),
+    'drill': ('Script', 'res://scripts/parts/DrillMesh.cs'),
     # scenes
     'block': ('PackedScene', 'res://scenes/kit/Block.tscn'),
     'stage': ('PackedScene', 'res://scenes/stage/RoomStage.tscn'),
@@ -174,8 +176,8 @@ class Room:
         """Choices on the shared RoomStage (Seed, DustDensity, PillarDensity, FrameBelow, FrameAbove…)."""
         self.stage_props.update(props)
 
-    def block(self, path, lo, hi, surface='rock', look=None, depth=4, collision_only=False, comment='', z=0):
-        """A gameplay block from corner `lo` to `hi` (X, Y). surface: rock or metal; look: a material override."""
+    def block(self, path, lo, hi, surface='rock', look=None, depth=4, collision_only=False, comment='', z=0, cracked=False):
+        """A gameplay block from corner `lo` to `hi` (X, Y). surface: rock or metal; look: a material override; cracked: the Drill breaks it."""
         if '/' not in path:
             path = 'Geometry/' + path
         cx, cy = (lo[0] + hi[0]) / 2, (lo[1] + hi[1]) / 2
@@ -186,6 +188,8 @@ class Room:
             props['Material'] = self.ext(look)
         if collision_only:
             props['CollisionOnly'] = True
+        if cracked:
+            props['Cracked'] = True
         return self.node(path, instance='block', comment=comment, **props)
 
     def mesh(self, path, mesh, material, pos, basis=IDENTITY, cast=True, comment=''):

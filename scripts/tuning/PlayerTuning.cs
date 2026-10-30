@@ -72,6 +72,11 @@ public partial class PlayerTuning : Resource
     /// <summary>A harpoon pressed this long before an anchor comes into sight still fires.</summary>
     [Export] public float HarpoonBufferTime { get; set; } = 0.1f;
 
+    /// <summary>The Drill's dive (dash while holding down): straight down at this speed until the pilgrim lands, at most this long.</summary>
+    [ExportGroup("Drill")]
+    [Export] public float DiveSpeed { get; set; } = 17f;
+    [Export] public float DiveMaxTime { get; set; } = 1.2f;
+
     /// <summary>The swing: wind-up, the window in which it hits, recovery, then a short cooldown (seconds).</summary>
     [ExportGroup("Attack")]
     [Export] public float AttackWindUp { get; set; } = 0.04f;

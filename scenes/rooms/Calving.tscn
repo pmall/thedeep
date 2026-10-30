@@ -1,0 +1,389 @@
+[gd_scene format=3]
+
+; The Calving, west of the Coldstacks (map offset (162.5, -71)): an ice cliff that sheds. From the Coldstacks' high
+; doorway the pilgrim comes out on top of a cliff of old ice, 16 m over the floor, and drops (a hard landing wakes the
+; Chorister asleep at the cliff's foot). Calved blocks of ice lie about the floor; west, the doorway on to the Bore.
+; Back up the cliff: an iron girder frozen into its face (Mag-grip) or two mooring rings (Harpoon).
+
+[ext_resource type="PackedScene" path="res://scenes/kit/Block.tscn" id="1_block"]
+[ext_resource type="Material" path="res://assets/materials/ice.tres" id="2_ice"]
+[ext_resource type="Script" path="res://scripts/rooms/RoomExit.cs" id="3_exit"]
+[ext_resource type="PackedScene" path="res://scenes/props/HarpoonAnchor.tscn" id="4_anchor"]
+[ext_resource type="Script" path="res://scripts/machines/Machine.cs" id="5_machine"]
+[ext_resource type="Resource" path="res://resources/machines/chorister.tres" id="6_chorister"]
+[ext_resource type="Script" path="res://scripts/kit/BlockMesh.cs" id="7_blockmesh"]
+[ext_resource type="Material" path="res://assets/materials/ice_mid.tres" id="8_ice_mid"]
+[ext_resource type="Material" path="res://assets/materials/stone_mid.tres" id="9_stone_mid"]
+[ext_resource type="Script" path="res://scripts/kit/IcicleMesh.cs" id="10_icicles"]
+[ext_resource type="Script" path="res://scripts/kit/WreckMesh.cs" id="11_wreck"]
+[ext_resource type="Material" path="res://assets/materials/rust_mid.tres" id="12_rust_mid"]
+[ext_resource type="Script" path="res://scripts/kit/PipeMesh.cs" id="13_pipe"]
+[ext_resource type="Material" path="res://assets/materials/metal_mid.tres" id="14_metal_mid"]
+[ext_resource type="Material" path="res://assets/materials/glyphs.tres" id="15_glyphs"]
+[ext_resource type="PackedScene" path="res://scenes/fx/Rime.tscn" id="16_rime"]
+[ext_resource type="PackedScene" path="res://scenes/fx/Dust.tscn" id="17_dust"]
+[ext_resource type="Material" path="res://assets/materials/foreground.tres" id="18_foreground"]
+[ext_resource type="Script" path="res://scripts/rooms/PhotoSpot.cs" id="19_spot"]
+[ext_resource type="Script" path="res://scripts/rooms/Room.cs" id="20_room"]
+[ext_resource type="Resource" path="res://resources/biomes/frozen.tres" id="21_frozen"]
+[ext_resource type="PackedScene" path="res://scenes/stage/RoomStage.tscn" id="22_stage"]
+
+[sub_resource type="PrimitiveMesh" id="blockmesh_1"]
+script = ExtResource("7_blockmesh")
+Size = Vector3(30, 34, 3)
+Bevel = 0.5
+
+[sub_resource type="PrimitiveMesh" id="blockmesh_2"]
+script = ExtResource("7_blockmesh")
+Size = Vector3(9, 5, 3)
+Bevel = 0.6
+
+[sub_resource type="PrimitiveMesh" id="blockmesh_3"]
+script = ExtResource("7_blockmesh")
+Size = Vector3(4, 2.5, 2.5)
+Bevel = 0.4
+
+[sub_resource type="PrimitiveMesh" id="blockmesh_4"]
+script = ExtResource("7_blockmesh")
+Size = Vector3(4, 6, 3)
+Bevel = 0.6
+
+[sub_resource type="PrimitiveMesh" id="blockmesh_5"]
+script = ExtResource("7_blockmesh")
+Size = Vector3(3, 4.5, 2.5)
+Bevel = 0.5
+
+[sub_resource type="PrimitiveMesh" id="blockmesh_6"]
+script = ExtResource("7_blockmesh")
+Size = Vector3(5, 3.5, 3)
+Bevel = 0.6
+
+[sub_resource type="PrimitiveMesh" id="blockmesh_7"]
+script = ExtResource("7_blockmesh")
+Size = Vector3(28, 30, 1.2)
+Bevel = 0.2
+
+[sub_resource type="PrimitiveMesh" id="icicles_8"]
+script = ExtResource("10_icicles")
+Width = 16
+Length = 2.4
+Count = 26
+Seed = 301
+
+[sub_resource type="PrimitiveMesh" id="icicles_9"]
+script = ExtResource("10_icicles")
+Width = 3
+Length = 11
+Count = 5
+Seed = 302
+Spread = 0.4
+
+[sub_resource type="PrimitiveMesh" id="icicles_10"]
+script = ExtResource("10_icicles")
+Width = 40
+Length = 1.6
+Count = 50
+Seed = 303
+
+[sub_resource type="PrimitiveMesh" id="wreck_11"]
+script = ExtResource("11_wreck")
+Size = 2.2
+Seed = 311
+
+[sub_resource type="PrimitiveMesh" id="pipe_12"]
+script = ExtResource("13_pipe")
+Points = PackedVector3Array(0, 0, 0, 0, 14, 0, 2, 16, 0, 9, 16, 0)
+Radius = 0.35
+BendRadius = 1.2
+FlangeSpacing = 3
+
+[sub_resource type="QuadMesh" id="QuadMesh_13"]
+size = Vector2(3, 0.3)
+
+[sub_resource type="PrimitiveMesh" id="pipe_14"]
+script = ExtResource("13_pipe")
+Points = PackedVector3Array(0, -4, 0, 0, 0, 0, 30, 0, 0, 31, 0.5, 0, 50, 0.5, 0)
+Radius = 0.5
+BendRadius = 1.4
+FlangeSpacing = 4
+
+[node name="Calving" type="Node3D" node_paths=PackedStringArray("SpawnPoint", "Stage", "Lamps", "Shafts", "GlyphLights")]
+script = ExtResource("20_room")
+SpawnPoint = NodePath("SpawnPoint")
+Stage = NodePath("Stage")
+Biome = ExtResource("21_frozen")
+Lamps = [NodePath("Lamps/Ice"), NodePath("Lamps/West")]
+Shafts = [NodePath("Shafts/Crack"), NodePath("Shafts/High")]
+GlyphLights = [NodePath("Glyphs/WestLight")]
+BoundsMin = Vector2(-1, -2)
+BoundsMax = Vector2(44, 26)
+
+[node name="SpawnPoint" type="Marker3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 6, 0, 0)
+
+; The shared atmosphere stack (environment, key light, clear front air, skylines, far pillars, frame, dust).
+[node name="Stage" parent="." instance=ExtResource("22_stage")]
+Seed = 131
+DustDensity = 0.7
+PillarDensity = 2.4
+FrameBelow = false
+
+[node name="Geometry" type="Node3D" parent="."]
+
+; the floor under the cliff
+[node name="Floor" parent="Geometry" instance=ExtResource("1_block")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 12, -1.5, 0)
+Size = Vector3(30, 3, 4)
+
+; the cliff of old ice; the Coldstacks' doorway on its top
+[node name="Cliff" parent="Geometry" instance=ExtResource("1_block")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 37.5, 6.5, 0)
+Size = Vector3(19, 19, 4)
+Material = ExtResource("2_ice")
+
+; an iron girder frozen into the cliff's face: grip up it
+[node name="Girder" parent="Geometry" instance=ExtResource("1_block")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 27.5, 6.5, 0)
+Size = Vector3(1, 19, 4)
+Surface = 1
+
+; calved blocks of ice
+[node name="ChunkLow" parent="Geometry" instance=ExtResource("1_block")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 9.75, 0.5, 0)
+Size = Vector3(1.5, 1, 4)
+Material = ExtResource("2_ice")
+
+[node name="ChunkHigh" parent="Geometry" instance=ExtResource("1_block")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 18.75, 0.75, 0)
+Size = Vector3(2.5, 1.5, 4)
+Material = ExtResource("2_ice")
+
+; over the west doorway
+[node name="WallWest" parent="Geometry" instance=ExtResource("1_block")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -1.5, 16.5, 0)
+Size = Vector3(3, 25, 4)
+
+; over the east doorway
+[node name="WallEast" parent="Geometry" instance=ExtResource("1_block")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 45.5, 24.5, 0)
+Size = Vector3(3, 9, 4)
+
+[node name="Ceiling" parent="Geometry" instance=ExtResource("1_block")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 22, 27.5, 0)
+Size = Vector3(50, 3, 4)
+
+[node name="Exits" type="Node3D" parent="."]
+
+; the high doorway back into the Coldstacks, on top of the cliff (up the girder, or the two rings)
+[node name="East" type="Marker3D" parent="Exits"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 43, 16, 0)
+script = ExtResource("3_exit")
+TargetRoom = "res://scenes/rooms/Coldstacks.tscn"
+TargetExit = "Calving"
+Requires = "MagGrip | Harpoon"
+Size = Vector2(1, 4)
+
+; on to the Bore
+[node name="West" type="Marker3D" parent="Exits"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 1, 0, 0)
+script = ExtResource("3_exit")
+TargetRoom = "res://scenes/rooms/Bore.tscn"
+TargetExit = "East"
+Size = Vector2(1, 4)
+
+[node name="Anchors" type="Node3D" parent="."]
+
+; two rings up the cliff (the Harpoon's way): from a jump at its foot, then over its lip
+[node name="Low" parent="Anchors" instance=ExtResource("4_anchor")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 25, 10, 0)
+
+[node name="High" parent="Anchors" instance=ExtResource("4_anchor")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 27.5, 18, 0)
+
+[node name="Machines" type="Node3D" parent="."]
+
+; asleep at the cliff's foot: a hard landing from the top wakes it
+[node name="Chorister" type="CharacterBody3D" parent="Machines"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 22.5, 0, 0)
+script = ExtResource("5_machine")
+Species = ExtResource("6_chorister")
+StartFacing = 1
+
+[node name="Shafts" type="Node3D" parent="."]
+
+; down through a crack in the vault onto the cliff's foot
+[node name="Crack" type="SpotLight3D" parent="Shafts"]
+transform = Transform3D(-1, 0, 0, 0, 0.1414, 0.9899, 0, 0.9899, -0.1414, 24, 46, -3)
+light_energy = 4.5
+light_volumetric_fog_energy = 12
+shadow_enabled = true
+spot_range = 80
+spot_attenuation = 0.25
+spot_angle = 7
+spot_angle_attenuation = 2
+
+; soft from the upper left across the floor
+[node name="High" type="SpotLight3D" parent="Shafts"]
+transform = Transform3D(-0.7071, 0.6288, -0.3234, 0, 0.4573, 0.8893, 0.7071, 0.6288, -0.3234, 2, 42, -12)
+light_energy = 2.8
+light_volumetric_fog_energy = 7
+shadow_enabled = true
+spot_range = 80
+spot_attenuation = 0.25
+spot_angle = 9
+spot_angle_attenuation = 2
+
+[node name="Lamps" type="Node3D" parent="."]
+
+; light caught in the cliff's ice
+[node name="Ice" type="OmniLight3D" parent="Lamps"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 36, 8, 1.6)
+light_energy = 1.3
+omni_range = 9
+shadow_enabled = false
+
+; a cold glow by the west doorway
+[node name="West" type="OmniLight3D" parent="Lamps"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 4, 3.5, 1.2)
+light_energy = 0.8
+omni_range = 6
+shadow_enabled = false
+
+[node name="Kit" type="Node3D" parent="."]
+
+; the glacier the cliff broke from, behind
+[node name="Glacier" type="MeshInstance3D" parent="Kit"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 36, 10, -6.5)
+mesh = SubResource("blockmesh_1")
+material_override = ExtResource("8_ice_mid")
+
+; a great block it shed, tipped against the back wall
+[node name="Calved" type="MeshInstance3D" parent="Kit"]
+transform = Transform3D(0.9903, -0.1392, 0, 0.1392, 0.9903, 0, 0, 0, 1, 12, 1.5, -4.5)
+mesh = SubResource("blockmesh_2")
+material_override = ExtResource("8_ice_mid")
+
+[node name="CalvedSmall" type="MeshInstance3D" parent="Kit"]
+transform = Transform3D(0.9781, 0.2079, 0, -0.2079, 0.9781, 0, 0, 0, 1, 4.5, 0.75, -3.5)
+mesh = SubResource("blockmesh_3")
+material_override = ExtResource("8_ice_mid")
+
+[node name="Seracs" type="Node3D" parent="Kit"]
+
+; seracs on the cliff's top, behind: ice about to calve
+[node name="A" type="MeshInstance3D" parent="Kit/Seracs"]
+transform = Transform3D(0.9877, 0.1564, 0, -0.1564, 0.9877, 0, 0, 0, 1, 33, 18.5, -4)
+mesh = SubResource("blockmesh_4")
+material_override = ExtResource("8_ice_mid")
+
+[node name="B" type="MeshInstance3D" parent="Kit/Seracs"]
+transform = Transform3D(0.9945, -0.1045, 0, 0.1045, 0.9945, 0, 0, 0, 1, 38.5, 17.75, -3.5)
+mesh = SubResource("blockmesh_5")
+material_override = ExtResource("8_ice_mid")
+
+[node name="C" type="MeshInstance3D" parent="Kit/Seracs"]
+transform = Transform3D(0.9976, 0.0698, 0, -0.0698, 0.9976, 0, 0, 0, 1, 42, 17.5, -5)
+mesh = SubResource("blockmesh_6")
+material_override = ExtResource("8_ice_mid")
+
+[node name="BackWall" type="MeshInstance3D" parent="Kit"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 10, 12, -8)
+mesh = SubResource("blockmesh_7")
+material_override = ExtResource("9_stone_mid")
+
+[node name="Icicles" type="Node3D" parent="Kit"]
+
+; icicles along the cliff's lip, and the long fall of them down its face
+[node name="Lip" type="MeshInstance3D" parent="Kit/Icicles"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 37.5, 16, 2.25)
+mesh = SubResource("icicles_8")
+material_override = ExtResource("2_ice")
+
+[node name="Face" type="MeshInstance3D" parent="Kit/Icicles"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 26.5, 16, -1)
+mesh = SubResource("icicles_9")
+material_override = ExtResource("8_ice_mid")
+
+[node name="Ceiling" type="MeshInstance3D" parent="Kit/Icicles"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 20, 26, -1.5)
+mesh = SubResource("icicles_10")
+material_override = ExtResource("8_ice_mid")
+
+; a rack toppled from the stacks, frozen where it fell
+[node name="Racks" type="MeshInstance3D" parent="Kit"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 7, 0, -3)
+mesh = SubResource("wreck_11")
+material_override = ExtResource("12_rust_mid")
+
+; a conduit up the cliff's face behind the girder
+[node name="Pipe" type="MeshInstance3D" parent="Kit"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 26.25, 1, -2.5)
+mesh = SubResource("pipe_12")
+material_override = ExtResource("14_metal_mid")
+
+[node name="Glyphs" type="Node3D" parent="."]
+
+[node name="West" type="MeshInstance3D" parent="Glyphs"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 4, -1.1, 2.01)
+mesh = SubResource("QuadMesh_13")
+material_override = ExtResource("15_glyphs")
+cast_shadow = 0
+
+[node name="WestLight" type="OmniLight3D" parent="Glyphs"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 4, -1.1, 2.71)
+light_energy = 0.3
+light_volumetric_fog_energy = 0
+omni_range = 2.5
+
+[node name="Particles" type="Node3D" parent="."]
+
+[node name="Fall" parent="Particles" instance=ExtResource("16_rime")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 24, 13, -1)
+Extents = Vector3(10, 12, 3)
+Density = 0.5
+
+[node name="Floor" parent="Particles" instance=ExtResource("16_rime")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 10, 10, -2)
+Extents = Vector3(12, 10, 3)
+Density = 0.2
+
+[node name="Motes" parent="Particles" instance=ExtResource("17_dust")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 22, 4, -1.5)
+Extents = Vector3(8, 4, 2)
+Density = 1
+
+[node name="Backdrop" type="Node3D" parent="."]
+
+[node name="ForePipe" type="MeshInstance3D" parent="Backdrop"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -3, -2.75, 7.5)
+mesh = SubResource("pipe_14")
+material_override = ExtResource("18_foreground")
+cast_shadow = 0
+
+[node name="PhotoSpots" type="Node3D" parent="."]
+
+; gameplay framing: the floor, the calved ice, the Chorister asleep at the cliff's foot
+[node name="Foot" type="Marker3D" parent="PhotoSpots"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 20, 5, 22)
+script = ExtResource("19_spot")
+PlayerPosition = Vector3(15, 0, 0)
+
+; the cliff: its lip, the girder, the two rings
+[node name="Cliff" type="Marker3D" parent="PhotoSpots"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 32, 10, 26)
+script = ExtResource("19_spot")
+PlayerPosition = Vector3(24, 0, 0)
+
+; arriving from the Coldstacks on top of the cliff
+[node name="Top" type="Marker3D" parent="PhotoSpots"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 36, 19, 22)
+script = ExtResource("19_spot")
+PlayerPosition = Vector3(40, 16, 0)
+PlayerFacing = -1
+
+; the whole cliff and the floor below
+[node name="Wide" type="Marker3D" parent="PhotoSpots"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 21, 12, 56)
+script = ExtResource("19_spot")
+PlayerPosition = Vector3(15, 0, 0)
+Fov = 40

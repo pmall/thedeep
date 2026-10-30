@@ -5,7 +5,8 @@ namespace TheDeep;
 
 /// <summary>
 /// The game's flow around the pilgrim: resting at shrines (heal and save), taking ability relics, reading
-/// scripture plates, boss fights (<see cref="BossSeal"/>), law breaks (<see cref="LawBreak"/>) and lifts (<see cref="Lift"/>), dying or
+/// scripture plates, boss fights (<see cref="BossSeal"/>), law breaks (<see cref="LawBreak"/>), lifts (<see cref="Lift"/>) and cracked
+/// rock broken by the Drill (it stays broken), dying or
 /// falling out of a room and coming back at the last shrine rested at, the end of what is built
 /// (<see cref="MapGoal"/> areas), and starting from the save. Holds the <see cref="SaveData"/>. Machines come back
 /// whenever a room is entered again (it is a fresh instance); taken relics, beaten bosses and broken laws never do.
@@ -245,6 +246,17 @@ public partial class Session : Node
             }
         }
 
+        foreach (Block block in room.Blocks().Where(b => b.Cracked))
+        {
+            if (Save.Collected.Contains(SaveData.RelicId(name, block.Name)))
+            {
+                block.Settle();
+                continue;
+            }
+
+            block.Shattered += OnShattered;
+        }
+
         foreach (Lift lift in room.All<Lift>())
         {
             lift.Player = Player;
@@ -272,6 +284,13 @@ public partial class Session : Node
         Remember(seal.Name);
         Camera.AddShake(0.5f);
         _ = Banner.Show(seal.FallenLine, seal.FallenHintLine, 4f);
+    }
+
+    /// <summary>Cracked rock broken by the Drill: remembered (and saved) at once, so the way stays open.</summary>
+    private void OnShattered(Block block)
+    {
+        Remember(block.Name);
+        Camera.AddShake(0.25f);
     }
 
     /// <summary>A law broken: remembered (and saved) at once; the moment is the pilgrim's, so it holds still a breath.</summary>

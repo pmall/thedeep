@@ -12,6 +12,7 @@ public sealed class PlayerStateSet
         Dash = new DashState(player);
         Grip = new GripState(player);
         Harpoon = new HarpoonState(player);
+        Dive = new DiveState(player);
     }
 
     public IdleState Idle { get; }
@@ -21,4 +22,5 @@ public sealed class PlayerStateSet
     public DashState Dash { get; }
     public GripState Grip { get; }
     public HarpoonState Harpoon { get; }
+    public DiveState Dive { get; }
 }

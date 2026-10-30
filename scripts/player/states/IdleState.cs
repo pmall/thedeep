@@ -24,7 +24,7 @@ public sealed class IdleState : PlayerState
 
         if (Player.WantsDash)
         {
-            return Player.States.Dash;
+            return Player.DashMove();
         }
 
         if (Player.WantsJump)

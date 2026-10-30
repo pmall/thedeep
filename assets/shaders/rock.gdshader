@@ -27,6 +27,9 @@ uniform float crack_width : hint_range(0.0, 0.1) = 0.014;
 /// Share of cell borders that are actually cracked.
 uniform float crack_amount : hint_range(0.0, 1.0) = 0.28;
 
+// Cracked rock (the Drill breaks it): a web of deep fissures over the whole face, so it reads apart from sound rock.
+uniform float fracture : hint_range(0.0, 1.0) = 0.0;
+
 group_uniforms deposits;
 /// Silt or moss in crevices and on up-facing surfaces (biome_silt).
 uniform float silt_amount : hint_range(0.0, 1.0) = 0.6;
@@ -78,6 +81,16 @@ Rock rock_at(vec3 p, vec3 t, vec3 b, float seed) {
 	r.tone = 1.0 + (layer_hash - 0.5) * 2.0 * strata_contrast + (warp - 0.5) * 0.35;
 	r.height = layer_hash * 0.035 - joint * 0.025;
 	r.cavity = joint * 0.5;
+	if (fracture > 0.0) {
+		// Big warped cells split by wide dark fissures, a pale broken rim along each, the slabs tilted apart.
+		vec2 fq = q * 1.1 + (vec2(fbm2(q * 0.7 + seed * 2.0, 2), fbm2(q * 0.7 + 3.1 + seed, 2)) - 0.5) * 0.9;
+		vec2 fc = voronoi_border(fq);
+		float fissure = 1.0 - smoothstep(0.02, 0.07, fc.x);
+		float rim = (1.0 - smoothstep(0.07, 0.14, fc.x)) * (1.0 - fissure);
+		r.height += fc.y * 0.03 * fracture - fissure * 0.08 * fracture;
+		r.cavity = max(r.cavity, fissure * fracture);
+		r.tone *= mix(1.0, (1.0 - 0.75 * fissure) * (1.0 + 0.25 * rim) * (0.9 + 0.2 * fc.y), fracture);
+	}
 	if (!detail) {
 		return r;
 	}

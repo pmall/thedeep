@@ -4,7 +4,7 @@
 ; endless racks, stacked in stone galleries up to the roof. A pilgrim shrine on the floor. Its ways:
 ;   east, the Choir (back toward the Brink's fall);
 ;   up the galleries to a hatch in the roof, the Counterweight: an old lift that only rises, to the Undercroft;
-;   the Calving, a high doorway on the west wall: up the metal buttress by grip, or by two rings (sealed);
+;   the Calving, a high doorway on the west wall: up the metal buttress by grip, or by two rings;
 ;   down the well and east along the corridor under the floor, the Mere (sealed);
 ;   the Vault under the corridor, its way plugged with ice (Drill; sealed);
 ;   the Chimney, a vent in the floor capped with slag (Heat plating; sealed).
@@ -171,11 +171,12 @@ Size = Vector3(2, 8.5, 4)
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 57, -13, 0)
 Size = Vector3(10, 6, 4)
 
-; the way down to the Vault, plugged with ice (Drill will break it)
+; the way down to the Vault, plugged with cracked ice (the Drill breaks it)
 [node name="IcePlug" parent="Geometry" instance=ExtResource("1_block")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 64, -10.5, 0)
 Size = Vector3(4, 1, 4)
 Material = ExtResource("3_ice")
+Cracked = true
 
 [node name="CorridorEast" parent="Geometry" instance=ExtResource("1_block")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 72.5, -13, 0)
@@ -204,11 +205,6 @@ Surface = 1
 [node name="WallWestHigh" parent="Geometry" instance=ExtResource("1_block")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -1.5, 26.5, 0)
 Size = Vector3(3, 17, 4)
-
-; sealed: the Calving is not built yet
-[node name="RubbleCalving" parent="Geometry" instance=ExtResource("1_block")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -1.25, 16, 0)
-Size = Vector3(1.5, 4, 4)
 
 [node name="WallEastLow" parent="Geometry" instance=ExtResource("1_block")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 77.5, -4, 0)
@@ -287,10 +283,12 @@ TargetRoom = "res://scenes/rooms/Counterweight.tscn"
 TargetExit = "Bottom"
 Size = Vector2(4, 1)
 
-; the high doorway west (sealed: not built yet)
+; the high doorway west, on to the Calving's ice cliff
 [node name="Calving" type="Marker3D" parent="Exits"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 1, 14, 0)
 script = ExtResource("4_exit")
+TargetRoom = "res://scenes/rooms/Calving.tscn"
+TargetExit = "East"
 Requires = "MagGrip | Harpoon"
 Size = Vector2(1, 4)
 

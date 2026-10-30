@@ -17,6 +17,9 @@ public abstract class PlayerState
     /// <summary>Whether held input may change the player's facing while in this state.</summary>
     public virtual bool AllowsTurning => true;
 
+    /// <summary>Whether this state bores through cracked rock ahead of the body when the pilgrim has the Drill.</summary>
+    public virtual bool Bores => false;
+
     /// <summary>What the animation shows in this state.</summary>
     public virtual MotionMode Motion => MotionMode.Ground;
 

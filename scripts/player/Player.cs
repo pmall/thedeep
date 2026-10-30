@@ -51,6 +51,12 @@ public partial class Player : CharacterBody3D
     /// <summary>Raised when a dash starts, with its direction (+1 right, -1 left).</summary>
     public event Action<int>? Dashed;
 
+    /// <summary>Raised when the Drill dives (straight down).</summary>
+    public event Action? Dove;
+
+    /// <summary>Raised when the Drill breaks cracked rock.</summary>
+    public event Action<Block>? Bored;
+
     public AbilitySet Abilities { get; } = new();
 
     /// <summary>The pilgrim's health (MaxHealth hits, a grace period after each).</summary>
@@ -174,6 +180,11 @@ public partial class Player : CharacterBody3D
 
         bool wasOnFloor = IsOnFloor();
         float fallSpeed = -Velocity.Y;
+        if (_state.Bores)
+        {
+            Bore(Velocity * dt * 2f);
+        }
+
         MoveAndSlide();
         StayOnPlayPlane();
         if (_state.AfterMove() is { } after && after != _state)
@@ -476,6 +487,50 @@ public partial class Player : CharacterBody3D
     }
 
     public void EndDash() => _dashCooldown.Start(Tuning.DashCooldown);
+
+    /// <summary>
+    /// The dash a press starts: with the Drill and down held, the dive (from the air, or standing on cracked rock);
+    /// otherwise the dash.
+    /// </summary>
+    public PlayerState DashMove() =>
+        Abilities.Has(Ability.Drill) && CurrentInput.MoveY < 0 && IsUpright && (!IsOnFloor() || CrackedAt(Vector3.Down * 0.1f) is not null)
+            ? States.Dive
+            : States.Dash;
+
+    /// <summary>Called by DiveState as it starts: like a dash, it spends the air dash off the ground.</summary>
+    public void BeginDive()
+    {
+        _dashBuffer.Clear();
+        if (!IsOnFloor())
+        {
+            _airDashesLeft--;
+        }
+
+        Dove?.Invoke();
+    }
+
+    /// <summary>With the Drill, breaks the cracked rock the body would run into moving by <paramref name="motion"/>.</summary>
+    private void Bore(Vector3 motion)
+    {
+        if (!Abilities.Has(Ability.Drill) || motion.LengthSquared() < 1e-6f)
+        {
+            return;
+        }
+
+        // A few in a row: breaking one may show another right behind it.
+        for (int i = 0; i < 3 && CrackedAt(motion) is { } block; i++)
+        {
+            block.Break(motion.Normalized());
+            Bored?.Invoke(block);
+        }
+    }
+
+    /// <summary>The unbroken cracked rock the body would hit first moving by <paramref name="motion"/>, or null.</summary>
+    private Block? CrackedAt(Vector3 motion)
+    {
+        var hit = new KinematicCollision3D();
+        return TestMove(GlobalTransform, motion, hit) && hit.GetCollider() is Block { Cracked: true, Broken: false } block ? block : null;
+    }
 
     private void ReadInput()
     {

@@ -143,10 +143,10 @@ Server halls frozen in rime, machines asleep in the cold, a black lake under ice
 |---|---|
 | Rimefall | Where the jump from the Brink lands (its sky is only arrived through): a shelf of rime under a broken dome, a frozen cascade down terraces, a shrine at the foot. *(built)* |
 | Choir | Choristers, Votaries frozen mid-prayer, asleep along a sunken choir: footsteps never wake them, a hard landing close by does. A silent choir to walk through. *(built)* |
-| Coldstacks | The hub: endless frozen racks in stone galleries up to the roof. Shrine. The Counterweight's hatch at the top of the galleries, the Calving ledge high on the west wall (a metal buttress or two rings), the Mere along the corridor under the floor, the Vault under an ice plug (Drill), the Chimney under a slag cap (Heat plating); all but the hatch sealed until built. *(built)* |
+| Coldstacks | The hub: endless frozen racks in stone galleries up to the roof. Shrine. The Counterweight's hatch at the top of the galleries, the Calving ledge high on the west wall (a metal buttress or two rings), the Mere along the corridor under the floor, the Vault under a plug of cracked ice (Drill), the Chimney under a slag cap (Heat plating); the Mere, the Vault and the Chimney sealed until built. *(built)* |
 | Counterweight | An old lift that only rises: up through the Coldstacks' roof hatch to a landing, an iron cage on a rope over a sheave, its weight sinking past as it rises the whole shaft to a grate in the Undercroft's floor. *(built)* |
-| Calving | An ice cliff that sheds: crossed by grip or harpoon. |
-| Bore | A mining machine frozen mid-bore: **Drill**. |
+| Calving | An ice cliff that sheds: out of the Coldstacks' high doorway onto its top, a drop to the floor (a Chorister asleep at its foot); back up by an iron girder frozen into its face (grip) or two rings (harpoon). *(built)* |
+| Bore | A mining machine frozen mid-bore, a shrine in its hall: the chamber it was cutting is a drop with **Drill** at its end, and the way out is boring through a cracked wall into the tunnel under the hall; the chamber's cracked floor over the way down to the Fissure. *(built)* |
 | Fissure | A crack through the bedrock up to the Descent (Drill both ways). |
 | Mere | A frozen lake; black water under the ice. |
 | Sounding | A sonar chapel on the shore: **Ballast**. |

@@ -3,7 +3,7 @@ using Godot;
 
 namespace TheDeep;
 
-/// <summary>Corner readout of the player's movement state and abilities, for playtesting. Hidden until F3.</summary>
+/// <summary>Corner readout of the player's movement state and abilities, for playtesting. Hidden until F7.</summary>
 public partial class DebugHud : CanvasLayer
 {
     [Export] public Player Player { get; set; } = null!;

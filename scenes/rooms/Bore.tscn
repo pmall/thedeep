@@ -1,0 +1,472 @@
+[gd_scene format=3]
+
+; The Bore, west of the Calving (map offset (116.5, -71)): a mining machine frozen mid-bore, its drill head driven into
+; the rock at the west end of its hall. A pilgrim shrine in the hall. Beside the drill head, a shaft drops into the
+; chamber it was cutting: the Drill relic waits at its end, and there is no climbing back up the shaft. A wall of
+; cracked rock seals the chamber from a tunnel under the hall, whose steps come up through a hole in the hall's floor:
+; seen first from the tunnel side, the cracked wall is what the Drill is for. The chamber's floor is cracked too, over
+; the way down to the Fissure (sealed: not built yet).
+
+[ext_resource type="PackedScene" path="res://scenes/kit/Block.tscn" id="1_block"]
+[ext_resource type="Script" path="res://scripts/rooms/RoomExit.cs" id="2_exit"]
+[ext_resource type="PackedScene" path="res://scenes/props/AbilityRelic.tscn" id="3_relic"]
+[ext_resource type="PackedScene" path="res://scenes/props/Shrine.tscn" id="4_shrine"]
+[ext_resource type="Script" path="res://scripts/kit/BlockMesh.cs" id="5_blockmesh"]
+[ext_resource type="Material" path="res://assets/materials/rust_mid.tres" id="6_rust_mid"]
+[ext_resource type="Material" path="res://assets/materials/metal_mid.tres" id="7_metal_mid"]
+[ext_resource type="Script" path="res://scripts/parts/TreadMesh.cs" id="8_tread"]
+[ext_resource type="Script" path="res://scripts/parts/DrillMesh.cs" id="9_drill"]
+[ext_resource type="Material" path="res://assets/materials/stone_mid.tres" id="10_stone_mid"]
+[ext_resource type="Script" path="res://scripts/kit/WreckMesh.cs" id="11_wreck"]
+[ext_resource type="Script" path="res://scripts/kit/CableMesh.cs" id="12_cables"]
+[ext_resource type="Material" path="res://assets/materials/cable.tres" id="13_cable"]
+[ext_resource type="Script" path="res://scripts/kit/IcicleMesh.cs" id="14_icicles"]
+[ext_resource type="Material" path="res://assets/materials/ice.tres" id="15_ice"]
+[ext_resource type="Material" path="res://assets/materials/glyphs.tres" id="16_glyphs"]
+[ext_resource type="PackedScene" path="res://scenes/fx/Rime.tscn" id="17_rime"]
+[ext_resource type="PackedScene" path="res://scenes/fx/Dust.tscn" id="18_dust"]
+[ext_resource type="Script" path="res://scripts/kit/PipeMesh.cs" id="19_pipe"]
+[ext_resource type="Material" path="res://assets/materials/foreground.tres" id="20_foreground"]
+[ext_resource type="Script" path="res://scripts/rooms/PhotoSpot.cs" id="21_spot"]
+[ext_resource type="Script" path="res://scripts/rooms/Room.cs" id="22_room"]
+[ext_resource type="Resource" path="res://resources/biomes/frozen.tres" id="23_frozen"]
+[ext_resource type="PackedScene" path="res://scenes/stage/RoomStage.tscn" id="24_stage"]
+
+[sub_resource type="PrimitiveMesh" id="blockmesh_1"]
+script = ExtResource("5_blockmesh")
+Size = Vector3(16, 5, 4)
+Bevel = 0.5
+
+[sub_resource type="PrimitiveMesh" id="blockmesh_2"]
+script = ExtResource("5_blockmesh")
+Size = Vector3(5, 3.5, 3)
+Bevel = 0.5
+
+[sub_resource type="PrimitiveMesh" id="blockmesh_3"]
+script = ExtResource("5_blockmesh")
+Size = Vector3(9, 1.2, 4.6)
+Bevel = 0.3
+
+[sub_resource type="PrimitiveMesh" id="tread_4"]
+script = ExtResource("8_tread")
+Length = 13
+Radius = 1.4
+Width = 3.6
+Thickness = 0.35
+Wheels = 6
+
+[sub_resource type="PrimitiveMesh" id="blockmesh_5"]
+script = ExtResource("5_blockmesh")
+Size = Vector3(2, 6, 5)
+Bevel = 0.4
+
+[sub_resource type="PrimitiveMesh" id="drill_6"]
+script = ExtResource("9_drill")
+Length = 9
+Radius = 2.6
+Flutes = 3
+Turns = 2.5
+
+[sub_resource type="PrimitiveMesh" id="blockmesh_7"]
+script = ExtResource("5_blockmesh")
+Size = Vector3(17, 19, 7)
+Bevel = 0.6
+
+[sub_resource type="PrimitiveMesh" id="blockmesh_8"]
+script = ExtResource("5_blockmesh")
+Size = Vector3(23, 7, 1.2)
+Bevel = 0.2
+
+[sub_resource type="PrimitiveMesh" id="blockmesh_9"]
+script = ExtResource("5_blockmesh")
+Size = Vector3(36, 30, 1.2)
+Bevel = 0.2
+
+[sub_resource type="PrimitiveMesh" id="wreck_10"]
+script = ExtResource("11_wreck")
+Size = 2
+Seed = 321
+
+[sub_resource type="PrimitiveMesh" id="cables_11"]
+script = ExtResource("12_cables")
+End = Vector3(-15, 1, 0)
+Sag = 2.2
+Radius = 0.08
+Strands = 3
+Seed = 331
+
+[sub_resource type="PrimitiveMesh" id="icicles_12"]
+script = ExtResource("14_icicles")
+Width = 30
+Length = 1.8
+Count = 44
+Seed = 341
+
+[sub_resource type="PrimitiveMesh" id="icicles_13"]
+script = ExtResource("14_icicles")
+Width = 10
+Length = 1.2
+Count = 16
+Seed = 342
+
+[sub_resource type="PrimitiveMesh" id="icicles_14"]
+script = ExtResource("14_icicles")
+Width = 6
+Length = 1
+Count = 10
+Seed = 343
+
+[sub_resource type="QuadMesh" id="QuadMesh_15"]
+size = Vector2(3, 0.3)
+
+[sub_resource type="QuadMesh" id="QuadMesh_16"]
+size = Vector2(3, 0.3)
+
+[sub_resource type="PrimitiveMesh" id="pipe_17"]
+script = ExtResource("19_pipe")
+Points = PackedVector3Array(0, -4, 0, 0, 0, 0, 30, 0, 0, 31, 0.5, 0, 56, 0.5, 0)
+Radius = 0.5
+BendRadius = 1.4
+FlangeSpacing = 4
+
+[node name="Bore" type="Node3D" node_paths=PackedStringArray("SpawnPoint", "Stage", "Lamps", "Shafts", "GlyphLights")]
+script = ExtResource("22_room")
+SpawnPoint = NodePath("SpawnPoint")
+Stage = NodePath("Stage")
+Biome = ExtResource("23_frozen")
+Lamps = [NodePath("Lamps/Chamber"), NodePath("Lamps/Tunnel"), NodePath("Lamps/Shrine"), NodePath("Lamps/Machine")]
+Shafts = [NodePath("Shafts/Shaft"), NodePath("Shafts/Hall")]
+GlyphLights = [NodePath("Props/Shrine/Light"), NodePath("Glyphs/ShrineLight"), NodePath("Glyphs/RelicLight")]
+BoundsMin = Vector2(-1, -13)
+BoundsMax = Vector2(48, 16)
+
+[node name="SpawnPoint" type="Marker3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 40, 0, 0)
+
+; The shared atmosphere stack (environment, key light, clear front air, skylines, far pillars, frame, dust).
+[node name="Stage" parent="." instance=ExtResource("24_stage")]
+Seed = 141
+DustDensity = 0.8
+PillarDensity = 2.6
+FrameBelow = false
+
+[node name="Geometry" type="Node3D" parent="."]
+
+; the hall's floor, thin over the tunnel
+[node name="HallFloorWest" parent="Geometry" instance=ExtResource("1_block")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 27, -0.75, 0)
+Size = Vector3(14, 1.5, 4)
+
+[node name="HallFloorEast" parent="Geometry" instance=ExtResource("1_block")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 46.5, -7, 0)
+Size = Vector3(9, 14, 4)
+
+; over the east doorway
+[node name="WallEast" parent="Geometry" instance=ExtResource("1_block")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 49.5, 11.5, 0)
+Size = Vector3(3, 15, 4)
+
+[node name="Ceiling" parent="Geometry" instance=ExtResource("1_block")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 24, 15.5, 0)
+Size = Vector3(54, 3, 4)
+
+; the rock the machine was boring into, over the chamber
+[node name="Rock" parent="Geometry" instance=ExtResource("1_block")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 5.5, 5.5, 0)
+Size = Vector3(17, 17, 4)
+
+; the chamber's floor
+[node name="ChamberFloorWest" parent="Geometry" instance=ExtResource("1_block")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 2.5, -11.5, 0)
+Size = Vector3(11, 5, 4)
+
+; cracked over the way down to the Fissure: dive through it
+[node name="CrackedFloor" parent="Geometry" instance=ExtResource("1_block")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 9.5, -9.5, 0)
+Size = Vector3(3, 1, 4)
+Cracked = true
+
+; sealed: the Fissure is not built yet
+[node name="Rubble" parent="Geometry" instance=ExtResource("1_block")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 9.5, -12.75, 0)
+Size = Vector3(3, 2.5, 4)
+
+[node name="ChamberFloorEast" parent="Geometry" instance=ExtResource("1_block")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 15.5, -11.5, 0)
+Size = Vector3(9, 5, 4)
+
+; the chamber's end
+[node name="WallWest" parent="Geometry" instance=ExtResource("1_block")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -1.5, -6, 0)
+Size = Vector3(3, 6, 4)
+
+; cracked rock between the shaft and the tunnel: the Drill bores it
+[node name="CrackedWall" parent="Geometry" instance=ExtResource("1_block")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 20.75, -5.25, 0)
+Size = Vector3(1.5, 7.5, 4)
+Cracked = true
+
+[node name="TunnelFloor" parent="Geometry" instance=ExtResource("1_block")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 25.75, -11.5, 0)
+Size = Vector3(8.5, 5, 4)
+
+; the tunnel's steps up to the hole in the hall's floor
+[node name="Step0" parent="Geometry" instance=ExtResource("1_block")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 32, -10.5, 0)
+Size = Vector3(4, 7, 4)
+
+[node name="Step1" parent="Geometry" instance=ExtResource("1_block")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 36, -9.25, 0)
+Size = Vector3(4, 9.5, 4)
+
+[node name="Step2" parent="Geometry" instance=ExtResource("1_block")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 40, -8, 0)
+Size = Vector3(4, 12, 4)
+
+[node name="Exits" type="Node3D" parent="."]
+
+; back to the Calving
+[node name="East" type="Marker3D" parent="Exits"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 47, 0, 0)
+script = ExtResource("2_exit")
+TargetRoom = "res://scenes/rooms/Calving.tscn"
+TargetExit = "West"
+Size = Vector2(1, 4)
+
+; under the cracked floor, down to the Fissure (sealed: not built yet)
+[node name="Fissure" type="Marker3D" parent="Exits"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 9.5, -11, 0)
+script = ExtResource("2_exit")
+Requires = "Drill"
+Size = Vector2(3, 1)
+
+[node name="Props" type="Node3D" parent="."]
+
+; the Drill, at the end of the chamber the machine was cutting
+[node name="Relic" parent="Props" instance=ExtResource("3_relic")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 4, -9, 0)
+Ability = 4
+NameLine = &"ability.drill.name"
+HintLine = &"ability.drill.hint"
+
+; the hall's shrine
+[node name="Shrine" parent="Props" instance=ExtResource("4_shrine")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 27, 0, 0)
+
+[node name="Shafts" type="Node3D" parent="."]
+
+; down the shaft beside the drill head, into the chamber
+[node name="Shaft" type="SpotLight3D" parent="Shafts"]
+transform = Transform3D(-1, 0, 0, 0, 0.1414, 0.9899, 0, 0.9899, -0.1414, 17, 40, -2)
+light_energy = 4.5
+light_volumetric_fog_energy = 11
+shadow_enabled = true
+spot_range = 80
+spot_attenuation = 0.25
+spot_angle = 6
+spot_angle_attenuation = 2
+
+; soft across the hall from above
+[node name="Hall" type="SpotLight3D" parent="Shafts"]
+transform = Transform3D(-0.7071, 0.6288, -0.3234, 0, 0.4573, 0.8893, 0.7071, 0.6288, -0.3234, 40, 42, -12)
+light_energy = 2.8
+light_volumetric_fog_energy = 7
+shadow_enabled = true
+spot_range = 80
+spot_attenuation = 0.25
+spot_angle = 10
+spot_angle_attenuation = 2
+
+[node name="Lamps" type="Node3D" parent="."]
+
+; a cold glow in the chamber
+[node name="Chamber" type="OmniLight3D" parent="Lamps"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 6, -5.5, 1.4)
+light_energy = 1.2
+omni_range = 8
+shadow_enabled = false
+
+; in the tunnel under the hall
+[node name="Tunnel" type="OmniLight3D" parent="Lamps"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 32, -4, 1.2)
+light_energy = 0.8
+omni_range = 7
+shadow_enabled = false
+
+; a candle glow at the shrine
+[node name="Shrine" type="OmniLight3D" parent="Lamps"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 27, 3.5, 1.2)
+light_energy = 0.9
+omni_range = 5
+shadow_enabled = false
+
+; cold light along the machine's flank
+[node name="Machine" type="OmniLight3D" parent="Lamps"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 31, 9, -1.5)
+light_energy = 1.8
+omni_range = 13
+shadow_enabled = false
+
+[node name="Kit" type="Node3D" parent="."]
+
+[node name="Machine" type="Node3D" parent="Kit"]
+
+; the machine's body, its treads, its cab, behind the hall
+[node name="Body" type="MeshInstance3D" parent="Kit/Machine"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 32, 5.5, -5.5)
+mesh = SubResource("blockmesh_1")
+material_override = ExtResource("6_rust_mid")
+
+[node name="Cab" type="MeshInstance3D" parent="Kit/Machine"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 38.5, 9.75, -5.5)
+mesh = SubResource("blockmesh_2")
+material_override = ExtResource("6_rust_mid")
+
+[node name="Hood" type="MeshInstance3D" parent="Kit/Machine"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 29.5, 8.5, -5.5)
+mesh = SubResource("blockmesh_3")
+material_override = ExtResource("7_metal_mid")
+
+[node name="Treads" type="MeshInstance3D" parent="Kit/Machine"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 32, 1.5, -5.5)
+mesh = SubResource("tread_4")
+material_override = ExtResource("6_rust_mid")
+
+[node name="Collar" type="MeshInstance3D" parent="Kit/Machine"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 23, 6, -5.5)
+mesh = SubResource("blockmesh_5")
+material_override = ExtResource("6_rust_mid")
+
+; the drill head, driven into the rock past the shaft
+[node name="Drill" type="MeshInstance3D" parent="Kit/Machine"]
+transform = Transform3D(0, 1, 0, -1, 0, 0, 0, 0, 1, 22, 6, -5.5)
+mesh = SubResource("drill_6")
+material_override = ExtResource("7_metal_mid")
+
+; the rock behind, the drill head sunk into it
+[node name="BackRock" type="MeshInstance3D" parent="Kit"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 5.5, 9.5, -6)
+mesh = SubResource("blockmesh_7")
+material_override = ExtResource("10_stone_mid")
+
+; the chamber's back
+[node name="ChamberBack" type="MeshInstance3D" parent="Kit"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 8.5, -6.5, -4)
+mesh = SubResource("blockmesh_8")
+material_override = ExtResource("10_stone_mid")
+
+[node name="BackWall" type="MeshInstance3D" parent="Kit"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 32, 4, -9)
+mesh = SubResource("blockmesh_9")
+material_override = ExtResource("10_stone_mid")
+
+; spoil the machine cut, frozen in heaps
+[node name="Spoil" type="MeshInstance3D" parent="Kit"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 44.5, 0, -3.5)
+mesh = SubResource("wreck_10")
+material_override = ExtResource("10_stone_mid")
+
+[node name="Cables" type="MeshInstance3D" parent="Kit"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 38, 11.5, -3.5)
+mesh = SubResource("cables_11")
+material_override = ExtResource("13_cable")
+
+[node name="Icicles" type="Node3D" parent="Kit"]
+
+[node name="Ceiling" type="MeshInstance3D" parent="Kit/Icicles"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 34, 14, 1.25)
+mesh = SubResource("icicles_12")
+material_override = ExtResource("15_ice")
+
+; under the rock, over the chamber
+[node name="Rock" type="MeshInstance3D" parent="Kit/Icicles"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 7, -3, 1.25)
+mesh = SubResource("icicles_13")
+material_override = ExtResource("15_ice")
+
+; under the hall's floor, in the tunnel
+[node name="Hall" type="MeshInstance3D" parent="Kit/Icicles"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 25, -1.5, 1.25)
+mesh = SubResource("icicles_14")
+material_override = ExtResource("15_ice")
+
+[node name="Glyphs" type="Node3D" parent="."]
+
+[node name="Shrine" type="MeshInstance3D" parent="Glyphs"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 27, -0.75, 2.01)
+mesh = SubResource("QuadMesh_15")
+material_override = ExtResource("16_glyphs")
+cast_shadow = 0
+
+[node name="ShrineLight" type="OmniLight3D" parent="Glyphs"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 27, -0.75, 2.71)
+light_energy = 0.3
+light_volumetric_fog_energy = 0
+omni_range = 2.5
+
+[node name="Relic" type="MeshInstance3D" parent="Glyphs"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 4, -9.6, 2.01)
+mesh = SubResource("QuadMesh_16")
+material_override = ExtResource("16_glyphs")
+cast_shadow = 0
+
+[node name="RelicLight" type="OmniLight3D" parent="Glyphs"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 4, -9.6, 2.71)
+light_energy = 0.35
+light_volumetric_fog_energy = 0
+omni_range = 2.5
+
+[node name="Particles" type="Node3D" parent="."]
+
+[node name="Hall" parent="Particles" instance=ExtResource("17_rime")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 30, 7, -1)
+Extents = Vector3(16, 7, 3)
+Density = 0.3
+
+[node name="Shaft" parent="Particles" instance=ExtResource("17_rime")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 17, 2, -1)
+Extents = Vector3(3, 10, 2)
+Density = 0.8
+
+[node name="Motes" parent="Particles" instance=ExtResource("18_dust")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 8, -6, -0.5)
+Extents = Vector3(6, 3, 1.5)
+Density = 1.2
+
+[node name="Backdrop" type="Node3D" parent="."]
+
+[node name="ForePipe" type="MeshInstance3D" parent="Backdrop"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -3, -14.75, 7.5)
+mesh = SubResource("pipe_17")
+material_override = ExtResource("20_foreground")
+cast_shadow = 0
+
+[node name="PhotoSpots" type="Node3D" parent="."]
+
+; gameplay framing: the hall, the machine frozen mid-bore, the shrine, the hole in the floor
+[node name="Hall" type="Marker3D" parent="PhotoSpots"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 34, 5, 22)
+script = ExtResource("21_spot")
+PlayerPosition = Vector3(44, 0, 0)
+PlayerFacing = -1
+
+; the chamber: the relic, the cracked floor, the cracked wall
+[node name="Chamber" type="Marker3D" parent="PhotoSpots"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 10, -5, 22)
+script = ExtResource("21_spot")
+PlayerPosition = Vector3(6, -9, 0)
+PlayerFacing = -1
+
+; the tunnel under the hall, the steps, the cracked wall from its side
+[node name="Tunnel" type="Marker3D" parent="PhotoSpots"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 31, -5, 22)
+script = ExtResource("21_spot")
+PlayerPosition = Vector3(25, -9, 0)
+PlayerFacing = -1
+
+; the whole bore: hall, shaft, chamber, tunnel
+[node name="Wide" type="Marker3D" parent="PhotoSpots"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 24, 1.5, 56)
+script = ExtResource("21_spot")
+PlayerPosition = Vector3(44, 0, 0)
+Fov = 40

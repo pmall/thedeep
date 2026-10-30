@@ -293,11 +293,11 @@ Size = Vector3(1, 38, 4)
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 45, 21, 0)
 Size = Vector3(2, 34, 4)
 
-; a cracked wall at the bottom (sealed: needs Drill)
+; a cracked wall at the bottom: the Drill bores through it (the way on is sealed: a room not built yet)
 [node name="Cracked" parent="Geometry" instance=ExtResource("5_block")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 45, 2, 0)
 Size = Vector3(2, 4, 4)
-Material = ExtResource("6_stone_mid")
+Cracked = true
 
 ; a balcony across the well where Votaries pray at the edge
 [node name="Balcony" parent="Geometry" instance=ExtResource("5_block")]

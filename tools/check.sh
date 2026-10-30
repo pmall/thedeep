@@ -74,6 +74,12 @@ grep 'GRIP OK' "$LOG_DIR/grip.log"
 scan_log "$LOG_DIR/harpoon.log" "harpoon check"
 grep -q 'HARPOON OK' "$LOG_DIR/harpoon.log" || { tail -20 "$LOG_DIR/harpoon.log"; fail "harpoon check did not report HARPOON OK"; }
 grep 'HARPOON OK' "$LOG_DIR/harpoon.log"
+# e3) Drill: a dash stopped by cracked rock without it, boring through with it, the dive through cracked rock and onto sound rock (DrillCheck, in the lab).
+"$GODOT" --headless --path . --fixed-fps 60 --quit-after 2000 -- --room MechanicsLab --drill-check >"$LOG_DIR/drill.log" 2>&1 \
+    || { grep -E 'DRILL CHECK|ERROR' "$LOG_DIR/drill.log" | head -40; fail "drill check failed (full log: $LOG_DIR/drill.log)"; }
+scan_log "$LOG_DIR/drill.log" "drill check"
+grep -q 'DRILL OK' "$LOG_DIR/drill.log" || { tail -20 "$LOG_DIR/drill.log"; fail "drill check did not report DRILL OK"; }
+grep 'DRILL OK' "$LOG_DIR/drill.log"
 # f) Combat and session: struck, swings break a machine, death and return, rest, relic (CombatCheck, in the lab).
 "$GODOT" --headless --path . --fixed-fps 60 --quit-after 4000 -- --room MechanicsLab --combat-check >"$LOG_DIR/combat.log" 2>&1 \
     || { grep -E 'COMBAT CHECK|ERROR' "$LOG_DIR/combat.log" | head -40; fail "combat check failed (full log: $LOG_DIR/combat.log)"; }
@@ -81,7 +87,7 @@ scan_log "$LOG_DIR/combat.log" "combat check"
 grep -q 'COMBAT OK' "$LOG_DIR/combat.log" || { tail -20 "$LOG_DIR/combat.log"; fail "combat check did not report COMBAT OK"; }
 grep 'COMBAT OK' "$LOG_DIR/combat.log"
 # f2) The flooded layer's end: the boss arena's gates, the Precentor broken and remembered, the third law held then broken, the fall into Rimefall, the Choir's sleepers (EncounterCheck).
-"$GODOT" --headless --path . --fixed-fps 60 --quit-after 7000 -- --room Chapterhouse --encounter-check >"$LOG_DIR/encounter.log" 2>&1 \
+"$GODOT" --headless --path . --fixed-fps 60 --quit-after 9000 -- --room Chapterhouse --encounter-check >"$LOG_DIR/encounter.log" 2>&1 \
     || { grep -E 'ENCOUNTER CHECK|ERROR' "$LOG_DIR/encounter.log" | head -40; fail "encounter check failed (full log: $LOG_DIR/encounter.log)"; }
 scan_log "$LOG_DIR/encounter.log" "encounter check"
 grep -q 'ENCOUNTER OK' "$LOG_DIR/encounter.log" || { tail -20 "$LOG_DIR/encounter.log"; fail "encounter check did not report ENCOUNTER OK"; }
