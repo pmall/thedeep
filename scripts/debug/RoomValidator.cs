@@ -33,7 +33,8 @@ public partial class RoomValidator : Node
     private readonly Dictionary<string, RoomShape> _shapes = new();
 
     /// <summary>What the geometry check needs of a room: its solids, its open exits, and where the pilgrim can wake.</summary>
-    private sealed record RoomShape(List<Box> Solids, List<ExitShape> Exits, List<System.Numerics.Vector2> Wakes, List<System.Numerics.Vector2> Anchors);
+    private sealed record RoomShape(List<Box> Solids, List<ExitShape> Exits, List<System.Numerics.Vector2> Wakes, List<System.Numerics.Vector2> Anchors,
+        List<LiftPath> Lifts);
 
     private sealed record ExitShape(string Name, System.Numerics.Vector2 Position, System.Numerics.Vector2 Size, string Requires, int ArrivalSide, bool Sealed);
     private bool _done;
@@ -192,7 +193,7 @@ public partial class RoomValidator : Node
         }
 
         var anchors = room.All<HarpoonAnchor>().Select(a => N(new Vector2(a.GlobalPosition.X, a.GlobalPosition.Y))).ToList();
-        _shapes[name] = new RoomShape(solids, exitShapes, wakes, anchors);
+        _shapes[name] = new RoomShape(solids, exitShapes, wakes, anchors, room.All<Lift>().Select(l => l.Path).ToList());
 
         if (room.All<MapGoal>().Any())
         {
@@ -349,7 +350,7 @@ public partial class RoomValidator : Node
     /// from a way in that needed none (that requirement would be a lie, or the geometry drifted from it). An exit the Harpoon
     /// opens must be reached by the base moveset and the Harpoon, zipping between the room's anchors, from some way in the
     /// Harpoon allows (the anchors are where the requirement says they are). Sealed exits (rooms not built yet) are held to
-    /// their requirement too, so a gate is right before the room behind it exists.
+    /// their requirement too, so a gate is right before the room behind it exists. Lifts are ridden from their lower stop.
     /// </summary>
     private void CheckGeometry()
     {
@@ -362,8 +363,8 @@ public partial class RoomValidator : Node
         float rise = 0.85f * tuning.JumpTakeOffSpeed;
         foreach ((string room, RoomShape shape) in _shapes.OrderBy(r => r.Key, System.StringComparer.Ordinal))
         {
-            var planner = new ReachPlanner(limits, shape.Solids);
-            var harpooner = new ReachPlanner(limits, shape.Solids, harpoon, shape.Anchors);
+            var planner = new ReachPlanner(limits, shape.Solids, lifts: shape.Lifts);
+            var harpooner = new ReachPlanner(limits, shape.Solids, harpoon, shape.Anchors, shape.Lifts);
             var triggers = shape.Exits.Select(e => Box.Around(e.Position, e.Size)).ToList();
 
             // Ways in: arriving through an exit (by the edge leading here: its requirement is what the pilgrim has at least), or waking.

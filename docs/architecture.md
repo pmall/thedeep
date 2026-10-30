@@ -35,10 +35,14 @@ scenes/
                            an arrival-only exit; a frozen fall, terraces, a shrine), the Choir (Choristers asleep mid-prayer),
                            the Coldstacks hub (shrine; galleries up to the Counterweight's roof hatch; the Calving ledge by
                            grip or two rings; the Mere, the Vault and the Chimney sealed; the built map's MapGoal)
+  rooms/Counterweight.tscn the lift shaft over the Coldstacks' roof hatch (M8): a landing, the cage rising the whole shaft
+                           to the grate in the Undercroft's floor (an arrival-only exit there); closes the loop
   props/HarpoonAnchor.tscn a mooring ring the Harpoon fires at (the origin is where the pilgrim's center is pulled)
   props/Portcullis.tscn    a gate of bars dropping across a way (a boss's arena)
   props/LawBreak.tscn      a law holding the pilgrim back at a lip: a veil of glyphs, the law's words, its collision
   props/ScripturePlate.tscn  a plate of scripture on a lectern, read with interact (lore)
+  props/Lift.tscn          a counterweighted lift: an iron cage (its collision), the weight behind the play plane, the
+                           sheave, the ropes; origin on the cage floor at its lower stop
   rooms/MechanicsLab.tscn  not part of the game: metal wall, slab and block for the headless mechanics checks
   rooms/MachineArena.tscn  the machine arena (M5): the four prototype species side by side, a shrine, a metal reliquary
   kit/Block.tscn           one gameplay block (Size + Surface; collider + bevelled kit mesh)
@@ -76,6 +80,9 @@ scripts/
                            while the boss stands, rise when it breaks; a beaten boss is gone for good)
   props/LawBreak.cs        one of the three laws as a story beat at a lip (docs/theme.md): held, strained against, broken
   props/ScripturePlate.cs  lore: "Read" shows its lines in the banner
+  props/Lift.cs            a lift that only carries its rider up: boards, rises, eases into its upper stop, sinks back
+                           empty; its weight, sheave and ropes follow; `Path` for the geometry check
+  props/LiftMotion.cs      pure: the lift's travel (waiting, boarding, rising with a braking curve, arrived, returning)
   combat/                  pure: Vitality (health + grace), Swing (swing timing); PlayerAttack (the swing, its crescent,
                            the area it hits), SlashMesh (the crescent mesh)
   game/Session.cs          the flow: shrines, relics, death and return, resuming from the save
@@ -149,7 +156,7 @@ scripts/
   debug/GripCheck.cs       scripted Mag-grip run in the mechanics lab, `-- --room MechanicsLab --grip-check`
   debug/HarpoonCheck.cs    scripted Harpoon run in the lab, `-- --room MechanicsLab --harpoon-check`
   debug/CombatCheck.cs     scripted combat and session run in the lab, `-- --room MechanicsLab --combat-check`
-  debug/EncounterCheck.cs  scripted boss fight, law break, the jump into Rimefall and the Choir's sleepers,
+  debug/EncounterCheck.cs  scripted boss fight, law break, the jump into Rimefall, the Choir's sleepers, the lift's ride,
                            `-- --room Chapterhouse --encounter-check`
   debug/CaptureTestDriver.cs  windowed capture check + frame times (`-- --capture-test`)
   debug/LookDevDriver.cs   photo spots + frame times for tools/capture.sh (`-- --lookdev <dir>`)
@@ -208,6 +215,7 @@ tools/motion_sheet.py          contact sheet of a look-dev reel (Motion.png, Mac
 
 - **Machines** (M5): one `Machine` node type for every species; a room places `Machine` nodes (in `Machines`) pointing at a `MachineSpecies` `.tres`. The species holds everything else: its body (a `PartAssembly` in `resources/parts/`, the same part system as the pilgrim), its locomotion (`Walk` on the ground, `Hover` in the plane, `Crawl` over the faces of the metal block it starts on, found from the physics layer), its stats and palette, its behavior and its animation. The behavior is a `MachineBehavior` resource exporting the knobs of one **brain**: a pure class (`machines/brains/`) that turns a `Perception` into an `Intent` each tick, built from the vocabulary (`Senses`, `Steering`, `PrayerCycle`, `StrikeAction`) and unit tested without the engine. The intent's channels (`Pray`, `Strike`, `Alert`, `Rouse`, `Work`) and the machine's speed drive its animation as data: `JointDriver`s pose, wave, spin or aim joints, `MachineLeg`s step by IK with planted feet. `MachineDirector` (in `Main`) collects the room's machines when it loads, builds their perception (the player's chest and line of sight on the world layers, impacts from the player's landings and dashes, neighbors and what they broadcast) and steps them in scene order, so look-dev and checks are deterministic. Adding a species is one `.tres` (and its body); a brain only for a truly new behavior. A strike's wind-up always comes before the blow, and only hostile species' eyes turn the hazard color. `SpeciesValidator` (in `tools/check.sh`) checks every species' data and runs each one alone in the arena, without and with the player.
 - **Combat and session** (M6): `PlayerAttack` (a child of the player) raises `Striking(area, swing)` while a swing's hit window is open; `MachineDirector` hits each machine whose `BodyRect` the area reaches once per swing (`Machine.TakeHit`: flash through the `hurt` instance uniform of machine.gdshader, stagger, knockback, breaking) and turns machine blows into `Player.TakeHit`. `Session` (in Main) handles shrines, relics, death and the return to the last shrine, and the save (`SaveData` ↔ `user://save.json`); `Main` resumes from the save on a normal launch. Text shown (the "Rest" prompt, ability banners) comes from the line book.
+- **Lifts** (M8): a `Lift` (`scenes/props/Lift.tscn`) is a prop, not a `Block`: its cage is an `AnimatableBody3D` on the rock layer that carries the pilgrim (the character body rides a moving floor), driven each physics tick by the pure `LiftMotion` (so the travel is unit tested). `Session` hands it the player when a room loads (riding is standing upright on its floor) and shakes the camera when its brake lets go; it holds still while the player is frozen (travelling under the veil). The geometry check sees it as a `LiftPath` (the platform at its lower stop, its rise): `ReachPlanner` stands on it there and rides it up, touching every trigger the body passes through, so an exit at the top of a shaft can need nothing. A lift that carries the pilgrim into another room ends in a hatch exit at its upper stop; the far side is an arrival-only exit on solid floor (the Undercroft's grate), since nothing goes back down that way.
 - **Bosses and law breaks** (M8): a boss is an ordinary `Machine` (its species and brain as data) inside a `BossSeal` arena whose `Portcullis` gates fall while it stands; a law break is a `LawBreak` at a lip. Neither is a `Block`, so the map and the geometry check see the ways as open (law breaks are story beats outside the ability graph, docs/theme.md; the draft models them as `milestone`s). `Session` hands them the player when a room loads and remembers each one done, with relics, in `SaveData.Collected` as `Room/NodeName`; on later visits it calls their `Settle`. Falling below a room's camera bounds (a drop into a room not built yet) returns the pilgrim to its last shrine.
 - **Text** is data: `resources/text/lines.tres` (`LineBook`) holds every line with a stable id, a speaker and delivery notes; species point at their creed by id.
 
@@ -239,6 +247,7 @@ Code with no Godot types is compiled straight into the xUnit project via `<Compi
 - `capture/CaptureFiles.cs`, `capture/CaptureReport.cs`, `capture/VideoClock.cs`, `capture/FfmpegCommand.cs`
 - `capture/VideoEncoder.cs` (plain .NET; its tests run the real ffmpeg)
 - `kit/MeshData.cs`, `kit/MeshBuilder.cs`, `kit/Profile.cs`, `kit/PathFrame.cs`, `kit/SweepPath.cs`, `kit/KitShapes.cs` (System.Numerics; icicles too)
+- `props/LiftMotion.cs`
 - `map/Requirement.cs`, `map/GridSnap.cs`, `map/ExitMath.cs`, `map/MapState.cs`, `map/MapGraph.cs`, `map/MapSolver.cs`, `map/MapDraft.cs`, `map/MapLayout.cs`, `map/ReachPlanner.cs`, `rooms/dressing/DressingLayout.cs`, `player/GripMath.cs`, `player/HarpoonAim.cs`, `combat/Vitality.cs`, `combat/Swing.cs`, `game/SaveData.cs`
 - `parts/PartShapes.cs`, `parts/PlanarIk.cs`, `parts/VerletChain.cs`, `parts/Humanoid*.cs`, `parts/PartCategory.cs`, `player/MotionMode.cs`, `player/PilgrimMotion.cs`
 - `machines/MachineAct.cs`, `Perception.cs`, `Intent.cs`, `Senses.cs`, `Steering.cs`, `PrayerCycle.cs`, `StrikeAction.cs`, `MachineBrain.cs`, `SurfacePath.cs`, `LegGait.cs`, `machines/brains/*.cs` (including `ConductorBrain`)

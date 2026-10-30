@@ -143,8 +143,8 @@ Server halls frozen in rime, machines asleep in the cold, a black lake under ice
 |---|---|
 | Rimefall | Where the jump from the Brink lands (its sky is only arrived through): a shelf of rime under a broken dome, a frozen cascade down terraces, a shrine at the foot. *(built)* |
 | Choir | Choristers, Votaries frozen mid-prayer, asleep along a sunken choir: footsteps never wake them, a hard landing close by does. A silent choir to walk through. *(built)* |
-| Coldstacks | The hub: endless frozen racks in stone galleries up to the roof. Shrine. The Counterweight's hatch at the top of the galleries, the Calving ledge high on the west wall (a metal buttress or two rings), the Mere along the corridor under the floor, the Vault under an ice plug (Drill), the Chimney under a slag cap (Heat plating); all sealed until built. *(built)* |
-| Counterweight | An old lift that only rises: back up to the Undercroft. |
+| Coldstacks | The hub: endless frozen racks in stone galleries up to the roof. Shrine. The Counterweight's hatch at the top of the galleries, the Calving ledge high on the west wall (a metal buttress or two rings), the Mere along the corridor under the floor, the Vault under an ice plug (Drill), the Chimney under a slag cap (Heat plating); all but the hatch sealed until built. *(built)* |
+| Counterweight | An old lift that only rises: up through the Coldstacks' roof hatch to a landing, an iron cage on a rope over a sheave, its weight sinking past as it rises the whole shaft to a grate in the Undercroft's floor. *(built)* |
 | Calving | An ice cliff that sheds: crossed by grip or harpoon. |
 | Bore | A mining machine frozen mid-bore: **Drill**. |
 | Fissure | A crack through the bedrock up to the Descent (Drill both ways). |
@@ -173,7 +173,7 @@ room Sanctum Frozen
 # built: these must match the scenes' markers
 way Rimefall <-> Choir
 way Choir <-> Coldstacks
-way Coldstacks <-> Counterweight                 # sealed: the roof hatch at the top of the galleries
+way Coldstacks <-> Counterweight                 # the roof hatch at the top of the galleries
 way Counterweight -> Undercroft                  # the lift only rises
 way Coldstacks <-> Calving : MagGrip | Harpoon
 way Calving <-> Bore

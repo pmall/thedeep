@@ -54,6 +54,7 @@ EXT = {
     'anchor': ('PackedScene', 'res://scenes/props/HarpoonAnchor.tscn'),
     'portcullis': ('PackedScene', 'res://scenes/props/Portcullis.tscn'),
     'law': ('PackedScene', 'res://scenes/props/LawBreak.tscn'),
+    'lift': ('PackedScene', 'res://scenes/props/Lift.tscn'),
     'plate': ('PackedScene', 'res://scenes/props/ScripturePlate.tscn'),
     # resources
     'flooded': ('Resource', 'res://resources/biomes/flooded.tres'),
@@ -257,6 +258,12 @@ class Room:
         return self.node('Props/' + name, instance='law', comment=comment, transform=Raw(transform((pos[0], pos[1], 0))),
                          Toward=toward, LawLine=Raw(f'&"{law_line}"'), BrokenLine=Raw(f'&"{broken_line}"'),
                          BrokenHintLine=Raw(f'&"{broken_hint}"'))
+
+    def lift(self, name, pos, rise, comment='', **props):
+        """A counterweighted lift (Lift): `pos` is the top of the cage floor at its lower stop; its lantern joins the lamps."""
+        self.lamps.append(f'Props/{name}/Cage/Lamp')
+        return self.node('Props/' + name, instance='lift', comment=comment, transform=Raw(transform((pos[0], pos[1], 0))),
+                         Rise=float(rise), **props)
 
     def plate(self, name, pos, title, text, comment=''):
         """A scripture plate on a lectern, read at `pos` (on the floor); its light joins the glyph lights."""

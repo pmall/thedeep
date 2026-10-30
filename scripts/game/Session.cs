@@ -5,7 +5,7 @@ namespace TheDeep;
 
 /// <summary>
 /// The game's flow around the pilgrim: resting at shrines (heal and save), taking ability relics, reading
-/// scripture plates, boss fights (<see cref="BossSeal"/>) and law breaks (<see cref="LawBreak"/>), dying or
+/// scripture plates, boss fights (<see cref="BossSeal"/>), law breaks (<see cref="LawBreak"/>) and lifts (<see cref="Lift"/>), dying or
 /// falling out of a room and coming back at the last shrine rested at, the end of what is built
 /// (<see cref="MapGoal"/> areas), and starting from the save. Holds the <see cref="SaveData"/>. Machines come back
 /// whenever a room is entered again (it is a fresh instance); taken relics, beaten bosses and broken laws never do.
@@ -243,6 +243,12 @@ public partial class Session : Node
             {
                 gate.Slammed += _ => Camera.AddShake(0.3f);
             }
+        }
+
+        foreach (Lift lift in room.All<Lift>())
+        {
+            lift.Player = Player;
+            lift.Released += _ => Camera.AddShake(0.12f);
         }
 
         foreach (LawBreak law in room.All<LawBreak>())

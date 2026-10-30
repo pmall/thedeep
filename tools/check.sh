@@ -81,7 +81,7 @@ scan_log "$LOG_DIR/combat.log" "combat check"
 grep -q 'COMBAT OK' "$LOG_DIR/combat.log" || { tail -20 "$LOG_DIR/combat.log"; fail "combat check did not report COMBAT OK"; }
 grep 'COMBAT OK' "$LOG_DIR/combat.log"
 # f2) The flooded layer's end: the boss arena's gates, the Precentor broken and remembered, the third law held then broken, the fall into Rimefall, the Choir's sleepers (EncounterCheck).
-"$GODOT" --headless --path . --fixed-fps 60 --quit-after 6000 -- --room Chapterhouse --encounter-check >"$LOG_DIR/encounter.log" 2>&1 \
+"$GODOT" --headless --path . --fixed-fps 60 --quit-after 7000 -- --room Chapterhouse --encounter-check >"$LOG_DIR/encounter.log" 2>&1 \
     || { grep -E 'ENCOUNTER CHECK|ERROR' "$LOG_DIR/encounter.log" | head -40; fail "encounter check failed (full log: $LOG_DIR/encounter.log)"; }
 scan_log "$LOG_DIR/encounter.log" "encounter check"
 grep -q 'ENCOUNTER OK' "$LOG_DIR/encounter.log" || { tail -20 "$LOG_DIR/encounter.log"; fail "encounter check did not report ENCOUNTER OK"; }

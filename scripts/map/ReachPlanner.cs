@@ -31,6 +31,11 @@ public readonly record struct Box(float MinX, float MinY, float MaxX, float MaxY
         new(center.X - size.X * 0.5f, center.Y - size.Y * 0.5f, center.X + size.X * 0.5f, center.Y + size.Y * 0.5f);
 }
 
+/// <summary>
+/// A lift on the play plane: its platform at the lower stop (a solid there), carrying whoever stands on it <see cref="Rise"/> up.
+/// </summary>
+public readonly record struct LiftPath(Box Platform, float Rise);
+
 /// <summary>A floor the pilgrim can stand on: the top of a solid at <see cref="Y"/>, feet from <see cref="MinX"/> to <see cref="MaxX"/>.</summary>
 public readonly record struct Ledge(float Y, float MinX, float MaxX);
 
@@ -45,6 +50,8 @@ public readonly record struct Ledge(float Y, float MinX, float MaxX);
 /// Given <see cref="HarpoonLimits"/> and anchors, it also fires the Harpoon: from standing (and from the top of a
 /// full jump) at every take-off point, and from each anchor reached, at every anchor in range and in clear sight,
 /// then lets go there (drifting either way or not, jumping off or not, dashing or not).
+/// Lifts (<see cref="LiftPath"/>) stand at their lower stop as solids; landing on one rides it up, the body touching every
+/// trigger it passes through on the way (stepping off at the top is not simulated: keep a lift's way out in its path).
 /// </summary>
 public sealed class ReachPlanner
 {
@@ -60,11 +67,14 @@ public sealed class ReachPlanner
     private readonly List<Ledge> _ledges;
     private readonly HarpoonLimits? _harpoon;
     private readonly List<Vector2> _anchors;
+    private readonly List<LiftPath> _lifts;
 
-    public ReachPlanner(MoveLimits limits, IEnumerable<Box> solids, HarpoonLimits? harpoon = null, IEnumerable<Vector2>? anchors = null)
+    public ReachPlanner(MoveLimits limits, IEnumerable<Box> solids, HarpoonLimits? harpoon = null, IEnumerable<Vector2>? anchors = null,
+        IEnumerable<LiftPath>? lifts = null)
     {
         _m = limits;
-        _solids = solids.ToList();
+        _lifts = lifts?.ToList() ?? new List<LiftPath>();
+        _solids = solids.Concat(_lifts.Select(l => l.Platform)).ToList();
         _ledges = FindLedges();
         _harpoon = harpoon;
         _anchors = harpoon is null ? new List<Vector2>() : anchors?.ToList() ?? new List<Vector2>();
@@ -112,6 +122,11 @@ public sealed class ReachPlanner
                     {
                         reachedTriggers.Add(t);
                     }
+                }
+
+                foreach (LiftPath lift in _lifts.Where(f => MathF.Abs(f.Platform.MaxY - l.Y) < 0.01f && l.MinX < f.Platform.MaxX && f.Platform.MinX < l.MaxX))
+                {
+                    Ride(lift, l, triggers, reachedTriggers);
                 }
             }
         }
@@ -166,6 +181,21 @@ public sealed class ReachPlanner
         }
 
         return (reachedTriggers, reachedLedges);
+    }
+
+    /// <summary>Standing on a lift's platform anywhere along <paramref name="on"/>, carried up the whole of its rise.</summary>
+    private void Ride(LiftPath lift, Ledge on, IReadOnlyList<Box> triggers, HashSet<int> reachedTriggers)
+    {
+        float a = MathF.Max(on.MinX, lift.Platform.MinX), b = MathF.Min(on.MaxX, lift.Platform.MaxX);
+        for (float x = a; x <= b + 0.001f; x += MathF.Max(0.25f, (b - a) / 8f))
+        {
+            for (float up = 0f; up <= lift.Rise + 0.001f; up += 0.25f)
+            {
+                Touch(new Vector2(x, on.Y + MathF.Min(up, lift.Rise)), triggers, reachedTriggers);
+            }
+
+            Touch(new Vector2(x, on.Y + lift.Rise), triggers, reachedTriggers);
+        }
     }
 
     /// <summary>Pulled from <paramref name="from"/> to <paramref name="anchor"/> (the body's center), then letting go there.</summary>

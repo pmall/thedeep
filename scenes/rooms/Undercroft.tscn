@@ -5,7 +5,7 @@
 ; over them, and a tall east wall. East at floor level: the Ossuary. High in the east wall: the way on to the
 ; Chapterhouse, on a metal ledge: climb the metal wall and wrap around the ledge (Mag-grip), or harpoon the two
 ; mooring rings (Harpoon). Above the west door a metal flue rises to the Scriptorium (Mag-grip). Coming back
-; from either is a drop. The lift up from the frozen layer (the Counterweight) will arrive here.
+; from either is a drop. The lift up from the frozen layer (the Counterweight) arrives at a grate in the east floor.
 
 [ext_resource type="Material" path="res://assets/materials/wet_stone.tres" id="1_wet_stone"]
 [ext_resource type="PackedScene" path="res://scenes/kit/Block.tscn" id="2_block"]
@@ -37,6 +37,8 @@
 [ext_resource type="Script" path="res://scripts/rooms/Room.cs" id="28_room"]
 [ext_resource type="Resource" path="res://resources/biomes/flooded.tres" id="29_flooded"]
 [ext_resource type="PackedScene" path="res://scenes/stage/RoomStage.tscn" id="30_stage"]
+[ext_resource type="Script" path="res://scripts/kit/GrateMesh.cs" id="31_grate"]
+[ext_resource type="Material" path="res://assets/materials/metal.tres" id="32_metal"]
 
 [sub_resource type="QuadMesh" id="QuadMesh_1"]
 size = Vector2(3, 0.3)
@@ -171,6 +173,20 @@ Radius = 0.07
 Strands = 3
 Seed = 6
 
+[sub_resource type="PrimitiveMesh" id="Grate_lift"]
+script = ExtResource("31_grate")
+Size = Vector3(4, 0.5, 4)
+Spacing = 0.3
+Bar = 0.07
+
+[sub_resource type="PrimitiveMesh" id="cables_lift"]
+script = ExtResource("20_cables")
+End = Vector3(0, -5, 0)
+Sag = 0.2
+Radius = 0.05
+Strands = 2
+Seed = 11
+
 [node name="Undercroft" type="Node3D" node_paths=PackedStringArray("SpawnPoint", "Stage", "Lamps", "Shafts", "GlyphLights")]
 script = ExtResource("28_room")
 SpawnPoint = NodePath("SpawnPoint")
@@ -204,9 +220,27 @@ transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 29, -4.5, 0)
 Size = Vector3(14, 3, 4)
 Material = ExtResource("1_wet_stone")
 
+[node name="FloorEastNear" parent="Geometry" instance=ExtResource("2_block")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 38, -3, 0)
+Size = Vector3(4, 6, 4)
+Material = ExtResource("1_wet_stone")
+
+; the head of the Counterweight's shaft: a grate over the dark, flush with the floor (shown by Kit/LiftGrate)
+[node name="LiftHead" parent="Geometry" instance=ExtResource("2_block")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 42, -0.25, 0)
+Size = Vector3(4, 0.5, 4)
+Surface = 1
+CollisionOnly = true
+
+; the shaft below the grate, 1.5 m down to its stone
+[node name="LiftWell" parent="Geometry" instance=ExtResource("2_block")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 42, -4, 0)
+Size = Vector3(4, 4, 4)
+Material = ExtResource("1_wet_stone")
+
 [node name="FloorEast" parent="Geometry" instance=ExtResource("2_block")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 47.5, -3, 0)
-Size = Vector3(23, 6, 4)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 51.5, -3, 0)
+Size = Vector3(15, 6, 4)
 Material = ExtResource("1_wet_stone")
 
 ; two tombs in the crypt
@@ -292,6 +326,13 @@ TargetRoom = "res://scenes/rooms/Scriptorium.tscn"
 TargetExit = "Hatch"
 Requires = "MagGrip"
 Size = Vector2(2, 1)
+
+; the Counterweight's cage rises to the grate in the east floor (only arrived through: the lift never goes down)
+[node name="Lift" type="Marker3D" parent="Exits"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 42, 0, 0)
+script = ExtResource("3_exit")
+ArrivalOnly = true
+Size = Vector2(4, 1)
 
 [node name="Anchors" type="Node3D" parent="."]
 
@@ -398,6 +439,17 @@ light_volumetric_fog_energy = 0
 omni_range = 2
 
 [node name="Kit" type="Node3D" parent="."]
+
+; the grate over the Counterweight's shaft, and its ropes going down into the dark
+[node name="LiftGrate" type="MeshInstance3D" parent="Kit"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 42, -0.5, 0)
+mesh = SubResource("Grate_lift")
+material_override = ExtResource("32_metal")
+
+[node name="LiftRopes" type="MeshInstance3D" parent="Kit"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 42.5, -0.75, -1)
+mesh = SubResource("cables_lift")
+material_override = ExtResource("21_cable")
 
 ; the back of the flue
 [node name="FlueBack" type="MeshInstance3D" parent="Kit"]

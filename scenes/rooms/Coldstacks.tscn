@@ -3,8 +3,7 @@
 ; The Coldstacks, west of the Choir (map offset (204.5, -69)): the frozen layer's hub, the cold archive's
 ; endless racks, stacked in stone galleries up to the roof. A pilgrim shrine on the floor. Its ways:
 ;   east, the Choir (back toward the Brink's fall);
-;   up the galleries to a hatch in the roof, the Counterweight: an old lift that only rises, to the Undercroft
-;     (sealed: not built yet);
+;   up the galleries to a hatch in the roof, the Counterweight: an old lift that only rises, to the Undercroft;
 ;   the Calving, a high doorway on the west wall: up the metal buttress by grip, or by two rings (sealed);
 ;   down the well and east along the corridor under the floor, the Mere (sealed);
 ;   the Vault under the corridor, its way plugged with ice (Drill; sealed);
@@ -280,10 +279,12 @@ TargetRoom = "res://scenes/rooms/Choir.tscn"
 TargetExit = "West"
 Size = Vector2(1, 4)
 
-; the roof hatch: the Counterweight lift, up to the Undercroft (sealed: not built yet)
+; the roof hatch: up into the Counterweight, the lift to the Undercroft (dropping back from it lands on the top gallery)
 [node name="Counterweight" type="Marker3D" parent="Exits"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 65, 31, 0)
 script = ExtResource("4_exit")
+TargetRoom = "res://scenes/rooms/Counterweight.tscn"
+TargetExit = "Bottom"
 Size = Vector2(4, 1)
 
 ; the high doorway west (sealed: not built yet)

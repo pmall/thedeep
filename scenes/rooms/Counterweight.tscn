@@ -1,0 +1,643 @@
+[gd_scene format=3]
+
+; The Counterweight, over the Coldstacks' roof hatch (map offset (265.5, -37.5)): an old lift shaft cut up through
+; the frozen archive to the crypts. Up through the hatch from the galleries, a short landing, and the lift: an iron
+; cage on a rope over a sheave out of sight above, an iron weight hanging on the rope's other end. Standing in the cage lets
+; go of its brake: it rises the whole shaft while the weight sinks past it, and carries the pilgrim up through the
+; floor of the Undercroft. It only rises: nothing climbs back down to it from above; left empty at the top, the cage
+; sinks back to wait. Dropping back into the hatch returns to the Coldstacks.
+
+[ext_resource type="PackedScene" path="res://scenes/kit/Block.tscn" id="1_block"]
+[ext_resource type="Script" path="res://scripts/rooms/RoomExit.cs" id="2_exit"]
+[ext_resource type="PackedScene" path="res://scenes/props/Lift.tscn" id="3_lift"]
+[ext_resource type="Script" path="res://scripts/kit/BlockMesh.cs" id="4_blockmesh"]
+[ext_resource type="Material" path="res://assets/materials/stone_mid.tres" id="5_stone_mid"]
+[ext_resource type="Script" path="res://scripts/kit/RackMesh.cs" id="6_rack"]
+[ext_resource type="Script" path="res://scripts/kit/IcicleMesh.cs" id="7_icicles"]
+[ext_resource type="Material" path="res://assets/materials/metal_mid.tres" id="8_metal_mid"]
+[ext_resource type="Script" path="res://scripts/rooms/dressing/RackRow.cs" id="9_rackrow"]
+[ext_resource type="Material" path="res://assets/materials/ice_mid.tres" id="10_ice_mid"]
+[ext_resource type="Script" path="res://scripts/kit/WreckMesh.cs" id="11_wreck"]
+[ext_resource type="Material" path="res://assets/materials/rust_mid.tres" id="12_rust_mid"]
+[ext_resource type="Material" path="res://assets/materials/ice.tres" id="13_ice"]
+[ext_resource type="Material" path="res://assets/materials/glyphs.tres" id="14_glyphs"]
+[ext_resource type="PackedScene" path="res://scenes/fx/Rime.tscn" id="15_rime"]
+[ext_resource type="PackedScene" path="res://scenes/fx/Dust.tscn" id="16_dust"]
+[ext_resource type="Script" path="res://scripts/kit/PipeMesh.cs" id="17_pipe"]
+[ext_resource type="Material" path="res://assets/materials/foreground.tres" id="18_foreground"]
+[ext_resource type="Script" path="res://scripts/rooms/PhotoSpot.cs" id="19_spot"]
+[ext_resource type="Script" path="res://scripts/rooms/Room.cs" id="20_room"]
+[ext_resource type="Resource" path="res://resources/biomes/frozen.tres" id="21_frozen"]
+[ext_resource type="PackedScene" path="res://scenes/stage/RoomStage.tscn" id="22_stage"]
+
+[sub_resource type="PrimitiveMesh" id="blockmesh_1"]
+script = ExtResource("4_blockmesh")
+Size = Vector3(30, 34, 1.2)
+Bevel = 0.2
+
+[sub_resource type="PrimitiveMesh" id="blockmesh_2"]
+script = ExtResource("4_blockmesh")
+Size = Vector3(10, 0.6, 2.4)
+Bevel = 0.1
+
+[sub_resource type="PrimitiveMesh" id="blockmesh_3"]
+script = ExtResource("4_blockmesh")
+Size = Vector3(7, 0.6, 2.4)
+Bevel = 0.1
+
+[sub_resource type="PrimitiveMesh" id="rack_4"]
+script = ExtResource("6_rack")
+Size = Vector3(1.4, 3, 1)
+Units = 7
+Seed = 201
+
+[sub_resource type="PrimitiveMesh" id="rack_5"]
+script = ExtResource("6_rack")
+Size = Vector3(1.4, 2.4, 1)
+Units = 5
+Seed = 202
+
+[sub_resource type="PrimitiveMesh" id="rack_6"]
+script = ExtResource("6_rack")
+Size = Vector3(1.4, 3.4, 1)
+Units = 8
+Seed = 203
+
+[sub_resource type="PrimitiveMesh" id="icicles_7"]
+script = ExtResource("7_icicles")
+Width = 9
+Length = 1.1
+Count = 16
+Seed = 211
+
+[sub_resource type="PrimitiveMesh" id="icicles_8"]
+script = ExtResource("7_icicles")
+Width = 6
+Length = 0.8
+Count = 11
+Seed = 212
+
+[sub_resource type="PrimitiveMesh" id="blockmesh_9"]
+script = ExtResource("4_blockmesh")
+Size = Vector3(0.3, 32, 0.3)
+Bevel = 0.05
+
+[sub_resource type="PrimitiveMesh" id="blockmesh_10"]
+script = ExtResource("4_blockmesh")
+Size = Vector3(3.75, 0.2, 0.2)
+Bevel = 0.03
+
+[sub_resource type="PrimitiveMesh" id="blockmesh_11"]
+script = ExtResource("4_blockmesh")
+Size = Vector3(3.25, 0.2, 0.2)
+Bevel = 0.03
+
+[sub_resource type="PrimitiveMesh" id="wreck_12"]
+script = ExtResource("11_wreck")
+Size = 2.4
+Seed = 251
+
+[sub_resource type="PrimitiveMesh" id="blockmesh_13"]
+script = ExtResource("4_blockmesh")
+Size = Vector3(2.6, 0.5, 1.8)
+Bevel = 0.1
+
+[sub_resource type="PrimitiveMesh" id="icicles_14"]
+script = ExtResource("7_icicles")
+Width = 10
+Length = 1.8
+Count = 20
+Seed = 261
+
+[sub_resource type="PrimitiveMesh" id="icicles_15"]
+script = ExtResource("7_icicles")
+Width = 8
+Length = 1.4
+Count = 16
+Seed = 262
+
+[sub_resource type="PrimitiveMesh" id="icicles_16"]
+script = ExtResource("7_icicles")
+Width = 1
+Length = 3.5
+Count = 3
+Seed = 263
+Spread = 0.4
+
+[sub_resource type="QuadMesh" id="QuadMesh_17"]
+size = Vector2(3.5, 0.3)
+
+[sub_resource type="PrimitiveMesh" id="pipe_18"]
+script = ExtResource("17_pipe")
+Points = PackedVector3Array(0, -4, 0, 0, 30, 0)
+Radius = 0.55
+BendRadius = 1.4
+FlangeSpacing = 3.5
+
+[node name="Counterweight" type="Node3D" node_paths=PackedStringArray("SpawnPoint", "Stage", "Lamps", "Shafts", "GlyphLights")]
+script = ExtResource("20_room")
+SpawnPoint = NodePath("SpawnPoint")
+Stage = NodePath("Stage")
+Biome = ExtResource("21_frozen")
+Lamps = [NodePath("Props/Lift/Cage/Lamp"), NodePath("Lamps/Landing"), NodePath("Lamps/Shaft")]
+Shafts = [NodePath("Shafts/Head"), NodePath("Shafts/High")]
+GlyphLights = [NodePath("Glyphs/AscentLight")]
+BoundsMin = Vector2(-1, -2)
+BoundsMax = Vector2(25, 29.5)
+
+[node name="SpawnPoint" type="Marker3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 8, 0, 0)
+
+; The shared atmosphere stack (environment, key light, clear front air, skylines, far pillars, frame, dust).
+[node name="Stage" parent="." instance=ExtResource("22_stage")]
+Seed = 121
+DustDensity = 0.8
+PillarDensity = 2.8
+FrameBelow = false
+
+[node name="Geometry" type="Node3D" parent="."]
+
+; the landing, either side of the hatch from the Coldstacks
+[node name="FloorWest" parent="Geometry" instance=ExtResource("1_block")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.5, -1.5, 0)
+Size = Vector3(5, 3, 4)
+
+[node name="FloorMid" parent="Geometry" instance=ExtResource("1_block")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 8.75, -1.5, 0)
+Size = Vector3(5.5, 3, 4)
+
+; under the cage at its lower stop
+[node name="Pit" parent="Geometry" instance=ExtResource("1_block")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 13, -1.75, 0)
+Size = Vector3(3, 2.5, 4)
+
+[node name="FloorEast" parent="Geometry" instance=ExtResource("1_block")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 20.75, -1.5, 0)
+Size = Vector3(12.5, 3, 4)
+
+[node name="WallWest" parent="Geometry" instance=ExtResource("1_block")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -1.5, 14, 0)
+Size = Vector3(3, 28, 4)
+
+[node name="WallEast" parent="Geometry" instance=ExtResource("1_block")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 25.5, 14, 0)
+Size = Vector3(3, 28, 4)
+
+; the shaft's head: open over the cage, up through the Undercroft's floor
+[node name="CeilingWest" parent="Geometry" instance=ExtResource("1_block")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 4, 29.5, 0)
+Size = Vector3(14, 3, 4)
+
+[node name="CeilingEast" parent="Geometry" instance=ExtResource("1_block")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 21, 29.5, 0)
+Size = Vector3(12, 3, 4)
+
+[node name="Exits" type="Node3D" parent="."]
+
+; the hatch down to the Coldstacks' galleries (arriving up through it lands east of it)
+[node name="Bottom" type="Marker3D" parent="Exits"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 4, -0.5, 0)
+script = ExtResource("2_exit")
+TargetRoom = "res://scenes/rooms/Coldstacks.tscn"
+TargetExit = "Counterweight"
+ArrivalSide = 1
+Size = Vector2(4, 1)
+
+; the cage at its upper stop: up through the Undercroft's floor (the lift only rises)
+[node name="Top" type="Marker3D" parent="Exits"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 13, 29, 0)
+script = ExtResource("2_exit")
+TargetRoom = "res://scenes/rooms/Undercroft.tscn"
+TargetExit = "Lift"
+OneWay = true
+Size = Vector2(4, 1)
+
+[node name="Props" type="Node3D" parent="."]
+
+; the cage at its lower stop, flush with the landing; it rises 27.5 m
+[node name="Lift" parent="Props" instance=ExtResource("3_lift")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 13, 0, 0)
+Rise = 27.5
+
+[node name="Shafts" type="Node3D" parent="."]
+
+; down the shaft from the crypts, through the opening at its head
+[node name="Head" type="SpotLight3D" parent="Shafts"]
+transform = Transform3D(-1, 0, 0, 0, 0.1414, 0.9899, 0, 0.9899, -0.1414, 13, 52, -2)
+light_energy = 4.5
+light_volumetric_fog_energy = 12
+shadow_enabled = true
+spot_range = 80
+spot_attenuation = 0.25
+spot_angle = 6
+spot_angle_attenuation = 2
+
+; a soft one from the upper left across the racks
+[node name="High" type="SpotLight3D" parent="Shafts"]
+transform = Transform3D(-0.7071, 0.6288, -0.3234, 0, 0.4573, 0.8893, 0.7071, 0.6288, -0.3234, 0, 44, -12)
+light_energy = 2.6
+light_volumetric_fog_energy = 7
+shadow_enabled = true
+spot_range = 80
+spot_attenuation = 0.25
+spot_angle = 9
+spot_angle_attenuation = 2
+
+[node name="Lamps" type="Node3D" parent="."]
+
+; a cold glow on the landing
+[node name="Landing" type="OmniLight3D" parent="Lamps"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 7.5, 3.6, 1.2)
+light_energy = 0.9
+omni_range = 6
+shadow_enabled = false
+
+; light caught in the rime high in the shaft
+[node name="Shaft" type="OmniLight3D" parent="Lamps"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 19, 15, -3)
+light_energy = 1.1
+omni_range = 10
+shadow_enabled = false
+
+[node name="Kit" type="Node3D" parent="."]
+
+[node name="BackWall" type="MeshInstance3D" parent="Kit"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 12, 13, -8)
+mesh = SubResource("blockmesh_1")
+material_override = ExtResource("5_stone_mid")
+
+[node name="Shelves" type="Node3D" parent="Kit"]
+
+[node name="West0" type="MeshInstance3D" parent="Kit/Shelves"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 5, 4.25, -5.5)
+mesh = SubResource("blockmesh_2")
+material_override = ExtResource("5_stone_mid")
+
+[node name="Racks" type="Node3D" parent="Kit"]
+
+[node name="West0" type="Node3D" parent="Kit/Racks"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.75, 4.5, -5.5)
+script = ExtResource("9_rackrow")
+Variants = [SubResource("rack_4"), SubResource("rack_5"), SubResource("rack_6")]
+Material = ExtResource("8_metal_mid")
+Count = 6
+Pitch = 1.6
+GapChance = 0.18
+ToppleChance = 0.06
+Seed = 220
+
+[node name="Icicles" type="Node3D" parent="Kit"]
+
+[node name="West0" type="MeshInstance3D" parent="Kit/Icicles"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 5, 4, -4.5)
+mesh = SubResource("icicles_7")
+material_override = ExtResource("10_ice_mid")
+
+[node name="East0" type="MeshInstance3D" parent="Kit/Shelves"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 21.25, 6.75, -5.5)
+mesh = SubResource("blockmesh_3")
+material_override = ExtResource("5_stone_mid")
+
+[node name="East0" type="Node3D" parent="Kit/Racks"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 18.5, 7, -5.5)
+script = ExtResource("9_rackrow")
+Variants = [SubResource("rack_4"), SubResource("rack_5"), SubResource("rack_6")]
+Material = ExtResource("8_metal_mid")
+Count = 4
+Pitch = 1.6
+GapChance = 0.2
+ToppleChance = 0.05
+Seed = 240
+
+[node name="East0" type="MeshInstance3D" parent="Kit/Icicles"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 21.25, 6.5, -4.5)
+mesh = SubResource("icicles_8")
+material_override = ExtResource("10_ice_mid")
+
+[node name="West1" type="MeshInstance3D" parent="Kit/Shelves"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 5, 9.25, -5.5)
+mesh = SubResource("blockmesh_2")
+material_override = ExtResource("5_stone_mid")
+
+[node name="West1" type="Node3D" parent="Kit/Racks"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.75, 9.5, -5.5)
+script = ExtResource("9_rackrow")
+Variants = [SubResource("rack_4"), SubResource("rack_5"), SubResource("rack_6")]
+Material = ExtResource("8_metal_mid")
+Count = 6
+Pitch = 1.6
+GapChance = 0.18
+ToppleChance = 0.06
+Seed = 221
+
+[node name="West1" type="MeshInstance3D" parent="Kit/Icicles"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 5, 9, -4.5)
+mesh = SubResource("icicles_7")
+material_override = ExtResource("10_ice_mid")
+
+[node name="East1" type="MeshInstance3D" parent="Kit/Shelves"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 21.25, 11.75, -5.5)
+mesh = SubResource("blockmesh_3")
+material_override = ExtResource("5_stone_mid")
+
+[node name="East1" type="Node3D" parent="Kit/Racks"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 18.5, 12, -5.5)
+script = ExtResource("9_rackrow")
+Variants = [SubResource("rack_4"), SubResource("rack_5"), SubResource("rack_6")]
+Material = ExtResource("8_metal_mid")
+Count = 4
+Pitch = 1.6
+GapChance = 0.2
+ToppleChance = 0.05
+Seed = 241
+
+[node name="East1" type="MeshInstance3D" parent="Kit/Icicles"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 21.25, 11.5, -4.5)
+mesh = SubResource("icicles_8")
+material_override = ExtResource("10_ice_mid")
+
+[node name="West2" type="MeshInstance3D" parent="Kit/Shelves"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 5, 14.25, -5.5)
+mesh = SubResource("blockmesh_2")
+material_override = ExtResource("5_stone_mid")
+
+[node name="West2" type="Node3D" parent="Kit/Racks"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.75, 14.5, -5.5)
+script = ExtResource("9_rackrow")
+Variants = [SubResource("rack_4"), SubResource("rack_5"), SubResource("rack_6")]
+Material = ExtResource("8_metal_mid")
+Count = 6
+Pitch = 1.6
+GapChance = 0.18
+ToppleChance = 0.06
+Seed = 222
+
+[node name="West2" type="MeshInstance3D" parent="Kit/Icicles"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 5, 14, -4.5)
+mesh = SubResource("icicles_7")
+material_override = ExtResource("10_ice_mid")
+
+[node name="East2" type="MeshInstance3D" parent="Kit/Shelves"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 21.25, 16.75, -5.5)
+mesh = SubResource("blockmesh_3")
+material_override = ExtResource("5_stone_mid")
+
+[node name="East2" type="Node3D" parent="Kit/Racks"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 18.5, 17, -5.5)
+script = ExtResource("9_rackrow")
+Variants = [SubResource("rack_4"), SubResource("rack_5"), SubResource("rack_6")]
+Material = ExtResource("8_metal_mid")
+Count = 4
+Pitch = 1.6
+GapChance = 0.2
+ToppleChance = 0.05
+Seed = 242
+
+[node name="East2" type="MeshInstance3D" parent="Kit/Icicles"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 21.25, 16.5, -4.5)
+mesh = SubResource("icicles_8")
+material_override = ExtResource("10_ice_mid")
+
+[node name="West3" type="MeshInstance3D" parent="Kit/Shelves"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 5, 19.25, -5.5)
+mesh = SubResource("blockmesh_2")
+material_override = ExtResource("5_stone_mid")
+
+[node name="West3" type="Node3D" parent="Kit/Racks"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.75, 19.5, -5.5)
+script = ExtResource("9_rackrow")
+Variants = [SubResource("rack_4"), SubResource("rack_5"), SubResource("rack_6")]
+Material = ExtResource("8_metal_mid")
+Count = 6
+Pitch = 1.6
+GapChance = 0.18
+ToppleChance = 0.06
+Seed = 223
+
+[node name="West3" type="MeshInstance3D" parent="Kit/Icicles"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 5, 19, -4.5)
+mesh = SubResource("icicles_7")
+material_override = ExtResource("10_ice_mid")
+
+[node name="East3" type="MeshInstance3D" parent="Kit/Shelves"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 21.25, 21.75, -5.5)
+mesh = SubResource("blockmesh_3")
+material_override = ExtResource("5_stone_mid")
+
+[node name="East3" type="Node3D" parent="Kit/Racks"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 18.5, 22, -5.5)
+script = ExtResource("9_rackrow")
+Variants = [SubResource("rack_4"), SubResource("rack_5"), SubResource("rack_6")]
+Material = ExtResource("8_metal_mid")
+Count = 4
+Pitch = 1.6
+GapChance = 0.2
+ToppleChance = 0.05
+Seed = 243
+
+[node name="East3" type="MeshInstance3D" parent="Kit/Icicles"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 21.25, 21.5, -4.5)
+mesh = SubResource("icicles_8")
+material_override = ExtResource("10_ice_mid")
+
+[node name="West4" type="MeshInstance3D" parent="Kit/Shelves"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 5, 24.25, -5.5)
+mesh = SubResource("blockmesh_2")
+material_override = ExtResource("5_stone_mid")
+
+[node name="West4" type="Node3D" parent="Kit/Racks"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.75, 24.5, -5.5)
+script = ExtResource("9_rackrow")
+Variants = [SubResource("rack_4"), SubResource("rack_5"), SubResource("rack_6")]
+Material = ExtResource("8_metal_mid")
+Count = 6
+Pitch = 1.6
+GapChance = 0.18
+ToppleChance = 0.06
+Seed = 224
+
+[node name="West4" type="MeshInstance3D" parent="Kit/Icicles"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 5, 24, -4.5)
+mesh = SubResource("icicles_7")
+material_override = ExtResource("10_ice_mid")
+
+[node name="East4" type="MeshInstance3D" parent="Kit/Shelves"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 21.25, 26.75, -5.5)
+mesh = SubResource("blockmesh_3")
+material_override = ExtResource("5_stone_mid")
+
+[node name="East4" type="Node3D" parent="Kit/Racks"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 18.5, 27, -5.5)
+script = ExtResource("9_rackrow")
+Variants = [SubResource("rack_4"), SubResource("rack_5"), SubResource("rack_6")]
+Material = ExtResource("8_metal_mid")
+Count = 4
+Pitch = 1.6
+GapChance = 0.2
+ToppleChance = 0.05
+Seed = 244
+
+[node name="East4" type="MeshInstance3D" parent="Kit/Icicles"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 21.25, 26.5, -4.5)
+mesh = SubResource("icicles_8")
+material_override = ExtResource("10_ice_mid")
+
+[node name="Guides" type="Node3D" parent="Kit"]
+
+[node name="CageWest" type="MeshInstance3D" parent="Kit/Guides"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 11.25, 14, -1.75)
+mesh = SubResource("blockmesh_9")
+material_override = ExtResource("8_metal_mid")
+
+[node name="CageEast" type="MeshInstance3D" parent="Kit/Guides"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 14.75, 14, -1.75)
+mesh = SubResource("blockmesh_9")
+material_override = ExtResource("8_metal_mid")
+
+[node name="WeightWest" type="MeshInstance3D" parent="Kit/Guides"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 17, 14, -2.5)
+mesh = SubResource("blockmesh_9")
+material_override = ExtResource("8_metal_mid")
+
+[node name="WeightEast" type="MeshInstance3D" parent="Kit/Guides"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 20, 14, -2.5)
+mesh = SubResource("blockmesh_9")
+material_override = ExtResource("8_metal_mid")
+
+[node name="Braces" type="Node3D" parent="Kit"]
+
+[node name="Cage0" type="MeshInstance3D" parent="Kit/Braces"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 13, 5, -1.75)
+mesh = SubResource("blockmesh_10")
+material_override = ExtResource("8_metal_mid")
+
+[node name="Weight0" type="MeshInstance3D" parent="Kit/Braces"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 18.5, 7.5, -2.75)
+mesh = SubResource("blockmesh_11")
+material_override = ExtResource("8_metal_mid")
+
+[node name="Cage1" type="MeshInstance3D" parent="Kit/Braces"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 13, 10, -1.75)
+mesh = SubResource("blockmesh_10")
+material_override = ExtResource("8_metal_mid")
+
+[node name="Weight1" type="MeshInstance3D" parent="Kit/Braces"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 18.5, 12.5, -2.75)
+mesh = SubResource("blockmesh_11")
+material_override = ExtResource("8_metal_mid")
+
+[node name="Cage2" type="MeshInstance3D" parent="Kit/Braces"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 13, 15, -1.75)
+mesh = SubResource("blockmesh_10")
+material_override = ExtResource("8_metal_mid")
+
+[node name="Weight2" type="MeshInstance3D" parent="Kit/Braces"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 18.5, 17.5, -2.75)
+mesh = SubResource("blockmesh_11")
+material_override = ExtResource("8_metal_mid")
+
+[node name="Cage3" type="MeshInstance3D" parent="Kit/Braces"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 13, 20, -1.75)
+mesh = SubResource("blockmesh_10")
+material_override = ExtResource("8_metal_mid")
+
+[node name="Weight3" type="MeshInstance3D" parent="Kit/Braces"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 18.5, 22.5, -2.75)
+mesh = SubResource("blockmesh_11")
+material_override = ExtResource("8_metal_mid")
+
+[node name="Cage4" type="MeshInstance3D" parent="Kit/Braces"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 13, 25, -1.75)
+mesh = SubResource("blockmesh_10")
+material_override = ExtResource("8_metal_mid")
+
+[node name="Weight4" type="MeshInstance3D" parent="Kit/Braces"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 18.5, 27.5, -2.75)
+mesh = SubResource("blockmesh_11")
+material_override = ExtResource("8_metal_mid")
+
+[node name="Brake" type="MeshInstance3D" parent="Kit"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 8.25, 0, -3.5)
+mesh = SubResource("wreck_12")
+material_override = ExtResource("12_rust_mid")
+
+[node name="Buffer" type="MeshInstance3D" parent="Kit"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 18.5, 0.25, -2.5)
+mesh = SubResource("blockmesh_13")
+material_override = ExtResource("12_rust_mid")
+
+[node name="HeadWest" type="MeshInstance3D" parent="Kit/Icicles"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 5.5, 28, 1.25)
+mesh = SubResource("icicles_14")
+material_override = ExtResource("13_ice")
+
+[node name="HeadEast" type="MeshInstance3D" parent="Kit/Icicles"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 19.5, 28, 1.25)
+mesh = SubResource("icicles_15")
+material_override = ExtResource("13_ice")
+
+[node name="WallWest" type="MeshInstance3D" parent="Kit/Icicles"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.25, 20, 1.25)
+mesh = SubResource("icicles_16")
+material_override = ExtResource("13_ice")
+
+[node name="Glyphs" type="Node3D" parent="."]
+
+[node name="Ascent" type="MeshInstance3D" parent="Glyphs"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 9, -1.1, 2.01)
+mesh = SubResource("QuadMesh_17")
+material_override = ExtResource("14_glyphs")
+cast_shadow = 0
+
+[node name="AscentLight" type="OmniLight3D" parent="Glyphs"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 9, -1.1, 2.71)
+light_energy = 0.35
+light_volumetric_fog_energy = 0
+omni_range = 2.5
+
+[node name="Particles" type="Node3D" parent="."]
+
+[node name="Shaft" parent="Particles" instance=ExtResource("15_rime")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 12, 15, -1)
+Extents = Vector3(11, 14, 3)
+Density = 0.45
+
+[node name="Motes" parent="Particles" instance=ExtResource("16_dust")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 9, 3, -1.5)
+Extents = Vector3(6, 3, 2)
+Density = 1.1
+
+[node name="Backdrop" type="Node3D" parent="."]
+
+[node name="ForePipe" type="MeshInstance3D" parent="Backdrop"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 25.5, 0, 7.5)
+mesh = SubResource("pipe_18")
+material_override = ExtResource("18_foreground")
+cast_shadow = 0
+
+[node name="PhotoSpots" type="Node3D" parent="."]
+
+; gameplay framing: up through the hatch, the cage waiting, the weight high above
+[node name="Landing" type="Marker3D" parent="PhotoSpots"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 9, 4, 22)
+script = ExtResource("19_spot")
+PlayerPosition = Vector3(8, 0, 0)
+
+; the shaft from below: racks on the shelves, the guides, the weight hanging at rest
+[node name="Shaft" type="Marker3D" parent="PhotoSpots"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 12, 13, 40)
+script = ExtResource("19_spot")
+PlayerPosition = Vector3(13, 0, 0)
+Fov = 40
+
+; mid-shaft: the weight hanging at rest between its guides, the racks
+[node name="Weight" type="Marker3D" parent="PhotoSpots"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 16, 15, 22)
+script = ExtResource("19_spot")
+PlayerPosition = Vector3(13, 0, 0)
+
+; the shaft's head, the opening up to the crypts
+[node name="Head" type="Marker3D" parent="PhotoSpots"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 13, 23, 22)
+script = ExtResource("19_spot")
+PlayerPosition = Vector3(13, 0, 0)

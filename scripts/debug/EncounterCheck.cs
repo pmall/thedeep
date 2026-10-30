@@ -11,7 +11,9 @@ namespace TheDeep;
 /// lingering before it; swings break it; the gates rise and the fight is remembered; entering again, it stays broken and
 /// the gates stay up. At the Brink: the third law holds the pilgrim at the lip; pressing on breaks it (remembered); over
 /// the lip, the jump falls on into Rimefall and lands there. In the Choir: walking past a sleeping Chorister wakes none;
-/// a hard landing beside one wakes it. Prints `ENCOUNTER OK` or `ENCOUNTER CHECK` errors.
+/// a hard landing beside one wakes it. In the Counterweight: standing in the cage lets go of its brake, and it carries the
+/// pilgrim (standing on its floor all the way) up into the Undercroft, onto the grate. Prints `ENCOUNTER OK` or
+/// `ENCOUNTER CHECK` errors.
 /// </summary>
 public partial class EncounterCheck : Node
 {
@@ -36,7 +38,10 @@ public partial class EncounterCheck : Node
     private Machine Precentor => World.Room.All<Machine>().First(m => m.Species.Id == "precentor");
     private LawBreak Law => World.Room.All<LawBreak>().First();
     private IEnumerable<Machine> Choristers => World.Room.All<Machine>().Where(m => m.Species.Id == "chorister");
+    private Lift Cage => World.Room.All<Lift>().First();
     private float X => Player.GlobalPosition.X;
+    private float _rodeTo;
+    private bool _rideProblem;
 
     private void Hold(StringName action, bool held)
     {
@@ -118,6 +123,35 @@ public partial class EncounterCheck : Node
             () => { Hold(InputActions.MoveRight, false); Player.Respawn(new Vector3(24f, 3f, 0f), 1); },
             () => Choristers.Single(c => c.Name == "Chorister1").Brain.Act != MachineAct.Sleep
                   && Choristers.Single(c => c.Name == "Chorister0").Brain.Act == MachineAct.Sleep));
+        _steps.Add(new("in the Counterweight, standing in the cage lets go of its brake", 4f,
+            () =>
+            {
+                World.Load(GD.Load<PackedScene>(World.RoomPath("Counterweight")));
+                Player.Respawn(new Vector3(8f, 0f, 0f), 1);
+                Hold(InputActions.MoveRight, true);
+            },
+            () => Cage.Travel.Phase == LiftPhase.Rising,
+            () => Hold(InputActions.MoveRight, X < 12.6f)));
+        _steps.Add(new("it carries the pilgrim up the shaft, through the Undercroft's floor, onto the grate", 16f,
+            () => { _rodeTo = 0f; },
+            () => World.RoomName == "Undercroft" && Player.InControl && Player.IsOnFloor() && Mathf.Abs(X - 42f) < 2.1f
+                  && Mathf.Abs(Player.GlobalPosition.Y) < 0.05f && _rodeTo > 25f,
+            () =>
+            {
+                if (World.RoomName != "Counterweight")
+                {
+                    return;
+                }
+
+                // Riding, not left behind: the pilgrim's feet stay on the cage floor all the way up.
+                float above = Player.GlobalPosition.Y - Cage.Cage.GlobalPosition.Y;
+                _rodeTo = Mathf.Max(_rodeTo, Player.GlobalPosition.Y);
+                if (Mathf.Abs(above) > 0.25f && !_rideProblem)
+                {
+                    _rideProblem = true;
+                    _problems.Add($"the pilgrim left the cage floor on the way up ({above:0.00} m from it, the cage {Cage.Travel.Offset:0.0} m up)");
+                }
+            }));
         Next();
     }
 
@@ -173,7 +207,7 @@ public partial class EncounterCheck : Node
 
         if (_problems.Count == 0)
         {
-            GD.Print($"ENCOUNTER OK: {_steps.Count} steps (arena gates, the Precentor struck and broken, remembered; the third law held, broken, the fall into Rimefall; the Choir asleep, woken)");
+            GD.Print($"ENCOUNTER OK: {_steps.Count} steps (arena gates, the Precentor struck and broken, remembered; the third law held, broken, the fall into Rimefall; the Choir asleep, woken; the Counterweight's ride up)");
         }
 
         GetTree().Quit(_problems.Count == 0 ? 0 : 1);

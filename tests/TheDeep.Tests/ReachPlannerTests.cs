@@ -104,4 +104,19 @@ public class ReachPlannerTests
         var anchors = new[] { new Vector2(9f, 16f) };
         Assert.DoesNotContain(0, new ReachPlanner(Limits, solids, Harpoon, anchors).Reach(Vector2.Zero, Vector2.Zero, new[] { top }).Triggers);
     }
+
+    [Fact]
+    public void ALiftCarriesThePilgrimUpItsShaft()
+    {
+        // A hatch 20 m up, over a lift's platform set flush in the floor beside the start.
+        var solids = new[] { B(-10f, -2f, 4f, 0f), B(7f, -2f, 20f, 0f), B(4f, -3f, 7f, -0.5f) };
+        Box hatch = B(4f, 21f, 7f, 22f);
+        var lift = new LiftPath(B(4f, -0.5f, 7f, 0f), 20.5f);
+        Assert.DoesNotContain(0, new ReachPlanner(Limits, solids).Reach(Vector2.Zero, Vector2.Zero, new[] { hatch }).Triggers);
+        Assert.Contains(0, new ReachPlanner(Limits, solids, lifts: new[] { lift }).Reach(Vector2.Zero, Vector2.Zero, new[] { hatch }).Triggers);
+
+        // One that rises short of it doesn't.
+        var shorter = lift with { Rise = 15f };
+        Assert.DoesNotContain(0, new ReachPlanner(Limits, solids, lifts: new[] { shorter }).Reach(Vector2.Zero, Vector2.Zero, new[] { hatch }).Triggers);
+    }
 }
