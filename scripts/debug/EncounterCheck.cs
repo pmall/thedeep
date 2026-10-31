@@ -15,7 +15,9 @@ namespace TheDeep;
 /// pilgrim (standing on its floor all the way) up into the Undercroft, onto the grate. In the Calving: Mag-grip climbs the
 /// girder up the ice cliff and the cliff's top leads back into the Coldstacks. In the Bore: the shaft drops into the
 /// chamber, the relic gives the Drill, a dash bores the cracked wall (remembered), the tunnel's steps climb back to the
-/// hall. Prints `ENCOUNTER OK` or `ENCOUNTER CHECK` errors.
+/// hall. In the Sounding: the drop into the well, floating to the shelf, the relic gives Ballast; sunk under the well's
+/// wall, rising in the shaft beyond, out onto the east hall. In the Mere: sunk through a lead to the lake bed and down its
+/// shaft into the Underice; the tanks blown, back up into the Mere. Prints `ENCOUNTER OK` or `ENCOUNTER CHECK` errors.
 /// </summary>
 public partial class EncounterCheck : Node
 {
@@ -45,6 +47,7 @@ public partial class EncounterCheck : Node
     private float _rodeTo;
     private bool _rideProblem;
     private int _jumpHeld;
+    private bool _rose;
 
     private void Hold(StringName action, bool held)
     {
@@ -198,6 +201,70 @@ public partial class EncounterCheck : Node
 
                 Hold(InputActions.Jump, --_jumpHeld > 0);
             }));
+        _steps.Add(new("in the Sounding, the drop into the well, floating to the shelf: the relic gives Ballast", 10f,
+            () =>
+            {
+                Hold(InputActions.Jump, false);
+                World.Load(GD.Load<PackedScene>(World.RoomPath("Sounding")));
+                Player.Respawn(new Vector3(10f, 0f, 0f), 1);
+            },
+            () => Player.Abilities.Has(Ability.Ballast) && Player.InControl,
+            () =>
+            {
+                // Over the lip, then floating: a full jump onto the shelf at the waterline.
+                bool floating = Player.CurrentState == Player.States.Swim && Player.Velocity.Y > -0.5f;
+                Hold(InputActions.MoveRight, X < 20.5f);
+                if (floating && _jumpHeld <= -10)
+                {
+                    _jumpHeld = 26;
+                }
+
+                Hold(InputActions.Jump, --_jumpHeld > 0);
+            }));
+        _steps.Add(new("sunk under the well's wall and up the shaft beyond, out onto the east hall", 12f,
+            () => { Hold(InputActions.Jump, false); Hold(InputActions.MoveRight, false); _jumpHeld = 0; },
+            () => X > 34.5f && Player.IsOnFloor() && Player.GlobalPosition.Y > -4.1f && Player.CurrentState != Player.States.Swim,
+            () =>
+            {
+                // Off the shelf into the water, down to the floor, east under the wall; in the shaft, blow the tanks, rise, jump out.
+                bool beyond = X > 30.5f, onShelf = Player.IsOnFloor() && Player.CurrentState != Player.States.Swim && X < 30f;
+                Hold(InputActions.MoveLeft, onShelf);
+                Hold(InputActions.MoveDown, !beyond && !onShelf);
+                Hold(InputActions.MoveUp, beyond && Player.Sunk);
+                Hold(InputActions.MoveRight, !onShelf);
+                if (beyond && !Player.Sunk && Player.CurrentState == Player.States.Swim && Player.Velocity.Y > -0.5f && _jumpHeld <= -10)
+                {
+                    _jumpHeld = 26;
+                }
+
+                Hold(InputActions.Jump, --_jumpHeld > 0);
+            }));
+        _steps.Add(new("in the Mere, sunk through a lead to the lake bed and down its shaft into the Underice", 12f,
+            () =>
+            {
+                Hold(InputActions.Jump, false);
+                Hold(InputActions.MoveUp, false);
+                Hold(InputActions.MoveLeft, false);
+                Hold(InputActions.MoveRight, false);
+                World.Load(GD.Load<PackedScene>(World.RoomPath("Mere")));
+                Player.Respawn(new Vector3(21.5f, 1f, 0f), 1);
+            },
+            () => World.RoomName == "Underice",
+            () =>
+            {
+                Hold(InputActions.MoveDown, true);
+                Hold(InputActions.MoveRight, X < 31.5f);
+            }));
+        _steps.Add(new("in the Underice, sunk clear of the shaft, then the tanks blown: up the shaft, back into the Mere", 10f,
+            () => Hold(InputActions.MoveRight, false),
+            () => World.RoomName == "Mere" && Player.InControl,
+            () =>
+            {
+                bool clear = World.RoomName == "Underice" && Player.InControl && Player.GlobalPosition.Y < 19f;
+                _rose |= clear;
+                Hold(InputActions.MoveDown, !_rose);
+                Hold(InputActions.MoveUp, _rose);
+            }));
         Next();
     }
 
@@ -242,7 +309,7 @@ public partial class EncounterCheck : Node
     {
         _index = _steps.Count;
         foreach (StringName action in new[] { InputActions.Attack, InputActions.MoveRight, InputActions.MoveLeft, InputActions.MoveUp,
-                     InputActions.Dash, InputActions.Jump })
+                     InputActions.MoveDown, InputActions.Dash, InputActions.Jump })
         {
             Input.ActionRelease(action);
         }
@@ -254,7 +321,7 @@ public partial class EncounterCheck : Node
 
         if (_problems.Count == 0)
         {
-            GD.Print($"ENCOUNTER OK: {_steps.Count} steps (arena gates, the Precentor struck and broken, remembered; the third law held, broken, the fall into Rimefall; the Choir asleep, woken; the Counterweight's ride up; the Calving's girder; the Bore's relic, its cracked wall, its steps)");
+            GD.Print($"ENCOUNTER OK: {_steps.Count} steps (arena gates, the Precentor struck and broken, remembered; the third law held, broken, the fall into Rimefall; the Choir asleep, woken; the Counterweight's ride up; the Calving's girder; the Bore's relic, its cracked wall, its steps; the Sounding's relic, under its wall; the Mere's lake bed down into the Underice and back)");
         }
 
         GetTree().Quit(_problems.Count == 0 ? 0 : 1);

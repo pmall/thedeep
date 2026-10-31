@@ -77,6 +77,27 @@ public partial class PlayerTuning : Resource
     [Export] public float DiveSpeed { get; set; } = 17f;
     [Export] public float DiveMaxTime { get; set; } = 1.2f;
 
+    /// <summary>Swimming: top speed across the water, how fast it is reached and lost.</summary>
+    [ExportGroup("Water")]
+    [Export] public float SwimSpeed { get; set; } = 4.5f;
+    [Export] public float SwimAcceleration { get; set; } = 30f;
+    [Export] public float SwimDeceleration { get; set; } = 18f;
+    /// <summary>Floating, the feet ride this far under the surface (the head and shoulders above it).</summary>
+    [Export] public float FloatDepth { get; set; } = 1.05f;
+    /// <summary>Floating, the body moves toward its float line at this many m/s per meter away, rising at most RiseSpeed.</summary>
+    [Export] public float FloatStiffness { get; set; } = 4f;
+    [Export] public float RiseSpeed { get; set; } = 4f;
+    /// <summary>With Ballast's tanks full, the body sinks at this speed (also the fastest a float line pulls down).</summary>
+    [Export] public float SinkSpeed { get; set; } = 4.5f;
+    /// <summary>How quickly water changes the body's vertical speed (m/s per second): a plunge dips, then bobs back.</summary>
+    [Export] public float WaterAcceleration { get; set; } = 22f;
+    /// <summary>Breaking the surface, a plunge keeps this fraction of its downward speed.</summary>
+    [Export] public float SplashKeep { get; set; } = 0.3f;
+    /// <summary>The feet this deep under the surface swim (shallower is wading).</summary>
+    [Export] public float WaterEnterDepth { get; set; } = 0.55f;
+    /// <summary>A jump leaves the water from within this distance of the float line.</summary>
+    [Export] public float WaterJumpWindow { get; set; } = 0.4f;
+
     /// <summary>The swing: wind-up, the window in which it hits, recovery, then a short cooldown (seconds).</summary>
     [ExportGroup("Attack")]
     [Export] public float AttackWindUp { get; set; } = 0.04f;
@@ -103,4 +124,8 @@ public partial class PlayerTuning : Resource
     public float Gravity => JumpMath.Gravity(JumpHeight, JumpTimeToApex);
 
     public float JumpTakeOffSpeed => JumpMath.TakeOffSpeed(JumpHeight, JumpTimeToApex);
+
+    /// <summary>The Water group as the pure <see cref="WaterMotion"/> reads it.</summary>
+    public WaterLimits Water => new(SwimSpeed, SwimAcceleration, SwimDeceleration, FloatDepth, FloatStiffness, RiseSpeed, SinkSpeed,
+        WaterAcceleration, SplashKeep, WaterEnterDepth, WaterJumpWindow);
 }

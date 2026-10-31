@@ -57,6 +57,9 @@ public partial class Player : CharacterBody3D
     /// <summary>Raised when the Drill breaks cracked rock.</summary>
     public event Action<Block>? Bored;
 
+    /// <summary>Raised on going into water deep enough to swim, with the downward speed (m/s) just before.</summary>
+    public event Action<float>? Splashed;
+
     public AbilitySet Abilities { get; } = new();
 
     /// <summary>The pilgrim's health (MaxHealth hits, a grace period after each).</summary>
@@ -102,6 +105,15 @@ public partial class Player : CharacterBody3D
     /// <summary>A buffered harpoon press, the ability, and an anchor in sight.</summary>
     public bool WantsHarpoon => _harpoonBuffer.Active && AnchorInSight is not null && Abilities.Has(Ability.Harpoon);
 
+    /// <summary>The height of the surface of the water the feet are in (a swimmable <see cref="WaterBody"/>), or null out of water.</summary>
+    public float? WaterSurface { get; private set; }
+
+    /// <summary>Ballast's tanks are full: in water the body sinks instead of floating. Emptied whenever the pilgrim leaves the water.</summary>
+    public bool Sunk { get; set; }
+
+    /// <summary>The water numbers of <see cref="Tuning"/>, as <see cref="WaterMotion"/> reads them.</summary>
+    public WaterLimits Water { get; private set; } = null!;
+
     /// <summary>The middle of the body on the play plane (what the harpoon aims from and pulls to an anchor).</summary>
     public NVector2 Center => Feet + SurfaceUp * CenterHeight;
 
@@ -141,6 +153,7 @@ public partial class Player : CharacterBody3D
         _state = States.Idle;
         _state.Enter();
         _airDashesLeft = Tuning.AirDashes;
+        Water = Tuning.Water;
         Vitality = new Vitality(Tuning.MaxHealth, Tuning.HurtGrace);
         Visual.Setup(Tuning.RunSpeed);
         Visual.Snap();
@@ -167,6 +180,12 @@ public partial class Player : CharacterBody3D
         Visual.Blink(Vitality.Grace > 0f && !Vitality.Dead);
 
         ReadInput();
+        WaterSurface = WaterAt(GlobalPosition + Vector3.Up * 0.02f);
+        if (WaterSurface is null)
+        {
+            Sunk = false;
+        }
+
         if (_state.AllowsTurning && CurrentInput.MoveX != 0)
         {
             SetFacing(CurrentInput.MoveX);
@@ -246,6 +265,7 @@ public partial class Player : CharacterBody3D
         _steer.Clear();
         _stun.Clear();
         _airDashesLeft = Tuning.AirDashes;
+        Sunk = false;
         ResetPhysicsInterpolation();
         Visual.Snap();
         Respawned?.Invoke();
@@ -312,6 +332,22 @@ public partial class Player : CharacterBody3D
         _harpoonBuffer.Clear();
         States.Harpoon.Prepare(AnchorInSight!);
         return States.Harpoon;
+    }
+
+    /// <summary>
+    /// Swimming, if it applies now: the feet deep enough in water and not rising out of it. Returns the swim state or null.
+    /// Called by the states that can walk, fall or dash into water, before they move.
+    /// </summary>
+    public SwimState? SwimEnter() =>
+        WaterSurface is { } surface && IsUpright && Velocity.Y <= 0f && WaterMotion.Deep(Feet.Y, surface, Water) ? States.Swim : null;
+
+    /// <summary>Called by SwimState as it starts: the plunge is caught by the surface, and the air dash is back.</summary>
+    public void BeginSwim()
+    {
+        float plunge = -Velocity.Y;
+        Velocity = Velocity with { Y = WaterMotion.Splash(Velocity.Y, Water) };
+        _airDashesLeft = Tuning.AirDashes;
+        Splashed?.Invoke(plunge);
     }
 
     /// <summary>An anchor reached: the air dash is back, like on a landing.</summary>
@@ -489,11 +525,12 @@ public partial class Player : CharacterBody3D
     public void EndDash() => _dashCooldown.Start(Tuning.DashCooldown);
 
     /// <summary>
-    /// The dash a press starts: with the Drill and down held, the dive (from the air, or standing on cracked rock);
-    /// otherwise the dash.
+    /// The dash a press starts: with the Drill and down held, the dive (from the air, or standing on cracked rock; in water
+    /// only with Ballast's tanks full); otherwise the dash.
     /// </summary>
     public PlayerState DashMove() =>
-        Abilities.Has(Ability.Drill) && CurrentInput.MoveY < 0 && IsUpright && (!IsOnFloor() || CrackedAt(Vector3.Down * 0.1f) is not null)
+        Abilities.Has(Ability.Drill) && CurrentInput.MoveY < 0 && IsUpright && (WaterSurface is null || Sunk)
+        && (!IsOnFloor() || CrackedAt(Vector3.Down * 0.1f) is not null)
             ? States.Dive
             : States.Dash;
 
@@ -523,6 +560,27 @@ public partial class Player : CharacterBody3D
             block.Break(motion.Normalized());
             Bored?.Invoke(block);
         }
+    }
+
+    /// <summary>The surface height of the swimmable water at <paramref name="point"/>, or null.</summary>
+    private float? WaterAt(Vector3 point)
+    {
+        var query = new PhysicsPointQueryParameters3D
+        {
+            Position = point with { Z = 0f },
+            CollisionMask = PhysicsLayers.Water,
+            CollideWithAreas = true,
+            CollideWithBodies = false,
+        };
+        foreach (Godot.Collections.Dictionary hit in GetWorld3D().DirectSpaceState.IntersectPoint(query, 4))
+        {
+            if (hit["collider"].AsGodotObject() is Area3D { } area && area.GetParent() is WaterBody water)
+            {
+                return water.SurfaceY;
+            }
+        }
+
+        return null;
     }
 
     /// <summary>The unbroken cracked rock the body would hit first moving by <paramref name="motion"/>, or null.</summary>

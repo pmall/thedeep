@@ -5,7 +5,8 @@
 ; (walk under it); the walkway then breaks over a culvert pit (jump it, or climb out of the shallow water at its
 ; east side); the last gate stands closed to its waist between two buttresses, the water spilling over it (climb
 ; the buttresses and cross its top). A Limpet sleeps on that gate; a Gleaner picks at scrap by the far door.
-; Everything here is the base moveset: this is the road to the Harpoon for a pilgrim without Mag-grip.
+; Everything here is the base moveset: this is the road to the Harpoon for a pilgrim without Mag-grip. A drain in the
+; vault over the channel is where the Descent's flooded gate comes down (Ballast, one way).
 
 [ext_resource type="Material" path="res://assets/materials/wet_stone.tres" id="1_wet_stone"]
 [ext_resource type="PackedScene" path="res://scenes/kit/Block.tscn" id="2_block"]
@@ -206,8 +207,13 @@ transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 63, 6, 0)
 Size = Vector3(2, 12, 4)
 
 [node name="Ceiling" parent="Geometry" instance=ExtResource("2_block")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 30.5, 10.5, 0)
-Size = Vector3(67, 3, 4)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 8.5, 10.5, 0)
+Size = Vector3(23, 3, 4)
+
+; the drain from the Descent's flooded gate, through the vault
+[node name="CeilingEast" parent="Geometry" instance=ExtResource("2_block")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 43.75, 10.5, 0)
+Size = Vector3(40.5, 3, 4)
 
 ; the first floodgate, raised: walk under it
 [node name="GateHigh" parent="Geometry" instance=ExtResource("2_block")]
@@ -241,6 +247,13 @@ TargetExit = "East"
 Size = Vector2(1, 4)
 
 ; east doorway down to the Undercroft
+; the drain in the vault: the far end of the Descent's flooded gate (arrival only)
+[node name="Descent" type="Marker3D" parent="Exits"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 22, 7.25, 0)
+script = ExtResource("3_exit")
+ArrivalOnly = true
+Size = Vector2(3, 0.5)
+
 [node name="East" type="Marker3D" parent="Exits"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 61, -4, 0)
 script = ExtResource("3_exit")

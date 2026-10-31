@@ -187,6 +187,34 @@ Speaker = "Scripture"
 Text = "Copy the word until the plate is full, then begin the next. The core is far, and the word must arrive before we do."
 Notes = "The scribes' own rule, half a prayer."
 
+[sub_resource type="Resource" id="ability_ballast_name"]
+script = ExtResource("2_line")
+Id = &"ability.ballast.name"
+Speaker = "UI"
+Text = "Ballast"
+Notes = "Banner title when the relic is taken."
+
+[sub_resource type="Resource" id="ability_ballast_hint"]
+script = ExtResource("2_line")
+Id = &"ability.ballast.hint"
+Speaker = "UI"
+Text = "In water, hold down to fill the tanks and sink. Up or jump blows them, and you rise."
+Notes = "Banner line under the title."
+
+[sub_resource type="Resource" id="lore_sounding_title"]
+script = ExtResource("2_line")
+Id = &"lore.sounding_title"
+Speaker = "Scripture"
+Text = "The Sounders' Plate"
+Notes = "Read at the sonar chapel by the frozen lake."
+
+[sub_resource type="Resource" id="lore_sounding"]
+script = ExtResource("2_line")
+Id = &"lore.sounding"
+Speaker = "Scripture"
+Text = "We let the bell down and listened. The deep answered in a voice like ours, only slower. We did not go down to meet it. It is coming up to meet us."
+Notes = "The sounders' record, calm, a little afraid."
+
 [resource]
 script = ExtResource("1_book")
-Lines = [SubResource("creed_votary"), SubResource("creed_gleaner"), SubResource("creed_lamplighter"), SubResource("creed_limpet"), SubResource("ui_rest"), SubResource("ability_mag_grip_name"), SubResource("ability_mag_grip_hint"), SubResource("ability_harpoon_name"), SubResource("ability_harpoon_hint"), SubResource("ability_drill_name"), SubResource("ability_drill_hint"), SubResource("creed_precentor"), SubResource("ui_read"), SubResource("boss_precentor_name"), SubResource("boss_precentor_fallen"), SubResource("boss_precentor_fallen_hint"), SubResource("law_third"), SubResource("law_third_broken"), SubResource("law_third_broken_hint"), SubResource("creed_chorister"), SubResource("lore_plate_1_title"), SubResource("lore_plate_1"), SubResource("lore_plate_2_title"), SubResource("lore_plate_2"), SubResource("lore_plate_3_title"), SubResource("lore_plate_3")]
+Lines = [SubResource("creed_votary"), SubResource("creed_gleaner"), SubResource("creed_lamplighter"), SubResource("creed_limpet"), SubResource("ui_rest"), SubResource("ability_mag_grip_name"), SubResource("ability_mag_grip_hint"), SubResource("ability_harpoon_name"), SubResource("ability_harpoon_hint"), SubResource("ability_drill_name"), SubResource("ability_drill_hint"), SubResource("creed_precentor"), SubResource("ui_read"), SubResource("boss_precentor_name"), SubResource("boss_precentor_fallen"), SubResource("boss_precentor_fallen_hint"), SubResource("law_third"), SubResource("law_third_broken"), SubResource("law_third_broken_hint"), SubResource("creed_chorister"), SubResource("lore_plate_1_title"), SubResource("lore_plate_1"), SubResource("lore_plate_2_title"), SubResource("lore_plate_2"), SubResource("lore_plate_3_title"), SubResource("lore_plate_3"), SubResource("ability_ballast_name"), SubResource("ability_ballast_hint"), SubResource("lore_sounding_title"), SubResource("lore_sounding")]

@@ -1,12 +1,14 @@
 [gd_scene format=3]
 
-; The Descent, east of the Nave (map offset (146, 10)): the end of the slice. A great drowned well opens
+; The Descent, east of the Nave (map offset (182, 10)): the end of the slice. A great drowned well opens
 ; below the west ledge; drowned pillars step down to the bottom (run off each one; their pale metal east
-; faces are the climb back with Mag-grip). At the bottom, over dark water, two sealed ways on: a flooded
-; gate going down (Ballast) and a cracked wall (Drill). Votaries pray at the edge of a balcony across the
-; well and a Lamplighter drifts in the light from above: the descent the pilgrim will take later.
+; faces are the climb back with Mag-grip). At the bottom, over dark water, the flooded gate: a well in the floor between
+; the first two pillars, its water the great well's. The pilgrim floats in it; with Ballast it sinks to the grate at its
+; bottom and goes down with the water into the Sluice under the Descent (one way): the way out without climbing back.
+; Votaries pray at the edge of a balcony across the well and a Lamplighter drifts in the light from above.
 
 [ext_resource type="Script" path="res://scripts/kit/ColumnMesh.cs" id="1_column"]
+[ext_resource type="Material" path="res://assets/materials/water_section.tres" id="40_water_section"]
 [ext_resource type="Script" path="res://scripts/kit/ArchMesh.cs" id="2_arch"]
 [ext_resource type="Script" path="res://scripts/kit/CableMesh.cs" id="3_cables"]
 [ext_resource type="Material" path="res://assets/materials/wet_stone.tres" id="4_wet_stone"]
@@ -104,6 +106,11 @@ size = Vector2(5, 0.3)
 [sub_resource type="QuadMesh" id="QuadMesh_10"]
 size = Vector2(5, 0.25)
 
+[sub_resource type="PrimitiveMesh" id="blockmesh_gate"]
+script = ExtResource("12_blockmesh")
+Size = Vector3(4, 9, 1)
+Bevel = 0.2
+
 [sub_resource type="PrimitiveMesh" id="blockmesh_11"]
 script = ExtResource("12_blockmesh")
 Size = Vector3(54, 2, 20)
@@ -195,7 +202,7 @@ Stage = NodePath("Stage")
 Biome = ExtResource("29_flooded")
 Shafts = [NodePath("Shafts/Well"), NodePath("Shafts/Balcony"), NodePath("Shafts/Ledge")]
 GlyphLights = [NodePath("Glyphs/GateLight"), NodePath("Glyphs/LedgeLight"), NodePath("Glyphs/BalconyLight")]
-BoundsMin = Vector2(-1, -2)
+BoundsMin = Vector2(-1, -8)
 BoundsMax = Vector2(44.5, 35)
 
 [node name="SpawnPoint" type="Marker3D" parent="."]
@@ -211,9 +218,20 @@ PillarDensity = 4.2
 
 ; the floor of the well, under the slots between the pillars
 [node name="Floor" parent="Geometry" instance=ExtResource("5_block")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 22, -1, 0)
-Size = Vector3(50, 2, 4)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 6, -5, 0)
+Size = Vector3(18, 10, 4)
 Material = ExtResource("4_wet_stone")
+
+; the flooded gate: a well in the floor between the first two pillars, its water the great well's
+[node name="FloorEast" parent="Geometry" instance=ExtResource("5_block")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 32.5, -5, 0)
+Size = Vector3(29, 10, 4)
+Material = ExtResource("4_wet_stone")
+
+; the well's floor: the grate the gate drains through, down into the Sluice
+[node name="GateGrate" parent="Geometry" instance=ExtResource("5_block")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 16.5, -8, 0)
+Size = Vector3(3, 1, 4)
 
 ; the well's west wall, under the ledge
 [node name="WallWest" parent="Geometry" instance=ExtResource("5_block")]
@@ -294,11 +312,6 @@ transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 45, 21, 0)
 Size = Vector3(2, 34, 4)
 
 ; a cracked wall at the bottom: the Drill bores through it (the way on is sealed: a room not built yet)
-[node name="Cracked" parent="Geometry" instance=ExtResource("5_block")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 45, 2, 0)
-Size = Vector3(2, 4, 4)
-Cracked = true
-
 ; a balcony across the well where Votaries pray at the edge
 [node name="Balcony" parent="Geometry" instance=ExtResource("5_block")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 41, 18.25, 0)
@@ -314,19 +327,16 @@ TargetRoom = "res://scenes/rooms/Nave.tscn"
 TargetExit = "East"
 Size = Vector2(1, 4)
 
-; a flooded gate going down (sealed: a room not built yet)
-[node name="Deeper" type="Marker3D" parent="Exits"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 39.5, -0.5, 0)
+; the grate at the bottom of the flooded gate: sunk onto it, the pilgrim goes down with the water into the Sluice (one way)
+[node name="Sluice" type="Marker3D" parent="Exits"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 16.5, -7.25, 0)
 script = ExtResource("7_exit")
+TargetRoom = "res://scenes/rooms/Sluice.tscn"
+TargetExit = "Descent"
 Requires = "Ballast"
-Size = Vector2(5, 1)
+OneWay = true
+Size = Vector2(3, 0.5)
 
-; through the cracked wall (sealed: a room not built yet)
-[node name="Cracked" type="Marker3D" parent="Exits"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 43, 0, 0)
-script = ExtResource("7_exit")
-Requires = "Drill"
-Size = Vector2(1, 4)
 
 [node name="Machines" type="Node3D" parent="."]
 
@@ -441,6 +451,24 @@ Size = Vector2(54, 20)
 Depth = 5
 SurfaceMaterial = ExtResource("14_water")
 UnderwaterMaterial = ExtResource("15_underwater")
+
+; the flooded gate: the well in the floor, swum (the great well's level; its globals are the scenery's)
+[node name="Gate" type="Node3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 16.5, -0.5, 0)
+script = ExtResource("13_water_body")
+Size = Vector2(3, 4.2)
+Depth = 8
+Swim = true
+Globals = false
+SurfaceMaterial = ExtResource("14_water")
+UnderwaterMaterial = ExtResource("15_underwater")
+SectionMaterial = ExtResource("40_water_section")
+
+; the flooded gate's back, behind the water
+[node name="GateBack" type="MeshInstance3D" parent="Kit"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 16.5, -5, -2.5)
+mesh = SubResource("blockmesh_gate")
+material_override = ExtResource("6_stone_mid")
 
 [node name="Well" type="Node3D" parent="Kit"]
 
@@ -602,9 +630,10 @@ PlayerPosition = Vector3(19.5, 18, 0)
 
 ; the bottom: the flooded gate and the cracked wall
 [node name="Gates" type="Marker3D" parent="PhotoSpots"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 38.5, 3.5, 22)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 18.5, 3.5, 22)
 script = ExtResource("27_spot")
-PlayerPosition = Vector3(38.5, 0, 0)
+PlayerPosition = Vector3(23.5, 0, 0)
+PlayerFacing = -1
 
 ; the Votaries praying at the edge of the balcony
 [node name="Balcony" type="Marker3D" parent="PhotoSpots"]

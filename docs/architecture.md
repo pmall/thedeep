@@ -39,7 +39,12 @@ scenes/
                            to the grate in the Undercroft's floor (an arrival-only exit there); closes the loop
   rooms/Calving.tscn, Bore.tscn   the Drill branch west of the Coldstacks (M8): the ice cliff (a Chorister at its foot; back
                            up by the girder or two rings), the Bore (a shrine; the Drill relic in a chamber reached by a drop,
-                           left by boring its cracked wall; the cracked floor over the sealed way down to the Fissure)
+                           left by boring its cracked wall)
+  rooms/Mere.tscn, Sounding.tscn, Underice.tscn   the Ballast branch east of the Coldstacks (M8): the frozen lake (leads of
+                           open water in the ice, the lake swum on the play plane, a shaft in its bed down to the Underice,
+                           Ballast), the Sounding (a sonar chapel: the Ballast relic in a well left by sinking under its wall;
+                           a shrine, a scripture plate), the Underice (a drowned cave under the lake; the way up into the
+                           Vault, sealed)
   props/HarpoonAnchor.tscn a mooring ring the Harpoon fires at (the origin is where the pilgrim's center is pulled)
   props/Portcullis.tscn    a gate of bars dropping across a way (a boss's arena)
   props/LawBreak.tscn      a law holding the pilgrim back at a lip: a veil of glyphs, the law's words, its collision
@@ -65,8 +70,9 @@ scripts/
   player/Player.cs         body, input sampling, timers, movement helpers, state machine host
   player/PlayerInput.cs    held input for one tick
   player/PlayerVisual.cs   facing + squash/stretch (on physics ticks)
-  player/states/           PlayerState base + Idle, Run, Jump, Fall, Dash, Grip (Mag-grip), Harpoon, Dive (the Drill's);
-                           PlayerStateSet
+  player/states/           PlayerState base + Idle, Run, Jump, Fall, Dash, Grip (Mag-grip), Harpoon, Dive (the Drill's),
+                           Swim (water; Ballast sinks); PlayerStateSet
+  player/WaterMotion.cs    pure: how a body moves in water (float line, plunge, sinking, swimming), and WaterLimits
   player/GripMath.cs       pure: Mag-grip geometry on axis-aligned surfaces (attach, inner and outer corners, upright)
   player/HarpoonAim.cs     pure: which anchor the Harpoon fires at, and the release velocity
   player/HarpoonRig.cs     in Main: the room's anchors, the one in sight each tick (Player.AnchorInSight), the line
@@ -107,7 +113,9 @@ scripts/
   rooms/SurfaceKind.cs     Rock / Metal
   rooms/BackdropScatter.cs deterministic out-of-focus kit blocks (backdrop/foreground)
   rooms/AmbientParticles.cs  particles filling a box (Extents, Density per m² of front face), fixed seed
-  rooms/WaterBody.cs       water: surface mesh + underwater fog volume, pushes water level/area globals
+  rooms/WaterBody.cs       water: surface mesh + underwater fog volume, pushes water level/area globals (`Globals`); with
+                           `Swim`, an area on the water layer over its play-plane region and its section (the cut seen from
+                           the side, water_section.gdshader), its haze kept behind the play plane
   kit/                     the environment kit (M2): procedural meshes, Godot-free geometry
     MeshData.cs, MeshBuilder.cs   vertices with a surface frame; bevelled boxes, sweeps, caps
     Profile.cs, PathFrame.cs, SweepPath.cs   cross-sections and paths (lines, bends, cables, arches)
@@ -163,9 +171,11 @@ scripts/
   debug/GripCheck.cs       scripted Mag-grip run in the mechanics lab, `-- --room MechanicsLab --grip-check`
   debug/HarpoonCheck.cs    scripted Harpoon run in the lab, `-- --room MechanicsLab --harpoon-check`
   debug/DrillCheck.cs      scripted Drill run in the lab (boring, diving), `-- --room MechanicsLab --drill-check`
+  debug/BallastCheck.cs    scripted water and Ballast run in a tank it places in the lab, `-- --room MechanicsLab --ballast-check`
   debug/CombatCheck.cs     scripted combat and session run in the lab, `-- --room MechanicsLab --combat-check`
   debug/EncounterCheck.cs  scripted boss fight, law break, the jump into Rimefall, the Choir's sleepers, the lift's ride, the
-                           Calving's girder, the Bore's relic and cracked wall,
+                           Calving's girder, the Bore's relic and cracked wall, the Sounding's relic and its well, the Mere's
+                           lake bed down into the Underice and back,
                            `-- --room Chapterhouse --encounter-check`
   debug/CaptureTestDriver.cs  windowed capture check + frame times (`-- --capture-test`)
   debug/LookDevDriver.cs   photo spots + frame times for tools/capture.sh (`-- --lookdev <dir>`)
@@ -191,6 +201,8 @@ assets/shaders/                the material library (M1), procedural, no UVs or 
   ice.gdshader                 old clear ice, opaque with faked depth: a dark body paling at grazing angles, fractures,
                                bubbles, a glossy skin (icicles, plugs)
   water.gdshader               water surface: depth absorption, own screen-space reflections, ripples
+  water_section.gdshader       a swimmable water's front, seen from the side: what is behind it bent and sunk into the
+                               water's color with depth, a meniscus on the surface line, caustic light under it
   underwater.gdshader          fog shader for the volume under a water surface
   particle.gdshader            ambient particles on camera-facing quads (mote, streak, bubble), lit only by direct light
   backdrop_silhouette.gdshader far skylines (cathedral, server halls) with their own haze and mist
@@ -225,6 +237,7 @@ tools/motion_sheet.py          contact sheet of a look-dev reel (Motion.png, Mac
 - **Machines** (M5): one `Machine` node type for every species; a room places `Machine` nodes (in `Machines`) pointing at a `MachineSpecies` `.tres`. The species holds everything else: its body (a `PartAssembly` in `resources/parts/`, the same part system as the pilgrim), its locomotion (`Walk` on the ground, `Hover` in the plane, `Crawl` over the faces of the metal block it starts on, found from the physics layer), its stats and palette, its behavior and its animation. The behavior is a `MachineBehavior` resource exporting the knobs of one **brain**: a pure class (`machines/brains/`) that turns a `Perception` into an `Intent` each tick, built from the vocabulary (`Senses`, `Steering`, `PrayerCycle`, `StrikeAction`) and unit tested without the engine. The intent's channels (`Pray`, `Strike`, `Alert`, `Rouse`, `Work`) and the machine's speed drive its animation as data: `JointDriver`s pose, wave, spin or aim joints, `MachineLeg`s step by IK with planted feet. `MachineDirector` (in `Main`) collects the room's machines when it loads, builds their perception (the player's chest and line of sight on the world layers, impacts from the player's landings and dashes, neighbors and what they broadcast) and steps them in scene order, so look-dev and checks are deterministic. Adding a species is one `.tres` (and its body); a brain only for a truly new behavior. A strike's wind-up always comes before the blow, and only hostile species' eyes turn the hazard color. `SpeciesValidator` (in `tools/check.sh`) checks every species' data and runs each one alone in the arena, without and with the player.
 - **Combat and session** (M6): `PlayerAttack` (a child of the player) raises `Striking(area, swing)` while a swing's hit window is open; `MachineDirector` hits each machine whose `BodyRect` the area reaches once per swing (`Machine.TakeHit`: flash through the `hurt` instance uniform of machine.gdshader, stagger, knockback, breaking) and turns machine blows into `Player.TakeHit`. `Session` (in Main) handles shrines, relics, death and the return to the last shrine, and the save (`SaveData` ↔ `user://save.json`); `Main` resumes from the save on a normal launch. Text shown (the "Rest" prompt, ability banners) comes from the line book.
 - **Lifts** (M8): a `Lift` (`scenes/props/Lift.tscn`) is a prop, not a `Block`: its cage is an `AnimatableBody3D` on the rock layer that carries the pilgrim (the character body rides a moving floor), driven each physics tick by the pure `LiftMotion` (so the travel is unit tested). `Session` hands it the player when a room loads (riding is standing upright on its floor) and shakes the camera when its brake lets go; it holds still while the player is frozen (travelling under the veil). The geometry check sees it as a `LiftPath` (the platform at its lower stop, its rise): `ReachPlanner` stands on it there and rides it up, touching every trigger the body passes through, so an exit at the top of a shaft can need nothing. A lift that carries the pilgrim into another room ends in a hatch exit at its upper stop; the far side is an arrival-only exit on solid floor (the Undercroft's grate), since nothing goes back down that way.
+- **Water** (M8, Ballast): a `WaterBody` with `Swim` makes an area on the `water` layer over its region of the play plane (Size.X wide, from its surface down Depth); the player finds the surface over its feet each tick (`Player.WaterSurface`, a point query) and `SwimState` moves it with the pure `WaterMotion`. Visually the water's front is a section quad (the cut, seen from the side) in front of the blocks, and its haze stays behind the play plane. Only one water body per room drives the water globals (caustics, the haze's level); a second one (the Descent's flooded gate beside its scenery water) sets `Globals` off. The geometry check reads each swimmable body's `PlayRegion`: every planner floats in it with the player's own motion (float lines are ledges to jump from; floors deeper than a jump out are not), and a Ballast planner reaches every point of the water connected to where it went in (`ReachPlanner`, a flood fill of feet positions). Water from one room to the next meets at hatches and doorways; each room's water has its own surface.
 - **Cracked rock** (M8, the Drill): a `Block` with `Cracked` (rock layer, cracked look). The player tests its own motion ahead each tick while in a state that bores (`PlayerState.Bores`: the dash, the dive) and breaks the cracked block it would hit (`Block.Break`: off the layers at once so the same tick's move goes through, a `Shatter` for the look). `Session` remembers each broken block by room and name and settles it on later visits. The geometry check has a third planner with cracked rock removed: an exit that needs the Drill must be reached by it from some way in.
 - **Bosses and law breaks** (M8): a boss is an ordinary `Machine` (its species and brain as data) inside a `BossSeal` arena whose `Portcullis` gates fall while it stands; a law break is a `LawBreak` at a lip. Neither is a `Block`, so the map and the geometry check see the ways as open (law breaks are story beats outside the ability graph, docs/theme.md; the draft models them as `milestone`s). `Session` hands them the player when a room loads and remembers each one done, with relics, in `SaveData.Collected` as `Room/NodeName`; on later visits it calls their `Settle`. Falling below a room's camera bounds (a drop into a room not built yet) returns the pilgrim to its last shrine.
 - **Text** is data: `resources/text/lines.tres` (`LineBook`) holds every line with a stable id, a speaker and delivery notes; species point at their creed by id.
@@ -249,6 +262,7 @@ Code with no Godot types is compiled straight into the xUnit project via `<Compi
 
 - `util/Motion.cs`
 - `util/Countdown.cs`
+- `player/WaterMotion.cs`
 - `tuning/JumpMath.cs`
 - `camera/CameraMath.cs`
 - `abilities/Ability.cs`

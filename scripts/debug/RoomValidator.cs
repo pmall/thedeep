@@ -34,10 +34,17 @@ public partial class RoomValidator : Node
 
     /// <summary>What the geometry check needs of a room: its solids, its open exits, and where the pilgrim can wake.</summary>
     private sealed record RoomShape(List<Box> Solids, List<ExitShape> Exits, List<System.Numerics.Vector2> Wakes, List<System.Numerics.Vector2> Anchors,
-        List<LiftPath> Lifts, List<Box> Sound);
+        List<LiftPath> Lifts, List<Box> Sound, List<Box> Waters);
 
     private sealed record ExitShape(string Name, System.Numerics.Vector2 Position, System.Numerics.Vector2 Size, string Requires, int ArrivalSide, bool Sealed);
     private bool _done;
+
+    /// <summary>The simulated abilities taken together, smallest first, for ways that need more than one.</summary>
+    private static readonly Ability[] Combined =
+    {
+        Ability.Harpoon | Ability.Drill, Ability.Harpoon | Ability.Ballast, Ability.Drill | Ability.Ballast,
+        Ability.Harpoon | Ability.Drill | Ability.Ballast,
+    };
 
     /// <summary>The start room's scene path (the world's start room).</summary>
     public string StartRoom { get; set; } = "";
@@ -84,6 +91,10 @@ public partial class RoomValidator : Node
         {
             GD.Print($"ROOMS OK: {rooms} rooms, {exits} exits");
             GD.Print(map);
+        }
+        else if (Report)
+        {
+            GD.Print(map); // the placements help find what doesn't line up
         }
 
         GetTree().Quit(_problems.Count == 0 ? 0 : 1);
@@ -195,7 +206,8 @@ public partial class RoomValidator : Node
         }
 
         var anchors = room.All<HarpoonAnchor>().Select(a => N(new Vector2(a.GlobalPosition.X, a.GlobalPosition.Y))).ToList();
-        _shapes[name] = new RoomShape(solids, exitShapes, wakes, anchors, room.All<Lift>().Select(l => l.Path).ToList(), sound);
+        var waters = room.All<WaterBody>().Where(w => w.Swim).Select(w => w.PlayRegion).ToList();
+        _shapes[name] = new RoomShape(solids, exitShapes, wakes, anchors, room.All<Lift>().Select(l => l.Path).ToList(), sound, waters);
 
         if (room.All<MapGoal>().Any())
         {
@@ -273,6 +285,16 @@ public partial class RoomValidator : Node
         }
 
         var text = new System.Text.StringBuilder();
+        if (Report && _problems.Count > 0)
+        {
+            foreach ((string room, System.Numerics.Vector2 offset) in layout.Offsets.OrderBy(o => o.Key, System.StringComparer.Ordinal))
+            {
+                text.Append($"\n  {room} at ({offset.X:0.##}, {offset.Y:0.##})");
+            }
+
+            return text.ToString();
+        }
+
         text.Append($"MAP OK: {_graph.Rooms.Count} rooms, {_graph.Edges.Count} exits, {_graph.Items.Count} relics, ")
             .Append($"{report.ReachableStates} states, no softlock, ")
             .Append(report.AbilityCount == 0 ? "no abilities on the map" : $"{report.Orders.Count} of {report.PossibleOrders} ability orders");
@@ -355,6 +377,9 @@ public partial class RoomValidator : Node
     /// their requirement too, so a gate is right before the room behind it exists. Lifts are ridden from their lower stop. An exit
     /// the Drill opens must be reached by the base moveset with every cracked block gone, from some way in (abilities accumulate,
     /// so whatever a way in needed, the pilgrim may hold the Drill there too; a rule of thumb: it bores any cracked rock it reaches).
+    /// Every planner swims the room's water (floating, as without Ballast); an exit Ballast opens must be reached by a planner that
+    /// sinks and rises anywhere in the water, from some way in. A way that needs simulated abilities together (Ballast and the
+    /// Drill) must be reached by a planner with all of them.
     /// </summary>
     private void CheckGeometry()
     {
@@ -364,12 +389,14 @@ public partial class RoomValidator : Node
             tuning.DashDistance, tuning.DashDuration, tuning.DashExitSpeedFactor, tuning.AirDashes);
         var harpoon = new HarpoonLimits(tuning.HarpoonRange, tuning.HarpoonMinDistance, tuning.HarpoonZipSpeed, tuning.HarpoonZipAcceleration,
             tuning.HarpoonExitSpeedFactor, tuning.HarpoonExitLift);
+        WaterLimits water = tuning.Water;
         float rise = 0.85f * tuning.JumpTakeOffSpeed;
         foreach ((string room, RoomShape shape) in _shapes.OrderBy(r => r.Key, System.StringComparer.Ordinal))
         {
-            var planner = new ReachPlanner(limits, shape.Solids, lifts: shape.Lifts);
-            var harpooner = new ReachPlanner(limits, shape.Solids, harpoon, shape.Anchors, shape.Lifts);
-            var driller = new ReachPlanner(limits, shape.Sound, lifts: shape.Lifts);
+            var planner = new ReachPlanner(limits, shape.Solids, lifts: shape.Lifts, water: water, waters: shape.Waters);
+            var harpooner = new ReachPlanner(limits, shape.Solids, harpoon, shape.Anchors, shape.Lifts, water, shape.Waters);
+            var driller = new ReachPlanner(limits, shape.Sound, lifts: shape.Lifts, water: water, waters: shape.Waters);
+            var sinker = new ReachPlanner(limits, shape.Solids, lifts: shape.Lifts, water: water, waters: shape.Waters, ballast: true);
             bool cracked = shape.Sound.Count < shape.Solids.Count;
             var triggers = shape.Exits.Select(e => Box.Around(e.Position, e.Size)).ToList();
 
@@ -401,6 +428,8 @@ public partial class RoomValidator : Node
             var zippedFrom = shape.Anchors.Count == 0 ? reachedFrom
                 : entries.Select(e => harpooner.Reach(e.At, e.Velocity, triggers, e.Steer).Triggers).ToList();
             var boredFrom = !cracked ? reachedFrom : entries.Select(e => driller.Reach(e.At, e.Velocity, triggers, e.Steer).Triggers).ToList();
+            var sunkFrom = shape.Waters.Count == 0 ? reachedFrom
+                : entries.Select(e => sinker.Reach(e.At, e.Velocity, triggers, e.Steer).Triggers).ToList();
             for (int i = 0; i < shape.Exits.Count; i++)
             {
                 ExitShape x = shape.Exits[i];
@@ -425,6 +454,30 @@ public partial class RoomValidator : Node
                 {
                     _problems.Add($"{room}: exit {x.Name} needs {x.Requires}, but the Drill reaches it from no way into the room " +
                                   $"({shape.Solids.Count - shape.Sound.Count} cracked blocks)");
+                }
+
+                if (!baseExit && Requirement.TryParse(x.Requires, out Requirement ballast, out _) && ballast.IsMetBy(Ability.Ballast)
+                    && entries.Any(e => e.Exit != i)
+                    && !Enumerable.Range(0, entries.Count).Any(e => entries[e].Exit != i && sunkFrom[e].Contains(i)))
+                {
+                    _problems.Add($"{room}: exit {x.Name} needs {x.Requires}, but Ballast reaches it from no way into the room " +
+                                  $"({shape.Waters.Count} waters)");
+                }
+
+                // A way that needs abilities together (Ballast & Drill): the planner with all of them, from any way in.
+                if (!baseExit && Requirement.TryParse(x.Requires, out Requirement together, out _)
+                    && !together.IsMetBy(Ability.Harpoon) && !together.IsMetBy(Ability.Drill) && !together.IsMetBy(Ability.Ballast)
+                    && Combined.FirstOrDefault(c => together.IsMetBy(c)) is var combined && combined != Ability.None
+                    && entries.Any(e => e.Exit != i))
+                {
+                    var both = new ReachPlanner(limits, (combined & Ability.Drill) != 0 ? shape.Sound : shape.Solids,
+                        (combined & Ability.Harpoon) != 0 ? harpoon : null, shape.Anchors, shape.Lifts, water, shape.Waters,
+                        ballast: (combined & Ability.Ballast) != 0);
+                    if (!Enumerable.Range(0, entries.Count).Any(e => entries[e].Exit != i
+                            && both.Reach(entries[e].At, entries[e].Velocity, triggers, entries[e].Steer).Triggers.Contains(i)))
+                    {
+                        _problems.Add($"{room}: exit {x.Name} needs {x.Requires}, but {combined} together reach it from no way into the room");
+                    }
                 }
 
                 if (!baseExit)

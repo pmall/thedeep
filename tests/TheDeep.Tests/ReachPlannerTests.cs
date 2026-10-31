@@ -119,4 +119,34 @@ public class ReachPlannerTests
         var shorter = lift with { Rise = 15f };
         Assert.DoesNotContain(0, new ReachPlanner(Limits, solids, lifts: new[] { shorter }).Reach(Vector2.Zero, Vector2.Zero, new[] { hatch }).Triggers);
     }
+
+    // A pool 8 m deep between two banks, its surface level with the near bank; a doorway low in its far wall.
+    private static readonly Box[] Pool = { B(-10f, -10f, 0f, 0f), B(0f, -10f, 20f, -8f), B(20f, -6f, 30f, 1.5f), B(20f, -10f, 30f, -8f), B(30f, -10f, 31f, 10f) };
+    private static readonly Box PoolWater = B(0f, -8f, 20f, 0f);
+    private static readonly Box Doorway = B(20f, -8f, 21f, -6f);
+
+    private static ReachPlanner Swimmer(bool ballast = false) =>
+        new(Limits, Pool, water: WaterMotionTests.Water, waters: new[] { PoolWater }, ballast: ballast);
+
+    [Fact]
+    public void FloatingCrossesAPoolAndJumpsOntoTheFarBank()
+    {
+        Box farBank = B(24f, 1.6f, 25f, 2.5f);
+        Assert.Contains(0, Swimmer().Reach(new Vector2(-5f, 0f), Vector2.Zero, new[] { farBank }).Triggers);
+        Assert.Contains(Swimmer().Ledges, l => l.Swim && l.MinX <= 1f && l.MaxX >= 19f);
+    }
+
+    [Fact]
+    public void WithoutBallastTheBottomIsOutOfReach()
+    {
+        // Not walking in, nor falling from 12 m up: the water holds the pilgrim up.
+        Assert.DoesNotContain(0, Swimmer().Reach(new Vector2(-5f, 0f), Vector2.Zero, new[] { Doorway }).Triggers);
+        Assert.DoesNotContain(0, Swimmer().Reach(new Vector2(10f, 12f), Vector2.Zero, new[] { Doorway }).Triggers);
+    }
+
+    [Fact]
+    public void BallastSinksToTheBottom()
+    {
+        Assert.Contains(0, Swimmer(ballast: true).Reach(new Vector2(-5f, 0f), Vector2.Zero, new[] { Doorway }).Triggers);
+    }
 }

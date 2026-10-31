@@ -80,6 +80,12 @@ grep 'HARPOON OK' "$LOG_DIR/harpoon.log"
 scan_log "$LOG_DIR/drill.log" "drill check"
 grep -q 'DRILL OK' "$LOG_DIR/drill.log" || { tail -20 "$LOG_DIR/drill.log"; fail "drill check did not report DRILL OK"; }
 grep 'DRILL OK' "$LOG_DIR/drill.log"
+# e4) Water and Ballast: splashing in and floating, held up without it, sinking, staying down, rising, jumping out (BallastCheck, in the lab).
+"$GODOT" --headless --path . --fixed-fps 60 --quit-after 2000 -- --room MechanicsLab --ballast-check >"$LOG_DIR/ballast.log" 2>&1 \
+    || { grep -E 'BALLAST CHECK|ERROR' "$LOG_DIR/ballast.log" | head -40; fail "ballast check failed (full log: $LOG_DIR/ballast.log)"; }
+scan_log "$LOG_DIR/ballast.log" "ballast check"
+grep -q 'BALLAST OK' "$LOG_DIR/ballast.log" || { tail -20 "$LOG_DIR/ballast.log"; fail "ballast check did not report BALLAST OK"; }
+grep 'BALLAST OK' "$LOG_DIR/ballast.log"
 # f) Combat and session: struck, swings break a machine, death and return, rest, relic (CombatCheck, in the lab).
 "$GODOT" --headless --path . --fixed-fps 60 --quit-after 4000 -- --room MechanicsLab --combat-check >"$LOG_DIR/combat.log" 2>&1 \
     || { grep -E 'COMBAT CHECK|ERROR' "$LOG_DIR/combat.log" | head -40; fail "combat check failed (full log: $LOG_DIR/combat.log)"; }

@@ -36,7 +36,7 @@ These gate the map. Every ability is one simple state or rule: no systemic or em
 | **Mag-grip** | Walk on **metal** walls and ceilings. Rock cannot be gripped. | Vertical shafts and ceilings made of metal |
 | **Harpoon** | Fire at an anchor point and zip to it | Gaps with anchor points |
 | **Drill** | Break cracked rock | Cracked rock walls and floors |
-| **Ballast** | Toggle between sinking and floating in water | Flooded layers |
+| **Ballast** | In water, sink (hold down) or float (up / jump) | Exits under water, under walls that reach into it |
 | **Heat plating** | Passive: survive heat-vent zones | Late-game areas near the core |
 
 The player can collect them in many orders, and that freedom is proven by a solver ([long-term.md](long-term.md), objective 2).
@@ -59,6 +59,12 @@ The player can collect them in many orders, and that freedom is proven by a solv
 - **Cracked rock** is a `Block` with `Cracked`: always on the rock layer (never grippable), shown by `assets/materials/cracked.tres` (deep fissures webbing the face; rock.gdshader's `fracture`) unless its look is overridden (the Coldstacks' plug of cracked ice). The moving body tests ahead each tick (`Player.Bore`, from any state whose `Bores` is true: the dash and the dive), so the dash never stops against it. It shatters (`Shatter`: chunks of its own material flung along the way, a dust cloud from `scenes/fx/Rubble.tscn`), the camera shakes, and it stays broken: `Session` remembers it at once, like a relic.
 - Checked headless in the mechanics lab (`DrillCheck`, in `tools/check.sh`), against cracked blocks it places itself. The geometry check removes cracked rock for ways the Drill opens.
 
+**Water and Ballast (implemented, M8).** Water the pilgrim swims in is a `WaterBody` with `Swim` (its play-plane region, from the surface down `Depth`, is an area on the `water` layer). `SwimState` with pure motion in `WaterMotion` (unit tested; the map's planner uses the same functions).
+- **Without Ballast the pilgrim floats.** Feet deeper than `WaterEnterDepth` under the surface (and not rising) swim: a plunge keeps `SplashKeep` of its downward speed, dips and bobs back; the body rides its float line, feet `FloatDepth` under the surface (head and shoulders above), easing toward it at `FloatStiffness` per meter (at most `RiseSpeed` up, `SinkSpeed` down), the water changing its vertical speed by at most `WaterAcceleration` per second. Swimming across at `SwimSpeed`. A jump near the float line (within `WaterJumpWindow`, or wading above it) leaves the water as a full jump. A dash works in water; the air dash refills on entering it. Wading into water too shallow to swim stands the body up again.
+- **Ballast** fills and blows tanks: in water, **holding down** fills them (`Player.Sunk`): the body sinks at `SinkSpeed` and walks the bottom; **up or jump** blows them and it rises back to float. The tanks stay as they are until changed, and empty whenever the pilgrim leaves the water. Sunk, the Drill's dive works under water (down + dash on cracked rock); floating, the surface catches a dive.
+- Water gates: an exit at the bottom of water (or under a wall that reaches into it) needs Ballast. The geometry check swims every room's water with the same motion (floating for every planner; sinking and rising anywhere connected for Ballast).
+- Checked headless in the mechanics lab (`BallastCheck`, in `tools/check.sh`), in a tank it places itself.
+
 Abilities are flags in `AbilitySet` (`Player.Abilities`). In debug builds, F1–F5 toggle them.
 
 ## Tuning
@@ -75,7 +81,7 @@ Input actions are defined in `project.godot` and mirrored in `scripts/core/Input
 | Action | Keyboard | Gamepad |
 |---|---|---|
 | `move_left` / `move_right` | A / D, ← / → | Left stick, d-pad |
-| `move_up` / `move_down` | W / S, ↑ / ↓ | Left stick, d-pad |
+| `move_up` / `move_down` (in water with Ballast: rise / sink) | W / S, ↑ / ↓ | Left stick, d-pad |
 | `jump` | Space, Z | A |
 | `dash` (with the Drill, down + dash dives) | Shift, C | RB, RT |
 | `attack` | J, X | X |

@@ -21,6 +21,11 @@ public sealed class FallState : PlayerState
             return grip;
         }
 
+        if (Player.SwimEnter() is { } swim)
+        {
+            return swim;
+        }
+
         Player.ApplyRunControl(delta, grounded: false);
         Player.ApplyGravity(delta);
 

@@ -19,6 +19,11 @@ public sealed class IdleState : PlayerState
             return grip;
         }
 
+        if (Player.SwimEnter() is { } swim)
+        {
+            return swim;
+        }
+
         Player.ApplyRunControl(delta, grounded: true);
         Player.ApplyGravity(delta);
 

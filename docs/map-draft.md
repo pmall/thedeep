@@ -1,6 +1,6 @@
 # Map draft — the whole game
 
-The whole map on paper (roadmap M7): 42 rooms over three layers and the core, 5 abilities, 4 bosses, 3 law breaks. It is a **draft planning graph**: the solver checks it on every build, before the rooms exist. Room names, boss names and story beats are placeholders unless [theme.md](theme.md) says otherwise.
+The whole map on paper (roadmap M7): 40 rooms over three layers and the core, 5 abilities, 4 bosses, 3 law breaks. It is a **draft planning graph**: the solver checks it on every build, before the rooms exist. Room names, boss names and story beats are placeholders unless [theme.md](theme.md) says otherwise.
 
 **How it is used.** The `map` blocks below are parsed by `MapDraft` (`scripts/map/MapDraft.cs`); everything outside them is design notes. `tools/check.sh` checks the draft twice:
 - Unit tests (`MapDraftTests`) parse this file and run `MapDraft.Check`: no softlock, every room reachable, every ability on exactly one relic, **at least 24 of the 120 ability orders**, every ability obtainable in **at least 2 positions**, 40–60 rooms, and each law break on every route to the goal, in story order (third, second, first).
@@ -24,15 +24,15 @@ The main road and its branches, layer by layer (simplified; the `map` blocks are
 ```
 FLOODED   Narthex ─ DrownedHall ─(M|H)→ Belfry → back down
                       │
-                    Nave ─(M)→ Descent ─(B)─ Cryptwater, ─(D)─ Fissure   (shortcuts from below)
+                    Nave ─(M)→ Descent ─(B)→ Sluice   (the flooded gate drains, one way)
                       ↓ hatch
           Reliquary[M] ─ Cistern ─ Sluice ─ Undercroft ─ Ossuary[H]
                          ↑(M) flue           │  ├─(M)→ Scriptorium (a drop back)
                                              │  └─(M|H)→ Chapterhouse ✦ ─ Brink ▼ third law
                                              ↑ lift                        ↓ the jump
 FROZEN                              Counterweight ─ Coldstacks ─ Choir ─ Rimefall
-                                                     ├─(M|H)─ Calving ─ Bore[D] ─(D)─ Fissure
-                                                     ├─ Mere ─ Sounding[B];  Mere ─(B)─ Underice ─(B)─ Cryptwater
+                                                     ├─(M|H)─ Calving ─ Bore[D]
+                                                     ├─ Mere ─ Sounding[B];  Mere ─(B)─ Underice
                                                      └─(D)─ Vault ✦ ─(B)─ Underice
                                                             Vault ─ Sanctum ▼ second law
 VOLCANIC                                            Kiln ─ Slag ─(B)─ Quench ─ Crucible[P]
@@ -51,7 +51,7 @@ M Mag-grip, H Harpoon, D Drill, B Ballast, P Heat plating.
 - **Drill and Ballast lie in the frozen layer**, on two branches of the Coldstacks; either one opens the Vault (break its frozen doors, or sink beneath them through the Underice), and so the way on to the volcanic layer.
 - **Heat plating lies in the volcanic layer**, in the Crucible, reached through the Quench (Ballast) or through the Basalt (Drill). It can be third, fourth or fifth.
 - **The core needs everything**: the Orrery needs Mag-grip and Harpoon, the Lode Drill and Ballast, the Threshold Heat plating.
-- Abilities left behind stay reachable: the Counterweight lift rises from the Coldstacks to the Undercroft, the Sanctum stays open behind the pilgrim, and later shortcuts (the Descent's two sealed ways, the Chimney) tie the layers together.
+- Abilities left behind stay reachable: the Counterweight lift rises from the Coldstacks to the Undercroft, the Sanctum stays open behind the pilgrim, and the Chimney (up from the volcanic layer) ties the layers together.
 
 The rule this gives: **Mag-grip or Harpoon first, Heat plating after Drill or Ballast**, everything else free. That is 32 of the 120 orders; Mag-grip and Harpoon at 1–5, Drill and Ballast at 2–5, Heat plating at 3–5. The test pins these numbers, so a change to the gates that costs freedom is seen at once.
 
@@ -84,8 +84,8 @@ The slice (built, M6) plus the crypts under it and the road down. Pale white, a 
 | Cistern | Under the Nave: Gleaner, Limpet; the Reliquary west, the Sluice east. *(built)* |
 | Reliquary | **Mag-grip** and a first shrine. *(built)* |
 | Belfry | Over the hall's shaft, by grip or harpoon: shrine, bell, Lamplighter. *(built)* |
-| Descent | The drowned well: sealed Ballast and Drill ways down, shortcuts once the frozen layer is open. *(built)* |
-| Sluice | The floodgate channel east of the Cistern: under a raised gate, over a culvert pit, over a closed gate (a Limpet asleep on it). *(built)* |
+| Descent | The drowned well. At its bottom the flooded gate: sink in it (Ballast) and go down with the water into the Sluice (one way), the way out without climbing back. *(built)* |
+| Sluice | The floodgate channel east of the Cistern: under a raised gate, over a culvert pit, over a closed gate (a Limpet asleep on it). A drain in its vault where the Descent's flooded gate comes down. *(built)* |
 | Undercroft | Crypts under the cathedral, the second hub: shrine, a Votary over the tombs; the high way on to the Chapterhouse by grip or rings, the flue up to the Scriptorium by grip (coming back from either is a drop); the lift from below will arrive here. *(built)* |
 | Ossuary | Racks of dead machines, kept like relics: **Harpoon**, then two rings up to a gallery. *(built)* |
 | Scriptorium | Up the Undercroft's metal flue (Mag-grip): Votaries copying scripture at lecterns, a gallery over them. Three plates to read (lore), a shrine. *(built)* |
@@ -118,8 +118,7 @@ way Nave -> Descent : MagGrip                    # the metal wall
 way Descent -> Nave
 way Cistern <-> Reliquary
 relic Reliquary MagGrip
-way Descent <-> Cryptwater : Ballast             # sealed: the flooded gate
-way Descent <-> Fissure : Drill                  # sealed: the cracked wall
+way Descent -> Sluice : Ballast                  # the flooded gate drains into the Sluice's vault
 
 # under the cathedral and the road down (built)
 way Cistern <-> Sluice
@@ -135,7 +134,7 @@ way Chapterhouse <-> Brink
 way Brink -> Rimefall                            # the jump: one way
 ```
 
-## Frozen — the cold archive (13 rooms)
+## Frozen — the cold archive (11 rooms)
 
 Server halls frozen in rime, machines asleep in the cold, a black lake under ice. Two branches from the Coldstacks: the Drill west, the Ballast east.
 
@@ -143,15 +142,13 @@ Server halls frozen in rime, machines asleep in the cold, a black lake under ice
 |---|---|
 | Rimefall | Where the jump from the Brink lands (its sky is only arrived through): a shelf of rime under a broken dome, a frozen cascade down terraces, a shrine at the foot. *(built)* |
 | Choir | Choristers, Votaries frozen mid-prayer, asleep along a sunken choir: footsteps never wake them, a hard landing close by does. A silent choir to walk through. *(built)* |
-| Coldstacks | The hub: endless frozen racks in stone galleries up to the roof. Shrine. The Counterweight's hatch at the top of the galleries, the Calving ledge high on the west wall (a metal buttress or two rings), the Mere along the corridor under the floor, the Vault under a plug of cracked ice (Drill), the Chimney under a slag cap (Heat plating); the Mere, the Vault and the Chimney sealed until built. *(built)* |
+| Coldstacks | The hub: endless frozen racks in stone galleries up to the roof. Shrine. The Counterweight's hatch at the top of the galleries, the Calving ledge high on the west wall (a metal buttress or two rings), the Mere along the corridor under the floor, the Vault under a plug of cracked ice (Drill), the Chimney under a slag cap (Heat plating); the Vault and the Chimney sealed until built. *(built)* |
 | Counterweight | An old lift that only rises: up through the Coldstacks' roof hatch to a landing, an iron cage on a rope over a sheave, its weight sinking past as it rises the whole shaft to a grate in the Undercroft's floor. *(built)* |
 | Calving | An ice cliff that sheds: out of the Coldstacks' high doorway onto its top, a drop to the floor (a Chorister asleep at its foot); back up by an iron girder frozen into its face (grip) or two rings (harpoon). *(built)* |
-| Bore | A mining machine frozen mid-bore, a shrine in its hall: the chamber it was cutting is a drop with **Drill** at its end, and the way out is boring through a cracked wall into the tunnel under the hall; the chamber's cracked floor over the way down to the Fissure. *(built)* |
-| Fissure | A crack through the bedrock up to the Descent (Drill both ways). |
-| Mere | A frozen lake; black water under the ice. |
-| Sounding | A sonar chapel on the shore: **Ballast**. |
-| Underice | Under the lake, sinking and rising (Ballast). |
-| Cryptwater | The flooded stair up to the Descent's gate (Ballast). |
+| Bore | A mining machine frozen mid-bore, a shrine in its hall: the chamber it was cutting is a drop with **Drill** at its end, and the way out is boring through a cracked wall into the tunnel under the hall. *(built)* |
+| Mere | A frozen lake in a low cavern: leads of black water in the ice (you float in them), Choristers asleep on it; the lake swum to its bed, a shaft down to the Underice (Ballast). *(built)* |
+| Sounding | A sonar chapel on the shore, its bell over a sounding well: **Ballast** on a shelf at the waterline in the well, left by sinking under its wall. A shrine, a scripture plate. *(built)* |
+| Underice | A drowned cave under the lake, roofed with ice: sinking and rising past curtains of ice and ridges of rock to a low door up into the Vault (sealed until built). *(built)* |
 | Vault | The archive's heart, entered by breaking its doors or from beneath. **Boss: the Archivist.** |
 | Sanctum | A priest-machine forbids the way on. **Second law.** |
 
@@ -162,11 +159,9 @@ room Coldstacks Frozen
 room Counterweight Frozen
 room Calving Frozen
 room Bore Frozen
-room Fissure Frozen
 room Mere Frozen
 room Sounding Frozen
 room Underice Frozen
-room Cryptwater Frozen
 room Vault Frozen
 room Sanctum Frozen
 
@@ -178,12 +173,10 @@ way Counterweight -> Undercroft                  # the lift only rises
 way Coldstacks <-> Calving : MagGrip | Harpoon
 way Calving <-> Bore
 relic Bore Drill
-way Bore <-> Fissure : Drill
 way Coldstacks <-> Mere
 way Mere <-> Sounding
 relic Sounding Ballast
 way Mere <-> Underice : Ballast
-way Underice <-> Cryptwater : Ballast
 way Coldstacks <-> Vault : Drill                 # break the frozen doors
 way Underice <-> Vault : Ballast                 # or come up from beneath
 boss Vault Archivist

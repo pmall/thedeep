@@ -70,7 +70,7 @@ EXT = {
 }
 for m in ['rock', 'wet_stone', 'metal', 'rust', 'glyphs', 'cable', 'stone_mid', 'metal_mid', 'rust_mid',
           'backdrop_stone', 'backdrop_rust', 'foreground', 'backdrop_cathedral', 'backdrop_halls', 'water', 'underwater',
-          'ice', 'ice_mid']:
+          'ice', 'ice_mid', 'water_section', 'cracked']:
     EXT[m] = ('Material', f'res://assets/materials/{m}.tres')
 
 IDENTITY = (1, 0, 0, 0, 1, 0, 0, 0, 1)
@@ -314,10 +314,19 @@ class Room:
         p.update(props)
         return self.node(path, instance=effect, comment=comment, **p)
 
-    def water(self, pos, size, depth=2.5, comment=''):
-        return self.node('Water', type='Node3D', comment=comment, transform=Raw(transform(pos)), script=self.ext('water_body'),
-                         Size=Raw(vec(*size)), Depth=float(depth), SurfaceMaterial=self.ext('water'),
-                         UnderwaterMaterial=self.ext('underwater'))
+    def water(self, pos, size, depth=2.5, comment='', swim=False, globals=True, name='Water'):
+        """A WaterBody: surface at `pos`, `size` (X across, Z into the scene); `swim`: the pilgrim swims in it (with its
+        section, the cut seen from the side); `globals`: it drives the caustics (one per room)."""
+        props = {'transform': Raw(transform(pos)), 'script': self.ext('water_body'), 'Size': Raw(vec(*size)), 'Depth': float(depth)}
+        if swim:
+            props['Swim'] = True
+        if not globals:
+            props['Globals'] = False
+        props['SurfaceMaterial'] = self.ext('water')
+        props['UnderwaterMaterial'] = self.ext('underwater')
+        if swim:
+            props['SectionMaterial'] = self.ext('water_section')
+        return self.node(name, type='Node3D', comment=comment, **props)
 
     def photo(self, name, cam, player, facing=1, fov=None, comment='', hud=False):
         props = {'transform': Raw(transform(cam)), 'script': self.ext('spot'), 'PlayerPosition': Raw(vec(player[0], player[1], 0))}

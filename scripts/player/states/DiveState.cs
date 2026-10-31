@@ -2,7 +2,8 @@ namespace TheDeep.States;
 
 /// <summary>
 /// The Drill's dive (dash while holding down): straight down at DiveSpeed, boring through cracked rock, until the pilgrim
-/// lands (or DiveMaxTime passes, then it falls). From the air it spends the air dash; from the ground only on cracked rock.
+/// lands (or DiveMaxTime passes, then it falls), or water catches it. From the air it spends the air dash; from the ground only
+/// on cracked rock.
 /// </summary>
 public sealed class DiveState : PlayerState
 {
@@ -35,6 +36,10 @@ public sealed class DiveState : PlayerState
     {
         _timeLeft -= delta;
         Player.Velocity = new Godot.Vector3(0f, -Tuning.DiveSpeed, 0f);
+        if (!Player.Sunk && Player.SwimEnter() is { } swim)
+        {
+            return swim; // the surface catches the dive (unless Ballast's tanks are full: then it bores on down)
+        }
 
         // IsOnFloor() reflects the previous move: the floor it started on is the one it drills through.
         bool landed = !_firstTick && Player.IsOnFloor();

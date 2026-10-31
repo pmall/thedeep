@@ -5,7 +5,7 @@
 ;   east, the Choir (back toward the Brink's fall);
 ;   up the galleries to a hatch in the roof, the Counterweight: an old lift that only rises, to the Undercroft;
 ;   the Calving, a high doorway on the west wall: up the metal buttress by grip, or by two rings;
-;   down the well and east along the corridor under the floor, the Mere (sealed);
+;   down the well and east along the corridor under the floor, the Mere;
 ;   the Vault under the corridor, its way plugged with ice (Drill; sealed);
 ;   the Chimney, a vent in the floor capped with slag (Heat plating; sealed).
 ; The MapGoal of the built map is here (the end of what is built).
@@ -210,11 +210,6 @@ Size = Vector3(3, 17, 4)
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 77.5, -4, 0)
 Size = Vector3(3, 4, 4)
 
-; sealed: the Mere is not built yet
-[node name="RubbleMere" parent="Geometry" instance=ExtResource("1_block")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 76.75, -8, 0)
-Size = Vector3(1.5, 4, 4)
-
 [node name="WallEast" parent="Geometry" instance=ExtResource("1_block")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 77.5, 19.5, 0)
 Size = Vector3(3, 31, 4)
@@ -292,10 +287,12 @@ TargetExit = "East"
 Requires = "MagGrip | Harpoon"
 Size = Vector2(1, 4)
 
-; the corridor's end, east to the frozen lake (sealed: not built yet)
+; the corridor's end, east to the frozen lake
 [node name="Mere" type="Marker3D" parent="Exits"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 75, -10, 0)
 script = ExtResource("4_exit")
+TargetRoom = "res://scenes/rooms/Mere.tscn"
+TargetExit = "West"
 Size = Vector2(1, 4)
 
 ; under the ice plug, down to the Vault (sealed: not built yet)

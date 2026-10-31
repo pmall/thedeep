@@ -33,6 +33,7 @@
     <Compile Include="../../scripts/map/ExitMath.cs" Link="Shared/ExitMath.cs" />
     <Compile Include="../../scripts/player/GripMath.cs" Link="Shared/GripMath.cs" />
     <Compile Include="../../scripts/player/HarpoonAim.cs" Link="Shared/HarpoonAim.cs" />
+    <Compile Include="../../scripts/player/WaterMotion.cs" Link="Shared/WaterMotion.cs" />
     <Compile Include="../../scripts/combat/Vitality.cs" Link="Shared/Vitality.cs" />
     <Compile Include="../../scripts/combat/Swing.cs" Link="Shared/Swing.cs" />
     <Compile Include="../../scripts/game/SaveData.cs" Link="Shared/SaveData.cs" />

@@ -4,8 +4,7 @@
 ; the rock at the west end of its hall. A pilgrim shrine in the hall. Beside the drill head, a shaft drops into the
 ; chamber it was cutting: the Drill relic waits at its end, and there is no climbing back up the shaft. A wall of
 ; cracked rock seals the chamber from a tunnel under the hall, whose steps come up through a hole in the hall's floor:
-; seen first from the tunnel side, the cracked wall is what the Drill is for. The chamber's floor is cracked too, over
-; the way down to the Fissure (sealed: not built yet).
+; seen first from the tunnel side, the cracked wall is what the Drill is for.
 
 [ext_resource type="PackedScene" path="res://scenes/kit/Block.tscn" id="1_block"]
 [ext_resource type="Script" path="res://scripts/rooms/RoomExit.cs" id="2_exit"]
@@ -180,16 +179,9 @@ Size = Vector3(17, 17, 4)
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 2.5, -11.5, 0)
 Size = Vector3(11, 5, 4)
 
-; cracked over the way down to the Fissure: dive through it
-[node name="CrackedFloor" parent="Geometry" instance=ExtResource("1_block")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 9.5, -9.5, 0)
-Size = Vector3(3, 1, 4)
-Cracked = true
-
-; sealed: the Fissure is not built yet
-[node name="Rubble" parent="Geometry" instance=ExtResource("1_block")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 9.5, -12.75, 0)
-Size = Vector3(3, 2.5, 4)
+[node name="ChamberFloorMid" parent="Geometry" instance=ExtResource("1_block")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 9.5, -11.5, 0)
+Size = Vector3(3, 5, 4)
 
 [node name="ChamberFloorEast" parent="Geometry" instance=ExtResource("1_block")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 15.5, -11.5, 0)
@@ -232,13 +224,6 @@ script = ExtResource("2_exit")
 TargetRoom = "res://scenes/rooms/Calving.tscn"
 TargetExit = "West"
 Size = Vector2(1, 4)
-
-; under the cracked floor, down to the Fissure (sealed: not built yet)
-[node name="Fissure" type="Marker3D" parent="Exits"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 9.5, -11, 0)
-script = ExtResource("2_exit")
-Requires = "Drill"
-Size = Vector2(3, 1)
 
 [node name="Props" type="Node3D" parent="."]
 

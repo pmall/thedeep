@@ -40,6 +40,8 @@ public partial class DebugHud : CanvasLayer
         _text.Append("floor  ").Append(Player.IsOnFloor() ? "yes" : "no").Append('\n');
         _text.Append("dash   ").Append(Player.DashCooldownRemaining > 0f ? $"cooldown {Player.DashCooldownRemaining:0.00}s" : "ready")
              .Append(", air dashes ").Append(Player.AirDashesLeft).Append('\n');
+        _text.Append("water  ").Append(Player.WaterSurface is { } surface ? $"surface {surface:0.0}, {(Player.Sunk ? "sunk" : "floating")}" : "none")
+             .Append('\n');
         _text.Append("abilities ");
         foreach (Ability ability in AbilitySet.All)
         {
