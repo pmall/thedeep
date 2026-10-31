@@ -5,8 +5,8 @@ namespace TheDeep;
 
 /// <summary>
 /// The game's flow around the pilgrim: resting at shrines (heal and save), taking ability relics, reading
-/// scripture plates, boss fights (<see cref="BossSeal"/>), law breaks (<see cref="LawBreak"/>), lifts (<see cref="Lift"/>) and cracked
-/// rock broken by the Drill (it stays broken), dying or
+/// scripture plates, lines spoken to it (<see cref="Proclamation"/>), boss fights (<see cref="BossSeal"/>), law breaks
+/// (<see cref="LawBreak"/>), lifts (<see cref="Lift"/>) and cracked rock broken by the Drill (it stays broken), dying or
 /// falling out of a room and coming back at the last shrine rested at, the end of what is built
 /// (<see cref="MapGoal"/> areas), and starting from the save. Holds the <see cref="SaveData"/>. Machines come back
 /// whenever a room is entered again (it is a fresh instance); taken relics, beaten bosses and broken laws never do.
@@ -35,8 +35,12 @@ public partial class Session : Node
     private Shrine? _prompted;
     private ScripturePlate? _plate;
     private bool _goalShown;
+    private readonly System.Collections.Generic.HashSet<Proclamation> _spoken = new();
 
     public SaveData Save { get; private set; } = new();
+
+    /// <summary>Raised when a <see cref="Proclamation"/> speaks to the pilgrim.</summary>
+    public event System.Action<Proclamation>? Spoke;
 
     /// <summary>False writes nothing to disk (checks and look-dev runs leave the owner's save alone).</summary>
     public bool Persist { get; set; } = true;
@@ -94,6 +98,13 @@ public partial class Session : Node
         {
             _goalShown = true;
             _ = Banner.Show(goal.TitleLine, goal.HintLine, 5f);
+        }
+
+        if (room.All<Proclamation>().FirstOrDefault(s => !_spoken.Contains(s) && s.Contains(p)) is { } spoken)
+        {
+            _spoken.Add(spoken);
+            _ = Banner.Show(spoken.SpeakerLine, spoken.TextLine, 5f);
+            Spoke?.Invoke(spoken);
         }
 
         bool standing = Player.IsUpright && Player.IsOnFloor();
@@ -220,6 +231,7 @@ public partial class Session : Node
         Prompt(null);
         PromptPlate(null);
         _goalShown = false;
+        _spoken.Clear();
         string name = World.NameOf(room.SceneFilePath);
         foreach (AbilityRelic relic in room.All<AbilityRelic>())
         {

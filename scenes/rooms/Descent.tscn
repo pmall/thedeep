@@ -313,6 +313,11 @@ Size = Vector3(2, 34, 4)
 
 ; a cracked wall at the bottom: the Drill bores through it (the way on is sealed: a room not built yet)
 ; a balcony across the well where Votaries pray at the edge
+; the foot of the east wall, where the well's stone meets the floor
+[node name="WallEastFoot" parent="Geometry" instance=ExtResource("5_block")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 45, 2, 0)
+Size = Vector3(2, 4, 4)
+
 [node name="Balcony" parent="Geometry" instance=ExtResource("5_block")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 41, 18.25, 0)
 Size = Vector3(6, 0.5, 4)

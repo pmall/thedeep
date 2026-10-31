@@ -67,6 +67,9 @@ EXT = {
     'limpet': ('Resource', 'res://resources/machines/limpet.tres'),
     'precentor': ('Resource', 'res://resources/machines/precentor.tres'),
     'chorister': ('Resource', 'res://resources/machines/chorister.tres'),
+    'archivist': ('Resource', 'res://resources/machines/archivist.tres'),
+    'hierarch': ('Resource', 'res://resources/machines/hierarch.tres'),
+    'proclamation': ('Script', 'res://scripts/props/Proclamation.cs'),
 }
 for m in ['rock', 'wet_stone', 'metal', 'rust', 'glyphs', 'cable', 'stone_mid', 'metal_mid', 'rust_mid',
           'backdrop_stone', 'backdrop_rust', 'foreground', 'backdrop_cathedral', 'backdrop_halls', 'water', 'underwater',
@@ -274,6 +277,12 @@ class Room:
         self.glyph_lights.append(f'Props/{name}/Light')
         return self.node('Props/' + name, instance='plate', comment=comment, transform=Raw(transform((pos[0], pos[1], 0))),
                          TitleLine=Raw(f'&"{title}"'), TextLine=Raw(f'&"{text}"'))
+
+    def proclamation(self, name, pos, size, speaker, text, comment=''):
+        """A line spoken to the pilgrim when its feet enter the area (`size` centered on `pos`), once per visit."""
+        return self.node('Props/' + name, type='Marker3D', comment=comment, transform=Raw(transform((pos[0], pos[1], 0))),
+                         script=self.ext('proclamation'), Size=Raw(vec(*size)), SpeakerLine=Raw(f'&"{speaker}"'),
+                         TextLine=Raw(f'&"{text}"'))
 
     def machine(self, name, species, pos, facing=1, comment='', **props):
         p = {'transform': Raw(transform((pos[0], pos[1], 0))), 'script': self.ext('machine'),

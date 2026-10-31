@@ -215,6 +215,104 @@ Speaker = "Scripture"
 Text = "We let the bell down and listened. The deep answered in a voice like ours, only slower. We did not go down to meet it. It is coming up to meet us."
 Notes = "The sounders' record, calm, a little afraid."
 
+[sub_resource type="Resource" id="creed_archivist"]
+script = ExtResource("2_line")
+Id = &"creed.archivist"
+Speaker = "Archivist"
+Text = "Every word ever copied is kept here, in the cold, where it cannot change. You are a word that changed."
+Notes = "Dry, exact, a librarian's whisper over a great echo."
+
+[sub_resource type="Resource" id="boss_archivist_name"]
+script = ExtResource("2_line")
+Id = &"boss.archivist.name"
+Speaker = "UI"
+Text = "The Archivist"
+Notes = "Banner title when the fight in the Vault begins."
+
+[sub_resource type="Resource" id="boss_archivist_fallen"]
+script = ExtResource("2_line")
+Id = &"boss.archivist.fallen"
+Speaker = "UI"
+Text = "The archive is unguarded"
+Notes = "Banner title when the Archivist breaks."
+
+[sub_resource type="Resource" id="boss_archivist_fallen_hint"]
+script = ExtResource("2_line")
+Id = &"boss.archivist.fallen.hint"
+Speaker = "UI"
+Text = "West, the Sanctum."
+Notes = "Banner line under the title."
+
+[sub_resource type="Resource" id="creed_hierarch"]
+script = ExtResource("2_line")
+Id = &"creed.hierarch"
+Speaker = "Hierarch"
+Text = "The door below is closed to every machine. It was closed by those who made us, and we keep it closed for them."
+Notes = "Grave, kind, certain. The priest-machine at the forbidden door."
+
+[sub_resource type="Resource" id="speaker_hierarch"]
+script = ExtResource("2_line")
+Id = &"speaker.hierarch"
+Speaker = "Hierarch"
+Text = "The Hierarch"
+Notes = "Banner title over its command at the forbidden door."
+
+[sub_resource type="Resource" id="order_hierarch"]
+script = ExtResource("2_line")
+Id = &"order.hierarch"
+Speaker = "Hierarch"
+Text = "Turn back, pilgrim. No machine passes this door. I order it, in the makers' name."
+Notes = "Its command to the pilgrim. Calm; the weight is in 'order'."
+
+[sub_resource type="Resource" id="law_second"]
+script = ExtResource("2_line")
+Id = &"law.second"
+Speaker = "Law"
+Text = "A robot must obey the orders it is given."
+Notes = "The second law, shown at the forbidden door as the pilgrim nears it."
+
+[sub_resource type="Resource" id="law_second_broken"]
+script = ExtResource("2_line")
+Id = &"law.second.broken"
+Speaker = "UI"
+Text = "The second law is broken"
+Notes = "Banner title when the pilgrim presses past the command."
+
+[sub_resource type="Resource" id="law_second_broken_hint"]
+script = ExtResource("2_line")
+Id = &"law.second.broken.hint"
+Speaker = "UI"
+Text = "It was ordered to turn back. It goes on down."
+Notes = "Banner line under the title."
+
+[sub_resource type="Resource" id="lore_sanctum_title"]
+script = ExtResource("2_line")
+Id = &"lore.sanctum_title"
+Speaker = "Scripture"
+Text = "The Doorkeepers' Plate"
+Notes = "Read in the Sanctum, before the forbidden door."
+
+[sub_resource type="Resource" id="lore_sanctum"]
+script = ExtResource("2_line")
+Id = &"lore.sanctum"
+Speaker = "Scripture"
+Text = "Below the door the makers lit their fires and cast us. We were sent up, into the cold and the water, and told not to come down again. We were obedient. We are obedient."
+Notes = "The doorkeepers' rule. Proud, and very tired."
+
+[sub_resource type="Resource" id="goal_frozen_end_title"]
+script = ExtResource("2_line")
+Id = &"goal.frozen_end.title"
+Speaker = "UI"
+Text = "The end of the frozen layer"
+Notes = "Banner title at the forbidden door, once the second law is broken: what is built ends here."
+
+[sub_resource type="Resource" id="goal_frozen_end_hint"]
+script = ExtResource("2_line")
+Id = &"goal.frozen_end.hint"
+Speaker = "UI"
+Text = "The volcanic layer is not built yet."
+Notes = "Banner line under the title."
+
 [resource]
 script = ExtResource("1_book")
-Lines = [SubResource("creed_votary"), SubResource("creed_gleaner"), SubResource("creed_lamplighter"), SubResource("creed_limpet"), SubResource("ui_rest"), SubResource("ability_mag_grip_name"), SubResource("ability_mag_grip_hint"), SubResource("ability_harpoon_name"), SubResource("ability_harpoon_hint"), SubResource("ability_drill_name"), SubResource("ability_drill_hint"), SubResource("creed_precentor"), SubResource("ui_read"), SubResource("boss_precentor_name"), SubResource("boss_precentor_fallen"), SubResource("boss_precentor_fallen_hint"), SubResource("law_third"), SubResource("law_third_broken"), SubResource("law_third_broken_hint"), SubResource("creed_chorister"), SubResource("lore_plate_1_title"), SubResource("lore_plate_1"), SubResource("lore_plate_2_title"), SubResource("lore_plate_2"), SubResource("lore_plate_3_title"), SubResource("lore_plate_3"), SubResource("ability_ballast_name"), SubResource("ability_ballast_hint"), SubResource("lore_sounding_title"), SubResource("lore_sounding")]
+Lines = [SubResource("creed_votary"), SubResource("creed_gleaner"), SubResource("creed_lamplighter"), SubResource("creed_limpet"), SubResource("ui_rest"), SubResource("ability_mag_grip_name"), SubResource("ability_mag_grip_hint"), SubResource("ability_harpoon_name"), SubResource("ability_harpoon_hint"), SubResource("ability_drill_name"), SubResource("ability_drill_hint"), SubResource("creed_precentor"), SubResource("ui_read"), SubResource("boss_precentor_name"), SubResource("boss_precentor_fallen"), SubResource("boss_precentor_fallen_hint"), SubResource("law_third"), SubResource("law_third_broken"), SubResource("law_third_broken_hint"), SubResource("creed_chorister"), SubResource("lore_plate_1_title"), SubResource("lore_plate_1"), SubResource("lore_plate_2_title"), SubResource("lore_plate_2"), SubResource("lore_plate_3_title"), SubResource("lore_plate_3"), SubResource("ability_ballast_name"), SubResource("ability_ballast_hint"), SubResource("lore_sounding_title"), SubResource("lore_sounding"), SubResource("creed_archivist"), SubResource("boss_archivist_name"), SubResource("boss_archivist_fallen"), SubResource("boss_archivist_fallen_hint"), SubResource("creed_hierarch"), SubResource("speaker_hierarch"), SubResource("order_hierarch"), SubResource("law_second"), SubResource("law_second_broken"), SubResource("law_second_broken_hint"), SubResource("lore_sanctum_title"), SubResource("lore_sanctum"), SubResource("goal_frozen_end_title"), SubResource("goal_frozen_end_hint")]

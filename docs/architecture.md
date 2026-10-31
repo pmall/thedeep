@@ -45,6 +45,9 @@ scenes/
                            Ballast), the Sounding (a sonar chapel: the Ballast relic in a well left by sinking under its wall;
                            a shrine, a scripture plate), the Underice (a drowned cave under the lake; the way up into the
                            Vault, sealed)
+  rooms/Vault.tscn, Sanctum.tscn   the frozen layer's end (M8): the Vault (the Archivist's arena among the frozen stacks; its
+                           pool, entered from the Coldstacks' ice plug above or the Underice's low door below), the Sanctum
+                           (a shrine; the Hierarch's order; the second law at the forbidden door, sealed; the built map's MapGoal)
   props/HarpoonAnchor.tscn a mooring ring the Harpoon fires at (the origin is where the pilgrim's center is pulled)
   props/Portcullis.tscn    a gate of bars dropping across a way (a boss's arena)
   props/LawBreak.tscn      a law holding the pilgrim back at a lip: a veil of glyphs, the law's words, its collision
@@ -91,6 +94,7 @@ scripts/
                            while the boss stands, rise when it breaks; a beaten boss is gone for good)
   props/LawBreak.cs        one of the three laws as a story beat at a lip (docs/theme.md): held, strained against, broken
   props/ScripturePlate.cs  lore: "Read" shows its lines in the banner
+  props/Proclamation.cs    a line spoken to the pilgrim when it comes near (an area; the session shows it once per visit)
   props/Lift.cs            a lift that only carries its rider up: boards, rises, eases into its upper stop, sinks back
                            empty; its weight, sheave and ropes follow; `Path` for the geometry check
   props/LiftMotion.cs      pure: the lift's travel (waiting, boarding, rising with a braking curve, arrived, returning)
@@ -143,7 +147,8 @@ scripts/
     pure: Perception.cs, Intent.cs, MachineAct.cs, MachineBrain.cs   what a brain knows, wants, and is seen doing
     pure: Senses.cs, Steering.cs, PrayerCycle.cs, StrikeAction.cs   the behavior vocabulary
     pure: SurfacePath.cs, LegGait.cs   a crawler's way around a block; legs stepping without skating
-    brains/                pure: PrayerBrain, HoarderBrain, FollowerBrain, SleeperBrain, ConductorBrain (the Precentor)
+    brains/                pure: PrayerBrain, HoarderBrain, FollowerBrain, SleeperBrain, ConductorBrain (the Precentor),
+                           SwoopBrain (the Archivist: drifts high, winds up, dives through the player, hangs)
   text/TextLine.cs, LineBook.cs   every line of text as data (id, speaker, text, delivery notes)
   player/PilgrimMotion.cs  pure procedural animation: gait, lean, landing spring, air and dash poses
   player/PlayerEffects.cs, BurstPool.cs, DashTrail.cs   grit/sparks/dust bursts by surface, dash trail
@@ -274,7 +279,7 @@ Code with no Godot types is compiled straight into the xUnit project via `<Compi
 - `props/LiftMotion.cs`
 - `map/Requirement.cs`, `map/GridSnap.cs`, `map/ExitMath.cs`, `map/MapState.cs`, `map/MapGraph.cs`, `map/MapSolver.cs`, `map/MapDraft.cs`, `map/MapLayout.cs`, `map/ReachPlanner.cs`, `rooms/dressing/DressingLayout.cs`, `player/GripMath.cs`, `player/HarpoonAim.cs`, `combat/Vitality.cs`, `combat/Swing.cs`, `game/SaveData.cs`
 - `parts/PartShapes.cs`, `parts/PlanarIk.cs`, `parts/VerletChain.cs`, `parts/Humanoid*.cs`, `parts/PartCategory.cs`, `player/MotionMode.cs`, `player/PilgrimMotion.cs`
-- `machines/MachineAct.cs`, `Perception.cs`, `Intent.cs`, `Senses.cs`, `Steering.cs`, `PrayerCycle.cs`, `StrikeAction.cs`, `MachineBrain.cs`, `SurfacePath.cs`, `LegGait.cs`, `machines/brains/*.cs` (including `ConductorBrain`)
+- `machines/MachineAct.cs`, `Perception.cs`, `Intent.cs`, `Senses.cs`, `Steering.cs`, `PrayerCycle.cs`, `StrikeAction.cs`, `MachineBrain.cs`, `SurfacePath.cs`, `LegGait.cs`, `machines/brains/*.cs` (including `ConductorBrain`, `SwoopBrain`)
 
 Keep these Godot-free. When adding testable logic, put it in a Godot-free file and add it to `tests/TheDeep.Tests/TheDeep.Tests.csproj`. Machine brains follow this pattern, and so will the map solver ([long-term.md](long-term.md)).
 

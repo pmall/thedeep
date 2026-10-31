@@ -4,7 +4,7 @@
 ; with old ice. Everything here is under water: the pilgrim comes down the shaft from the lake bed sunk (Ballast), and
 ; moves only by sinking and rising. Curtains of ice hang from the roof nearly to the floor; ridges of rock rise nearly to
 ; the roof; the way west goes under one and over the next, past the hulk of a machine that drowned here, to a low door
-; in the west wall: the Vault, from beneath (sealed: not built yet). Back up the shaft to the Mere by rising.
+; in the west wall: the Vault's pool, from beneath. Back up the shaft to the Mere by rising.
 
 [ext_resource type="PackedScene" path="res://scenes/kit/Block.tscn" id="1_block"]
 [ext_resource type="Material" path="res://assets/materials/ice.tres" id="2_ice"]
@@ -155,10 +155,12 @@ TargetExit = "Underice"
 Requires = "Ballast"
 Size = Vector2(3, 1)
 
-; the low door west, up into the Vault from beneath (sealed: not built yet)
+; the low door west, into the Vault's pool
 [node name="Vault" type="Marker3D" parent="Exits"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.5, 3, 0)
 script = ExtResource("3_exit")
+TargetRoom = "res://scenes/rooms/Vault.tscn"
+TargetExit = "Underice"
 Requires = "Ballast"
 Size = Vector2(1, 4)
 

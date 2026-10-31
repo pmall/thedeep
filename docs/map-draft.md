@@ -33,7 +33,7 @@ FLOODED   Narthex ─ DrownedHall ─(M|H)→ Belfry → back down
 FROZEN                              Counterweight ─ Coldstacks ─ Choir ─ Rimefall
                                                      ├─(M|H)─ Calving ─ Bore[D]
                                                      ├─ Mere ─ Sounding[B];  Mere ─(B)─ Underice
-                                                     └─(D)─ Vault ✦ ─(B)─ Underice
+                                                     └─(D)→ Vault ✦ ─(B)─ Underice
                                                             Vault ─ Sanctum ▼ second law
 VOLCANIC                                            Kiln ─ Slag ─(B)─ Quench ─ Crucible[P]
                                                            ├─(D)─ Basalt ─ Crucible
@@ -48,7 +48,7 @@ M Mag-grip, H Harpoon, D Drill, B Ballast, P Heat plating.
 
 - **The first ability is Mag-grip or Harpoon.** Both lie in the flooded layer, reached with the base moveset: Mag-grip west of the Cistern (the Reliquary), Harpoon east of it, through the Sluice and the Undercroft (the Ossuary). Taking one road skips the other.
 - **Either one opens the way down**: the Undercroft's high doorway to the Chapterhouse is reached by climbing its metal wall or by harpooning its two rings. So the frozen layer can be entered with either.
-- **Drill and Ballast lie in the frozen layer**, on two branches of the Coldstacks; either one opens the Vault (break its frozen doors, or sink beneath them through the Underice), and so the way on to the volcanic layer.
+- **Drill and Ballast lie in the frozen layer**, on two branches of the Coldstacks; either one opens the Vault (dive through its ice plug, or come up from beneath through the Underice), and so the way on to the volcanic layer.
 - **Heat plating lies in the volcanic layer**, in the Crucible, reached through the Quench (Ballast) or through the Basalt (Drill). It can be third, fourth or fifth.
 - **The core needs everything**: the Orrery needs Mag-grip and Harpoon, the Lode Drill and Ballast, the Threshold Heat plating.
 - Abilities left behind stay reachable: the Counterweight lift rises from the Coldstacks to the Undercroft, the Sanctum stays open behind the pilgrim, and the Chimney (up from the volcanic layer) ties the layers together.
@@ -149,8 +149,8 @@ Server halls frozen in rime, machines asleep in the cold, a black lake under ice
 | Mere | A frozen lake in a low cavern: leads of black water in the ice (you float in them), Choristers asleep on it; the lake swum to its bed, a shaft down to the Underice (Ballast). *(built)* |
 | Sounding | A sonar chapel on the shore, its bell over a sounding well: **Ballast** on a shelf at the waterline in the well, left by sinking under its wall. A shrine, a scripture plate. *(built)* |
 | Underice | A drowned cave under the lake, roofed with ice: sinking and rising past curtains of ice and ridges of rock to a low door up into the Vault (sealed until built). *(built)* |
-| Vault | The archive's heart, entered by breaking its doors or from beneath. **Boss: the Archivist.** |
-| Sanctum | A priest-machine forbids the way on. **Second law.** |
+| Vault | The archive's heart, a tall hall of frozen stacks: entered from above by diving through the Coldstacks' ice plug (Drill, one way, into its pool) or from beneath, up from the Underice into the pool (Ballast). **Boss: the Archivist** (placeholder: it drifts high over the stacks and dives). *(built)* |
+| Sanctum | The last chapel of the frozen layer, a shrine: the Hierarch, a priest-machine, orders the pilgrim back from the forbidden door. **Second law**: a veil the pilgrim presses through. The door goes down to the Kiln. *(built)* |
 
 ```map
 room Rimefall Frozen
@@ -177,7 +177,7 @@ way Coldstacks <-> Mere
 way Mere <-> Sounding
 relic Sounding Ballast
 way Mere <-> Underice : Ballast
-way Coldstacks <-> Vault : Drill                 # break the frozen doors
+way Coldstacks -> Vault : Drill                  # dive through the ice plug, down into the Vault's pool
 way Underice <-> Vault : Ballast                 # or come up from beneath
 boss Vault Archivist
 way Vault <-> Sanctum

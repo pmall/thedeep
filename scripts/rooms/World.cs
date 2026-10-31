@@ -48,6 +48,11 @@ public partial class World : Node3D
             _room.QueueFree();
         }
 
+        // Let rooms freed earlier finish finalizing their C# wrappers now, before a new room is built: finalized on the GC
+        // thread while a room was instantiated, they intermittently broke the engine ("Handle is not initialized"; see
+        // RoomValidator). A room is loaded under the veil, so the pause is not seen.
+        GC.Collect();
+        GC.WaitForPendingFinalizers();
         _room = scene.Instantiate<Room>();
         AddChild(_room);
         if (map)

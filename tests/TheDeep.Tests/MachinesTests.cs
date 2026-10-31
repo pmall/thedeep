@@ -311,6 +311,57 @@ public class MachinesTests
         Assert.Equal(1, mid.Facing);
     }
 
+    [Fact]
+    public void SwooperHoversUntilItSeesThePlayerThenShadowsThemHigh()
+    {
+        var brain = new SwoopBrain { Altitude = 6f, Offset = 3f, Interval = 10f };
+        Assert.Equal(MachineAct.Hover, Run(brain, Perception.Alone(0f, Vector2.Zero, 1), 30).Last().Act);
+        Assert.False(brain.Engaged);
+
+        // Seen below and to the left: it drifts toward a point above and beside them, never down at them.
+        var seen = With(new Vector2(4f, 2f), 1, new PlayerTrace(new Vector2(0f, 1f), Vector2.Zero, true));
+        Intent drift = Run(brain, seen, 5).Last();
+        Assert.True(brain.Engaged);
+        Assert.Equal(MachineAct.Hunt, drift.Act);
+        Assert.True(drift.Velocity.Y > 0f, "it climbs to its altitude");
+        Assert.False(drift.Hit);
+    }
+
+    [Fact]
+    public void SwooperWindsUpThenDivesThroughWhereThePlayerStoodThenHangs()
+    {
+        var brain = new SwoopBrain { Interval = 0.5f, WindUp = 0.7f, DiveSpeed = 15f, Overshoot = 2.5f, Hang = 1.4f, Flurry = 0 };
+        var p = With(new Vector2(3f, 7f), 1, new PlayerTrace(new Vector2(0f, 1f), Vector2.Zero, true));
+        List<Intent> ticks = Run(brain, p, 60 * 4);
+        int wind = ticks.FindIndex(i => i.Act == MachineAct.WindUp);
+        int dive = ticks.FindIndex(i => i.Act == MachineAct.Strike);
+        int hang = ticks.FindIndex(i => i.Act == MachineAct.Recover);
+        Assert.InRange(wind * Dt, 0.45f, 0.55f);
+        Assert.InRange((dive - wind) * Dt, 0.68f, 0.75f);
+        Assert.All(ticks.Skip(wind).Take(dive - wind), i => Assert.Equal(Vector2.Zero, i.Velocity));
+
+        // The dive goes down and left, at the player, and strikes all the way; then it hangs still.
+        Intent diving = ticks[dive];
+        Assert.True(diving.Hit);
+        Assert.True(diving.Velocity.X < 0f && diving.Velocity.Y < 0f);
+        Assert.Equal(15f, diving.Velocity.Length(), 2);
+        Assert.InRange((hang - dive) * Dt, 0.5f, 0.65f); // 6.7 m to the player and 2.5 past, at 15 m/s
+        Assert.All(ticks.Skip(hang).Take(60), i => { Assert.Equal(Vector2.Zero, i.Velocity); Assert.False(i.Hit); });
+    }
+
+    [Fact]
+    public void SwooperDivesTwiceEveryFewDives()
+    {
+        var brain = new SwoopBrain { Interval = 0.5f, Flurry = 2 };
+        var p = With(new Vector2(3f, 7f), 1, new PlayerTrace(new Vector2(0f, 1f), Vector2.Zero, true));
+        List<Intent> ticks = Run(brain, p, 60 * 12);
+        // Dives start where a strike follows a non-strike tick; the second of a flurry comes without a hang between.
+        var starts = Enumerable.Range(1, ticks.Count - 1).Where(n => ticks[n].Act == MachineAct.Strike && ticks[n - 1].Act != MachineAct.Strike).ToList();
+        Assert.True(starts.Count >= 4, $"{starts.Count} dives");
+        bool flurry = starts.Zip(starts.Skip(1)).Any(t => !ticks.Skip(t.First).Take(t.Second - t.First).Any(i => i.Act == MachineAct.Recover));
+        Assert.True(flurry, "two dives with no hang between them");
+    }
+
     private static PrayerBrain NewPrayer(float phase = 0f) =>
         new("votary", 3f, phase, new StrikeAction()) { Reach = 2f, Calm = 1f };
 

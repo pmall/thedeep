@@ -17,7 +17,11 @@ namespace TheDeep;
 /// chamber, the relic gives the Drill, a dash bores the cracked wall (remembered), the tunnel's steps climb back to the
 /// hall. In the Sounding: the drop into the well, floating to the shelf, the relic gives Ballast; sunk under the well's
 /// wall, rising in the shaft beyond, out onto the east hall. In the Mere: sunk through a lead to the lake bed and down its
-/// shaft into the Underice; the tanks blown, back up into the Mere. Prints `ENCOUNTER OK` or `ENCOUNTER CHECK` errors.
+/// shaft into the Underice; the tanks blown, back up into the Mere. In the Coldstacks: a dive through the ice plug drops
+/// into the Vault's pool; out of it and into the arena, both gates fall; the Archivist dives at the pilgrim below it; swings
+/// break it while it hangs low; the gates rise, remembered. In the Sanctum: the Hierarch's order is heard coming near; the
+/// second law holds the pilgrim at the forbidden door; pressing on breaks it (remembered). Prints `ENCOUNTER OK` or
+/// `ENCOUNTER CHECK` errors.
 /// </summary>
 public partial class EncounterCheck : Node
 {
@@ -43,6 +47,8 @@ public partial class EncounterCheck : Node
     private LawBreak Law => World.Room.All<LawBreak>().First();
     private IEnumerable<Machine> Choristers => World.Room.All<Machine>().Where(m => m.Species.Id == "chorister");
     private Lift Cage => World.Room.All<Lift>().First();
+    private Machine Archivist => World.Room.All<Machine>().First(m => m.Species.Id == "archivist");
+    private bool _ordered;
     private float X => Player.GlobalPosition.X;
     private float _rodeTo;
     private bool _rideProblem;
@@ -265,8 +271,81 @@ public partial class EncounterCheck : Node
                 Hold(InputActions.MoveDown, !_rose);
                 Hold(InputActions.MoveUp, _rose);
             }));
+        _steps.Add(new("in the Coldstacks, down and dash on the ice plug: the dive breaks it and drops into the Vault's pool", 8f,
+            () =>
+            {
+                Hold(InputActions.MoveUp, false);
+                Player.Abilities.Unlock(Ability.Drill);
+                World.Load(GD.Load<PackedScene>(World.RoomPath("Coldstacks")));
+                Player.Respawn(new Vector3(64f, -10f, 0f), 1);
+                Hold(InputActions.MoveDown, true);
+            },
+            () => World.RoomName == "Vault" && Player.InControl && Player.CurrentState == Player.States.Swim,
+            () => Hold(InputActions.Dash, World.RoomName == "Coldstacks" && _ticks is > 10 and < 14)));
+        _steps.Add(new("out of the pool and west into the arena: both gates fall", 8f,
+            () => { Hold(InputActions.MoveDown, false); Hold(InputActions.Dash, false); Hold(InputActions.MoveLeft, true); _jumpHeld = 0; },
+            () => Seal.Fighting && Seal.Gates.All(g => g.Shut),
+            () =>
+            {
+                if (Player.CurrentState == Player.States.Swim && Player.Velocity.Y > -0.5f && _jumpHeld <= -10)
+                {
+                    _jumpHeld = 26;
+                }
+
+                Hold(InputActions.Jump, --_jumpHeld > 0);
+                Hold(InputActions.MoveLeft, X > 30f);
+            }));
+        _steps.Add(new("the Archivist dives at the pilgrim lingering below it", 12f,
+            () => { Hold(InputActions.Jump, false); Hold(InputActions.MoveLeft, false); },
+            () => Player.Vitality.Current < Player.Vitality.Max));
+        _steps.Add(new("swings break the Archivist while it hangs after its dives", 90f,
+            () => { },
+            () => Archivist.Broken,
+            () =>
+            {
+                // Kept alive (the rules, not the balance); under it while it hangs low, swinging, jumping to reach it.
+                Player.Vitality.Restore();
+                Vector2 at = Archivist.PlanePosition;
+                float gap = at.X - X, rise = at.Y - Player.GlobalPosition.Y;
+                bool low = Archivist.Intent.Act is MachineAct.Recover or MachineAct.Strike;
+                Hold(InputActions.MoveRight, low && gap > 1.2f);
+                Hold(InputActions.MoveLeft, low && gap < -1.2f);
+                if (Mathf.Abs(gap) <= 1.2f && Math.Sign(gap) != Player.WorldFacing && gap != 0f)
+                {
+                    Hold(gap > 0f ? InputActions.MoveRight : InputActions.MoveLeft, true);
+                }
+
+                Hold(InputActions.Jump, low && rise > 2.2f && Mathf.Abs(gap) < 2.5f && Player.IsOnFloor() && _ticks % 30 < 14);
+                Hold(InputActions.Attack, Mathf.Abs(gap) < 2.6f && _ticks % 21 is 1 or 2);
+            }));
+        _steps.Add(new("the Vault's gates rise and the fight is remembered", 4f,
+            () =>
+            {
+                foreach (StringName action in new[] { InputActions.MoveRight, InputActions.MoveLeft, InputActions.Attack, InputActions.Jump })
+                {
+                    Hold(action, false);
+                }
+            },
+            () => Seal.Gates.All(g => g.Raised) && Session.Save.Collected.Contains("Vault/Arena")));
+        _steps.Add(new("in the Sanctum, coming near the Hierarch: its order is heard", 6f,
+            () =>
+            {
+                Session.Spoke += OnSpoke;
+                World.Load(GD.Load<PackedScene>(World.RoomPath("Sanctum")));
+                Player.Respawn(new Vector3(40f, 0f, 0f), -1);
+                Hold(InputActions.MoveLeft, true);
+            },
+            () => _ordered));
+        _steps.Add(new("the second law holds the pilgrim at the forbidden door", 3f,
+            () => { },
+            () => _ticks >= 90 && X > 7f && Player.IsOnFloor() && !Law.Broken && Law.Strain > 0.1f));
+        _steps.Add(new("pressing on breaks it, and it is remembered; past it, the end of what is built", 6f,
+            () => { },
+            () => Law.Broken && Session.Save.Collected.Contains("Sanctum/Law") && X < 6f));
         Next();
     }
+
+    private void OnSpoke(Proclamation proclamation) => _ordered |= proclamation.Name == "Order";
 
     private void Next()
     {
@@ -314,6 +393,7 @@ public partial class EncounterCheck : Node
             Input.ActionRelease(action);
         }
 
+        Session.Spoke -= OnSpoke;
         foreach (string problem in _problems)
         {
             GD.PushError($"ENCOUNTER CHECK: {problem}");
@@ -321,7 +401,7 @@ public partial class EncounterCheck : Node
 
         if (_problems.Count == 0)
         {
-            GD.Print($"ENCOUNTER OK: {_steps.Count} steps (arena gates, the Precentor struck and broken, remembered; the third law held, broken, the fall into Rimefall; the Choir asleep, woken; the Counterweight's ride up; the Calving's girder; the Bore's relic, its cracked wall, its steps; the Sounding's relic, under its wall; the Mere's lake bed down into the Underice and back)");
+            GD.Print($"ENCOUNTER OK: {_steps.Count} steps (arena gates, the Precentor struck and broken, remembered; the third law held, broken, the fall into Rimefall; the Choir asleep, woken; the Counterweight's ride up; the Calving's girder; the Bore's relic, its cracked wall, its steps; the Sounding's relic, under its wall; the Mere's lake bed down into the Underice and back; the ice plug into the Vault, its gates, the Archivist broken, remembered; the Hierarch's order, the second law held, broken)");
         }
 
         GetTree().Quit(_problems.Count == 0 ? 0 : 1);

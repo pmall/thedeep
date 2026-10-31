@@ -70,6 +70,7 @@
     <Compile Include="../../scripts/machines/brains/FollowerBrain.cs" Link="Shared/FollowerBrain.cs" />
     <Compile Include="../../scripts/machines/brains/SleeperBrain.cs" Link="Shared/SleeperBrain.cs" />
     <Compile Include="../../scripts/machines/brains/ConductorBrain.cs" Link="Shared/ConductorBrain.cs" />
+    <Compile Include="../../scripts/machines/brains/SwoopBrain.cs" Link="Shared/SwoopBrain.cs" />
   </ItemGroup>
   <ItemGroup>
     <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.12.0" />

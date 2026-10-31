@@ -1,0 +1,102 @@
+[gd_resource type="Resource" script_class="MachineSpecies" format=3]
+; The Archivist (SwoopBehavior), boss of the frozen layer, a placeholder until the character pass: the keeper
+; of the cold archive in the Vault, a reliquary the size of a cabinet. It drifts high over the pilgrim, shadowing
+; it; every few seconds it stops dead and shudders (the wind-up), then dives through where the pilgrim stands and
+; on past, and hangs low and still after (the opening). Every third dive it turns and dives again at once.
+
+[ext_resource type="Script" path="res://scripts/machines/MachineSpecies.cs" id="1_species"]
+[ext_resource type="Script" path="res://scripts/machines/behaviors/SwoopBehavior.cs" id="2_behavior"]
+[ext_resource type="Script" path="res://scripts/machines/JointDriver.cs" id="3_driver"]
+[ext_resource type="Resource" path="res://resources/parts/archivist.tres" id="5_assembly"]
+
+[sub_resource type="Resource" id="Behavior"]
+script = ExtResource("2_behavior")
+SightRange = 18
+Altitude = 6
+Offset = 3.5
+DriftSpeed = 4.5
+Interval = 2.2
+WindUp = 0.75
+QuickWindUp = 0.45
+DiveSpeed = 15
+Overshoot = 2.5
+DiveTime = 1.2
+Hang = 1.5
+Flurry = 3
+
+; floating
+[sub_resource type="Resource" id="Driver_0"]
+script = ExtResource("3_driver")
+Joint = &"Core"
+Mode = 1
+Channel = 0
+Angle = 3
+Offset = Vector3(0, 0.25, 0)
+Rate = 0.55
+
+[sub_resource type="Resource" id="Driver_1"]
+script = ExtResource("3_driver")
+Joint = &"Rotor"
+Mode = 2
+Channel = 5
+Base = 0.4
+Axis = Vector3(0, 1, 0)
+Angle = 1300
+
+[sub_resource type="Resource" id="Driver_2"]
+script = ExtResource("3_driver")
+Joint = &"Eye"
+Mode = 3
+Channel = 0
+Angle = 60
+Sharpness = 6
+
+[sub_resource type="Resource" id="Driver_3"]
+script = ExtResource("3_driver")
+Joint = &"FinN"
+Mode = 1
+Channel = 0
+Angle = 14
+Rate = 1.1
+
+[sub_resource type="Resource" id="Driver_4"]
+script = ExtResource("3_driver")
+Joint = &"FinF"
+Mode = 1
+Channel = 0
+Angle = 14
+Rate = 1.1
+Phase = 0.5
+
+; pitches back as it winds up, then throws itself forward into the dive
+[sub_resource type="Resource" id="Driver_5"]
+script = ExtResource("3_driver")
+Joint = &"Core"
+Mode = 0
+Channel = 3
+Angle = -26
+WindUp = 18
+
+[resource]
+script = ExtResource("1_species")
+Id = &"archivist"
+DisplayName = "Archivist"
+Layer = 1
+Hostile = true
+CreedLine = &"creed.archivist"
+Assembly = ExtResource("5_assembly")
+Locomotion = 1
+BodySize = Vector2(1.9, 2.2)
+SensorHeight = 0
+TurnSharpness = 4
+MaxSpeed = 16
+Acceleration = 50
+Health = 22
+Damage = 1
+StaggerTime = 0
+Heft = 0.12
+StrikeRange = 2.2
+Wear = 0.3
+Tone = 0.85
+Behavior = SubResource("Behavior")
+Drivers = [SubResource("Driver_0"), SubResource("Driver_1"), SubResource("Driver_2"), SubResource("Driver_3"), SubResource("Driver_4"), SubResource("Driver_5")]
