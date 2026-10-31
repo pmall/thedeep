@@ -12,7 +12,7 @@ The plan we follow from session to session: the owner's direction, where we are,
    5. **Final touch:** story, dialogue, cutscenes.
 
    Art matters in every phase and is implied throughout: new rooms follow [art-direction.md](art-direction.md) at the quality bar the built rooms set. Phase 2 is where the visuals are pushed further. Until a phase comes, its part of the game stays a working placeholder: used, not polished. Why this order: at the 2026-10-31 playtest the owner "barely saw anything because the rooms are locked, or I didn't understand something".
-2. **Procedural only, pushed as far as possible.** All visuals come from code: shaders, generated meshes, lighting, fog, particles, post-processing. No imported textures or models yet. Another art source comes later, so every visual piece must be **swappable** (a material, a part mesh) without touching gameplay.
+2. **Procedural only, pushed to the maximum.** All visuals come from code: shaders, generated meshes, lighting, fog, particles, post-processing. The game must look good with procedural art alone; no imported textures or models. Authored assets (a Blender MCP, owner 2026-10-31) come only at the very end, as the cherry on the cake for polish, never to make up for a procedural look that isn't good enough. Every visual piece stays **swappable** (a material, a part mesh) without touching gameplay, so that polish is cheap.
 3. **Two long-term objectives shape the architecture** (details in [long-term.md](long-term.md)):
    - **No two machines alike:** 150–200 behaviorally distinct machine species, built from modular parts and a shared behavior vocabulary. Grown in phase 4.
    - **Any order, proven on every build:** abilities collectable in many orders, never a softlock, checked by a solver on every build. Built (M7), and it holds every room as it is built.
@@ -90,7 +90,7 @@ Deferred by the owner. Ask before planning it. Two parts:
 
 ## Later: beyond procedural art
 
-Once the procedural look has gone as far as it can, upgrade the visuals another way (owner's choice when we get there: CC0 assets, commissioned or generated art, or a **Blender MCP** the owner may provide for the agent to model assets). Thanks to the swap rule, this means replacing materials, kit meshes and part meshes, not rebuilding rooms or machines.
+The final polish, once the procedural look has gone as far as it can (direction 2): the owner may provide a **Blender MCP** so the agent can model the pieces code does worst (the pilgrim's head and hair, bosses, organic parts, one-off set pieces), painted by the game's own world-space shaders so they match everything else. Procedural stays the base: materials, atmosphere and layouts remain code. Thanks to the swap rule, this means replacing materials, kit meshes and part meshes, not rebuilding rooms or machines.
 
 ---
 

@@ -39,7 +39,7 @@ The coding agent builds everything by editing text files. The owner only plays a
 - Never hand-invent `uid://` values. Never edit `.godot/` or `*.import` files.
 - Godot script classes are `public partial class` named exactly like their file. No string node paths across scenes; use typed `[Export]` references and C# events. Details in [docs/godot-csharp.md](docs/godot-csharp.md).
 - Movement numbers live only in `resources/player_tuning.tres`. Input action names only in `InputActions`, physics layers only in `PhysicsLayers`.
-- **Visuals are procedural only for now** (no imported textures or models), and every visual piece must stay swappable. Judge visual changes from rendered captures, not from code.
+- **Visuals are procedural only, pushed to the maximum** (no imported textures or models; authored assets come only as final polish), and every visual piece must stay swappable. Judge visual changes from rendered captures, not from code.
 - **Long-term objectives** ([docs/long-term.md](docs/long-term.md)) shape every architectural choice:
   1. *No two machines alike:* 150–200 behaviorally distinct machine species, made of data plus behavior and modular parts.
   2. *Any order, proven on every build:* abilities can be collected in many orders, and a solver proves there is never a softlock (built; it runs in `tools/check.sh`).

@@ -15,7 +15,7 @@ Read this before any visual work. Art matters in every phase: every room is buil
 
 ## Production rules
 
-1. **Procedural only, pushed as far as possible** (owner decision). All visuals come from code: shaders, generated meshes, lighting, fog, particles, post-processing. No imported textures or models for now.
+1. **Procedural only, pushed to the maximum** (owner decision). All visuals come from code: shaders, generated meshes, lighting, fog, particles, post-processing. The game must look good this way alone. Authored models (a Blender MCP) come only at the very end, as polish (roadmap, "Later: beyond procedural art").
 2. **Everything visual is swappable.** Another art source comes later. Materials, kit pieces and machine parts are referenced through resources, so a procedural version can be replaced by an authored one without touching gameplay or rooms.
 3. **Visuals never decide gameplay.** Rock versus metal is the physics layer, not the material. Collision shapes are simple and kept separate from visual meshes.
 4. **Judge with images, not code.** For every visual change, render captures before and after and look at them (see [testing.md](testing.md)). Keep within the frame budget: 1080p at 60 fps on the owner's RTX 3060, target ≤ 10 ms per frame.
