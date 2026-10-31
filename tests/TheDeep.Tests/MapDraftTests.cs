@@ -146,4 +146,15 @@ public class MapDraftTests
 
         throw new DirectoryNotFoundException("no AGENTS.md above the test binaries");
     }
+
+    [Fact]
+    public void ARoomPickedToTryStartsWithWhatARouteThereNeeds()
+    {
+        MapDraft d = MapDraft.FromMarkdown(File.ReadAllText(Path.Combine(RepoRoot(), "docs", "map-draft.md")));
+        Assert.Equal(Ability.None, MapSolver.Arrival(d.Graph, "Ossuary"));
+        Ability vault = MapSolver.Arrival(d.Graph, "Vault")!.Value;
+        Assert.True(vault.HasFlag(Ability.Drill) || vault.HasFlag(Ability.Ballast));
+        Assert.True(vault.HasFlag(Ability.MagGrip) || vault.HasFlag(Ability.Harpoon));
+        Assert.Equal(AbilitySet.All.Aggregate(Ability.None, (a, b) => a | b), MapSolver.Arrival(d.Graph, "Heart"));
+    }
 }

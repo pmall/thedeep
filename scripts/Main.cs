@@ -26,6 +26,15 @@ public partial class Main : Node3D
     /// <summary>`--room &lt;name&gt;`: start in scenes/rooms/&lt;name&gt;.tscn instead of the world's start room.</summary>
     private const string RoomArgument = "--room";
 
+    /// <summary>
+    /// `--abilities &lt;list&gt;`: start with these abilities (`all`, `none`, or names joined by commas: `MagGrip,Drill`),
+    /// instead of what a route to the `--room` needs.
+    /// </summary>
+    private const string AbilitiesArgument = "--abilities";
+
+    /// <summary>The whole game's draft map: `--room` asks its solver what a route to the room needs.</summary>
+    private const string DraftPath = "res://docs/map-draft.md";
+
     /// <summary>User argument that checks every room scene and quits (see RoomValidator), used by tools/check.sh.</summary>
     private const string ValidateRoomsArgument = "--validate-rooms";
 
@@ -65,6 +74,11 @@ public partial class Main : Node3D
     [Export] public RoomTravel Travel { get; set; } = null!;
     [Export] public Session Session { get; set; } = null!;
     [Export] public HealthHud Health { get; set; } = null!;
+    [Export] public HintLine Hint { get; set; } = null!;
+    [Export] public MapScreen MapScreen { get; set; } = null!;
+
+    /// <summary>`--ui-shot &lt;dir&gt;`: renders a gate hint and the map screen to PNGs (see UiShot; windowed).</summary>
+    private const string UiShotArgument = "--ui-shot";
 
     /// <summary>`--new`: start a new game, ignoring (and not touching) the save until the first rest.</summary>
     private const string NewGameArgument = "--new";
@@ -73,7 +87,7 @@ public partial class Main : Node3D
     private static readonly string[] DriverArguments =
     {
         SmokeArgument, CaptureTestArgument, LookDevArgument, ValidateRoomsArgument, ValidateTravelArgument, ValidateSpeciesArgument,
-        GripCheckArgument, CombatCheckArgument, HarpoonCheckArgument, EncounterCheckArgument, DrillCheckArgument, BallastCheckArgument, HeatCheckArgument,
+        UiShotArgument, GripCheckArgument, CombatCheckArgument, HarpoonCheckArgument, EncounterCheckArgument, DrillCheckArgument, BallastCheckArgument, HeatCheckArgument,
     };
 
     private SaveData? _resume;
@@ -123,6 +137,11 @@ public partial class Main : Node3D
         }
 
         string[] args = OS.GetCmdlineUserArgs();
+        if (!DriverArguments.Any(a => Array.IndexOf(args, a) >= 0))
+        {
+            GrantStartAbilities(args);
+        }
+
         if (ArgumentValue(args, BiomeArgument) is { } biomeName)
         {
             if (BiomeProfile.Load(biomeName) is { } biome)
@@ -175,6 +194,10 @@ public partial class Main : Node3D
         {
             AddChild(new SpeciesValidator { Room = room, Player = Player, Machines = Machines });
         }
+        else if (ArgumentValue(args, UiShotArgument) is { } shotDir)
+        {
+            AddChild(new UiShot { World = World, Player = Player, Travel = Travel, Hint = Hint, Map = MapScreen, OutputDir = shotDir });
+        }
         else if (Array.IndexOf(args, SmokeArgument) >= 0)
         {
             AddChild(new SmokeDriver { Player = Player });
@@ -188,7 +211,7 @@ public partial class Main : Node3D
             Travel.Enabled = false;
             var driver = new LookDevDriver
             {
-                Player = Player, Room = room, Camera = Camera, Machines = Machines, Overlays = new CanvasLayer[] { Hud, Capture, Health, Session.Banner },
+                Player = Player, Room = room, Camera = Camera, Machines = Machines, Overlays = new CanvasLayer[] { Hud, Capture, Health, Session.Banner, Hint },
                 OutputDir = outputDir, PerfFile = ArgumentValue(args, PerfArgument) ?? "perf.json",
             };
             if (ArgumentValue(args, SizeArgument) is { } size && size.Split('x') is [var w, var h]
@@ -199,6 +222,69 @@ public partial class Main : Node3D
 
             AddChild(driver);
         }
+    }
+
+    /// <summary>
+    /// A room picked with `--room` starts with the abilities a route there needs (the draft map's solver: the fewest a pilgrim
+    /// can own arriving there), so any room can be tried as a player would come to it; `--abilities` says otherwise.
+    /// </summary>
+    private void GrantStartAbilities(string[] args)
+    {
+        Ability? grant = null;
+        if (ArgumentValue(args, AbilitiesArgument) is { } list)
+        {
+            grant = ParseAbilities(list);
+            if (grant is null)
+            {
+                GD.PushError($"--abilities {list}: expected all, none, or ability names joined by commas ({string.Join(", ", AbilitySet.All)})");
+            }
+        }
+        else if (Array.IndexOf(args, RoomArgument) >= 0 && FileAccess.FileExists(DraftPath))
+        {
+            try
+            {
+                MapDraft draft = MapDraft.FromMarkdown(FileAccess.GetFileAsString(DraftPath));
+                grant = MapSolver.Arrival(draft.Graph, World.RoomName);
+            }
+            catch (FormatException e)
+            {
+                GD.PushError($"map draft ({DraftPath}): {e.Message}");
+            }
+        }
+
+        if (grant is { } owned)
+        {
+            Player.Abilities.Set(owned, true);
+            GD.Print($"[start] {World.RoomName} with {(owned == Ability.None ? "no abilities" : owned.ToString())}");
+        }
+    }
+
+    /// <summary>`all`, `none`, or ability names joined by commas; null if a name is unknown.</summary>
+    private static Ability? ParseAbilities(string list)
+    {
+        string trimmed = list.Trim();
+        if (trimmed.Equals("all", StringComparison.OrdinalIgnoreCase))
+        {
+            return AbilitySet.All.Aggregate(Ability.None, (a, b) => a | b);
+        }
+
+        if (trimmed.Equals("none", StringComparison.OrdinalIgnoreCase))
+        {
+            return Ability.None;
+        }
+
+        Ability owned = Ability.None;
+        foreach (string name in trimmed.Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries))
+        {
+            if (!Enum.TryParse(name, ignoreCase: true, out Ability a) || a == Ability.None)
+            {
+                return null;
+            }
+
+            owned |= a;
+        }
+
+        return owned;
     }
 
     /// <summary>The argument following <paramref name="name"/>, or null.</summary>

@@ -98,4 +98,17 @@ public class MapSolverTests
         Assert.All(r.Orders, o => Assert.Equal(Ability.Harpoon, o[0]));
         Assert.Equal(new[] { 1, 2 }, r.Positions[Ability.Ballast]);
     }
+
+    [Fact]
+    public void ArrivalGivesTheFewestAbilitiesARouteThereNeeds()
+    {
+        MapGraph g = Slice();
+        Assert.Equal(Ability.None, MapSolver.Arrival(g, "Narthex"));
+        Assert.Equal(Ability.None, MapSolver.Arrival(g, "Cistern"));
+        // The Reliquary's own relic is not counted: it is still lying there on arrival.
+        Assert.Equal(Ability.None, MapSolver.Arrival(g, "Reliquary"));
+        Assert.Equal(Ability.MagGrip, MapSolver.Arrival(g, "Descent"));
+        Assert.Equal(Ability.MagGrip, MapSolver.Arrival(g, "Belfry"));
+        Assert.Null(MapSolver.Arrival(g, "Nowhere"));
+    }
 }

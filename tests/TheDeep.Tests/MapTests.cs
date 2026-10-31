@@ -1,3 +1,4 @@
+using System.Linq;
 using System.Numerics;
 using Xunit;
 
@@ -83,5 +84,30 @@ public class MapTests
         Assert.Equal("A", map.Current);
         Assert.Equal(2, map.Rooms.Count);
         Assert.Equal(new Vector2(102f, 20f), map.Find("B")!.MapMax);
+    }
+
+    [Fact]
+    public void WaysAreKeptWithTheSaveAndTakenOnesRemembered()
+    {
+        var map = new MapState();
+        map.Enter("Nave", System.Numerics.Vector2.Zero, new System.Numerics.Vector2(-2, -2), new System.Numerics.Vector2(40, 20));
+        map.SetWays("Nave", new[]
+        {
+            new MapWay("Nave", "West", new System.Numerics.Vector2(0, 0), "", true),
+            new MapWay("Nave", "Wall", new System.Numerics.Vector2(30, 12), "MagGrip", true),
+        });
+        map.Take("Nave", "West");
+        Assert.True(map.Taken("Nave", "West"));
+        Assert.False(map.Taken("Nave", "Wall"));
+
+        var data = new SaveData { Room = "Nave" };
+        data.SetMap(map);
+        SaveData back = SaveData.FromJson(data.ToJson())!;
+        var restored = new MapState();
+        restored.Restore(back.MapRooms(), "Nave", back.MapWays(), back.Taken);
+        Assert.Equal(2, restored.WaysOf("Nave").Count);
+        Assert.Equal("MagGrip", restored.WaysOf("Nave").Single(w => w.Exit == "Wall").Requires);
+        Assert.True(restored.Taken("Nave", "West"));
+        Assert.False(restored.Taken("Nave", "Wall"));
     }
 }

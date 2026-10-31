@@ -1,3 +1,4 @@
+using System.Linq;
 using Godot;
 using NVector2 = System.Numerics.Vector2;
 
@@ -6,7 +7,9 @@ namespace TheDeep;
 /// <summary>
 /// The minimal map (the map action: M, Tab, LB): the rooms visited so far as thin outlines placed from the
 /// exits crossed (<see cref="World.Map"/>), the current room brighter, and the pilgrim as a soft pulsing
-/// dot. Opening it pauses the game and eases in over a dim veil; it closes the same way.
+/// dot. The ways not yet taken show where they leave their room: a dot for one the pilgrim can take now, small rings in
+/// the gate's colors (<see cref="GateKinds"/>) for one it can't yet, a faint ring for one leading where nothing is built;
+/// a legend names what is shown. Opening it pauses the game and eases in over a dim veil; it closes the same way.
 /// </summary>
 public partial class MapScreen : CanvasLayer
 {
@@ -27,6 +30,8 @@ public partial class MapScreen : CanvasLayer
     [Export] public float FadeTime { get; set; } = 0.22f;
 
     private Control _canvas = null!;
+    private readonly System.Collections.Generic.Dictionary<string, Requirement> _requirements = new();
+    private Font _font = null!;
     private float _shown;
     private bool _open;
     private float _time;
@@ -40,6 +45,7 @@ public partial class MapScreen : CanvasLayer
         _canvas = new Control { MouseFilter = Control.MouseFilterEnum.Ignore };
         _canvas.SetAnchorsPreset(Control.LayoutPreset.FullRect);
         _canvas.Draw += DrawMap;
+        _font = ThemeDB.FallbackFont;
         AddChild(_canvas);
         Visible = false;
     }
@@ -108,6 +114,8 @@ public partial class MapScreen : CanvasLayer
             _canvas.DrawRect(rect, line with { A = line.A * ease }, filled: false, width: width);
         }
 
+        DrawWays(Screen, ui, ease);
+
         if (World.Map.Find(World.Map.Current) is { } current)
         {
             Vector3 p = Player.GlobalPosition;
@@ -116,5 +124,94 @@ public partial class MapScreen : CanvasLayer
             _canvas.DrawCircle(dot, (6f + 4f * pulse) * ui, Here with { A = 0.18f * ease });
             _canvas.DrawCircle(dot, 3.5f * ui, Here with { A = ease });
         }
+    }
+
+    /// <summary>The ways not yet taken, at their exits, and the legend of what is shown.</summary>
+    private void DrawWays(System.Func<NVector2, Vector2> screen, float ui, float ease)
+    {
+        Ability owned = Player.Abilities.Unlocked;
+        var shown = new System.Collections.Generic.SortedSet<Ability>();
+        bool open = false, unbuilt = false;
+        float pulse = 0.75f + 0.25f * Mathf.Sin(_time * 2.2f);
+        foreach (MapWay way in World.Map.Ways)
+        {
+            if (World.Map.Taken(way.Room, way.Exit) || World.Map.Find(way.Room) is not { } room)
+            {
+                continue;
+            }
+
+            Vector2 at = screen(room.Offset + way.Position);
+            Requirement need = RequirementOf(way.Requires);
+            if (!way.Built)
+            {
+                unbuilt = true;
+                _canvas.DrawArc(at, 4.5f * ui, 0f, Mathf.Tau, 20, Line with { A = 0.35f * ease }, Mathf.Max(1f, 1.4f * ui));
+            }
+            else if (need.IsMetBy(owned))
+            {
+                open = true;
+                _canvas.DrawCircle(at, 8f * ui, Colors.White with { A = 0.12f * ease * pulse });
+                _canvas.DrawCircle(at, 4f * ui, Colors.White with { A = 0.92f * ease * pulse });
+            }
+            else
+            {
+                Ability[] kinds = AbilitySet.All.Where(a => need.Options.Any(o => o.HasFlag(a)) && !owned.HasFlag(a)).ToArray();
+                for (int i = 0; i < kinds.Length; i++)
+                {
+                    shown.Add(kinds[i]);
+                    Vector2 c = at + new Vector2((i - 0.5f * (kinds.Length - 1)) * 13f * ui, 0f);
+                    _canvas.DrawArc(c, 5f * ui, 0f, Mathf.Tau, 20, GateKinds.ColorOf(kinds[i]) with { A = 0.95f * ease }, Mathf.Max(1.5f, 2f * ui));
+                }
+            }
+        }
+
+        // The legend, bottom center: what each mark is.
+        var entries = new System.Collections.Generic.List<(string Text, Color Color, bool Filled)>();
+        if (open)
+        {
+            entries.Add((LineBook.Shared.Find("map.way.open")?.Text ?? "", Colors.White, true));
+        }
+
+        foreach (Ability a in shown)
+        {
+            entries.Add((LineBook.Shared.Find(GateKinds.MapWord(a))?.Text ?? "", GateKinds.ColorOf(a), false));
+        }
+
+        if (unbuilt)
+        {
+            entries.Add((LineBook.Shared.Find("map.way.unbuilt")?.Text ?? "", Line, false));
+        }
+
+        int size = Mathf.RoundToInt(17f * ui);
+        float gap = 34f * ui, mark = 20f * ui;
+        float total = entries.Sum(e => mark + _font.GetStringSize(e.Text, HorizontalAlignment.Left, -1, size).X) + gap * Mathf.Max(0, entries.Count - 1);
+        Vector2 size2 = _canvas.Size;
+        float x = 0.5f * (size2.X - total), y = size2.Y - 56f * ui;
+        foreach ((string text, Color color, bool filled) in entries)
+        {
+            var c = new Vector2(x + 6f * ui, y - 0.33f * size);
+            if (filled)
+            {
+                _canvas.DrawCircle(c, 4f * ui, color with { A = ease });
+            }
+            else
+            {
+                _canvas.DrawArc(c, 5f * ui, 0f, Mathf.Tau, 20, color with { A = ease }, Mathf.Max(1.5f, 2f * ui));
+            }
+
+            _canvas.DrawString(_font, new Vector2(x + mark, y), text, HorizontalAlignment.Left, -1, size, new Color(0.86f, 0.86f, 0.95f, 0.8f * ease));
+            x += mark + _font.GetStringSize(text, HorizontalAlignment.Left, -1, size).X + gap;
+        }
+    }
+
+    private Requirement RequirementOf(string text)
+    {
+        if (!_requirements.TryGetValue(text, out Requirement? r))
+        {
+            r = Requirement.TryParse(text, out Requirement parsed, out _) ? parsed : Requirement.None;
+            _requirements[text] = r;
+        }
+
+        return r;
     }
 }

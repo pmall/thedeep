@@ -6,6 +6,7 @@
 #   tools/capture.sh [label] --against DIR   compare with DIR instead
 #   tools/capture.sh [label] --biome NAME    render with resources/biomes/NAME.tres instead of each room's own
 # (the start room's frame times go to perf.json, the arena's to perf-MachineArena.json)
+#   tools/capture.sh [label] --rooms "A B"   render only these rooms (quick looks while building a room)
 #   tools/capture.sh --compare BEFORE AFTER  only build the sheet for two existing runs
 #
 # Opens a small window for about a minute (rendering needs a GPU). See docs/testing.md.
@@ -35,11 +36,12 @@ if [ "${1:-}" = "--compare" ]; then
     exit 0
 fi
 
-label="" against="" biome_args=()
+label="" against="" biome_args=() only=""
 while [ $# -gt 0 ]; do
     case "$1" in
         --against) against="${2%/}"; shift 2 ;;
         --biome) biome_args=(--biome "$2"); shift 2 ;;
+        --rooms) only="$2"; shift 2 ;;
         -*) fail "unknown option $1" ;;
         *) label="$1"; shift ;;
     esac
@@ -64,6 +66,7 @@ dotnet build TheDeep.sln -v q -nologo >"$out/build.log" 2>&1 || { tail -20 "$out
 
 # The rooms rendered: the drowned hall first (perf.json, compared run to run), then the slice rooms, the arena and the lab.
 ROOMS=(DrownedHall Narthex Belfry Nave Cistern Reliquary Descent Sluice Undercroft Ossuary Scriptorium Chapterhouse Brink Rimefall Choir Coldstacks Counterweight Calving Bore Mere Sounding Underice Vault Sanctum Kiln Slag Chimney MachineArena MechanicsLab)
+if [ -n "$only" ]; then read -r -a ROOMS <<<"$only"; fi
 for room in "${ROOMS[@]}"; do
     name="$room"
     room_args=(--room "$room") perf="perf-$room.json" log="$out/godot-$room.log"

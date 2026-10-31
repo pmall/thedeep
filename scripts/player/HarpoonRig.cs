@@ -30,6 +30,9 @@ public partial class HarpoonRig : Node3D
     [Export] public Node3D Head { get; set; } = null!;
 
     private readonly List<HarpoonAnchor> _anchors = new();
+
+    /// <summary>The anchor the pilgrim would fire at if it had the Harpoon (null with it): a ring out of reach, for the gate hints.</summary>
+    public HarpoonAnchor? OutOfReach { get; private set; }
     private HarpoonAnchor? _sighted;
     private float _reel;
     private Vector3 _reelEnd;
@@ -52,6 +55,7 @@ public partial class HarpoonRig : Node3D
     public override void _PhysicsProcess(double delta)
     {
         HarpoonAnchor? target = null;
+        OutOfReach = !Player.Abilities.Has(Ability.Harpoon) && _anchors.Count > 0 && !Player.Frozen ? Pick() : null;
         if (Player.CurrentState is HarpoonState harpoon)
         {
             target = harpoon.Anchor;
@@ -153,6 +157,7 @@ public partial class HarpoonRig : Node3D
         _anchors.Clear();
         _anchors.AddRange(room.All<HarpoonAnchor>());
         _sighted = null;
+        OutOfReach = null;
         _reel = 0f;
         Player.AnchorInSight = null;
         Player.LastAnchor = null;

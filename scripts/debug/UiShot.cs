@@ -1,0 +1,74 @@
+using System.Collections.Generic;
+using System.Linq;
+using Godot;
+
+namespace TheDeep;
+
+/// <summary>
+/// Renders the game's screens for a look (`-- --ui-shot &lt;dir&gt;`, windowed: headless renders nothing): a gate hint over the
+/// room (hint.png), then, after crossing a few open exits from the start room, the map screen (map.png). For judging UI as
+/// images, like the look-dev captures; not part of tools/check.sh.
+/// </summary>
+public partial class UiShot : Node
+{
+    public World World { get; set; } = null!;
+    public Player Player { get; set; } = null!;
+    public RoomTravel Travel { get; set; } = null!;
+    public HintLine Hint { get; set; } = null!;
+    public MapScreen Map { get; set; } = null!;
+    public string OutputDir { get; set; } = "";
+
+    /// <summary>How many exits to cross before the map is shown.</summary>
+    public int Hops { get; set; } = 4;
+
+    private int _tick;
+    private int _hops;
+    private readonly HashSet<string> _visited = new();
+
+    public override void _Ready()
+    {
+        DirAccess.MakeDirRecursiveAbsolute(OutputDir);
+        ProcessMode = ProcessModeEnum.Always;
+        Hint.Show(GateKinds.HintLine(Ability.MagGrip), GateKinds.ColorOf(Ability.MagGrip));
+    }
+
+    public override void _Process(double delta)
+    {
+        _tick++;
+        if (_tick == 90)
+        {
+            Shot("hint.png");
+            Hint.Clear();
+        }
+        else if (_tick > 90 && _tick % 20 == 0 && _hops < Hops)
+        {
+            _visited.Add(World.RoomName);
+            RoomExit? exit = World.Room.Exits().Where(e => e.Open && ResourceLoader.Exists(e.TargetRoom))
+                .OrderBy(e => _visited.Contains(World.NameOf(e.TargetRoom)) ? 1 : 0).FirstOrDefault();
+            if (exit is not null)
+            {
+                Travel.Go(exit);
+            }
+
+            _hops++;
+        }
+        else if (_hops == Hops && !Map.IsOpen)
+        {
+            Map.Toggle();
+            _tick = 1000;
+        }
+        else if (_tick == 1060)
+        {
+            Shot("map.png");
+            GetTree().Paused = false;
+            GetTree().Quit();
+        }
+    }
+
+    private void Shot(string name)
+    {
+        string path = $"{OutputDir}/{name}";
+        Error e = GetViewport().GetTexture().GetImage().SavePng(path);
+        GD.Print(e == Error.Ok ? $"[ui-shot] {path}" : $"[ui-shot] could not save {path}: {e}");
+    }
+}

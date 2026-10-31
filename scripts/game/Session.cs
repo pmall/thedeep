@@ -67,11 +67,9 @@ public partial class Session : Node
     {
         Save = data;
         Player.Abilities.Set((Ability)data.Abilities, true);
-        World.Map.Restore(data.MapRooms(), World.RoomName);
-        if (World.Map.Find(World.RoomName) is null)
-        {
-            World.Enter(World.Room, System.Numerics.Vector2.Zero);
-        }
+        World.Map.Restore(data.MapRooms(), World.RoomName, data.MapWays(), data.Taken);
+        // Entered again where the save placed it (or at the origin): its ways out are read afresh from the room.
+        World.Enter(World.Room, World.Map.Find(World.RoomName)?.Offset ?? System.Numerics.Vector2.Zero);
 
         OnRoomLoaded(World.Room);
         Player.Respawn(RespawnPoint(World.Room), 1);
@@ -235,7 +233,8 @@ public partial class Session : Node
         string name = World.NameOf(room.SceneFilePath);
         foreach (AbilityRelic relic in room.All<AbilityRelic>())
         {
-            if (Save.Collected.Contains(SaveData.RelicId(name, relic.Name)))
+            // A relic whose ability is already owned lies empty (a room tried with `--room`, its route's abilities given).
+            if (Save.Collected.Contains(SaveData.RelicId(name, relic.Name)) || Player.Abilities.Has(relic.Ability))
             {
                 relic.Empty();
             }
@@ -339,7 +338,7 @@ public partial class Session : Node
     private void Write()
     {
         Save.Abilities = (int)Player.Abilities.Unlocked;
-        Save.SetMap(World.Map.Rooms);
+        Save.SetMap(World.Map);
         if (Persist)
         {
             SaveFile.Write(Save);

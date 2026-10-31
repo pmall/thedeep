@@ -159,6 +159,46 @@ public static class MapSolver
         return false;
     }
 
+    /// <summary>
+    /// The fewest abilities a pilgrim can own on arriving in <paramref name="room"/> from the start, before taking that room's own
+    /// relics (so a relic room is tried with its relic still lying there); ties go to the shortest route. Null if no route
+    /// reaches it. <c>--room</c> starts with these, so a room behind gates can be tried the way a player would come to it.
+    /// </summary>
+    public static Ability? Arrival(MapGraph map, string room)
+    {
+        if (room == map.Start)
+        {
+            return Ability.None;
+        }
+
+        SolverState start = Enter(map, map.Start, Ability.None);
+        var seen = new HashSet<SolverState> { start };
+        var queue = new Queue<SolverState>();
+        queue.Enqueue(start);
+        Ability? best = null;
+        while (queue.Count > 0)
+        {
+            SolverState s = queue.Dequeue();
+            foreach (MapEdge edge in map.From(s.Room).Where(e => e.Requires.IsMetBy(s.Owned)))
+            {
+                if (edge.To == room && (best is not { } b || Count(s.Owned) < Count(b)))
+                {
+                    best = s.Owned;
+                }
+
+                SolverState t = Enter(map, edge.To, s.Owned);
+                if (seen.Add(t))
+                {
+                    queue.Enqueue(t);
+                }
+            }
+        }
+
+        return best;
+    }
+
+    private static int Count(Ability a) => System.Numerics.BitOperations.PopCount((uint)a);
+
     /// <summary>Arriving in <paramref name="room"/> with <paramref name="owned"/>: its relics are taken.</summary>
     private static SolverState Enter(MapGraph map, string room, Ability owned) =>
         new(room, map.In(room).Aggregate(owned, (o, item) => o | item.Ability));

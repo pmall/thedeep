@@ -1,4 +1,5 @@
 using System;
+using System.Linq;
 using Godot;
 using NVector2 = System.Numerics.Vector2;
 
@@ -67,8 +68,10 @@ public partial class World : Node3D
     /// <summary>Records <paramref name="room"/> on the map at <paramref name="offset"/> (kept if it was placed before).</summary>
     public void Enter(Room room, NVector2 offset)
     {
-        Map.Enter(NameOf(room.SceneFilePath), offset,
-            new NVector2(room.BoundsMin.X, room.BoundsMin.Y), new NVector2(room.BoundsMax.X, room.BoundsMax.Y));
+        string name = NameOf(room.SceneFilePath);
+        Map.Enter(name, offset, new NVector2(room.BoundsMin.X, room.BoundsMin.Y), new NVector2(room.BoundsMax.X, room.BoundsMax.Y));
+        Map.SetWays(name, room.Exits().Where(e => !e.ArrivalOnly)
+            .Select(e => new MapWay(name, e.Name, new NVector2(e.RoomPosition.X, e.RoomPosition.Y), e.Requires, e.Open)));
     }
 
     /// <summary>The scene path of the room named <paramref name="name"/> (its file name without extension).</summary>

@@ -23,6 +23,8 @@
 [ext_resource type="Script" path="res://scripts/ui/Banner.cs" id="19_banner"]
 [ext_resource type="Script" path="res://scripts/player/HarpoonRig.cs" id="20_harpoon"]
 [ext_resource type="Material" path="res://assets/materials/harpoon_line.tres" id="21_line"]
+[ext_resource type="Script" path="res://scripts/game/GateHints.cs" id="22_gates"]
+[ext_resource type="Script" path="res://scripts/ui/HintLine.cs" id="23_hint"]
 
 [sub_resource type="CylinderMesh" id="HarpoonLine"]
 top_radius = 0.016
@@ -40,7 +42,7 @@ height = 0.3
 radial_segments = 8
 rings = 1
 
-[node name="Main" type="Node3D" node_paths=PackedStringArray("World", "Player", "Machines", "Capture", "Camera", "Hud", "Travel", "Session", "Health")]
+[node name="Main" type="Node3D" node_paths=PackedStringArray("World", "Player", "Machines", "Capture", "Camera", "Hud", "Travel", "Session", "Health", "Hint", "MapScreen")]
 script = ExtResource("1_main")
 World = NodePath("World")
 Player = NodePath("Player")
@@ -51,6 +53,8 @@ Hud = NodePath("DebugHud")
 Travel = NodePath("RoomTravel")
 Session = NodePath("Session")
 Health = NodePath("HealthHud")
+Hint = NodePath("HintLine")
+MapScreen = NodePath("MapScreen")
 
 ; Loads the room scenes (first child, so the room exists before the camera and HUD are ready).
 [node name="World" type="Node3D" parent="."]
@@ -106,6 +110,14 @@ Fade = NodePath("../ScreenFade")
 Banner = NodePath("../Banner")
 Camera = NodePath("../SideCamera")
 
+; A gate the pilgrim can't pass yet says so: its line, low on the screen.
+[node name="GateHints" type="Node" parent="." node_paths=PackedStringArray("World", "Player", "Harpoon", "Hint")]
+script = ExtResource("22_gates")
+World = NodePath("../World")
+Player = NodePath("../Player")
+Harpoon = NodePath("../Harpoon")
+Hint = NodePath("../HintLine")
+
 [node name="SideCamera" parent="." node_paths=PackedStringArray("Target", "World") instance=ExtResource("6_camera")]
 Target = NodePath("../Player")
 World = NodePath("../World")
@@ -121,6 +133,9 @@ Player = NodePath("../Player")
 
 [node name="Banner" type="CanvasLayer" parent="."]
 script = ExtResource("19_banner")
+
+[node name="HintLine" type="CanvasLayer" parent="."]
+script = ExtResource("23_hint")
 
 [node name="MapScreen" type="CanvasLayer" parent="." node_paths=PackedStringArray("World", "Player")]
 script = ExtResource("16_map")

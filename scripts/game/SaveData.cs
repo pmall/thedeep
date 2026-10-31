@@ -7,6 +7,9 @@ namespace TheDeep;
 /// <summary>A visited room on the saved map.</summary>
 public sealed record SavedRoom(string Name, float X, float Y, float MinX, float MinY, float MaxX, float MaxY);
 
+/// <summary>A way out of a visited room on the saved map (<see cref="MapWay"/>).</summary>
+public sealed record SavedWay(string Room, string Exit, float X, float Y, string Requires, bool Built);
+
 /// <summary>
 /// What a save holds, pure: the shrine the pilgrim last rested at (where it comes back after dying or
 /// relaunching), its abilities, the relics taken, and the map of visited rooms. Stored as JSON in
@@ -31,6 +34,12 @@ public sealed class SaveData
     public List<string> Collected { get; set; } = new();
 
     public List<SavedRoom> Map { get; set; } = new();
+
+    /// <summary>The visited rooms' ways out (empty in a save from before they were kept).</summary>
+    public List<SavedWay> Ways { get; set; } = new();
+
+    /// <summary>The ways taken, as "Room/Exit".</summary>
+    public List<string> Taken { get; set; } = new();
 
     private static readonly JsonSerializerOptions Options = new() { WriteIndented = true, DefaultIgnoreCondition = JsonIgnoreCondition.Never };
 
@@ -66,6 +75,29 @@ public sealed class SaveData
         foreach (MapRoom r in rooms)
         {
             Map.Add(new SavedRoom(r.Name, r.Offset.X, r.Offset.Y, r.BoundsMin.X, r.BoundsMin.Y, r.BoundsMax.X, r.BoundsMax.Y));
+        }
+    }
+
+    /// <summary>Keeps the whole map: rooms, their ways out, the ways taken.</summary>
+    public void SetMap(MapState map)
+    {
+        SetMap(map.Rooms);
+        Ways.Clear();
+        foreach (MapWay w in map.Ways)
+        {
+            Ways.Add(new SavedWay(w.Room, w.Exit, w.Position.X, w.Position.Y, w.Requires, w.Built));
+        }
+
+        Taken = new List<string>(map.TakenWays);
+        Taken.Sort(System.StringComparer.Ordinal);
+    }
+
+    /// <summary>The saved ways out as the map keeps them.</summary>
+    public IEnumerable<MapWay> MapWays()
+    {
+        foreach (SavedWay w in Ways)
+        {
+            yield return new MapWay(w.Room, w.Exit, new System.Numerics.Vector2(w.X, w.Y), w.Requires, w.Built);
         }
     }
 

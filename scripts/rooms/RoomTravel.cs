@@ -88,13 +88,14 @@ public partial class RoomTravel : Node
         MapRoom? here = World.Map.Find(World.RoomName);
         NVector2 hereOffset = here?.Offset ?? NVector2.Zero;
         string targetExit = exit.TargetExit;
+        string leaving = World.RoomName, leavingExit = exit.Name, target = exit.TargetRoom;
 
         // The arrival exit's position is only known once the room is loaded: place the room on the map after.
-        Room room = World.Load(GD.Load<PackedScene>(exit.TargetRoom), map: false);
+        Room room = World.Load(GD.Load<PackedScene>(target), map: false);
         RoomExit? arrival = room.FindExit(targetExit);
         if (arrival is null)
         {
-            GD.PushError($"{exit.TargetRoom} has no exit named {targetExit}; arriving at its spawn point");
+            GD.PushError($"{target} has no exit named {targetExit}; arriving at its spawn point");
             World.Enter(room, hereOffset);
             Player.Respawn(room.SpawnPoint.GlobalPosition);
             return null;
@@ -102,6 +103,8 @@ public partial class RoomTravel : Node
 
         NVector2 to = ToN(arrival.RoomPosition);
         World.Enter(room, ExitMath.RoomOffset(hereOffset, from, to));
+        World.Map.Take(leaving, leavingExit);
+        World.Map.Take(World.RoomName, arrival.Name);
         NVector2 position = ExitMath.Arrival(player, from, to, ToN(arrival.Size));
         NVector2 keep = ExitMath.ArrivalVelocity(velocity, ToN(arrival.Size), ClimbRise * Player.Tuning.JumpTakeOffSpeed);
         arrival.Disarm();
