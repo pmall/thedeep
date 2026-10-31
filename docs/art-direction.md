@@ -1,6 +1,6 @@
 # Art direction
 
-Read this before any visual work. Extended visuals are the second phase of the work, right after the complete world ([roadmap.md](roadmap.md)); until then, rooms need only enough look to read their space, gates and hazards.
+Read this before any visual work. Art matters in every phase: every room is built to this direction. Extended visuals, where the look is pushed further, are the second phase of the work, right after the complete world ([roadmap.md](roadmap.md)).
 
 ## The look
 

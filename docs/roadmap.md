@@ -11,7 +11,7 @@ The plan we follow from session to session: the owner's direction, where we are,
    4. **Characters** (the character pass): the pilgrim, NPCs, enemies, bosses.
    5. **Final touch:** story, dialogue, cutscenes.
 
-   Until a phase comes, its part of the game stays a working placeholder: used, not polished. Why this order: at the 2026-10-31 playtest the owner "barely saw anything because the rooms are locked, or I didn't understand something".
+   Art matters in every phase and is implied throughout: new rooms follow [art-direction.md](art-direction.md) at the quality bar the built rooms set. Phase 2 is where the visuals are pushed further. Until a phase comes, its part of the game stays a working placeholder: used, not polished. Why this order: at the 2026-10-31 playtest the owner "barely saw anything because the rooms are locked, or I didn't understand something".
 2. **Procedural only, pushed as far as possible.** All visuals come from code: shaders, generated meshes, lighting, fog, particles, post-processing. No imported textures or models yet. Another art source comes later, so every visual piece must be **swappable** (a material, a part mesh) without touching gameplay.
 3. **Two long-term objectives shape the architecture** (details in [long-term.md](long-term.md)):
    - **No two machines alike:** 150–200 behaviorally distinct machine species, built from modular parts and a shared behavior vocabulary. Grown in phase 4.
@@ -45,7 +45,7 @@ When the owner changes direction, rewrite the docs it touches so none of them co
 
 ## Phase 1: a complete world to play *(current)*
 
-Rooms, abilities, gates, bosses and law breaks as working placeholders: enough look to read the space, the gates and the hazards, no more. Use existing species, and add a new one only where a room's design needs it (data first, a brain only for a truly new behavior).
+Rooms are built with the level toolkit to the art direction, at the quality bar the built rooms already set. Gates and hazards must read at a glance. Bosses, machines and law breaks stay working placeholders. Use existing species, and add a new one only where a room's design needs it (data first, a brain only for a truly new behavior).
 
 - [ ] **W1, reachable and readable.**
   - `--room <Name>` starts with the abilities a route there needs (from the solver), so any room can be tried.
@@ -90,7 +90,7 @@ Deferred by the owner. Ask before planning it. Two parts:
 
 ## Later: beyond procedural art
 
-Once the procedural look has gone as far as it can, upgrade the visuals another way (owner's choice when we get there: CC0 assets, commissioned or generated art). Thanks to the swap rule, this means replacing materials, kit meshes and part meshes, not rebuilding rooms or machines.
+Once the procedural look has gone as far as it can, upgrade the visuals another way (owner's choice when we get there: CC0 assets, commissioned or generated art, or a **Blender MCP** the owner may provide for the agent to model assets). Thanks to the swap rule, this means replacing materials, kit meshes and part meshes, not rebuilding rooms or machines.
 
 ---
 
