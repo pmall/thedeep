@@ -156,7 +156,10 @@ public partial class Main : Node3D
 
         if (Array.IndexOf(args, ValidateRoomsArgument) >= 0)
         {
-            AddChild(new RoomValidator { StartRoom = _gameStart, Report = Array.IndexOf(args, "--map-report") >= 0 });
+            AddChild(new RoomValidator
+            {
+                StartRoom = _gameStart, Report = Array.IndexOf(args, "--map-report") >= 0, ReachReport = ArgumentValue(args, "--reach-report") ?? "",
+            });
         }
         else if (Array.IndexOf(args, ValidateTravelArgument) >= 0)
         {

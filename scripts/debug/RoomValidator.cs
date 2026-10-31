@@ -47,6 +47,9 @@ public partial class RoomValidator : Node
         .Select(i => (Ability)i).Where(a => (a & ~Simulated) == 0 && System.Numerics.BitOperations.PopCount((uint)a) > 1)
         .OrderBy(a => System.Numerics.BitOperations.PopCount((uint)a)).ToArray();
 
+    /// <summary>A room whose ways in print what they reach (`--reach-report &lt;Room&gt;`), to debug the geometry check.</summary>
+    public string ReachReport { get; set; } = "";
+
     /// <summary>The start room's scene path (the world's start room).</summary>
     public string StartRoom { get; set; } = "";
 
@@ -408,8 +411,9 @@ public partial class RoomValidator : Node
             // Ways in: arriving through an exit (by the edge leading here: its requirement is what the pilgrim has at least), or waking.
             var entries = new List<(string What, System.Numerics.Vector2 At, System.Numerics.Vector2 Velocity, int Steer, bool Base, bool Harpoon, bool Drill,
                 int Exit)>();
-            // Ways in that only Heat plating opens: whoever arrives through one has it, so heat is no obstacle from there.
-            var mustBePlated = new List<bool>();
+            // What each way in guarantees: the abilities every option of its requirement holds (whoever arrives through a way only the
+            // Drill opens has the Drill, and bores what it reaches; through one only Heat plating opens, heat is no obstacle).
+            var guaranteed = new List<Ability>();
             foreach (MapEdge edge in _graph.Edges.Where(e => e.To == room))
             {
                 int index = shape.Exits.FindIndex(x => x.Name == edge.ToExit);
@@ -424,16 +428,34 @@ public partial class RoomValidator : Node
                     : x.ArrivalSide != 0 ? new System.Numerics.Vector2(0f, rise) : new System.Numerics.Vector2(0f, -5f);
                 entries.Add(($"arriving through {x.Name}", x.Position, velocity, vertical ? x.ArrivalSide : 0,
                     edge.Requires.IsMetBy(Ability.None), edge.Requires.IsMetBy(Ability.Harpoon), true, index));
-                mustBePlated.Add(!edge.Requires.IsMetBy(Ability.MagGrip | Ability.Harpoon | Ability.Drill | Ability.Ballast));
+                guaranteed.Add(edge.Requires.Options.Aggregate(Simulated, (all, option) => all & option));
             }
 
             foreach (System.Numerics.Vector2 wake in shape.Wakes)
             {
                 entries.Add(($"waking at ({wake.X:0.#}, {wake.Y:0.#})", wake, System.Numerics.Vector2.Zero, 0, true, true, true, -1));
-                mustBePlated.Add(false);
+                guaranteed.Add(Ability.None);
             }
 
-            var reachedFrom = entries.Select((e, n) => (mustBePlated[n] ? plated : planner).Reach(e.At, e.Velocity, triggers, e.Steer).Triggers).ToList();
+            var planners = new Dictionary<Ability, ReachPlanner> { [Ability.None] = planner };
+            ReachPlanner With(Ability g) => planners.TryGetValue(g, out ReachPlanner? p) ? p : planners[g] = new ReachPlanner(limits,
+                (g & Ability.Drill) != 0 ? shape.Sound : shape.Solids, (g & Ability.Harpoon) != 0 ? harpoon : null, shape.Anchors, shape.Lifts, water,
+                shape.Waters, ballast: (g & Ability.Ballast) != 0, hazards: (g & Ability.HeatPlating) != 0 ? null : shape.Heat);
+            var reachedFrom = entries.Select((e, n) => With(guaranteed[n]).Reach(e.At, e.Velocity, triggers, e.Steer).Triggers).ToList();
+            if (ReachReport == room)
+            {
+                // `--reach-report <Room>`: the ledges each way in reaches, to see where a planner stops.
+                for (int n = 0; n < entries.Count; n++)
+                {
+                    ReachPlanner p = With(guaranteed[n]);
+                    var (_, ledges) = p.Reach(entries[n].At, entries[n].Velocity, triggers, entries[n].Steer);
+                    GD.Print($"REACH {room} {entries[n].What} [{guaranteed[n]}]: exits " +
+                             string.Join(", ", reachedFrom[n].Select(t => shape.Exits[t].Name)) + "; ledges " +
+                             string.Join(" ", ledges.OrderBy(l => p.Ledges[l].Y).Select(l => $"{(p.Ledges[l].Swim ? "~" : "")}{p.Ledges[l].Y:0.##}@{p.Ledges[l].MinX:0.##}..{p.Ledges[l].MaxX:0.##}")));
+                }
+
+                GD.Print($"REACH {room} all ledges: " + string.Join(" ", planner.Ledges.OrderBy(l => l.Y).Select(l => $"{(l.Swim ? "~" : "")}{l.Y:0.##}@{l.MinX:0.##}..{l.MaxX:0.##}")));
+            }
             var zippedFrom = shape.Anchors.Count == 0 ? reachedFrom
                 : entries.Select(e => harpooner.Reach(e.At, e.Velocity, triggers, e.Steer).Triggers).ToList();
             var boredFrom = !cracked ? reachedFrom : entries.Select(e => driller.Reach(e.At, e.Velocity, triggers, e.Steer).Triggers).ToList();

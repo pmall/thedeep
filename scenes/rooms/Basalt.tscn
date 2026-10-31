@@ -1,0 +1,464 @@
+[gd_scene format=3]
+
+; The Basalt, under the Slag's plug (map offset (223.5, -193)): a crust of basalt over the foundry, only passed by boring.
+; The shaft from the plug drops onto a second plug; under it a cavern split by a cracked wall, a third plug in its floor,
+; and at the bottom a slag channel to jump before the hole that falls on into the Crucible. Reached only with the Drill
+; (the dive through the Slag's plug), so every crust here gives to it. One way: the shaft is too smooth to climb.
+
+[ext_resource type="Material" path="res://assets/materials/basalt.tres" id="1_basalt"]
+[ext_resource type="PackedScene" path="res://scenes/kit/Block.tscn" id="2_block"]
+[ext_resource type="Script" path="res://scripts/rooms/RoomExit.cs" id="3_exit"]
+[ext_resource type="Script" path="res://scripts/props/HeatZone.cs" id="4_heatzone"]
+[ext_resource type="Material" path="res://assets/materials/heat_haze.tres" id="5_heat_haze"]
+[ext_resource type="PackedScene" path="res://scenes/fx/Embers.tscn" id="6_embers"]
+[ext_resource type="Script" path="res://scripts/kit/BlockMesh.cs" id="7_blockmesh"]
+[ext_resource type="Material" path="res://assets/materials/stone_mid.tres" id="8_stone_mid"]
+[ext_resource type="Material" path="res://assets/materials/magma.tres" id="9_magma"]
+[ext_resource type="Script" path="res://scripts/kit/ColumnMesh.cs" id="10_column"]
+[ext_resource type="Script" path="res://scripts/rooms/PhotoSpot.cs" id="11_spot"]
+[ext_resource type="Script" path="res://scripts/rooms/Room.cs" id="12_room"]
+[ext_resource type="Resource" path="res://resources/biomes/volcanic.tres" id="13_volcanic"]
+[ext_resource type="PackedScene" path="res://scenes/stage/RoomStage.tscn" id="14_stage"]
+
+[sub_resource type="PrimitiveMesh" id="blockmesh_1"]
+script = ExtResource("7_blockmesh")
+Size = Vector3(76, 64, 1.2)
+Bevel = 0.3
+
+[sub_resource type="PrimitiveMesh" id="blockmesh_2"]
+script = ExtResource("7_blockmesh")
+Size = Vector3(4, 0.4, 3)
+Bevel = 0.1
+
+[sub_resource type="PrimitiveMesh" id="blockmesh_3"]
+script = ExtResource("7_blockmesh")
+Size = Vector3(3, 0.3, 3)
+Bevel = 0.1
+
+[sub_resource type="PrimitiveMesh" id="column_4"]
+script = ExtResource("10_column")
+Height = 8
+Radius = 0.7
+Sides = 6
+
+[sub_resource type="PrimitiveMesh" id="column_5"]
+script = ExtResource("10_column")
+Height = 7.75
+Radius = 0.7
+Sides = 6
+
+[sub_resource type="PrimitiveMesh" id="column_6"]
+script = ExtResource("10_column")
+Height = 8.75
+Radius = 0.7
+Sides = 6
+
+[sub_resource type="PrimitiveMesh" id="column_7"]
+script = ExtResource("10_column")
+Height = 8.25
+Radius = 0.7
+Sides = 6
+
+[sub_resource type="PrimitiveMesh" id="column_8"]
+script = ExtResource("10_column")
+Height = 7
+Radius = 0.7
+Sides = 6
+
+[sub_resource type="PrimitiveMesh" id="column_9"]
+script = ExtResource("10_column")
+Height = 10.75
+Radius = 0.7
+Sides = 6
+
+[sub_resource type="PrimitiveMesh" id="column_10"]
+script = ExtResource("10_column")
+Height = 11.25
+Radius = 0.7
+Sides = 6
+
+[sub_resource type="PrimitiveMesh" id="column_11"]
+script = ExtResource("10_column")
+Height = 8.5
+Radius = 0.7
+Sides = 6
+
+[sub_resource type="PrimitiveMesh" id="column_12"]
+script = ExtResource("10_column")
+Height = 9.75
+Radius = 0.7
+Sides = 6
+
+[sub_resource type="PrimitiveMesh" id="column_13"]
+script = ExtResource("10_column")
+Height = 11.5
+Radius = 0.7
+Sides = 6
+
+[sub_resource type="PrimitiveMesh" id="column_14"]
+script = ExtResource("10_column")
+Height = 9
+Radius = 0.7
+Sides = 6
+
+[sub_resource type="PrimitiveMesh" id="column_15"]
+script = ExtResource("10_column")
+Height = 6.25
+Radius = 0.7
+Sides = 6
+
+[sub_resource type="PrimitiveMesh" id="column_16"]
+script = ExtResource("10_column")
+Height = 5.5
+Radius = 0.7
+Sides = 6
+
+[sub_resource type="PrimitiveMesh" id="column_17"]
+script = ExtResource("10_column")
+Height = 10.25
+Radius = 0.7
+Sides = 6
+
+[sub_resource type="PrimitiveMesh" id="blockmesh_18"]
+script = ExtResource("7_blockmesh")
+Size = Vector3(36, 0.3, 1)
+Bevel = 0.1
+
+[node name="Basalt" type="Node3D" node_paths=PackedStringArray("SpawnPoint", "Stage", "Lamps")]
+script = ExtResource("12_room")
+SpawnPoint = NodePath("SpawnPoint")
+Stage = NodePath("Stage")
+Biome = ExtResource("13_volcanic")
+Lamps = [NodePath("Lamps/Cavern"), NodePath("Lamps/Bottom")]
+BoundsMin = Vector2(-1, -1)
+BoundsMax = Vector2(40, 40)
+
+[node name="SpawnPoint" type="Marker3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 8, 15, 0)
+
+; The shared atmosphere stack (environment, key light, clear front air, skylines, far pillars, frame, dust).
+[node name="Stage" parent="." instance=ExtResource("14_stage")]
+Seed = 251
+DustDensity = 0
+PillarDensity = 0
+FrameBelow = false
+FrameAbove = false
+
+[node name="Geometry" type="Node3D" parent="."]
+
+; the shaft from the Slag's plug comes down between them
+[node name="RoofWest" parent="Geometry" instance=ExtResource("2_block")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 1.75, 40.25, 0)
+Size = Vector3(9.5, 3.5, 4)
+Material = ExtResource("1_basalt")
+
+[node name="RoofEast" parent="Geometry" instance=ExtResource("2_block")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 25.75, 40.25, 0)
+Size = Vector3(32.5, 3.5, 4)
+Material = ExtResource("1_basalt")
+
+[node name="ShaftWest" parent="Geometry" instance=ExtResource("2_block")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 5.25, 34.25, 0)
+Size = Vector3(2.5, 8.5, 4)
+Material = ExtResource("1_basalt")
+
+[node name="ShaftEast" parent="Geometry" instance=ExtResource("2_block")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 10.75, 34.25, 0)
+Size = Vector3(2.5, 8.5, 4)
+Material = ExtResource("1_basalt")
+
+; the upper crust
+[node name="SlabWest" parent="Geometry" instance=ExtResource("2_block")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 1.75, 28.5, 0)
+Size = Vector3(9.5, 3, 4)
+Material = ExtResource("1_basalt")
+
+[node name="SlabEast" parent="Geometry" instance=ExtResource("2_block")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 25.75, 28.5, 0)
+Size = Vector3(32.5, 3, 4)
+Material = ExtResource("1_basalt")
+
+; the shaft ends on a plug of cracked crust: the dive goes through
+[node name="PlugA" parent="Geometry" instance=ExtResource("2_block")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 8, 28.5, 0)
+Size = Vector3(3, 3, 4)
+Cracked = true
+
+[node name="WallWest" parent="Geometry" instance=ExtResource("2_block")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -1, 13.5, 0)
+Size = Vector3(4, 27, 4)
+Material = ExtResource("1_basalt")
+
+[node name="WallEast" parent="Geometry" instance=ExtResource("2_block")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 40, 13.5, 0)
+Size = Vector3(4, 27, 4)
+Material = ExtResource("1_basalt")
+
+; a wall of cracked crust splits the cavern: bored through
+[node name="CrackedWall" parent="Geometry" instance=ExtResource("2_block")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 16.75, 21, 0)
+Size = Vector3(1.5, 12, 4)
+Cracked = true
+
+; the cavern's floor
+[node name="FloorBWest" parent="Geometry" instance=ExtResource("2_block")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 15.5, 14, 0)
+Size = Vector3(29, 2, 4)
+Material = ExtResource("1_basalt")
+
+; a plug in the floor: the dive goes on down
+[node name="PlugB" parent="Geometry" instance=ExtResource("2_block")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 31.5, 14, 0)
+Size = Vector3(3, 2, 4)
+Cracked = true
+
+[node name="FloorBEast" parent="Geometry" instance=ExtResource("2_block")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 35.5, 14, 0)
+Size = Vector3(5, 2, 4)
+Material = ExtResource("1_basalt")
+
+; the bottom: the hole down to the Crucible opens between them
+[node name="FloorWest" parent="Geometry" instance=ExtResource("2_block")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 1.5, -1, 0)
+Size = Vector3(9, 4, 4)
+Material = ExtResource("1_basalt")
+
+[node name="FloorMid" parent="Geometry" instance=ExtResource("2_block")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 13.5, -1, 0)
+Size = Vector3(9, 4, 4)
+Material = ExtResource("1_basalt")
+
+; a channel of slag across the bottom: jumped
+[node name="Channel" parent="Geometry" instance=ExtResource("2_block")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 20, -2, 0)
+Size = Vector3(4, 2, 4)
+Material = ExtResource("1_basalt")
+
+[node name="FloorEast" parent="Geometry" instance=ExtResource("2_block")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 32, -1, 0)
+Size = Vector3(20, 4, 4)
+Material = ExtResource("1_basalt")
+
+[node name="Exits" type="Node3D" parent="."]
+
+; where the shaft from the Slag's plug comes in (one way)
+[node name="Top" type="Marker3D" parent="Exits"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 8, 38, 0)
+script = ExtResource("3_exit")
+ArrivalOnly = true
+Size = Vector2(3, 1)
+
+; the hole in the bottom, down into the Crucible (one way)
+[node name="Crucible" type="Marker3D" parent="Exits"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 7.5, 0.5, 0)
+script = ExtResource("3_exit")
+TargetRoom = "res://scenes/rooms/Crucible.tscn"
+TargetExit = "Basalt"
+OneWay = true
+Size = Vector2(3, 1)
+
+[node name="Heat" type="Node3D" parent="."]
+
+; heat breathing up through the west end of the cavern floor
+[node name="Vent" type="Node3D" parent="Heat"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 3, 15, 0)
+script = ExtResource("4_heatzone")
+Size = Vector2(3, 3)
+HazeMaterial = ExtResource("5_heat_haze")
+Embers = ExtResource("6_embers")
+EmberDensity = 1.6
+GlowEnergy = 2.5
+
+; the slag channel
+[node name="Slag" type="Node3D" parent="Heat"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 20, -1, 0)
+script = ExtResource("4_heatzone")
+Size = Vector2(4, 2.5)
+HazeMaterial = ExtResource("5_heat_haze")
+Embers = ExtResource("6_embers")
+EmberDensity = 2
+GlowEnergy = 3
+
+[node name="Kit" type="Node3D" parent="."]
+
+[node name="Back" type="MeshInstance3D" parent="Kit"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 19.5, 19.5, -16)
+mesh = SubResource("blockmesh_1")
+material_override = ExtResource("8_stone_mid")
+
+; slag in the channel
+[node name="ChannelSlag" type="MeshInstance3D" parent="Kit"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 20, -0.75, 0)
+mesh = SubResource("blockmesh_2")
+material_override = ExtResource("9_magma")
+
+[node name="VentGlow" type="MeshInstance3D" parent="Kit"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 3, 15.25, 0)
+mesh = SubResource("blockmesh_3")
+material_override = ExtResource("9_magma")
+
+[node name="Columns" type="Node3D" parent="Kit"]
+
+; columnar basalt behind the play plane
+[node name="C0_0" type="MeshInstance3D" parent="Kit/Columns"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 2.5, 15, -3.5)
+mesh = SubResource("column_4")
+material_override = ExtResource("8_stone_mid")
+
+[node name="C1_0" type="MeshInstance3D" parent="Kit/Columns"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 2.5, 1, -3.5)
+mesh = SubResource("column_5")
+material_override = ExtResource("8_stone_mid")
+
+[node name="C0_1" type="MeshInstance3D" parent="Kit/Columns"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 5, 15, -3.5)
+mesh = SubResource("column_6")
+material_override = ExtResource("8_stone_mid")
+
+[node name="C1_1" type="MeshInstance3D" parent="Kit/Columns"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 5, 1, -3.5)
+mesh = SubResource("column_7")
+material_override = ExtResource("8_stone_mid")
+
+[node name="C0_2" type="MeshInstance3D" parent="Kit/Columns"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 7.25, 15, -3.5)
+mesh = SubResource("column_5")
+material_override = ExtResource("8_stone_mid")
+
+[node name="C1_2" type="MeshInstance3D" parent="Kit/Columns"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 7.25, 1, -3.5)
+mesh = SubResource("column_7")
+material_override = ExtResource("8_stone_mid")
+
+[node name="C0_3" type="MeshInstance3D" parent="Kit/Columns"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 13.5, 15, -3.5)
+mesh = SubResource("column_8")
+material_override = ExtResource("8_stone_mid")
+
+[node name="C1_3" type="MeshInstance3D" parent="Kit/Columns"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 13.5, 1, -3.5)
+mesh = SubResource("column_9")
+material_override = ExtResource("8_stone_mid")
+
+[node name="C0_4" type="MeshInstance3D" parent="Kit/Columns"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 20.5, 15, -3.5)
+mesh = SubResource("column_5")
+material_override = ExtResource("8_stone_mid")
+
+[node name="C1_4" type="MeshInstance3D" parent="Kit/Columns"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 20.5, 1, -3.5)
+mesh = SubResource("column_10")
+material_override = ExtResource("8_stone_mid")
+
+[node name="C0_5" type="MeshInstance3D" parent="Kit/Columns"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 23, 15, -3.5)
+mesh = SubResource("column_11")
+material_override = ExtResource("8_stone_mid")
+
+[node name="C1_5" type="MeshInstance3D" parent="Kit/Columns"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 23, 1, -3.5)
+mesh = SubResource("column_12")
+material_override = ExtResource("8_stone_mid")
+
+[node name="C0_6" type="MeshInstance3D" parent="Kit/Columns"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 26.25, 15, -3.5)
+mesh = SubResource("column_13")
+material_override = ExtResource("8_stone_mid")
+
+[node name="C1_6" type="MeshInstance3D" parent="Kit/Columns"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 26.25, 1, -3.5)
+mesh = SubResource("column_14")
+material_override = ExtResource("8_stone_mid")
+
+[node name="C0_7" type="MeshInstance3D" parent="Kit/Columns"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 29.5, 15, -3.5)
+mesh = SubResource("column_9")
+material_override = ExtResource("8_stone_mid")
+
+[node name="C1_7" type="MeshInstance3D" parent="Kit/Columns"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 29.5, 1, -3.5)
+mesh = SubResource("column_4")
+material_override = ExtResource("8_stone_mid")
+
+[node name="C0_8" type="MeshInstance3D" parent="Kit/Columns"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 34, 15, -3.5)
+mesh = SubResource("column_15")
+material_override = ExtResource("8_stone_mid")
+
+[node name="C1_8" type="MeshInstance3D" parent="Kit/Columns"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 34, 1, -3.5)
+mesh = SubResource("column_16")
+material_override = ExtResource("8_stone_mid")
+
+[node name="C0_9" type="MeshInstance3D" parent="Kit/Columns"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 36.5, 15, -3.5)
+mesh = SubResource("column_7")
+material_override = ExtResource("8_stone_mid")
+
+[node name="C1_9" type="MeshInstance3D" parent="Kit/Columns"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 36.5, 1, -3.5)
+mesh = SubResource("column_17")
+material_override = ExtResource("8_stone_mid")
+
+; magma seams glowing through the crust behind
+[node name="SeamUpper" type="MeshInstance3D" parent="Kit"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 20, 27.5, -4.5)
+mesh = SubResource("blockmesh_18")
+material_override = ExtResource("9_magma")
+
+[node name="SeamLower" type="MeshInstance3D" parent="Kit"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 19, 13.5, -4.5)
+mesh = SubResource("blockmesh_18")
+material_override = ExtResource("9_magma")
+
+[node name="Lamps" type="Node3D" parent="."]
+
+; the seams' glow in the cavern
+[node name="Cavern" type="OmniLight3D" parent="Lamps"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 12, 22, 3)
+light_energy = 2.2
+omni_range = 20
+shadow_enabled = false
+
+; the slag channel glowing
+[node name="Bottom" type="OmniLight3D" parent="Lamps"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 20, 3, 2.5)
+light_energy = 2
+omni_range = 14
+shadow_enabled = false
+
+[node name="Particles" type="Node3D" parent="."]
+
+; embers rising through the crust
+[node name="Embers" parent="Particles" instance=ExtResource("6_embers")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 20, 14, -1)
+Extents = Vector3(18, 13, 2)
+Density = 0.12
+
+[node name="PhotoSpots" type="Node3D" parent="."]
+
+; the shaft's foot: the first plug
+[node name="Shaft" type="Marker3D" parent="PhotoSpots"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 8, 31, 20)
+script = ExtResource("11_spot")
+PlayerPosition = Vector3(8, 30, 0)
+
+; the cavern, the cracked wall, the plug in its floor
+[node name="Cavern" type="Marker3D" parent="PhotoSpots"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 17, 20, 22)
+script = ExtResource("11_spot")
+PlayerPosition = Vector3(12, 15, 0)
+
+; the bottom: the slag channel, the hole down
+[node name="Bottom" type="Marker3D" parent="PhotoSpots"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 17, 5, 22)
+script = ExtResource("11_spot")
+PlayerPosition = Vector3(26, 1, 0)
+PlayerFacing = -1
+
+; the whole crust
+[node name="Wide" type="Marker3D" parent="PhotoSpots"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 19.5, 19, 64)
+script = ExtResource("11_spot")
+PlayerPosition = Vector3(12, 15, 0)
+Fov = 40

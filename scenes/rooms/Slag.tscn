@@ -183,6 +183,17 @@ transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 65.5, -4.5, 0)
 Size = Vector3(5, 3, 4)
 Material = ExtResource("1_basalt")
 
+; the plug's shaft, walled off from the river all the way down
+[node name="ShaftWest" parent="Geometry" instance=ExtResource("2_block")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 59, -18, 0)
+Size = Vector3(2, 24, 4)
+Material = ExtResource("1_basalt")
+
+[node name="ShaftEast" parent="Geometry" instance=ExtResource("2_block")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 64, -18, 0)
+Size = Vector3(2, 24, 4)
+Material = ExtResource("1_basalt")
+
 [node name="EastFloor" parent="Geometry" instance=ExtResource("2_block")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 83, -6, 0)
 Size = Vector3(24, 12, 4)
@@ -217,18 +228,23 @@ TargetRoom = "res://scenes/rooms/Chimney.tscn"
 TargetExit = "Bottom"
 Size = Vector2(3, 1)
 
-; the coolant pool's bottom: sunk (Ballast), down to the Quench (sealed: not built yet)
+; the coolant pool's bottom: sunk (Ballast), down to the Quench
 [node name="Quench" type="Marker3D" parent="Exits"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 13.5, -29, 0)
 script = ExtResource("3_exit")
+TargetRoom = "res://scenes/rooms/Quench.tscn"
+TargetExit = "Slag"
 Requires = "Ballast"
 Size = Vector2(3, 1)
 
-; under the plug: down to the Basalt (sealed: not built yet)
+; the bottom of the plug's shaft: down to the Basalt (one way: the shaft is too smooth to climb)
 [node name="Basalt" type="Marker3D" parent="Exits"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 61.5, -8, 0)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 61.5, -29, 0)
 script = ExtResource("3_exit")
+TargetRoom = "res://scenes/rooms/Basalt.tscn"
+TargetExit = "Top"
 Requires = "Drill"
+OneWay = true
 Size = Vector2(3, 1)
 
 ; the end of what is built
@@ -296,11 +312,20 @@ Embers = ExtResource("12_embers")
 EmberDensity = 0.8
 GlowEnergy = 3
 
-; the river itself, under the platforms
+; the river itself, under the platforms (the plug's shaft walled off from it)
 [node name="RiverUnder" type="Node3D" parent="Heat"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 44, -31, 0)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 37.5, -31, 0)
 script = ExtResource("10_heatzone")
-Size = Vector2(54, 22)
+Size = Vector2(41, 22)
+HazeMaterial = ExtResource("11_heat_haze")
+Embers = ExtResource("12_embers")
+EmberDensity = 0
+GlowEnergy = 2
+
+[node name="RiverUnderEast" type="Node3D" parent="Heat"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 68, -31, 0)
+script = ExtResource("10_heatzone")
+Size = Vector2(6, 22)
 HazeMaterial = ExtResource("11_heat_haze")
 Embers = ExtResource("12_embers")
 EmberDensity = 0

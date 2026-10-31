@@ -67,6 +67,9 @@ public sealed class ReachPlanner
 {
     private const float Dt = 1f / 60f;
     private const int MaxTicks = 240;
+
+    /// <summary>Longest a body may float before it settles (rising from the bottom of deep water), ticks.</summary>
+    private const int MaxSwimTicks = 900;
     private const float Skin = 0.001f;
 
     /// <summary>Sight to an anchor stops this short of it (an anchor may hang by a wall's face).</summary>
@@ -339,7 +342,8 @@ public sealed class ReachPlanner
 
         int dashLeft = 0, dashDir = dir == 0 ? 1 : dir;
         bool dashed = false;
-        for (int tick = 0; tick < MaxTicks; tick++)
+        int limit = MaxTicks;
+        for (int tick = 0; tick < limit; tick++)
         {
             bool held = jumpTicks < 0 || tick < jumpTicks;
             if (swimming is null && v.Y <= 0f && WaterAt(p) is { } water && WaterMotion.Deep(p.Y, water.MaxY, _w!))
@@ -351,6 +355,7 @@ public sealed class ReachPlanner
                 }
 
                 swimming = water;
+                limit = tick + MaxSwimTicks; // floating up from deep water takes a while
                 dashLeft = 0;
                 v.Y = WaterMotion.Splash(v.Y, _w!);
             }

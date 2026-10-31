@@ -1,0 +1,432 @@
+[gd_scene format=3]
+
+; The Crucible, under the Quench and the Basalt (map offset (191.5, -214.5)): where the machines' plating was cast. A great
+; crucible hangs tilted over the casting floor, pouring into molds that still glow (jumped, or walked through once plated).
+; Heat plating lies on a dais between them, and a shrine. West, the coolant falls from the Quench's drain into a basin, and
+; gantries climb back up to it (the way out, needing nothing); east, the hole from the Basalt drops onto the floor.
+
+[ext_resource type="Material" path="res://assets/materials/basalt.tres" id="1_basalt"]
+[ext_resource type="PackedScene" path="res://scenes/kit/Block.tscn" id="2_block"]
+[ext_resource type="Material" path="res://assets/materials/rust.tres" id="3_rust"]
+[ext_resource type="Script" path="res://scripts/rooms/RoomExit.cs" id="4_exit"]
+[ext_resource type="PackedScene" path="res://scenes/props/AbilityRelic.tscn" id="5_relic"]
+[ext_resource type="PackedScene" path="res://scenes/props/Shrine.tscn" id="6_shrine"]
+[ext_resource type="Script" path="res://scripts/props/HeatZone.cs" id="7_heatzone"]
+[ext_resource type="Material" path="res://assets/materials/heat_haze.tres" id="8_heat_haze"]
+[ext_resource type="PackedScene" path="res://scenes/fx/Embers.tscn" id="9_embers"]
+[ext_resource type="Script" path="res://scripts/rooms/WaterBody.cs" id="10_water_body"]
+[ext_resource type="Material" path="res://assets/materials/water.tres" id="11_water"]
+[ext_resource type="Material" path="res://assets/materials/underwater.tres" id="12_underwater"]
+[ext_resource type="Material" path="res://assets/materials/water_section.tres" id="13_water_section"]
+[ext_resource type="Script" path="res://scripts/kit/BlockMesh.cs" id="14_blockmesh"]
+[ext_resource type="Material" path="res://assets/materials/stone_mid.tres" id="15_stone_mid"]
+[ext_resource type="Material" path="res://assets/materials/magma.tres" id="16_magma"]
+[ext_resource type="Script" path="res://scripts/parts/PodMesh.cs" id="17_pod"]
+[ext_resource type="Material" path="res://assets/materials/rust_mid.tres" id="18_rust_mid"]
+[ext_resource type="Script" path="res://scripts/kit/CableMesh.cs" id="19_cables"]
+[ext_resource type="Script" path="res://scripts/kit/PipeMesh.cs" id="20_pipe"]
+[ext_resource type="PackedScene" path="res://scenes/fx/Drips.tscn" id="21_drips"]
+[ext_resource type="Script" path="res://scripts/rooms/PhotoSpot.cs" id="22_spot"]
+[ext_resource type="Script" path="res://scripts/rooms/Room.cs" id="23_room"]
+[ext_resource type="Resource" path="res://resources/biomes/volcanic.tres" id="24_volcanic"]
+[ext_resource type="PackedScene" path="res://scenes/stage/RoomStage.tscn" id="25_stage"]
+
+[sub_resource type="PrimitiveMesh" id="blockmesh_1"]
+script = ExtResource("14_blockmesh")
+Size = Vector3(100, 50, 1.2)
+Bevel = 0.3
+
+[sub_resource type="PrimitiveMesh" id="blockmesh_2"]
+script = ExtResource("14_blockmesh")
+Size = Vector3(3, 26, 3)
+Bevel = 0.4
+
+[sub_resource type="PrimitiveMesh" id="blockmesh_3"]
+script = ExtResource("14_blockmesh")
+Size = Vector3(4, 0.4, 3.6)
+Bevel = 0.1
+
+[sub_resource type="PrimitiveMesh" id="pod_4"]
+script = ExtResource("17_pod")
+Axis = Vector3(0, 1, 0)
+Length = 9
+Stations = PackedVector4Array(0, 2.4, 2.4, 0, 0.12, 3.6, 3.6, 0, 0.7, 4.2, 4.2, 0, 0.92, 4.0, 4.0, 0, 1, 3.4, 3.4, 0)
+Sides = 28
+Rings = 12
+
+[sub_resource type="PrimitiveMesh" id="pod_5"]
+script = ExtResource("17_pod")
+Axis = Vector3(0, 1, 0)
+Length = 9
+Stations = PackedVector4Array(0, 0.35, 0.35, 0, 0.5, 0.25, 0.25, 0, 1, 0.4, 0.4, 0)
+Sides = 10
+Rings = 6
+
+[sub_resource type="PrimitiveMesh" id="cables_6"]
+script = ExtResource("19_cables")
+End = Vector3(0, -9, 0)
+Sag = 0.2
+Radius = 0.12
+Strands = 2
+Seed = 263
+
+[sub_resource type="PrimitiveMesh" id="pod_7"]
+script = ExtResource("17_pod")
+Axis = Vector3(0, 1, 0)
+Length = 3
+Stations = PackedVector4Array(0, 1.0, 1.0, 0, 0.2, 1.5, 1.5, 0, 1, 1.6, 1.6, 0)
+Sides = 18
+Rings = 6
+
+[sub_resource type="PrimitiveMesh" id="pipe_8"]
+script = ExtResource("20_pipe")
+Points = PackedVector3Array(0, 0, 0, 0, -6, 0)
+Radius = 1.6
+BendRadius = 1
+FlangeSpacing = 2
+
+[node name="Crucible" type="Node3D" node_paths=PackedStringArray("SpawnPoint", "Stage", "Lamps", "Shafts", "GlyphLights")]
+script = ExtResource("23_room")
+SpawnPoint = NodePath("SpawnPoint")
+Stage = NodePath("Stage")
+Biome = ExtResource("24_volcanic")
+Lamps = [NodePath("Lamps/Crucible"), NodePath("Lamps/Basin"), NodePath("Lamps/East")]
+Shafts = [NodePath("Shafts/Drain")]
+GlyphLights = [NodePath("Props/Shrine/Light")]
+BoundsMin = Vector2(-1, -1)
+BoundsMax = Vector2(61, 23)
+
+[node name="SpawnPoint" type="Marker3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 52, 4, 0)
+
+; The shared atmosphere stack (environment, key light, clear front air, skylines, far pillars, frame, dust).
+[node name="Stage" parent="." instance=ExtResource("25_stage")]
+Seed = 261
+DustDensity = 0
+PillarDensity = 1
+FrameBelow = false
+FrameAbove = false
+
+[node name="Geometry" type="Node3D" parent="."]
+
+; the Quench's drain opens in the low west roof between them
+[node name="RoofWest" parent="Geometry" instance=ExtResource("2_block")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 4.75, 22.5, 0)
+Size = Vector3(15.5, 7, 4)
+Material = ExtResource("1_basalt")
+
+[node name="RoofMid" parent="Geometry" instance=ExtResource("2_block")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 19.75, 22.5, 0)
+Size = Vector3(8.5, 7, 4)
+Material = ExtResource("1_basalt")
+
+; the high roof over the casting floor; the Basalt's hole opens in it
+[node name="RoofHigh" parent="Geometry" instance=ExtResource("2_block")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 31, 24.25, 0)
+Size = Vector3(14, 3.5, 4)
+Material = ExtResource("1_basalt")
+
+[node name="RoofEast" parent="Geometry" instance=ExtResource("2_block")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 52.5, 24.25, 0)
+Size = Vector3(23, 3.5, 4)
+Material = ExtResource("1_basalt")
+
+[node name="WallWest" parent="Geometry" instance=ExtResource("2_block")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -1, 11.5, 0)
+Size = Vector3(4, 15, 4)
+Material = ExtResource("1_basalt")
+
+[node name="WallEast" parent="Geometry" instance=ExtResource("2_block")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 62, 13.25, 0)
+Size = Vector3(4, 18.5, 4)
+Material = ExtResource("1_basalt")
+
+[node name="FloorWest" parent="Geometry" instance=ExtResource("2_block")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 3, 0.5, 0)
+Size = Vector3(12, 7, 4)
+Material = ExtResource("1_basalt")
+
+; the basin the coolant falls into
+[node name="Basin" parent="Geometry" instance=ExtResource("2_block")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 14, -1, 0)
+Size = Vector3(10, 4, 4)
+Material = ExtResource("1_basalt")
+
+; the casting floor
+[node name="FloorCasting" parent="Geometry" instance=ExtResource("2_block")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 20.5, 0.5, 0)
+Size = Vector3(3, 7, 4)
+Material = ExtResource("1_basalt")
+
+; a mould, its metal still molten: jumped, or walked through once plated
+[node name="MoldWest" parent="Geometry" instance=ExtResource("2_block")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 24, -0.5, 0)
+Size = Vector3(4, 5, 4)
+Material = ExtResource("1_basalt")
+
+[node name="FloorDais" parent="Geometry" instance=ExtResource("2_block")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 35, 0.5, 0)
+Size = Vector3(18, 7, 4)
+Material = ExtResource("1_basalt")
+
+; the dais
+[node name="Dais" parent="Geometry" instance=ExtResource("2_block")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 32, 4.75, 0)
+Size = Vector3(6, 1.5, 4)
+Material = ExtResource("3_rust")
+
+[node name="MoldEast" parent="Geometry" instance=ExtResource("2_block")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 46, -0.5, 0)
+Size = Vector3(4, 5, 4)
+Material = ExtResource("1_basalt")
+
+[node name="FloorEast" parent="Geometry" instance=ExtResource("2_block")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 56, 0.5, 0)
+Size = Vector3(16, 7, 4)
+Material = ExtResource("1_basalt")
+
+; gantries up to the drain
+[node name="Gantry0" parent="Geometry" instance=ExtResource("2_block")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 10, 6.25, 0)
+Size = Vector3(4, 0.5, 4)
+Material = ExtResource("3_rust")
+
+[node name="Gantry1" parent="Geometry" instance=ExtResource("2_block")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 18, 8.75, 0)
+Size = Vector3(4, 0.5, 4)
+Material = ExtResource("3_rust")
+
+[node name="Gantry2" parent="Geometry" instance=ExtResource("2_block")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 10, 11.25, 0)
+Size = Vector3(4, 0.5, 4)
+Material = ExtResource("3_rust")
+
+[node name="Gantry3" parent="Geometry" instance=ExtResource("2_block")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 17.75, 13.75, 0)
+Size = Vector3(4.5, 0.5, 4)
+Material = ExtResource("3_rust")
+
+[node name="Exits" type="Node3D" parent="."]
+
+; up through the drain into the Quench's coolant
+[node name="Quench" type="Marker3D" parent="Exits"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 14, 19.25, 0)
+script = ExtResource("4_exit")
+TargetRoom = "res://scenes/rooms/Quench.tscn"
+TargetExit = "Crucible"
+Size = Vector2(3, 2)
+
+; where the Basalt's hole drops in (one way)
+[node name="Basalt" type="Marker3D" parent="Exits"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 39.5, 22, 0)
+script = ExtResource("4_exit")
+ArrivalOnly = true
+Size = Vector2(3, 1)
+
+[node name="Props" type="Node3D" parent="."]
+
+; Heat plating, on the dais
+[node name="HeatPlating" parent="Props" instance=ExtResource("5_relic")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 32, 5.5, 0)
+Ability = 16
+NameLine = &"ability.heat_plating.name"
+HintLine = &"ability.heat_plating.hint"
+
+; a shrine on the casting floor
+[node name="Shrine" parent="Props" instance=ExtResource("6_shrine")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 54, 4, 0)
+
+[node name="Heat" type="Node3D" parent="."]
+
+; heat over the molten moulds
+[node name="MoldWest" type="Node3D" parent="Heat"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 24, 2, 0)
+script = ExtResource("7_heatzone")
+Size = Vector2(4, 3.5)
+HazeMaterial = ExtResource("8_heat_haze")
+Embers = ExtResource("9_embers")
+EmberDensity = 1.6
+GlowEnergy = 3
+
+[node name="MoldEast" type="Node3D" parent="Heat"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 46, 2, 0)
+script = ExtResource("7_heatzone")
+Size = Vector2(4, 3.5)
+HazeMaterial = ExtResource("8_heat_haze")
+Embers = ExtResource("9_embers")
+EmberDensity = 1.6
+GlowEnergy = 3
+
+; the basin of coolant under the drain
+[node name="Water" type="Node3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 14, 3.5, -4)
+script = ExtResource("10_water_body")
+Size = Vector2(10, 12.1)
+Depth = 2.5
+Swim = true
+SurfaceMaterial = ExtResource("11_water")
+UnderwaterMaterial = ExtResource("12_underwater")
+SectionMaterial = ExtResource("13_water_section")
+
+[node name="Kit" type="Node3D" parent="."]
+
+[node name="Back" type="MeshInstance3D" parent="Kit"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 30, 11, -18)
+mesh = SubResource("blockmesh_1")
+material_override = ExtResource("15_stone_mid")
+
+[node name="Buttresses" type="Node3D" parent="Kit"]
+
+; the hall's buttresses, back in the haze
+[node name="B0" type="MeshInstance3D" parent="Kit/Buttresses"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 4, 11, -11)
+mesh = SubResource("blockmesh_2")
+material_override = ExtResource("15_stone_mid")
+
+[node name="B1" type="MeshInstance3D" parent="Kit/Buttresses"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 22, 11, -11)
+mesh = SubResource("blockmesh_2")
+material_override = ExtResource("15_stone_mid")
+
+[node name="B2" type="MeshInstance3D" parent="Kit/Buttresses"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 52, 11, -11)
+mesh = SubResource("blockmesh_2")
+material_override = ExtResource("15_stone_mid")
+
+; the molten metal in the moulds
+[node name="MoldWestMetal" type="MeshInstance3D" parent="Kit"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 24, 1.75, 0)
+mesh = SubResource("blockmesh_3")
+material_override = ExtResource("16_magma")
+
+[node name="MoldEastMetal" type="MeshInstance3D" parent="Kit"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 46, 1.75, 0)
+mesh = SubResource("blockmesh_3")
+material_override = ExtResource("16_magma")
+
+; the great crucible, hanging tipped over the east mould
+[node name="Crucible" type="MeshInstance3D" parent="Kit"]
+transform = Transform3D(-0.342, 0.9397, 0, -0.9397, -0.342, 0, 0, 0, 1, 37.5, 14, -6)
+mesh = SubResource("pod_4")
+material_override = ExtResource("18_rust_mid")
+
+; a thread of metal still pouring from its lip into the mould
+[node name="Pour" type="MeshInstance3D" parent="Kit"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 46, 2, -6)
+mesh = SubResource("pod_5")
+material_override = ExtResource("16_magma")
+
+[node name="ChainWest" type="MeshInstance3D" parent="Kit"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 38, 22.5, -6)
+mesh = SubResource("cables_6")
+material_override = ExtResource("18_rust_mid")
+
+[node name="ChainEast" type="MeshInstance3D" parent="Kit"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 44, 22.5, -6)
+mesh = SubResource("cables_6")
+material_override = ExtResource("18_rust_mid")
+
+[node name="Ladles" type="Node3D" parent="Kit"]
+
+; ladles, cold, along the floor
+[node name="L0" type="MeshInstance3D" parent="Kit/Ladles"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 51, 4, -3.5)
+mesh = SubResource("pod_7")
+material_override = ExtResource("18_rust_mid")
+
+[node name="L1" type="MeshInstance3D" parent="Kit/Ladles"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 57, 4, -3.5)
+mesh = SubResource("pod_7")
+material_override = ExtResource("18_rust_mid")
+
+[node name="L2" type="MeshInstance3D" parent="Kit/Ladles"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 20.5, 4, -3.5)
+mesh = SubResource("pod_7")
+material_override = ExtResource("18_rust_mid")
+
+; the Quench's drain, an iron spout
+[node name="DrainSpout" type="MeshInstance3D" parent="Kit"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 14, 24, -2.5)
+mesh = SubResource("pipe_8")
+material_override = ExtResource("18_rust_mid")
+
+[node name="BasaltHole" type="MeshInstance3D" parent="Kit"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 39.5, 27.5, -2.5)
+mesh = SubResource("pipe_8")
+material_override = ExtResource("15_stone_mid")
+
+[node name="Lamps" type="Node3D" parent="."]
+
+; the moulds and the pour lighting the floor
+[node name="Crucible" type="OmniLight3D" parent="Lamps"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 40, 8, 2.5)
+light_energy = 3
+omni_range = 24
+shadow_enabled = false
+
+[node name="Basin" type="OmniLight3D" parent="Lamps"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 14, 8, 2)
+light_energy = 1.8
+omni_range = 14
+shadow_enabled = false
+
+[node name="East" type="OmniLight3D" parent="Lamps"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 52, 10, 2)
+light_energy = 1.6
+omni_range = 16
+shadow_enabled = false
+
+[node name="Shafts" type="Node3D" parent="."]
+
+; light down the Quench's drain
+[node name="Drain" type="SpotLight3D" parent="Shafts"]
+transform = Transform3D(-1, 0, 0, 0, 0.1414, 0.9899, 0, 0.9899, -0.1414, 14, 50, -1)
+light_energy = 2
+light_volumetric_fog_energy = 6
+shadow_enabled = true
+spot_range = 60
+spot_attenuation = 0.25
+spot_angle = 5
+spot_angle_attenuation = 2
+
+[node name="Particles" type="Node3D" parent="."]
+
+; coolant falling from the drain
+[node name="Drips" parent="Particles" instance=ExtResource("21_drips")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 14, 10.5, -0.5)
+Extents = Vector3(1.2, 8, 1)
+Density = 1
+
+; embers over the moulds
+[node name="Embers" parent="Particles" instance=ExtResource("9_embers")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 34, 8, -2)
+Extents = Vector3(18, 6, 3)
+Density = 0.15
+
+[node name="PhotoSpots" type="Node3D" parent="."]
+
+; the dais, Heat plating, the moulds either side, the crucible over them
+[node name="Dais" type="Marker3D" parent="PhotoSpots"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 33, 8, 20)
+script = ExtResource("22_spot")
+PlayerPosition = Vector3(30, 5.5, 0)
+
+; the basin, the gantries up to the drain
+[node name="Gantries" type="Marker3D" parent="PhotoSpots"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 14, 11, 22)
+script = ExtResource("22_spot")
+PlayerPosition = Vector3(10, 11.5, 0)
+
+; the shrine, the casting floor
+[node name="Floor" type="Marker3D" parent="PhotoSpots"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 48, 8, 22)
+script = ExtResource("22_spot")
+PlayerPosition = Vector3(53, 4, 0)
+PlayerFacing = -1
+
+; the whole casting hall
+[node name="Wide" type="Marker3D" parent="PhotoSpots"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 30, 11, 60)
+script = ExtResource("22_spot")
+PlayerPosition = Vector3(30, 5.5, 0)
+Fov = 40

@@ -192,9 +192,9 @@ Basalt, slag rivers, the machines' birthplace: they are cast here in molds of th
 |---|---|
 | Kiln | Past the forbidden door, down a stair: a kiln the size of a nave, long cold, molds in the shape of machines; on its firing floor the first heat (a low vent) and a shrine. *(built)* |
 | Slag | The hub, a cavern over a river of slag (falling in is the end): basalt platforms, heat rising between them, a shrine under the Chimney's vent; a coolant pool down to the Quench (Ballast), a cracked plug over the Basalt (Drill). *(built)* |
-| Quench | A coolant reservoir: sink through it (Ballast). |
-| Basalt | A crust of basalt: drill through it (Drill). |
-| Crucible | Where plating is cast: **Heat plating**. |
+| Quench | A coolant reservoir under the Slag's pool: a drop into deep coolant among sunken quench tanks; sunk (Ballast) to the drain in its floor, down into the Crucible; floating, ledges climb back to the hatch (the way home from the Crucible). *(built)* |
+| Basalt | A crust of basalt under the Slag's plug, only reached with the Drill (one way, down the plug's walled shaft): plugs dived through, a cracked wall bored, a slag channel jumped, a hole down into the Crucible (one way). *(built)* |
+| Crucible | Where plating is cast, under both: a great crucible pouring into glowing moulds, **Heat plating** on a dais between them, a shrine; the coolant falls from the Quench's drain into a basin, gantries climb back to it. *(built)* |
 | Ashfall | Ash raining through a broken flue. |
 | Bellows | A giant bellows machine, its anchors and metal ribs (grip or harpoon). |
 | Pyre | Through the vents (Heat plating): where machines are given to the fire. Lore, a shrine. |
@@ -214,10 +214,12 @@ room Chimney Volcanic
 room Foundry Volcanic
 
 way Kiln <-> Slag
-way Slag <-> Quench : Ballast
-way Slag <-> Basalt : Drill
-way Quench <-> Crucible
-way Basalt <-> Crucible
+way Slag -> Quench : Ballast                     # sunk through the coolant pool's floor
+way Quench -> Slag                               # up the ledges to the hatch, floating up the pool
+way Slag -> Basalt : Drill                       # the dive through the plug, down the walled shaft: one way
+way Basalt -> Crucible                           # a drop through the crust's floor: one way
+way Quench -> Crucible : Ballast                 # sunk through the drain in its floor
+way Crucible -> Quench                           # up the gantries, floating up from the drain
 relic Crucible HeatPlating
 way Slag <-> Ashfall
 way Ashfall <-> Pyre : HeatPlating
