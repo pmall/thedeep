@@ -83,7 +83,7 @@ script = ExtResource("20_pipe")
 Points = PackedVector3Array(0, 0, 0, 0, -6, 0)
 Radius = 1.6
 BendRadius = 1
-FlangeSpacing = 2
+FlangeSpacing = 4
 
 [node name="Crucible" type="Node3D" node_paths=PackedStringArray("SpawnPoint", "Stage", "Lamps", "Shafts", "GlyphLights")]
 script = ExtResource("23_room")

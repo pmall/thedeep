@@ -9,7 +9,6 @@
 [ext_resource type="Material" path="res://assets/materials/basalt.tres" id="1_basalt"]
 [ext_resource type="PackedScene" path="res://scenes/kit/Block.tscn" id="2_block"]
 [ext_resource type="Script" path="res://scripts/rooms/RoomExit.cs" id="3_exit"]
-[ext_resource type="Script" path="res://scripts/map/MapGoal.cs" id="4_goal"]
 [ext_resource type="Script" path="res://scripts/rooms/WaterBody.cs" id="5_water_body"]
 [ext_resource type="Material" path="res://assets/materials/water.tres" id="6_water"]
 [ext_resource type="Material" path="res://assets/materials/underwater.tres" id="7_underwater"]
@@ -214,10 +213,12 @@ TargetRoom = "res://scenes/rooms/Kiln.tscn"
 TargetExit = "Slag"
 Size = Vector2(1, 4)
 
-; east, on to the Ashfall (sealed: not built yet)
+; east, on to the Ashfall
 [node name="East" type="Marker3D" parent="Exits"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 91.5, 2, 0)
 script = ExtResource("3_exit")
+TargetRoom = "res://scenes/rooms/Ashfall.tscn"
+TargetExit = "West"
 Size = Vector2(1, 4)
 
 ; up the vent: the Chimney, the shortcut home
@@ -246,14 +247,6 @@ TargetExit = "Top"
 Requires = "Drill"
 OneWay = true
 Size = Vector2(3, 1)
-
-; the end of what is built
-[node name="Goal" type="Marker3D" parent="Exits"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 85, 2, 0)
-script = ExtResource("4_goal")
-Size = Vector2(8, 4)
-TitleLine = &"goal.built_end.title"
-HintLine = &"goal.built_end.hint"
 
 ; the coolant pool, swum
 [node name="Coolant" type="Node3D" parent="."]

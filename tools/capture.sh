@@ -65,7 +65,7 @@ touch "$ROOT/.gdignore" # Godot must not import the captures
 dotnet build TheDeep.sln -v q -nologo >"$out/build.log" 2>&1 || { tail -20 "$out/build.log"; fail "dotnet build"; }
 
 # The rooms rendered: the drowned hall first (perf.json, compared run to run), then the slice rooms, the arena and the lab.
-ROOMS=(DrownedHall Narthex Belfry Nave Cistern Reliquary Descent Sluice Undercroft Ossuary Scriptorium Chapterhouse Brink Rimefall Choir Coldstacks Counterweight Calving Bore Mere Sounding Underice Vault Sanctum Kiln Slag Chimney Quench Basalt Crucible MachineArena MechanicsLab)
+ROOMS=(DrownedHall Narthex Belfry Nave Cistern Reliquary Descent Sluice Undercroft Ossuary Scriptorium Chapterhouse Brink Rimefall Choir Coldstacks Counterweight Calving Bore Mere Sounding Underice Vault Sanctum Kiln Slag Chimney Quench Basalt Crucible Ashfall Pyre Bellows Foundry MachineArena MechanicsLab)
 if [ -n "$only" ]; then read -r -a ROOMS <<<"$only"; fi
 for room in "${ROOMS[@]}"; do
     name="$room"

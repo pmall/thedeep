@@ -55,6 +55,9 @@ scenes/
   rooms/Quench.tscn, Basalt.tscn, Crucible.tscn   under the Slag (M8): the coolant reservoir (sunk to its drain with
                            Ballast; ledges back up to the hatch), the basalt crust (the Drill's one-way way down: plugs, a
                            cracked wall, a slag channel), the casting hall under both (Heat plating, a shrine, moulds)
+  rooms/Ashfall.tscn, Pyre.tscn, Bellows.tscn, Foundry.tscn   east of the Slag (M8): the pit under the broken flue
+                           (heat before the Pyre, a hatch down to the Bellows), the Pyre (lore, a shrine), the Bellows (its
+                           frame or rings up to the Foundry; a shrine), the Foundry (the Founder's arena; the vents down)
   props/HarpoonAnchor.tscn a mooring ring the Harpoon fires at (the origin is where the pilgrim's center is pulled)
   props/Portcullis.tscn    a gate of bars dropping across a way (a boss's arena)
   props/LawBreak.tscn      a law holding the pilgrim back at a lip: a veil of glyphs, the law's words, its collision

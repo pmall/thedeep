@@ -20,12 +20,12 @@ The plan we follow from session to session: the owner's direction, where we are,
 ## Status
 
 - **Foundation done** (M0–M7, 2026-10-24 to 2026-10-28): look-dev tools (`tools/capture.sh`, F12/F10 owner captures), the procedural material library, the environment kit, atmosphere, `BiomeProfile`s, the modular part system, the pilgrim and four machine prototypes (placeholders), the level toolkit, room travel and the map screen, combat, health, shrines and saving, the map solver, the geometry check and the whole map on paper ([map-draft.md](map-draft.md): 40 rooms, 5 abilities, 4 bosses, 3 law breaks, 32 of 120 orders).
-- **Phase 1, the complete world: 30 of 40 rooms built.**
+- **Phase 1, the complete world: 34 of 40 rooms built.**
   - Flooded layer: all 13 rooms; the Harpoon, the Precentor (boss placeholder), the third law.
   - Frozen layer: all 11 rooms; the Drill, Ballast, the Archivist (boss placeholder), the second law.
-  - Volcanic layer: 6 of 10 (the Kiln, the Slag, the Chimney, the Quench, the Basalt, the Crucible with Heat plating).
+  - Volcanic layer: all 10 rooms; Heat plating (the Crucible), the Founder (boss placeholder, the Foundry).
   - Core: 0 of 6.
-  - Built map: all 5 abilities, 32 of 120 orders, no softlock; its `MapGoal` is in the Slag.
+  - Built map: all 5 abilities, 32 of 120 orders, no softlock; its `MapGoal` is in the Foundry, before the vents to the core.
 - **Owner playtest 2026-10-31:** saw little: `--room` gave no abilities, so almost every way was sealed. W1 fixed that (`--room` now gives the route's abilities), and gates now say what they are.
 - **Next:** W1 below (make the world reachable and readable), then the Quench and the Basalt. The Basalt goes one way down through the Slag's plug with the Drill; that plug's shaft must be walled off from the river and its exit moved to the Slag's bottom, map (231.5, -155). Draft ways to become `Slag -> Quench : Ballast`, `Quench -> Slag`, `Slag -> Basalt : Drill`, `Basalt -> Crucible`.
 
@@ -48,7 +48,7 @@ When the owner changes direction, rewrite the docs it touches so none of them co
 Rooms are built with the level toolkit to the art direction, at the quality bar the built rooms already set. Gates and hazards must read at a glance. Bosses, machines and law breaks stay working placeholders. Use existing species, and add a new one only where a room's design needs it (data first, a brain only for a truly new behavior).
 
 - [x] **W1, reachable and readable.** `--room <Name>` starts with the abilities a route there needs (`MapSolver.Arrival` over the draft; `--abilities` overrides); a gate the pilgrim can't pass yet says so (`GateHints`: bare metal, rings, cracked rock, deep water, heat, each in its color); the map shows the ways not yet taken (a dot if open now, rings in the gate's colors if not, a legend).
-- [ ] **The volcanic layer** (7 rooms left): the Quench, the Basalt, the Crucible (Heat plating relic), the Ashfall, the Bellows, the Pyre, the Foundry (the Founder, a boss placeholder).
+- [x] **The volcanic layer**: the Quench, the Basalt, the Crucible (Heat plating relic), the Ashfall, the Bellows, the Pyre, the Foundry (the Founder, a boss placeholder).
 - [ ] **The core** (6 rooms): its `BiomeProfile` and just enough kit to read as ancient machinery; the Threshold, the Mantle, the Orrery, the Lode, the Effigy (the first law), the Heart (Nirvanary, a boss placeholder; the end).
 - [ ] **An ending placeholder**: reaching the end closes the run with a card, back to a new game.
 - [ ] **The whole run proven:** the built map matches the draft (40 rooms, 32 of 120 orders, no softlock), and a scripted playthrough in `tools/check.sh` plays from a new game to the end.

@@ -195,11 +195,11 @@ Basalt, slag rivers, the machines' birthplace: they are cast here in molds of th
 | Quench | A coolant reservoir under the Slag's pool: a drop into deep coolant among sunken quench tanks; sunk (Ballast) to the drain in its floor, down into the Crucible; floating, ledges climb back to the hatch (the way home from the Crucible). *(built)* |
 | Basalt | A crust of basalt under the Slag's plug, only reached with the Drill (one way, down the plug's walled shaft): plugs dived through, a cracked wall bored, a slag channel jumped, a hole down into the Crucible (one way). *(built)* |
 | Crucible | Where plating is cast, under both: a great crucible pouring into glowing moulds, **Heat plating** on a dais between them, a shrine; the coolant falls from the Quench's drain into a basin, gantries climb back to it. *(built)* |
-| Ashfall | Ash raining through a broken flue. |
-| Bellows | A giant bellows machine, its anchors and metal ribs (grip or harpoon). |
-| Pyre | Through the vents (Heat plating): where machines are given to the fire. Lore, a shrine. |
+| Ashfall | East of the Slag: a pit under a broken flue, ash raining through; a stair of ledges down to the ash floor, a Gleaner; the Pyre behind a curtain of heat (Heat plating), a hatch down to the Bellows. *(built)* |
+| Bellows | Under the Ashfall: a bellows the size of a nave, still heaving; gantries back up to the hatch; its iron frame (Mag-grip) or the rings on its ribs (Harpoon) up to the high door on to the Foundry; a shrine. *(built)* |
+| Pyre | Through the heat (Heat plating): where machines are given to the fire; a pyre on an altar, broken machines laid round it, a scripture plate, a shrine. *(built)* |
 | Chimney | A narrow vent from the Slag's roof up to the slag welling in the Coldstacks' floor: ledges up its throat, its molten mouth passed only with Heat plating. The shortcut home. *(built)* |
-| Foundry | The great foundry. **Boss: the Founder.** The vents to the core need Heat plating. |
+| Foundry | The great foundry, an arcade over a molten channel. **Boss: the Founder** (placeholder: the Precentor's brain, heavier). The vents to the core, a shaft of heat in the floor, need Heat plating. *(built)* |
 
 ```map
 room Kiln Volcanic
@@ -223,8 +223,9 @@ way Crucible -> Quench                           # up the gantries, floating up 
 relic Crucible HeatPlating
 way Slag <-> Ashfall
 way Ashfall <-> Pyre : HeatPlating
-way Ashfall <-> Bellows : MagGrip | Harpoon
-way Bellows <-> Foundry
+way Ashfall <-> Bellows                          # the hatch in the ash floor; gantries back up to it
+way Bellows -> Foundry : MagGrip | Harpoon       # the bellows' iron frame or the rings on its ribs, up to the high door
+way Foundry -> Bellows                           # back out onto the high ledge, and down
 boss Foundry Founder
 way Slag <-> Chimney
 way Chimney <-> Coldstacks : HeatPlating

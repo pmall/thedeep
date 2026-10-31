@@ -41,7 +41,7 @@ EXT = {
     # part meshes, usable as dressing too (a bell is a pod, its lip a ring)
     'pod': ('Script', 'res://scripts/parts/PodMesh.cs'),
     'ring': ('Script', 'res://scripts/parts/RingMesh.cs'),
-    'plate': ('Script', 'res://scripts/parts/PlateMesh.cs'),
+    'platemesh': ('Script', 'res://scripts/parts/PlateMesh.cs'),
     'tread': ('Script', 'res://scripts/parts/TreadMesh.cs'),
     'drill': ('Script', 'res://scripts/parts/DrillMesh.cs'),
     # scenes
@@ -69,10 +69,14 @@ EXT = {
     'chorister': ('Resource', 'res://resources/machines/chorister.tres'),
     'archivist': ('Resource', 'res://resources/machines/archivist.tres'),
     'hierarch': ('Resource', 'res://resources/machines/hierarch.tres'),
+    'founder': ('Resource', 'res://resources/machines/founder.tres'),
     'proclamation': ('Script', 'res://scripts/props/Proclamation.cs'),
     'heatzone': ('Script', 'res://scripts/props/HeatZone.cs'),
     'embers': ('PackedScene', 'res://scenes/fx/Embers.tscn'),
     'volcanic': ('Resource', 'res://resources/biomes/volcanic.tres'),
+    'core': ('Resource', 'res://resources/biomes/core.tres'),
+    'spinner': ('Script', 'res://scripts/rooms/dressing/Spinner.cs'),
+    'rotor': ('Script', 'res://scripts/parts/RotorMesh.cs'),
 }
 for m in ['rock', 'wet_stone', 'metal', 'rust', 'glyphs', 'cable', 'stone_mid', 'metal_mid', 'rust_mid',
           'backdrop_stone', 'backdrop_rust', 'foreground', 'backdrop_cathedral', 'backdrop_halls', 'water', 'underwater',
@@ -197,6 +201,11 @@ class Room:
         if cracked:
             props['Cracked'] = True
         return self.node(path, instance='block', comment=comment, **props)
+
+    def spinner(self, path, pos, speed=0.2, axis=(0, 0, 1), phase=0.0, basis=IDENTITY, comment=''):
+        """A node that turns its children (Spinner, visual only): old machinery, still turning."""
+        return self.node(path, type='Node3D', comment=comment, transform=Raw(transform(pos, basis)), script=self.ext('spinner'),
+                         Axis=Raw(vec(*axis)), Speed=float(speed), Phase=float(phase))
 
     def mesh(self, path, mesh, material, pos, basis=IDENTITY, cast=True, comment=''):
         props = {'transform': Raw(transform(pos, basis)), 'mesh': mesh, 'material_override': self.ext(material)}
