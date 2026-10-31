@@ -70,6 +70,7 @@ EXT = {
     'archivist': ('Resource', 'res://resources/machines/archivist.tres'),
     'hierarch': ('Resource', 'res://resources/machines/hierarch.tres'),
     'founder': ('Resource', 'res://resources/machines/founder.tres'),
+    'nirvanary': ('Resource', 'res://resources/machines/nirvanary.tres'),
     'proclamation': ('Script', 'res://scripts/props/Proclamation.cs'),
     'heatzone': ('Script', 'res://scripts/props/HeatZone.cs'),
     'embers': ('PackedScene', 'res://scenes/fx/Embers.tscn'),
@@ -250,9 +251,12 @@ class Room:
         props['Size'] = Raw(vec(*size))
         return self.node('Exits/' + name, type='Marker3D', comment=comment, **props)
 
-    def goal(self, name, pos, size=None, title='', hint='', comment=''):
-        """Where the journey ends, for the map solver (a MapGoal marker); with a size, an area showing the banner lines."""
+    def goal(self, name, pos, size=None, title='', hint='', comment='', ending=False):
+        """Where the journey ends, for the map solver (a MapGoal marker); with a size, an area showing the banner lines;
+        `ending`: the end of the game (the end card)."""
         props = {'transform': Raw(transform((pos[0], pos[1], 0))), 'script': self.ext('goal')}
+        if ending:
+            props['Ending'] = True
         if size:
             props['Size'] = Raw(vec(*size))
             props['TitleLine'] = Raw(f'&"{title}"')

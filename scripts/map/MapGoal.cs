@@ -6,12 +6,16 @@ namespace TheDeep;
 /// Where the journey ends, for the map solver (docs/long-term.md, objective 2): from every state the pilgrim
 /// can reach, a room holding a goal must stay reachable. While the game is being built, the goal sits at the
 /// end of what is built (the Brink, for now); the full game will end at the core. With a <see cref="Size"/>, it
-/// is also an area: reaching it shows the banner lines (the end of the build), once per visit.
+/// is also an area: reaching it shows the banner lines (the end of the build), once per visit; an <see cref="Ending"/>
+/// goal instead closes the run (<see cref="EndCard"/>).
 /// </summary>
 public partial class MapGoal : Marker3D
 {
     /// <summary>Area on the play plane (width, height), centered on the marker; zero for a marker only.</summary>
     [Export] public Vector2 Size { get; set; }
+
+    /// <summary>The end of the game (the Heart): reaching it, once the room's boss is broken, closes the run with the end card.</summary>
+    [Export] public bool Ending { get; set; }
 
     [Export] public StringName TitleLine { get; set; } = "";
     [Export] public StringName HintLine { get; set; } = "";

@@ -1,0 +1,51 @@
+[gd_resource type="Resource" script_class="BiomeProfile" format=3]
+; Layer 4, the core: what the machines call paradise. Ancient machinery, older than the foundry, dark bronze and black
+; iron in a crimson haze; the accent is ember red, the glow of the heart they descend toward (docs/art-direction.md: the
+; palette warms with depth, to dark amber and ember at the core).
+
+[ext_resource type="Script" path="res://scripts/biome/BiomeProfile.cs" id="1_biome"]
+
+[resource]
+script = ExtResource("1_biome")
+DisplayName = "Core"
+Rock = Color(0.46, 0.4, 0.38, 1)
+Metal = Color(0.72, 0.62, 0.52, 1)
+Backdrop = Color(0.09, 0.05, 0.05, 1)
+BackdropAccent = Color(1, 0.3, 0.16, 1)
+Rust = Color(0.36, 0.17, 0.12, 1)
+Silt = Color(0.36, 0.3, 0.29, 1)
+Foreground = Color(0.025, 0.012, 0.012, 1)
+Accent = Color(1, 0.3, 0.14, 1)
+Background = Color(0.36, 0.1, 0.06, 1)
+AmbientColor = Color(0.7, 0.6, 0.58, 1)
+AmbientEnergy = 0.85
+KeyColor = Color(1, 0.72, 0.58, 1)
+KeyEnergy = 1.6
+LampColor = Color(1, 0.36, 0.18, 1)
+ShaftColor = Color(1, 0.5, 0.34, 1)
+KeyFogEnergy = 0.35
+FogColor = Color(0.42, 0.13, 0.08, 1)
+FogDensity = 0.45
+FogDepthBegin = 26.0
+FogDepthEnd = 95.0
+HazeColor = Color(0.78, 0.22, 0.12, 1)
+VolumetricDensity = 0.008
+VolumetricAlbedo = Color(1, 0.7, 0.6, 1)
+VolumetricEmission = Color(0.1, 0.02, 0.012, 1)
+VolumetricEmissionEnergy = 1.0
+VolumetricAnisotropy = 0.3
+Exposure = 1.0
+Brightness = 1.0
+Contrast = 1.15
+Saturation = 0.95
+Lift = Color(0.02, 0.008, 0.008, 1)
+Gain = Color(1, 0.95, 0.92, 1)
+GlowIntensity = 1.0
+WaterTint = Color(0.5, 0.18, 0.1, 1)
+WaterDeep = Color(0.12, 0.03, 0.02, 1)
+CausticColor = Color(1, 0.45, 0.25, 1)
+CausticStrength = 1.8
+Vignette = 0.75
+VignetteColor = Color(0.12, 0.03, 0.03, 1)
+Grain = 0.045
+ParticleTint = Color(1, 0.42, 0.25, 1)

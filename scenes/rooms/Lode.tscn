@@ -1,0 +1,237 @@
+[gd_scene format=3]
+
+; The Lode, under the Orrery (map offset (510.5, -192)): seams of molten glass gone cold in the core's rock. The seam from
+; the Orrery drops into a flooded crack: sunk to its bottom (Ballast), a low gap leads out into a cavern of glowing seams,
+; and a wall of cracked glass across it is bored (Drill). East, the door on to the Effigy. Back the same way, rising up
+; the flooded crack to the Orrery.
+
+[ext_resource type="Material" path="res://assets/materials/basalt.tres" id="1_basalt"]
+[ext_resource type="PackedScene" path="res://scenes/kit/Block.tscn" id="2_block"]
+[ext_resource type="Script" path="res://scripts/rooms/RoomExit.cs" id="3_exit"]
+[ext_resource type="Script" path="res://scripts/rooms/WaterBody.cs" id="4_water_body"]
+[ext_resource type="Material" path="res://assets/materials/water.tres" id="5_water"]
+[ext_resource type="Material" path="res://assets/materials/underwater.tres" id="6_underwater"]
+[ext_resource type="Material" path="res://assets/materials/water_section.tres" id="7_water_section"]
+[ext_resource type="Script" path="res://scripts/kit/BlockMesh.cs" id="8_blockmesh"]
+[ext_resource type="Material" path="res://assets/materials/stone_mid.tres" id="9_stone_mid"]
+[ext_resource type="Material" path="res://assets/materials/magma.tres" id="10_magma"]
+[ext_resource type="Script" path="res://scripts/parts/RingMesh.cs" id="11_ring"]
+[ext_resource type="Script" path="res://scripts/rooms/dressing/Spinner.cs" id="12_spinner"]
+[ext_resource type="Material" path="res://assets/materials/rust_mid.tres" id="13_rust_mid"]
+[ext_resource type="PackedScene" path="res://scenes/fx/Embers.tscn" id="14_embers"]
+[ext_resource type="Script" path="res://scripts/rooms/PhotoSpot.cs" id="15_spot"]
+[ext_resource type="Script" path="res://scripts/rooms/Room.cs" id="16_room"]
+[ext_resource type="Resource" path="res://resources/biomes/core.tres" id="17_core"]
+[ext_resource type="PackedScene" path="res://scenes/stage/RoomStage.tscn" id="18_stage"]
+
+[sub_resource type="PrimitiveMesh" id="blockmesh_1"]
+script = ExtResource("8_blockmesh")
+Size = Vector3(80, 40, 1.2)
+Bevel = 0.3
+
+[sub_resource type="PrimitiveMesh" id="blockmesh_2"]
+script = ExtResource("8_blockmesh")
+Size = Vector3(0.5, 18, 0.6)
+Bevel = 0.1
+
+[sub_resource type="PrimitiveMesh" id="ring_3"]
+script = ExtResource("11_ring")
+RadiusX = 6
+RadiusZ = 6
+Height = 0.9
+Thickness = 0.6
+Segments = 60
+
+[node name="Lode" type="Node3D" node_paths=PackedStringArray("SpawnPoint", "Stage", "Lamps")]
+script = ExtResource("16_room")
+SpawnPoint = NodePath("SpawnPoint")
+Stage = NodePath("Stage")
+Biome = ExtResource("17_core")
+Lamps = [NodePath("Lamps/Cavern"), NodePath("Lamps/Crack"), NodePath("Lamps/East")]
+BoundsMin = Vector2(-1, -1)
+BoundsMax = Vector2(50, 16)
+
+[node name="SpawnPoint" type="Marker3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 20, 1, 0)
+
+; The shared atmosphere stack (environment, key light, clear front air, skylines, far pillars, frame, dust).
+[node name="Stage" parent="." instance=ExtResource("18_stage")]
+Seed = 341
+DustDensity = 0
+PillarDensity = 0
+FrameBelow = false
+FrameAbove = false
+
+[node name="Geometry" type="Node3D" parent="."]
+
+[node name="Floor" parent="Geometry" instance=ExtResource("2_block")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 25, -1, 0)
+Size = Vector3(56, 4, 4)
+Material = ExtResource("1_basalt")
+
+[node name="WallWest" parent="Geometry" instance=ExtResource("2_block")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 2, 10, 0)
+Size = Vector3(10, 18, 4)
+Material = ExtResource("1_basalt")
+
+; the east wall of the flooded crack; the low gap under it leads out
+[node name="CrackEast" parent="Geometry" instance=ExtResource("2_block")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 14, 10, 0)
+Size = Vector3(2, 12, 4)
+Material = ExtResource("1_basalt")
+
+; the seam from the Orrery opens in the roof between them
+[node name="RoofWest" parent="Geometry" instance=ExtResource("2_block")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 7.75, 17.5, 0)
+Size = Vector3(1.5, 3, 4)
+Material = ExtResource("1_basalt")
+
+[node name="RoofEast" parent="Geometry" instance=ExtResource("2_block")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 32.25, 17.5, 0)
+Size = Vector3(41.5, 3, 4)
+Material = ExtResource("1_basalt")
+
+; a wall of cracked glass across the cavern: bored through
+[node name="GlassWall" parent="Geometry" instance=ExtResource("2_block")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 30.75, 8.5, 0)
+Size = Vector3(1.5, 15, 4)
+Cracked = true
+
+; over the door on to the Effigy
+[node name="WallEast" parent="Geometry" instance=ExtResource("2_block")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 51.5, 10.5, 0)
+Size = Vector3(3, 11, 4)
+Material = ExtResource("1_basalt")
+
+[node name="Exits" type="Node3D" parent="."]
+
+; up the flooded crack into the Orrery
+[node name="Orrery" type="Marker3D" parent="Exits"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 10, 15.5, 0)
+script = ExtResource("3_exit")
+TargetRoom = "res://scenes/rooms/Orrery.tscn"
+TargetExit = "Lode"
+Requires = "Drill & Ballast"
+Size = Vector2(3, 1)
+
+; east, on to the Effigy
+[node name="Effigy" type="Marker3D" parent="Exits"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 49.5, 3, 0)
+script = ExtResource("3_exit")
+TargetRoom = "res://scenes/rooms/Effigy.tscn"
+TargetExit = "West"
+Size = Vector2(1, 4)
+
+; the flooded crack: molten glass gone cold, still glowing
+[node name="Water" type="Node3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 10, 17, -4)
+script = ExtResource("4_water_body")
+Size = Vector2(6, 12.1)
+Depth = 16
+Swim = true
+SurfaceMaterial = ExtResource("5_water")
+UnderwaterMaterial = ExtResource("6_underwater")
+SectionMaterial = ExtResource("7_water_section")
+
+[node name="Kit" type="Node3D" parent="."]
+
+[node name="Back" type="MeshInstance3D" parent="Kit"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 25, 8, -16)
+mesh = SubResource("blockmesh_1")
+material_override = ExtResource("9_stone_mid")
+
+[node name="Seams" type="Node3D" parent="Kit"]
+
+; seams of glass glowing in the rock
+[node name="S0" type="MeshInstance3D" parent="Kit/Seams"]
+transform = Transform3D(0.9974, -0.0718, 0, 0.0718, 0.9974, 0, 0, 0, 1, 18, 8, -4.5)
+mesh = SubResource("blockmesh_2")
+material_override = ExtResource("10_magma")
+
+[node name="S1" type="MeshInstance3D" parent="Kit/Seams"]
+transform = Transform3D(0.9982, -0.0593, 0, 0.0593, 0.9982, 0, 0, 0, 1, 22.5, 8, -4.5)
+mesh = SubResource("blockmesh_2")
+material_override = ExtResource("10_magma")
+
+[node name="S2" type="MeshInstance3D" parent="Kit/Seams"]
+transform = Transform3D(0.9538, 0.3004, 0, -0.3004, 0.9538, 0, 0, 0, 1, 26, 8, -4.5)
+mesh = SubResource("blockmesh_2")
+material_override = ExtResource("10_magma")
+
+[node name="S3" type="MeshInstance3D" parent="Kit/Seams"]
+transform = Transform3D(0.9271, 0.3749, 0, -0.3749, 0.9271, 0, 0, 0, 1, 35, 8, -4.5)
+mesh = SubResource("blockmesh_2")
+material_override = ExtResource("10_magma")
+
+[node name="S4" type="MeshInstance3D" parent="Kit/Seams"]
+transform = Transform3D(0.9542, -0.2991, 0, 0.2991, 0.9542, 0, 0, 0, 1, 39.5, 8, -4.5)
+mesh = SubResource("blockmesh_2")
+material_override = ExtResource("10_magma")
+
+[node name="S5" type="MeshInstance3D" parent="Kit/Seams"]
+transform = Transform3D(0.9782, 0.2077, 0, -0.2077, 0.9782, 0, 0, 0, 1, 44, 8, -4.5)
+mesh = SubResource("blockmesh_2")
+material_override = ExtResource("10_magma")
+
+; an old wheel in the rock
+[node name="Wheel" type="Node3D" parent="Kit"]
+transform = Transform3D(1, 0, 0, 0, 0, -1, 0, 1, 0, 40, 9, -10)
+script = ExtResource("12_spinner")
+Axis = Vector3(0, 1, 0)
+Speed = 0.07
+Phase = 0
+
+[node name="Ring" type="MeshInstance3D" parent="Kit/Wheel"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0)
+mesh = SubResource("ring_3")
+material_override = ExtResource("13_rust_mid")
+
+[node name="Lamps" type="Node3D" parent="."]
+
+; the seams' glow
+[node name="Cavern" type="OmniLight3D" parent="Lamps"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 24, 8, 3)
+light_energy = 2.4
+omni_range = 22
+shadow_enabled = false
+
+[node name="Crack" type="OmniLight3D" parent="Lamps"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 10, 8, 1.5)
+light_energy = 1.6
+omni_range = 10
+shadow_enabled = false
+
+[node name="East" type="OmniLight3D" parent="Lamps"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 44, 6, 2)
+light_energy = 1.4
+omni_range = 12
+shadow_enabled = false
+
+[node name="Particles" type="Node3D" parent="."]
+
+[node name="Embers" parent="Particles" instance=ExtResource("14_embers")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 30, 8, -2)
+Extents = Vector3(18, 6, 3)
+Density = 0.1
+
+[node name="PhotoSpots" type="Node3D" parent="."]
+
+; the flooded crack, the low gap out of it
+[node name="Crack" type="Marker3D" parent="PhotoSpots"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 11, 8, 20)
+script = ExtResource("15_spot")
+PlayerPosition = Vector3(18, 1, 0)
+PlayerFacing = -1
+
+; the cavern of seams, the cracked glass wall
+[node name="Cavern" type="Marker3D" parent="PhotoSpots"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 30, 7, 22)
+script = ExtResource("15_spot")
+PlayerPosition = Vector3(26, 1, 0)
+
+; the whole lode
+[node name="Wide" type="Marker3D" parent="PhotoSpots"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 25, 7.5, 52)
+script = ExtResource("15_spot")
+PlayerPosition = Vector3(26, 1, 0)
+Fov = 40

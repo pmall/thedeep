@@ -18,6 +18,15 @@ public static class SaveFile
         return file is null ? null : SaveData.FromJson(file.GetAsText());
     }
 
+    /// <summary>Forgets the save (the run ended): the next launch is a new game.</summary>
+    public static void Delete()
+    {
+        if (FileAccess.FileExists(Path))
+        {
+            DirAccess.RemoveAbsolute(ProjectSettings.GlobalizePath(Path));
+        }
+    }
+
     public static void Write(SaveData data)
     {
         using FileAccess? file = FileAccess.Open(Path, FileAccess.ModeFlags.Write);

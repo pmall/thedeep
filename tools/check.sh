@@ -104,6 +104,12 @@ grep 'COMBAT OK' "$LOG_DIR/combat.log"
 scan_log "$LOG_DIR/encounter.log" "encounter check"
 grep -q 'ENCOUNTER OK' "$LOG_DIR/encounter.log" || { tail -20 "$LOG_DIR/encounter.log"; fail "encounter check did not report ENCOUNTER OK"; }
 grep 'ENCOUNTER OK' "$LOG_DIR/encounter.log"
+# f3) The whole run: the solver's shortest route from a new game to the end, played through the real exits, relics, laws, bosses and the end card (PlaythroughCheck).
+"$GODOT" --headless --path . --fixed-fps 60 --quit-after 60000 -- --playthrough-check >"$LOG_DIR/playthrough.log" 2>&1 \
+    || { grep -E 'PLAYTHROUGH CHECK|ERROR' "$LOG_DIR/playthrough.log" | head -40; fail "playthrough check failed (full log: $LOG_DIR/playthrough.log)"; }
+scan_log "$LOG_DIR/playthrough.log" "playthrough check"
+grep -q 'PLAYTHROUGH OK' "$LOG_DIR/playthrough.log" || { tail -20 "$LOG_DIR/playthrough.log"; fail "playthrough check did not report PLAYTHROUGH OK"; }
+grep 'PLAYTHROUGH OK' "$LOG_DIR/playthrough.log"
 # g) Machine species: data, then each one alive in the arena without and with the player (SpeciesValidator).
 "$GODOT" --headless --path . --fixed-fps 60 --quit-after 9000 -- --room MachineArena --validate-species >"$LOG_DIR/species.log" 2>&1 \
     || { grep -E 'SPECIES CHECK|ERROR' "$LOG_DIR/species.log" | head -40; fail "species check failed (full log: $LOG_DIR/species.log)"; }

@@ -1,0 +1,102 @@
+[gd_resource type="Resource" script_class="MachineSpecies" format=3]
+; Nirvanary (SwoopBehavior), the last boss, a placeholder until the character pass: what the machines call paradise,
+; waiting at the Heart. It drifts high and wide over the pilgrim, stops and shudders, then dives through where the
+; pilgrim stands, faster than the Archivist; every fourth dive it turns and dives again at once. It hangs low and still
+; after a dive (the opening).
+
+[ext_resource type="Script" path="res://scripts/machines/MachineSpecies.cs" id="1_species"]
+[ext_resource type="Script" path="res://scripts/machines/behaviors/SwoopBehavior.cs" id="2_behavior"]
+[ext_resource type="Script" path="res://scripts/machines/JointDriver.cs" id="3_driver"]
+[ext_resource type="Resource" path="res://resources/parts/nirvanary.tres" id="5_assembly"]
+
+[sub_resource type="Resource" id="Behavior"]
+script = ExtResource("2_behavior")
+SightRange = 18
+Altitude = 7.5
+Offset = 3.5
+DriftSpeed = 5
+Interval = 2.0
+WindUp = 0.75
+QuickWindUp = 0.45
+DiveSpeed = 17
+Overshoot = 2.5
+DiveTime = 1.2
+Hang = 1.5
+Flurry = 4
+
+; floating
+[sub_resource type="Resource" id="Driver_0"]
+script = ExtResource("3_driver")
+Joint = &"Core"
+Mode = 1
+Channel = 0
+Angle = 3
+Offset = Vector3(0, 0.25, 0)
+Rate = 0.55
+
+[sub_resource type="Resource" id="Driver_1"]
+script = ExtResource("3_driver")
+Joint = &"Rotor"
+Mode = 2
+Channel = 5
+Base = 0.4
+Axis = Vector3(0, 1, 0)
+Angle = 1300
+
+[sub_resource type="Resource" id="Driver_2"]
+script = ExtResource("3_driver")
+Joint = &"Eye"
+Mode = 3
+Channel = 0
+Angle = 60
+Sharpness = 6
+
+[sub_resource type="Resource" id="Driver_3"]
+script = ExtResource("3_driver")
+Joint = &"FinN"
+Mode = 1
+Channel = 0
+Angle = 14
+Rate = 1.1
+
+[sub_resource type="Resource" id="Driver_4"]
+script = ExtResource("3_driver")
+Joint = &"FinF"
+Mode = 1
+Channel = 0
+Angle = 14
+Rate = 1.1
+Phase = 0.5
+
+; pitches back as it winds up, then throws itself forward into the dive
+[sub_resource type="Resource" id="Driver_5"]
+script = ExtResource("3_driver")
+Joint = &"Core"
+Mode = 0
+Channel = 3
+Angle = -26
+WindUp = 18
+
+[resource]
+script = ExtResource("1_species")
+Id = &"nirvanary"
+DisplayName = "Nirvanary"
+Layer = 3
+Hostile = true
+CreedLine = &"creed.nirvanary"
+Assembly = ExtResource("5_assembly")
+Locomotion = 1
+BodySize = Vector2(2.8, 3.3)
+SensorHeight = 0
+TurnSharpness = 4
+MaxSpeed = 16
+Acceleration = 50
+Health = 32
+Damage = 1
+StaggerTime = 0
+Heft = 0.12
+StrikeRange = 2.2
+Wear = 0.1
+Tone = 1.1
+Behavior = SubResource("Behavior")
+Drivers = [SubResource("Driver_0"), SubResource("Driver_1"), SubResource("Driver_2"), SubResource("Driver_3"), SubResource("Driver_4"), SubResource("Driver_5")]

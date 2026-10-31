@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using System.Linq;
 using Xunit;
 
@@ -110,5 +111,18 @@ public class MapSolverTests
         Assert.Equal(Ability.MagGrip, MapSolver.Arrival(g, "Descent"));
         Assert.Equal(Ability.MagGrip, MapSolver.Arrival(g, "Belfry"));
         Assert.Null(MapSolver.Arrival(g, "Nowhere"));
+    }
+
+    [Fact]
+    public void RouteTakesTheFewestWaysToTheGoalPickingUpWhatItNeeds()
+    {
+        IReadOnlyList<MapEdge> route = MapSolver.Route(Slice())!;
+        // Down the hatch to the Reliquary for Mag-grip, back up the flue, up the metal wall to the Descent.
+        Assert.Equal(new[] { "DrownedHall", "Nave", "Cistern", "Reliquary", "Cistern", "Nave", "Descent" }, route.Select(e => e.To));
+        Assert.Equal("Narthex", route[0].From);
+        var g = new MapGraph { Start = "A" };
+        g.AddEdge(new MapEdge("A", "B", "B", "A", Requirement.Parse("Drill")));
+        g.AddGoal("B");
+        Assert.Null(MapSolver.Route(g));
     }
 }

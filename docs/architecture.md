@@ -58,6 +58,10 @@ scenes/
   rooms/Ashfall.tscn, Pyre.tscn, Bellows.tscn, Foundry.tscn   east of the Slag (M8): the pit under the broken flue
                            (heat before the Pyre, a hatch down to the Bellows), the Pyre (lore, a shrine), the Bellows (its
                            frame or rings up to the Foundry; a shrine), the Foundry (the Founder's arena; the vents down)
+  rooms/Threshold.tscn, Mantle.tscn, Orrery.tscn, Lode.tscn, Effigy.tscn, Heart.tscn   the core (M8, `core.tres`): the
+                           gate through the heat, the Mantle (grip and harpoon to the Orrery), the Orrery (its rings; the
+                           plug and the flooded seam down, Drill and Ballast), the Lode, the Effigy (the first law), the
+                           Heart (Nirvanary; the `MapGoal` that ends the game)
   props/HarpoonAnchor.tscn a mooring ring the Harpoon fires at (the origin is where the pilgrim's center is pulled)
   props/Portcullis.tscn    a gate of bars dropping across a way (a boss's arena)
   props/LawBreak.tscn      a law holding the pilgrim back at a lip: a veil of glyphs, the law's words, its collision
@@ -75,7 +79,7 @@ scenes/
   ui/OwnerCapture.tscn     F12 screenshot / F10 video: REC dot + saved-file toast
 scripts/
   Main.cs                  spawns the player; user args: `--room` (with the abilities a route there needs, from the draft's
-                           solver), `--abilities`, `--biome`, and test drivers (`--smoke`, `--validate-rooms`,
+                           solver), `--abilities`, `--biome`, and test drivers (`--smoke`, `--validate-rooms`, `--playthrough-check`,
                            `--validate-species`, `--capture-test`, `--lookdev [--perf file]`)
   core/InputActions.cs     input action names (StringName constants)
   core/PhysicsLayers.cs    physics layer bits
@@ -120,7 +124,8 @@ scripts/
   rooms/RoomStage.cs       shared atmosphere stack sized from the room's bounds: environment, key light, clear front
                            fog, two skylines, far pillars, framing foreground above and below, dust
   rooms/dressing/          dressing generators (visual only, seeded): Colonnade (piers + arches + beam + cables),
-                           RackRow (a row of variants with gaps and toppled pieces); pure DressingLayout
+                           RackRow (a row of variants with gaps and toppled pieces); pure DressingLayout; Spinner (old
+                           machinery still turning: spins its children on physics ticks)
   rooms/RoomExit.cs        connection marker: target room + exit, requirement expression, one-way flag; ArrivalOnly for the
                            far end of a one-way drop from another room (no target, no trigger, not a sealed way)
   rooms/PhotoSpot.cs       look-dev camera marker (position = camera) + player placement
@@ -170,6 +175,7 @@ scripts/
   ui/DebugHud.cs
   ui/ScreenFade.cs         the veil for transitions; ui/MapScreen.cs: the minimal map (M / Tab / LB): visited rooms, the ways
                            not yet taken (a dot if open now, rings in the gate's colors if not), a legend
+  ui/EndCard.cs            the end of the game (placeholder): a warm black, a title and two lines, then a new game
   ui/HintLine.cs           one quiet line low on the screen with a mark in a gate's color
   game/GateHints.cs        a gate the pilgrim can't pass yet says so: bare metal pressed, a ring in sight, cracked rock
                            touched, deep water pressed down into, heat thrown back by, without the ability (once per visit)
@@ -180,7 +186,8 @@ scripts/
                            achievable orders), the layout check, the base-moveset reach planner (geometry check)
   map/MapDraft.cs          pure (M7): the whole game's draft map (the `map` blocks of docs/map-draft.md): parser,
                            its targets (orders, positions, scope, law-break milestones), its agreement with built rooms
-  map/MapGoal.cs           marker: where the journey ends (for the solver); with a size, an area showing the end of the build
+  map/MapGoal.cs           marker: where the journey ends (for the solver); with a size, an area showing the end of the build;
+                           `Ending` (the Heart): reaching it, its room's boss broken, plays the end card and starts a new game
   capture/OwnerCapture.cs  owner capture keys (every build): files + state report to captures/
   capture/FrameGrabber.cs  async GPU readback of the viewport into pooled buffers
   capture/VideoEncoder.cs  ffmpeg process fed raw frames from a writer thread
@@ -202,6 +209,7 @@ scripts/
                            Calving's girder, the Bore's relic and cracked wall, the Sounding's relic and its well, the Mere's
                            lake bed down into the Underice and back,
                            `-- --room Chapterhouse --encounter-check`
+  debug/PlaythroughCheck.cs  the whole run from a new game to the end along the solver's route, `-- --playthrough-check`
   debug/UiShot.cs          renders a gate hint and the map screen to PNGs (`-- --ui-shot <dir>`, windowed)
   debug/CaptureTestDriver.cs  windowed capture check + frame times (`-- --capture-test`)
   debug/LookDevDriver.cs   photo spots + frame times for tools/capture.sh (`-- --lookdev <dir>`)
@@ -210,7 +218,7 @@ scripts/
   util/Countdown.cs        coyote, buffers, cooldowns
   util/FrameTimeStats.cs   average / percentile / worst frame times
 resources/player_tuning.tres   the live PlayerTuning values
-resources/biomes/              BiomeProfile per depth layer (flooded, frozen, volcanic)
+resources/biomes/              BiomeProfile per depth layer (flooded, frozen, volcanic, core)
 resources/parts/               part assemblies: the pilgrim, and one body per machine species
 resources/machines/            MachineSpecies, one file per species (its id is its file name)
 resources/text/lines.tres      the LineBook: every line of text shown (creeds, prompts, banners, scripture, laws)

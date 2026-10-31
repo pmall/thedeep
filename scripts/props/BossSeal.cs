@@ -33,6 +33,9 @@ public partial class BossSeal : Node3D
 
     public bool Fighting => _phase == Phase.Fighting;
 
+    /// <summary>The boss is broken (this visit, or for good before).</summary>
+    public bool Won => _phase == Phase.Won;
+
     /// <summary>The fight began: the gates are falling.</summary>
     public event Action<BossSeal>? Began;
 

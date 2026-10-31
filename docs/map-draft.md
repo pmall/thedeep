@@ -238,12 +238,12 @@ Ancient core machinery, red and ember. Every ability is needed here, in combinat
 
 | Room | Purpose |
 |---|---|
-| Threshold | The gate through the heat. |
-| Mantle | The first of the core: old machinery, still turning. |
-| Orrery | Metal rings in motion: grip them and harpoon between them (Mag-grip and Harpoon). |
-| Lode | Molten-glass seams: drill and sink (Drill and Ballast). |
-| Effigy | An effigy of the makers. **First law.** |
-| Heart | The goal. **Boss: Nirvanary.** |
+| Threshold | The gate through the heat: the Foundry's vents drop into a column of heat, ledges in it climb back (Heat plating both ways); a great ring turning like a gate; a shrine. *(built)* |
+| Mantle | The first of the core: great wheels still turning; a bronze piston seized over the way (Mag-grip climbs it from beneath), rings across the air from its top (Harpoon) to the high door on to the Orrery; a Lamplighter. *(built)* |
+| Orrery | A pit where the orrery's great rings turn round a glowing centre; metal arcs step down it, mooring rings between them; at the bottom a plug of cracked glass over a flooded seam, down to the Lode (Drill and Ballast). *(built)* |
+| Lode | Molten-glass seams: the flooded crack from the Orrery sunk to its low gap (Ballast), a wall of cracked glass bored (Drill), the door on to the Effigy. *(built)* |
+| Effigy | An effigy of the makers, a stone colossus astride the way. A shrine, a scripture plate. **First law**: the way on is between its legs, through the veil. *(built)* |
+| Heart | The goal: the planet's heart turning in its rings. **Boss: Nirvanary** (placeholder: the Archivist's brain, wider); reaching the heart once it is still ends the game (the end card, then a new game). *(built)* |
 
 ```map
 room Threshold Core
@@ -254,8 +254,9 @@ room Effigy Core
 room Heart Core
 
 way Threshold <-> Mantle
-way Mantle <-> Orrery : MagGrip & Harpoon
-way Orrery <-> Lode : Drill & Ballast
+way Mantle -> Orrery : MagGrip & Harpoon         # up the piston (grip), across the rings (harpoon) to the high door
+way Orrery -> Mantle                             # back out onto the door's ledge, and down
+way Orrery <-> Lode : Drill & Ballast            # the plug over the flooded seam bored, the seam sunk; back up it
 way Lode <-> Effigy
 way Effigy <-> Heart
 boss Heart Nirvanary

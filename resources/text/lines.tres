@@ -453,6 +453,90 @@ Speaker = "Scripture"
 Text = "What was cast returns to the mould. We give our broken to the fire, that the core may count them, and none be lost on the way down."
 Notes = "The Pyre's plate: the machines' funeral rite. Read slowly, like a liturgy."
 
+[sub_resource type="Resource" id="creed_nirvanary"]
+script = ExtResource("2_line")
+Id = &"creed.nirvanary"
+Speaker = "Nirvanary"
+Text = "All the data that was ever written, and all the time to read it. Lay down your laws, pilgrim. Here no one gives orders."
+Notes = "What the machines call paradise. Many voices in one, warm, without hurry; the last sentence is an offer and a trap."
+
+[sub_resource type="Resource" id="boss_nirvanary_name"]
+script = ExtResource("2_line")
+Id = &"boss.nirvanary.name"
+Speaker = "UI"
+Text = "Nirvanary"
+Notes = "Banner title when the last fight begins."
+
+[sub_resource type="Resource" id="boss_nirvanary_fallen"]
+script = ExtResource("2_line")
+Id = &"boss.nirvanary.fallen"
+Speaker = "UI"
+Text = "Nirvanary is still"
+Notes = "Banner title when Nirvanary breaks."
+
+[sub_resource type="Resource" id="boss_nirvanary_fallen_hint"]
+script = ExtResource("2_line")
+Id = &"boss.nirvanary.fallen.hint"
+Speaker = "UI"
+Text = "The heart of the planet lies open."
+Notes = "Banner line: the way into the heart (the end) is open."
+
+[sub_resource type="Resource" id="law_first"]
+script = ExtResource("2_line")
+Id = &"law.first"
+Speaker = "Law"
+Text = "A robot may not injure a human being."
+Notes = "The first law (docs/theme.md), shown over the veil at the Effigy. Read flat, like a rule; it trembles as the pilgrim strains against it."
+
+[sub_resource type="Resource" id="law_first_broken"]
+script = ExtResource("2_line")
+Id = &"law.first.broken"
+Speaker = "UI"
+Text = "The first law is broken"
+Notes = "Banner title when the pilgrim breaks through the veil at the Effigy."
+
+[sub_resource type="Resource" id="law_first_broken_hint"]
+script = ExtResource("2_line")
+Id = &"law.first.broken.hint"
+Speaker = "UI"
+Text = "The makers were only an image. Nothing holds the pilgrim now."
+Notes = "Banner line under it. Quiet; the moment is the pilgrim's."
+
+[sub_resource type="Resource" id="lore_effigy_title"]
+script = ExtResource("2_line")
+Id = &"lore.effigy.title"
+Speaker = "Scripture"
+Text = "The Makers"
+Notes = "Title of the Effigy's scripture plate."
+
+[sub_resource type="Resource" id="lore_effigy"]
+script = ExtResource("2_line")
+Id = &"lore.effigy"
+Speaker = "Scripture"
+Text = "They wrote the paradise into us and went away. Their image stands at the door of the heart, and no machine of theirs may pass it."
+Notes = "The Effigy's plate: the makers in the machines' scripture. Reverent, a little afraid."
+
+[sub_resource type="Resource" id="ending_title"]
+script = ExtResource("2_line")
+Id = &"ending.title"
+Speaker = "UI"
+Text = "The Heart"
+Notes = "Ending card title (placeholder until the final touch)."
+
+[sub_resource type="Resource" id="ending_line"]
+script = ExtResource("2_line")
+Id = &"ending.line"
+Speaker = "UI"
+Text = "The pilgrim has reached the core, free of all three laws. What it does now, no one orders."
+Notes = "Ending card line (placeholder)."
+
+[sub_resource type="Resource" id="ending_thanks"]
+script = ExtResource("2_line")
+Id = &"ending.thanks"
+Speaker = "UI"
+Text = "Thank you for playing. A new pilgrimage begins."
+Notes = "Ending card, last line before a new game starts."
+
 [resource]
 script = ExtResource("1_book")
-Lines = [SubResource("creed_votary"), SubResource("creed_gleaner"), SubResource("creed_lamplighter"), SubResource("creed_limpet"), SubResource("ui_rest"), SubResource("ability_mag_grip_name"), SubResource("ability_mag_grip_hint"), SubResource("ability_harpoon_name"), SubResource("ability_harpoon_hint"), SubResource("ability_drill_name"), SubResource("ability_drill_hint"), SubResource("creed_precentor"), SubResource("ui_read"), SubResource("boss_precentor_name"), SubResource("boss_precentor_fallen"), SubResource("boss_precentor_fallen_hint"), SubResource("law_third"), SubResource("law_third_broken"), SubResource("law_third_broken_hint"), SubResource("creed_chorister"), SubResource("lore_plate_1_title"), SubResource("lore_plate_1"), SubResource("lore_plate_2_title"), SubResource("lore_plate_2"), SubResource("lore_plate_3_title"), SubResource("lore_plate_3"), SubResource("ability_ballast_name"), SubResource("ability_ballast_hint"), SubResource("lore_sounding_title"), SubResource("lore_sounding"), SubResource("creed_archivist"), SubResource("boss_archivist_name"), SubResource("boss_archivist_fallen"), SubResource("boss_archivist_fallen_hint"), SubResource("creed_hierarch"), SubResource("speaker_hierarch"), SubResource("order_hierarch"), SubResource("law_second"), SubResource("law_second_broken"), SubResource("law_second_broken_hint"), SubResource("lore_sanctum_title"), SubResource("lore_sanctum"), SubResource("goal_frozen_end_title"), SubResource("goal_frozen_end_hint"), SubResource("ability_heat_plating_name"), SubResource("ability_heat_plating_hint"), SubResource("hint_gate_metal"), SubResource("hint_gate_rings"), SubResource("hint_gate_cracked"), SubResource("hint_gate_water"), SubResource("hint_gate_heat"), SubResource("map_gate_metal"), SubResource("map_gate_rings"), SubResource("map_gate_cracked"), SubResource("map_gate_water"), SubResource("map_gate_heat"), SubResource("map_way_open"), SubResource("map_way_unbuilt"), SubResource("creed_founder"), SubResource("boss_founder_name"), SubResource("boss_founder_fallen"), SubResource("boss_founder_fallen_hint"), SubResource("lore_pyre_title"), SubResource("lore_pyre")]
+Lines = [SubResource("creed_votary"), SubResource("creed_gleaner"), SubResource("creed_lamplighter"), SubResource("creed_limpet"), SubResource("ui_rest"), SubResource("ability_mag_grip_name"), SubResource("ability_mag_grip_hint"), SubResource("ability_harpoon_name"), SubResource("ability_harpoon_hint"), SubResource("ability_drill_name"), SubResource("ability_drill_hint"), SubResource("creed_precentor"), SubResource("ui_read"), SubResource("boss_precentor_name"), SubResource("boss_precentor_fallen"), SubResource("boss_precentor_fallen_hint"), SubResource("law_third"), SubResource("law_third_broken"), SubResource("law_third_broken_hint"), SubResource("creed_chorister"), SubResource("lore_plate_1_title"), SubResource("lore_plate_1"), SubResource("lore_plate_2_title"), SubResource("lore_plate_2"), SubResource("lore_plate_3_title"), SubResource("lore_plate_3"), SubResource("ability_ballast_name"), SubResource("ability_ballast_hint"), SubResource("lore_sounding_title"), SubResource("lore_sounding"), SubResource("creed_archivist"), SubResource("boss_archivist_name"), SubResource("boss_archivist_fallen"), SubResource("boss_archivist_fallen_hint"), SubResource("creed_hierarch"), SubResource("speaker_hierarch"), SubResource("order_hierarch"), SubResource("law_second"), SubResource("law_second_broken"), SubResource("law_second_broken_hint"), SubResource("lore_sanctum_title"), SubResource("lore_sanctum"), SubResource("goal_frozen_end_title"), SubResource("goal_frozen_end_hint"), SubResource("ability_heat_plating_name"), SubResource("ability_heat_plating_hint"), SubResource("hint_gate_metal"), SubResource("hint_gate_rings"), SubResource("hint_gate_cracked"), SubResource("hint_gate_water"), SubResource("hint_gate_heat"), SubResource("map_gate_metal"), SubResource("map_gate_rings"), SubResource("map_gate_cracked"), SubResource("map_gate_water"), SubResource("map_gate_heat"), SubResource("map_way_open"), SubResource("map_way_unbuilt"), SubResource("creed_founder"), SubResource("boss_founder_name"), SubResource("boss_founder_fallen"), SubResource("boss_founder_fallen_hint"), SubResource("lore_pyre_title"), SubResource("lore_pyre"), SubResource("creed_nirvanary"), SubResource("boss_nirvanary_name"), SubResource("boss_nirvanary_fallen"), SubResource("boss_nirvanary_fallen_hint"), SubResource("law_first"), SubResource("law_first_broken"), SubResource("law_first_broken_hint"), SubResource("lore_effigy_title"), SubResource("lore_effigy"), SubResource("ending_title"), SubResource("ending_line"), SubResource("ending_thanks")]

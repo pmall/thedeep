@@ -20,14 +20,14 @@ The plan we follow from session to session: the owner's direction, where we are,
 ## Status
 
 - **Foundation done** (M0–M7, 2026-10-24 to 2026-10-28): look-dev tools (`tools/capture.sh`, F12/F10 owner captures), the procedural material library, the environment kit, atmosphere, `BiomeProfile`s, the modular part system, the pilgrim and four machine prototypes (placeholders), the level toolkit, room travel and the map screen, combat, health, shrines and saving, the map solver, the geometry check and the whole map on paper ([map-draft.md](map-draft.md): 40 rooms, 5 abilities, 4 bosses, 3 law breaks, 32 of 120 orders).
-- **Phase 1, the complete world: 34 of 40 rooms built.**
+- **Phase 1, the complete world: all 40 rooms built.**
   - Flooded layer: all 13 rooms; the Harpoon, the Precentor (boss placeholder), the third law.
   - Frozen layer: all 11 rooms; the Drill, Ballast, the Archivist (boss placeholder), the second law.
   - Volcanic layer: all 10 rooms; Heat plating (the Crucible), the Founder (boss placeholder, the Foundry).
-  - Core: 0 of 6.
-  - Built map: all 5 abilities, 32 of 120 orders, no softlock; its `MapGoal` is in the Foundry, before the vents to the core.
+  - Core: all 6 rooms (`core.tres`: ancient machinery in a crimson haze); Nirvanary (boss placeholder), the first law, the end card.
+  - Built map = the draft: 40 rooms, 82 ways, all 5 abilities, 32 of 120 orders, no softlock; the `MapGoal` is the Heart (reaching it ends the game).
 - **Owner playtest 2026-10-31:** saw little: `--room` gave no abilities, so almost every way was sealed. W1 fixed that (`--room` now gives the route's abilities), and gates now say what they are.
-- **Next:** W1 below (make the world reachable and readable), then the Quench and the Basalt. The Basalt goes one way down through the Slag's plug with the Drill; that plug's shaft must be walled off from the river and its exit moved to the Slag's bottom, map (231.5, -155). Draft ways to become `Slag -> Quench : Ballast`, `Quench -> Slag`, `Slag -> Basalt : Drill`, `Basalt -> Crucible`.
+- **Next:** the owner plays from `godot --path . -- --new` to the end (phase 1's done-when) and says where a gate didn't read or a way was unclear; then phase 2 (extended visuals). The bosses (the Founder, Nirvanary) are clones of earlier bodies and brains, placeholders until phase 4.
 
 ## Session protocol
 
@@ -49,9 +49,9 @@ Rooms are built with the level toolkit to the art direction, at the quality bar 
 
 - [x] **W1, reachable and readable.** `--room <Name>` starts with the abilities a route there needs (`MapSolver.Arrival` over the draft; `--abilities` overrides); a gate the pilgrim can't pass yet says so (`GateHints`: bare metal, rings, cracked rock, deep water, heat, each in its color); the map shows the ways not yet taken (a dot if open now, rings in the gate's colors if not, a legend).
 - [x] **The volcanic layer**: the Quench, the Basalt, the Crucible (Heat plating relic), the Ashfall, the Bellows, the Pyre, the Foundry (the Founder, a boss placeholder).
-- [ ] **The core** (6 rooms): its `BiomeProfile` and just enough kit to read as ancient machinery; the Threshold, the Mantle, the Orrery, the Lode, the Effigy (the first law), the Heart (Nirvanary, a boss placeholder; the end).
-- [ ] **An ending placeholder**: reaching the end closes the run with a card, back to a new game.
-- [ ] **The whole run proven:** the built map matches the draft (40 rooms, 32 of 120 orders, no softlock), and a scripted playthrough in `tools/check.sh` plays from a new game to the end.
+- [x] **The core** (6 rooms): its `BiomeProfile` and just enough kit to read as ancient machinery; the Threshold, the Mantle, the Orrery, the Lode, the Effigy (the first law), the Heart (Nirvanary, a boss placeholder; the end).
+- [x] **An ending placeholder**: reaching the end closes the run with a card, back to a new game.
+- [x] **The whole run proven:** the built map matches the draft (40 rooms, 32 of 120 orders, no softlock), and `PlaythroughCheck` in `tools/check.sh` plays the solver's shortest route from a new game to the end (39 ways, 5 relics, 3 laws, 4 bosses, the end card).
 - **Done when:** the owner plays from `godot --path . -- --new` to the end, with no debug keys, and always knows what a gate needs.
 
 ## Phase 2: extended visuals

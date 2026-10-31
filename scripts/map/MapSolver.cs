@@ -199,6 +199,46 @@ public static class MapSolver
 
     private static int Count(Ability a) => System.Numerics.BitOperations.PopCount((uint)a);
 
+    /// <summary>
+    /// A shortest route (fewest ways taken) from the start to a goal, as the ways to take in order (abilities picked up from
+    /// the relics of the rooms passed through, as <see cref="Solve"/> does); null if no goal can be reached. The playthrough
+    /// check walks it.
+    /// </summary>
+    public static IReadOnlyList<MapEdge>? Route(MapGraph map)
+    {
+        SolverState start = Enter(map, map.Start, Ability.None);
+        var parent = new Dictionary<SolverState, (SolverState From, MapEdge Edge)?> { [start] = null };
+        var queue = new Queue<SolverState>();
+        queue.Enqueue(start);
+        while (queue.Count > 0)
+        {
+            SolverState s = queue.Dequeue();
+            if (map.Goals.Contains(s.Room))
+            {
+                var route = new List<MapEdge>();
+                for (SolverState at = s; parent[at] is { } p; at = p.From)
+                {
+                    route.Add(p.Edge);
+                }
+
+                route.Reverse();
+                return route;
+            }
+
+            foreach (MapEdge edge in map.From(s.Room).Where(e => e.Requires.IsMetBy(s.Owned)))
+            {
+                SolverState t = Enter(map, edge.To, s.Owned);
+                if (!parent.ContainsKey(t))
+                {
+                    parent[t] = (s, edge);
+                    queue.Enqueue(t);
+                }
+            }
+        }
+
+        return null;
+    }
+
     /// <summary>Arriving in <paramref name="room"/> with <paramref name="owned"/>: its relics are taken.</summary>
     private static SolverState Enter(MapGraph map, string room, Ability owned) =>
         new(room, map.In(room).Aggregate(owned, (o, item) => o | item.Ability));

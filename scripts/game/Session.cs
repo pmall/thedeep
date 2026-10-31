@@ -18,6 +18,7 @@ public partial class Session : Node
     [Export] public ScreenFade Fade { get; set; } = null!;
     [Export] public Banner Banner { get; set; } = null!;
     [Export] public SideCamera Camera { get; set; } = null!;
+    [Export] public EndCard EndCard { get; set; } = null!;
 
     /// <summary>How close (meters, on the play plane) the pilgrim must stand to rest at a shrine or take a relic.</summary>
     [Export] public float RestRange { get; set; } = 1.6f;
@@ -92,9 +93,16 @@ public partial class Session : Node
             return;
         }
 
-        if (!_goalShown && room.All<MapGoal>().FirstOrDefault(g => g.Contains(p)) is { } goal)
+        if (!_goalShown && room.All<MapGoal>().FirstOrDefault(g => g.Contains(p)) is { } goal
+            && !(goal.Ending && room.All<BossSeal>().Any(s => !s.Won)))
         {
             _goalShown = true;
+            if (goal.Ending)
+            {
+                End();
+                return;
+            }
+
             _ = Banner.Show(goal.TitleLine, goal.HintLine, 5f);
         }
 
@@ -191,6 +199,28 @@ public partial class Session : Node
         _busy = false;
         await Banner.Show(relic.NameLine, relic.HintLine);
     }
+
+    /// <summary>
+    /// The end of the game (the Heart): the pilgrim stands still, the end card plays, then a new game begins (the save, if
+    /// this run keeps one, is gone: the next pilgrimage starts at the Narthex).
+    /// </summary>
+    private async void End()
+    {
+        _busy = true;
+        Player.Velocity = Vector3.Zero;
+        Player.Frozen = true;
+        Ended?.Invoke();
+        await EndCard.Play();
+        if (Persist)
+        {
+            SaveFile.Delete();
+        }
+
+        GetTree().ReloadCurrentScene();
+    }
+
+    /// <summary>Raised when the pilgrim reaches the end of the game, as the end card begins.</summary>
+    public event System.Action? Ended;
 
     /// <summary>Death: the veil falls, the pilgrim wakes at the last shrine rested at, whole, the room renewed.</summary>
     private void OnDied() => Return();

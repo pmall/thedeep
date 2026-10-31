@@ -11,6 +11,7 @@
 [ext_resource type="Resource" path="res://resources/biomes/flooded.tres" id="8_flooded"]
 [ext_resource type="Resource" path="res://resources/biomes/volcanic.tres" id="9_volcanic"]
 [ext_resource type="Resource" path="res://resources/biomes/frozen.tres" id="9_frozen"]
+[ext_resource type="Resource" path="res://resources/biomes/core.tres" id="9_core"]
 [ext_resource type="PackedScene" path="res://scenes/camera/ScreenGrade.tscn" id="10_grade"]
 [ext_resource type="Script" path="res://scripts/machines/MachineDirector.cs" id="11_machines"]
 [ext_resource type="Script" path="res://scripts/player/BurstPool.cs" id="12_pool"]
@@ -25,6 +26,7 @@
 [ext_resource type="Material" path="res://assets/materials/harpoon_line.tres" id="21_line"]
 [ext_resource type="Script" path="res://scripts/game/GateHints.cs" id="22_gates"]
 [ext_resource type="Script" path="res://scripts/ui/HintLine.cs" id="23_hint"]
+[ext_resource type="Script" path="res://scripts/ui/EndCard.cs" id="24_end"]
 
 [sub_resource type="CylinderMesh" id="HarpoonLine"]
 top_radius = 0.016
@@ -102,13 +104,14 @@ Player = NodePath("../Player")
 Fade = NodePath("../ScreenFade")
 
 ; Shrines (rest: heal and save), relics, death and the return to the last shrine, the save.
-[node name="Session" type="Node" parent="." node_paths=PackedStringArray("World", "Player", "Fade", "Banner", "Camera")]
+[node name="Session" type="Node" parent="." node_paths=PackedStringArray("World", "Player", "Fade", "Banner", "Camera", "EndCard")]
 script = ExtResource("17_session")
 World = NodePath("../World")
 Player = NodePath("../Player")
 Fade = NodePath("../ScreenFade")
 Banner = NodePath("../Banner")
 Camera = NodePath("../SideCamera")
+EndCard = NodePath("../EndCard")
 
 ; A gate the pilgrim can't pass yet says so: its line, low on the screen.
 [node name="GateHints" type="Node" parent="." node_paths=PackedStringArray("World", "Player", "Harpoon", "Hint")]
@@ -134,6 +137,9 @@ Player = NodePath("../Player")
 [node name="Banner" type="CanvasLayer" parent="."]
 script = ExtResource("19_banner")
 
+[node name="EndCard" type="CanvasLayer" parent="."]
+script = ExtResource("24_end")
+
 [node name="HintLine" type="CanvasLayer" parent="."]
 script = ExtResource("23_hint")
 
@@ -149,7 +155,7 @@ Player = NodePath("../Player")
 script = ExtResource("5_cheats")
 Player = NodePath("../Player")
 World = NodePath("../World")
-Biomes = [ExtResource("8_flooded"), ExtResource("9_frozen"), ExtResource("9_volcanic")]
+Biomes = [ExtResource("8_flooded"), ExtResource("9_frozen"), ExtResource("9_volcanic"), ExtResource("9_core")]
 
 [node name="OwnerCapture" parent="." node_paths=PackedStringArray("Player", "World") instance=ExtResource("7_capture")]
 Player = NodePath("../Player")

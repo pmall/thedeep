@@ -62,6 +62,9 @@ public partial class Main : Node3D
     /// <summary>User argument that runs the scripted Heat plating check (see HeatCheck), used by tools/check.sh.</summary>
     private const string HeatCheckArgument = "--heat-check";
 
+    /// <summary>User argument that plays the whole run from a new game to the end (see PlaythroughCheck), used by tools/check.sh.</summary>
+    private const string PlaythroughCheckArgument = "--playthrough-check";
+
     /// <summary>User argument that checks every machine species and quits (see SpeciesValidator), used by tools/check.sh.</summary>
     private const string ValidateSpeciesArgument = "--validate-species";
 
@@ -87,7 +90,7 @@ public partial class Main : Node3D
     private static readonly string[] DriverArguments =
     {
         SmokeArgument, CaptureTestArgument, LookDevArgument, ValidateRoomsArgument, ValidateTravelArgument, ValidateSpeciesArgument,
-        UiShotArgument, GripCheckArgument, CombatCheckArgument, HarpoonCheckArgument, EncounterCheckArgument, DrillCheckArgument, BallastCheckArgument, HeatCheckArgument,
+        UiShotArgument, PlaythroughCheckArgument, GripCheckArgument, CombatCheckArgument, HarpoonCheckArgument, EncounterCheckArgument, DrillCheckArgument, BallastCheckArgument, HeatCheckArgument,
     };
 
     private SaveData? _resume;
@@ -192,6 +195,10 @@ public partial class Main : Node3D
         else if (Array.IndexOf(args, EncounterCheckArgument) >= 0)
         {
             AddChild(new EncounterCheck { Player = Player, World = World, Session = Session });
+        }
+        else if (Array.IndexOf(args, PlaythroughCheckArgument) >= 0)
+        {
+            AddChild(new PlaythroughCheck { World = World, Player = Player, Session = Session });
         }
         else if (Array.IndexOf(args, ValidateSpeciesArgument) >= 0)
         {
