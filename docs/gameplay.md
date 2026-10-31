@@ -39,7 +39,7 @@ These gate the map. Every ability is one simple state or rule: no systemic or em
 | **Harpoon** | Fire at an anchor point and zip to it | Gaps with anchor points |
 | **Drill** | Break cracked rock | Cracked rock walls and floors |
 | **Ballast** | In water, sink (hold down) or float (up / jump) | Exits under water, under walls that reach into it |
-| **Heat plating** | Passive: survive heat-vent zones | Late-game areas near the core |
+| **Heat plating** | Passive: heat (vents, the air over slag) no longer burns | Vents and molten mouths (the Chimney, the Pyre, the way to the core) |
 
 The player can collect them in many orders, and that freedom is proven by a solver ([long-term.md](long-term.md), objective 2).
 
@@ -66,6 +66,8 @@ The player can collect them in many orders, and that freedom is proven by a solv
 - **Ballast** fills and blows tanks: in water, **holding down** fills them (`Player.Sunk`): the body sinks at `SinkSpeed` and walks the bottom; **up or jump** blows them and it rises back to float. The tanks stay as they are until changed, and empty whenever the pilgrim leaves the water. Sunk, the Drill's dive works under water (down + dash on cracked rock); floating, the surface catches a dive.
 - Water gates: an exit at the bottom of water (or under a wall that reaches into it) needs Ballast. The geometry check swims every room's water with the same motion (floating for every planner; sinking and rising anywhere connected for Ballast).
 - Checked headless in the mechanics lab (`BallastCheck`, in `tools/check.sh`), in a tank it places itself.
+
+**Heat plating (implemented, M8).** Heat is a `HeatZone` (`scripts/props/HeatZone.cs`): a box on the play plane rising from its node (a vent's column of hot air, the air over slag), drawn as shimmering haze (`heat_haze.gdshader`) with embers (`scenes/fx/Embers.tscn`) and a glow. Without Heat plating, touching it burns: a blow (`Damage`, thrown back out the way the pilgrim came, the grace period); while the grace lasts it still throws the pilgrim out unhurt (`Player.Repel`), so heat is never crossed without the plating. With Heat plating it is harmless (passive). Slag rivers are heat over a fall out of the room: falling in is the end, plated or not. The geometry check treats heat as space no planner enters without Heat plating, and an exit Heat plating opens must be reached by a planner that walks through it. Checked headless in the lab (`HeatCheck`, in `tools/check.sh`).
 
 Abilities are flags in `AbilitySet` (`Player.Abilities`). In debug builds, F1–F5 toggle them.
 

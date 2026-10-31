@@ -1,49 +1,50 @@
 [gd_resource type="Resource" script_class="BiomeProfile" format=3]
-; Layer 3 (draft): basalt and ember, warming toward the NieR furnace amber of the core.
+; Layer 3, the foundry: cool grey stone and iron silhouetted against amber light and haze (the NieR furnace,
+; docs/references/nier-factory-furnace.png); the accent is the molten orange of slag and vents.
 
 [ext_resource type="Script" path="res://scripts/biome/BiomeProfile.cs" id="1_biome"]
 
 [resource]
 script = ExtResource("1_biome")
 DisplayName = "Volcanic"
-Rock = Color(0.2, 0.18, 0.17, 1)
-Metal = Color(0.44, 0.38, 0.34, 1)
-Backdrop = Color(0.1, 0.07, 0.06, 1)
-BackdropAccent = Color(0.95, 0.42, 0.12, 1)
-Rust = Color(0.4, 0.2, 0.12, 1)
-Silt = Color(0.12, 0.11, 0.1, 1)
-Foreground = Color(0.02, 0.01, 0.01, 1)
-Accent = Color(1, 0.5, 0.15, 1)
-Background = Color(0.04, 0.02, 0.02, 1)
-AmbientColor = Color(0.5, 0.34, 0.26, 1)
-AmbientEnergy = 0.4
+Rock = Color(0.37, 0.35, 0.35, 1)
+Metal = Color(0.44, 0.46, 0.5, 1)
+Backdrop = Color(0.16, 0.13, 0.13, 1)
+BackdropAccent = Color(1, 0.55, 0.2, 1)
+Rust = Color(0.42, 0.24, 0.15, 1)
+Silt = Color(0.32, 0.3, 0.3, 1)
+Foreground = Color(0.03, 0.025, 0.025, 1)
+Accent = Color(1, 0.55, 0.18, 1)
+Background = Color(0.42, 0.18, 0.07, 1)
+AmbientColor = Color(0.55, 0.52, 0.55, 1)
+AmbientEnergy = 0.6
 KeyColor = Color(1, 0.72, 0.48, 1)
-KeyEnergy = 1.0
-LampColor = Color(1, 0.45, 0.15, 1)
-ShaftColor = Color(1, 0.62, 0.35, 1)
-KeyFogEnergy = 0.3
-FogColor = Color(0.17, 0.07, 0.04, 1)
-FogDensity = 1.0
-FogDepthBegin = 20.0
-FogDepthEnd = 65.0
-HazeColor = Color(0.42, 0.2, 0.12, 1)
-VolumetricDensity = 0.03
-VolumetricAlbedo = Color(0.9, 0.7, 0.6, 1)
-VolumetricEmission = Color(0.08, 0.03, 0.015, 1)
+KeyEnergy = 1.2
+LampColor = Color(1, 0.5, 0.2, 1)
+ShaftColor = Color(1, 0.66, 0.36, 1)
+KeyFogEnergy = 0.35
+FogColor = Color(0.5, 0.25, 0.1, 1)
+FogDensity = 0.6
+FogDepthBegin = 26.0
+FogDepthEnd = 95.0
+HazeColor = Color(0.85, 0.45, 0.18, 1)
+VolumetricDensity = 0.012
+VolumetricAlbedo = Color(1, 0.78, 0.6, 1)
+VolumetricEmission = Color(0.1, 0.04, 0.015, 1)
 VolumetricEmissionEnergy = 1.0
 VolumetricAnisotropy = 0.3
 Exposure = 1.0
 Brightness = 1.0
-Contrast = 1.1
-Saturation = 0.95
-Lift = Color(0.04, 0.01, 0, 1)
-Gain = Color(1, 0.95, 0.88, 1)
-GlowIntensity = 0.8
+Contrast = 1.12
+Saturation = 0.92
+Lift = Color(0.02, 0.012, 0.01, 1)
+Gain = Color(1, 0.97, 0.92, 1)
+GlowIntensity = 0.9
 WaterTint = Color(0.3, 0.18, 0.12, 1)
 WaterDeep = Color(0.08, 0.04, 0.02, 1)
 CausticColor = Color(1, 0.6, 0.3, 1)
 CausticStrength = 1.5
-Vignette = 0.8
-VignetteColor = Color(0.2, 0.1, 0.06, 1)
+Vignette = 0.7
+VignetteColor = Color(0.16, 0.07, 0.04, 1)
 Grain = 0.045
-ParticleTint = Color(1, 0.6, 0.25, 1)
+ParticleTint = Color(1, 0.62, 0.3, 1)

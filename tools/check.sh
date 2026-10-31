@@ -86,6 +86,12 @@ grep 'DRILL OK' "$LOG_DIR/drill.log"
 scan_log "$LOG_DIR/ballast.log" "ballast check"
 grep -q 'BALLAST OK' "$LOG_DIR/ballast.log" || { tail -20 "$LOG_DIR/ballast.log"; fail "ballast check did not report BALLAST OK"; }
 grep 'BALLAST OK' "$LOG_DIR/ballast.log"
+# e5) Heat plating: burned and thrown back by a column of heat without it, through it unharmed with it (HeatCheck, in the lab).
+"$GODOT" --headless --path . --fixed-fps 60 --quit-after 1000 -- --room MechanicsLab --heat-check >"$LOG_DIR/heat.log" 2>&1 \
+    || { grep -E 'HEAT CHECK|ERROR' "$LOG_DIR/heat.log" | head -40; fail "heat check failed (full log: $LOG_DIR/heat.log)"; }
+scan_log "$LOG_DIR/heat.log" "heat check"
+grep -q 'HEAT OK' "$LOG_DIR/heat.log" || { tail -20 "$LOG_DIR/heat.log"; fail "heat check did not report HEAT OK"; }
+grep 'HEAT OK' "$LOG_DIR/heat.log"
 # f) Combat and session: struck, swings break a machine, death and return, rest, relic (CombatCheck, in the lab).
 "$GODOT" --headless --path . --fixed-fps 60 --quit-after 4000 -- --room MechanicsLab --combat-check >"$LOG_DIR/combat.log" 2>&1 \
     || { grep -E 'COMBAT CHECK|ERROR' "$LOG_DIR/combat.log" | head -40; fail "combat check failed (full log: $LOG_DIR/combat.log)"; }

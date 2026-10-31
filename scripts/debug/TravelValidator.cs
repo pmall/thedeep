@@ -9,7 +9,7 @@ namespace TheDeep;
 /// exit: loads its room, puts the player in the exit's area moving out through it, and checks that the
 /// player arrives in the target room inside the arrival exit's area, that the room is placed on the map,
 /// and that the player is still there once it has landed and stood a second (no bounce back through the
-/// arrival exit, and a drop through a hatch never falls on into a doorway below it). Prints
+/// arrival exit, and a drop through a hatch never falls on into a doorway below it). The pilgrim holds every ability. Prints
 /// `TRAVEL OK` or one `TRAVEL CHECK` error per problem.
 /// </summary>
 public partial class TravelValidator : Node
@@ -43,6 +43,12 @@ public partial class TravelValidator : Node
             }
 
             room.Free();
+        }
+
+        // Every ability: this crosses exits, it doesn't test their requirements (and heat would burn a pilgrim without plating).
+        foreach (Ability ability in AbilitySet.All)
+        {
+            Player.Abilities.Unlock(ability);
         }
 
         Travel.Travelled += _ =>

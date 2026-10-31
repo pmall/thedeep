@@ -34,17 +34,18 @@ public partial class RoomValidator : Node
 
     /// <summary>What the geometry check needs of a room: its solids, its open exits, and where the pilgrim can wake.</summary>
     private sealed record RoomShape(List<Box> Solids, List<ExitShape> Exits, List<System.Numerics.Vector2> Wakes, List<System.Numerics.Vector2> Anchors,
-        List<LiftPath> Lifts, List<Box> Sound, List<Box> Waters);
+        List<LiftPath> Lifts, List<Box> Sound, List<Box> Waters, List<Box> Heat);
 
     private sealed record ExitShape(string Name, System.Numerics.Vector2 Position, System.Numerics.Vector2 Size, string Requires, int ArrivalSide, bool Sealed);
     private bool _done;
 
-    /// <summary>The simulated abilities taken together, smallest first, for ways that need more than one.</summary>
-    private static readonly Ability[] Combined =
-    {
-        Ability.Harpoon | Ability.Drill, Ability.Harpoon | Ability.Ballast, Ability.Drill | Ability.Ballast,
-        Ability.Harpoon | Ability.Drill | Ability.Ballast,
-    };
+    /// <summary>The abilities the geometry check simulates (Mag-grip is not).</summary>
+    private const Ability Simulated = Ability.Harpoon | Ability.Drill | Ability.Ballast | Ability.HeatPlating;
+
+    /// <summary>The simulated abilities taken together, fewest first, for ways that need more than one.</summary>
+    private static readonly Ability[] Combined = Enumerable.Range(1, (int)Simulated)
+        .Select(i => (Ability)i).Where(a => (a & ~Simulated) == 0 && System.Numerics.BitOperations.PopCount((uint)a) > 1)
+        .OrderBy(a => System.Numerics.BitOperations.PopCount((uint)a)).ToArray();
 
     /// <summary>The start room's scene path (the world's start room).</summary>
     public string StartRoom { get; set; } = "";
@@ -207,7 +208,8 @@ public partial class RoomValidator : Node
 
         var anchors = room.All<HarpoonAnchor>().Select(a => N(new Vector2(a.GlobalPosition.X, a.GlobalPosition.Y))).ToList();
         var waters = room.All<WaterBody>().Where(w => w.Swim).Select(w => w.PlayRegion).ToList();
-        _shapes[name] = new RoomShape(solids, exitShapes, wakes, anchors, room.All<Lift>().Select(l => l.Path).ToList(), sound, waters);
+        var heat = room.All<HeatZone>().Select(z => z.Region).ToList();
+        _shapes[name] = new RoomShape(solids, exitShapes, wakes, anchors, room.All<Lift>().Select(l => l.Path).ToList(), sound, waters, heat);
 
         if (room.All<MapGoal>().Any())
         {
@@ -378,8 +380,9 @@ public partial class RoomValidator : Node
     /// the Drill opens must be reached by the base moveset with every cracked block gone, from some way in (abilities accumulate,
     /// so whatever a way in needed, the pilgrim may hold the Drill there too; a rule of thumb: it bores any cracked rock it reaches).
     /// Every planner swims the room's water (floating, as without Ballast); an exit Ballast opens must be reached by a planner that
-    /// sinks and rises anywhere in the water, from some way in. A way that needs simulated abilities together (Ballast and the
-    /// Drill) must be reached by a planner with all of them.
+    /// sinks and rises anywhere in the water, from some way in. Heat zones are space no planner enters without Heat plating; an
+    /// exit Heat plating opens must be reached by a planner that walks through them. A way that needs simulated abilities
+    /// together (Ballast and the Drill) must be reached by a planner with all of them.
     /// </summary>
     private void CheckGeometry()
     {
@@ -393,16 +396,20 @@ public partial class RoomValidator : Node
         float rise = 0.85f * tuning.JumpTakeOffSpeed;
         foreach ((string room, RoomShape shape) in _shapes.OrderBy(r => r.Key, System.StringComparer.Ordinal))
         {
-            var planner = new ReachPlanner(limits, shape.Solids, lifts: shape.Lifts, water: water, waters: shape.Waters);
-            var harpooner = new ReachPlanner(limits, shape.Solids, harpoon, shape.Anchors, shape.Lifts, water, shape.Waters);
-            var driller = new ReachPlanner(limits, shape.Sound, lifts: shape.Lifts, water: water, waters: shape.Waters);
-            var sinker = new ReachPlanner(limits, shape.Solids, lifts: shape.Lifts, water: water, waters: shape.Waters, ballast: true);
+            var planner = new ReachPlanner(limits, shape.Solids, lifts: shape.Lifts, water: water, waters: shape.Waters, hazards: shape.Heat);
+            var harpooner = new ReachPlanner(limits, shape.Solids, harpoon, shape.Anchors, shape.Lifts, water, shape.Waters, hazards: shape.Heat);
+            var driller = new ReachPlanner(limits, shape.Sound, lifts: shape.Lifts, water: water, waters: shape.Waters, hazards: shape.Heat);
+            var sinker = new ReachPlanner(limits, shape.Solids, lifts: shape.Lifts, water: water, waters: shape.Waters, ballast: true,
+                hazards: shape.Heat);
+            var plated = new ReachPlanner(limits, shape.Solids, lifts: shape.Lifts, water: water, waters: shape.Waters);
             bool cracked = shape.Sound.Count < shape.Solids.Count;
             var triggers = shape.Exits.Select(e => Box.Around(e.Position, e.Size)).ToList();
 
             // Ways in: arriving through an exit (by the edge leading here: its requirement is what the pilgrim has at least), or waking.
             var entries = new List<(string What, System.Numerics.Vector2 At, System.Numerics.Vector2 Velocity, int Steer, bool Base, bool Harpoon, bool Drill,
                 int Exit)>();
+            // Ways in that only Heat plating opens: whoever arrives through one has it, so heat is no obstacle from there.
+            var mustBePlated = new List<bool>();
             foreach (MapEdge edge in _graph.Edges.Where(e => e.To == room))
             {
                 int index = shape.Exits.FindIndex(x => x.Name == edge.ToExit);
@@ -417,19 +424,23 @@ public partial class RoomValidator : Node
                     : x.ArrivalSide != 0 ? new System.Numerics.Vector2(0f, rise) : new System.Numerics.Vector2(0f, -5f);
                 entries.Add(($"arriving through {x.Name}", x.Position, velocity, vertical ? x.ArrivalSide : 0,
                     edge.Requires.IsMetBy(Ability.None), edge.Requires.IsMetBy(Ability.Harpoon), true, index));
+                mustBePlated.Add(!edge.Requires.IsMetBy(Ability.MagGrip | Ability.Harpoon | Ability.Drill | Ability.Ballast));
             }
 
             foreach (System.Numerics.Vector2 wake in shape.Wakes)
             {
                 entries.Add(($"waking at ({wake.X:0.#}, {wake.Y:0.#})", wake, System.Numerics.Vector2.Zero, 0, true, true, true, -1));
+                mustBePlated.Add(false);
             }
 
-            var reachedFrom = entries.Select(e => planner.Reach(e.At, e.Velocity, triggers, e.Steer).Triggers).ToList();
+            var reachedFrom = entries.Select((e, n) => (mustBePlated[n] ? plated : planner).Reach(e.At, e.Velocity, triggers, e.Steer).Triggers).ToList();
             var zippedFrom = shape.Anchors.Count == 0 ? reachedFrom
                 : entries.Select(e => harpooner.Reach(e.At, e.Velocity, triggers, e.Steer).Triggers).ToList();
             var boredFrom = !cracked ? reachedFrom : entries.Select(e => driller.Reach(e.At, e.Velocity, triggers, e.Steer).Triggers).ToList();
             var sunkFrom = shape.Waters.Count == 0 ? reachedFrom
                 : entries.Select(e => sinker.Reach(e.At, e.Velocity, triggers, e.Steer).Triggers).ToList();
+            var platedFrom = shape.Heat.Count == 0 ? reachedFrom
+                : entries.Select(e => plated.Reach(e.At, e.Velocity, triggers, e.Steer).Triggers).ToList();
             for (int i = 0; i < shape.Exits.Count; i++)
             {
                 ExitShape x = shape.Exits[i];
@@ -464,15 +475,24 @@ public partial class RoomValidator : Node
                                   $"({shape.Waters.Count} waters)");
                 }
 
+                if (!baseExit && Requirement.TryParse(x.Requires, out Requirement heat, out _) && heat.IsMetBy(Ability.HeatPlating)
+                    && entries.Any(e => e.Exit != i)
+                    && !Enumerable.Range(0, entries.Count).Any(e => entries[e].Exit != i && platedFrom[e].Contains(i)))
+                {
+                    _problems.Add($"{room}: exit {x.Name} needs {x.Requires}, but Heat plating reaches it from no way into the room " +
+                                  $"({shape.Heat.Count} heat zones)");
+                }
+
                 // A way that needs abilities together (Ballast & Drill): the planner with all of them, from any way in.
                 if (!baseExit && Requirement.TryParse(x.Requires, out Requirement together, out _)
                     && !together.IsMetBy(Ability.Harpoon) && !together.IsMetBy(Ability.Drill) && !together.IsMetBy(Ability.Ballast)
+                    && !together.IsMetBy(Ability.HeatPlating)
                     && Combined.FirstOrDefault(c => together.IsMetBy(c)) is var combined && combined != Ability.None
                     && entries.Any(e => e.Exit != i))
                 {
                     var both = new ReachPlanner(limits, (combined & Ability.Drill) != 0 ? shape.Sound : shape.Solids,
                         (combined & Ability.Harpoon) != 0 ? harpoon : null, shape.Anchors, shape.Lifts, water, shape.Waters,
-                        ballast: (combined & Ability.Ballast) != 0);
+                        ballast: (combined & Ability.Ballast) != 0, hazards: (combined & Ability.HeatPlating) != 0 ? null : shape.Heat);
                     if (!Enumerable.Range(0, entries.Count).Any(e => entries[e].Exit != i
                             && both.Reach(entries[e].At, entries[e].Velocity, triggers, entries[e].Steer).Triggers.Contains(i)))
                     {

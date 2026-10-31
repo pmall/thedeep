@@ -269,6 +269,11 @@ public partial class Session : Node
             block.Shattered += OnShattered;
         }
 
+        foreach (HeatZone zone in room.All<HeatZone>())
+        {
+            zone.Player = Player;
+        }
+
         foreach (Lift lift in room.All<Lift>())
         {
             lift.Player = Player;

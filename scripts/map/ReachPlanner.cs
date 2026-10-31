@@ -60,6 +60,8 @@ public readonly record struct Ledge(float Y, float MinX, float MaxX, bool Swim =
 /// which is a ledge to swim along and jump from. Floors deeper than a jump out of the water are not take-off points. With
 /// <c>ballast</c>, a body in water reaches every point of the water connected to where it went in (sinking and rising at
 /// will), touching what the body passes and standing on every floor it finds there.
+/// Hazards (heat zones, for a planner without Heat plating) are space the body never enters: a trajectory that touches one
+/// ends there, and no ledge or water reaches into one.
 /// </summary>
 public sealed class ReachPlanner
 {
@@ -79,6 +81,7 @@ public sealed class ReachPlanner
     private readonly WaterLimits? _w;
     private readonly List<Box> _waters;
     private readonly bool _ballast;
+    private readonly List<Box> _hazards;
 
     /// <summary>With Ballast, the water reachable together (feet positions on a grid where the body fits, by connected part).</summary>
     private readonly Dictionary<(int X, int Y), int> _cellPart = new();
@@ -88,9 +91,11 @@ public sealed class ReachPlanner
     private const float Cell = 0.25f;
 
     public ReachPlanner(MoveLimits limits, IEnumerable<Box> solids, HarpoonLimits? harpoon = null, IEnumerable<Vector2>? anchors = null,
-        IEnumerable<LiftPath>? lifts = null, WaterLimits? water = null, IEnumerable<Box>? waters = null, bool ballast = false)
+        IEnumerable<LiftPath>? lifts = null, WaterLimits? water = null, IEnumerable<Box>? waters = null, bool ballast = false,
+        IEnumerable<Box>? hazards = null)
     {
         _m = limits;
+        _hazards = hazards?.ToList() ?? new List<Box>();
         _lifts = lifts?.ToList() ?? new List<LiftPath>();
         _solids = solids.Concat(_lifts.Select(l => l.Platform)).ToList();
         _w = water;
@@ -420,6 +425,11 @@ public sealed class ReachPlanner
             }
 
             Touch(p, triggers, reachedTriggers);
+            if (InHazard(p))
+            {
+                return;
+            }
+
             if (hitY && v.Y < 0f)
             {
                 // On a floor: a landing after a flight ends the trajectory; before take-off (walking to an edge) it goes on.
@@ -452,6 +462,11 @@ public sealed class ReachPlanner
 
         p.Y = MoveAxis(p, v.Y * Dt, horizontal: false, out bool hitY);
         Touch(p, triggers, reachedTriggers);
+        if (InHazard(p))
+        {
+            return true; // burned: the trajectory ends without a landing
+        }
+
         float line = WaterMotion.FloatLine(water.MaxY, w);
         if (hitY && v.Y < 0f && WaterMotion.CanJumpOut(p.Y, water.MaxY, w))
         {
@@ -471,6 +486,18 @@ public sealed class ReachPlanner
         }
 
         return false;
+    }
+
+    /// <summary>Whether the body with its feet at <paramref name="p"/> touches a hazard.</summary>
+    private bool InHazard(Vector2 p)
+    {
+        if (_hazards.Count == 0)
+        {
+            return false;
+        }
+
+        Box body = BodyAt(p);
+        return _hazards.Any(h => h.Overlaps(body));
     }
 
     /// <summary>The water the feet at <paramref name="p"/> are in, or null.</summary>
@@ -581,7 +608,7 @@ public sealed class ReachPlanner
         {
             var free = new List<(float A, float B)> { (s.MinX, s.MaxX) };
             var room = new Box(s.MinX - half, s.MaxY + Skin, s.MaxX + half, s.MaxY + _m.Height);
-            foreach (Box o in _solids)
+            foreach (Box o in _solids.Concat(_hazards))
             {
                 if (!o.Overlaps(room))
                 {
@@ -615,7 +642,7 @@ public sealed class ReachPlanner
             float y = WaterMotion.FloatLine(water.MaxY, _w!);
             var free = new List<(float A, float B)> { (water.MinX, water.MaxX) };
             var body = new Box(water.MinX - half, y + Skin, water.MaxX + half, y + _m.Height);
-            foreach (Box o in _solids.Where(o => o.Overlaps(body)))
+            foreach (Box o in _solids.Concat(_hazards).Where(o => o.Overlaps(body)))
             {
                 free = free.SelectMany(f => Cut(f, o.MinX - half, o.MaxX + half)).ToList();
             }
@@ -640,7 +667,7 @@ public sealed class ReachPlanner
                 for (int iy = (int)MathF.Ceiling(water.MinY / Cell); iy * Cell <= top + 0.001f; iy++)
                 {
                     Box body = BodyAt(new Vector2(ix * Cell, iy * Cell));
-                    if (!_solids.Any(s => s.Overlaps(body)))
+                    if (!_solids.Any(s => s.Overlaps(body)) && !_hazards.Any(h => h.Overlaps(body)))
                     {
                         _cellPart[(ix, iy)] = -1;
                     }

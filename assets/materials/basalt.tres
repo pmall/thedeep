@@ -1,0 +1,15 @@
+[gd_resource type="ShaderMaterial" format=3]
+; Basalt: the volcanic layer's rock, the rock shader with sharper strata, more cracks and a little ash in them
+; (the palette makes it dark).
+
+[ext_resource type="Shader" path="res://assets/shaders/rock.gdshader" id="1_shader"]
+
+[resource]
+shader = ExtResource("1_shader")
+shader_parameter/strata_frequency = 2.2
+shader_parameter/strata_contrast = 0.32
+shader_parameter/crack_scale = 1.1
+shader_parameter/crack_amount = 0.5
+shader_parameter/silt_amount = 0.35
+shader_parameter/edge_wear = 0.35
+shader_parameter/roughness = 0.82

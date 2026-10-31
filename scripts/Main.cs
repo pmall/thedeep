@@ -50,6 +50,9 @@ public partial class Main : Node3D
     /// <summary>User argument that runs the scripted water and Ballast check (see BallastCheck), used by tools/check.sh.</summary>
     private const string BallastCheckArgument = "--ballast-check";
 
+    /// <summary>User argument that runs the scripted Heat plating check (see HeatCheck), used by tools/check.sh.</summary>
+    private const string HeatCheckArgument = "--heat-check";
+
     /// <summary>User argument that checks every machine species and quits (see SpeciesValidator), used by tools/check.sh.</summary>
     private const string ValidateSpeciesArgument = "--validate-species";
 
@@ -70,7 +73,7 @@ public partial class Main : Node3D
     private static readonly string[] DriverArguments =
     {
         SmokeArgument, CaptureTestArgument, LookDevArgument, ValidateRoomsArgument, ValidateTravelArgument, ValidateSpeciesArgument,
-        GripCheckArgument, CombatCheckArgument, HarpoonCheckArgument, EncounterCheckArgument, DrillCheckArgument, BallastCheckArgument,
+        GripCheckArgument, CombatCheckArgument, HarpoonCheckArgument, EncounterCheckArgument, DrillCheckArgument, BallastCheckArgument, HeatCheckArgument,
     };
 
     private SaveData? _resume;
@@ -155,6 +158,10 @@ public partial class Main : Node3D
         else if (Array.IndexOf(args, BallastCheckArgument) >= 0)
         {
             AddChild(new BallastCheck { Player = Player, World = World });
+        }
+        else if (Array.IndexOf(args, HeatCheckArgument) >= 0)
+        {
+            AddChild(new HeatCheck { Player = Player, World = World });
         }
         else if (Array.IndexOf(args, CombatCheckArgument) >= 0)
         {

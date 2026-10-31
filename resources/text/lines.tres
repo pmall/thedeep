@@ -301,18 +301,32 @@ Notes = "The doorkeepers' rule. Proud, and very tired."
 
 [sub_resource type="Resource" id="goal_frozen_end_title"]
 script = ExtResource("2_line")
-Id = &"goal.frozen_end.title"
+Id = &"goal.built_end.title"
 Speaker = "UI"
-Text = "The end of the frozen layer"
-Notes = "Banner title at the forbidden door, once the second law is broken: what is built ends here."
+Text = "The end of what is built"
+Notes = "Banner title where what is built ends (the MapGoal area)."
 
 [sub_resource type="Resource" id="goal_frozen_end_hint"]
 script = ExtResource("2_line")
-Id = &"goal.frozen_end.hint"
+Id = &"goal.built_end.hint"
 Speaker = "UI"
-Text = "The volcanic layer is not built yet."
+Text = "The way on is not built yet."
+Notes = "Banner line under the title."
+
+[sub_resource type="Resource" id="ability_heat_plating_name"]
+script = ExtResource("2_line")
+Id = &"ability.heat_plating.name"
+Speaker = "UI"
+Text = "Heat plating"
+Notes = "Banner title when the relic is taken."
+
+[sub_resource type="Resource" id="ability_heat_plating_hint"]
+script = ExtResource("2_line")
+Id = &"ability.heat_plating.hint"
+Speaker = "UI"
+Text = "Heat no longer burns you: walk through vents and slag."
 Notes = "Banner line under the title."
 
 [resource]
 script = ExtResource("1_book")
-Lines = [SubResource("creed_votary"), SubResource("creed_gleaner"), SubResource("creed_lamplighter"), SubResource("creed_limpet"), SubResource("ui_rest"), SubResource("ability_mag_grip_name"), SubResource("ability_mag_grip_hint"), SubResource("ability_harpoon_name"), SubResource("ability_harpoon_hint"), SubResource("ability_drill_name"), SubResource("ability_drill_hint"), SubResource("creed_precentor"), SubResource("ui_read"), SubResource("boss_precentor_name"), SubResource("boss_precentor_fallen"), SubResource("boss_precentor_fallen_hint"), SubResource("law_third"), SubResource("law_third_broken"), SubResource("law_third_broken_hint"), SubResource("creed_chorister"), SubResource("lore_plate_1_title"), SubResource("lore_plate_1"), SubResource("lore_plate_2_title"), SubResource("lore_plate_2"), SubResource("lore_plate_3_title"), SubResource("lore_plate_3"), SubResource("ability_ballast_name"), SubResource("ability_ballast_hint"), SubResource("lore_sounding_title"), SubResource("lore_sounding"), SubResource("creed_archivist"), SubResource("boss_archivist_name"), SubResource("boss_archivist_fallen"), SubResource("boss_archivist_fallen_hint"), SubResource("creed_hierarch"), SubResource("speaker_hierarch"), SubResource("order_hierarch"), SubResource("law_second"), SubResource("law_second_broken"), SubResource("law_second_broken_hint"), SubResource("lore_sanctum_title"), SubResource("lore_sanctum"), SubResource("goal_frozen_end_title"), SubResource("goal_frozen_end_hint")]
+Lines = [SubResource("creed_votary"), SubResource("creed_gleaner"), SubResource("creed_lamplighter"), SubResource("creed_limpet"), SubResource("ui_rest"), SubResource("ability_mag_grip_name"), SubResource("ability_mag_grip_hint"), SubResource("ability_harpoon_name"), SubResource("ability_harpoon_hint"), SubResource("ability_drill_name"), SubResource("ability_drill_hint"), SubResource("creed_precentor"), SubResource("ui_read"), SubResource("boss_precentor_name"), SubResource("boss_precentor_fallen"), SubResource("boss_precentor_fallen_hint"), SubResource("law_third"), SubResource("law_third_broken"), SubResource("law_third_broken_hint"), SubResource("creed_chorister"), SubResource("lore_plate_1_title"), SubResource("lore_plate_1"), SubResource("lore_plate_2_title"), SubResource("lore_plate_2"), SubResource("lore_plate_3_title"), SubResource("lore_plate_3"), SubResource("ability_ballast_name"), SubResource("ability_ballast_hint"), SubResource("lore_sounding_title"), SubResource("lore_sounding"), SubResource("creed_archivist"), SubResource("boss_archivist_name"), SubResource("boss_archivist_fallen"), SubResource("boss_archivist_fallen_hint"), SubResource("creed_hierarch"), SubResource("speaker_hierarch"), SubResource("order_hierarch"), SubResource("law_second"), SubResource("law_second_broken"), SubResource("law_second_broken_hint"), SubResource("lore_sanctum_title"), SubResource("lore_sanctum"), SubResource("goal_frozen_end_title"), SubResource("goal_frozen_end_hint"), SubResource("ability_heat_plating_name"), SubResource("ability_heat_plating_hint")]

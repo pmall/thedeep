@@ -1,0 +1,20 @@
+[gd_scene format=3]
+; Embers rising on hot air (over heat vents, slag, fires). Place it over the heat, set Extents and Density;
+; the lifetime covers a rise of about 5 m.
+
+[ext_resource type="Script" path="res://scripts/rooms/AmbientParticles.cs" id="1_ambient"]
+[ext_resource type="Material" path="res://assets/particles/ember_process.tres" id="2_process"]
+[ext_resource type="Material" path="res://assets/particles/ember_material.tres" id="3_material"]
+
+[sub_resource type="QuadMesh" id="QuadMesh_ember"]
+material = ExtResource("3_material")
+size = Vector2(0.04, 0.16)
+
+[node name="Embers" type="GPUParticles3D"]
+cast_shadow = 0
+amount = 60
+lifetime = 2.6
+process_material = ExtResource("2_process")
+draw_pass_1 = SubResource("QuadMesh_ember")
+script = ExtResource("1_ambient")
+Drift = Vector3(2, 7, 1)

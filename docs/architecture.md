@@ -48,6 +48,10 @@ scenes/
   rooms/Vault.tscn, Sanctum.tscn   the frozen layer's end (M8): the Vault (the Archivist's arena among the frozen stacks; its
                            pool, entered from the Coldstacks' ice plug above or the Underice's low door below), the Sanctum
                            (a shrine; the Hierarch's order; the second law at the forbidden door, sealed; the built map's MapGoal)
+  rooms/Kiln.tscn, Slag.tscn, Chimney.tscn   the volcanic layer's start (M8): the Kiln past the forbidden door (molds, the
+                           first heat, a shrine), the Slag hub over a slag river (platforms, heat between them, a shrine; the
+                           coolant pool to the Quench and the cracked plug over the Basalt, sealed; the built map's MapGoal), the
+                           Chimney (a vent up to the Coldstacks' slag: Heat plating)
   props/HarpoonAnchor.tscn a mooring ring the Harpoon fires at (the origin is where the pilgrim's center is pulled)
   props/Portcullis.tscn    a gate of bars dropping across a way (a boss's arena)
   props/LawBreak.tscn      a law holding the pilgrim back at a lip: a veil of glyphs, the law's words, its collision
@@ -95,6 +99,8 @@ scripts/
   props/LawBreak.cs        one of the three laws as a story beat at a lip (docs/theme.md): held, strained against, broken
   props/ScripturePlate.cs  lore: "Read" shows its lines in the banner
   props/Proclamation.cs    a line spoken to the pilgrim when it comes near (an area; the session shows it once per visit)
+  props/HeatZone.cs        heat on the play plane (a vent, the air over slag): burns and throws back without Heat plating;
+                           haze, embers, a glow; `Region` for the geometry check
   props/Lift.cs            a lift that only carries its rider up: boards, rises, eases into its upper stop, sinks back
                            empty; its weight, sheave and ropes follow; `Path` for the geometry check
   props/LiftMotion.cs      pure: the lift's travel (waiting, boarding, rising with a braking curve, arrived, returning)
@@ -177,6 +183,7 @@ scripts/
   debug/HarpoonCheck.cs    scripted Harpoon run in the lab, `-- --room MechanicsLab --harpoon-check`
   debug/DrillCheck.cs      scripted Drill run in the lab (boring, diving), `-- --room MechanicsLab --drill-check`
   debug/BallastCheck.cs    scripted water and Ballast run in a tank it places in the lab, `-- --room MechanicsLab --ballast-check`
+  debug/HeatCheck.cs       scripted Heat plating run at a column of heat it places in the lab, `-- --room MechanicsLab --heat-check`
   debug/CombatCheck.cs     scripted combat and session run in the lab, `-- --room MechanicsLab --combat-check`
   debug/EncounterCheck.cs  scripted boss fight, law break, the jump into Rimefall, the Choir's sleepers, the lift's ride, the
                            Calving's girder, the Bore's relic and cracked wall, the Sounding's relic and its well, the Mere's
@@ -206,6 +213,8 @@ assets/shaders/                the material library (M1), procedural, no UVs or 
   ice.gdshader                 old clear ice, opaque with faked depth: a dark body paling at grazing angles, fractures,
                                bubbles, a glossy skin (icicles, plugs)
   water.gdshader               water surface: depth absorption, own screen-space reflections, ripples
+  heat_haze.gdshader           a column of heat: what is behind it shimmers, a glow in the accent rising from its foot
+  magma.gdshader               magma and slag: dark crust plates drifting on a glowing molten web (world-projected)
   water_section.gdshader       a swimmable water's front, seen from the side: what is behind it bent and sunk into the
                                water's color with depth, a meniscus on the surface line, caustic light under it
   underwater.gdshader          fog shader for the volume under a water surface
@@ -216,7 +225,8 @@ assets/shaders/                the material library (M1), procedural, no UVs or 
   machine.gdshader             native machines: palette shells, trim, panel lines, wear, tread cleats, glyph bands,
                                eyes from calm to the hazard color (instance uniforms per machine)
   android.gdshader, trail.gdshader   the pilgrim's own materials and its dash trail
-assets/materials/              rock, wet_stone, cracked, metal, rust, glyphs, cable, ice (ice_mid); *_mid for the midground behind the
+assets/materials/              rock, wet_stone, cracked, basalt (the volcanic rock), magma, heat_haze, water_section, metal,
+                               rust, glyphs, cable, ice (ice_mid); *_mid for the midground behind the
                                play plane (stone_mid, metal_mid, rust_mid); backdrop_stone, backdrop_rust, foreground;
                                backdrop_cathedral, backdrop_halls; water, underwater, fog_clear; screen_grade
 assets/materials/machines/     shell, frame, corroded, vestment, robe, tread, eye, prayer_wheel, blade, cable, ember
@@ -243,6 +253,7 @@ tools/motion_sheet.py          contact sheet of a look-dev reel (Motion.png, Mac
 - **Combat and session** (M6): `PlayerAttack` (a child of the player) raises `Striking(area, swing)` while a swing's hit window is open; `MachineDirector` hits each machine whose `BodyRect` the area reaches once per swing (`Machine.TakeHit`: flash through the `hurt` instance uniform of machine.gdshader, stagger, knockback, breaking) and turns machine blows into `Player.TakeHit`. `Session` (in Main) handles shrines, relics, death and the return to the last shrine, and the save (`SaveData` ↔ `user://save.json`); `Main` resumes from the save on a normal launch. Text shown (the "Rest" prompt, ability banners) comes from the line book.
 - **Lifts** (M8): a `Lift` (`scenes/props/Lift.tscn`) is a prop, not a `Block`: its cage is an `AnimatableBody3D` on the rock layer that carries the pilgrim (the character body rides a moving floor), driven each physics tick by the pure `LiftMotion` (so the travel is unit tested). `Session` hands it the player when a room loads (riding is standing upright on its floor) and shakes the camera when its brake lets go; it holds still while the player is frozen (travelling under the veil). The geometry check sees it as a `LiftPath` (the platform at its lower stop, its rise): `ReachPlanner` stands on it there and rides it up, touching every trigger the body passes through, so an exit at the top of a shaft can need nothing. A lift that carries the pilgrim into another room ends in a hatch exit at its upper stop; the far side is an arrival-only exit on solid floor (the Undercroft's grate), since nothing goes back down that way.
 - **Water** (M8, Ballast): a `WaterBody` with `Swim` makes an area on the `water` layer over its region of the play plane (Size.X wide, from its surface down Depth); the player finds the surface over its feet each tick (`Player.WaterSurface`, a point query) and `SwimState` moves it with the pure `WaterMotion`. Visually the water's front is a section quad (the cut, seen from the side) in front of the blocks, and its haze stays behind the play plane. Only one water body per room drives the water globals (caustics, the haze's level); a second one (the Descent's flooded gate beside its scenery water) sets `Globals` off. The geometry check reads each swimmable body's `PlayRegion`: every planner floats in it with the player's own motion (float lines are ledges to jump from; floors deeper than a jump out are not), and a Ballast planner reaches every point of the water connected to where it went in (`ReachPlanner`, a flood fill of feet positions). Water from one room to the next meets at hatches and doorways; each room's water has its own surface.
+- **Heat** (M8, Heat plating): a `HeatZone` is a prop, not a `Block`: `Session` hands it the player when a room loads, and it burns (or, during the grace period, repels) a player without Heat plating whose body overlaps its region. The geometry check reads each zone's `Region` as space a planner without Heat plating never enters (a trajectory touching one ends; ledges and water cells are cut by it); entries through a way only Heat plating opens are planned with it.
 - **Cracked rock** (M8, the Drill): a `Block` with `Cracked` (rock layer, cracked look). The player tests its own motion ahead each tick while in a state that bores (`PlayerState.Bores`: the dash, the dive) and breaks the cracked block it would hit (`Block.Break`: off the layers at once so the same tick's move goes through, a `Shatter` for the look). `Session` remembers each broken block by room and name and settles it on later visits. The geometry check has a third planner with cracked rock removed: an exit that needs the Drill must be reached by it from some way in.
 - **Bosses and law breaks** (M8): a boss is an ordinary `Machine` (its species and brain as data) inside a `BossSeal` arena whose `Portcullis` gates fall while it stands; a law break is a `LawBreak` at a lip. Neither is a `Block`, so the map and the geometry check see the ways as open (law breaks are story beats outside the ability graph, docs/theme.md; the draft models them as `milestone`s). `Session` hands them the player when a room loads and remembers each one done, with relics, in `SaveData.Collected` as `Room/NodeName`; on later visits it calls their `Settle`. Falling below a room's camera bounds (a drop into a room not built yet) returns the pilgrim to its last shrine.
 - **Text** is data: `resources/text/lines.tres` (`LineBook`) holds every line with a stable id, a speaker and delivery notes; species point at their creed by id.

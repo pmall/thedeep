@@ -190,15 +190,15 @@ Basalt, slag rivers, the machines' birthplace: they are cast here in molds of th
 
 | Room | Purpose |
 |---|---|
-| Kiln | Past the forbidden door: a cold kiln, the first heat. Shrine. |
-| Slag | The hub over slag rivers. |
+| Kiln | Past the forbidden door, down a stair: a kiln the size of a nave, long cold, molds in the shape of machines; on its firing floor the first heat (a low vent) and a shrine. *(built)* |
+| Slag | The hub, a cavern over a river of slag (falling in is the end): basalt platforms, heat rising between them, a shrine under the Chimney's vent; a coolant pool down to the Quench (Ballast), a cracked plug over the Basalt (Drill). *(built)* |
 | Quench | A coolant reservoir: sink through it (Ballast). |
 | Basalt | A crust of basalt: drill through it (Drill). |
 | Crucible | Where plating is cast: **Heat plating**. |
 | Ashfall | Ash raining through a broken flue. |
 | Bellows | A giant bellows machine, its anchors and metal ribs (grip or harpoon). |
 | Pyre | Through the vents (Heat plating): where machines are given to the fire. Lore, a shrine. |
-| Chimney | A vent up to the Coldstacks (Heat plating): the shortcut home. |
+| Chimney | A narrow vent from the Slag's roof up to the slag welling in the Coldstacks' floor: ledges up its throat, its molten mouth passed only with Heat plating. The shortcut home. *(built)* |
 | Foundry | The great foundry. **Boss: the Founder.** The vents to the core need Heat plating. |
 
 ```map

@@ -149,4 +149,19 @@ public class ReachPlannerTests
     {
         Assert.Contains(0, Swimmer(ballast: true).Reach(new Vector2(-5f, 0f), Vector2.Zero, new[] { Doorway }).Triggers);
     }
+
+    [Fact]
+    public void HeatIsNoGoWithoutHeatPlating()
+    {
+        // A column of heat across a corridor: the base moveset never passes it (not even jumping: it reaches the roof).
+        var solids = new[] { B(-10f, -2f, 30f, 0f), B(-10f, 6f, 30f, 8f) };
+        Box far = B(20f, 0.1f, 21f, 1f);
+        var heat = new[] { B(9f, 0f, 11f, 6f) };
+        Assert.DoesNotContain(0, new ReachPlanner(Limits, solids, hazards: heat).Reach(Vector2.Zero, Vector2.Zero, new[] { far }).Triggers);
+        Assert.Contains(0, new ReachPlanner(Limits, solids).Reach(Vector2.Zero, Vector2.Zero, new[] { far }).Triggers);
+
+        // A low vent is jumped over.
+        var low = new[] { B(9f, 0f, 11f, 1.5f) };
+        Assert.Contains(0, new ReachPlanner(Limits, solids, hazards: low).Reach(Vector2.Zero, Vector2.Zero, new[] { far }).Triggers);
+    }
 }

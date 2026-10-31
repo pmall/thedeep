@@ -1,0 +1,7 @@
+[gd_resource type="ShaderMaterial" format=3]
+; Magma and slag: dark crust drifting on a glowing molten web (magma.gdshader). Pair with a HeatZone.
+
+[ext_resource type="Shader" path="res://assets/shaders/magma.gdshader" id="1_shader"]
+
+[resource]
+shader = ExtResource("1_shader")

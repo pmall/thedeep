@@ -44,15 +44,15 @@ public partial class World : Node3D
     {
         if (_room is not null)
         {
+            // Freed now, and its C# wrappers finalized before the next room is built, while nothing else touches the engine:
+            // finalized on the GC thread during a later room's setup, they intermittently crashed Godot (gchandle.is_released,
+            // "Handle is not initialized"; the room check does the same). A room is loaded under the veil: the pause is unseen.
             RemoveChild(_room);
-            _room.QueueFree();
+            _room.Free();
+            GC.Collect();
+            GC.WaitForPendingFinalizers();
         }
 
-        // Let rooms freed earlier finish finalizing their C# wrappers now, before a new room is built: finalized on the GC
-        // thread while a room was instantiated, they intermittently broke the engine ("Handle is not initialized"; see
-        // RoomValidator). A room is loaded under the veil, so the pause is not seen.
-        GC.Collect();
-        GC.WaitForPendingFinalizers();
         _room = scene.Instantiate<Room>();
         AddChild(_room);
         if (map)

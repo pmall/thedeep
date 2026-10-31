@@ -70,10 +70,13 @@ EXT = {
     'archivist': ('Resource', 'res://resources/machines/archivist.tres'),
     'hierarch': ('Resource', 'res://resources/machines/hierarch.tres'),
     'proclamation': ('Script', 'res://scripts/props/Proclamation.cs'),
+    'heatzone': ('Script', 'res://scripts/props/HeatZone.cs'),
+    'embers': ('PackedScene', 'res://scenes/fx/Embers.tscn'),
+    'volcanic': ('Resource', 'res://resources/biomes/volcanic.tres'),
 }
 for m in ['rock', 'wet_stone', 'metal', 'rust', 'glyphs', 'cable', 'stone_mid', 'metal_mid', 'rust_mid',
           'backdrop_stone', 'backdrop_rust', 'foreground', 'backdrop_cathedral', 'backdrop_halls', 'water', 'underwater',
-          'ice', 'ice_mid', 'water_section', 'cracked']:
+          'ice', 'ice_mid', 'water_section', 'cracked', 'magma', 'basalt', 'heat_haze']:
     EXT[m] = ('Material', f'res://assets/materials/{m}.tres')
 
 IDENTITY = (1, 0, 0, 0, 1, 0, 0, 0, 1)
@@ -283,6 +286,12 @@ class Room:
         return self.node('Props/' + name, type='Marker3D', comment=comment, transform=Raw(transform((pos[0], pos[1], 0))),
                          script=self.ext('proclamation'), Size=Raw(vec(*size)), SpeakerLine=Raw(f'&"{speaker}"'),
                          TextLine=Raw(f'&"{text}"'))
+
+    def heat(self, name, pos, size, density=1.2, glow=2.5, comment=''):
+        """A HeatZone: `size` (width, height) rising from `pos` (the middle of its foot); burns without Heat plating."""
+        return self.node('Heat/' + name, type='Node3D', comment=comment, transform=Raw(transform((pos[0], pos[1], 0))),
+                         script=self.ext('heatzone'), Size=Raw(vec(*size)), HazeMaterial=self.ext('heat_haze'),
+                         Embers=self.ext('embers'), EmberDensity=float(density), GlowEnergy=float(glow))
 
     def machine(self, name, species, pos, facing=1, comment='', **props):
         p = {'transform': Raw(transform((pos[0], pos[1], 0))), 'script': self.ext('machine'),

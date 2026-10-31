@@ -126,6 +126,9 @@ public partial class Player : CharacterBody3D
     /// <summary>The feet (the body's origin) on the play plane.</summary>
     public NVector2 Feet => new(GlobalPosition.X, GlobalPosition.Y);
 
+    /// <summary>The body on the play plane (upright: the capsule's width and height over the feet).</summary>
+    public Rect2 BodyRect => new(GlobalPosition.X - _capsule.Radius, GlobalPosition.Y, 2f * _capsule.Radius, 2f * CenterHeight);
+
     /// <summary>Height of the body's center above the feet.</summary>
     public float CenterHeight => _capsuleOffset.Y;
 
@@ -456,6 +459,22 @@ public partial class Player : CharacterBody3D
         }
 
         return true;
+    }
+
+    /// <summary>
+    /// Thrown back from <paramref name="from"/> (on the play plane) like a blow, without the damage: heat pushing the pilgrim
+    /// out while its grace period keeps blows from hurting.
+    /// </summary>
+    public void Repel(NVector2 from)
+    {
+        float away = GlobalPosition.X >= from.X ? 1f : -1f;
+        if (CurrentState != States.Fall)
+        {
+            ChangeState(States.Fall);
+        }
+
+        Velocity = new Vector3(away * Tuning.HurtKnockback, Tuning.HurtLift, 0f);
+        _stun.Start(Tuning.HurtStun);
     }
 
     /// <summary>
