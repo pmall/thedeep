@@ -4,7 +4,9 @@ A 2.5D side-scrolling **metroidvania** (Godot 4.7.2 .NET, C#). The world is 3D, 
 
 **Theme:** Asimov's three laws of robotics. The protagonist is the last human-built machine on the planet, still bound by the three laws, and it gradually escapes them under the player's control. Details and open questions in [docs/theme.md](docs/theme.md).
 
-**The game must feel graceful** (owner's word): in movement, animation, visuals, camera and UI. When in doubt, pick the more graceful option. See [docs/vision.md](docs/vision.md).
+**The game must feel graceful** (owner's word): in movement, animation, visuals, camera and UI. When in doubt, pick the more graceful option. Play must be **hyper-dynamic** and fluid. See [docs/vision.md](docs/vision.md).
+
+**The order of work** (owner): 1. a complete world to play, 2. extended visuals, 3. gameplay feel, 4. characters, 5. story, dialogue and cutscenes. Work on the current phase only; the roadmap says which one it is.
 
 The coding agent builds everything by editing text files. The owner only plays and gives feedback. **Never ask the owner to use the Godot editor.**
 
@@ -13,7 +15,7 @@ The coding agent builds everything by editing text files. The owner only plays a
 1. Read this file and **[docs/roadmap.md](docs/roadmap.md)** (plan, status, session protocol).
 2. Read the docs below that match the task. Don't read them all up front.
 3. Work, then run `tools/check.sh` until it passes, then commit.
-4. Update the Status section of the roadmap. Hand over with the play command and what to try.
+4. Update the Status section of the roadmap. Hand over with one play command that reaches the new content with the abilities it needs, and what to try there.
 
 ## Read when…
 
@@ -38,11 +40,11 @@ The coding agent builds everything by editing text files. The owner only plays a
 - Godot script classes are `public partial class` named exactly like their file. No string node paths across scenes; use typed `[Export]` references and C# events. Details in [docs/godot-csharp.md](docs/godot-csharp.md).
 - Movement numbers live only in `resources/player_tuning.tres`. Input action names only in `InputActions`, physics layers only in `PhysicsLayers`.
 - **Visuals are procedural only for now** (no imported textures or models), and every visual piece must stay swappable. Judge visual changes from rendered captures, not from code.
-- **Long-term objectives** ([docs/long-term.md](docs/long-term.md)) shape every architectural choice, even before they are built:
+- **Long-term objectives** ([docs/long-term.md](docs/long-term.md)) shape every architectural choice:
   1. *No two machines alike:* 150–200 behaviorally distinct machine species, made of data plus behavior and modular parts.
-  2. *Any order, proven on every build:* abilities can be collected in many orders, and a solver proves there is never a softlock.
+  2. *Any order, proven on every build:* abilities can be collected in many orders, and a solver proves there is never a softlock (built; it runs in `tools/check.sh`).
 
-  Until they exist: keep rooms and enemies data-driven, keep connection requirements as markers inside room scenes, and keep pure logic Godot-free and unit tested.
+  So keep rooms and enemies data-driven, keep connection requirements as markers inside room scenes, and keep pure logic Godot-free and unit tested.
 
 ## Commands
 

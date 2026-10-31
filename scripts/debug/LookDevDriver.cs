@@ -29,7 +29,7 @@ public partial class LookDevDriver : Node
     private const int WarmupFrames = 120;
     private const int MeasuredFrames = 900;
 
-    /// <summary>Frame time the game must stay under at 1080p on the owner's RTX 3060 (docs/roadmap.md, M0).</summary>
+    /// <summary>Frame time the game must stay under at 1080p on the owner's RTX 3060 (docs/art-direction.md, production rule 4).</summary>
     private const double BudgetMs = 10.0;
 
     private readonly ConcurrentQueue<string> _problems = new();

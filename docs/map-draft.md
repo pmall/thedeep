@@ -4,7 +4,7 @@ The whole map on paper (roadmap M7): 40 rooms over three layers and the core, 5 
 
 **How it is used.** The `map` blocks below are parsed by `MapDraft` (`scripts/map/MapDraft.cs`); everything outside them is design notes. `tools/check.sh` checks the draft twice:
 - Unit tests (`MapDraftTests`) parse this file and run `MapDraft.Check`: no softlock, every room reachable, every ability on exactly one relic, **at least 24 of the 120 ability orders**, every ability obtainable in **at least 2 positions**, 40–60 rooms, and each law break on every route to the goal, in story order (third, second, first).
-- The room check (`RoomValidator`) compares the draft with the rooms already built: a built room's exits, sealed exits (an empty `TargetRoom`) and relics must match the draft's ways and relics for that room. **The markers are the truth**: when a room is built or changed, update its part of the draft in the same commit. Goals are not compared (the slice ends at the Descent's `MapGoal`; the game ends at the Heart).
+- The room check (`RoomValidator`) compares the draft with the rooms already built: a built room's exits, sealed exits (an empty `TargetRoom`) and relics must match the draft's ways and relics for that room. **The markers are the truth**: when a room is built or changed, update its part of the draft in the same commit. Goals are not compared (the built map's `MapGoal` sits in its deepest built room until the Heart exists).
 - Print it: `tools/map.sh` (the built map and the draft: summaries, every way, every achievable order).
 
 **Format.** `room Name Layer`, `way A -> B` (one way) or `way A <-> B` (both), `: requirement` after a way (`MagGrip | Harpoon`, `Drill & Ballast`; a `<->` way needs it both ways), `relic Room Ability`, `boss Room Name`, `milestone Room Name` (in story order), `start Room`, `goal Room`. `#` starts a comment.
@@ -90,7 +90,7 @@ The slice (built, M6) plus the crypts under it and the road down. Pale white, a 
 | Ossuary | Racks of dead machines, kept like relics: **Harpoon**, then two rings up to a gallery. *(built)* |
 | Scriptorium | Up the Undercroft's metal flue (Mag-grip): Votaries copying scripture at lecterns, a gallery over them. Three plates to read (lore), a shrine. *(built)* |
 | Chapterhouse | A chapter house half drowned, its vault on one pier. **Boss: the Precentor** (placeholder): the gates fall behind and ahead until it breaks. *(built)* |
-| Brink | The lip of the first deep descent, a last shrine. **Third law**: a veil the pilgrim cannot pass until it presses on and breaks it. One way down (to Rimefall, sealed until built). *(built)* |
+| Brink | The lip of the first deep descent, a last shrine. **Third law**: a veil the pilgrim cannot pass until it presses on and breaks it. One way down, to Rimefall. *(built)* |
 
 ```map
 room Narthex Flooded
@@ -142,13 +142,13 @@ Server halls frozen in rime, machines asleep in the cold, a black lake under ice
 |---|---|
 | Rimefall | Where the jump from the Brink lands (its sky is only arrived through): a shelf of rime under a broken dome, a frozen cascade down terraces, a shrine at the foot. *(built)* |
 | Choir | Choristers, Votaries frozen mid-prayer, asleep along a sunken choir: footsteps never wake them, a hard landing close by does. A silent choir to walk through. *(built)* |
-| Coldstacks | The hub: endless frozen racks in stone galleries up to the roof. Shrine. The Counterweight's hatch at the top of the galleries, the Calving ledge high on the west wall (a metal buttress or two rings), the Mere along the corridor under the floor, the Vault under a plug of cracked ice (Drill), the Chimney under a slag cap (Heat plating); the Vault and the Chimney sealed until built. *(built)* |
+| Coldstacks | The hub: endless frozen racks in stone galleries up to the roof. Shrine. The Counterweight's hatch at the top of the galleries, the Calving ledge high on the west wall (a metal buttress or two rings), the Mere along the corridor under the floor, the Vault under a plug of cracked ice (Drill), the Chimney under a slag cap (Heat plating). *(built)* |
 | Counterweight | An old lift that only rises: up through the Coldstacks' roof hatch to a landing, an iron cage on a rope over a sheave, its weight sinking past as it rises the whole shaft to a grate in the Undercroft's floor. *(built)* |
 | Calving | An ice cliff that sheds: out of the Coldstacks' high doorway onto its top, a drop to the floor (a Chorister asleep at its foot); back up by an iron girder frozen into its face (grip) or two rings (harpoon). *(built)* |
 | Bore | A mining machine frozen mid-bore, a shrine in its hall: the chamber it was cutting is a drop with **Drill** at its end, and the way out is boring through a cracked wall into the tunnel under the hall. *(built)* |
 | Mere | A frozen lake in a low cavern: leads of black water in the ice (you float in them), Choristers asleep on it; the lake swum to its bed, a shaft down to the Underice (Ballast). *(built)* |
 | Sounding | A sonar chapel on the shore, its bell over a sounding well: **Ballast** on a shelf at the waterline in the well, left by sinking under its wall. A shrine, a scripture plate. *(built)* |
-| Underice | A drowned cave under the lake, roofed with ice: sinking and rising past curtains of ice and ridges of rock to a low door up into the Vault (sealed until built). *(built)* |
+| Underice | A drowned cave under the lake, roofed with ice: sinking and rising past curtains of ice and ridges of rock to a low door up into the Vault. *(built)* |
 | Vault | The archive's heart, a tall hall of frozen stacks: entered from above by diving through the Coldstacks' ice plug (Drill, one way, into its pool) or from beneath, up from the Underice into the pool (Ballast). **Boss: the Archivist** (placeholder: it drifts high over the stacks and dives). *(built)* |
 | Sanctum | The last chapel of the frozen layer, a shrine: the Hierarch, a priest-machine, orders the pilgrim back from the forbidden door. **Second law**: a veil the pilgrim presses through. The door goes down to the Kiln. *(built)* |
 

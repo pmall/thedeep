@@ -1,6 +1,6 @@
 # Art direction
 
-Read this before any visual work. Graphics and art direction are the owner's top priority after "the game is playable".
+Read this before any visual work. Extended visuals are the second phase of the work, right after the complete world ([roadmap.md](roadmap.md)); until then, rooms need only enough look to read their space, gates and hazards.
 
 ## The look
 
@@ -85,11 +85,11 @@ M3 atmosphere in place (2026-10-24):
 - **GI**: SDFGI was tried and rejected for now: +1.7 ms average and p99 over budget (11.4 ms) for a barely visible change in this lighting. VoxelGI needs a bake; revisit when rooms get darker interiors.
 - Cost: 6.9 ms average per frame at 1080p, p99 7.8 ms (5.8 ms before M3).
 
-Still missing compared with `perfect.jpg`: the dark android (M4); the player capsule is still grey and low in contrast. The play plane is still a little darker and bluer than the reference outside the shaft; judge with the owner before pushing the palette brighter.
+Still missing compared with `perfect.jpg`: the play plane is still a little darker and bluer than the reference outside the shaft; judge with the owner before pushing the palette brighter.
 
 M4 pilgrim, first pass (2026-10-24):
 - Built from parts (`resources/parts/pilgrim.tres`, materials in `assets/materials/pilgrim/`, shader `android.gdshader`): matte black suit, black lacquer shell, white ceramic trim drawn along each part's edges (cuffs, boot tops, coat piping), silver hair with strands, a violet visor slit, a lantern whose warm glow is the carried light. Its colors are its own, not the biome's: the human-built android looks foreign at every depth.
-- Animation and effects: see roadmap M4. Judge on `Motion.png` from `tools/capture.sh`.
+- Animation: run cycle with planted feet by IK, lean into acceleration, landing compression, leap, fall and dash poses, breathing idle, turning through the camera. Effects: grit on rock, sparks on metal, landing and dash dust, dash trail, camera shake on hard landings. Judge on `Motion.png` from `tools/capture.sh`.
 - Open: hair still reads a little like a helmet; against the dark server racks the black body loses contrast (rim light or a lighter backdrop there).
 
 M5 machines, first prototypes (2026-10-25), in the machine arena (`scenes/rooms/MachineArena.tscn`):

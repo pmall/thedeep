@@ -5,21 +5,21 @@
 **The Deep** (working title) is a gameplay-first, side-scrolling **metroidvania** with a 2.5D look: the world is real 3D, the camera is fixed to the side, and play happens on a single 2D plane (Z = 0). Visual references: *Metroid Dread* for the ambiance and *NieR: Automata* for the character (see [art-direction.md](art-direction.md)); earlier also *Ori*, *Hollow Knight: Silksong*, *Castlevania: Belmont's Curse*.
 
 **One word for the whole game: graceful** (owner). Use it as the tiebreaker for every choice:
-- **Movement:** moves chain into each other without hard stops; momentum carries through jumps, dashes and landings. Graceful is not floaty: controls stay tight and precise.
+- **Movement:** hyper-dynamic and fluid (owner, 2026-10-31): moves chain into each other without hard stops; momentum carries through jumps, dashes and landings. Graceful is not floaty: controls stay tight and precise.
 - **Animation:** fluid and acrobatic, with flowing secondary motion (cloth, hair, cables).
 - **Visuals:** restraint. Clean shapes, a calm palette, one accent color, uncluttered screens.
 - **Camera and UI:** eased, never jerky. Thin, minimal interface, smooth transitions.
 - **Pacing:** calm, deliberate moments between bursts of action, like *Inside*.
 
-Design priorities, in order:
-1. **A finished, playable game.** No novel signature systems. Classic metroidvania structure done well.
-2. **Ambience and art direction.** See [art-direction.md](art-direction.md).
-3. **A small, defined set of abilities**, fixed before the map is designed, because the map is built around them. See [gameplay.md](gameplay.md).
+Design principles:
+- **A finished, playable game.** No novel signature systems. Classic metroidvania structure done well.
+- **A small, fixed set of abilities** (five, [gameplay.md](gameplay.md)); the map is built around them.
+- **The order of work** is the owner's five phases in [roadmap.md](roadmap.md): the complete world, then visuals, then feel, then characters, then story.
 
 ## Scope
 
 - **About 2 hours of play** (decided). The model is *Inside*: about 2 hours, rich in gameplay and story. Dense rather than wide: fewer rooms, each one with a purpose, no filler.
-- Three depth layers plus the core. Five unlockable abilities. Estimate 40–60 rooms and 3–4 bosses, refined when the full map is designed (roadmap M7).
+- Three depth layers plus the core. Five unlockable abilities. 40 rooms, 4 bosses and 3 law breaks, designed in [map-draft.md](map-draft.md).
 - Two long-term objectives add depth without making the game harder to play: 150–200 distinct machine species, and freedom of ability order proven by a solver. See [long-term.md](long-term.md).
 
 ## Setting
@@ -30,7 +30,7 @@ A planet in the *Nirvanary* universe. Machines across many worlds seek "Nirvanar
 
 **The game is a descent:** deeper means older, stranger, hotter.
 
-Narrative is out of scope for now: placeholder text only. Given the *Inside* reference, expect storytelling to come mostly through environments and machine behavior rather than text. Keep rooms and machines able to carry that later. The owner also wants **high-quality voiced dialogue** someday, with generated voices. So all text (dialogue, creeds, bestiary) is stored as data with stable line IDs, never hard-coded (see "Later: audio" in [roadmap.md](roadmap.md)).
+Narrative is the last phase (roadmap): until then, placeholder text only. Given the *Inside* reference, expect storytelling to come mostly through environments and machine behavior rather than text. Keep rooms and machines able to carry that later. The owner also wants **high-quality voiced dialogue** someday, with generated voices. So all text (dialogue, creeds, bestiary) is stored as data with stable line IDs, never hard-coded (see "Later: audio" in [roadmap.md](roadmap.md)).
 
 ## Owner workflow
 

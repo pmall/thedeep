@@ -1,6 +1,6 @@
 # Long-term objectives — "The Deep"
 
-This file describes two long-term objectives for the game. They are **not** built in the first steps; the current focus is the graphical side and base movement. But every architectural choice made from the start must keep them possible and cheap to add later. When writing `AGENTS.md`, include a short summary of this file and a link to it.
+This file describes two long-term objectives for the game. Every architectural choice must keep them possible and cheap to grow. `AGENTS.md` carries a short summary of this file and a link to it.
 
 Both objectives share one idea: the game should contain something a solo developer could not realistically build by hand, but a coding agent can. Not one complex system: **a very large number of simple, well-made pieces, plus automated proof that they all fit together.** The game itself stays simple to play.
 
@@ -78,8 +78,8 @@ Note on full freedom: making all 120 orders possible means every ability must be
 
 ---
 
-## What this means right now
+## Where they stand (2026-10-31)
 
-- Do not build either system during the initial steps.
-- Do: keep enemies and rooms data-driven, keep pure logic free of Godot types where practical (so it can be unit-tested), and keep all movement limits in `player_tuning.tres`. Both objectives depend on these.
-- During the graphical phase, prototype the modular machine-part look early (Objective 1). It's both an art task and the foundation of the bestiary.
+- **Objective 2 is built:** the extractor, the solver, the geometry check and the draft map run in `tools/check.sh`, and every room is held to them as it is built.
+- **Objective 1 has its foundation:** the part library, species as data, the behavior vocabulary v0 and the machine checks (M5). Species are grown in the characters phase of [roadmap.md](roadmap.md); until then, the existing species are placeholders.
+- Both depend on keeping enemies and rooms data-driven, pure logic free of Godot types where practical (so it can be unit-tested), and all movement limits in `player_tuning.tres`.
