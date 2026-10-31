@@ -6,7 +6,8 @@ namespace TheDeep;
 
 /// <summary>
 /// Renders the game's screens for a look (`-- --ui-shot &lt;dir&gt;`, windowed: headless renders nothing): a gate hint over the
-/// room (hint.png), then, after crossing a few open exits from the start room, the map screen (map.png). For judging UI as
+/// room (hint.png), then, after crossing a few open exits from the start room, the map screen (map.png), then the end card
+/// (end.png). For judging UI as
 /// images, like the look-dev captures; not part of tools/check.sh.
 /// </summary>
 public partial class UiShot : Node
@@ -16,6 +17,7 @@ public partial class UiShot : Node
     public RoomTravel Travel { get; set; } = null!;
     public HintLine Hint { get; set; } = null!;
     public MapScreen Map { get; set; } = null!;
+    public EndCard EndCard { get; set; } = null!;
     public string OutputDir { get; set; } = "";
 
     /// <summary>How many exits to cross before the map is shown.</summary>
@@ -23,6 +25,9 @@ public partial class UiShot : Node
 
     private int _tick;
     private int _hops;
+    private bool _mapped;
+    private bool _shotEnd;
+    private float _endTime;
     private readonly HashSet<string> _visited = new();
 
     public override void _Ready()
@@ -52,14 +57,22 @@ public partial class UiShot : Node
 
             _hops++;
         }
-        else if (_hops == Hops && !Map.IsOpen)
+        else if (_hops == Hops && !_mapped)
         {
+            _mapped = true;
             Map.Toggle();
             _tick = 1000;
         }
         else if (_tick == 1060)
         {
             Shot("map.png");
+            Map.Toggle();
+            _ = EndCard.Play();
+        }
+        else if (_tick > 1060 && (_endTime += (float)delta) >= 7.5f && !_shotEnd)
+        {
+            _shotEnd = true;
+            Shot("end.png");
             GetTree().Paused = false;
             GetTree().Quit();
         }

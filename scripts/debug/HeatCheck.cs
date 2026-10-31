@@ -14,6 +14,10 @@ public partial class HeatCheck : Node
 {
     public Player Player { get; set; } = null!;
     public World World { get; set; } = null!;
+    public GateHints Hints { get; set; } = null!;
+
+    /// <summary>The gates the pilgrim has said it can't pass (GateHints).</summary>
+    private readonly System.Collections.Generic.HashSet<Ability> _hinted = new();
 
     /// <summary>The column: its middle and half width, on the lab floor.</summary>
     private const float Middle = 12f, Half = 1f;
@@ -43,13 +47,18 @@ public partial class HeatCheck : Node
         };
         World.Room.AddChild(zone);
         zone.Player = Player;
+        Hints.Said += kind => _hinted.Add(kind);
 
         _steps.Add(new("without Heat plating, running into the heat burns and throws the pilgrim back out", 2f,
             () => { Player.Abilities.Lock(Ability.HeatPlating); Player.Respawn(new Vector3(6f, 0f, 0f), 1); Input.ActionPress(InputActions.MoveRight); },
             () => Player.Vitality.Current < Player.Vitality.Max && X < Middle - Half && Player.Velocity.X < 0f && !_crossed));
+        _steps.Add(new("and the pilgrim says its plating would not bear it (the gate hint)", 1f,
+            () => { },
+            () => _hinted.Contains(Ability.HeatPlating)));
         _steps.Add(new("with Heat plating, the pilgrim runs through it unharmed", 2.5f,
             () =>
             {
+                Input.ActionPress(InputActions.MoveRight);
                 Player.Vitality.Restore();
                 Player.Abilities.Unlock(Ability.HeatPlating);
                 Player.Respawn(new Vector3(6f, 0f, 0f), 1);
@@ -104,7 +113,7 @@ public partial class HeatCheck : Node
 
         if (_problems.Count == 0)
         {
-            GD.Print($"HEAT OK: {_steps.Count} steps (burned and thrown back without it, through unharmed with it)");
+            GD.Print($"HEAT OK: {_steps.Count} steps (burned and thrown back without it, the gate hint, through unharmed with it)");
         }
 
         GetTree().Quit(_problems.Count == 0 ? 0 : 1);

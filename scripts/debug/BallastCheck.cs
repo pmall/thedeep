@@ -15,6 +15,10 @@ public partial class BallastCheck : Node
 {
     public Player Player { get; set; } = null!;
     public World World { get; set; } = null!;
+    public GateHints Hints { get; set; } = null!;
+
+    /// <summary>The gates the pilgrim has said it can't pass (GateHints).</summary>
+    private readonly System.Collections.Generic.HashSet<Ability> _hinted = new();
 
     /// <summary>The tank: its surface, its middle, its floor (the lab's).</summary>
     private const float Surface = 5f, Middle = 12.5f, Bottom = 0f;
@@ -46,12 +50,16 @@ public partial class BallastCheck : Node
             UnderwaterMaterial = GD.Load<Material>("res://assets/materials/underwater.tres"),
         });
 
+        Hints.Said += kind => _hinted.Add(kind);
         _steps.Add(new("dropped in, it splashes and settles floating on the float line", 3f,
             () => { Player.Abilities.Lock(Ability.Ballast); Player.Respawn(new Vector3(Middle, Surface + 4f, 0f), 1); },
             () => Swimming && Mathf.Abs(Y - Line) < 0.1f && Mathf.Abs(Player.Velocity.Y) < 0.3f));
         _steps.Add(new("without Ballast, holding down keeps it floating", 1.5f,
             () => { _lowest = Y; Input.ActionPress(InputActions.MoveDown); },
             () => !Swimming || Y < Line - 0.5f || Player.Sunk, Hold: true));
+        _steps.Add(new("and the pilgrim says it is too light to sink (the gate hint)", 1f,
+            () => { },
+            () => _hinted.Contains(Ability.Ballast)));
         _steps.Add(new("with Ballast, holding down sinks it to the bottom", 3f,
             () => Player.Abilities.Unlock(Ability.Ballast),
             () => Swimming && Player.Sunk && Player.IsOnFloor() && Y < Bottom + 0.05f));
@@ -139,7 +147,7 @@ public partial class BallastCheck : Node
 
         if (_problems.Count == 0)
         {
-            GD.Print($"BALLAST OK: {_steps.Count} steps (splashed in and floated, held up without it, sank, stayed down, rose, jumped out)");
+            GD.Print($"BALLAST OK: {_steps.Count} steps (splashed in and floated, held up without it, the gate hint, sank, stayed down, rose, jumped out)");
         }
 
         GetTree().Quit(_problems.Count == 0 ? 0 : 1);

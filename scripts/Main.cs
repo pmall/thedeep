@@ -79,6 +79,7 @@ public partial class Main : Node3D
     [Export] public HealthHud Health { get; set; } = null!;
     [Export] public HintLine Hint { get; set; } = null!;
     [Export] public MapScreen MapScreen { get; set; } = null!;
+    [Export] public GateHints Hints { get; set; } = null!;
 
     /// <summary>`--ui-shot &lt;dir&gt;`: renders a gate hint and the map screen to PNGs (see UiShot; windowed).</summary>
     private const string UiShotArgument = "--ui-shot";
@@ -178,15 +179,15 @@ public partial class Main : Node3D
         }
         else if (Array.IndexOf(args, DrillCheckArgument) >= 0)
         {
-            AddChild(new DrillCheck { Player = Player, World = World });
+            AddChild(new DrillCheck { Player = Player, World = World, Hints = Hints });
         }
         else if (Array.IndexOf(args, BallastCheckArgument) >= 0)
         {
-            AddChild(new BallastCheck { Player = Player, World = World });
+            AddChild(new BallastCheck { Player = Player, World = World, Hints = Hints });
         }
         else if (Array.IndexOf(args, HeatCheckArgument) >= 0)
         {
-            AddChild(new HeatCheck { Player = Player, World = World });
+            AddChild(new HeatCheck { Player = Player, World = World, Hints = Hints });
         }
         else if (Array.IndexOf(args, CombatCheckArgument) >= 0)
         {
@@ -206,7 +207,7 @@ public partial class Main : Node3D
         }
         else if (ArgumentValue(args, UiShotArgument) is { } shotDir)
         {
-            AddChild(new UiShot { World = World, Player = Player, Travel = Travel, Hint = Hint, Map = MapScreen, OutputDir = shotDir });
+            AddChild(new UiShot { World = World, Player = Player, Travel = Travel, Hint = Hint, Map = MapScreen, EndCard = Session.EndCard, OutputDir = shotDir });
         }
         else if (Array.IndexOf(args, SmokeArgument) >= 0)
         {

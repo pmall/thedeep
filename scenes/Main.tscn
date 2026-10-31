@@ -44,7 +44,7 @@ height = 0.3
 radial_segments = 8
 rings = 1
 
-[node name="Main" type="Node3D" node_paths=PackedStringArray("World", "Player", "Machines", "Capture", "Camera", "Hud", "Travel", "Session", "Health", "Hint", "MapScreen")]
+[node name="Main" type="Node3D" node_paths=PackedStringArray("World", "Player", "Machines", "Capture", "Camera", "Hud", "Travel", "Session", "Health", "Hint", "MapScreen", "Hints")]
 script = ExtResource("1_main")
 World = NodePath("World")
 Player = NodePath("Player")
@@ -57,6 +57,7 @@ Session = NodePath("Session")
 Health = NodePath("HealthHud")
 Hint = NodePath("HintLine")
 MapScreen = NodePath("MapScreen")
+Hints = NodePath("GateHints")
 
 ; Loads the room scenes (first child, so the room exists before the camera and HUD are ready).
 [node name="World" type="Node3D" parent="."]

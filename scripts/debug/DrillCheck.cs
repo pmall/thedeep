@@ -15,6 +15,10 @@ public partial class DrillCheck : Node
 {
     public Player Player { get; set; } = null!;
     public World World { get; set; } = null!;
+    public GateHints Hints { get; set; } = null!;
+
+    /// <summary>The gates the pilgrim has said it can't pass (GateHints).</summary>
+    private readonly System.Collections.Generic.HashSet<Ability> _hinted = new();
 
     private readonly List<Step> _steps = new();
     private readonly List<string> _problems = new();
@@ -41,11 +45,15 @@ public partial class DrillCheck : Node
         _wall = Cracked("CrackedWall", new Vector3(13f, 1.5f, 0f), new Vector3(1f, 3f, 4f));
         _slab = Cracked("CrackedSlab", new Vector3(20f, 3.25f, 0f), new Vector3(4f, 0.5f, 4f));
 
+        Hints.Said += kind => _hinted.Add(kind);
         _steps.Add(new("without the Drill, a dash stops at cracked rock and leaves it whole", 0.6f,
             () => { Player.Abilities.Lock(Ability.Drill); Place(10.5f, 0f); Input.ActionPress(InputActions.Dash); },
             () => _wall.Broken || X > 12.5f, Hold: true));
+        _steps.Add(new("pressed against it, the pilgrim says it would give to a bore (the gate hint)", 1.5f,
+            () => { Input.ActionRelease(InputActions.Dash); Input.ActionPress(InputActions.MoveRight); },
+            () => _hinted.Contains(Ability.Drill)));
         _steps.Add(new("with it, the dash bores through and carries on", 0.5f,
-            () => { Input.ActionRelease(InputActions.Dash); Player.Abilities.Unlock(Ability.Drill); Place(10.5f, 0f); Press(InputActions.Dash); },
+            () => { Input.ActionRelease(InputActions.MoveRight); Player.Abilities.Unlock(Ability.Drill); Place(10.5f, 0f); Press(InputActions.Dash); },
             () => _wall.Broken && X > 14.5f && Player.CurrentState == Player.States.Dash));
         _steps.Add(new("down and dash on cracked rock: the dive breaks it and lands on the floor below", 1f,
             () => { Release(InputActions.Dash); Place(20f, 3.5f); Input.ActionPress(InputActions.MoveDown); Press(InputActions.Dash); },
@@ -148,7 +156,7 @@ public partial class DrillCheck : Node
 
         if (_problems.Count == 0)
         {
-            GD.Print($"DRILL OK: {_steps.Count} steps (stopped without it, bored through, dove through, dove onto sound rock, a dash on sound rock)");
+            GD.Print($"DRILL OK: {_steps.Count} steps (stopped without it, the gate hint, bored through, dove through, dove onto sound rock, a dash on sound rock)");
         }
 
         GetTree().Quit(_problems.Count == 0 ? 0 : 1);

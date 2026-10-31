@@ -26,15 +26,28 @@ public partial class GateHints : Node
     private readonly Dictionary<Ability, float> _met = new();
     private readonly HashSet<Ability> _said = new();
 
+    /// <summary>Raised when the pilgrim says its line about a gate (the kind is the ability it lacks).</summary>
+    public event System.Action<Ability>? Said;
+
     public override void _Ready()
     {
         World.RoomLoaded += OnRoomLoaded;
+        HeatZone.Scorched += OnScorched;
         OnRoomLoaded(World.Room);
     }
 
     public override void _ExitTree()
     {
         World.RoomLoaded -= OnRoomLoaded;
+        HeatZone.Scorched -= OnScorched;
+    }
+
+    private void OnScorched(HeatZone zone)
+    {
+        if (!Player.Abilities.Has(Ability.HeatPlating) && !_said.Contains(Ability.HeatPlating))
+        {
+            Say(Ability.HeatPlating);
+        }
     }
 
     public override void _PhysicsProcess(double delta)
@@ -71,6 +84,7 @@ public partial class GateHints : Node
     {
         _said.Add(kind);
         Hint.Show(GateKinds.HintLine(kind), GateKinds.ColorOf(kind));
+        Said?.Invoke(kind);
     }
 
     private bool PressesBareMetal()
@@ -98,20 +112,10 @@ public partial class GateHints : Node
         return false;
     }
 
-    private void OnRoomLoaded(Room room)
+    private void OnRoomLoaded(Room _)
     {
         _met.Clear();
         _said.Clear();
         Hint.Clear();
-        foreach (HeatZone zone in room.All<HeatZone>())
-        {
-            zone.Scorched += () =>
-            {
-                if (!Player.Abilities.Has(Ability.HeatPlating) && !_said.Contains(Ability.HeatPlating))
-                {
-                    Say(Ability.HeatPlating);
-                }
-            };
-        }
     }
 }

@@ -32,8 +32,8 @@ public partial class HeatZone : Node3D
     /// <summary>The pilgrim, set by the session when the room loads.</summary>
     public Player? Player { get; set; }
 
-    /// <summary>Raised when the heat throws back a pilgrim without Heat plating (burned or repelled).</summary>
-    public event System.Action? Scorched;
+    /// <summary>Raised when any zone throws back a pilgrim without Heat plating (burned or repelled): the gate hints listen.</summary>
+    public static event System.Action<HeatZone>? Scorched;
 
     /// <summary>The light at its foot, in the room's lamp color.</summary>
     public OmniLight3D Glow { get; private set; } = null!;
@@ -95,7 +95,7 @@ public partial class HeatZone : Node3D
                 player.Repel(from);
             }
 
-            Scorched?.Invoke();
+            Scorched?.Invoke(this);
         }
     }
 }
