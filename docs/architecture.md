@@ -75,7 +75,7 @@ scenes/
   camera/ScreenGrade.tscn  finishing pass over the 3D view: vignette + grain (strengths from the biome)
   fx/                      ambient particle effects (AmbientParticles): Dust, Silt, Drips, Rime (falling flakes); one-shot
                            bursts: Grit, Puff, Sparks (the pilgrim's), Rubble (cracked rock shattering)
-  ui/DebugHud.tscn         debug builds: room name and position (always); F7: state/velocity/abilities readout + control hints
+  ui/DebugHud.tscn         debug builds: room name and position and the controls manual (always; F8 hides the manual); F7: state/velocity/abilities readout
   ui/OwnerCapture.tscn     F12 screenshot / F10 video: REC dot + saved-file toast
 scripts/
   Main.cs                  spawns the player; user args: `--room` (with the abilities a route there needs, from the draft's
@@ -173,6 +173,8 @@ scripts/
   map/Requirement.cs       ability requirement expressions (`MagGrip | Harpoon`), parsed to alternatives
   map/GridSnap.cs          the kit grid (block edges 0.5 m, piece origins 0.25 m)
   ui/DebugHud.cs
+  ui/ControlsManual.cs     debug builds: every control, its buttons (keyboard or gamepad, the device last used) lit while held
+  ui/ButtonNames.cs        pure: gamepad button and axis names and shapes, key cap names, which device the last input means
   ui/ScreenFade.cs         the veil for transitions; ui/MapScreen.cs: the minimal map (M / Tab / LB): visited rooms, the ways
                            not yet taken (a dot if open now, rings in the gate's colors if not), a legend
   ui/EndCard.cs            the end of the game (placeholder): a warm black, a title and two lines, then a new game
@@ -211,7 +213,7 @@ scripts/
                            lake bed down into the Underice and back,
                            `-- --room Chapterhouse --encounter-check`
   debug/PlaythroughCheck.cs  the whole run from a new game to the end along the solver's route, `-- --playthrough-check`
-  debug/UiShot.cs          renders a gate hint and the map screen to PNGs (`-- --ui-shot <dir>`, windowed)
+  debug/UiShot.cs          renders a gate hint (with the manual for the keyboard), the manual for the gamepad, the map screen and the end card to PNGs (`-- --ui-shot <dir>`, windowed)
   debug/CaptureTestDriver.cs  windowed capture check + frame times (`-- --capture-test`)
   debug/LookDevDriver.cs   photo spots + frame times for tools/capture.sh (`-- --lookdev <dir>`)
   debug/DemoInput.cs       scripted run/jump/dash input for drivers
@@ -313,6 +315,7 @@ Code with no Godot types is compiled straight into the xUnit project via `<Compi
 - `props/LiftMotion.cs`
 - `map/Requirement.cs`, `map/GridSnap.cs`, `map/ExitMath.cs`, `map/MapState.cs`, `map/MapGraph.cs`, `map/MapSolver.cs`, `map/MapDraft.cs`, `map/MapLayout.cs`, `map/ReachPlanner.cs`, `rooms/dressing/DressingLayout.cs`, `player/GripMath.cs`, `player/HarpoonAim.cs`, `combat/Vitality.cs`, `combat/Swing.cs`, `game/SaveData.cs`
 - `parts/PartShapes.cs`, `parts/PlanarIk.cs`, `parts/VerletChain.cs`, `parts/Humanoid*.cs`, `parts/PartCategory.cs`, `player/MotionMode.cs`, `player/PilgrimMotion.cs`
+- `ui/ButtonNames.cs`
 - `machines/MachineAct.cs`, `Perception.cs`, `Intent.cs`, `Senses.cs`, `Steering.cs`, `PrayerCycle.cs`, `StrikeAction.cs`, `MachineBrain.cs`, `SurfacePath.cs`, `LegGait.cs`, `machines/brains/*.cs` (including `ConductorBrain`, `SwoopBrain`)
 
 Keep these Godot-free. When adding testable logic, put it in a Godot-free file and add it to `tests/TheDeep.Tests/TheDeep.Tests.csproj`. Machine brains and the map solver (`scripts/map/`) follow this pattern ([long-term.md](long-term.md)).

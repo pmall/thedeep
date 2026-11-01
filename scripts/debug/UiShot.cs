@@ -6,7 +6,7 @@ namespace TheDeep;
 
 /// <summary>
 /// Renders the game's screens for a look (`-- --ui-shot &lt;dir&gt;`, windowed: headless renders nothing): a gate hint over the
-/// room (hint.png), then, after crossing a few open exits from the start room, the map screen (map.png), then the end card
+/// room with the controls manual for the keyboard, Jump held (hint.png), the manual for the gamepad, Dash held (manual-pad.png), then, after crossing a few open exits from the start room, the map screen (map.png), then the end card
 /// (end.png). For judging UI as
 /// images, like the look-dev captures; not part of tools/check.sh.
 /// </summary>
@@ -18,6 +18,7 @@ public partial class UiShot : Node
     public HintLine Hint { get; set; } = null!;
     public MapScreen Map { get; set; } = null!;
     public EndCard EndCard { get; set; } = null!;
+    public ControlsManual? Manual { get; set; }
     public string OutputDir { get; set; } = "";
 
     /// <summary>How many exits to cross before the map is shown.</summary>
@@ -40,12 +41,29 @@ public partial class UiShot : Node
     public override void _Process(double delta)
     {
         _tick++;
-        if (_tick == 90)
+        if (_tick == 70)
+        {
+            SetDevice(ButtonNames.Device.Keyboard);
+            Input.ActionPress(InputActions.Jump);
+        }
+        else if (_tick == 90)
         {
             Shot("hint.png");
             Hint.Clear();
+            Input.ActionRelease(InputActions.Jump);
+            SetDevice(ButtonNames.Device.Gamepad);
         }
-        else if (_tick > 90 && _tick % 20 == 0 && _hops < Hops)
+        else if (_tick == 120)
+        {
+            Input.ActionPress(InputActions.Dash);
+        }
+        else if (_tick == 130)
+        {
+            Shot("manual-pad.png");
+            Input.ActionRelease(InputActions.Dash);
+            SetDevice(ButtonNames.Device.Keyboard);
+        }
+        else if (_tick > 130 && _tick % 20 == 0 && _hops < Hops)
         {
             _visited.Add(World.RoomName);
             RoomExit? exit = World.Room.Exits().Where(e => e.Open && ResourceLoader.Exists(e.TargetRoom))
@@ -75,6 +93,14 @@ public partial class UiShot : Node
             Shot("end.png");
             GetTree().Paused = false;
             GetTree().Quit();
+        }
+    }
+
+    private void SetDevice(ButtonNames.Device device)
+    {
+        if (Manual is not null)
+        {
+            Manual.Device = device;
         }
     }
 
