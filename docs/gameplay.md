@@ -100,7 +100,7 @@ Input actions are defined in `project.godot` and mirrored in `scripts/core/Input
 | `debug_respawn` | R | Back |
 | `debug_toggle_{mag_grip,harpoon,drill,ballast,heat_plating}` | F1–F5 | — |
 | `debug_cycle_biome` | F6 | — |
-| `debug_toggle_hud` (state readout; the room name and position show in debug builds without it) | F7 | — |
-| `debug_toggle_manual` (hides the controls manual) | F8 | — |
+| `debug_toggle_hud` (state readout and the debug keys; the room name and position show in debug builds without it) | F7 | — |
+| `debug_toggle_manual` (hides the gameplay controls) | F8 | — |
 
-**The controls manual** (debug builds, bottom left; `ControlsManual`): every control above with its buttons and what it does, each button lit while held. It shows the keyboard while the keyboard was used last and the gamepad while the pad was (a stick counts past half way), and reads the buttons from the input map, keys by the layout's labels (on AZERTY the physical WASD shows Z Q S D, and `map`'s physical M shows `,`). An ability's rows stay faint until it is held. Its words are `ui.manual.*` in the line book; add a row to `ControlsManual.Specs` when an action is added.
+**On-screen controls** (debug builds; `ControlsManual`, owner 2026-11-01: gameplay and debug apart, and small). The **gameplay controls**, bottom left, always: each gameplay action's main button and what it does (the ability moves too: dive, sink and rise, Mag-grip), each button lit while held. They show the keyboard while the keyboard was used last and the gamepad while the pad was (a stick counts past half way), read from the input map, keys by the layout's labels (on AZERTY the physical WASD shows Z Q S D, and `map`'s physical M shows `,`). An ability's rows stay faint until it is held. The **debug keys**, top left with the F7 readout: each key, then the pad button where there is one (respawn: View; screenshot: Share). Words are `ui.manual.*` in the line book; add a row to `ControlsManual.Gameplay` or `.Debug` when an action is added.

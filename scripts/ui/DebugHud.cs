@@ -5,9 +5,9 @@ namespace TheDeep;
 
 /// <summary>
 /// Playtesting readouts. In debug builds, the room's name and where the pilgrim stands in it (meters, the room's own frame) sit in
-/// the top right corner at all times, so a remark (or an F12 screenshot) says where it was made, and the whole controls manual
-/// sits bottom left, lit while held, for the device in hand (<see cref="ControlsManual"/>; F8 hides it). F7 adds the movement
-/// state, velocity and abilities. Release builds show nothing.
+/// the top right corner at all times, so a remark (or an F12 screenshot) says where it was made, and the gameplay controls sit
+/// bottom left, lit while held, for the device in hand (<see cref="ControlsManual"/>; F8 hides them). F7 adds the movement
+/// state, velocity and abilities, and the debug keys. Release builds show nothing.
 /// </summary>
 public partial class DebugHud : CanvasLayer
 {
@@ -18,8 +18,11 @@ public partial class DebugHud : CanvasLayer
     private Label _info = null!;
     private Label _room = null!;
 
-    /// <summary>The on-screen controls manual (built in <see cref="_Ready"/>, debug builds only; null in release).</summary>
+    /// <summary>The gameplay controls (built in <see cref="_Ready"/>, debug builds only; null in release).</summary>
     public ControlsManual? Manual { get; private set; }
+
+    /// <summary>The debug keys, shown with the F7 readout (debug builds only).</summary>
+    public ControlsManual? DebugKeys { get; private set; }
 
     public override void _Ready()
     {
@@ -30,8 +33,12 @@ public partial class DebugHud : CanvasLayer
         if (Visible)
         {
             Manual = new ControlsManual { Player = Player };
-            AddChild(Manual);
-            Manual.SetAnchorsAndOffsetsPreset(Control.LayoutPreset.FullRect);
+            DebugKeys = new ControlsManual { Player = Player, Specs = ControlsManual.Debug, BothDevices = true, Top = true, Visible = false };
+            foreach (ControlsManual manual in new[] { Manual, DebugKeys })
+            {
+                AddChild(manual);
+                manual.SetAnchorsAndOffsetsPreset(Control.LayoutPreset.FullRect);
+            }
         }
     }
 
@@ -40,6 +47,11 @@ public partial class DebugHud : CanvasLayer
         if (@event.IsActionPressed(InputActions.DebugToggleHud) && OS.IsDebugBuild())
         {
             _info.Visible = !_info.Visible;
+            if (DebugKeys is not null)
+            {
+                DebugKeys.Visible = _info.Visible;
+            }
+
             GetViewport().SetInputAsHandled();
         }
         else if (@event.IsActionPressed(InputActions.DebugToggleManual) && Manual is not null)

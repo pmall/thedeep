@@ -537,13 +537,6 @@ Speaker = "UI"
 Text = "Thank you for playing. A new pilgrimage begins."
 Notes = "Ending card, last line before a new game starts."
 
-[sub_resource type="Resource" id="ui_manual_moving"]
-script = ExtResource("2_line")
-Id = &"ui.manual.moving"
-Speaker = "UI"
-Text = "Moving"
-Notes = "Debug builds: the on-screen controls manual. Section header."
-
 [sub_resource type="Resource" id="ui_manual_move"]
 script = ExtResource("2_line")
 Id = &"ui.manual.move"
@@ -555,14 +548,14 @@ Notes = "Debug builds: the on-screen controls manual. Run left and right; up and
 script = ExtResource("2_line")
 Id = &"ui.manual.jump"
 Speaker = "UI"
-Text = "Jump · hold for height"
+Text = "Jump (hold: higher)"
 Notes = "Debug builds: the on-screen controls manual."
 
 [sub_resource type="Resource" id="ui_manual_dash"]
 script = ExtResource("2_line")
 Id = &"ui.manual.dash"
 Speaker = "UI"
-Text = "Dash · once more in the air"
+Text = "Dash"
 Notes = "Debug builds: the on-screen controls manual."
 
 [sub_resource type="Resource" id="ui_manual_attack"]
@@ -576,63 +569,49 @@ Notes = "Debug builds: the on-screen controls manual."
 script = ExtResource("2_line")
 Id = &"ui.manual.interact"
 Speaker = "UI"
-Text = "Rest at a shrine · read a plate"
+Text = "Rest · read"
 Notes = "Debug builds: the on-screen controls manual."
 
 [sub_resource type="Resource" id="ui_manual_map"]
 script = ExtResource("2_line")
 Id = &"ui.manual.map"
 Speaker = "UI"
-Text = "Map (pauses)"
+Text = "Map"
 Notes = "Debug builds: the on-screen controls manual."
-
-[sub_resource type="Resource" id="ui_manual_abilities"]
-script = ExtResource("2_line")
-Id = &"ui.manual.abilities"
-Speaker = "UI"
-Text = "Abilities"
-Notes = "Debug builds: the on-screen controls manual. Section header."
 
 [sub_resource type="Resource" id="ui_manual_mag_grip"]
 script = ExtResource("2_line")
 Id = &"ui.manual.mag_grip"
 Speaker = "UI"
-Text = "Mag-grip · press into bare metal; Jump leaps off"
+Text = "Mag-grip: press into metal"
 Notes = "Debug builds: the on-screen controls manual."
 
 [sub_resource type="Resource" id="ui_manual_harpoon"]
 script = ExtResource("2_line")
 Id = &"ui.manual.harpoon"
 Speaker = "UI"
-Text = "Harpoon · zip to the ring in sight"
+Text = "Harpoon to a ring"
 Notes = "Debug builds: the on-screen controls manual."
 
 [sub_resource type="Resource" id="ui_manual_drill"]
 script = ExtResource("2_line")
 Id = &"ui.manual.drill"
 Speaker = "UI"
-Text = "Drill · dash bores cracked rock; Down + Dash dives"
+Text = "Dive (Drill)"
 Notes = "Debug builds: the on-screen controls manual."
 
 [sub_resource type="Resource" id="ui_manual_ballast"]
 script = ExtResource("2_line")
 Id = &"ui.manual.ballast"
 Speaker = "UI"
-Text = "Ballast · in water, Down sinks, Up rises"
-Notes = "Debug builds: the on-screen controls manual."
-
-[sub_resource type="Resource" id="ui_manual_heat_plating"]
-script = ExtResource("2_line")
-Id = &"ui.manual.heat_plating"
-Speaker = "UI"
-Text = "Heat plating · heat no longer burns (no button)"
+Text = "Sink · rise (Ballast)"
 Notes = "Debug builds: the on-screen controls manual."
 
 [sub_resource type="Resource" id="ui_manual_debug"]
 script = ExtResource("2_line")
 Id = &"ui.manual.debug"
 Speaker = "UI"
-Text = "Captures and debug"
+Text = "Debug"
 Notes = "Debug builds: the on-screen controls manual. Section header."
 
 [sub_resource type="Resource" id="ui_manual_screenshot"]
@@ -646,21 +625,21 @@ Notes = "Debug builds: the on-screen controls manual."
 script = ExtResource("2_line")
 Id = &"ui.manual.video"
 Speaker = "UI"
-Text = "Video, start and stop"
+Text = "Video start / stop"
 Notes = "Debug builds: the on-screen controls manual."
 
 [sub_resource type="Resource" id="ui_manual_respawn"]
 script = ExtResource("2_line")
 Id = &"ui.manual.respawn"
 Speaker = "UI"
-Text = "Back to the room's spawn"
+Text = "Respawn"
 Notes = "Debug builds: the on-screen controls manual."
 
 [sub_resource type="Resource" id="ui_manual_toggle_abilities"]
 script = ExtResource("2_line")
 Id = &"ui.manual.toggle_abilities"
 Speaker = "UI"
-Text = "Toggle Mag-grip, Harpoon, Drill, Ballast, Heat plating"
+Text = "Toggle the five abilities"
 Notes = "Debug builds: the on-screen controls manual."
 
 [sub_resource type="Resource" id="ui_manual_biome"]
@@ -674,16 +653,16 @@ Notes = "Debug builds: the on-screen controls manual."
 script = ExtResource("2_line")
 Id = &"ui.manual.readout"
 Speaker = "UI"
-Text = "State readout"
+Text = "This readout"
 Notes = "Debug builds: the on-screen controls manual."
 
 [sub_resource type="Resource" id="ui_manual_hide"]
 script = ExtResource("2_line")
 Id = &"ui.manual.hide"
 Speaker = "UI"
-Text = "Hide this manual"
+Text = "Hide the controls"
 Notes = "Debug builds: the on-screen controls manual."
 
 [resource]
 script = ExtResource("1_book")
-Lines = [SubResource("creed_votary"), SubResource("creed_gleaner"), SubResource("creed_lamplighter"), SubResource("creed_limpet"), SubResource("ui_rest"), SubResource("ability_mag_grip_name"), SubResource("ability_mag_grip_hint"), SubResource("ability_harpoon_name"), SubResource("ability_harpoon_hint"), SubResource("ability_drill_name"), SubResource("ability_drill_hint"), SubResource("creed_precentor"), SubResource("ui_read"), SubResource("boss_precentor_name"), SubResource("boss_precentor_fallen"), SubResource("boss_precentor_fallen_hint"), SubResource("law_third"), SubResource("law_third_broken"), SubResource("law_third_broken_hint"), SubResource("creed_chorister"), SubResource("lore_plate_1_title"), SubResource("lore_plate_1"), SubResource("lore_plate_2_title"), SubResource("lore_plate_2"), SubResource("lore_plate_3_title"), SubResource("lore_plate_3"), SubResource("ability_ballast_name"), SubResource("ability_ballast_hint"), SubResource("lore_sounding_title"), SubResource("lore_sounding"), SubResource("creed_archivist"), SubResource("boss_archivist_name"), SubResource("boss_archivist_fallen"), SubResource("boss_archivist_fallen_hint"), SubResource("creed_hierarch"), SubResource("speaker_hierarch"), SubResource("order_hierarch"), SubResource("law_second"), SubResource("law_second_broken"), SubResource("law_second_broken_hint"), SubResource("lore_sanctum_title"), SubResource("lore_sanctum"), SubResource("goal_frozen_end_title"), SubResource("goal_frozen_end_hint"), SubResource("ability_heat_plating_name"), SubResource("ability_heat_plating_hint"), SubResource("hint_gate_metal"), SubResource("hint_gate_rings"), SubResource("hint_gate_cracked"), SubResource("hint_gate_water"), SubResource("hint_gate_heat"), SubResource("map_gate_metal"), SubResource("map_gate_rings"), SubResource("map_gate_cracked"), SubResource("map_gate_water"), SubResource("map_gate_heat"), SubResource("map_way_open"), SubResource("map_way_unbuilt"), SubResource("creed_founder"), SubResource("boss_founder_name"), SubResource("boss_founder_fallen"), SubResource("boss_founder_fallen_hint"), SubResource("lore_pyre_title"), SubResource("lore_pyre"), SubResource("creed_nirvanary"), SubResource("boss_nirvanary_name"), SubResource("boss_nirvanary_fallen"), SubResource("boss_nirvanary_fallen_hint"), SubResource("law_first"), SubResource("law_first_broken"), SubResource("law_first_broken_hint"), SubResource("lore_effigy_title"), SubResource("lore_effigy"), SubResource("ending_title"), SubResource("ending_line"), SubResource("ending_thanks"), SubResource("ui_manual_moving"), SubResource("ui_manual_move"), SubResource("ui_manual_jump"), SubResource("ui_manual_dash"), SubResource("ui_manual_attack"), SubResource("ui_manual_interact"), SubResource("ui_manual_map"), SubResource("ui_manual_abilities"), SubResource("ui_manual_mag_grip"), SubResource("ui_manual_harpoon"), SubResource("ui_manual_drill"), SubResource("ui_manual_ballast"), SubResource("ui_manual_heat_plating"), SubResource("ui_manual_debug"), SubResource("ui_manual_screenshot"), SubResource("ui_manual_video"), SubResource("ui_manual_respawn"), SubResource("ui_manual_toggle_abilities"), SubResource("ui_manual_biome"), SubResource("ui_manual_readout"), SubResource("ui_manual_hide")]
+Lines = [SubResource("creed_votary"), SubResource("creed_gleaner"), SubResource("creed_lamplighter"), SubResource("creed_limpet"), SubResource("ui_rest"), SubResource("ability_mag_grip_name"), SubResource("ability_mag_grip_hint"), SubResource("ability_harpoon_name"), SubResource("ability_harpoon_hint"), SubResource("ability_drill_name"), SubResource("ability_drill_hint"), SubResource("creed_precentor"), SubResource("ui_read"), SubResource("boss_precentor_name"), SubResource("boss_precentor_fallen"), SubResource("boss_precentor_fallen_hint"), SubResource("law_third"), SubResource("law_third_broken"), SubResource("law_third_broken_hint"), SubResource("creed_chorister"), SubResource("lore_plate_1_title"), SubResource("lore_plate_1"), SubResource("lore_plate_2_title"), SubResource("lore_plate_2"), SubResource("lore_plate_3_title"), SubResource("lore_plate_3"), SubResource("ability_ballast_name"), SubResource("ability_ballast_hint"), SubResource("lore_sounding_title"), SubResource("lore_sounding"), SubResource("creed_archivist"), SubResource("boss_archivist_name"), SubResource("boss_archivist_fallen"), SubResource("boss_archivist_fallen_hint"), SubResource("creed_hierarch"), SubResource("speaker_hierarch"), SubResource("order_hierarch"), SubResource("law_second"), SubResource("law_second_broken"), SubResource("law_second_broken_hint"), SubResource("lore_sanctum_title"), SubResource("lore_sanctum"), SubResource("goal_frozen_end_title"), SubResource("goal_frozen_end_hint"), SubResource("ability_heat_plating_name"), SubResource("ability_heat_plating_hint"), SubResource("hint_gate_metal"), SubResource("hint_gate_rings"), SubResource("hint_gate_cracked"), SubResource("hint_gate_water"), SubResource("hint_gate_heat"), SubResource("map_gate_metal"), SubResource("map_gate_rings"), SubResource("map_gate_cracked"), SubResource("map_gate_water"), SubResource("map_gate_heat"), SubResource("map_way_open"), SubResource("map_way_unbuilt"), SubResource("creed_founder"), SubResource("boss_founder_name"), SubResource("boss_founder_fallen"), SubResource("boss_founder_fallen_hint"), SubResource("lore_pyre_title"), SubResource("lore_pyre"), SubResource("creed_nirvanary"), SubResource("boss_nirvanary_name"), SubResource("boss_nirvanary_fallen"), SubResource("boss_nirvanary_fallen_hint"), SubResource("law_first"), SubResource("law_first_broken"), SubResource("law_first_broken_hint"), SubResource("lore_effigy_title"), SubResource("lore_effigy"), SubResource("ending_title"), SubResource("ending_line"), SubResource("ending_thanks"), SubResource("ui_manual_move"), SubResource("ui_manual_jump"), SubResource("ui_manual_dash"), SubResource("ui_manual_attack"), SubResource("ui_manual_interact"), SubResource("ui_manual_map"), SubResource("ui_manual_mag_grip"), SubResource("ui_manual_harpoon"), SubResource("ui_manual_drill"), SubResource("ui_manual_ballast"), SubResource("ui_manual_debug"), SubResource("ui_manual_screenshot"), SubResource("ui_manual_video"), SubResource("ui_manual_respawn"), SubResource("ui_manual_toggle_abilities"), SubResource("ui_manual_biome"), SubResource("ui_manual_readout"), SubResource("ui_manual_hide")]

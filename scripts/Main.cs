@@ -208,7 +208,7 @@ public partial class Main : Node3D
         }
         else if (ArgumentValue(args, UiShotArgument) is { } shotDir)
         {
-            AddChild(new UiShot { World = World, Player = Player, Travel = Travel, Hint = Hint, Map = MapScreen, EndCard = Session.EndCard, Manual = Hud.Manual, OutputDir = shotDir });
+            AddChild(new UiShot { World = World, Player = Player, Travel = Travel, Hint = Hint, Map = MapScreen, EndCard = Session.EndCard, Manual = Hud.Manual, DebugKeys = Hud.DebugKeys, OutputDir = shotDir });
         }
         else if (Array.IndexOf(args, SmokeArgument) >= 0)
         {

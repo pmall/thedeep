@@ -4,11 +4,12 @@ using Godot;
 namespace TheDeep;
 
 /// <summary>
-/// Debug builds: the whole manual on screen, bottom left: every control (moving, each ability's moves, captures, debug keys), its
-/// buttons and what it does, each button lit while held. Keyboard caps while the player is on the keyboard, gamepad buttons while
-/// on the pad (<see cref="ButtonNames.Next"/>), crossfading when the device changes. Buttons are read from the input map, keys by
-/// the layout's own labels (on AZERTY the physical WASD reads Z Q S D), so the manual never drifts from the bindings. An ability's
-/// rows are faint until it is held. Words come from the line book. F8 hides it.
+/// Debug builds: a small manual on screen, each button lit while held. Two of them (DebugHud): the gameplay manual, bottom left
+/// (<see cref="Gameplay"/>: each action's main button and what it does; keyboard caps while the player is on the keyboard, gamepad
+/// buttons while on the pad, <see cref="ButtonNames.Next"/>, crossfading when the device changes; F8 hides it), and the debug keys,
+/// top left with the F7 readout (<see cref="Debug"/>: the keyboard key, then the pad button where there is one). Buttons are read
+/// from the input map, keys by the layout's own labels (on AZERTY the physical WASD reads Z Q S D), so the manual never drifts
+/// from the bindings. An ability's rows are faint until it is held. Words come from the line book.
 /// </summary>
 public partial class ControlsManual : Control
 {
@@ -18,14 +19,14 @@ public partial class ControlsManual : Control
     /// <summary>The device shown; set by the last input, or forced (UiShot).</summary>
     public ButtonNames.Device Device { get; set; }
 
-    private const float Pad = 14f;
-    private const float RowHeight = 23f;
+    private const float Pad = 10f;
+    private const float RowHeight = 21f;
     private const float HeaderHeight = 22f;
-    private const float CapHeight = 19f;
+    private const float CapHeight = 18f;
     private const float CapGap = 4f;
-    private const float Column = 16f;
+    private const float Column = 10f;
     private const int CapFont = 12;
-    private const int WordFont = 13;
+    private const int WordFont = 12;
     private const int HeaderFont = 11;
 
     private static readonly Color Ink = new(0.78f, 0.86f, 0.88f);
@@ -36,7 +37,7 @@ public partial class ControlsManual : Control
     };
 
     /// <summary>How a row's actions become buttons.</summary>
-    private enum Kind
+    public enum Kind
     {
         /// <summary>Every binding of the one action, "/" between.</summary>
         Any,
@@ -46,29 +47,29 @@ public partial class ControlsManual : Control
         Set,
     }
 
-    private sealed record Spec(StringName Line, Kind Kind, StringName[] Actions, Ability Needs = Ability.None, string Separator = "/");
+    public sealed record Spec(StringName Line, Kind Kind, StringName[] Actions, Ability Needs = Ability.None, string Separator = "/");
 
     private static readonly StringName[] MoveSet = { InputActions.MoveUp, InputActions.MoveLeft, InputActions.MoveDown, InputActions.MoveRight };
 
-    /// <summary>The manual: a section header is a spec with no actions.</summary>
-    private static readonly Spec[] Specs =
+    /// <summary>The gameplay manual: the main button of each action, keyboard or gamepad.</summary>
+    public static readonly Spec[] Gameplay =
     {
-        new("ui.manual.moving", Kind.Any, System.Array.Empty<StringName>()),
         new("ui.manual.move", Kind.Set, MoveSet),
         new("ui.manual.jump", Kind.Any, new[] { InputActions.Jump }),
         new("ui.manual.dash", Kind.Any, new[] { InputActions.Dash }),
         new("ui.manual.attack", Kind.Any, new[] { InputActions.Attack }),
-        new("ui.manual.interact", Kind.Any, new[] { InputActions.Interact }),
-        new("ui.manual.map", Kind.Any, new[] { InputActions.Map }),
-        new("ui.manual.abilities", Kind.Any, System.Array.Empty<StringName>()),
-        new("ui.manual.mag_grip", Kind.Join, new[] { InputActions.MoveLeft, InputActions.MoveRight }, Ability.MagGrip),
         new("ui.manual.harpoon", Kind.Any, new[] { InputActions.Harpoon }, Ability.Harpoon),
         new("ui.manual.drill", Kind.Join, new[] { InputActions.MoveDown, InputActions.Dash }, Ability.Drill, "+"),
         new("ui.manual.ballast", Kind.Join, new[] { InputActions.MoveDown, InputActions.MoveUp }, Ability.Ballast),
-        new("ui.manual.heat_plating", Kind.Join, System.Array.Empty<StringName>(), Ability.HeatPlating),
+        new("ui.manual.mag_grip", Kind.Join, new[] { InputActions.MoveLeft, InputActions.MoveRight }, Ability.MagGrip),
+        new("ui.manual.interact", Kind.Any, new[] { InputActions.Interact }),
+        new("ui.manual.map", Kind.Any, new[] { InputActions.Map }),
+    };
+
+    /// <summary>The debug keys (keyboard only), shown with the F7 readout.</summary>
+    public static readonly Spec[] Debug =
+    {
         new("ui.manual.debug", Kind.Any, System.Array.Empty<StringName>()),
-        new("ui.manual.screenshot", Kind.Any, new[] { InputActions.CaptureScreenshot }),
-        new("ui.manual.video", Kind.Any, new[] { InputActions.CaptureVideo }),
         new("ui.manual.respawn", Kind.Any, new[] { InputActions.DebugRespawn }),
         new("ui.manual.toggle_abilities", Kind.Join, new[]
         {
@@ -78,7 +79,20 @@ public partial class ControlsManual : Control
         new("ui.manual.biome", Kind.Any, new[] { InputActions.DebugCycleBiome }),
         new("ui.manual.readout", Kind.Any, new[] { InputActions.DebugToggleHud }),
         new("ui.manual.hide", Kind.Any, new[] { InputActions.DebugToggleManual }),
+        new("ui.manual.screenshot", Kind.Any, new[] { InputActions.CaptureScreenshot }),
+        new("ui.manual.video", Kind.Any, new[] { InputActions.CaptureVideo }),
     };
+
+    /// <summary>The rows shown (<see cref="Gameplay"/> or <see cref="Debug"/>).</summary>
+    public Spec[] Specs { get; init; } = Gameplay;
+
+    /// <summary>The keyboard's key and the pad's button side by side, whatever the device (the debug keys).</summary>
+    public bool BothDevices { get; init; }
+
+    /// <summary>Sits at the top left, <see cref="TopOffset"/> down; otherwise at the bottom left.</summary>
+    public bool Top { get; init; }
+
+    public float TopOffset { get; init; } = 150f;
 
     /// <summary>One button on screen: a key cap, or a pad glyph; lit while any of its actions is held.</summary>
     private sealed class Glyph
@@ -122,16 +136,29 @@ public partial class ControlsManual : Control
         foreach (Spec spec in Specs)
         {
             var row = new Row { Spec = spec, Words = LineBook.Shared.Find(spec.Line)?.Text ?? "", Header = spec.Actions.Length == 0 && spec.Needs == Ability.None };
-            Build(row.Items[(int)ButtonNames.Device.Keyboard], spec, false, font);
-            Build(row.Items[(int)ButtonNames.Device.Gamepad], spec, true, font);
+            List<object> keys = row.Items[(int)ButtonNames.Device.Keyboard];
+            List<object> buttons = row.Items[(int)ButtonNames.Device.Gamepad];
+            Build(keys, spec, false, font);
+            Build(buttons, spec, true, font);
+            if (BothDevices && buttons.Count > 0)
+            {
+                keys.Add("/");
+                keys.AddRange(buttons);
+            }
+
             _rows.Add(row);
         }
 
-        Device = _shown = Input.GetConnectedJoypads().Count > 0 ? ButtonNames.Device.Gamepad : ButtonNames.Device.Keyboard;
+        Device = _shown = Input.GetConnectedJoypads().Count > 0 && !BothDevices ? ButtonNames.Device.Gamepad : ButtonNames.Device.Keyboard;
     }
 
     public override void _Input(InputEvent @event)
     {
+        if (BothDevices)
+        {
+            return;
+        }
+
         Device = @event switch
         {
             InputEventKey { Pressed: true } => ButtonNames.Next(Device, ButtonNames.Source.Key),
@@ -196,7 +223,7 @@ public partial class ControlsManual : Control
         }
 
         Vector2 size = new(Pad * 2f + buttons + Column + words, Pad * 2f + height - 4f);
-        Vector2 origin = new(16f, Size.Y - 16f - size.Y);
+        Vector2 origin = new(16f, Top ? TopOffset : Size.Y - 16f - size.Y);
         DrawStyleBox(_panel, new Rect2(origin, size));
 
         float y = origin.Y + Pad;
@@ -249,9 +276,14 @@ public partial class ControlsManual : Control
         switch (spec.Kind)
         {
             case Kind.Any when spec.Actions.Length == 1:
+                // The main button only (the first bound for the device): the manual stays small.
                 foreach (InputEvent e in InputMap.ActionGetEvents(spec.Actions[0]))
                 {
-                    Add(items, GlyphOf(e, pad, spec.Actions[0]), "/");
+                    if (GlyphOf(e, pad, spec.Actions[0]) is { } glyph)
+                    {
+                        Add(items, glyph, "/");
+                        break;
+                    }
                 }
 
                 break;
@@ -294,7 +326,8 @@ public partial class ControlsManual : Control
             count = Mathf.Max(count, events[i].Count);
         }
 
-        for (int n = 0; n < count; n++)
+        // The first group only (W A S D; the left stick): the manual stays small.
+        for (int n = 0; n < count && items.Count == 0; n++)
         {
             Glyph? whole = null;
             var group = new List<Glyph>();

@@ -6,7 +6,8 @@ namespace TheDeep;
 
 /// <summary>
 /// Renders the game's screens for a look (`-- --ui-shot &lt;dir&gt;`, windowed: headless renders nothing): a gate hint over the
-/// room with the controls manual for the keyboard, Jump held (hint.png), the manual for the gamepad, Dash held (manual-pad.png), then, after crossing a few open exits from the start room, the map screen (map.png), then the end card
+/// room with the gameplay controls for the keyboard, Jump held, and the debug keys (hint.png), the controls for the gamepad, Dash
+/// held (manual-pad.png), then, after crossing a few open exits from the start room, the map screen (map.png), then the end card
 /// (end.png). For judging UI as
 /// images, like the look-dev captures; not part of tools/check.sh.
 /// </summary>
@@ -19,6 +20,7 @@ public partial class UiShot : Node
     public MapScreen Map { get; set; } = null!;
     public EndCard EndCard { get; set; } = null!;
     public ControlsManual? Manual { get; set; }
+    public ControlsManual? DebugKeys { get; set; }
     public string OutputDir { get; set; } = "";
 
     /// <summary>How many exits to cross before the map is shown.</summary>
@@ -43,12 +45,22 @@ public partial class UiShot : Node
         _tick++;
         if (_tick == 70)
         {
+            if (DebugKeys is not null)
+            {
+                DebugKeys.Visible = true;
+            }
+
             SetDevice(ButtonNames.Device.Keyboard);
             Input.ActionPress(InputActions.Jump);
         }
         else if (_tick == 90)
         {
             Shot("hint.png");
+            if (DebugKeys is not null)
+            {
+                DebugKeys.Visible = false;
+            }
+
             Hint.Clear();
             Input.ActionRelease(InputActions.Jump);
             SetDevice(ButtonNames.Device.Gamepad);
