@@ -1,12 +1,14 @@
 [gd_resource type="ShaderMaterial" format=3]
-; Ice of the architecture behind a room (icicles under the stacks' walkways): dark, few fractures, hazed by distance.
+; Ice of the architecture behind a room (icicles under the stacks' walkways): pale, a glossy rim, hazed by distance.
 
-[ext_resource type="Shader" path="res://assets/shaders/ice.gdshader" id="1_shader"]
+[ext_resource type="Shader" path="res://assets/shaders/architecture.gdshader" id="1_shader"]
 
 [resource]
 shader = ExtResource("1_shader")
-shader_parameter/fractures = 0.2
-shader_parameter/bubbles = 0.1
-shader_parameter/shade = 0.6
+shader_parameter/slot = 1
+shader_parameter/lines = 2
+shader_parameter/roughness = 0.2
+shader_parameter/shade = 0.7
+shader_parameter/rim = 0.5
 shader_parameter/haze_per_meter = 0.024
 shader_parameter/haze_max = 0.88

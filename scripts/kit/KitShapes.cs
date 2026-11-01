@@ -188,6 +188,31 @@ public static class KitShapes
     }
 
     /// <summary>
+    /// A stack of shelves of <paramref name="size"/> standing on the origin, front facing +Z, cheap enough to repeat by the
+    /// hundred far away (the archive towers behind a room): a recessed body, a lip every <paramref name="shelf"/> meters, a
+    /// divider down the middle and posts at both sides. A few dozen triangles where a <see cref="Rack"/> has thousands.
+    /// </summary>
+    public static void Stack(MeshBuilder b, Vector3 size, float shelf)
+    {
+        float hx = size.X * 0.5f, hz = size.Z * 0.5f;
+        float post = MathF.Min(0.25f, size.X * 0.08f);
+        b.Variation = 0.2f;
+        b.Box(new Vector3(0f, size.Y * 0.5f, -hz * 0.3f), new Vector3(size.X - 2f * post, size.Y, size.Z * 0.7f), 0f);
+        b.Variation = 0f;
+        b.Box(new Vector3(-hx + post * 0.5f, size.Y * 0.5f, 0f), new Vector3(post, size.Y, size.Z), post * 0.15f);
+        b.Box(new Vector3(hx - post * 0.5f, size.Y * 0.5f, 0f), new Vector3(post, size.Y, size.Z), post * 0.15f);
+        b.Variation = 0.6f;
+        b.Box(new Vector3(0f, size.Y * 0.5f, hz * 0.2f), new Vector3(post * 0.5f, size.Y, size.Z * 0.6f), 0f);
+        int shelves = Math.Max(1, (int)MathF.Round(size.Y / shelf));
+        for (int i = 1; i <= shelves; i++)
+        {
+            float y = size.Y * i / shelves;
+            b.Variation = 0.3f + 0.6f * i / shelves;
+            b.Box(new Vector3(0f, y - 0.06f, 0f), new Vector3(size.X, 0.12f, size.Z), 0f);
+        }
+    }
+
+    /// <summary>
     /// A server rack of <paramref name="size"/> standing on the origin, front facing +Z: a frame, a back
     /// panel and <paramref name="units"/> drive bays, some pulled out or missing (drowned and looted).
     /// </summary>

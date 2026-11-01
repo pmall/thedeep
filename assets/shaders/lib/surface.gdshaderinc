@@ -55,6 +55,21 @@ vec3 surface_bump(Surface f, vec3 n, vec2 gradient) {
 	return normalize(n - gradient.x * f.tangent - gradient.y * f.bitangent);
 }
 
+// The slope of a height field along the surface's tangent and bitangent (meters per meter, for surface_bump), from the
+// screen-space derivatives of one evaluation (the surface gradient, after Mikkelsen 2010), where finite differences
+// evaluated the whole pattern twice more per pixel. `pos` the view-space position (VERTEX), `n`, `t`, `b` view space.
+vec2 surface_slope(float h, vec3 pos, vec3 n, vec3 t, vec3 b) {
+	vec3 dpdx = dFdx(pos);
+	vec3 dpdy = dFdy(pos);
+	float dhdx = dFdx(h);
+	float dhdy = dFdy(h);
+	vec3 r1 = cross(dpdy, n);
+	vec3 r2 = cross(n, dpdx);
+	float det = dot(dpdx, r1);
+	vec3 grad = (r1 * dhdx + r2 * dhdy) / (abs(det) > 1e-12 ? det : 1e-12);
+	return vec2(dot(grad, t), dot(grad, b));
+}
+
 // View-space direction to world space.
 vec3 view_to_world(vec3 v, mat4 inv_view) {
 	return normalize(mat3(inv_view) * v);

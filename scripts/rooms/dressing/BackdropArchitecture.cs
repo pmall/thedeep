@@ -141,7 +141,7 @@ public partial class BackdropArchitecture : Node3D
             BackdropPiece.UpperArch => new ArchMesh { Span = d.Pitch, Rise = d.UpperRise, Thickness = d.ArchThickness * 0.8f, Depth = d.ArchDepth * 0.9f, Segments = 20 },
             BackdropPiece.Course => new BlockMesh { Size = new Vector3(d.Pitch, d.CourseHeight, d.ArchDepth * 1.15f), Bevel = 0.1f * s },
             BackdropPiece.Rib => new ArchMesh { Span = d.Pitch * 0.9f, Rise = d.PointedRise * 0.94f, Thickness = 0.22f * s, Depth = 0.3f * s, Flange = 0.4f * s, Segments = 24 },
-            BackdropPiece.Tower => new RackMesh { Size = new Vector3(d.TowerWidth, d.TowerHeight, 2.4f * s), Units = 18, Seed = seed },
+            BackdropPiece.Tower => new StackMesh { Size = new Vector3(d.TowerWidth, d.TowerHeight, 2.4f * s), Shelf = 1.2f * s },
             BackdropPiece.Walkway => new BlockMesh { Size = new Vector3(d.Pitch - d.TowerWidth + 0.4f * s, d.WalkwayHeight, d.WalkwayDepth), Bevel = 0.06f * s },
             BackdropPiece.Icicles => new IcicleMesh { Width = (d.Pitch - d.TowerWidth) * 0.9f, Length = 1.8f * s, Count = 9, Seed = seed },
             BackdropPiece.Chimney => new ColumnMesh { Height = length, Radius = d.ChimneyRadius, Sides = 12, Shafts = 1, Plinth = 1.2f * s, Capital = 0.7f * s },

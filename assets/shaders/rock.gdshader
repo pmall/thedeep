@@ -179,15 +179,12 @@ void fragment() {
 	vec3 n = f.normal;
 	float chipped = 0.0;
 	if (detail) {
-		// Bump from the height field by finite differences along the surface.
-		const float e = 0.006;
-		float hx = rock_at(p + t * e, t, b, seed, up).height;
-		float hy = rock_at(p + b * e, t, b, seed, up).height;
 		// Worn edges: the band's width varies along the edge.
 		float chip_noise = value_noise3(p * 3.1 + seed * 5.0);
 		float width = wear_width * (0.4 + 1.2 * chip_noise);
 		chipped = (1.0 - smoothstep(0.0, width * 1.6, f.edge)) * edge_wear;
-		n = surface_bump(f, n, vec2(hx - r.height, hy - r.height) / e);
+		// Bump from the height field's screen-space slope (one evaluation, lib/surface).
+		n = surface_bump(f, n, surface_slope(r.height, VERTEX, f.normal, f.tangent, f.bitangent));
 	}
 	vec3 face_world_n = view_to_world(f.normal, INV_VIEW_MATRIX);
 	bool side = abs(face_world_n.y) < 0.5;

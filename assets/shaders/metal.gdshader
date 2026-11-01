@@ -106,10 +106,7 @@ void fragment() {
 	float aa = max(fwidth(f.uv.x), fwidth(f.uv.y)) * 0.75;
 
 	Panels pn = panels_at(f.uv, f.size, seed, aa);
-	const float e = 0.004;
-	float hx = panels_at(f.uv + vec2(e, 0.0), f.size, seed, aa).height;
-	float hy = panels_at(f.uv + vec2(0.0, e), f.size, seed, aa).height;
-	vec3 n = surface_bump(f, f.normal, vec2(hx - pn.height, hy - pn.height) / e);
+	vec3 n = surface_bump(f, f.normal, surface_slope(pn.height, VERTEX, f.normal, f.tangent, f.bitangent));
 
 	vec3 coat = palette_color(slot) * (0.94 + 0.12 * pn.panel) * (0.96 + 0.08 * seed);
 	float blotch = fbm3(p * 0.7 + seed * 9.0, 3);

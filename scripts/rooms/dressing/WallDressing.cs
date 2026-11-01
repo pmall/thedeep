@@ -111,15 +111,16 @@ public partial class WallDressing : Node3D
                 Add(new ColumnMesh { Height = h, Radius = w * 0.4f, Sides = 8, Shafts = 1, Plinth = 0.5f, Capital = 0.4f }, Stone!, at);
                 break;
             case WallPiece.Shelf:
-                Add(new BlockMesh { Size = new Vector3(w, h, 1f), Bevel = 0.03f }, Iron!, at);
+                Add(new BlockMesh { Size = new Vector3(w, h, 1f), Bevel = 0.03f }, Iron!, at, shadow: false);
                 break;
             case WallPiece.Icicles:
                 Add(new IcicleMesh { Width = w, Length = h, Count = Mathf.Max(3, (int)(w * 1.6f)), Seed = Seed + index }, Ice!, at, shadow: false);
                 break;
             case WallPiece.Rack:
                 int variant = Mathf.Clamp((int)p.Roll, 0, _racks.Length - 1);
-                _racks[variant] ??= new RackMesh { Size = new Vector3(w, h, 0.9f), Units = 10, Seed = Seed * 3 + variant };
-                Add(_racks[variant], Plate!, at);
+                // Stacks, not full racks: a wall holds hundreds, far back in the fog (racks cost a millisecond on the Sounding's wall).
+                _racks[variant] ??= new StackMesh { Size = new Vector3(w, h, 0.9f), Shelf = 0.45f + 0.12f * variant };
+                Add(_racks[variant], Plate!, at, shadow: false); // hundreds against the wall: their shadows cost more than they show
                 break;
             case WallPiece.Hub:
                 Add(new ColumnMesh { Height = 0.7f, Radius = w, Sides = 12, Shafts = 1, Plinth = 0.15f, Capital = 0.15f }, Plate!, at,

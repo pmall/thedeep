@@ -1,14 +1,12 @@
 [gd_resource type="ShaderMaterial" format=3]
-; Masonry of the architecture behind a room (BackdropArchitecture): the backdrop's color, tone and strata only, hazed
-; by distance behind the play plane.
+; Masonry of the architecture behind a room (BackdropArchitecture): the backdrop's color in courses, hazed by distance.
 
-[ext_resource type="Shader" path="res://assets/shaders/rock.gdshader" id="1_shader"]
+[ext_resource type="Shader" path="res://assets/shaders/architecture.gdshader" id="1_shader"]
 
 [resource]
 shader = ExtResource("1_shader")
 shader_parameter/slot = 2
-shader_parameter/detail = false
-shader_parameter/course_height = 1.1
-shader_parameter/block_length = 2.2
+shader_parameter/lines = 0
+shader_parameter/cell = Vector2(1.1, 2.2)
 shader_parameter/haze_per_meter = 0.024
 shader_parameter/haze_max = 0.88
