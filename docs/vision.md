@@ -14,12 +14,14 @@
 Design principles:
 - **A finished, playable game.** No novel signature systems. Classic metroidvania structure done well.
 - **A small, fixed set of abilities** (five, [gameplay.md](gameplay.md)); the map is built around them.
-- **The order of work** is the owner's five phases in [roadmap.md](roadmap.md): the complete world, then visuals, then feel, then characters, then story.
+- **The order of work** is the owner's four stages in [roadmap.md](roadmap.md): the prototype (every brick ready), the plan on paper (the real game's network of rooms), the real game, then polish.
+- **Built from bricks** ([principles.md](principles.md)): everything the game is made of is a reusable piece, so a bigger world (or a sequel) is assembled, not rewritten.
 
 ## Scope
 
-- **About 2 hours of play** (decided). The model is *Inside*: about 2 hours, rich in gameplay and story. Dense rather than wide: fewer rooms, each one with a purpose, no filler.
-- Three depth layers plus the core. Five unlockable abilities. 40 rooms, 4 bosses and 3 law breaks, designed in [map-draft.md](map-draft.md).
+- **The prototype** (built): three depth layers plus the core, five unlockable abilities, 40 rooms, 4 bosses and 3 law breaks ([map-draft.md](map-draft.md)). It was planned as about 2 hours of play, *Inside*-dense. It is now the playground where every brick is proven.
+- **The real game** (owner, 2026-11-01: "I start to be ambitious"): bigger than the prototype, with many paths, loops and secret rooms, every room with a purpose (a secret, an ambush, an enigma, lore). Its size and length are decided with its network of rooms in stage B ([roadmap.md](roadmap.md)). Dense still beats wide: no filler.
+- **Prototype systems kept deliberately small:** one kind of power-up (a permanent bonus to strength or defense), a small inventory of keys and codes that open doors, dialogue boxes. Nothing more.
 - Two long-term objectives add depth without making the game harder to play: 150–200 distinct machine species, and freedom of ability order proven by a solver. See [long-term.md](long-term.md).
 
 ## Setting
@@ -30,7 +32,7 @@ A planet in the *Nirvanary* universe. Machines across many worlds seek "Nirvanar
 
 **The game is a descent:** deeper means older, stranger, hotter.
 
-Narrative is the last phase (roadmap): until then, placeholder text only. Given the *Inside* reference, expect storytelling to come mostly through environments and machine behavior rather than text. Keep rooms and machines able to carry that later. The owner also wants **high-quality voiced dialogue** someday, with generated voices. So all text (dialogue, creeds, bestiary) is stored as data with stable line IDs, never hard-coded (see "Later: audio" in [roadmap.md](roadmap.md)).
+Narrative is polish, the last stage (roadmap): until then, placeholder text only; the prototype builds the dialogue box, not the dialogue. Given the *Inside* reference, expect storytelling to come mostly through environments and machine behavior rather than text. Keep rooms and machines able to carry that later. The owner also wants **high-quality voiced dialogue** someday, with generated voices. So all text (dialogue, creeds, bestiary) is stored as data with stable line IDs, never hard-coded (see "Audio" in [roadmap.md](roadmap.md), stage D).
 
 ## Owner workflow
 

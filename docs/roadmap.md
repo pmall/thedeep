@@ -4,99 +4,97 @@ The plan we follow from session to session: the owner's direction, where we are,
 
 ## Direction (decided by the owner)
 
-1. **The order of work** (owner, 2026-10-31). Each phase is finished before the next one starts:
-   1. **A complete world to play** *(current)*: every room on the map built, all five abilities, every ability order proven, playable and understandable from a new game to the end.
-   2. **Extended visuals.**
-   3. **Gameplay feel:** hyper-dynamic, fluid, flowing.
-   4. **Characters** (the character pass): the pilgrim, NPCs, enemies, bosses.
-   5. **Final touch:** story, dialogue, cutscenes.
+1. **Four stages** (owner, 2026-11-01, replacing the five phases of 2026-10-31). Each stage is finished before the next one starts:
+   - **A. The prototype** *(current)*: every brick of the game ready, beautiful and modular, proven in the 40-room prototype world. The prototype is our **playground**, and it stays one after this stage.
+   - **B. The plan on paper**: the real game's map as a network of rooms, with a table describing every room. Reviewed and approved by the owner before anything is built.
+   - **C. The real game**: built from the plan, beside the prototype, from the prototype's bricks.
+   - **D. Polish**: what makes it rich: many machine species, the real bosses, secrets and traps in every room, narrative, story, dialogue, voices, cutscenes, audio, authored final assets.
 
-   Art matters in every phase and is implied throughout: new rooms follow [art-direction.md](art-direction.md) at the quality bar the built rooms set. Phase 2 is where the visuals are pushed further. Until a phase comes, its part of the game stays a working placeholder: used, not polished. Why this order: at the 2026-10-31 playtest the owner "barely saw anything because the rooms are locked, or I didn't understand something".
-2. **Procedural only, pushed to the maximum.** All visuals come from code: shaders, generated meshes, lighting, fog, particles, post-processing. The game must look good with procedural art alone; no imported textures or models. Authored assets (a Blender MCP, owner 2026-10-31) come only at the very end, as the cherry on the cake for polish, never to make up for a procedural look that isn't good enough. Every visual piece stays **swappable** (a material, a part mesh) without touching gameplay, so that polish is cheap.
-3. **Two long-term objectives shape the architecture** (details in [long-term.md](long-term.md)):
-   - **No two machines alike:** 150–200 behaviorally distinct machine species, built from modular parts and a shared behavior vocabulary. Grown in phase 4.
-   - **Any order, proven on every build:** abilities collectable in many orders, never a softlock, checked by a solver on every build. Built (M7), and it holds every room as it is built.
+   Why: the owner is now ambitious for the game. The prototype's world (40 rooms, 5 abilities, the solver) proved the structure. Before growing it, every reusable piece must exist and be good, so that the big world becomes a puzzle assembled from finished pieces. *"If we make a sequel, we make a new map, I have all the tools modularized at my disposal, boom, we implement it."*
+2. **Programming principles** (owner, 2026-11-01): bricks, not rooms; the engine is a detail (core / adapters / content); data first; types tell the truth, zero shortcuts with the type system. All in [principles.md](principles.md), which every code change follows.
+3. **Procedural only, pushed to the maximum.** All visuals come from code: shaders, generated meshes, lighting, fog, particles, post-processing. The game must look great this way alone. Authored assets (a Blender MCP) come only in stage D, as the cherry on the cake, never to make up for a procedural look that isn't good enough. Every visual piece stays **swappable** (a material, a part mesh) without touching gameplay.
+4. **Two long-term objectives shape the architecture** ([long-term.md](long-term.md)): no two machines alike (150–200 species, grown in stage D, the framework ready now), and any order, proven on every build (the solver; it will prove the real game's network too).
 
 ## Status
 
-- **Foundation done** (M0–M7, 2026-10-24 to 2026-10-28): look-dev tools (`tools/capture.sh`, F12/F10 owner captures), the procedural material library, the environment kit, atmosphere, `BiomeProfile`s, the modular part system, the pilgrim and four machine prototypes (placeholders), the level toolkit, room travel and the map screen, combat, health, shrines and saving, the map solver, the geometry check and the whole map on paper ([map-draft.md](map-draft.md): 40 rooms, 5 abilities, 4 bosses, 3 law breaks, 32 of 120 orders).
-- **Phase 1, the complete world: all 40 rooms built.**
-  - Flooded layer: all 13 rooms; the Harpoon, the Precentor (boss placeholder), the third law.
-  - Frozen layer: all 11 rooms; the Drill, Ballast, the Archivist (boss placeholder), the second law.
-  - Volcanic layer: all 10 rooms; Heat plating (the Crucible), the Founder (boss placeholder, the Foundry).
-  - Core: all 6 rooms (`core.tres`: ancient machinery in a crimson haze); Nirvanary (boss placeholder), the first law, the end card.
-  - Built map = the draft: 40 rooms, 82 ways, all 5 abilities, 32 of 120 orders, no softlock; the `MapGoal` is the Heart (reaching it ends the game).
-- **Owner playtest 2026-10-31:** saw little: `--room` gave no abilities, so almost every way was sealed. W1 fixed that (`--room` now gives the route's abilities), and gates now say what they are.
-- **Proven from inside the rooms (2026-11-01):** the solver no longer trusts a room to be one place. The inside check walks every (room, way in, abilities) state with the planner, which now simulates all five abilities (Mag-grip too). It found the Reliquary's Mag-grip relic walled off by a 7 m pillar since M6, now a pier hanging from the slab. The check also demands room for error: a clumsier pilgrim must take every way the exact one does. That failed in eight rooms whose ladders climbed 3 m per ledge against a 3.2 m jump (the DrownedHall, Cistern, Sluice, Coldstacks, Slag, Kiln, Chimney, Ashfall) and the Orrery's last arc; all are now 2.5 m steps ([gameplay.md](gameplay.md), room metrics).
-- **Owner playtest 2026-11-01** ("in good direction"; Mag-grip liked): fixed what it found. The room's name and the pilgrim's position now sit top right in debug builds. Jumps were too exact: a ledge assist (a jump ending up to 0.6 m short of a ledge's top lifts the pilgrim onto it, simulated by the planner too) and coyote time and jump buffer at 0.15 s. Mag-grip slid on along rock past the metal's end, down the Descent's flooded gate, through its water and into the Sluice without Ballast: now only metal holds, and water lets go of a grip. The room check's clumsy pilgrim is now much clumsier (jumps 18% lower, dashes 35% shorter, runs 20% slower, no assist), so no way in the world asks for an exact jump: it found the Coldstacks' 8 m well (a beam now in its middle) and the Crucible's hole up to the Quench.
-- **On-screen controls (2026-11-01, owner):** debug builds show the gameplay controls bottom left, small, for the keyboard or the gamepad as last used, each button lit while held (F8 hides them); the debug keys show with the F7 readout.
-- **Phase 2, extended visuals, under way.**
-  - Performance pass done: every room's frame p99 is under 10 ms at 1080p (most 6–8). Collections were the spikes: garbage is down from about 635 KB per frame to 1–4 KB in most rooms (rays through kept nodes, chain meshes written in place, no per-tick LINQ); `perf*.json` reports `alloc_kb_per_frame`, and `THEDEEP_ALLOC_SAMPLE=1 tools/capture.sh` the types allocating. Then the GPU: the far architecture on one cheap shader (`architecture.gdshader`), towers and wall racks as `StackMesh` shelves without shadows, and rock and metal bump from one evaluation of their pattern (`surface_slope`, screen-space derivatives) instead of three: GPU time 0.5–1 ms lower in most rooms, every room's p99 under 9.6 ms.
-  - The shared stage: real architecture in the haze, skylines and light by layer, masonry ([art-direction.md](art-direction.md), "Phase 2, the shared stage").
-  - The rooms' back walls dressed (`WallDressing`): every volcanic and core room, four frozen ones.
-  - Left: each layer's rooms against their references, from the photo spots (the core's murky walls, the frozen open items in [art-direction.md](art-direction.md), the flooded rooms' wide shots).
-- **Next:** the owner plays from `godot --path . -- --new` to the end (phase 1's done-when) and says where a gate didn't read or a way was unclear; then phase 2 (extended visuals). The bosses (the Founder, Nirvanary) are clones of earlier bodies and brains, placeholders until phase 4.
+- **Foundation done** (M0–M7, 2026-10-24 to 2026-10-28): look-dev tools (`tools/capture.sh`, F12/F10 owner captures), the material library, the environment kit, atmosphere, `BiomeProfile`s, the modular part system, the pilgrim and placeholder machines, the level toolkit, room travel and the map screen, combat, health, shrines and saving, the map solver and geometry check, the map on paper ([map-draft.md](map-draft.md)).
+- **The prototype world is built** (the former phase 1): all 40 rooms over the flooded, frozen and volcanic layers and the core; 5 abilities, 4 placeholder bosses, 3 law breaks, the end card. Built map = draft: 82 ways, 32 of 120 orders, no softlock. Proven from inside the rooms (every room, way in and abilities walked by the planner, with a much clumsier pilgrim for room for error), and `PlaythroughCheck` plays the solver's route from a new game to the end.
+- **Owner playtests:** 2026-10-31 (rooms locked: `--room` now gives the route's abilities, gates say what they need) and 2026-11-01 ("in good direction", Mag-grip liked: a ledge assist, coyote time and jump buffer at 0.15 s, only metal holds a grip, water lets go of it, on-screen controls in debug builds).
+- **Visual work under way** (now prototype item P2): every room's frame p99 under 10 ms at 1080p, garbage 1–4 KB per frame; the shared stage (architecture in the haze, skylines and light by layer, masonry); back walls dressed (`WallDressing`) in every volcanic and core room and four frozen ones.
+- **Next: P1, the seams.**
 
 ## Session protocol
 
 Every session:
-1. Read `AGENTS.md`, this file, then the docs that `AGENTS.md` lists for the task at hand.
-2. Work on the current phase's first unfinished item (or what the owner asks for).
+1. Read `AGENTS.md`, this file, then the docs that `AGENTS.md` lists for the task at hand. Any code change: [principles.md](principles.md).
+2. Work on the current stage's first unfinished item (or what the owner asks for).
 3. For any visual change, capture the photo spots **before and after** and look at them. Never judge visuals from code alone.
 4. `tools/check.sh` passes, then commit.
-5. Update **Status** here: replace what changed, don't append a session log.
+5. Update **Status** here, and [bricks.md](bricks.md) when a brick changes status: replace what changed, don't append a session log.
 6. Hand over with **one command that reaches the new content with the abilities it needs**, and what to try there. Never hand over a command that drops the owner somewhere they can't move.
 
 When the owner changes direction, rewrite the docs it touches so none of them contradicts it. Don't stack the new rule on top of the old one.
 
 ---
 
-## Phase 1: a complete world to play *(current)*
+## Stage A: the prototype *(current)*
 
-Rooms are built with the level toolkit to the art direction, at the quality bar the built rooms already set. Gates and hazards must read at a glance. Bosses, machines and law breaks stay working placeholders. Use existing species, and add a new one only where a room's design needs it (data first, a brain only for a truly new behavior).
+**The goal:** every brick in [bricks.md](bricks.md) is **ready**: beautiful, modular, checked, and used in the prototype world. The prototype's 40 rooms are where bricks are proven, not content to polish: a room gets the attention its bricks need, no more. Bosses, machines and law breaks stay working placeholders (their richness is stage D), but the systems behind them must be ready.
 
-- [x] **W1, reachable and readable.** `--room <Name>` starts with the abilities a route there needs (`MapSolver.Arrival` over the draft; `--abilities` overrides); a gate the pilgrim can't pass yet says so (`GateHints`: bare metal, rings, cracked rock, deep water, heat, each in its color); the map shows the ways not yet taken (a dot if open now, rings in the gate's colors if not, a legend).
-- [x] **The volcanic layer**: the Quench, the Basalt, the Crucible (Heat plating relic), the Ashfall, the Bellows, the Pyre, the Foundry (the Founder, a boss placeholder).
-- [x] **The core** (6 rooms): its `BiomeProfile` and just enough kit to read as ancient machinery; the Threshold, the Mantle, the Orrery, the Lode, the Effigy (the first law), the Heart (Nirvanary, a boss placeholder; the end).
-- [x] **An ending placeholder**: reaching the end closes the run with a card, back to a new game.
-- [x] **The whole run proven:** the built map matches the draft (40 rooms, 32 of 120 orders, no softlock), and `PlaythroughCheck` in `tools/check.sh` plays the solver's shortest route from a new game to the end (39 ways, 5 relics, 3 laws, 4 bosses, the end card).
-- [x] **Proven from inside the rooms, with room for error:** the inside check (1212 states of room, way in and abilities, all five abilities simulated, no softlock, every relic and the goal reached) and the clumsy pilgrim, in `tools/check.sh`.
-- **Done when:** the owner plays from `godot --path . -- --new` to the end, with no debug keys, and always knows what a gate needs.
+The items, in order. Each one ends with its bricks marked in [bricks.md](bricks.md).
 
-## Phase 2: extended visuals
+- [ ] **P1, the seams** (code realignment to [principles.md](principles.md); first, so that every new brick is built on it):
+  - The core as its own project (`TheDeep.Core`, no Godot reference), referenced by the game and the tests; the 83 Godot-free files move into it, so the compiler holds the boundary (today the test project's file list does). Vectors converted in one place.
+  - Type shortcuts removed: the null-forgiving `!` outside `[Export]` references (about 40, most in `ReachPlanner`'s optional limits, `WallDressing`'s materials, `Session`'s prompts), `ControlsManual`'s `List<object>` as a closed set of cases. Required exports checked, so a missing one fails the room or brick check.
+  - **A world is data**: a `WorldDefinition` (its rooms folder, network file, biomes, line book, start room, its layers) replaces what the code assumes about the prototype (`scenes/rooms/`, `docs/map-draft.md`, the `DepthLayer` enum). The prototype becomes `worlds/prototype/` with its rooms and its draft, and `godot --path .` still plays it.
+  - Adapters made thin where rules grew in nodes (`Player`, `Session`, `Machine`, `RoomValidator` are the biggest): their rules moved into core classes with tests.
+  - Done when: the check passes, `godot --path .` plays exactly as before, no Godot type compiles in the core, no `!` outside exports, and no prototype name or path remains in non-check code.
+- [ ] **P2, the stage bricks** (the visuals, already under way): every stage brick of each biome brought to the bar of [art-direction.md](art-direction.md) and past it: materials, backgrounds and architecture, water, heat, ice, light, particles, the block kit's look. Left from the visual work: each layer's rooms against their references from the photo spots (the core's murky walls, the frozen open items in [art-direction.md](art-direction.md), the flooded rooms' wide shots), back walls for the remaining frozen and the flooded rooms. Done when: every biome reads at a glance and looks "very cool" to the owner in their captures, within the frame budget.
+- [ ] **P3, the pilgrim**: the character fully made: its look in the *NieR: Automata* spirit (the hair, the coat, contrast against dark backdrops), a rig and animation for every move and every ability (run, jump, land, dash, air dash, ledge assist, grip and its corners, harpoon throw and zip, bore and dive, swim, sink and rise, hurt, death, rest, taking a relic), secondary motion (coat, braid, cables), effects. Very dynamic animation: anticipation, follow-through, weight. Done when: every state reads at a glance in motion, in the look-dev reels and in the owner's play.
+- [ ] **P4, feel and fight**: hyper-dynamic, fluid play: moves chain and carry momentum, smooth Mag-grip corners, harpoon, dive and swim flowing into each other; the camera eased; a small fight moveset (chained swings, an air attack, a dash strike or similar: a few moves, done well) with hits that land (hit stop, sparks, knockback) and health that reads. Numbers stay in `player_tuning.tres` ([gameplay.md](gameplay.md)).
+- [ ] **P5, the game systems**: the bricks the real game's rooms will need, one working example of each in the prototype:
+  - **Dialogue box**: a speaker and lines in turn, advanced by the player; lines from the line book. Graceful and small (the owner plays on a gamepad and wants on-screen UI small).
+  - **Power-ups**: one kind of loot, a permanent bonus to strength or defense. Nothing more.
+  - **Inventory**: keys and codes, held and shown small; **locked doors** that one opens. Items join the requirement language of exits, so the solver proves the world with them (no key behind its own door, no softlock).
+  - **Room kinds** the plan will use: a **hidden passage** (the secret room's way in), an **ambush** (an arena that seals while a wave of machines stands: the trap room), a **switch and mechanism** (an enigma's piece).
+  - Items, power-ups and opened doors in the save; keys and doors in the gate hints and the map screen.
+- [ ] **P6, the sequel test and sign-off**:
+  - **The sequel test:** a small second world (a handful of rooms, a new arrangement, one biome variant) built from content alone, **with no code change**. Whatever it forces into the code was a missing brick: fix it as a brick. It stays as a fixture the check loads.
+  - The owner plays the prototype from `godot --path . -- --new` to the end, with no debug keys, always knowing what a gate needs, and is happy with it.
+- **Done when:** every brick in [bricks.md](bricks.md) is ready, the sequel test passes, and the owner signs the prototype off.
 
-Every room brought to and past the foundation's quality bar, layer by layer ([art-direction.md](art-direction.md): the open items listed under "Current state", the volcanic and core looks). The performance pass came first (done: every room under 10 ms p99).
+## Stage B: the plan on paper
 
-## Phase 3: gameplay feel
+The real game's map, designed before a single room is built. Two files per world, read by the code and checked on every build, plus a drawing for review:
 
-Hyper-dynamic, fluid play: movement that chains and carries momentum, smooth Mag-grip corners, harpoon, dive and swim flowing into each other, camera and combat feel. Numbers stay in `player_tuning.tres` ([gameplay.md](gameplay.md)).
+- **The network**: every node a room, every edge a way between rooms with its requirement (nothing, an ability, abilities together or in alternative, an item), one way or both. The same language as [map-draft.md](map-draft.md), extended with items, secrets and power-ups. Much bigger than the prototype: many paths, loops, shortcuts, secret rooms. The solver proves it like the prototype: no softlock, every room reachable, the order-freedom targets, every item placed before its door.
+- **The room table** (a `.tsv` beside the network): one row per room: name, layer and biome, kinds (hub, corridor, relic, boss, shrine, **secret**, **ambush / enemy trap**, **enigma**, lore, ...), what happens there, its machines, its items, notes. A check holds the table and the network to each other (same rooms, a relic room has its relic, a secret room is entered by a hidden way).
+- **A drawing**: the network rendered for the owner to read on paper (generated from the files, never drawn by hand).
+- **Done when:** the owner approves the plan. Nothing is built before that.
 
-## Phase 4: characters (the character pass)
+## Stage C: the real game
 
-- The pilgrim: its look (the hair reads like a helmet; contrast against dark backdrops), its animation and effects.
-- The machines: design, art and gameplay of the species, then growing the bestiary: about 10 good species first, then by layer, toward 150–200 ([long-term.md](long-term.md)). Distinctness before count.
-- NPCs, and the bosses designed for real.
-- The bestiary: entries filled in from the behaviors the player has seen.
+Built from the approved plan, beside the prototype (its own world folder; the prototype stays the playground and keeps being checked). Rooms are assembled from the bricks; a room that needs something new means a new brick, built and proven in the prototype first. Each built room is held to the plan by the same checks as the prototype's draft (the markers are the truth; plan and rooms agree).
 
-## Phase 5: final touch
+## Stage D: polish
 
-Story, dialogue and cutscenes: the law breaks as real moments, the ending, scripture and creeds written for real ([theme.md](theme.md) and its open questions). All text stays data in the line book (see "Later: audio").
+Only once the real game plays from start to end:
+- **The bestiary**: species grown toward 150–200 behaviorally distinct machines ([long-term.md](long-term.md)), the real bosses, NPCs.
+- **Every room made rich**: its secrets, its swarms, its secret passages, its enigma, the paths toward the end.
+- **Story**: the law breaks as real moments, the ending, dialogue, scripture and creeds written for real ([theme.md](theme.md) and its open questions), cutscenes. All text stays data in the line book.
+- **Audio and voices** (see below).
+- **Beyond procedural art** (see below).
+- **Release:** main menu, pause, settings (graphics quality tiers, audio, controls remapping), save slots, a bestiary screen, controller polish, accessibility options, exported Linux and Windows builds. *Where release work goes is the owner's to place; default: here.*
 
-## Not yet placed by the owner
-
-- **Release:** main menu, pause, settings (graphics quality tiers, audio, controls remapping), save slots, a bestiary screen, controller polish, accessibility options, exported Linux and Windows builds.
-
-## Later: audio
+### Audio
 
 Deferred by the owner. Ask before planning it. Two parts:
 - **Ambience** (room tones, machinery, water). Keep hooks cheap: rooms and biome profiles can later reference ambience.
-- **High-quality voiced dialogue** (owner wish, "someday"). Generated voices, via an ElevenLabs MCP server or local TTS models, to be decided then. This fits the setting: machine voices can be processed (filters, vocoder-like effects) per species or layer.
+- **High-quality voiced dialogue** (owner wish). Generated voices, via an ElevenLabs MCP server or local TTS models, to be decided then. Machine voices can be processed (filters, vocoder-like effects) per species or layer. This is why every line is data with a stable id: voice files are generated per line id in a batch and re-generated when text changes.
 
-  To keep it cheap, when any text is written (placeholder lines, machine creeds, bestiary entries), store it as **data**: one entry per line with a stable ID, speaker, text and optional delivery notes. Never hard-code strings in scenes or scripts. Voice files can then be generated per line ID in a batch and re-generated when text changes.
+### Beyond procedural art
 
-## Later: beyond procedural art
-
-The final polish, once the procedural look has gone as far as it can (direction 2): the owner may provide a **Blender MCP** so the agent can model the pieces code does worst (the pilgrim's head and hair, bosses, organic parts, one-off set pieces), painted by the game's own world-space shaders so they match everything else. Procedural stays the base: materials, atmosphere and layouts remain code. Thanks to the swap rule, this means replacing materials, kit meshes and part meshes, not rebuilding rooms or machines.
+Once the procedural look has gone as far as it can: the owner may provide a **Blender MCP** so the agent can model the pieces code does worst (the pilgrim's head and hair, bosses, organic parts, one-off set pieces), painted by the game's own world-space shaders so they match everything else. Procedural stays the base. Thanks to the swap rule this means replacing materials, kit meshes and part meshes, not rebuilding rooms or machines.
 
 ---
 
@@ -104,6 +102,8 @@ The final polish, once the procedural look has gone as far as it can (direction 
 
 | Decision | Default until answered | Needed by |
 |---|---|---|
-| Audio: when and from where | Silent; owner decides later | — |
-| Palette progression with depth | Pale white + purple near the surface, warming to NieR furnace amber at the core ([art-direction.md](art-direction.md)). [long-term.md](long-term.md) says "teal and rust near the surface, red and ember near the core" for machines | Phase 2 |
-| Where release work (menus, settings, builds) goes in the order | After phase 5 | Phase 5 |
+| The real game's size and length (the prototype was planned for about 2 hours, *Inside*-dense) | Decided in stage B, with the network | Stage B |
+| Audio: when and from where | Silent; stage D | Stage D |
+| Palette progression with depth | Pale white + purple near the surface, warming to NieR furnace amber at the core ([art-direction.md](art-direction.md)). [long-term.md](long-term.md) says "teal and rust near the surface, red and ember near the core" for machines | P2 |
+| The real game's abilities: the same five, or more | The same five; the bricks don't assume a count | Stage B |
+| Where release work (menus, settings, builds) goes | Stage D | Stage D |

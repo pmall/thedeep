@@ -1,6 +1,6 @@
 # Long-term objectives — "The Deep"
 
-This file describes two long-term objectives for the game. Every architectural choice must keep them possible and cheap to grow. `AGENTS.md` carries a short summary of this file and a link to it.
+This file describes the long-term objectives for the game. Every architectural choice must keep them possible and cheap to grow. `AGENTS.md` carries a short summary of this file and a link to it.
 
 Both objectives share one idea: the game should contain something a solo developer could not realistically build by hand, but a coding agent can. Not one complex system: **a very large number of simple, well-made pieces, plus automated proof that they all fit together.** The game itself stays simple to play.
 
@@ -33,7 +33,7 @@ Roughly a third of species should be non-hostile. The world should feel inhabite
 
 - **Species are data plus one behavior.** A `MachineSpecies` resource (`[GlobalClass]`, `.tres`) holds name, layer, parts, stats, palette and a reference to its behavior. Behavior is a C# class.
 - **A shared behavior vocabulary.** Small reusable building blocks: senses (sees player, hears impact, detects nearby machines, detects depth), movement patterns (patrol, hover, wall-crawl on metal, swim, burrow), and actions (strike, flee, carry, repair, pray). Most species combine these blocks. A species may still have its own short custom script when its behavior needs it. That is allowed and expected.
-- **Machines are assembled from modular parts, in code.** Part categories: chassis, locomotion (legs, treads, fins, rotors), sensors (eyes, antennas), tools (claws, drills, censers) and ornaments (religious plating, prayer wheels, cables). A species is a choice of parts, plus scale, proportions and palette. This keeps the art cost to a library of parts, not one model per species. **This part library belongs to the graphical phase,** so building it early is on the critical path.
+- **Machines are assembled from modular parts, in code.** Part categories: chassis, locomotion (legs, treads, fins, rotors), sensors (eyes, antennas), tools (claws, drills, censers) and ornaments (religious plating, prayer wheels, cables). A species is a choice of parts, plus scale, proportions and palette. This keeps the art cost to a library of parts, not one model per species. **This part library is a prototype brick,** so building it early is on the critical path; the species themselves are grown in polish.
 - **Palette by depth.** Species colors follow the game's depth palette: teal and rust near the surface, red and ember near the core.
 - **Bestiary.** Each species has an entry: name, layer, a placeholder "creed" line, and the behaviors the player has observed. Entries fill in as the player watches the machine, not just by killing it.
 
@@ -79,8 +79,32 @@ Note on full freedom: making all 120 orders possible means every ability must be
 
 ---
 
+## Objective 3 — Any world from the bricks
+
+Added with the owner's direction of 2026-11-01 ([roadmap.md](roadmap.md), [principles.md](principles.md)).
+
+### Goal
+
+The game is built twice: a **prototype** (40 rooms, our playground) and then the **real game**, much bigger, from a network of rooms planned on paper. The second build must be assembly, not rewriting: every piece the prototype uses (stage looks, materials, backdrops, water, blocks, gates, mechanisms, machines, items, dialogue) is a reusable **brick**, and a new world is content alone. The owner's test: *"if we make a sequel, we make a new map, and all the tools are at my disposal: it becomes a puzzle and we implement it."*
+
+### What exactly is guaranteed
+
+1. **No world in the code.** No room name, species id, layer or file path of one world appears outside its content and its own checks. A world is data: its rooms, its network and room table, its biomes and layers, its line book, its start.
+2. **The sequel test.** A small second world, made of content only, loads, plays and passes the same checks as the prototype. It stays in the check as a fixture.
+3. **The plan is proven like the prototype.** The real game's network and room table are read by the code and checked on every build (the solver's guarantees, the table agreeing with the network) before and while its rooms are built.
+
+### Architecture to put in place
+
+- The core (rules, state, solver, brains, geometry) in its own Godot-free project; Godot nodes as thin adapters ([principles.md](principles.md)).
+- A world definition that names a world's content; the prototype moved under it.
+- Items (keys, codes) in the requirement language of exits, so the solver sees every gate.
+- The brick catalog ([bricks.md](bricks.md)) kept current: what each brick is and whether it is ready.
+
+---
+
 ## Where they stand (2026-10-31)
 
 - **Objective 2 is built:** the extractor, the solver, the geometry check and the draft map run in `tools/check.sh`, and every room is held to them as it is built.
-- **Objective 1 has its foundation:** the part library, species as data, the behavior vocabulary v0 and the machine checks (M5). Species are grown in the characters phase of [roadmap.md](roadmap.md); until then, the existing species are placeholders.
+- **Objective 1 has its foundation:** the part library, species as data, the behavior vocabulary v0 and the machine checks (M5). Species are grown in stage D (polish) of [roadmap.md](roadmap.md); until then, the existing species are placeholders.
+- **Objective 3 is the prototype's goal** (stage A of [roadmap.md](roadmap.md)): its last item is the sequel test.
 - Both depend on keeping enemies and rooms data-driven, pure logic free of Godot types where practical (so it can be unit-tested), and all movement limits in `player_tuning.tres`.

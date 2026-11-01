@@ -1,6 +1,6 @@
 # Art direction
 
-Read this before any visual work. Art matters in every phase: every room is built to this direction. Extended visuals, where the look is pushed further, are the second phase of the work, right after the complete world ([roadmap.md](roadmap.md)).
+Read this before any visual work. Art matters in every stage: every room is built to this direction. In the prototype ([roadmap.md](roadmap.md)), the stage bricks (P2) and the pilgrim (P3) are where the look is pushed to its bar, so that the real game is assembled from pieces that already look right.
 
 ## The look
 

@@ -1,6 +1,6 @@
-# Map draft — the whole game
+# Map draft — the prototype world
 
-The whole map on paper (roadmap M7): 40 rooms over three layers and the core, 5 abilities, 4 bosses, 3 law breaks. It is a **draft planning graph**: the solver checks it on every build, before the rooms exist. Room names, boss names and story beats are placeholders unless [theme.md](theme.md) says otherwise.
+The prototype's map on paper (roadmap M7): 40 rooms over three layers and the core, 5 abilities, 4 bosses, 3 law breaks, all built. It is a **planning graph**: the solver checks it on every build. The real game's map will be a bigger network with a room table, planned in stage B of [roadmap.md](roadmap.md) in its own files; this one stays the prototype's. Room names, boss names and story beats are placeholders unless [theme.md](theme.md) says otherwise.
 
 **How it is used.** The `map` blocks below are parsed by `MapDraft` (`scripts/map/MapDraft.cs`); everything outside them is design notes. `tools/check.sh` checks the draft twice:
 - Unit tests (`MapDraftTests`) parse this file and run `MapDraft.Check`: no softlock, every room reachable, every ability on exactly one relic, **at least 24 of the 120 ability orders**, every ability obtainable in **at least 2 positions**, 40–60 rooms, and each law break on every route to the goal, in story order (third, second, first).

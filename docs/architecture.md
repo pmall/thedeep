@@ -7,6 +7,12 @@
 - The player is a `CharacterBody3D` locked to Z = 0 (`axis_lock_linear_z` plus clamping in code). All gameplay physics stays on X/Y.
 - Versions and install paths: [toolchain.md](toolchain.md). Working with Godot files as text: [godot-csharp.md](godot-csharp.md).
 
+## Layers
+
+The rules are in [principles.md](principles.md): **core** (pure C#, no Godot: rules, state, the map and solver, brains, geometry), **adapters** (thin Godot nodes that connect the core to the engine), **content** (scenes, resources, data: rooms, species, biomes, lines, worlds). Dependencies point one way: content → adapters → core.
+
+Where the code stands (2026-11-01): the core exists as the Godot-free files listed under "Pure logic" below, compiled into the tests by a hand-kept list; it lives in `scripts/` beside the adapters. Some adapters still hold rules of their own (`Player`, `Session`, `Machine`, `RoomValidator`), and the prototype world is assumed by the code (`scenes/rooms/`, `docs/map-draft.md`, the `DepthLayer` enum). Roadmap item P1 moves the core into its own project (`TheDeep.Core`, no Godot reference, so the compiler holds the boundary), makes those adapters thin, and makes a world data. Update this section and the tree below when it lands.
+
 ## Project structure
 
 ```
@@ -190,7 +196,7 @@ scripts/
   map/MapGraph.cs, MapSolver.cs, MapLayout.cs, ReachPlanner.cs   pure (M7): the map graph, the order solver (softlocks,
                            achievable orders; SolveInside: states are room, way in, abilities), the layout check, the reach
                            planner (the moveset and all five abilities, for the geometry and inside checks)
-  map/MapDraft.cs          pure (M7): the whole game's draft map (the `map` blocks of docs/map-draft.md): parser,
+  map/MapDraft.cs          pure (M7): the prototype's draft map (the `map` blocks of docs/map-draft.md): parser,
                            its targets (orders, positions, scope, law-break milestones), its agreement with built rooms
   map/MapGoal.cs           marker: where the journey ends (for the solver); with a size, an area showing the end of the build;
                            `Ending` (the Heart): reaching it, its room's boss broken, plays the end card and starts a new game
@@ -321,10 +327,11 @@ Code with no Godot types is compiled straight into the xUnit project via `<Compi
 - `ui/ButtonNames.cs`
 - `machines/MachineAct.cs`, `Perception.cs`, `Intent.cs`, `Senses.cs`, `Steering.cs`, `PrayerCycle.cs`, `StrikeAction.cs`, `MachineBrain.cs`, `SurfacePath.cs`, `LegGait.cs`, `machines/brains/*.cs` (including `ConductorBrain`, `SwoopBrain`)
 
-Keep these Godot-free. When adding testable logic, put it in a Godot-free file and add it to `tests/TheDeep.Tests/TheDeep.Tests.csproj`. Machine brains and the map solver (`scripts/map/`) follow this pattern ([long-term.md](long-term.md)).
+Keep these Godot-free. When adding testable logic, put it in a Godot-free file and add it to `tests/TheDeep.Tests/TheDeep.Tests.csproj` (until P1 gives the core its own project). Every new game rule goes here, not in a node ([principles.md](principles.md)). Machine brains and the map solver (`scripts/map/`) follow this pattern ([long-term.md](long-term.md)).
 
 ## Rules that keep the long-term objectives cheap
 
+- No code knows one world: room names, species ids, layers and content paths come from content ([long-term.md](long-term.md), objective 3).
 - Rooms are separate scenes. Connections are **marker nodes inside the room scene** that carry an ability requirement expression and a one-way flag. Never keep a hand-maintained list of connections.
 - Machines are data (`MachineSpecies` `.tres`) plus one behavior class. Never one scene per machine.
 - The player and the machines are built from the same modular part system.
@@ -335,5 +342,5 @@ Keep these Godot-free. When adding testable logic, put it in a Godot-free file a
 - **Per-frame code allocates nothing** (`_Process`, `_PhysicsProcess` and what they call). A garbage collection is a dropped frame, and engine objects (arrays and dictionaries from the engine, query parameters, node wrappers) are finalizable, so they survive into gen1 and make every collection slow. Keep buffers and reuse them (`KitMesh.Buffers`, `MeshBuilder.Clear`, `SweepPath.FromPoints(…, frames)`), ask the room for nodes through `Room.All<T>()` (kept, never walk the tree per tick), avoid LINQ and `GetChildren()` per tick. `tools/capture.sh` reports the collections in each run (`gc` in `perf*.json`); a scripted run should see a handful, not one every few frames.
 - Standard C# naming: PascalCase types, methods and properties; `_camelCase` private fields. One class per file, with the file named after the class.
 - Namespace `TheDeep` (player states: `TheDeep.States`).
-- Nullable reference types on, warnings are errors. Exported node and resource references are declared `= null!;`.
+- Nullable reference types on, warnings are errors. Exported references a scene must set are declared `= null!;`, and that is the only place `!` is allowed; typing rules in [principles.md](principles.md) ("Types tell the truth").
 - `unsafe` is allowed in the game assembly only for `FrameGrabber`, which copies frames out of Godot's native buffers through `Godot.NativeInterop` to avoid multi-megabyte allocations every frame, and `NativeMeshArrays`, which writes a chain's mesh arrays straight into the engine array (through the managed indexer each packed array registers a finalizable disposer: seven per chain per frame). Don't spread it.
