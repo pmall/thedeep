@@ -22,9 +22,10 @@ public partial class SpeciesValidator : Node
     private readonly List<string> _problems = new();
     private IEnumerator<int>? _script;
 
-    public Room Room { get; set; } = null!;
-    public Player Player { get; set; } = null!;
-    public MachineDirector Machines { get; set; } = null!;
+    public required World World { get; init; }
+    public required Room Room { get; init; }
+    public required Player Player { get; init; }
+    public required MachineDirector Machines { get; init; }
 
     public SpeciesValidator()
     {
@@ -43,12 +44,7 @@ public partial class SpeciesValidator : Node
     private IEnumerable<int> Run()
     {
         List<MachineSpecies> species = Load();
-        LineBook? lines = GD.Load<LineBook>(LineBook.Path);
-        if (lines is null)
-        {
-            _problems.Add($"no line book at {LineBook.Path}");
-        }
-
+        LineBook lines = LineBook.Shared;
         foreach (MachineSpecies s in species)
         {
             CheckData(s, lines);
@@ -131,7 +127,7 @@ public partial class SpeciesValidator : Node
         return species;
     }
 
-    private void CheckData(MachineSpecies s, LineBook? lines)
+    private void CheckData(MachineSpecies s, LineBook lines)
     {
         void Problem(string what) => _problems.Add($"{s.ResourcePath}: {what}");
         if (string.IsNullOrWhiteSpace(s.DisplayName))
@@ -144,9 +140,14 @@ public partial class SpeciesValidator : Node
             Problem("no behavior");
         }
 
-        if (lines is not null && lines.Find(s.CreedLine) is null)
+        if (lines.Find(s.CreedLine) is null)
         {
-            Problem($"creed line {s.CreedLine} is not in {LineBook.Path}");
+            Problem($"creed line {s.CreedLine} is not in the world's line book");
+        }
+
+        if (s.Habitat is null)
+        {
+            Problem("no habitat (the biome it lives in)");
         }
 
         if (s.Assembly is null)
@@ -242,7 +243,7 @@ public partial class SpeciesValidator : Node
         foreach (MachineSpecies s in species)
         {
             string acts = observed.TryGetValue(s.Id, out SortedSet<MachineAct>? set) ? string.Join(", ", set) : "not run";
-            GD.Print($"  {s.Id,-14} {s.Layer,-9} {(s.Hostile ? "hostile" : "peaceful"),-9} {s.Behavior?.GetType().Name,-18} seen: {acts}");
+            GD.Print($"  {s.Id,-14} {Habitat(s),-9} {(s.Hostile ? "hostile" : "peaceful"),-9} {s.Behavior?.GetType().Name,-18} seen: {acts}");
         }
 
         // Likely duplicates: same behavior and same body (a variant, not a species; docs/long-term.md).
@@ -251,7 +252,11 @@ public partial class SpeciesValidator : Node
             .Where(g => g.Count() > 1)
             .Select(g => string.Join(" = ", g.Select(s => s.Id)))
             .ToList();
-        string layers = string.Join(", ", species.GroupBy(s => s.Layer).OrderBy(g => g.Key).Select(g => $"{g.Key} {g.Count()}"));
+        // Per habitat, the world's layers first, from the surface down.
+        var depth = World.Definition.Layers.Select(l => l.Biome).ToList();
+        string layers = string.Join(", ", species.GroupBy(Habitat)
+            .OrderBy(g => depth.FindIndex(b => b.DisplayName == g.Key) is var i and >= 0 ? i : int.MaxValue).ThenBy(g => g.Key)
+            .Select(g => $"{g.Key} {g.Count()}"));
         int peaceful = species.Count(s => !s.Hostile);
         foreach (string problem in _problems)
         {
@@ -264,4 +269,6 @@ public partial class SpeciesValidator : Node
                 + (duplicates.Count == 0 ? "no likely duplicates" : $"likely duplicates: {string.Join("; ", duplicates)}"));
         }
     }
+
+    private static string Habitat(MachineSpecies s) => s.Habitat?.DisplayName ?? "(none)";
 }

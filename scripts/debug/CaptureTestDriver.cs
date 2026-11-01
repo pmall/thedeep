@@ -30,7 +30,7 @@ public partial class CaptureTestDriver : Node
     private string? _screenshot;
     private string? _video;
 
-    public OwnerCapture Capture { get; set; } = null!;
+    public required OwnerCapture Capture { get; init; }
 
     public CaptureTestDriver()
     {

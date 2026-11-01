@@ -14,5 +14,5 @@ public partial class BlockMesh : KitMesh
     /// <summary>Chamfer on every edge, meters.</summary>
     [Export] public float Bevel { get => _bevel; set { _bevel = value; RequestUpdate(); } }
 
-    protected override void Build(MeshBuilder builder) => KitShapes.Block(builder, ToNumerics(Size), Bevel);
+    protected override void Build(MeshBuilder builder) => KitShapes.Block(builder, Size.ToCore(), Bevel);
 }

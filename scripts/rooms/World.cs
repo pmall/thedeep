@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using Godot;
 using NVector2 = System.Numerics.Vector2;
@@ -6,16 +7,17 @@ using NVector2 = System.Numerics.Vector2;
 namespace TheDeep;
 
 /// <summary>
-/// Holds the current room. Rooms are separate scenes, loaded here one at a time at the world origin;
-/// their connections are <see cref="RoomExit"/> markers inside them (<see cref="RoomTravel"/> moves the
-/// player through them). Also keeps the map of visited rooms, placed from the exits crossed.
+/// Holds the current room of the world being played (<see cref="Definition"/>). Rooms are separate scenes, loaded here one at a
+/// time at the world origin; their connections are <see cref="RoomExit"/> markers inside them (<see cref="RoomTravel"/> moves
+/// the player through them). Also keeps the map of visited rooms, placed from the exits crossed.
 /// </summary>
 public partial class World : Node3D
 {
-    /// <summary>Folder of the room scenes; a room's name is its file name there.</summary>
-    public const string RoomFolder = "res://scenes/rooms";
+    /// <summary>The world played: its rooms, network, layers, line book and start.</summary>
+    [Export] public WorldDefinition Definition { get; set; } = null!;
 
-    [Export] public PackedScene StartRoom { get; set; } = null!;
+    /// <summary>The room loaded first instead of the world's start room (the save's, or `--room`'s); set before this node is ready.</summary>
+    public PackedScene? FirstRoom { get; set; }
 
     private Room? _room;
 
@@ -31,9 +33,15 @@ public partial class World : Node3D
     /// <summary>Raised after a room is loaded and ready.</summary>
     public event Action<Room>? RoomLoaded;
 
+    public override void _EnterTree()
+    {
+        // Before any node is ready: the props, banners and manuals of this world read their words from its line book.
+        LineBook.Use(Definition.Lines);
+    }
+
     public override void _Ready()
     {
-        Load(StartRoom);
+        Load(FirstRoom ?? Definition.StartRoom);
     }
 
     /// <summary>
@@ -70,13 +78,17 @@ public partial class World : Node3D
     public void Enter(Room room, NVector2 offset)
     {
         string name = NameOf(room.SceneFilePath);
-        Map.Enter(name, offset, new NVector2(room.BoundsMin.X, room.BoundsMin.Y), new NVector2(room.BoundsMax.X, room.BoundsMax.Y));
+        Map.Enter(name, offset, room.BoundsMin.ToCore(), room.BoundsMax.ToCore());
         Map.SetWays(name, room.Exits().Where(e => !e.ArrivalOnly)
-            .Select(e => new MapWay(name, e.Name, new NVector2(e.RoomPosition.X, e.RoomPosition.Y), e.Requires, e.Open)));
+            .Select(e => new MapWay(name, e.Name, e.RoomPosition.ToCore(), e.Requires, e.Open)));
     }
 
-    /// <summary>The scene path of the room named <paramref name="name"/> (its file name without extension).</summary>
-    public static string RoomPath(string name) => $"{RoomFolder}/{name}.tscn";
+    /// <summary>The scene path of the world's room named <paramref name="name"/> (its file name without extension).</summary>
+    public string RoomPath(string name) => Definition.RoomPath(name);
+
+    /// <summary>The scene paths of every room of the world, in name order (the lab rooms too; see <see cref="Room.InGame"/>).</summary>
+    public IEnumerable<string> RoomScenes() =>
+        DirAccess.GetFilesAt(Definition.RoomsFolder).Where(f => f.EndsWith(".tscn")).Order().Select(f => $"{Definition.RoomsFolder}/{f}");
 
     /// <summary>A room's name from its scene path.</summary>
     public static string NameOf(string scenePath) => scenePath.GetFile().GetBaseName();

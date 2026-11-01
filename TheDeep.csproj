@@ -10,7 +10,12 @@
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
   </PropertyGroup>
   <ItemGroup>
-    <!-- The xUnit project has its own csproj; keep its sources out of the game assembly. -->
+    <!-- The core and the xUnit tests are projects of their own; keep their sources out of the game assembly. -->
+    <Compile Remove="core/**" />
     <Compile Remove="tests/**" />
+  </ItemGroup>
+  <ItemGroup>
+    <!-- The rules and state, Godot-free (docs/principles.md): the game is their adapter. -->
+    <ProjectReference Include="core/TheDeep.Core.csproj" />
   </ItemGroup>
 </Project>

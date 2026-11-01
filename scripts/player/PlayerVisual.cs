@@ -108,7 +108,7 @@ public partial class PlayerVisual : Node3D
             return;
         }
 
-        _motion.Update(delta, new NVector2(velocity.X, velocity.Y), _facing, mode);
+        _motion.Update(delta, velocity.Flat(), _facing, mode);
         _rig.Apply(_motion.Pose);
         Body.StepChains(delta, onFloor && !float.IsNaN(floorY) ? floorY + 0.02f : float.NaN);
 

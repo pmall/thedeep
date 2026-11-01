@@ -14,7 +14,7 @@ namespace TheDeep;
 public partial class ControlsManual : Control
 {
     /// <summary>The pilgrim whose abilities dim the rows it can't use yet.</summary>
-    public Player Player { get; set; } = null!;
+    public required Player Player { get; init; }
 
     /// <summary>The device shown; set by the last input, or forced (UiShot).</summary>
     public ButtonNames.Device Device { get; set; }
@@ -94,27 +94,39 @@ public partial class ControlsManual : Control
 
     public float TopOffset { get; init; } = 150f;
 
+    /// <summary>What a row shows for one device, left to right: buttons (<see cref="Glyph"/>) and the marks between them (<see cref="Separator"/>).</summary>
+    private abstract class Item
+    {
+        /// <summary>Its width on screen, measured once the row is built.</summary>
+        public float Width;
+    }
+
+    /// <summary>A mark between buttons: "/" between alternatives, "+" between buttons pressed together.</summary>
+    private sealed class Separator(string text) : Item
+    {
+        public string Text { get; } = text;
+    }
+
     /// <summary>One button on screen: a key cap, or a pad glyph; lit while any of its actions is held.</summary>
-    private sealed class Glyph
+    private sealed class Glyph : Item
     {
         public string Text = "";
         public ButtonNames.PadShape? Shape;
         public int Face = -1;
         public StringName[] Actions = System.Array.Empty<StringName>();
         public float Lit;
-        public float Width;
 
         /// <summary>A stick pushed one way (a direction on the stick), or zero for the live stick.</summary>
         public Vector2 Push;
     }
 
-    /// <summary>A row as drawn for one device: its buttons and the separators between them (a string item).</summary>
-    private sealed class Row
+    /// <summary>A row as drawn: its spec, its words, and for each device its buttons and the separators between them.</summary>
+    private sealed class Row(Spec spec, string words, bool header)
     {
-        public Spec Spec = null!;
-        public string Words = "";
-        public bool Header;
-        public readonly List<object>[] Items = { new(), new() };
+        public Spec Spec { get; } = spec;
+        public string Words { get; } = words;
+        public bool Header { get; } = header;
+        public readonly List<Item>[] Items = { new(), new() };
     }
 
     private readonly List<Row> _rows = new();
@@ -135,14 +147,14 @@ public partial class ControlsManual : Control
         Font font = GetThemeDefaultFont();
         foreach (Spec spec in Specs)
         {
-            var row = new Row { Spec = spec, Words = LineBook.Shared.Find(spec.Line)?.Text ?? "", Header = spec.Actions.Length == 0 && spec.Needs == Ability.None };
-            List<object> keys = row.Items[(int)ButtonNames.Device.Keyboard];
-            List<object> buttons = row.Items[(int)ButtonNames.Device.Gamepad];
+            var row = new Row(spec, LineBook.Shared.Find(spec.Line)?.Text ?? "", header: spec.Actions.Length == 0 && spec.Needs == Ability.None);
+            List<Item> keys = row.Items[(int)ButtonNames.Device.Keyboard];
+            List<Item> buttons = row.Items[(int)ButtonNames.Device.Gamepad];
             Build(keys, spec, false, font);
             Build(buttons, spec, true, font);
             if (BothDevices && buttons.Count > 0)
             {
-                keys.Add("/");
+                keys.Add(new Separator("/") { Width = Width(font, "/", CapFont) });
                 keys.AddRange(buttons);
             }
 
@@ -185,7 +197,7 @@ public partial class ControlsManual : Control
 
         foreach (Row row in _rows)
         {
-            foreach (object item in row.Items[(int)_shown])
+            foreach (Item item in row.Items[(int)_shown])
             {
                 if (item is Glyph glyph)
                 {
@@ -217,7 +229,7 @@ public partial class ControlsManual : Control
         float height = 0f;
         foreach (Row row in _rows)
         {
-            buttons = Mathf.Max(buttons, ItemsWidth(font, row.Items[device]));
+            buttons = Mathf.Max(buttons, ItemsWidth(row.Items[device]));
             words = Mathf.Max(words, Width(font, row.Words, row.Header ? HeaderFont : WordFont));
             height += row.Header ? HeaderHeight : RowHeight;
         }
@@ -243,25 +255,25 @@ public partial class ControlsManual : Control
             float rowA = a * (row.Spec.Needs == Ability.None || Player.Abilities.Has(row.Spec.Needs) ? 1f : 0.5f);
             float mid = y + RowHeight * 0.5f - 1f;
             float x = origin.X + Pad;
-            List<object> items = row.Items[device];
+            List<Item> items = row.Items[device];
             if (items.Count == 0)
             {
                 DrawString(font, new Vector2(x, mid + 4.5f), "—", HorizontalAlignment.Left, -1f, CapFont, Ink with { A = 0.35f * rowA });
             }
 
-            foreach (object item in items)
+            foreach (Item item in items)
             {
-                if (item is Glyph glyph)
+                switch (item)
                 {
-                    DrawGlyph(font, glyph, new Vector2(x + glyph.Width * 0.5f, mid + 1.5f * glyph.Lit), rowA);
-                    x += glyph.Width + CapGap;
+                    case Glyph glyph:
+                        DrawGlyph(font, glyph, new Vector2(x + glyph.Width * 0.5f, mid + 1.5f * glyph.Lit), rowA);
+                        break;
+                    case Separator separator:
+                        DrawString(font, new Vector2(x, mid + 4.5f), separator.Text, HorizontalAlignment.Left, -1f, CapFont, Ink with { A = 0.5f * rowA });
+                        break;
                 }
-                else if (item is string separator)
-                {
-                    float w = Width(font, separator, CapFont);
-                    DrawString(font, new Vector2(x, mid + 4.5f), separator, HorizontalAlignment.Left, -1f, CapFont, Ink with { A = 0.5f * rowA });
-                    x += w + CapGap;
-                }
+
+                x += item.Width + CapGap;
             }
 
             DrawString(font, new Vector2(wordsX, mid + 5f), row.Words, HorizontalAlignment.Left, -1f, WordFont, Ink with { A = 0.85f * rowA });
@@ -271,7 +283,7 @@ public partial class ControlsManual : Control
 
     // ---- building the rows ----
 
-    private static void Build(List<object> items, Spec spec, bool pad, Font font)
+    private static void Build(List<Item> items, Spec spec, bool pad, Font font)
     {
         switch (spec.Kind)
         {
@@ -306,17 +318,22 @@ public partial class ControlsManual : Control
                 break;
         }
 
-        foreach (object item in items)
+        foreach (Item item in items)
         {
-            if (item is Glyph glyph)
+            switch (item)
             {
-                glyph.Width = GlyphWidth(font, glyph);
+                case Glyph glyph:
+                    glyph.Width = GlyphWidth(font, glyph);
+                    break;
+                case Separator separator:
+                    separator.Width = Width(font, separator.Text, CapFont);
+                    break;
             }
         }
     }
 
     /// <summary>Movement: the n-th binding of each direction makes a group (W A S D, then the arrows); a stick or a d-pad is one glyph.</summary>
-    private static void BuildSet(List<object> items, StringName[] actions, bool pad)
+    private static void BuildSet(List<Item> items, StringName[] actions, bool pad)
     {
         var events = new Godot.Collections.Array<InputEvent>[actions.Length];
         int count = 0;
@@ -364,7 +381,7 @@ public partial class ControlsManual : Control
         }
     }
 
-    private static void Add(List<object> items, Glyph? glyph, string separator)
+    private static void Add(List<Item> items, Glyph? glyph, string separator)
     {
         if (glyph is null)
         {
@@ -373,7 +390,7 @@ public partial class ControlsManual : Control
 
         if (items.Count > 0 && separator != "")
         {
-            items.Add(separator);
+            items.Add(new Separator(separator));
         }
 
         items.Add(glyph);
@@ -422,12 +439,12 @@ public partial class ControlsManual : Control
         _ => Mathf.Max(CapHeight + 3f, Width(font, glyph.Text, CapFont) + 12f),
     };
 
-    private static float ItemsWidth(Font font, List<object> items)
+    private static float ItemsWidth(List<Item> items)
     {
         float w = 0f;
-        foreach (object item in items)
+        foreach (Item item in items)
         {
-            w += (item is Glyph glyph ? glyph.Width : Width(font, (string)item, CapFont)) + CapGap;
+            w += item.Width + CapGap;
         }
 
         return Mathf.Max(0f, w - CapGap);

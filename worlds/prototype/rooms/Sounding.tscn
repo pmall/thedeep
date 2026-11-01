@@ -1,0 +1,378 @@
+[gd_scene format=3]
+
+; The Sounding, east of the Mere (map offset (340.5, -79)): a sonar chapel on the lake shore, where the machines
+; listened to the deep. Its great bell hangs over a sounding well of black water. The pilgrim drops into the well (its
+; walls are too high to climb back) and floats to a shelf at the waterline: the Ballast relic. With it, the only way on
+; is down: sink to the well's floor, under the wall, and rise in the shaft beyond, into the chapel's east hall (a
+; shrine), then up the ringers' plinth, over the shaft onto the wall, and over the well's mouth to the door.
+
+[ext_resource type="PackedScene" path="res://scenes/kit/Block.tscn" id="1_block"]
+[ext_resource type="Script" path="res://scripts/rooms/RoomExit.cs" id="2_exit"]
+[ext_resource type="PackedScene" path="res://scenes/props/AbilityRelic.tscn" id="3_relic"]
+[ext_resource type="PackedScene" path="res://scenes/props/Shrine.tscn" id="4_shrine"]
+[ext_resource type="Script" path="res://scripts/rooms/WaterBody.cs" id="5_water_body"]
+[ext_resource type="Material" path="res://assets/materials/water.tres" id="6_water"]
+[ext_resource type="Material" path="res://assets/materials/underwater.tres" id="7_underwater"]
+[ext_resource type="Material" path="res://assets/materials/water_section.tres" id="8_water_section"]
+[ext_resource type="PackedScene" path="res://scenes/props/ScripturePlate.tscn" id="9_plate"]
+[ext_resource type="Script" path="res://scripts/parts/PodMesh.cs" id="10_pod"]
+[ext_resource type="Material" path="res://assets/materials/rust_mid.tres" id="11_rust_mid"]
+[ext_resource type="Script" path="res://scripts/parts/RingMesh.cs" id="12_ring"]
+[ext_resource type="Script" path="res://scripts/kit/BlockMesh.cs" id="13_blockmesh"]
+[ext_resource type="Material" path="res://assets/materials/metal_mid.tres" id="14_metal_mid"]
+[ext_resource type="Material" path="res://assets/materials/stone_mid.tres" id="15_stone_mid"]
+[ext_resource type="Script" path="res://scripts/kit/ArchMesh.cs" id="16_arch"]
+[ext_resource type="Script" path="res://scripts/kit/CableMesh.cs" id="17_cables"]
+[ext_resource type="Material" path="res://assets/materials/cable.tres" id="18_cable"]
+[ext_resource type="Script" path="res://scripts/kit/IcicleMesh.cs" id="19_icicles"]
+[ext_resource type="Material" path="res://assets/materials/ice.tres" id="20_ice"]
+[ext_resource type="Material" path="res://assets/materials/glyphs.tres" id="21_glyphs"]
+[ext_resource type="PackedScene" path="res://scenes/fx/Rime.tscn" id="22_rime"]
+[ext_resource type="PackedScene" path="res://scenes/fx/Silt.tscn" id="23_silt"]
+[ext_resource type="Script" path="res://scripts/rooms/PhotoSpot.cs" id="24_spot"]
+[ext_resource type="Script" path="res://scripts/rooms/Room.cs" id="25_room"]
+[ext_resource type="Resource" path="res://resources/biomes/frozen.tres" id="26_frozen"]
+[ext_resource type="PackedScene" path="res://scenes/stage/RoomStage.tscn" id="27_stage"]
+[ext_resource type="Script" path="res://scripts/rooms/dressing/WallDressing.cs" id="28_wall"]
+
+[sub_resource type="PrimitiveMesh" id="pod_1"]
+script = ExtResource("10_pod")
+Axis = Vector3(0, -1, 0)
+Length = 4.2
+Stations = PackedVector4Array(0, 0.98, 0.98, 0, 0.06, 1.68, 1.68, 0, 0.25, 2.03, 2.03, 0, 0.6, 2.31, 2.31, 0, 0.85, 3.01, 3.01, 0, 0.96, 3.78, 3.78, 0, 1, 3.85, 3.85, 0)
+Sides = 40
+Rings = 24
+
+[sub_resource type="PrimitiveMesh" id="ring_2"]
+script = ExtResource("12_ring")
+RadiusX = 1.92
+RadiusZ = 1.92
+Height = 0.3
+Thickness = 0.2
+Segments = 48
+
+[sub_resource type="PrimitiveMesh" id="blockmesh_3"]
+script = ExtResource("13_blockmesh")
+Size = Vector3(14, 0.8, 1.2)
+Bevel = 0.2
+
+[sub_resource type="PrimitiveMesh" id="blockmesh_4"]
+script = ExtResource("13_blockmesh")
+Size = Vector3(64, 32, 1.2)
+Bevel = 0.3
+
+[sub_resource type="PrimitiveMesh" id="arch_5"]
+script = ExtResource("16_arch")
+Span = 16
+Rise = 8
+Thickness = 0.9
+Depth = 1
+Flange = 0.4
+Segments = 40
+
+[sub_resource type="PrimitiveMesh" id="pod_6"]
+script = ExtResource("10_pod")
+Axis = Vector3(0, 1, 0)
+Length = 3.2
+Stations = PackedVector4Array(0, 0.3, 0.3, 0, 0.5, 0.5, 0.5, 0, 0.85, 1.1, 1.1, 0, 1, 1.9, 1.9, 0)
+Sides = 24
+Rings = 10
+
+[sub_resource type="PrimitiveMesh" id="cables_7"]
+script = ExtResource("17_cables")
+End = Vector3(-22, 2, 0)
+Sag = 2.6
+Radius = 0.07
+Strands = 3
+Seed = 173
+
+[sub_resource type="PrimitiveMesh" id="icicles_8"]
+script = ExtResource("19_icicles")
+Width = 56
+Length = 2.4
+Count = 56
+Seed = 174
+
+[sub_resource type="QuadMesh" id="QuadMesh_9"]
+size = Vector2(2.5, 0.3)
+
+[sub_resource type="QuadMesh" id="QuadMesh_10"]
+size = Vector2(3, 0.3)
+
+[node name="Sounding" type="Node3D" node_paths=PackedStringArray("SpawnPoint", "Stage", "Lamps", "Shafts", "GlyphLights")]
+script = ExtResource("25_room")
+SpawnPoint = NodePath("SpawnPoint")
+Stage = NodePath("Stage")
+Biome = ExtResource("26_frozen")
+Lamps = [NodePath("Lamps/Well"), NodePath("Lamps/Shrine")]
+Shafts = [NodePath("Shafts/Bell"), NodePath("Shafts/Hall")]
+GlyphLights = [NodePath("Props/Shrine/Light"), NodePath("Props/Plate/Light"), NodePath("Glyphs/RelicLight"), NodePath("Glyphs/ShrineLight")]
+BoundsMin = Vector2(-1, -18)
+BoundsMax = Vector2(58, 12)
+
+[node name="SpawnPoint" type="Marker3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 4, 0, 0)
+
+; The shared atmosphere stack (environment, key light, clear front air, skylines, far pillars, frame, dust).
+[node name="Stage" parent="." instance=ExtResource("27_stage")]
+Seed = 171
+DustDensity = 0.6
+PillarDensity = 2
+FrameBelow = false
+
+[node name="Geometry" type="Node3D" parent="."]
+
+[node name="Entrance" parent="Geometry" instance=ExtResource("1_block")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 5.5, -10, 0)
+Size = Vector3(17, 20, 4)
+
+[node name="WestWall" parent="Geometry" instance=ExtResource("1_block")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -1.5, 9.5, 0)
+Size = Vector3(3, 11, 4)
+
+[node name="Roof" parent="Geometry" instance=ExtResource("1_block")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 30.5, 13.5, 0)
+Size = Vector3(61, 3, 4)
+
+[node name="WellFloor" parent="Geometry" instance=ExtResource("1_block")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 24, -18, 0)
+Size = Vector3(20, 4, 4)
+
+; the wall between the well and the shaft: the water passes under it
+[node name="WellWall" parent="Geometry" instance=ExtResource("1_block")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 26, -6, 0)
+Size = Vector3(8, 12, 4)
+
+; the relic's shelf, just above the water
+[node name="Shelf" parent="Geometry" instance=ExtResource("1_block")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 20.75, -6.25, 0)
+Size = Vector3(2.5, 1.5, 4)
+
+; out of the shaft onto the east hall
+[node name="EastHall" parent="Geometry" instance=ExtResource("1_block")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 47.5, -12, 0)
+Size = Vector3(27, 16, 4)
+
+; the bell-ringers' plinth: up it, then over the shaft onto the wall
+[node name="Plinth" parent="Geometry" instance=ExtResource("1_block")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 38, -2.5, 0)
+Size = Vector3(4, 3, 4)
+
+[node name="EastWall" parent="Geometry" instance=ExtResource("1_block")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 59.5, 4, 0)
+Size = Vector3(3, 16, 4)
+
+[node name="Exits" type="Node3D" parent="."]
+
+; back west to the Mere
+[node name="West" type="Marker3D" parent="Exits"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 1, 0, 0)
+script = ExtResource("2_exit")
+TargetRoom = "res://worlds/prototype/rooms/Mere.tscn"
+TargetExit = "East"
+Size = Vector2(1, 4)
+
+[node name="Props" type="Node3D" parent="."]
+
+; Ballast, on the shelf at the waterline
+[node name="Relic" parent="Props" instance=ExtResource("3_relic")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 21, -5.5, 0)
+Ability = 8
+NameLine = &"ability.ballast.name"
+HintLine = &"ability.ballast.hint"
+
+; the east hall's shrine
+[node name="Shrine" parent="Props" instance=ExtResource("4_shrine")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 48, -4, 0)
+
+; the sounding well and the shaft beyond its wall, joined under it
+[node name="Water" type="Node3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 24, -6, -6)
+script = ExtResource("5_water_body")
+Size = Vector2(20, 16.1)
+Depth = 10
+Swim = true
+SurfaceMaterial = ExtResource("6_water")
+UnderwaterMaterial = ExtResource("7_underwater")
+SectionMaterial = ExtResource("8_water_section")
+
+; the sounders' plate
+[node name="Plate" parent="Props" instance=ExtResource("9_plate")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 42, -4, 0)
+TitleLine = &"lore.sounding_title"
+TextLine = &"lore.sounding"
+
+[node name="Kit" type="Node3D" parent="."]
+
+[node name="Bell" type="Node3D" parent="Kit"]
+
+; the sounding bell, hung over the well's mouth
+[node name="Body" type="MeshInstance3D" parent="Kit/Bell"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 18, 10.75, -2.5)
+mesh = SubResource("pod_1")
+material_override = ExtResource("11_rust_mid")
+
+[node name="Lip" type="MeshInstance3D" parent="Kit/Bell"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 18, 6.5, -2.5)
+mesh = SubResource("ring_2")
+material_override = ExtResource("11_rust_mid")
+
+[node name="Yoke" type="MeshInstance3D" parent="Kit/Bell"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 18, 11.25, -2.5)
+mesh = SubResource("blockmesh_3")
+material_override = ExtResource("14_metal_mid")
+
+; the chapel's back wall
+[node name="Back" type="MeshInstance3D" parent="Kit"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 29, -3, -8.5)
+mesh = SubResource("blockmesh_4")
+material_override = ExtResource("15_stone_mid")
+
+; the back wall dressed: a archive's wall at 1.25x (WallDressing)
+[node name="WallDressing" type="Node3D" parent="Kit"]
+transform = Transform3D(1.25, 0, 0, 0, 1.25, 0, 0, 0, 1.25, 29, -19, -7.75)
+script = ExtResource("28_wall")
+Style = 2
+Size = Vector2(51.2, 25.6)
+Seed = 480
+
+[node name="Ribs" type="Node3D" parent="Kit"]
+
+[node name="A" type="MeshInstance3D" parent="Kit/Ribs"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 18, 4, -6.5)
+mesh = SubResource("arch_5")
+material_override = ExtResource("15_stone_mid")
+
+[node name="B" type="MeshInstance3D" parent="Kit/Ribs"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 46, 4, -6.5)
+mesh = SubResource("arch_5")
+material_override = ExtResource("15_stone_mid")
+
+[node name="Horns" type="Node3D" parent="Kit"]
+
+; listening horns turned to the well
+[node name="A" type="MeshInstance3D" parent="Kit/Horns"]
+transform = Transform3D(0.5, 0.866, 0, -0.866, 0.5, 0, 0, 0, 1, 40, 3, -4.5)
+mesh = SubResource("pod_6")
+material_override = ExtResource("14_metal_mid")
+
+[node name="B" type="MeshInstance3D" parent="Kit/Horns"]
+transform = Transform3D(0.2588, 0.9659, 0, -0.9659, 0.2588, 0, 0, 0, 1, 54, 5, -4.5)
+mesh = SubResource("pod_6")
+material_override = ExtResource("14_metal_mid")
+
+; the horns cabled to the bell
+[node name="Cables" type="MeshInstance3D" parent="Kit"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 40, 6, -3.5)
+mesh = SubResource("cables_7")
+material_override = ExtResource("18_cable")
+
+[node name="Icicles" type="MeshInstance3D" parent="Kit"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 29, 12, 1.25)
+mesh = SubResource("icicles_8")
+material_override = ExtResource("20_ice")
+
+[node name="Glyphs" type="Node3D" parent="."]
+
+; faith glyphs under the relic's shelf
+[node name="Relic" type="MeshInstance3D" parent="Glyphs"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 21, -6.4, 2.01)
+mesh = SubResource("QuadMesh_9")
+material_override = ExtResource("21_glyphs")
+cast_shadow = 0
+
+[node name="RelicLight" type="OmniLight3D" parent="Glyphs"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 21, -6.4, 2.71)
+light_energy = 0.5
+light_volumetric_fog_energy = 0
+omni_range = 2.5
+
+[node name="Shrine" type="MeshInstance3D" parent="Glyphs"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 48, -4.75, 2.01)
+mesh = SubResource("QuadMesh_10")
+material_override = ExtResource("21_glyphs")
+cast_shadow = 0
+
+[node name="ShrineLight" type="OmniLight3D" parent="Glyphs"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 48, -4.75, 2.71)
+light_energy = 0.5
+light_volumetric_fog_energy = 0
+omni_range = 2.5
+
+[node name="Shafts" type="Node3D" parent="."]
+
+[node name="Bell" type="SpotLight3D" parent="Shafts"]
+transform = Transform3D(-1, 0, 0, 0, 0.1414, 0.9899, 0, 0.9899, -0.1414, 18, 40, -2)
+light_energy = 4.5
+light_volumetric_fog_energy = 11
+shadow_enabled = true
+spot_range = 70
+spot_attenuation = 0.25
+spot_angle = 7
+spot_angle_attenuation = 2
+
+[node name="Hall" type="SpotLight3D" parent="Shafts"]
+transform = Transform3D(-0.7071, 0.6288, -0.3234, 0, 0.4573, 0.8893, 0.7071, 0.6288, -0.3234, 44, 38, -12)
+light_energy = 2.4
+light_volumetric_fog_energy = 7
+shadow_enabled = true
+spot_range = 70
+spot_attenuation = 0.25
+spot_angle = 10
+spot_angle_attenuation = 2
+
+[node name="Lamps" type="Node3D" parent="."]
+
+; a cold glow down the well
+[node name="Well" type="OmniLight3D" parent="Lamps"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 22, -9, 1)
+light_energy = 1
+omni_range = 7
+shadow_enabled = false
+
+[node name="Shrine" type="OmniLight3D" parent="Lamps"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 48, -0.5, 1.2)
+light_energy = 0.9
+omni_range = 5
+shadow_enabled = false
+
+[node name="Particles" type="Node3D" parent="."]
+
+[node name="Rime" parent="Particles" instance=ExtResource("22_rime")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 29, 4, -1)
+Extents = Vector3(28, 7, 3)
+Density = 0.35
+
+[node name="Silt" parent="Particles" instance=ExtResource("23_silt")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 24, -11, -1)
+Extents = Vector3(9, 4, 2)
+Density = 0.7
+
+[node name="PhotoSpots" type="Node3D" parent="."]
+
+; the door, the bell over the well
+[node name="Bell" type="Marker3D" parent="PhotoSpots"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 16, 4.5, 22)
+script = ExtResource("24_spot")
+PlayerPosition = Vector3(8, 0, 0)
+
+; in the well: the relic at the waterline, the way under the wall
+[node name="Well" type="Marker3D" parent="PhotoSpots"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 22, -8, 22)
+script = ExtResource("24_spot")
+PlayerPosition = Vector3(21, -5.5, 0)
+PlayerFacing = -1
+
+; the east hall's shrine, the shaft, the wall top
+[node name="Hall" type="Marker3D" parent="PhotoSpots"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 42, 0, 22)
+script = ExtResource("24_spot")
+PlayerPosition = Vector3(46, -4, 0)
+PlayerFacing = -1
+
+; the whole chapel
+[node name="Wide" type="Marker3D" parent="PhotoSpots"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 29, -3, 64)
+script = ExtResource("24_spot")
+PlayerPosition = Vector3(8, 0, 0)
+Fov = 40

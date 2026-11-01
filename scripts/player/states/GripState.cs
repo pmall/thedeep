@@ -112,7 +112,7 @@ public sealed class GripState : PlayerState
 
         NVector2 t = GripMath.Tangent(up);
         NVector2 v = t * _speed - up * StickSpeed;
-        Player.Velocity = new Vector3(v.X, v.Y, 0f);
+        Player.Velocity = v.OnPlane();
         return null;
     }
 

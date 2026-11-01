@@ -8,6 +8,7 @@
 [ext_resource type="Script" path="res://scripts/machines/JointDriver.cs" id="3_driver"]
 [ext_resource type="Script" path="res://scripts/machines/MachineLeg.cs" id="4_leg"]
 [ext_resource type="Resource" path="res://resources/parts/gleaner.tres" id="5_assembly"]
+[ext_resource type="Resource" path="res://resources/biomes/flooded.tres" id="0_habitat"]
 
 [sub_resource type="Resource" id="Behavior"]
 script = ExtResource("2_behavior")
@@ -166,7 +167,7 @@ Bend = -1
 script = ExtResource("1_species")
 Id = &"gleaner"
 DisplayName = "Gleaner"
-Layer = 0
+Habitat = ExtResource("0_habitat")
 Hostile = false
 CreedLine = &"creed.gleaner"
 Assembly = ExtResource("5_assembly")

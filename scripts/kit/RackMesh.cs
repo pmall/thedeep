@@ -18,5 +18,5 @@ public partial class RackMesh : KitMesh
     /// <summary>Which bays are pulled out or missing.</summary>
     [Export] public int Seed { get => _seed; set { _seed = value; RequestUpdate(); } }
 
-    protected override void Build(MeshBuilder builder) => KitShapes.Rack(builder, ToNumerics(Size), Units, Seed);
+    protected override void Build(MeshBuilder builder) => KitShapes.Rack(builder, Size.ToCore(), Units, Seed);
 }

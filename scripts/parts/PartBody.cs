@@ -110,10 +110,16 @@ public partial class PartBody : Node3D
         {
             var joint = new Node3D { Name = spec.Name, Position = spec.Offset };
             Node3D parent = this;
-            if (!spec.Parent.IsEmpty && !_joints.TryGetValue(spec.Parent, out parent!))
+            if (!spec.Parent.IsEmpty)
             {
-                GD.PushError($"{Assembly.ResourcePath}: joint {spec.Name} hangs from unknown joint {spec.Parent} (list parents first)");
-                parent = this;
+                if (_joints.TryGetValue(spec.Parent, out Node3D? found))
+                {
+                    parent = found;
+                }
+                else
+                {
+                    GD.PushError($"{Assembly.ResourcePath}: joint {spec.Name} hangs from unknown joint {spec.Parent} (list parents first)");
+                }
             }
 
             parent.AddChild(joint);
@@ -153,7 +159,7 @@ public partial class PartBody : Node3D
                 Gravity = spec.Gravity,
                 Drag = spec.Drag,
                 Stiffness = spec.Stiffness,
-                RestDirection = ToNumerics(spec.RestDirection),
+                RestDirection = spec.RestDirection.ToCore(),
                 RestCurl = Mathf.DegToRad(spec.RestCurl),
             };
 
@@ -184,7 +190,7 @@ public partial class PartBody : Node3D
     {
         Transform3D t = chain.Joint.GlobalTransform;
         Quaternion q = t.Basis.Orthonormalized().GetRotationQuaternion();
-        return (ToNumerics(t * chain.Spec.Offset), new NQuaternion(q.X, q.Y, q.Z, q.W));
+        return ((t * chain.Spec.Offset).ToCore(), q.ToCore());
     }
 
     private void DrawChain(Chain chain, float t)
@@ -202,7 +208,7 @@ public partial class PartBody : Node3D
         // Rebuilt every frame from kept buffers (ChainMesh), so drawing a chain leaves nothing for the garbage collector.
         ChainMesh m = chain.Mesh;
         m.Builder.Clear();
-        SweepPath.FromPoints(points, ToNumerics(faceAxis), m.Path);
+        SweepPath.FromPoints(points, faceAxis.ToCore(), m.Path);
         m.Builder.Sweep(m.Path, m.Profile, scales: m.Scales);
         var mesh = (ArrayMesh)chain.Skin.Mesh;
         mesh.ClearSurfaces();
@@ -219,13 +225,11 @@ public partial class PartBody : Node3D
             z = Vector3.Back;
         }
 
-        chain.End.GlobalTransform = new Transform3D(new Basis(y.Cross(z), y, z), new Vector3(tip.X, tip.Y, tip.Z));
+        chain.End.GlobalTransform = new Transform3D(new Basis(y.Cross(z), y, z), tip.ToGodot());
     }
 
     private static readonly Godot.Collections.Array<Godot.Collections.Array> NoBlendShapes = new();
     private static readonly Godot.Collections.Dictionary NoLods = new();
-
-    private static NVector3 ToNumerics(Vector3 v) => new(v.X, v.Y, v.Z);
 
     private sealed record Chain(PartChain Spec, Node3D Joint, VerletChain Sim, MeshInstance3D Skin, Node3D End, NVector3[] Previous, ChainMesh Mesh);
 

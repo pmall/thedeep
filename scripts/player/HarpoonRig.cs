@@ -30,8 +30,9 @@ public partial class HarpoonRig : Node3D
 
     private readonly List<HarpoonAnchor> _anchors = new();
     private readonly List<NVector2> _points = new();
-    private PlaneRay _ray = null!;
-    private System.Func<int, bool> _inSight = null!;
+    private PlaneRay? _ray;
+    private PlaneRay Ray => _ray ??= PlaneRay.For(PhysicsLayers.Solid);
+    private readonly System.Func<int, bool> _inSight;
     private NVector2 _sightFrom;
 
     /// <summary>The anchor the pilgrim would fire at if it had the Harpoon (null with it): a ring out of reach, for the gate hints.</summary>
@@ -40,12 +41,16 @@ public partial class HarpoonRig : Node3D
     private float _reel;
     private Vector3 _reelEnd;
 
+    public HarpoonRig()
+    {
+        _inSight = i => InSight(_sightFrom, _points[i]); // made once: a lambda per tick would allocate
+    }
+
     public override void _Ready()
     {
         TopLevel = true;
         PhysicsInterpolationMode = PhysicsInterpolationModeEnum.Off;
-        _ray = PlaneRay.AddTo(this, PhysicsLayers.Solid);
-        _inSight = i => InSight(_sightFrom, _points[i]);
+        Ray.Attach(this);
         World.RoomLoaded += OnRoomLoaded;
         OnRoomLoaded(World.Room);
         Line.Visible = false;
@@ -89,9 +94,9 @@ public partial class HarpoonRig : Node3D
     public override void _Process(double delta)
     {
         Vector3 hand = Player.GetGlobalTransformInterpolated().Origin + new Vector3(0f, Player.CenterHeight + 0.15f, 0f);
-        if (Player.CurrentState is HarpoonState harpoon && IsInstanceValid(harpoon.Anchor))
+        if (Player.CurrentState is HarpoonState { Anchor: { } fired } harpoon && IsInstanceValid(fired))
         {
-            Vector3 anchor = harpoon.Anchor.GlobalPosition;
+            Vector3 anchor = fired.GlobalPosition;
             Vector3 toAnchor = anchor - hand;
             float reach = Mathf.Min(harpoon.Line + 0.15f, toAnchor.Length());
             _reelEnd = hand + toAnchor.Normalized() * reach;
@@ -159,7 +164,7 @@ public partial class HarpoonRig : Node3D
     private bool InSight(NVector2 from, NVector2 to)
     {
         NVector2 end = to - NVector2.Normalize(to - from) * SightMargin;
-        return !_ray.Cast(new Vector3(from.X, from.Y, 0f), new Vector3(end.X, end.Y, 0f));
+        return !Ray.Cast(from.OnPlane(), end.OnPlane());
     }
 
     private void OnRoomLoaded(Room room)

@@ -35,22 +35,15 @@ public partial class KitMesh : PrimitiveMesh
     public sealed class Buffers : System.IDisposable
     {
         private readonly NativeMeshArrays? _native;
-        private readonly Array? _arrays;
 
         public Buffers(bool kept = false)
         {
-            if (kept)
-            {
-                _native = new NativeMeshArrays();
-            }
-            else
-            {
-                _arrays = new Array();
-            }
+            _native = kept ? new NativeMeshArrays() : null;
+            Arrays = _native?.Managed ?? new Array();
         }
 
-        /// <summary>The Godot array the slots are written into.</summary>
-        public Array Arrays => _native?.Managed ?? _arrays!;
+        /// <summary>The Godot array the slots are written into (the native writer's own, for kept buffers).</summary>
+        public Array Arrays { get; }
 
         internal NativeMeshArrays? Native => _native;
 
@@ -101,16 +94,16 @@ public partial class KitMesh : PrimitiveMesh
         Vector2[] patches = buffers.Patches;
         for (int i = 0; i < count; i++)
         {
-            positions[i] = ToGodot(mesh.Positions[i]);
-            normals[i] = ToGodot(mesh.Normals[i]);
+            positions[i] = mesh.Positions[i].ToGodot();
+            normals[i] = mesh.Normals[i].ToGodot();
             System.Numerics.Vector4 t = mesh.Tangents[i];
             tangents[i * 4] = t.X;
             tangents[i * 4 + 1] = t.Y;
             tangents[i * 4 + 2] = t.Z;
             tangents[i * 4 + 3] = t.W;
             colors[i] = new Color(Mathf.Clamp(mesh.Heights[i] / HeightRange, 0f, 1f), mesh.Variations[i], 0f);
-            uvs[i] = new Vector2(mesh.Uvs[i].X, mesh.Uvs[i].Y);
-            patches[i] = new Vector2(mesh.PatchSizes[i].X, mesh.PatchSizes[i].Y);
+            uvs[i] = mesh.Uvs[i].ToGodot();
+            patches[i] = mesh.PatchSizes[i].ToGodot();
         }
 
         mesh.Indices.CopyTo(buffers.Indices);
@@ -141,8 +134,4 @@ public partial class KitMesh : PrimitiveMesh
     protected virtual void Build(MeshBuilder builder)
     {
     }
-
-    protected static NVector3 ToNumerics(Vector3 v) => new(v.X, v.Y, v.Z);
-
-    private static Vector3 ToGodot(NVector3 v) => new(v.X, v.Y, v.Z);
 }

@@ -29,9 +29,10 @@ public partial class MapScreen : CanvasLayer
     /// <summary>Seconds to ease in or out.</summary>
     [Export] public float FadeTime { get; set; } = 0.22f;
 
-    private Control _canvas = null!;
+    private Control? _canvas;
+    private Control Canvas => _canvas ??= new Control { MouseFilter = Control.MouseFilterEnum.Ignore };
     private readonly System.Collections.Generic.Dictionary<string, Requirement> _requirements = new();
-    private Font _font = null!;
+    private readonly Font _font = ThemeDB.FallbackFont;
     private float _shown;
     private bool _open;
     private float _time;
@@ -42,11 +43,9 @@ public partial class MapScreen : CanvasLayer
     {
         Layer = 80;
         ProcessMode = ProcessModeEnum.Always;
-        _canvas = new Control { MouseFilter = Control.MouseFilterEnum.Ignore };
-        _canvas.SetAnchorsPreset(Control.LayoutPreset.FullRect);
-        _canvas.Draw += DrawMap;
-        _font = ThemeDB.FallbackFont;
-        AddChild(_canvas);
+        Canvas.SetAnchorsPreset(Control.LayoutPreset.FullRect);
+        Canvas.Draw += DrawMap;
+        AddChild(Canvas);
         Visible = false;
     }
 
@@ -74,15 +73,15 @@ public partial class MapScreen : CanvasLayer
         Visible = _shown > 0f;
         if (Visible)
         {
-            _canvas.QueueRedraw();
+            Canvas.QueueRedraw();
         }
     }
 
     private void DrawMap()
     {
         float ease = _shown * _shown * (3f - 2f * _shown);
-        Vector2 size = _canvas.Size;
-        _canvas.DrawRect(new Rect2(Vector2.Zero, size), Veil with { A = Veil.A * ease });
+        Vector2 size = Canvas.Size;
+        Canvas.DrawRect(new Rect2(Vector2.Zero, size), Veil with { A = Veil.A * ease });
         if (World.Map.Rooms.Count == 0)
         {
             return;
@@ -110,8 +109,8 @@ public partial class MapScreen : CanvasLayer
             Vector2 a = Screen(new NVector2(room.MapMin.X, room.MapMax.Y)), b = Screen(new NVector2(room.MapMax.X, room.MapMin.Y));
             var rect = new Rect2(a, b - a);
             Color line = here ? Here : Line;
-            _canvas.DrawRect(rect, line with { A = (here ? 0.14f : 0.06f) * ease });
-            _canvas.DrawRect(rect, line with { A = line.A * ease }, filled: false, width: width);
+            Canvas.DrawRect(rect, line with { A = (here ? 0.14f : 0.06f) * ease });
+            Canvas.DrawRect(rect, line with { A = line.A * ease }, filled: false, width: width);
         }
 
         DrawWays(Screen, ui, ease);
@@ -121,8 +120,8 @@ public partial class MapScreen : CanvasLayer
             Vector3 p = Player.GlobalPosition;
             Vector2 dot = Screen(current.Offset + new NVector2(p.X, p.Y + 1f));
             float pulse = 0.5f + 0.5f * Mathf.Sin(_time * 3f);
-            _canvas.DrawCircle(dot, (6f + 4f * pulse) * ui, Here with { A = 0.18f * ease });
-            _canvas.DrawCircle(dot, 3.5f * ui, Here with { A = ease });
+            Canvas.DrawCircle(dot, (6f + 4f * pulse) * ui, Here with { A = 0.18f * ease });
+            Canvas.DrawCircle(dot, 3.5f * ui, Here with { A = ease });
         }
     }
 
@@ -145,13 +144,13 @@ public partial class MapScreen : CanvasLayer
             if (!way.Built)
             {
                 unbuilt = true;
-                _canvas.DrawArc(at, 4.5f * ui, 0f, Mathf.Tau, 20, Line with { A = 0.35f * ease }, Mathf.Max(1f, 1.4f * ui));
+                Canvas.DrawArc(at, 4.5f * ui, 0f, Mathf.Tau, 20, Line with { A = 0.35f * ease }, Mathf.Max(1f, 1.4f * ui));
             }
             else if (need.IsMetBy(owned))
             {
                 open = true;
-                _canvas.DrawCircle(at, 8f * ui, Colors.White with { A = 0.12f * ease * pulse });
-                _canvas.DrawCircle(at, 4f * ui, Colors.White with { A = 0.92f * ease * pulse });
+                Canvas.DrawCircle(at, 8f * ui, Colors.White with { A = 0.12f * ease * pulse });
+                Canvas.DrawCircle(at, 4f * ui, Colors.White with { A = 0.92f * ease * pulse });
             }
             else
             {
@@ -160,7 +159,7 @@ public partial class MapScreen : CanvasLayer
                 {
                     shown.Add(kinds[i]);
                     Vector2 c = at + new Vector2((i - 0.5f * (kinds.Length - 1)) * 13f * ui, 0f);
-                    _canvas.DrawArc(c, 5f * ui, 0f, Mathf.Tau, 20, GateKinds.ColorOf(kinds[i]) with { A = 0.95f * ease }, Mathf.Max(1.5f, 2f * ui));
+                    Canvas.DrawArc(c, 5f * ui, 0f, Mathf.Tau, 20, GateKinds.ColorOf(kinds[i]) with { A = 0.95f * ease }, Mathf.Max(1.5f, 2f * ui));
                 }
             }
         }
@@ -185,21 +184,21 @@ public partial class MapScreen : CanvasLayer
         int size = Mathf.RoundToInt(17f * ui);
         float gap = 34f * ui, mark = 20f * ui;
         float total = entries.Sum(e => mark + _font.GetStringSize(e.Text, HorizontalAlignment.Left, -1, size).X) + gap * Mathf.Max(0, entries.Count - 1);
-        Vector2 size2 = _canvas.Size;
+        Vector2 size2 = Canvas.Size;
         float x = 0.5f * (size2.X - total), y = size2.Y - 56f * ui;
         foreach ((string text, Color color, bool filled) in entries)
         {
             var c = new Vector2(x + 6f * ui, y - 0.33f * size);
             if (filled)
             {
-                _canvas.DrawCircle(c, 4f * ui, color with { A = ease });
+                Canvas.DrawCircle(c, 4f * ui, color with { A = ease });
             }
             else
             {
-                _canvas.DrawArc(c, 5f * ui, 0f, Mathf.Tau, 20, color with { A = ease }, Mathf.Max(1.5f, 2f * ui));
+                Canvas.DrawArc(c, 5f * ui, 0f, Mathf.Tau, 20, color with { A = ease }, Mathf.Max(1.5f, 2f * ui));
             }
 
-            _canvas.DrawString(_font, new Vector2(x + mark, y), text, HorizontalAlignment.Left, -1, size, new Color(0.86f, 0.86f, 0.95f, 0.8f * ease));
+            Canvas.DrawString(_font, new Vector2(x + mark, y), text, HorizontalAlignment.Left, -1, size, new Color(0.86f, 0.86f, 0.95f, 0.8f * ease));
             x += mark + _font.GetStringSize(text, HorizontalAlignment.Left, -1, size).X + gap;
         }
     }

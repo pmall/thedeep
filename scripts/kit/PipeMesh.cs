@@ -23,7 +23,7 @@ public partial class PipeMesh : KitMesh
     {
         if (Points.Length >= 2)
         {
-            KitShapes.Pipe(builder, Points.Select(ToNumerics).ToArray(), Radius, BendRadius, FlangeSpacing);
+            KitShapes.Pipe(builder, Points.Select(p => p.ToCore()).ToArray(), Radius, BendRadius, FlangeSpacing);
         }
     }
 }

@@ -113,11 +113,11 @@ public class MapDraftTests
         Assert.Contains("D is built but not in the draft", d.Differences(built, sealedB));
     }
 
-    /// <summary>The whole game's draft (docs/map-draft.md) meets every target.</summary>
+    /// <summary>The prototype world's draft (worlds/prototype/map-draft.md) meets every target it names.</summary>
     [Fact]
     public void TheWholeGameDraftHoldsUp()
     {
-        MapDraft d = MapDraft.FromMarkdown(File.ReadAllText(Path.Combine(RepoRoot(), "docs", "map-draft.md")));
+        MapDraft d = MapDraft.FromMarkdown(File.ReadAllText(PrototypeNetwork()));
         (MapReport report, var problems) = d.Check();
         _output.WriteLine(d.Summary(report));
         foreach (string p in problems)
@@ -126,6 +126,7 @@ public class MapDraftTests
         }
 
         Assert.Empty(problems);
+        Assert.Equal(new MapTargets(Orders: 24, Positions: 2, MinRooms: 40, MaxRooms: 60), d.Targets);
         Assert.Equal(new[] { "Flooded", "Frozen", "Volcanic", "Core" }, d.LayerOrder);
 
         // The design's rule (docs/map-draft.md, "Order freedom"): Mag-grip or Harpoon first, Heat plating after Drill or Ballast.
@@ -133,6 +134,30 @@ public class MapDraftTests
         Assert.All(report.Orders, o => Assert.True(Array.IndexOf(o, Ability.HeatPlating) > Math.Min(Array.IndexOf(o, Ability.Drill), Array.IndexOf(o, Ability.Ballast))));
         Assert.Equal(32, report.Orders.Count);
     }
+
+    [Fact]
+    public void TargetsAreWhatTheNetworkNames()
+    {
+        const string map = "start A\nroom A L\nroom B L\nway A <-> B\ngoal B\n";
+        Assert.Equal(MapTargets.None, MapDraft.Parse(map).Targets);
+        Assert.DoesNotContain(MapDraft.Parse(map).Check().Problems, p => p.Contains("scope") || p.Contains("target"));
+
+        MapDraft d = MapDraft.Parse(map + "target orders 3\ntarget positions 1\ntarget rooms 5 9\n");
+        Assert.Equal(new MapTargets(Orders: 3, Positions: 1, MinRooms: 5, MaxRooms: 9), d.Targets);
+        Assert.Contains("2 rooms, outside the scope of 5–9", d.Check().Problems);
+    }
+
+    [Theory]
+    [InlineData("target orders")]
+    [InlineData("target orders many")]
+    [InlineData("target rooms 9 5")]
+    [InlineData("target speed 3")]
+    public void AMalformedTargetIsAnError(string line)
+    {
+        Assert.Throws<FormatException>(() => MapDraft.Parse($"start A\nroom A L\n{line}\n"));
+    }
+
+    private static string PrototypeNetwork() => Path.Combine(RepoRoot(), "worlds", "prototype", "map-draft.md");
 
     private static string RepoRoot()
     {
@@ -150,9 +175,11 @@ public class MapDraftTests
     [Fact]
     public void ARoomPickedToTryStartsWithWhatARouteThereNeeds()
     {
-        MapDraft d = MapDraft.FromMarkdown(File.ReadAllText(Path.Combine(RepoRoot(), "docs", "map-draft.md")));
+        MapDraft d = MapDraft.FromMarkdown(File.ReadAllText(PrototypeNetwork()));
         Assert.Equal(Ability.None, MapSolver.Arrival(d.Graph, "Ossuary"));
-        Ability vault = MapSolver.Arrival(d.Graph, "Vault")!.Value;
+        Ability? arrival = MapSolver.Arrival(d.Graph, "Vault");
+        Assert.NotNull(arrival);
+        Ability vault = arrival.Value;
         Assert.True(vault.HasFlag(Ability.Drill) || vault.HasFlag(Ability.Ballast));
         Assert.True(vault.HasFlag(Ability.MagGrip) || vault.HasFlag(Ability.Harpoon));
         Assert.Equal(AbilitySet.All.Aggregate(Ability.None, (a, b) => a | b), MapSolver.Arrival(d.Graph, "Heart"));

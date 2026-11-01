@@ -20,9 +20,9 @@ public partial class TravelValidator : Node
     /// <summary>Longest wait for the player to land after arriving (a drop down a flue), ticks.</summary>
     private const int LandTicks = 360;
 
-    public World World { get; set; } = null!;
-    public Player Player { get; set; } = null!;
-    public RoomTravel Travel { get; set; } = null!;
+    public required World World { get; init; }
+    public required Player Player { get; init; }
+    public required RoomTravel Travel { get; init; }
 
     private readonly List<(string Room, string Exit)> _todo = new();
     private readonly List<string> _problems = new();
@@ -34,9 +34,9 @@ public partial class TravelValidator : Node
 
     public override void _Ready()
     {
-        foreach (string path in DirAccess.GetFilesAt(World.RoomFolder).Where(f => f.EndsWith(".tscn")).Order())
+        foreach (string path in World.RoomScenes())
         {
-            var room = GD.Load<PackedScene>($"{World.RoomFolder}/{path}").Instantiate<Room>();
+            var room = GD.Load<PackedScene>(path).Instantiate<Room>();
             foreach (RoomExit exit in Find(room).Where(e => e.TargetRoom != ""))
             {
                 _todo.Add((World.NameOf(path), exit.Name));
@@ -87,13 +87,18 @@ public partial class TravelValidator : Node
         (string roomName, string exitName) = _todo[0];
         _todo.RemoveAt(0);
         Room room = World.Load(GD.Load<PackedScene>(World.RoomPath(roomName)));
-        RoomExit exit = room.FindExit(exitName)!;
+        if (room.FindExit(exitName) is not { } exit)
+        {
+            _problems.Add($"{roomName}:{exitName}: the exit is gone from its room");
+            return;
+        }
+
         _current = (roomName, exitName, World.NameOf(exit.TargetRoom), exit.TargetExit);
 
         // Moving out through the exit: up or down through a hatch, toward the nearer side through a doorway.
         Vector2 at = exit.RoomPosition;
         Vector2 center = (room.BoundsMin + room.BoundsMax) * 0.5f;
-        Vector3 velocity = ExitMath.IsVertical(new System.Numerics.Vector2(exit.Size.X, exit.Size.Y))
+        Vector3 velocity = ExitMath.IsVertical(exit.Size.ToCore())
             ? new Vector3(0f, at.Y > center.Y ? 10f : -10f, 0f)
             : new Vector3(at.X > center.X ? 7f : -7f, 0f, 0f);
         Player.Respawn(new Vector3(at.X, at.Y, 0f));

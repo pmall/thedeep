@@ -1,6 +1,5 @@
 <Project Sdk="Microsoft.NET.Sdk">
-  <!-- Plain xUnit tests for pure game logic. Godot types can't run outside the engine, so this
-       project compiles the Godot-free source files directly instead of referencing TheDeep.csproj. -->
+  <!-- Plain xUnit tests for the core (core/TheDeep.Core.csproj): the game's rules, without the engine. -->
   <PropertyGroup>
     <TargetFramework>net8.0</TargetFramework>
     <Nullable>enable</Nullable>
@@ -9,71 +8,7 @@
     <RootNamespace>TheDeep.Tests</RootNamespace>
   </PropertyGroup>
   <ItemGroup>
-    <!-- Keep in sync with the "Pure logic" list in docs/architecture.md. These files must not use Godot types. -->
-    <Compile Include="../../scripts/util/Motion.cs" Link="Shared/Motion.cs" />
-    <Compile Include="../../scripts/util/Countdown.cs" Link="Shared/Countdown.cs" />
-    <Compile Include="../../scripts/tuning/JumpMath.cs" Link="Shared/JumpMath.cs" />
-    <Compile Include="../../scripts/camera/CameraMath.cs" Link="Shared/CameraMath.cs" />
-    <Compile Include="../../scripts/abilities/Ability.cs" Link="Shared/Ability.cs" />
-    <Compile Include="../../scripts/abilities/AbilitySet.cs" Link="Shared/AbilitySet.cs" />
-    <Compile Include="../../scripts/util/FrameTimeStats.cs" Link="Shared/FrameTimeStats.cs" />
-    <Compile Include="../../scripts/capture/CaptureFiles.cs" Link="Shared/CaptureFiles.cs" />
-    <Compile Include="../../scripts/capture/CaptureReport.cs" Link="Shared/CaptureReport.cs" />
-    <Compile Include="../../scripts/capture/VideoClock.cs" Link="Shared/VideoClock.cs" />
-    <Compile Include="../../scripts/capture/FfmpegCommand.cs" Link="Shared/FfmpegCommand.cs" />
-    <Compile Include="../../scripts/capture/VideoEncoder.cs" Link="Shared/VideoEncoder.cs" />
-    <Compile Include="../../scripts/kit/MeshData.cs" Link="Shared/MeshData.cs" />
-    <Compile Include="../../scripts/kit/MeshBuilder.cs" Link="Shared/MeshBuilder.cs" />
-    <Compile Include="../../scripts/kit/Profile.cs" Link="Shared/Profile.cs" />
-    <Compile Include="../../scripts/kit/PathFrame.cs" Link="Shared/PathFrame.cs" />
-    <Compile Include="../../scripts/kit/SweepPath.cs" Link="Shared/SweepPath.cs" />
-    <Compile Include="../../scripts/kit/KitShapes.cs" Link="Shared/KitShapes.cs" />
-    <Compile Include="../../scripts/map/Requirement.cs" Link="Shared/Requirement.cs" />
-    <Compile Include="../../scripts/map/GridSnap.cs" Link="Shared/GridSnap.cs" />
-    <Compile Include="../../scripts/map/ExitMath.cs" Link="Shared/ExitMath.cs" />
-    <Compile Include="../../scripts/player/GripMath.cs" Link="Shared/GripMath.cs" />
-    <Compile Include="../../scripts/player/HarpoonAim.cs" Link="Shared/HarpoonAim.cs" />
-    <Compile Include="../../scripts/player/WaterMotion.cs" Link="Shared/WaterMotion.cs" />
-    <Compile Include="../../scripts/combat/Vitality.cs" Link="Shared/Vitality.cs" />
-    <Compile Include="../../scripts/combat/Swing.cs" Link="Shared/Swing.cs" />
-    <Compile Include="../../scripts/game/SaveData.cs" Link="Shared/SaveData.cs" />
-    <Compile Include="../../scripts/map/MapState.cs" Link="Shared/MapState.cs" />
-    <Compile Include="../../scripts/map/MapGraph.cs" Link="Shared/MapGraph.cs" />
-    <Compile Include="../../scripts/map/MapSolver.cs" Link="Shared/MapSolver.cs" />
-    <Compile Include="../../scripts/map/MapDraft.cs" Link="Shared/MapDraft.cs" />
-    <Compile Include="../../scripts/map/MapLayout.cs" Link="Shared/MapLayout.cs" />
-    <Compile Include="../../scripts/map/ReachPlanner.cs" Link="Shared/ReachPlanner.cs" />
-    <Compile Include="../../scripts/rooms/dressing/DressingLayout.cs" Link="Shared/DressingLayout.cs" />
-    <Compile Include="../../scripts/rooms/dressing/BackdropLayout.cs" Link="Shared/BackdropLayout.cs" />
-    <Compile Include="../../scripts/rooms/dressing/WallLayout.cs" Link="Shared/WallLayout.cs" />
-    <Compile Include="../../scripts/props/LiftMotion.cs" Link="Shared/LiftMotion.cs" />
-    <Compile Include="../../scripts/parts/PartShapes.cs" Link="Shared/PartShapes.cs" />
-    <Compile Include="../../scripts/parts/PlanarIk.cs" Link="Shared/PlanarIk.cs" />
-    <Compile Include="../../scripts/parts/VerletChain.cs" Link="Shared/VerletChain.cs" />
-    <Compile Include="../../scripts/parts/HumanoidBone.cs" Link="Shared/HumanoidBone.cs" />
-    <Compile Include="../../scripts/parts/Humanoid.cs" Link="Shared/Humanoid.cs" />
-    <Compile Include="../../scripts/parts/HumanoidDims.cs" Link="Shared/HumanoidDims.cs" />
-    <Compile Include="../../scripts/parts/HumanoidPose.cs" Link="Shared/HumanoidPose.cs" />
-    <Compile Include="../../scripts/parts/PartCategory.cs" Link="Shared/PartCategory.cs" />
-    <Compile Include="../../scripts/player/MotionMode.cs" Link="Shared/MotionMode.cs" />
-    <Compile Include="../../scripts/player/PilgrimMotion.cs" Link="Shared/PilgrimMotion.cs" />
-    <Compile Include="../../scripts/machines/MachineAct.cs" Link="Shared/MachineAct.cs" />
-    <Compile Include="../../scripts/machines/Perception.cs" Link="Shared/Perception.cs" />
-    <Compile Include="../../scripts/machines/Intent.cs" Link="Shared/Intent.cs" />
-    <Compile Include="../../scripts/machines/Senses.cs" Link="Shared/Senses.cs" />
-    <Compile Include="../../scripts/machines/Steering.cs" Link="Shared/Steering.cs" />
-    <Compile Include="../../scripts/machines/PrayerCycle.cs" Link="Shared/PrayerCycle.cs" />
-    <Compile Include="../../scripts/machines/StrikeAction.cs" Link="Shared/StrikeAction.cs" />
-    <Compile Include="../../scripts/machines/MachineBrain.cs" Link="Shared/MachineBrain.cs" />
-    <Compile Include="../../scripts/machines/SurfacePath.cs" Link="Shared/SurfacePath.cs" />
-    <Compile Include="../../scripts/machines/LegGait.cs" Link="Shared/LegGait.cs" />
-    <Compile Include="../../scripts/machines/brains/PrayerBrain.cs" Link="Shared/PrayerBrain.cs" />
-    <Compile Include="../../scripts/machines/brains/HoarderBrain.cs" Link="Shared/HoarderBrain.cs" />
-    <Compile Include="../../scripts/machines/brains/FollowerBrain.cs" Link="Shared/FollowerBrain.cs" />
-    <Compile Include="../../scripts/machines/brains/SleeperBrain.cs" Link="Shared/SleeperBrain.cs" />
-    <Compile Include="../../scripts/machines/brains/ConductorBrain.cs" Link="Shared/ConductorBrain.cs" />
-    <Compile Include="../../scripts/machines/brains/SwoopBrain.cs" Link="Shared/SwoopBrain.cs" />
-    <Compile Include="../../scripts/ui/ButtonNames.cs" Link="Shared/ButtonNames.cs" />
+    <ProjectReference Include="../../core/TheDeep.Core.csproj" />
   </ItemGroup>
   <ItemGroup>
     <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.12.0" />

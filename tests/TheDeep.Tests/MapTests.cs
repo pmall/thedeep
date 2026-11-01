@@ -83,7 +83,7 @@ public class MapTests
         Assert.Equal(Vector2.Zero, again.Offset);
         Assert.Equal("A", map.Current);
         Assert.Equal(2, map.Rooms.Count);
-        Assert.Equal(new Vector2(102f, 20f), map.Find("B")!.MapMax);
+        Assert.Equal(new Vector2(102f, 20f), map.Find("B")?.MapMax);
     }
 
     [Fact]

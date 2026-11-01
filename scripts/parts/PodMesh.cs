@@ -34,8 +34,8 @@ public partial class PodMesh : KitMesh
     {
         if (Stations.Length >= 2)
         {
-            PartShapes.Pod(builder, ToNumerics(Axis), Length,
-                Stations.Select(s => new System.Numerics.Vector4(s.X, s.Y, s.Z, s.W)).ToArray(), Sides, Rings, Mathf.DegToRad(Curl));
+            PartShapes.Pod(builder, Axis.ToCore(), Length,
+                Stations.Select(s => s.ToCore()).ToArray(), Sides, Rings, Mathf.DegToRad(Curl));
         }
     }
 }

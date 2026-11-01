@@ -8,6 +8,7 @@
 [ext_resource type="Script" path="res://scripts/machines/behaviors/SwoopBehavior.cs" id="2_behavior"]
 [ext_resource type="Script" path="res://scripts/machines/JointDriver.cs" id="3_driver"]
 [ext_resource type="Resource" path="res://resources/parts/archivist.tres" id="5_assembly"]
+[ext_resource type="Resource" path="res://resources/biomes/frozen.tres" id="0_habitat"]
 
 [sub_resource type="Resource" id="Behavior"]
 script = ExtResource("2_behavior")
@@ -81,7 +82,7 @@ WindUp = 18
 script = ExtResource("1_species")
 Id = &"archivist"
 DisplayName = "Archivist"
-Layer = 1
+Habitat = ExtResource("0_habitat")
 Hostile = true
 CreedLine = &"creed.archivist"
 Assembly = ExtResource("5_assembly")

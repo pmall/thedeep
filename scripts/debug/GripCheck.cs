@@ -17,8 +17,8 @@ namespace TheDeep;
 /// </summary>
 public partial class GripCheck : Node
 {
-    public Player Player { get; set; } = null!;
-    public World World { get; set; } = null!;
+    public required Player Player { get; init; }
+    public required World World { get; init; }
 
     /// <summary>The pier east of the metal wall: its east face, the top of its metal foot, its top.</summary>
     private const float PierFace = 30f, PierMetalTop = 4f, PierTop = 10f;

@@ -34,14 +34,14 @@ The coding agent builds everything by editing text files. The owner only plays a
 | Run, test, capture screenshots, or hand over to the owner | [docs/testing.md](docs/testing.md) |
 | Deal with versions, paths, .NET environment or upgrades | [docs/toolchain.md](docs/toolchain.md) |
 | Work on machines/enemies, rooms, connections or the map | [docs/long-term.md](docs/long-term.md) (owner-written) |
-| Build or change a room, an exit or a relic in the prototype | [docs/map-draft.md](docs/map-draft.md) (the prototype world's map; keep it in step with built rooms) |
+| Build or change a room, an exit or a relic in the prototype | [worlds/prototype/map-draft.md](worlds/prototype/map-draft.md) (the prototype world's network; keep it in step with built rooms) |
 
 ## Rules that always apply
 
 - **`tools/check.sh` passes before every commit.** Never report work as done while it fails.
 - Keep `godot --path .` working. That is the owner's launch command.
 - Never hand-invent `uid://` values. Never edit `.godot/` or `*.import` files.
-- **Programming principles** ([docs/principles.md](docs/principles.md)): game rules live in the Godot-free core, Godot nodes stay thin adapters, content is data, and no code knows one world's names. Nullable only when the game allows absence; no `!` to silence the compiler (only `[Export]` references are `= null!`), no `object` lists, no unrelated unions, no casts or pragmas to pass a build. Fighting the compiler means the model is wrong.
+- **Programming principles** ([docs/principles.md](docs/principles.md)): game rules live in the Godot-free core (`core/`, its own project: a Godot type there does not compile), Godot nodes stay thin adapters, content is data, and no code knows one world's names. Nullable only when the game allows absence; no `!` to silence the compiler (only `[Export]` references are `= null!`), no `object` lists, no unrelated unions, no casts or pragmas to pass a build. Fighting the compiler means the model is wrong.
 - Godot script classes are `public partial class` named exactly like their file. No string node paths across scenes; use typed `[Export]` references and C# events. Details in [docs/godot-csharp.md](docs/godot-csharp.md).
 - Movement numbers live only in `resources/player_tuning.tres`. Input action names only in `InputActions`, physics layers only in `PhysicsLayers`.
 - **Visuals are procedural first, pushed to the maximum** (no imported textures or models; Blender comes only once procedural has gone as far as it can, from the end of the prototype, the pilgrim first), and every visual piece must stay swappable. The game gets one **signature** pass, a painted (gouache-like) look of its own ([docs/art-direction.md](docs/art-direction.md)). Judge visual changes from rendered captures, not from code.
@@ -57,6 +57,6 @@ The coding agent builds everything by editing text files. The owner only plays a
 | What | Command |
 |---|---|
 | Check (build, import, smoke, room and species checks, tests) | `tools/check.sh` |
-| Run the game | `godot --path .` |
+| Run the game | `godot --path .` (the prototype; `-- --world <name>` plays `worlds/<name>/world.tres`) |
 | Print the map graph and ability orders (built rooms and the draft) | `tools/map.sh` |
 | Render photo spots + frame times, compare with last run | `tools/capture.sh [label]` (see [docs/testing.md](docs/testing.md)) |

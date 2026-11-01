@@ -43,7 +43,10 @@ public partial class Block : StaticBody3D
     public event Action<Block>? Shattered;
 
     private MeshInstance3D? _mesh;
-    private CollisionShape3D _shape = null!;
+    private CollisionShape3D? _shape;
+
+    /// <summary>The scene's collision shape (its unique child).</summary>
+    private CollisionShape3D ShapeNode => _shape ??= GetNode<CollisionShape3D>("%Shape");
 
     public override void _Ready()
     {
@@ -63,8 +66,7 @@ public partial class Block : StaticBody3D
             _mesh = mesh;
         }
 
-        _shape = GetNode<CollisionShape3D>("%Shape");
-        _shape.Shape = new BoxShape3D { Size = Size };
+        ShapeNode.Shape = new BoxShape3D { Size = Size };
     }
 
     /// <summary>The Drill bores into it, moving along <paramref name="push"/>: it shatters, and the way is open.</summary>
@@ -95,7 +97,7 @@ public partial class Block : StaticBody3D
         Broken = true;
         // Off the layers at once (a dash boring through moves this very tick); the shape follows when physics allows.
         CollisionLayer = 0;
-        _shape.SetDeferred(CollisionShape3D.PropertyName.Disabled, true);
+        ShapeNode.SetDeferred(CollisionShape3D.PropertyName.Disabled, true);
         if (_mesh is not null)
         {
             _mesh.Visible = false;

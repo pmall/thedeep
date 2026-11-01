@@ -36,10 +36,12 @@ public partial class OwnerCapture : CanvasLayer
     private readonly ConcurrentQueue<string> _messages = new();
     private readonly ConcurrentQueue<string> _savedFiles = new();
     private readonly HashSet<string> _reservedNames = new();
-    private Control _recIndicator = null!;
-    private Control _recDot = null!;
-    private Label _recTime = null!;
-    private Label _toast = null!;
+    /// <summary>The REC dot and running time shown while a video records; the toast naming a saved file.</summary>
+    [Export] public Control RecIndicator { get; set; } = null!;
+    [Export] public Control RecDot { get; set; } = null!;
+    [Export] public Label RecTime { get; set; } = null!;
+    [Export] public Label Toast { get; set; } = null!;
+
     private Tween? _toastTween;
     private FrameGrabber? _grabber;
     private Task<VideoCodec?>? _codecProbe;
@@ -51,12 +53,8 @@ public partial class OwnerCapture : CanvasLayer
     public override void _Ready()
     {
         ProcessMode = ProcessModeEnum.Always;
-        _recIndicator = GetNode<Control>("%RecIndicator");
-        _recDot = GetNode<Control>("%RecDot");
-        _recTime = GetNode<Label>("%RecTime");
-        _toast = GetNode<Label>("%Toast");
-        _recIndicator.Visible = false;
-        _toast.Modulate = Colors.Transparent;
+        RecIndicator.Visible = false;
+        Toast.Modulate = Colors.Transparent;
 
         _grabber = FrameGrabber.Create(GetViewport());
         if (_grabber is not null)
@@ -198,8 +196,8 @@ public partial class OwnerCapture : CanvasLayer
         }
 
         CaptureReport report = DescribeGame($"The Deep video {name}.mp4");
-        _recording = new Recording(encoder, new VideoClock(VideoFps, VideoFps), Time.GetTicksUsec(), format, folder, name, report);
-        _recIndicator.Visible = true;
+        _recording = new Recording(_grabber, encoder, new VideoClock(VideoFps, VideoFps), Time.GetTicksUsec(), format, folder, name, report);
+        RecIndicator.Visible = true;
         RecordFrame(_recording);
     }
 
@@ -211,7 +209,7 @@ public partial class OwnerCapture : CanvasLayer
         }
 
         _recording = null;
-        _recIndicator.Visible = false;
+        RecIndicator.Visible = false;
         if (reason.Length > 0)
         {
             ShowToast($"Recording stopped: {reason}");
@@ -223,8 +221,8 @@ public partial class OwnerCapture : CanvasLayer
     private void RecordFrame(Recording recording)
     {
         double elapsed = (Time.GetTicksUsec() - recording.StartUsec) / 1_000_000.0;
-        _recDot.Modulate = new Color(1f, 1f, 1f, 0.55f + 0.45f * Mathf.Cos((float)elapsed * Mathf.Tau * 0.5f));
-        _recTime.Text = FormatDuration(elapsed);
+        RecDot.Modulate = new Color(1f, 1f, 1f, 0.55f + 0.45f * Mathf.Cos((float)elapsed * Mathf.Tau * 0.5f));
+        RecTime.Text = FormatDuration(elapsed);
 
         if (recording.Encoder.Failed)
         {
@@ -238,21 +236,21 @@ public partial class OwnerCapture : CanvasLayer
             return;
         }
 
-        FrameFormat? format = _grabber!.CurrentFormat(out _);
+        FrameFormat? format = recording.Grabber.CurrentFormat(out _);
         if (format != recording.Format)
         {
             StopRecording("the window size changed");
             return;
         }
 
-        if (_grabber.InFlight >= MaxFramesInFlight)
+        if (recording.Grabber.InFlight >= MaxFramesInFlight)
         {
             recording.Encoder.CoverMissedFrames(due);
             return;
         }
 
         VideoEncoder encoder = recording.Encoder;
-        _grabber.Request(bytes => encoder.Submit(bytes, due));
+        recording.Grabber.Request(bytes => encoder.Submit(bytes, due));
     }
 
     private async Task FinishRecording(Recording recording, string reason)
@@ -294,13 +292,13 @@ public partial class OwnerCapture : CanvasLayer
     private void ShowToast(string text)
     {
         GD.Print($"[capture] {text}");
-        _toast.Text = text;
+        Toast.Text = text;
         _toastTween?.Kill();
         _toastTween = CreateTween();
-        _toastTween.TweenProperty(_toast, CanvasItem.PropertyName.Modulate.ToString(), Colors.White, 0.25)
+        _toastTween.TweenProperty(Toast, CanvasItem.PropertyName.Modulate.ToString(), Colors.White, 0.25)
             .SetTrans(Tween.TransitionType.Sine).SetEase(Tween.EaseType.Out);
         _toastTween.TweenInterval(2.5);
-        _toastTween.TweenProperty(_toast, CanvasItem.PropertyName.Modulate.ToString(), Colors.Transparent, 0.8)
+        _toastTween.TweenProperty(Toast, CanvasItem.PropertyName.Modulate.ToString(), Colors.Transparent, 0.8)
             .SetTrans(Tween.TransitionType.Sine).SetEase(Tween.EaseType.InOut);
     }
 
@@ -376,6 +374,6 @@ public partial class OwnerCapture : CanvasLayer
     }
 
     private sealed record Recording(
-        VideoEncoder Encoder, VideoClock Clock, ulong StartUsec, FrameFormat Format,
+        FrameGrabber Grabber, VideoEncoder Encoder, VideoClock Clock, ulong StartUsec, FrameFormat Format,
         string Folder, string Name, CaptureReport Report);
 }

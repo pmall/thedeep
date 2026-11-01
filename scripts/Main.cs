@@ -23,7 +23,10 @@ public partial class Main : Node3D
     /// <summary>`--biome &lt;name&gt;`: start with resources/biomes/&lt;name&gt;.tres instead of the room's own.</summary>
     private const string BiomeArgument = "--biome";
 
-    /// <summary>`--room &lt;name&gt;`: start in scenes/rooms/&lt;name&gt;.tscn instead of the world's start room.</summary>
+    /// <summary>`--world &lt;name&gt;`: play worlds/&lt;name&gt;/world.tres instead of the main scene's world (the prototype).</summary>
+    private const string WorldArgument = "--world";
+
+    /// <summary>`--room &lt;name&gt;`: start in the world's room of that name instead of its start room.</summary>
     private const string RoomArgument = "--room";
 
     /// <summary>
@@ -31,9 +34,6 @@ public partial class Main : Node3D
     /// instead of what a route to the `--room` needs.
     /// </summary>
     private const string AbilitiesArgument = "--abilities";
-
-    /// <summary>The whole game's draft map: `--room` asks its solver what a route to the room needs.</summary>
-    private const string DraftPath = "res://docs/map-draft.md";
 
     /// <summary>User argument that checks every room scene and quits (see RoomValidator), used by tools/check.sh.</summary>
     private const string ValidateRoomsArgument = "--validate-rooms";
@@ -101,17 +101,29 @@ public partial class Main : Node3D
 
     public override void _EnterTree()
     {
-        _gameStart = World.StartRoom.ResourcePath;
         string[] args = OS.GetCmdlineUserArgs();
+        if (ArgumentValue(args, WorldArgument) is { } worldName)
+        {
+            if (WorldDefinition.Load(worldName) is { } definition)
+            {
+                World.Definition = definition;
+            }
+            else
+            {
+                GD.PushError($"no world named {worldName} ({WorldDefinition.Folder}/{worldName}/{WorldDefinition.FileName})");
+            }
+        }
+
+        _gameStart = World.Definition.StartRoom.ResourcePath;
         bool driven = DriverArguments.Any(a => Array.IndexOf(args, a) >= 0);
         bool pickedRoom = Array.IndexOf(args, RoomArgument) >= 0;
 
         // A normal launch resumes from the save: the world starts in the room of the last shrine rested at.
-        if (!driven && !pickedRoom && Array.IndexOf(args, NewGameArgument) < 0 && SaveFile.Read() is { } save
+        if (!driven && !pickedRoom && Array.IndexOf(args, NewGameArgument) < 0 && SaveFile.Read(World.Definition.SavePath) is { } save
             && ResourceLoader.Exists(World.RoomPath(save.Room)))
         {
             _resume = save;
-            World.StartRoom = GD.Load<PackedScene>(World.RoomPath(save.Room));
+            World.FirstRoom = GD.Load<PackedScene>(World.RoomPath(save.Room));
         }
 
         Session.Persist = !driven && !pickedRoom;
@@ -122,7 +134,7 @@ public partial class Main : Node3D
             string path = World.RoomPath(roomName);
             if (ResourceLoader.Exists(path))
             {
-                World.StartRoom = GD.Load<PackedScene>(path);
+                World.FirstRoom = GD.Load<PackedScene>(path);
             }
             else
             {
@@ -162,7 +174,7 @@ public partial class Main : Node3D
         {
             AddChild(new RoomValidator
             {
-                StartRoom = _gameStart, Report = Array.IndexOf(args, "--map-report") >= 0, ReachReport = ArgumentValue(args, "--reach-report") ?? "", SlackReport = Array.IndexOf(args, "--slack-report") >= 0,
+                World = World, Tuning = Player.Tuning, ClimbRise = Travel.ClimbRise, StartRoom = _gameStart, Report = Array.IndexOf(args, "--map-report") >= 0, ReachReport = ArgumentValue(args, "--reach-report") ?? "", SlackReport = Array.IndexOf(args, "--slack-report") >= 0,
                 ReachWith = ArgumentValue(args, AbilitiesArgument) is { } with ? ParseAbilities(with) : null,
             });
         }
@@ -204,7 +216,7 @@ public partial class Main : Node3D
         }
         else if (Array.IndexOf(args, ValidateSpeciesArgument) >= 0)
         {
-            AddChild(new SpeciesValidator { Room = room, Player = Player, Machines = Machines });
+            AddChild(new SpeciesValidator { World = World, Room = room, Player = Player, Machines = Machines });
         }
         else if (ArgumentValue(args, UiShotArgument) is { } shotDir)
         {
@@ -237,7 +249,7 @@ public partial class Main : Node3D
     }
 
     /// <summary>
-    /// A room picked with `--room` starts with the abilities a route there needs (the draft map's solver: the fewest a pilgrim
+    /// A room picked with `--room` starts with the abilities a route there needs (the world's network and its solver: the fewest a pilgrim
     /// can own arriving there), so any room can be tried as a player would come to it; `--abilities` says otherwise.
     /// </summary>
     private void GrantStartAbilities(string[] args)
@@ -251,16 +263,16 @@ public partial class Main : Node3D
                 GD.PushError($"--abilities {list}: expected all, none, or ability names joined by commas ({string.Join(", ", AbilitySet.All)})");
             }
         }
-        else if (Array.IndexOf(args, RoomArgument) >= 0 && FileAccess.FileExists(DraftPath))
+        else if (Array.IndexOf(args, RoomArgument) >= 0 && FileAccess.FileExists(World.Definition.Network))
         {
             try
             {
-                MapDraft draft = MapDraft.FromMarkdown(FileAccess.GetFileAsString(DraftPath));
+                MapDraft draft = MapDraft.FromMarkdown(FileAccess.GetFileAsString(World.Definition.Network));
                 grant = MapSolver.Arrival(draft.Graph, World.RoomName);
             }
             catch (FormatException e)
             {
-                GD.PushError($"map draft ({DraftPath}): {e.Message}");
+                GD.PushError($"the world's network ({World.Definition.Network}): {e.Message}");
             }
         }
 

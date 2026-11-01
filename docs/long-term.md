@@ -66,7 +66,7 @@ Note on full freedom: making all 120 orders possible means every ability must be
 
 - **Rooms are separate scenes; the map is a graph.** Each connection between rooms (and each meaningful route inside a room) is a **marker node placed in the room scene**. It carries its requirement as an expression over abilities (for example `MagGrip | Harpoon`, or `Drill & Ballast`) and a one-way flag. Requirements live next to the geometry they describe, never in a separate hand-maintained list.
 - **An extractor** reads all room scenes and builds the map graph from the markers.
-- **The solver is pure C# logic** in a separate test project (xUnit), with no Godot dependency, so it runs fast inside `dotnet test`. It explores every reachable state, then checks guarantee 1 and computes guarantee 2.
+- **The solver is pure C# logic** in the core (`core/`, no Godot dependency), tested by the xUnit project, so it runs fast inside `dotnet test`. It explores every reachable state, then checks guarantee 1 and computes guarantee 2.
 - **Geometry sanity check.** Base movement limits (maximum jump height, jump plus dash distance) come from `player_tuning.tres`. A check measures the gaps and heights at each marked connection, and fails if a connection marked "base moveset" is physically beyond those limits, or if an unmarked gap is crossable. This catches requirements that have drifted from the real level geometry.
 - **Debug view:** a command that prints the map graph and the achievable orders, so the designer can see the effect of a change immediately.
 

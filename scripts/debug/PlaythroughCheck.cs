@@ -17,9 +17,9 @@ namespace TheDeep;
 /// </summary>
 public partial class PlaythroughCheck : Node
 {
-    public World World { get; set; } = null!;
-    public Player Player { get; set; } = null!;
-    public Session Session { get; set; } = null!;
+    public required World World { get; init; }
+    public required Player Player { get; init; }
+    public required Session Session { get; init; }
 
     private enum Phase { Done = -1, Relic, Law, Boss, Cross, Arrive, End }
 
@@ -44,9 +44,9 @@ public partial class PlaythroughCheck : Node
     public override void _Ready()
     {
         var map = new MapGraph { Start = World.RoomName };
-        foreach (string file in DirAccess.GetFilesAt(World.RoomFolder).Where(f => f.EndsWith(".tscn")).Order())
+        foreach (string file in World.RoomScenes())
         {
-            var room = GD.Load<PackedScene>($"{World.RoomFolder}/{file}").Instantiate<Room>();
+            var room = GD.Load<PackedScene>(file).Instantiate<Room>();
             string name = World.NameOf(file);
             if (room.InGame)
             {
@@ -188,7 +188,7 @@ public partial class PlaythroughCheck : Node
                 }
 
                 Vector2 at = exit.RoomPosition, center = (room.BoundsMin + room.BoundsMax) * 0.5f;
-                bool vertical = ExitMath.IsVertical(new System.Numerics.Vector2(exit.Size.X, exit.Size.Y));
+                bool vertical = ExitMath.IsVertical(exit.Size.ToCore());
                 Player.Respawn(new Vector3(at.X, at.Y, 0f));
                 Player.Velocity = vertical ? new Vector3(0f, at.Y > center.Y ? 10f : -10f, 0f) : new Vector3(at.X > center.X ? 7f : -7f, 0f, 0f);
                 if (!vertical)

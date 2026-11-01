@@ -15,8 +15,12 @@ public partial class DebugHud : CanvasLayer
     [Export] public World World { get; set; } = null!;
 
     private readonly StringBuilder _text = new();
-    private Label _info = null!;
-    private Label _room = null!;
+    private Label? _info;
+    private Label? _room;
+
+    // The scene's unique labels.
+    private Label Info => _info ??= GetNode<Label>("%Info");
+    private Label RoomLabel => _room ??= GetNode<Label>("%Room");
 
     /// <summary>The gameplay controls (built in <see cref="_Ready"/>, debug builds only; null in release).</summary>
     public ControlsManual? Manual { get; private set; }
@@ -26,9 +30,7 @@ public partial class DebugHud : CanvasLayer
 
     public override void _Ready()
     {
-        _info = GetNode<Label>("%Info");
-        _room = GetNode<Label>("%Room");
-        _info.Visible = false;
+        Info.Visible = false;
         Visible = OS.IsDebugBuild();
         if (Visible)
         {
@@ -46,10 +48,10 @@ public partial class DebugHud : CanvasLayer
     {
         if (@event.IsActionPressed(InputActions.DebugToggleHud) && OS.IsDebugBuild())
         {
-            _info.Visible = !_info.Visible;
+            Info.Visible = !Info.Visible;
             if (DebugKeys is not null)
             {
-                DebugKeys.Visible = _info.Visible;
+                DebugKeys.Visible = Info.Visible;
             }
 
             GetViewport().SetInputAsHandled();
@@ -78,11 +80,11 @@ public partial class DebugHud : CanvasLayer
             {
                 // Rebuilt only when what it shows changes: a new string every frame is garbage.
                 _roomShown = shown;
-                _room.Text = $"{World.RoomName}   {at.X:0.0}, {at.Y:0.0}";
+                RoomLabel.Text = $"{World.RoomName}   {at.X:0.0}, {at.Y:0.0}";
             }
         }
 
-        if (!_info.Visible)
+        if (!Info.Visible)
         {
             return;
         }
@@ -102,6 +104,6 @@ public partial class DebugHud : CanvasLayer
             _text.Append(Player.Abilities.Has(ability) ? "[x] " : "[ ] ").Append(ability).Append("  ");
         }
 
-        _info.Text = _text.ToString();
+        Info.Text = _text.ToString();
     }
 }

@@ -1,0 +1,306 @@
+[gd_scene format=3]
+
+; The Mantle, east of the Threshold (map offset (442, -175)): the first of the core, old machinery still turning. Great
+; wheels turn in the dark behind a bronze piston seized over the way; the door on to the Orrery is high in the east wall. The way up needs
+; both: Mag-grip climbs the piston, and the Harpoon crosses the air from its top along three rings to the door's ledge.
+
+[ext_resource type="Material" path="res://assets/materials/basalt.tres" id="1_basalt"]
+[ext_resource type="PackedScene" path="res://scenes/kit/Block.tscn" id="2_block"]
+[ext_resource type="Script" path="res://scripts/rooms/RoomExit.cs" id="3_exit"]
+[ext_resource type="PackedScene" path="res://scenes/props/HarpoonAnchor.tscn" id="4_anchor"]
+[ext_resource type="Script" path="res://scripts/machines/Machine.cs" id="5_machine"]
+[ext_resource type="Resource" path="res://resources/machines/lamplighter.tres" id="6_lamplighter"]
+[ext_resource type="Script" path="res://scripts/kit/BlockMesh.cs" id="7_blockmesh"]
+[ext_resource type="Material" path="res://assets/materials/stone_mid.tres" id="8_stone_mid"]
+[ext_resource type="Script" path="res://scripts/parts/RingMesh.cs" id="9_ring"]
+[ext_resource type="Script" path="res://scripts/rooms/dressing/Spinner.cs" id="10_spinner"]
+[ext_resource type="Material" path="res://assets/materials/metal_mid.tres" id="11_metal_mid"]
+[ext_resource type="Material" path="res://assets/materials/rust_mid.tres" id="12_rust_mid"]
+[ext_resource type="Material" path="res://assets/materials/glyphs.tres" id="13_glyphs"]
+[ext_resource type="PackedScene" path="res://scenes/fx/Dust.tscn" id="14_dust"]
+[ext_resource type="PackedScene" path="res://scenes/fx/Embers.tscn" id="15_embers"]
+[ext_resource type="Script" path="res://scripts/rooms/PhotoSpot.cs" id="16_spot"]
+[ext_resource type="Script" path="res://scripts/rooms/Room.cs" id="17_room"]
+[ext_resource type="Resource" path="res://resources/biomes/core.tres" id="18_core"]
+[ext_resource type="PackedScene" path="res://scenes/stage/RoomStage.tscn" id="19_stage"]
+[ext_resource type="Script" path="res://scripts/rooms/dressing/WallDressing.cs" id="20_wall"]
+
+[sub_resource type="PrimitiveMesh" id="blockmesh_1"]
+script = ExtResource("7_blockmesh")
+Size = Vector3(90, 56, 1.2)
+Bevel = 0.3
+
+[sub_resource type="PrimitiveMesh" id="ring_2"]
+script = ExtResource("9_ring")
+RadiusX = 9
+RadiusZ = 9
+Height = 1.4
+Thickness = 0.9
+Segments = 90
+
+[sub_resource type="PrimitiveMesh" id="ring_3"]
+script = ExtResource("9_ring")
+RadiusX = 7
+RadiusZ = 7
+Height = 1.2
+Thickness = 0.8
+Segments = 70
+
+[sub_resource type="PrimitiveMesh" id="ring_4"]
+script = ExtResource("9_ring")
+RadiusX = 4.5
+RadiusZ = 4.5
+Height = 0.8
+Thickness = 0.5
+Segments = 45
+
+[sub_resource type="PrimitiveMesh" id="ring_5"]
+script = ExtResource("9_ring")
+RadiusX = 5.5
+RadiusZ = 5.5
+Height = 0.6
+Thickness = 0.4
+Segments = 55
+
+[sub_resource type="PrimitiveMesh" id="blockmesh_6"]
+script = ExtResource("7_blockmesh")
+Size = Vector3(1.2, 16, 1.2)
+Bevel = 0.2
+
+[sub_resource type="QuadMesh" id="QuadMesh_7"]
+size = Vector2(0.3, 6)
+
+[node name="Mantle" type="Node3D" node_paths=PackedStringArray("SpawnPoint", "Stage", "Lamps", "GlyphLights")]
+script = ExtResource("17_room")
+SpawnPoint = NodePath("SpawnPoint")
+Stage = NodePath("Stage")
+Biome = ExtResource("18_core")
+Lamps = [NodePath("Lamps/Hall"), NodePath("Lamps/Ledge")]
+GlyphLights = [NodePath("Glyphs/PistonLight")]
+BoundsMin = Vector2(-1, -1)
+BoundsMax = Vector2(50, 30)
+
+[node name="SpawnPoint" type="Marker3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 4, 0, 0)
+
+; The shared atmosphere stack (environment, key light, clear front air, skylines, far pillars, frame, dust).
+[node name="Stage" parent="." instance=ExtResource("19_stage")]
+Seed = 321
+DustDensity = 0
+PillarDensity = 1
+FrameBelow = false
+FrameAbove = false
+
+[node name="Geometry" type="Node3D" parent="."]
+
+[node name="Floor" parent="Geometry" instance=ExtResource("2_block")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 25, -1.5, 0)
+Size = Vector3(56, 3, 4)
+Material = ExtResource("1_basalt")
+
+; over the door from the Threshold
+[node name="WallWestHigh" parent="Geometry" instance=ExtResource("2_block")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -1.5, 18.5, 0)
+Size = Vector3(3, 29, 4)
+Material = ExtResource("1_basalt")
+
+[node name="Roof" parent="Geometry" instance=ExtResource("2_block")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 26.5, 31.5, 0)
+Size = Vector3(53, 3, 4)
+Material = ExtResource("1_basalt")
+
+; under the high door on to the Orrery
+[node name="WallEastLow" parent="Geometry" instance=ExtResource("2_block")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 51.5, 10, 0)
+Size = Vector3(3, 20, 4)
+Material = ExtResource("1_basalt")
+
+[node name="WallEastHigh" parent="Geometry" instance=ExtResource("2_block")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 51.5, 27, 0)
+Size = Vector3(3, 6, 4)
+Material = ExtResource("1_basalt")
+
+; a bronze piston, long seized over the way: Mag-grip takes its underside and climbs it
+[node name="Piston" parent="Geometry" instance=ExtResource("2_block")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 21.5, 8.75, 0)
+Size = Vector3(3, 10.5, 4)
+Surface = 1
+
+; the high door's ledge
+[node name="DoorLedge" parent="Geometry" instance=ExtResource("2_block")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 45, 19.75, 0)
+Size = Vector3(10, 0.5, 4)
+Material = ExtResource("1_basalt")
+
+[node name="Exits" type="Node3D" parent="."]
+
+; west, back to the Threshold
+[node name="West" type="Marker3D" parent="Exits"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.5, 2, 0)
+script = ExtResource("3_exit")
+TargetRoom = "res://worlds/prototype/rooms/Threshold.tscn"
+TargetExit = "Mantle"
+Size = Vector2(1, 4)
+
+; the high door east, on to the Orrery: Mag-grip, then the Harpoon
+[node name="Orrery" type="Marker3D" parent="Exits"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 49.5, 22, 0)
+script = ExtResource("3_exit")
+TargetRoom = "res://worlds/prototype/rooms/Orrery.tscn"
+TargetExit = "West"
+Requires = "MagGrip & Harpoon"
+Size = Vector2(1, 4)
+
+[node name="Anchors" type="Node3D" parent="."]
+
+; rings across the air from the piston to the ledge
+[node name="RingA" parent="Anchors" instance=ExtResource("4_anchor")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 28.5, 17, 0)
+
+[node name="RingB" parent="Anchors" instance=ExtResource("4_anchor")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 33.5, 20, 0)
+
+[node name="RingC" parent="Anchors" instance=ExtResource("4_anchor")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 38, 22.5, 0)
+
+[node name="Machines" type="Node3D" parent="."]
+
+; a Lamplighter, drifting in the warm dark
+[node name="Lamplighter" type="CharacterBody3D" parent="Machines"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 10, 3, 0)
+script = ExtResource("5_machine")
+Species = ExtResource("6_lamplighter")
+StartFacing = 1
+
+[node name="Kit" type="Node3D" parent="."]
+
+[node name="Back" type="MeshInstance3D" parent="Kit"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 25, 14, -20)
+mesh = SubResource("blockmesh_1")
+material_override = ExtResource("8_stone_mid")
+
+; the back wall dressed: a machinery's wall at 2.25x (WallDressing)
+[node name="WallDressing" type="Node3D" parent="Kit"]
+transform = Transform3D(2.25, 0, 0, 0, 2.25, 0, 0, 0, 2.25, 25, -14, -19.25)
+script = ExtResource("20_wall")
+Style = 1
+Size = Vector2(40, 24.8889)
+Seed = 670
+
+; great wheels, still turning in the dark
+[node name="WheelA" type="Node3D" parent="Kit"]
+transform = Transform3D(1, 0, 0, 0, 0, -1, 0, 1, 0, 12, 16, -9)
+script = ExtResource("10_spinner")
+Axis = Vector3(0, 1, 0)
+Speed = 0.08
+Phase = 0
+
+[node name="Ring" type="MeshInstance3D" parent="Kit/WheelA"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0)
+mesh = SubResource("ring_2")
+material_override = ExtResource("11_metal_mid")
+
+[node name="WheelB" type="Node3D" parent="Kit"]
+transform = Transform3D(1, 0, 0, 0, 0, -1, 0, 1, 0, 34, 9, -12)
+script = ExtResource("10_spinner")
+Axis = Vector3(0, 1, 0)
+Speed = -0.11
+Phase = 0
+
+[node name="Ring" type="MeshInstance3D" parent="Kit/WheelB"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0)
+mesh = SubResource("ring_3")
+material_override = ExtResource("12_rust_mid")
+
+[node name="WheelC" type="Node3D" parent="Kit"]
+transform = Transform3D(1, 0, 0, 0, 0, -1, 0, 1, 0, 40, 24, -8)
+script = ExtResource("10_spinner")
+Axis = Vector3(0, 1, 0)
+Speed = 0.17
+Phase = 0
+
+[node name="Ring" type="MeshInstance3D" parent="Kit/WheelC"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0)
+mesh = SubResource("ring_4")
+material_override = ExtResource("11_metal_mid")
+
+[node name="WheelD" type="Node3D" parent="Kit"]
+transform = Transform3D(1, 0, 0, 0, 0, -1, 0, 1, 0, 12, 16, -8.25)
+script = ExtResource("10_spinner")
+Axis = Vector3(0, 1, 0)
+Speed = -0.14
+Phase = 0
+
+[node name="Ring" type="MeshInstance3D" parent="Kit/WheelD"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0)
+mesh = SubResource("ring_5")
+material_override = ExtResource("12_rust_mid")
+
+; the piston's rod, up into the dark
+[node name="Rod" type="MeshInstance3D" parent="Kit"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 21.5, 22, -1.5)
+mesh = SubResource("blockmesh_6")
+material_override = ExtResource("11_metal_mid")
+
+[node name="Glyphs" type="Node3D" parent="."]
+
+; glyphs down the piston's face
+[node name="Piston" type="MeshInstance3D" parent="Glyphs"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 21.5, 9, 2.01)
+mesh = SubResource("QuadMesh_7")
+material_override = ExtResource("13_glyphs")
+cast_shadow = 0
+
+[node name="PistonLight" type="OmniLight3D" parent="Glyphs"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 21.5, 9, 2.71)
+light_energy = 0.6
+light_volumetric_fog_energy = 0
+omni_range = 2.5
+
+[node name="Lamps" type="Node3D" parent="."]
+
+; the warm glow of the core
+[node name="Hall" type="OmniLight3D" parent="Lamps"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 25, 12, 4)
+light_energy = 2.4
+omni_range = 28
+shadow_enabled = false
+
+[node name="Ledge" type="OmniLight3D" parent="Lamps"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 45, 23, 2)
+light_energy = 1.4
+omni_range = 10
+shadow_enabled = false
+
+[node name="Particles" type="Node3D" parent="."]
+
+[node name="Dust" parent="Particles" instance=ExtResource("14_dust")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 25, 14, -2)
+Extents = Vector3(24, 14, 3)
+Density = 0.15
+
+[node name="Embers" parent="Particles" instance=ExtResource("15_embers")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 25, 6, -3)
+Extents = Vector3(24, 5, 3)
+Density = 0.08
+
+[node name="PhotoSpots" type="Node3D" parent="."]
+
+; the piston, the wheels turning behind
+[node name="Hall" type="Marker3D" parent="PhotoSpots"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 24, 10, 26)
+script = ExtResource("16_spot")
+PlayerPosition = Vector3(16, 0, 0)
+
+; from the piston's top: the rings across to the ledge
+[node name="Rings" type="Marker3D" parent="PhotoSpots"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 36, 19, 20)
+script = ExtResource("16_spot")
+PlayerPosition = Vector3(22, 14, 0)
+
+; the whole mantle
+[node name="Wide" type="Marker3D" parent="PhotoSpots"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 25, 14, 64)
+script = ExtResource("16_spot")
+PlayerPosition = Vector3(16, 0, 0)
+Fov = 40

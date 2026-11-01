@@ -130,7 +130,27 @@ public partial class PlayerTuning : Resource
 
     public float JumpTakeOffSpeed => JumpMath.TakeOffSpeed(JumpHeight, JumpTimeToApex);
 
+    // The core reads these numbers as plain records: each one is built here, the one place they cross the seam.
+
     /// <summary>The Water group as the pure <see cref="WaterMotion"/> reads it.</summary>
     public WaterLimits Water => new(SwimSpeed, SwimAcceleration, SwimDeceleration, FloatDepth, FloatStiffness, RiseSpeed, SinkSpeed,
         WaterAcceleration, SplashKeep, WaterEnterDepth, WaterJumpWindow);
+
+    /// <summary>Running, falling, the grace windows, the air dashes and the blows, as <see cref="PilgrimControl"/> and <see cref="MoveRules"/> read them.</summary>
+    public ControlLimits Control => new(RunSpeed, GroundAcceleration, GroundDeceleration, AirAcceleration, AirDeceleration,
+        Gravity, ApexHangThreshold, ApexGravityMultiplier, FallGravityMultiplier, MaxFallSpeed,
+        CoyoteTime, JumpBufferTime, DashBufferTime, DashCooldown, HarpoonBufferTime, GripRegrabDelay,
+        AirDashes, HurtKnockback, HurtLift, HurtStun);
+
+    /// <summary>The base moveset as the map's planner simulates it (<see cref="ReachPlanner"/>).</summary>
+    public MoveLimits Move => new(RunSpeed, AirAcceleration, AirDeceleration, JumpHeight, JumpTimeToApex, JumpCutFactor,
+        FallGravityMultiplier, ApexHangThreshold, ApexGravityMultiplier, MaxFallSpeed, DashDistance, DashDuration, DashExitSpeedFactor,
+        AirDashes, LedgeAssist: LedgeAssistHeight);
+
+    /// <summary>The Harpoon group, as the planner simulates it.</summary>
+    public HarpoonLimits Harpoon => new(HarpoonRange, HarpoonMinDistance, HarpoonZipSpeed, HarpoonZipAcceleration, HarpoonExitSpeedFactor,
+        HarpoonExitLift);
+
+    /// <summary>The Mag-grip group, as the planner simulates it.</summary>
+    public GripLimits Grip => new(GripLeapAwaySpeed, GripLeapUpFactor, GripRegrabDelay);
 }

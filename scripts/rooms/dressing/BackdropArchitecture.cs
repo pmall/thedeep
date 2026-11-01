@@ -116,7 +116,7 @@ public partial class BackdropArchitecture : Node3D
         };
         Basis basis = new Basis(Vector3.Back, p.RollZ) * new Basis(Vector3.Right, p.PitchX) * Basis.FromScale(scale);
         NVector3 o = p.Position;
-        return new Transform3D(basis, new Vector3(o.X, o.Y, o.Z));
+        return new Transform3D(basis, o.ToGodot());
     }
 
     /// <summary>Pieces whose <see cref="BackdropPlacement.Length"/> stretches them; the others with a length are built at it.</summary>

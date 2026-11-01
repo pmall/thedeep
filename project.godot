@@ -1,7 +1,7 @@
 ; Engine configuration file.
 ; Edited as text by the coding agent (see AGENTS.md). Input map and physics layers are
-; mirrored in scripts/core/InputActions.cs and scripts/core/PhysicsLayers.cs; shader globals in
-; scripts/core/ShaderGlobals.cs.
+; mirrored in scripts/engine/InputActions.cs and scripts/engine/PhysicsLayers.cs; shader globals in
+; scripts/engine/ShaderGlobals.cs.
 
 config_version=5
 

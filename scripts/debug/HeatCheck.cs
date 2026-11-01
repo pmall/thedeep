@@ -12,9 +12,9 @@ namespace TheDeep;
 /// </summary>
 public partial class HeatCheck : Node
 {
-    public Player Player { get; set; } = null!;
-    public World World { get; set; } = null!;
-    public GateHints Hints { get; set; } = null!;
+    public required Player Player { get; init; }
+    public required World World { get; init; }
+    public required GateHints Hints { get; init; }
 
     /// <summary>The gates the pilgrim has said it can't pass (GateHints).</summary>
     private readonly System.Collections.Generic.HashSet<Ability> _hinted = new();

@@ -36,7 +36,9 @@ public partial class HeatZone : Node3D
     public static event System.Action<HeatZone>? Scorched;
 
     /// <summary>The light at its foot, in the room's lamp color.</summary>
-    public OmniLight3D Glow { get; private set; } = null!;
+    public OmniLight3D Glow => _glow ??= new OmniLight3D { Position = new Vector3(0f, 0.6f, 1.2f) };
+
+    private OmniLight3D? _glow;
 
     /// <summary>The zone on the play plane, for the map's geometry check.</summary>
     public Box Region => new(GlobalPosition.X - 0.5f * Size.X, GlobalPosition.Y, GlobalPosition.X + 0.5f * Size.X, GlobalPosition.Y + Size.Y);
@@ -64,7 +66,8 @@ public partial class HeatZone : Node3D
             AddChild(embers);
         }
 
-        Glow = new OmniLight3D { LightEnergy = GlowEnergy, OmniRange = Mathf.Max(Size.X, 3f) * 1.6f, Position = new Vector3(0f, 0.6f, 1.2f) };
+        Glow.LightEnergy = GlowEnergy;
+        Glow.OmniRange = Mathf.Max(Size.X, 3f) * 1.6f;
         for (Node? n = GetParent(); n is not null; n = n.GetParent())
         {
             if (n is Room { Biome: { } biome })

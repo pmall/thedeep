@@ -84,7 +84,7 @@ Every piece a world is built from ([principles.md](principles.md), "Bricks, not 
 
 | Brick | What it is | Status | Prototype item |
 |---|---|---|---|
-| World | which rooms, network, table, biomes and line book make one world, and where it starts | missing (the prototype is wired in: `scenes/rooms/`, `docs/map-draft.md`, `DepthLayer`) | P1 |
+| World (`WorldDefinition`) | which rooms, network, layers and their biomes and line book make one world, where it starts, its save; `--world <name>` plays `worlds/<name>/world.tres` | ready (the room table comes with the network, stage B) | P6 (the sequel test) |
 | `Session`, `Shrine`, save | shrines, death and return, relics, the save | working | P5 (items in the save) |
 | Room travel | crossing an exit under a fade, arriving with momentum | ready | — |
 | Map screen | visited rooms and the ways not taken | working | P5 |
@@ -99,4 +99,5 @@ Every piece a world is built from ([principles.md](principles.md), "Bricks, not 
 | Map solver | no softlock, ability orders, from the network | ready |
 | Reach planner | the moveset and all five abilities simulated inside each room, with a clumsy pilgrim | ready |
 | Room, travel, species and lab checks | headless, in `tools/check.sh` | ready |
+| Required exports | an export the type says is always there and the scene left empty fails the room check (rooms, the bricks they place, the resources those reach, the main scene and its world) | ready |
 | Network and room table check | the real game's plan on paper: graph and table agree, targets met | missing (stage B) |

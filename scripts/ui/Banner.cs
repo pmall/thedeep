@@ -9,23 +9,23 @@ namespace TheDeep;
 /// </summary>
 public partial class Banner : CanvasLayer
 {
-    private Label _title = null!;
-    private Label _line = null!;
-    private Control _box = null!;
+    private Label? _title;
+    private Label TitleLabel => _title ??= MakeLabel(40, new Color(0.95f, 0.93f, 1f));
+    private Label? _line;
+    private Label LineLabel => _line ??= MakeLabel(20, new Color(0.85f, 0.83f, 0.92f));
+    private Control? _box;
+    private Control Box => _box ??= new VBoxContainer { MouseFilter = Control.MouseFilterEnum.Ignore, Alignment = BoxContainer.AlignmentMode.Center };
     private Tween? _tween;
 
     public override void _Ready()
     {
         Layer = 75;
-        _box = new VBoxContainer { MouseFilter = Control.MouseFilterEnum.Ignore, Alignment = BoxContainer.AlignmentMode.Center };
-        _box.SetAnchorsPreset(Control.LayoutPreset.FullRect);
-        _box.OffsetTop = 520f;
-        _title = MakeLabel(40, new Color(0.95f, 0.93f, 1f));
-        _line = MakeLabel(20, new Color(0.85f, 0.83f, 0.92f));
-        _box.AddChild(_title);
-        _box.AddChild(_line);
-        _box.Modulate = Colors.White with { A = 0f };
-        AddChild(_box);
+        Box.SetAnchorsPreset(Control.LayoutPreset.FullRect);
+        Box.OffsetTop = 520f;
+        Box.AddChild(TitleLabel);
+        Box.AddChild(LineLabel);
+        Box.Modulate = Colors.White with { A = 0f };
+        AddChild(Box);
     }
 
     private static Label MakeLabel(int size, Color color)
@@ -42,13 +42,13 @@ public partial class Banner : CanvasLayer
     public async Task Show(StringName titleId, StringName lineId, float hold = 3.5f)
     {
         var book = LineBook.Shared;
-        _title.Text = book.Find(titleId)?.Text ?? "";
-        _line.Text = book.Find(lineId)?.Text ?? "";
+        TitleLabel.Text = book.Find(titleId)?.Text ?? "";
+        LineLabel.Text = book.Find(lineId)?.Text ?? "";
         _tween?.Kill();
         _tween = CreateTween();
-        _tween.TweenProperty(_box, "modulate:a", 1f, 0.7f).SetTrans(Tween.TransitionType.Sine);
+        _tween.TweenProperty(Box, "modulate:a", 1f, 0.7f).SetTrans(Tween.TransitionType.Sine);
         _tween.TweenInterval(hold);
-        _tween.TweenProperty(_box, "modulate:a", 0f, 1.0f).SetTrans(Tween.TransitionType.Sine);
+        _tween.TweenProperty(Box, "modulate:a", 0f, 1.0f).SetTrans(Tween.TransitionType.Sine);
         await ToSignal(_tween, Tween.SignalName.Finished);
     }
 }

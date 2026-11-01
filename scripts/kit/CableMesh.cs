@@ -22,5 +22,5 @@ public partial class CableMesh : KitMesh
     [Export] public int Seed { get => _seed; set { _seed = value; RequestUpdate(); } }
 
     protected override void Build(MeshBuilder builder) =>
-        KitShapes.Cables(builder, ToNumerics(End), Sag, Radius, Strands, Seed);
+        KitShapes.Cables(builder, End.ToCore(), Sag, Radius, Strands, Seed);
 }

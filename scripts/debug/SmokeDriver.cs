@@ -22,7 +22,7 @@ public partial class SmokeDriver : Node
     private float _fullJumpBaseY;
     private float _maxAbsZ;
 
-    public Player Player { get; set; } = null!;
+    public required Player Player { get; init; }
 
     public SmokeDriver()
     {

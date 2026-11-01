@@ -14,8 +14,8 @@ namespace TheDeep;
 /// </summary>
 public partial class HarpoonCheck : Node
 {
-    public Player Player { get; set; } = null!;
-    public World World { get; set; } = null!;
+    public required Player Player { get; init; }
+    public required World World { get; init; }
 
     private readonly List<Step> _steps = new();
     private readonly List<string> _problems = new();
@@ -101,7 +101,7 @@ public partial class HarpoonCheck : Node
         _maxAbsZ = Mathf.Max(_maxAbsZ, Mathf.Abs(Player.GlobalPosition.Z));
         if (Player.CurrentState == Player.States.Harpoon)
         {
-            _closest = Mathf.Min(_closest, (Player.States.Harpoon.Anchor.Point - Player.Center).Length());
+            _closest = Player.States.Harpoon.Anchor is { } anchor ? Mathf.Min(_closest, (anchor.Point - Player.Center).Length()) : _closest;
         }
 
         Step step = _steps[_index];

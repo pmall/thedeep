@@ -20,7 +20,7 @@ All numbers live in `resources/player_tuning.tres` (see "Tuning" below).
 - **Death:** the veil falls slowly; the pilgrim wakes at the last shrine it rested at, whole, the room renewed (its machines back).
 - **Pilgrim shrines** (save points, `scenes/props/Shrine.tscn`): standing at one shows "Rest"; **E** (pad Y) rests: full health, the glyphs flare, the game is saved there.
 - **Ability relics** (`scenes/props/AbilityRelic.tscn`): walking into one takes it: the pilgrim stands still while the core drifts in, the ability unlocks, a banner names it and says how to use it, and the game saves. A taken relic stays taken.
-- **Saving:** `user://save.json` (`SaveData`, pure; on Linux `~/.local/share/godot/app_userdata/The Deep/save.json`): the last shrine rested at, abilities, relics taken, the map. A normal launch resumes there; `godot --path . -- --new` starts fresh (the save is overwritten at the first rest). Checks, look-dev and `--room` runs never read or write it.
+- **Saving:** one save per world (`WorldDefinition.SavePath`; the prototype's is `user://save.json`) (`SaveData`, pure; on Linux `~/.local/share/godot/app_userdata/The Deep/save.json`): the last shrine rested at, abilities, relics taken, the map. A normal launch resumes there; `godot --path . -- --new` starts fresh (the save is overwritten at the first rest). Checks, look-dev and `--room` runs never read or write it.
 - **Map** (M / Tab, pad LB): the visited rooms, placed from the exits crossed; pauses the game.
 - **Leaving a room:** walk (run, dash, drift) out through a doorway; standing in one, or dropping into one from above, never travels. Hatches in floors and ceilings are crossed whatever the way.
 - **Scripture plates** (`scenes/props/ScripturePlate.tscn`, the Scriptorium): standing at one shows "Read"; **E** (pad Y) shows its words in the banner. Lore only.
@@ -52,7 +52,7 @@ The player can collect them in many orders, and that freedom is proven by a solv
 - **Corners snap** (a later pass may smooth them): a metal wall ahead turns the player onto it (inner corner); a surface's end wraps the player around the edge onto the end face (outer corner); reaching a floor stands it up. After a corner, the input that led there keeps meaning "keep going" until it changes, so holding up climbs a wall, turns under the ceiling and walks along it. A rock face ahead just stops the player; a rock end face lets go. **Only metal holds:** where the metal ends and rock goes on in the same plane, the player lets go (until 2026-11-01 it slid on along the rock: down the Descent's flooded gate, through its water and into the Sluice without Ballast). **Water lets go too:** walked down into swimmable water, once the body's center is deeper than `WaterEnterDepth` (`GripMath.Drowned`) the player lets go and swims, so deep water stays Ballast's gate even beside metal. The planner places no grip pose on rock or drowned.
 - **The visible body eases** into each new pose (`PlayerVisual.CarryOver`): the collider snaps, the body follows in about a tenth of a second. Animation sees the body's own frame, so walking on a wall plays the run cycle; the coat and braid still hang toward the world's floor.
 - A grip surface refills the air dash. Travelling through an exit while gripping stands the player up first.
-- Checked headless in `scenes/rooms/MechanicsLab.tscn` (`GripCheck`, in `tools/check.sh`); look-dev shoots a grip reel there (`Grip.png`).
+- Checked headless in `worlds/prototype/rooms/MechanicsLab.tscn` (`GripCheck`, in `tools/check.sh`); look-dev shoots a grip reel there (`Grip.png`).
 
 **Harpoon (implemented, M8).** `HarpoonState`, aiming in `HarpoonAim` (pure, unit tested), the eye and the line in `HarpoonRig` (in Main).
 - **Anchors** are mooring rings placed in rooms (`scenes/props/HarpoonAnchor.tscn`): the node's origin is where the pilgrim's center is pulled to. They are only a position (no collision); keep a body's height of air below one.
@@ -83,7 +83,7 @@ Abilities are flags in `AbilitySet` (`Player.Abilities`). In debug builds, F1–
 
 ## Controls
 
-Input actions are defined in `project.godot` and mirrored in `scripts/core/InputActions.cs`. Never use string literals for them elsewhere.
+Input actions are defined in `project.godot` and mirrored in `scripts/engine/InputActions.cs`. Never use string literals for them elsewhere.
 
 | Action | Keyboard | Gamepad |
 |---|---|---|

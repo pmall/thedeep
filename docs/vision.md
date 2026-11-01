@@ -19,7 +19,7 @@ Design principles:
 
 ## Scope
 
-- **The prototype** (built): three depth layers plus the core, five unlockable abilities, 40 rooms, 4 bosses and 3 law breaks ([map-draft.md](map-draft.md)). It was planned as about 2 hours of play, *Inside*-dense. It is now the playground where every brick is proven.
+- **The prototype** (built): three depth layers plus the core, five unlockable abilities, 40 rooms, 4 bosses and 3 law breaks ([map-draft.md](../worlds/prototype/map-draft.md)). It was planned as about 2 hours of play, *Inside*-dense. It is now the playground where every brick is proven.
 - **The real game** (owner, 2026-11-01: "I start to be ambitious"): bigger than the prototype, with many paths, loops and secret rooms, every room with a purpose (a secret, an ambush, an enigma, lore). Its size and length are decided with its network of rooms in stage B ([roadmap.md](roadmap.md)). Dense still beats wide: no filler.
 - **Prototype systems kept deliberately small:** one kind of power-up (a permanent bonus to strength or defense), a small inventory of keys and codes that open doors, dialogue boxes. Nothing more.
 - Two long-term objectives add depth without making the game harder to play: 150–200 distinct machine species, and freedom of ability order proven by a solver. See [long-term.md](long-term.md).

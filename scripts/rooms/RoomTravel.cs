@@ -82,9 +82,9 @@ public partial class RoomTravel : Node
     /// <summary>Loads the exit's target room and places the player at its arrival exit. Returns the arrival exit.</summary>
     public RoomExit? Go(RoomExit exit)
     {
-        NVector2 from = ToN(exit.RoomPosition);
-        NVector2 player = ToN(new Vector2(Player.GlobalPosition.X, Player.GlobalPosition.Y));
-        NVector2 velocity = ToN(new Vector2(Player.Velocity.X, Player.Velocity.Y));
+        NVector2 from = exit.RoomPosition.ToCore();
+        NVector2 player = Player.GlobalPosition.Flat();
+        NVector2 velocity = Player.Velocity.Flat();
         MapRoom? here = World.Map.Find(World.RoomName);
         NVector2 hereOffset = here?.Offset ?? NVector2.Zero;
         string targetExit = exit.TargetExit;
@@ -101,20 +101,18 @@ public partial class RoomTravel : Node
             return null;
         }
 
-        NVector2 to = ToN(arrival.RoomPosition);
+        NVector2 to = arrival.RoomPosition.ToCore();
         World.Enter(room, ExitMath.RoomOffset(hereOffset, from, to));
         World.Map.Take(leaving, leavingExit);
         World.Map.Take(World.RoomName, arrival.Name);
-        NVector2 position = ExitMath.Arrival(player, from, to, ToN(arrival.Size));
-        NVector2 keep = ExitMath.ArrivalVelocity(velocity, ToN(arrival.Size), ClimbRise * Player.Tuning.JumpTakeOffSpeed);
+        NVector2 position = ExitMath.Arrival(player, from, to, arrival.Size.ToCore());
+        NVector2 keep = ExitMath.ArrivalVelocity(velocity, arrival.Size.ToCore(), ClimbRise * Player.Tuning.JumpTakeOffSpeed);
         arrival.Disarm();
-        Player.Arrive(new Vector3(position.X, position.Y, 0f), new Vector3(keep.X, keep.Y, 0f));
+        Player.Arrive(position.OnPlane(), keep.OnPlane());
         if (arrival.ArrivalSide != 0 && keep.Y > 0f)
         {
             Player.Steer(arrival.ArrivalSide, SteerTime);
         }
         return arrival;
     }
-
-    private static NVector2 ToN(Vector2 v) => new(v.X, v.Y);
 }

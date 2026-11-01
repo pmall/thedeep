@@ -10,31 +10,31 @@ public partial class HintLine : CanvasLayer
 {
     [Export] public float Hold { get; set; } = 3.2f;
 
-    private Label _label = null!;
-    private Control _mark = null!;
-    private Control _box = null!;
+    private Label? _label;
+    private Label Words => _label ??= new Label { MouseFilter = Control.MouseFilterEnum.Ignore };
+    private Control? _mark;
+    private Control Mark => _mark ??= new Control { CustomMinimumSize = new Vector2(14f, 14f), MouseFilter = Control.MouseFilterEnum.Ignore, SizeFlagsVertical = Control.SizeFlags.ShrinkCenter };
+    private Control? _box;
+    private Control Box => _box ??= new HBoxContainer { MouseFilter = Control.MouseFilterEnum.Ignore, Alignment = BoxContainer.AlignmentMode.Center };
     private Color _color = Colors.White;
     private Tween? _tween;
 
     public override void _Ready()
     {
         Layer = 74;
-        _box = new HBoxContainer { MouseFilter = Control.MouseFilterEnum.Ignore, Alignment = BoxContainer.AlignmentMode.Center };
-        _box.SetAnchorsPreset(Control.LayoutPreset.BottomWide);
-        _box.OffsetTop = -132f;
-        _box.OffsetBottom = -92f;
-        _box.AddThemeConstantOverride("separation", 14);
-        _mark = new Control { CustomMinimumSize = new Vector2(14f, 14f), MouseFilter = Control.MouseFilterEnum.Ignore, SizeFlagsVertical = Control.SizeFlags.ShrinkCenter };
-        _mark.Draw += () => _mark.DrawCircle(_mark.Size * 0.5f, 5.5f, _color);
-        _label = new Label { MouseFilter = Control.MouseFilterEnum.Ignore };
-        _label.AddThemeFontSizeOverride("font_size", 22);
-        _label.AddThemeColorOverride("font_color", new Color(0.9f, 0.88f, 0.95f));
-        _label.AddThemeColorOverride("font_shadow_color", new Color(0f, 0f, 0f, 0.65f));
-        _label.AddThemeConstantOverride("shadow_offset_y", 2);
-        _box.AddChild(_mark);
-        _box.AddChild(_label);
-        _box.Modulate = Colors.White with { A = 0f };
-        AddChild(_box);
+        Box.SetAnchorsPreset(Control.LayoutPreset.BottomWide);
+        Box.OffsetTop = -132f;
+        Box.OffsetBottom = -92f;
+        Box.AddThemeConstantOverride("separation", 14);
+        Mark.Draw += () => Mark.DrawCircle(Mark.Size * 0.5f, 5.5f, _color);
+        Words.AddThemeFontSizeOverride("font_size", 22);
+        Words.AddThemeColorOverride("font_color", new Color(0.9f, 0.88f, 0.95f));
+        Words.AddThemeColorOverride("font_shadow_color", new Color(0f, 0f, 0f, 0.65f));
+        Words.AddThemeConstantOverride("shadow_offset_y", 2);
+        Box.AddChild(Mark);
+        Box.AddChild(Words);
+        Box.Modulate = Colors.White with { A = 0f };
+        AddChild(Box);
     }
 
     /// <summary>Whether a line is showing (or easing).</summary>
@@ -43,14 +43,14 @@ public partial class HintLine : CanvasLayer
     /// <summary>Shows the line <paramref name="lineId"/> with a mark in <paramref name="color"/>.</summary>
     public void Show(StringName lineId, Color color)
     {
-        _label.Text = LineBook.Shared.Find(lineId)?.Text ?? "";
+        Words.Text = LineBook.Shared.Find(lineId)?.Text ?? "";
         _color = color;
-        _mark.QueueRedraw();
+        Mark.QueueRedraw();
         _tween?.Kill();
         _tween = CreateTween();
-        _tween.TweenProperty(_box, "modulate:a", 1f, 0.45f).SetTrans(Tween.TransitionType.Sine);
+        _tween.TweenProperty(Box, "modulate:a", 1f, 0.45f).SetTrans(Tween.TransitionType.Sine);
         _tween.TweenInterval(Hold);
-        _tween.TweenProperty(_box, "modulate:a", 0f, 0.9f).SetTrans(Tween.TransitionType.Sine);
+        _tween.TweenProperty(Box, "modulate:a", 0f, 0.9f).SetTrans(Tween.TransitionType.Sine);
     }
 
     /// <summary>Gone at once (a room left under the veil).</summary>
@@ -63,6 +63,6 @@ public partial class HintLine : CanvasLayer
 
         _tween?.Kill();
         _tween = null;
-        _box.Modulate = Colors.White with { A = 0f };
+        Box.Modulate = Colors.White with { A = 0f };
     }
 }

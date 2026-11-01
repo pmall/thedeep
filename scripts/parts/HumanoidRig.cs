@@ -41,7 +41,7 @@ public sealed class HumanoidRig
         Vector3 R(HumanoidBone b) => rest[(int)b];
         var dims = new HumanoidDims(
             HipsHeight: R(HumanoidBone.Hips).Y,
-            HipJoint: new NVector2(R(HumanoidBone.ThighR).X, R(HumanoidBone.ThighR).Y),
+            HipJoint: R(HumanoidBone.ThighR).Flat(),
             Thigh: R(HumanoidBone.ShinR).Length(),
             Shin: R(HumanoidBone.FootR).Length(),
             ShoulderHeight: R(HumanoidBone.Spine).Y + R(HumanoidBone.Chest).Y + R(HumanoidBone.UpperArmR).Y,
@@ -62,7 +62,7 @@ public sealed class HumanoidRig
             Vector3 position = _rest[i];
             if (bone == HumanoidBone.Hips)
             {
-                position += new Vector3(pose.HipsOffset.X, pose.HipsOffset.Y, 0f);
+                position += pose.HipsOffset.OnPlane();
             }
 
             _joints[i].Transform = new Transform3D(new Basis(Vector3.Back, pose.Local(bone)), position);

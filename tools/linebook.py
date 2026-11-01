@@ -1,4 +1,4 @@
-"""Adds lines to the line book (resources/text/lines.tres) from a throwaway script, or replaces lines with the same id.
+"""Adds lines to the line book (worlds/prototype/lines.tres) from a throwaway script, or replaces lines with the same id.
 
     import sys; sys.path.insert(0, 'tools'); from linebook import add
     add([('hint.gate.metal', 'UI', 'Bare metal ...', 'Notes ...')])
@@ -8,7 +8,7 @@ Each line is (id, speaker, text, notes). The sub-resource id is the line id with
 
 import re
 
-PATH = 'resources/text/lines.tres'
+PATH = 'worlds/prototype/lines.tres'
 
 
 def _quote(s):

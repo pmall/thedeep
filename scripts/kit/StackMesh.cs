@@ -14,5 +14,5 @@ public partial class StackMesh : KitMesh
     /// <summary>Height between shelves, meters.</summary>
     [Export] public float Shelf { get => _shelf; set { _shelf = value; RequestUpdate(); } }
 
-    protected override void Build(MeshBuilder builder) => KitShapes.Stack(builder, ToNumerics(Size), Shelf);
+    protected override void Build(MeshBuilder builder) => KitShapes.Stack(builder, Size.ToCore(), Shelf);
 }

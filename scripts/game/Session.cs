@@ -9,8 +9,10 @@ namespace TheDeep;
 /// scripture plates, lines spoken to it (<see cref="Proclamation"/>), boss fights (<see cref="BossSeal"/>), law breaks
 /// (<see cref="LawBreak"/>), lifts (<see cref="Lift"/>) and cracked rock broken by the Drill (it stays broken), dying or
 /// falling out of a room and coming back at the last shrine rested at, the end of what is built
-/// (<see cref="MapGoal"/> areas), and starting from the save. Holds the <see cref="SaveData"/>. Machines come back
-/// whenever a room is entered again (it is a fresh instance); taken relics, beaten bosses and broken laws never do.
+/// (<see cref="MapGoal"/> areas), and starting from the save. The progress and its rules are the core's
+/// (<see cref="Pilgrimage"/>: what is done for good, the last rest, a visit's moments); this node finds them in the room and plays
+/// them. Machines come back whenever a room is entered again (it is a fresh instance); taken relics, beaten bosses and broken laws
+/// never do.
 /// </summary>
 public partial class Session : Node
 {
@@ -36,10 +38,13 @@ public partial class Session : Node
     private bool _busy;
     private Shrine? _prompted;
     private ScripturePlate? _plate;
-    private bool _goalShown;
-    private readonly System.Collections.Generic.HashSet<Proclamation> _spoken = new();
 
-    public SaveData Save { get; private set; } = new();
+    /// <summary>The proclamations heard this visit (each speaks once per visit).</summary>
+    private readonly HashSet<Proclamation> _spoken = new();
+
+    private Pilgrimage _pilgrimage = new(new SaveData());
+
+    public SaveData Save => _pilgrimage.Save;
 
     /// <summary>Raised when a <see cref="Proclamation"/> speaks to the pilgrim.</summary>
     public event System.Action<Proclamation>? Spoke;
@@ -52,10 +57,6 @@ public partial class Session : Node
         World.RoomLoaded += OnRoomLoaded;
         Player.Died += OnDied;
         OnRoomLoaded(World.Room);
-        if (Save.Room == "")
-        {
-            Save.Room = World.RoomName;
-        }
     }
 
     public override void _ExitTree()
@@ -67,7 +68,7 @@ public partial class Session : Node
     /// <summary>Starts from <paramref name="data"/> (the world already loaded its room): abilities, map, the pilgrim at its shrine.</summary>
     public void Resume(SaveData data)
     {
-        Save = data;
+        _pilgrimage = new Pilgrimage(data);
         Player.Abilities.Set((Ability)data.Abilities, true);
         World.Map.Restore(data.MapRooms(), World.RoomName, data.MapWays(), data.Taken);
         // Entered again where the save placed it (or at the origin): its ways out are read afresh from the room.
@@ -88,22 +89,25 @@ public partial class Session : Node
 
         Vector3 p = Player.GlobalPosition;
         Room room = World.Room;
-        if (p.Y < room.BoundsMin.Y - FallOutDepth)
+        if (Pilgrimage.FellOut(p.Y, room.BoundsMin.Y, FallOutDepth))
         {
             FellOut();
             return;
         }
 
-        if (!_goalShown && GoalAt(room, p) is { } goal && !(goal.Ending && BossLeft(room)))
+        if (GoalAt(room, p) is { } goal)
         {
-            _goalShown = true;
-            if (goal.Ending)
+            switch (_pilgrimage.ReachGoal(goal.Ending, goal.Ending && BossLeft(room)))
             {
-                End();
-                return;
+                case GoalMoment.End:
+                    End();
+                    return;
+                case GoalMoment.Shown:
+                    _ = Banner.Show(goal.TitleLine, goal.HintLine, 5f);
+                    break;
+                case GoalMoment.None:
+                    break;
             }
-
-            _ = Banner.Show(goal.TitleLine, goal.HintLine, 5f);
         }
 
         if (Unspoken(room, p) is { } spoken)
@@ -206,9 +210,9 @@ public partial class Session : Node
             return;
         }
 
-        if (IsInstanceValid(_prompted))
+        if (_prompted is { } shown && IsInstanceValid(shown))
         {
-            _prompted!.ShowPrompt(false);
+            shown.ShowPrompt(false);
         }
 
         _prompted = shrine;
@@ -222,9 +226,9 @@ public partial class Session : Node
             return;
         }
 
-        if (IsInstanceValid(_plate))
+        if (_plate is { } shown && IsInstanceValid(shown))
         {
-            _plate!.ShowPrompt(false);
+            shown.ShowPrompt(false);
         }
 
         _plate = plate;
@@ -236,8 +240,7 @@ public partial class Session : Node
     {
         _busy = true;
         Player.Vitality.Restore();
-        Save.Room = World.RoomName;
-        Save.Shrine = shrine.Name;
+        _pilgrimage.Rest(World.RoomName, shrine.Name);
         Write();
         shrine.Flare();
         Player.Velocity = Vector3.Zero;
@@ -263,7 +266,7 @@ public partial class Session : Node
 
     /// <summary>
     /// The end of the game (the Heart): the pilgrim stands still, the end card plays, then a new game begins (the save, if
-    /// this run keeps one, is gone: the next pilgrimage starts at the Narthex).
+    /// this run keeps one, is gone: the next pilgrimage starts at the world's start room).
     /// </summary>
     private async void End()
     {
@@ -274,7 +277,7 @@ public partial class Session : Node
         await EndCard.Play();
         if (Persist)
         {
-            SaveFile.Delete();
+            SaveFile.Delete(World.Definition.SavePath);
         }
 
         GetTree().ReloadCurrentScene();
@@ -319,13 +322,12 @@ public partial class Session : Node
     {
         Prompt(null);
         PromptPlate(null);
-        _goalShown = false;
         _spoken.Clear();
         string name = World.NameOf(room.SceneFilePath);
+        _pilgrimage.Enter(name);
         foreach (AbilityRelic relic in room.All<AbilityRelic>())
         {
-            // A relic whose ability is already owned lies empty (a room tried with `--room`, its route's abilities given).
-            if (Save.Collected.Contains(SaveData.RelicId(name, relic.Name)) || Player.Abilities.Has(relic.Ability))
+            if (_pilgrimage.RelicEmpty(name, relic.Name, relic.Ability, Player.Abilities.Unlocked))
             {
                 relic.Empty();
             }
@@ -334,7 +336,7 @@ public partial class Session : Node
         foreach (BossSeal seal in room.All<BossSeal>())
         {
             seal.Player = Player;
-            if (Save.Collected.Contains(SaveData.RelicId(name, seal.Name)))
+            if (_pilgrimage.Done(name, seal.Name))
             {
                 seal.Settle();
                 continue;
@@ -350,7 +352,7 @@ public partial class Session : Node
 
         foreach (Block block in room.Blocks().Where(b => b.Cracked))
         {
-            if (Save.Collected.Contains(SaveData.RelicId(name, block.Name)))
+            if (_pilgrimage.Done(name, block.Name))
             {
                 block.Settle();
                 continue;
@@ -373,7 +375,7 @@ public partial class Session : Node
         foreach (LawBreak law in room.All<LawBreak>())
         {
             law.Player = Player;
-            if (Save.Collected.Contains(SaveData.RelicId(name, law.Name)))
+            if (_pilgrimage.Done(name, law.Name))
             {
                 law.Settle();
                 continue;
@@ -417,22 +419,16 @@ public partial class Session : Node
     /// <summary>Done for good (a relic taken, a boss beaten, a law broken): kept in the save, written at once.</summary>
     private void Remember(string node)
     {
-        string id = SaveData.RelicId(World.RoomName, node);
-        if (!Save.Collected.Contains(id))
-        {
-            Save.Collected.Add(id);
-        }
-
+        _pilgrimage.Remember(World.RoomName, node);
         Write();
     }
 
     private void Write()
     {
-        Save.Abilities = (int)Player.Abilities.Unlocked;
-        Save.SetMap(World.Map);
+        _pilgrimage.Record(Player.Abilities.Unlocked, World.Map);
         if (Persist)
         {
-            SaveFile.Write(Save);
+            SaveFile.Write(World.Definition.SavePath, Save);
         }
     }
 

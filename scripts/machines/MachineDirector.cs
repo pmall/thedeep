@@ -37,7 +37,8 @@ public partial class MachineDirector : Node
     private readonly List<Impact> _impacts = new();
     private readonly List<Impact> _heard = new();
     private readonly List<Neighbor> _neighbors = new();
-    private PlaneRay _sight = null!;
+    private PlaneRay? _sight;
+    private PlaneRay Sight => _sight ??= PlaneRay.For(PhysicsLayers.Solid);
 
     /// <summary>Machines already hit by a swing (by the swing's number), so a swing hits each once.</summary>
     private readonly HashSet<(Machine, int)> _struck = new();
@@ -55,7 +56,7 @@ public partial class MachineDirector : Node
 
     public override void _Ready()
     {
-        _sight = PlaneRay.AddTo(this, PhysicsLayers.Solid);
+        Sight.Attach(this);
         World.RoomLoaded += OnRoomLoaded;
         Player.Landed += OnLanded;
         Player.Dashed += OnDashed;
@@ -105,8 +106,8 @@ public partial class MachineDirector : Node
             PlayerTrace? player = null;
             if (PlayerPresent)
             {
-                bool inSight = !_sight.Cast(machine.SensorPosition, chest);
-                player = new PlayerTrace(Flat(chest), Flat(Player.Velocity), inSight);
+                bool inSight = !Sight.Cast(machine.SensorPosition, chest);
+                player = new PlayerTrace(chest.Flat(), Player.Velocity.Flat(), inSight);
             }
 
             _neighbors.Clear();
@@ -115,7 +116,7 @@ public partial class MachineDirector : Node
             {
                 if (other != machine && !other.Broken && other.PlanePosition.DistanceTo(here) <= NeighborRange)
                 {
-                    _neighbors.Add(new Neighbor(Flat(other.PlanePosition), other.Species.Id, other.Intent.Signal));
+                    _neighbors.Add(new Neighbor(other.PlanePosition.ToCore(), other.Species.Id, other.Intent.Signal));
                 }
             }
 
@@ -124,7 +125,7 @@ public partial class MachineDirector : Node
             {
                 HitSparks?.Emit(chest, 1f);
                 Camera?.AddShake(HitShake);
-                Player.TakeHit(machine.Species.Damage, new System.Numerics.Vector2(machine.PlanePosition.X, machine.PlanePosition.Y));
+                Player.TakeHit(machine.Species.Damage, machine.PlanePosition.ToCore());
                 PlayerStruck?.Invoke(machine);
             }
         }
@@ -142,7 +143,7 @@ public partial class MachineDirector : Node
 
             Rect2 body = machine.BodyRect.Intersection(area);
             Vector2 at = body.GetCenter();
-            bool broke = machine.TakeHit(Player.Tuning.AttackDamage, new Vector2(Player.GlobalPosition.X, Player.GlobalPosition.Y),
+            bool broke = machine.TakeHit(Player.Tuning.AttackDamage, Player.GlobalPosition.X,
                 Player.Tuning.AttackKnockback);
             HitSparks?.Emit(new Vector3(at.X, at.Y, 0.3f), broke ? 1.5f : 0.7f);
             Camera?.AddShake(broke ? 0.3f : 0.12f);
@@ -173,11 +174,7 @@ public partial class MachineDirector : Node
         }
     }
 
-    private void OnLanded(float fallSpeed) => _impacts.Add(new Impact(Flat(Player.GlobalPosition), fallSpeed));
+    private void OnLanded(float fallSpeed) => _impacts.Add(new Impact(Player.GlobalPosition.Flat(), fallSpeed));
 
-    private void OnDashed(int direction) => _impacts.Add(new Impact(Flat(Player.GlobalPosition), DashImpact));
-
-    private static NVector2 Flat(Vector3 v) => new(v.X, v.Y);
-
-    private static NVector2 Flat(Vector2 v) => new(v.X, v.Y);
+    private void OnDashed(int direction) => _impacts.Add(new Impact(Player.GlobalPosition.Flat(), DashImpact));
 }

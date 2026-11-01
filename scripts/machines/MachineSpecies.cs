@@ -17,12 +17,14 @@ public partial class MachineSpecies : Resource
     [Export] public StringName Id { get; set; } = "";
 
     [Export] public string DisplayName { get; set; } = "";
-    [Export] public DepthLayer Layer { get; set; } = DepthLayer.Flooded;
+
+    /// <summary>The biome it lives in (the layer of the descent it belongs to: its palette there reads as its own).</summary>
+    [Export] public BiomeProfile Habitat { get; set; } = null!;
 
     /// <summary>Can it hurt the player? About a third of species should not (docs/long-term.md).</summary>
     [Export] public bool Hostile { get; set; }
 
-    /// <summary>Id of its creed, a line in <see cref="LineBook.Path"/> (placeholder text, stored as data for voicing later).</summary>
+    /// <summary>Id of its creed, a line in the world's line book (placeholder text, stored as data for voicing later).</summary>
     [Export] public StringName CreedLine { get; set; } = "";
 
     [ExportGroup("Body")]

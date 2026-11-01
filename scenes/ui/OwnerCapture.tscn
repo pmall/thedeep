@@ -10,9 +10,13 @@ corner_radius_bottom_right = 5
 corner_radius_bottom_left = 5
 anti_aliasing_size = 0.6
 
-[node name="OwnerCapture" type="CanvasLayer"]
+[node name="OwnerCapture" type="CanvasLayer" node_paths=PackedStringArray("RecIndicator", "RecDot", "RecTime", "Toast")]
 layer = 100
 script = ExtResource("1_capture")
+RecIndicator = NodePath("RecIndicator")
+RecDot = NodePath("RecIndicator/RecDot")
+RecTime = NodePath("RecIndicator/RecTime")
+Toast = NodePath("Toast")
 
 [node name="RecIndicator" type="HBoxContainer" parent="."]
 unique_name_in_owner = true

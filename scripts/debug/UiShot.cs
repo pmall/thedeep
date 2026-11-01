@@ -13,12 +13,12 @@ namespace TheDeep;
 /// </summary>
 public partial class UiShot : Node
 {
-    public World World { get; set; } = null!;
-    public Player Player { get; set; } = null!;
-    public RoomTravel Travel { get; set; } = null!;
-    public HintLine Hint { get; set; } = null!;
-    public MapScreen Map { get; set; } = null!;
-    public EndCard EndCard { get; set; } = null!;
+    public required World World { get; init; }
+    public required Player Player { get; init; }
+    public required RoomTravel Travel { get; init; }
+    public required HintLine Hint { get; init; }
+    public required MapScreen Map { get; init; }
+    public required EndCard EndCard { get; init; }
     public ControlsManual? Manual { get; set; }
     public ControlsManual? DebugKeys { get; set; }
     public string OutputDir { get; set; } = "";

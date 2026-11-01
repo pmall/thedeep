@@ -53,8 +53,8 @@ public sealed class MachineAnimator
             }
 
             Vector3 knee = body.RestOffset(spec.Lower), foot = body.RestOffset(spec.Foot);
-            _legs.Add(new Leg(spec, upper, lower, Flat(knee).Length(), Flat(foot).Length(), RestAngle(knee), RestAngle(foot),
-                Flat(rest.GetValueOrDefault(spec.Foot))));
+            _legs.Add(new Leg(spec, upper, lower, knee.Flat().Length(), foot.Flat().Length(), RestAngle(knee), RestAngle(foot),
+                rest.GetValueOrDefault(spec.Foot).Flat()));
         }
     }
 
@@ -141,7 +141,7 @@ public sealed class MachineAnimator
         float phase = LegGait.Advance(walked, spec.Stride, spec.Stance) + spec.Phase;
         NVector2 target = leg.RestFoot + LegGait.Foot(phase, spec.Stance, spec.Stride, spec.Lift) * stepping;
         Transform3D toGround = _ground.GlobalTransform.AffineInverse();
-        NVector2 hip = Flat(toGround * leg.Upper.GlobalPosition);
+        NVector2 hip = (toGround * leg.Upper.GlobalPosition).Flat();
         (float upper, float lower) = PlanarIk.TwoBone(hip, target, leg.UpperLength, leg.LowerLength, spec.Bend);
 
         // Absolute angles in the ground frame, to local turns: minus the parent's turn and the segment's rest angle.
@@ -164,8 +164,6 @@ public sealed class MachineAnimator
 
     /// <summary>The angle of a segment from straight down, positive toward +X (PlanarIk's convention).</summary>
     private static float RestAngle(Vector3 offset) => Mathf.Atan2(offset.X, -offset.Y);
-
-    private static NVector2 Flat(Vector3 v) => new(v.X, v.Y);
 
     private sealed record Leg(MachineLeg Spec, Node3D Upper, Node3D Lower, float UpperLength, float LowerLength,
         float UpperRest, float LowerRest, NVector2 RestFoot);

@@ -25,9 +25,9 @@ namespace TheDeep;
 /// </summary>
 public partial class EncounterCheck : Node
 {
-    public Player Player { get; set; } = null!;
-    public World World { get; set; } = null!;
-    public Session Session { get; set; } = null!;
+    public required Player Player { get; init; }
+    public required World World { get; init; }
+    public required Session Session { get; init; }
 
     private readonly List<Step> _steps = new();
     private readonly List<string> _problems = new();

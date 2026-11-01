@@ -126,8 +126,9 @@ class Raw(str):
 
 
 class Room:
-    def __init__(self, name, bounds, spawn, doc='', biome='flooded', in_game=True):
+    def __init__(self, name, bounds, spawn, doc='', biome='flooded', in_game=True, world='prototype'):
         self.name, self.bounds, self.spawn, self.doc, self.biome, self.in_game = name, bounds, spawn, doc, biome, in_game
+        self.world = world      # the room goes in worlds/<world>/rooms/, beside the rooms its exits lead to
         self.ext_ids = {}
         self.subs = []          # (id, type, props)
         self.nodes = []         # (comment, header, props)
@@ -238,7 +239,7 @@ class Room:
         """An exit marker; `arrival_only` for the far end of a one-way drop from another room (no target, no trigger)."""
         props = {'transform': Raw(transform((pos[0], pos[1], 0))), 'script': self.ext('exit')}
         if target:
-            props['TargetRoom'] = f'res://scenes/rooms/{target}.tscn'
+            props['TargetRoom'] = f'res://worlds/{self.world}/rooms/{target}.tscn'
             props['TargetExit'] = target_exit
         if requires:
             props['Requires'] = requires
@@ -434,7 +435,7 @@ class Room:
         return '\n'.join(lines).rstrip() + '\n'
 
     def write(self, path=None):
-        path = path or os.path.join(os.path.dirname(__file__), '..', 'scenes', 'rooms', f'{self.name}.tscn')
+        path = path or os.path.join(os.path.dirname(__file__), '..', 'worlds', self.world, 'rooms', f'{self.name}.tscn')
         with open(path, 'w') as f:
             f.write(self.text())
         return path

@@ -7,6 +7,7 @@
 [ext_resource type="Script" path="res://scripts/machines/behaviors/FollowerBehavior.cs" id="2_behavior"]
 [ext_resource type="Script" path="res://scripts/machines/JointDriver.cs" id="3_driver"]
 [ext_resource type="Resource" path="res://resources/parts/lamplighter.tres" id="5_assembly"]
+[ext_resource type="Resource" path="res://resources/biomes/flooded.tres" id="0_habitat"]
 
 [sub_resource type="Resource" id="Behavior"]
 script = ExtResource("2_behavior")
@@ -64,7 +65,7 @@ Phase = 0.5
 script = ExtResource("1_species")
 Id = &"lamplighter"
 DisplayName = "Lamplighter"
-Layer = 0
+Habitat = ExtResource("0_habitat")
 Hostile = false
 CreedLine = &"creed.lamplighter"
 Assembly = ExtResource("5_assembly")

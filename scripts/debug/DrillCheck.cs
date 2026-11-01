@@ -13,9 +13,9 @@ namespace TheDeep;
 /// </summary>
 public partial class DrillCheck : Node
 {
-    public Player Player { get; set; } = null!;
-    public World World { get; set; } = null!;
-    public GateHints Hints { get; set; } = null!;
+    public required Player Player { get; init; }
+    public required World World { get; init; }
+    public required GateHints Hints { get; init; }
 
     /// <summary>The gates the pilgrim has said it can't pass (GateHints).</summary>
     private readonly System.Collections.Generic.HashSet<Ability> _hinted = new();
@@ -25,8 +25,9 @@ public partial class DrillCheck : Node
     private int _index = -1;
     private int _ticks;
     private bool _dove;
-    private Block _wall = null!;
-    private Block _slab = null!;
+    // A cracked wall across the floor, and a cracked slab in the air over it.
+    private readonly Block _wall = Cracked("CrackedWall", new Vector3(13f, 1.5f, 0f), new Vector3(1f, 3f, 4f));
+    private readonly Block _slab = Cracked("CrackedSlab", new Vector3(20f, 3.25f, 0f), new Vector3(4f, 0.5f, 4f));
 
     private sealed record Step(string What, float Seconds, Action Start, Func<bool> Done, bool Hold = false);
 
@@ -41,9 +42,8 @@ public partial class DrillCheck : Node
 
     public override void _Ready()
     {
-        // A cracked wall across the floor, and a cracked slab in the air over it.
-        _wall = Cracked("CrackedWall", new Vector3(13f, 1.5f, 0f), new Vector3(1f, 3f, 4f));
-        _slab = Cracked("CrackedSlab", new Vector3(20f, 3.25f, 0f), new Vector3(4f, 0.5f, 4f));
+        World.Room.AddChild(_wall);
+        World.Room.AddChild(_slab);
 
         Hints.Said += kind => _hinted.Add(kind);
         _steps.Add(new("without the Drill, a dash stops at cracked rock and leaves it whole", 0.6f,
@@ -67,14 +67,13 @@ public partial class DrillCheck : Node
         Next();
     }
 
-    private Block Cracked(string name, Vector3 center, Vector3 size)
+    private static Block Cracked(string name, Vector3 center, Vector3 size)
     {
         var block = GD.Load<PackedScene>("res://scenes/kit/Block.tscn").Instantiate<Block>();
         block.Name = name;
         block.Size = size;
         block.Cracked = true;
         block.Position = center;
-        World.Room.AddChild(block);
         return block;
     }
 

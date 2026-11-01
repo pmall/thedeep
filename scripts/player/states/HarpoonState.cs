@@ -17,7 +17,7 @@ public sealed class HarpoonState : PlayerState
     /// <summary>A pull moving less than this share of its speed, a few ticks running, is blocked.</summary>
     private const float StuckShare = 0.25f;
 
-    private HarpoonAnchor _anchor = null!;
+    private HarpoonAnchor? _anchor;
     private float _line;
     private float _speed;
     private bool _bitten;
@@ -34,8 +34,8 @@ public sealed class HarpoonState : PlayerState
 
     public override MotionMode Motion => MotionMode.Dash;
 
-    /// <summary>The anchor fired at.</summary>
-    public HarpoonAnchor Anchor => _anchor;
+    /// <summary>The anchor fired at (null before the first shot).</summary>
+    public HarpoonAnchor? Anchor => _anchor;
 
     /// <summary>How far the line has flown from the pilgrim's center (it stops at the anchor).</summary>
     public float Line => _line;
@@ -53,7 +53,7 @@ public sealed class HarpoonState : PlayerState
         _bitten = false;
         _arriving = false;
         _stuck = 0;
-        float dx = _anchor.Point.X - Player.Center.X;
+        float dx = _anchor is { } anchor ? anchor.Point.X - Player.Center.X : 0f;
         if (Mathf.Abs(dx) > 0.1f)
         {
             Player.SetWorldFacing(dx > 0f ? 1 : -1);
@@ -62,12 +62,12 @@ public sealed class HarpoonState : PlayerState
 
     public override PlayerState? PhysicsUpdate(float delta)
     {
-        if (!Player.Abilities.Has(Ability.Harpoon) || !GodotObject.IsInstanceValid(_anchor))
+        if (!Player.Abilities.Has(Ability.Harpoon) || _anchor is not { } anchor || !GodotObject.IsInstanceValid(anchor))
         {
             return Player.States.Fall;
         }
 
-        NVector2 to = _anchor.Point - Player.Center;
+        NVector2 to = anchor.Point - Player.Center;
         float distance = to.Length();
         NVector2 dir = distance > 1e-4f ? to / distance : new NVector2(0f, 1f);
         if (!_bitten)
@@ -81,7 +81,7 @@ public sealed class HarpoonState : PlayerState
 
             _line = distance;
             _bitten = true;
-            var v = new NVector2(Player.Velocity.X, Player.Velocity.Y);
+            NVector2 v = Player.Velocity.Flat();
             _speed = Mathf.Max(0f, NVector2.Dot(v, dir));
         }
 
@@ -99,7 +99,7 @@ public sealed class HarpoonState : PlayerState
         _speed = TheDeep.Motion.Approach(_speed, Tuning.HarpoonZipSpeed, Tuning.HarpoonZipAcceleration * delta);
         _arriving = distance <= _speed * delta;
         NVector2 step = _arriving ? to / delta : dir * _speed;
-        Player.Velocity = new Vector3(step.X, step.Y, 0f);
+        Player.Velocity = step.OnPlane();
         _before = Player.Center;
         _pull = dir;
         return null;
@@ -107,16 +107,16 @@ public sealed class HarpoonState : PlayerState
 
     public override PlayerState? AfterMove()
     {
-        if (!_bitten)
+        if (!_bitten || _anchor is not { } anchor)
         {
             return null;
         }
 
-        if (_arriving || (_anchor.Point - Player.Center).Length() < 0.05f)
+        if (_arriving || (anchor.Point - Player.Center).Length() < 0.05f)
         {
             NVector2 v = HarpoonAim.Release(_pull, _speed, Tuning.HarpoonExitSpeedFactor, Tuning.HarpoonExitLift);
-            Player.Velocity = new Vector3(v.X, v.Y, 0f);
-            Player.LastAnchor = _anchor;
+            Player.Velocity = v.OnPlane();
+            Player.LastAnchor = anchor;
             Player.RefillAirDash();
             return Player.States.Fall;
         }
@@ -126,7 +126,7 @@ public sealed class HarpoonState : PlayerState
         _stuck = moved < expected * StuckShare ? _stuck + 1 : 0;
         if (_stuck >= 4)
         {
-            Player.LastAnchor = _anchor;
+            Player.LastAnchor = anchor;
             return Player.States.Fall;
         }
 

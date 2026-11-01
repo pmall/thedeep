@@ -63,7 +63,9 @@ public partial class DashTrail : MeshInstance3D
     public override void _Process(double delta)
     {
         _mesh.ClearSurfaces();
-        int count = _points.Count + (_emitting && _head is not null ? 1 : 0);
+        // While emitting, the trail runs on to the body's interpolated position.
+        Vector3? head = _emitting && _head is not null ? _head.GetGlobalTransformInterpolated().Origin : null;
+        int count = _points.Count + (head is null ? 0 : 1);
         if (count < 2)
         {
             return;
@@ -74,7 +76,7 @@ public partial class DashTrail : MeshInstance3D
         var uvs = new Vector2[count * 2];
         for (int i = 0; i < count; i++)
         {
-            (Vector3 position, float age) = i < _points.Count ? _points[i] : (_head!.GetGlobalTransformInterpolated().Origin, 0f);
+            (Vector3 position, float age) = i < _points.Count ? _points[i] : (head.GetValueOrDefault(), 0f);
             float life = 1f - age / Lifetime;
             float half = HalfHeight * (0.35f + 0.65f * life);
             var color = new Color(1f, 1f, 1f, life * life);

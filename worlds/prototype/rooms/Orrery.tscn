@@ -1,0 +1,341 @@
+[gd_scene format=3]
+
+; The Orrery, past the Mantle's high door (map offset (491, -155)): a pit where the great rings of the core's orrery turn
+; around a dark centre. Arcs of metal (the rings' segments, grippable) step down the pit, with mooring rings between
+; them; at its bottom a plug of cracked glass over a flooded seam, the way down to the Lode: bored (Drill) and sunk
+; (Ballast). The arcs climb back to the door (needing nothing).
+
+[ext_resource type="Material" path="res://assets/materials/basalt.tres" id="1_basalt"]
+[ext_resource type="PackedScene" path="res://scenes/kit/Block.tscn" id="2_block"]
+[ext_resource type="Script" path="res://scripts/rooms/RoomExit.cs" id="3_exit"]
+[ext_resource type="Script" path="res://scripts/rooms/WaterBody.cs" id="4_water_body"]
+[ext_resource type="Material" path="res://assets/materials/water.tres" id="5_water"]
+[ext_resource type="Material" path="res://assets/materials/underwater.tres" id="6_underwater"]
+[ext_resource type="Material" path="res://assets/materials/water_section.tres" id="7_water_section"]
+[ext_resource type="PackedScene" path="res://scenes/props/HarpoonAnchor.tscn" id="8_anchor"]
+[ext_resource type="Script" path="res://scripts/kit/BlockMesh.cs" id="9_blockmesh"]
+[ext_resource type="Material" path="res://assets/materials/stone_mid.tres" id="10_stone_mid"]
+[ext_resource type="Script" path="res://scripts/parts/PodMesh.cs" id="11_pod"]
+[ext_resource type="Material" path="res://assets/materials/magma.tres" id="12_magma"]
+[ext_resource type="Script" path="res://scripts/parts/RingMesh.cs" id="13_ring"]
+[ext_resource type="Script" path="res://scripts/rooms/dressing/Spinner.cs" id="14_spinner"]
+[ext_resource type="Material" path="res://assets/materials/metal_mid.tres" id="15_metal_mid"]
+[ext_resource type="Material" path="res://assets/materials/rust_mid.tres" id="16_rust_mid"]
+[ext_resource type="PackedScene" path="res://scenes/fx/Dust.tscn" id="17_dust"]
+[ext_resource type="Script" path="res://scripts/rooms/PhotoSpot.cs" id="18_spot"]
+[ext_resource type="Script" path="res://scripts/rooms/Room.cs" id="19_room"]
+[ext_resource type="Resource" path="res://resources/biomes/core.tres" id="20_core"]
+[ext_resource type="PackedScene" path="res://scenes/stage/RoomStage.tscn" id="21_stage"]
+[ext_resource type="Script" path="res://scripts/rooms/dressing/WallDressing.cs" id="22_wall"]
+
+[sub_resource type="PrimitiveMesh" id="blockmesh_1"]
+script = ExtResource("9_blockmesh")
+Size = Vector3(90, 70, 1.2)
+Bevel = 0.3
+
+[sub_resource type="PrimitiveMesh" id="pod_2"]
+script = ExtResource("11_pod")
+Axis = Vector3(0, 1, 0)
+Length = 6
+Stations = PackedVector4Array(0, 0, 0, 0, 0.15, 2.0, 2.0, 0, 0.5, 3.0, 3.0, 0, 0.85, 2.0, 2.0, 0, 1, 0, 0, 0)
+Sides = 28
+Rings = 14
+
+[sub_resource type="PrimitiveMesh" id="ring_3"]
+script = ExtResource("13_ring")
+RadiusX = 13
+RadiusZ = 13
+Height = 0.7
+Thickness = 0.5
+Segments = 130
+
+[sub_resource type="PrimitiveMesh" id="ring_4"]
+script = ExtResource("13_ring")
+RadiusX = 10
+RadiusZ = 10
+Height = 0.6
+Thickness = 0.45
+Segments = 100
+
+[sub_resource type="PrimitiveMesh" id="ring_5"]
+script = ExtResource("13_ring")
+RadiusX = 7
+RadiusZ = 7
+Height = 0.5
+Thickness = 0.4
+Segments = 70
+
+[sub_resource type="PrimitiveMesh" id="ring_6"]
+script = ExtResource("13_ring")
+RadiusX = 16.5
+RadiusZ = 16.5
+Height = 0.9
+Thickness = 0.6
+Segments = 165
+
+[node name="Orrery" type="Node3D" node_paths=PackedStringArray("SpawnPoint", "Stage", "Lamps")]
+script = ExtResource("19_room")
+SpawnPoint = NodePath("SpawnPoint")
+Stage = NodePath("Stage")
+Biome = ExtResource("20_core")
+Lamps = [NodePath("Lamps/Centre"), NodePath("Lamps/Door"), NodePath("Lamps/Seam")]
+BoundsMin = Vector2(-1, -22)
+BoundsMax = Vector2(50, 24)
+
+[node name="SpawnPoint" type="Marker3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 4, 0, 0)
+
+; The shared atmosphere stack (environment, key light, clear front air, skylines, far pillars, frame, dust).
+[node name="Stage" parent="." instance=ExtResource("21_stage")]
+Seed = 331
+DustDensity = 0
+PillarDensity = 0
+FrameBelow = false
+FrameAbove = false
+
+[node name="Geometry" type="Node3D" parent="."]
+
+; the upper floor inside the Mantle's door
+[node name="Upper" parent="Geometry" instance=ExtResource("2_block")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 4.5, -12, 0)
+Size = Vector3(15, 24, 4)
+Material = ExtResource("1_basalt")
+
+[node name="WallWestHigh" parent="Geometry" instance=ExtResource("2_block")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -1.5, 15.5, 0)
+Size = Vector3(3, 23, 4)
+Material = ExtResource("1_basalt")
+
+[node name="Roof" parent="Geometry" instance=ExtResource("2_block")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 26.5, 25.5, 0)
+Size = Vector3(53, 3, 4)
+Material = ExtResource("1_basalt")
+
+[node name="WallEast" parent="Geometry" instance=ExtResource("2_block")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 50, 0, 0)
+Size = Vector3(6, 48, 4)
+Material = ExtResource("1_basalt")
+
+; the bottom of the pit
+[node name="PitWest" parent="Geometry" instance=ExtResource("2_block")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 20, -21.25, 0)
+Size = Vector3(16, 5.5, 4)
+Material = ExtResource("1_basalt")
+
+[node name="PitEast" parent="Geometry" instance=ExtResource("2_block")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 39, -21.25, 0)
+Size = Vector3(16, 5.5, 4)
+Material = ExtResource("1_basalt")
+
+; a plug of cracked glass over the flooded seam: bored through
+[node name="Plug" parent="Geometry" instance=ExtResource("2_block")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 29.5, -18.75, 0)
+Size = Vector3(3, 0.5, 4)
+Cracked = true
+
+; arcs of the orrery's rings, stepping down the pit
+[node name="Arc0" parent="Geometry" instance=ExtResource("2_block")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 24, -16.25, 0)
+Size = Vector3(4, 0.5, 4)
+Surface = 1
+
+[node name="Arc1" parent="Geometry" instance=ExtResource("2_block")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 16, -13.75, 0)
+Size = Vector3(4, 0.5, 4)
+Surface = 1
+
+[node name="Arc2" parent="Geometry" instance=ExtResource("2_block")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 24, -11.25, 0)
+Size = Vector3(4, 0.5, 4)
+Surface = 1
+
+[node name="Arc3" parent="Geometry" instance=ExtResource("2_block")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 16, -8.75, 0)
+Size = Vector3(4, 0.5, 4)
+Surface = 1
+
+[node name="Arc4" parent="Geometry" instance=ExtResource("2_block")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 24, -6.25, 0)
+Size = Vector3(4, 0.5, 4)
+Surface = 1
+
+[node name="Arc5" parent="Geometry" instance=ExtResource("2_block")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 16, -3.75, 0)
+Size = Vector3(4, 0.5, 4)
+Surface = 1
+
+[node name="Arc6" parent="Geometry" instance=ExtResource("2_block")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 24, -1.25, 0)
+Size = Vector3(4, 0.5, 4)
+Surface = 1
+
+; the last arc, a hop from the door's floor
+[node name="Arc7" parent="Geometry" instance=ExtResource("2_block")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 16, 1.25, 0)
+Size = Vector3(4, 0.5, 4)
+Surface = 1
+
+[node name="Exits" type="Node3D" parent="."]
+
+; west, back out onto the Mantle's ledge
+[node name="West" type="Marker3D" parent="Exits"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.5, 2, 0)
+script = ExtResource("3_exit")
+TargetRoom = "res://worlds/prototype/rooms/Mantle.tscn"
+TargetExit = "Orrery"
+Size = Vector2(1, 4)
+
+; down the flooded seam under the plug, into the Lode
+[node name="Lode" type="Marker3D" parent="Exits"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 29.5, -21.5, 0)
+script = ExtResource("3_exit")
+TargetRoom = "res://worlds/prototype/rooms/Lode.tscn"
+TargetExit = "Orrery"
+Requires = "Drill & Ballast"
+ArrivalSide = 1
+Size = Vector2(3, 1)
+
+; the seam, flooded with molten glass gone cold
+[node name="Water" type="Node3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 29.5, -19.5, -4)
+script = ExtResource("4_water_body")
+Size = Vector2(3, 12.1)
+Depth = 3
+Swim = true
+SurfaceMaterial = ExtResource("5_water")
+UnderwaterMaterial = ExtResource("6_underwater")
+SectionMaterial = ExtResource("7_water_section")
+
+[node name="Anchors" type="Node3D" parent="."]
+
+; mooring rings between the arcs
+[node name="RingA" parent="Anchors" instance=ExtResource("8_anchor")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 35, -6, 0)
+
+[node name="RingB" parent="Anchors" instance=ExtResource("8_anchor")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 40, -12, 0)
+
+[node name="Kit" type="Node3D" parent="."]
+
+[node name="Back" type="MeshInstance3D" parent="Kit"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 25, 0, -22)
+mesh = SubResource("blockmesh_1")
+material_override = ExtResource("10_stone_mid")
+
+; the back wall dressed: a machinery's wall at 2.25x (WallDressing)
+[node name="WallDressing" type="Node3D" parent="Kit"]
+transform = Transform3D(2.25, 0, 0, 0, 2.25, 0, 0, 0, 2.25, 25, -35, -21.25)
+script = ExtResource("22_wall")
+Style = 1
+Size = Vector2(40, 31.1111)
+Seed = 8
+
+; the dark centre the rings turn around, glowing
+[node name="Centre" type="MeshInstance3D" parent="Kit"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 30, -5, -14)
+mesh = SubResource("pod_2")
+material_override = ExtResource("12_magma")
+
+; the orrery's rings, each on its own tilt
+[node name="RingA" type="Node3D" parent="Kit"]
+transform = Transform3D(0.9848, 0.1651, -0.0537, 0, -0.309, -0.9511, -0.1736, 0.9366, -0.3043, 30, -2, -14)
+script = ExtResource("14_spinner")
+Axis = Vector3(0, 1, 0)
+Speed = 0.06
+Phase = 0
+
+[node name="Ring" type="MeshInstance3D" parent="Kit/RingA"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0)
+mesh = SubResource("ring_3")
+material_override = ExtResource("15_metal_mid")
+
+[node name="RingB" type="Node3D" parent="Kit"]
+transform = Transform3D(0.9659, -0.2364, -0.1053, 0, 0.4067, -0.9135, 0.2588, 0.8824, 0.3929, 30, -2, -14)
+script = ExtResource("14_spinner")
+Axis = Vector3(0, 1, 0)
+Speed = -0.09
+Phase = 0
+
+[node name="Ring" type="MeshInstance3D" parent="Kit/RingB"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0)
+mesh = SubResource("ring_4")
+material_override = ExtResource("16_rust_mid")
+
+[node name="RingC" type="Node3D" parent="Kit"]
+transform = Transform3D(0.9397, 0.262, -0.2198, 0, -0.6428, -0.766, -0.342, 0.7198, -0.604, 30, -2, -14)
+script = ExtResource("14_spinner")
+Axis = Vector3(0, 1, 0)
+Speed = 0.14
+Phase = 0
+
+[node name="Ring" type="MeshInstance3D" parent="Kit/RingC"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0)
+mesh = SubResource("ring_5")
+material_override = ExtResource("15_metal_mid")
+
+[node name="RingD" type="Node3D" parent="Kit"]
+transform = Transform3D(0.9962, -0.0867, 0.0091, 0, -0.1045, -0.9945, 0.0872, 0.9907, -0.1041, 30, -2, -14)
+script = ExtResource("14_spinner")
+Axis = Vector3(0, 1, 0)
+Speed = -0.04
+Phase = 0
+
+[node name="Ring" type="MeshInstance3D" parent="Kit/RingD"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0)
+mesh = SubResource("ring_6")
+material_override = ExtResource("16_rust_mid")
+
+[node name="Lamps" type="Node3D" parent="."]
+
+; the glow of the centre
+[node name="Centre" type="OmniLight3D" parent="Lamps"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 30, -5, -6)
+light_energy = 3
+omni_range = 30
+shadow_enabled = false
+
+[node name="Door" type="OmniLight3D" parent="Lamps"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 6, 4, 2)
+light_energy = 1.2
+omni_range = 10
+shadow_enabled = false
+
+[node name="Seam" type="OmniLight3D" parent="Lamps"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 29.5, -17, 2)
+light_energy = 1.4
+omni_range = 8
+shadow_enabled = false
+
+[node name="Particles" type="Node3D" parent="."]
+
+[node name="Dust" parent="Particles" instance=ExtResource("17_dust")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 28, 0, -2)
+Extents = Vector3(20, 20, 3)
+Density = 0.12
+
+[node name="PhotoSpots" type="Node3D" parent="."]
+
+; inside the Mantle's door: the pit, the rings turning
+[node name="Door" type="Marker3D" parent="PhotoSpots"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 14, 0, 24)
+script = ExtResource("18_spot")
+PlayerPosition = Vector3(6, 0, 0)
+
+; the arcs down the pit, the rings behind
+[node name="Pit" type="Marker3D" parent="PhotoSpots"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 28, -10, 24)
+script = ExtResource("18_spot")
+PlayerPosition = Vector3(24, -11, 0)
+
+; the plug over the flooded seam
+[node name="Seam" type="Marker3D" parent="PhotoSpots"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 29, -16, 16)
+script = ExtResource("18_spot")
+PlayerPosition = Vector3(26, -18.5, 0)
+
+; the whole orrery
+[node name="Wide" type="Marker3D" parent="PhotoSpots"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 25, 1, 70)
+script = ExtResource("18_spot")
+PlayerPosition = Vector3(24, -11, 0)
+Fov = 40

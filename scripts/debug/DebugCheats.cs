@@ -4,34 +4,28 @@ namespace TheDeep;
 
 /// <summary>
 /// Debug keys for playtesting: R / pad Back respawns, F1–F5 toggle each ability, F6 cycles the
-/// room's biome profile. Removed from release builds.
+/// room's biome through the world's layers. Removed from release builds.
 /// </summary>
 public partial class DebugCheats : Node
 {
     [Export] public Player Player { get; set; } = null!;
     [Export] public World World { get; set; } = null!;
 
-    /// <summary>Profiles F6 cycles through.</summary>
-    [Export] public BiomeProfile[] Biomes { get; set; } = System.Array.Empty<BiomeProfile>();
-
-    private (StringName Action, Ability Ability)[] _toggles = null!;
+    private static readonly (StringName Action, Ability Ability)[] Toggles =
+    {
+        (InputActions.DebugToggleMagGrip, Ability.MagGrip),
+        (InputActions.DebugToggleHarpoon, Ability.Harpoon),
+        (InputActions.DebugToggleDrill, Ability.Drill),
+        (InputActions.DebugToggleBallast, Ability.Ballast),
+        (InputActions.DebugToggleHeatPlating, Ability.HeatPlating),
+    };
 
     public override void _Ready()
     {
         if (!OS.IsDebugBuild())
         {
             QueueFree();
-            return;
         }
-
-        _toggles = new[]
-        {
-            (InputActions.DebugToggleMagGrip, Ability.MagGrip),
-            (InputActions.DebugToggleHarpoon, Ability.Harpoon),
-            (InputActions.DebugToggleDrill, Ability.Drill),
-            (InputActions.DebugToggleBallast, Ability.Ballast),
-            (InputActions.DebugToggleHeatPlating, Ability.HeatPlating),
-        };
     }
 
     public override void _UnhandledInput(InputEvent @event)
@@ -43,16 +37,17 @@ public partial class DebugCheats : Node
             return;
         }
 
-        if (@event.IsActionPressed(InputActions.DebugCycleBiome) && Biomes.Length > 0)
+        WorldLayer[] layers = World.Definition.Layers;
+        if (@event.IsActionPressed(InputActions.DebugCycleBiome) && layers.Length > 0)
         {
-            int next = (System.Array.IndexOf(Biomes, World.Room.Biome) + 1) % Biomes.Length;
-            World.Room.ApplyBiome(Biomes[next]);
-            GD.Print($"[debug] biome: {Biomes[next].DisplayName}");
+            int next = (System.Array.FindIndex(layers, l => l.Biome == World.Room.Biome) + 1) % layers.Length;
+            World.Room.ApplyBiome(layers[next].Biome);
+            GD.Print($"[debug] biome: {layers[next].Biome.DisplayName}");
             GetViewport().SetInputAsHandled();
             return;
         }
 
-        foreach (var (action, ability) in _toggles)
+        foreach (var (action, ability) in Toggles)
         {
             if (@event.IsActionPressed(action))
             {

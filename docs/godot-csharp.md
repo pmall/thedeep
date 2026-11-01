@@ -9,7 +9,7 @@ The owner never opens the Godot editor. Every `.tscn`, `.tres`, `.cs` file and `
 - Never edit `.godot/` or `*.import` files (generated). Do commit `*.import` files.
 - Bulky scene text (like a room layout) may be generated with a small script. Keep the generated `.tscn` readable, because the `.tscn` is the source of truth.
 - `.tscn` `Transform3D(...)` values are the basis **row-major** (`x.x, y.x, z.x, x.y, y.y, z.y, x.z, y.z, z.z`) followed by the origin.
-- Folders Godot must not scan (docs, tests) contain an empty `.gdignore`.
+- Folders Godot must not scan (docs, tests, the core) contain an empty `.gdignore`.
 
 ## C# rules the compiler won't always flag
 
@@ -23,6 +23,8 @@ The owner never opens the Godot editor. Every `.tscn`, `.tres`, `.cs` file and `
 
 - No string node paths across scenes (`GetNode("A/B")`). Use typed `[Export] public NodeType X { get; set; } = null!;` references. In the `.tscn`, list them in the node's `node_paths=PackedStringArray("X")` and assign `X = NodePath("../Y")`.
 - Within one scene, `GetNode<T>("%UniqueName")` with `unique_name_in_owner = true` is fine.
+- Something a node builds for itself (a child label, a ray, a light, a core object from its exports) is not `= null!` either (only exports are): create it on first use, `private Label? _title; private Label Title => _title ??= new Label { ... };`, and use the property. Not in a field initializer: a node built in its constructor leaks when its scene is instantiated and freed before it is ready (the room check does that to every room it reads an exit from; Godot reports RID leaks at exit).
+- A node created in code by another (a check driver) takes what it needs as `public required T X { get; init; }`, so the compiler makes its creator set it.
 - Connect signals with C# events (`button.Pressed += OnPressed;`), not `Connect("name", ...)`. Unsubscribe in `_ExitTree` when the source outlives the listener.
 - Use the generated `SignalName.X` / `PropertyName.X` constants, never string literals. Input actions come from `InputActions`.
 

@@ -44,7 +44,7 @@ public partial class LookDevDriver : Node
     /// <summary>Per measured frame: frame, GPU, render CPU, process and physics script times (ms) and the GCs since the last frame.</summary>
     private readonly List<(double Frame, double Gpu, double Cpu, double Process, double Physics, int Gc0, int Gc1, int Gc2)> _frames = new();
     private int _gc0, _gc1, _gc2;
-    private IEnumerator<int> _script = null!;
+    private IEnumerator<int>? _script;
     private FrameGrabber? _grabber;
     private DemoInput? _demo;
     private MotionReel.Segment? _segment;
@@ -55,10 +55,10 @@ public partial class LookDevDriver : Node
     private long _allocatedAtStart, _allocated;
     private readonly AllocationSampler? _sampler = System.Environment.GetEnvironmentVariable("THEDEEP_ALLOC_SAMPLE") == "1" ? new() : null;
 
-    public Player Player { get; set; } = null!;
-    public Room Room { get; set; } = null!;
-    public SideCamera Camera { get; set; } = null!;
-    public MachineDirector Machines { get; set; } = null!;
+    public required Player Player { get; init; }
+    public required Room Room { get; init; }
+    public required SideCamera Camera { get; init; }
+    public required MachineDirector Machines { get; init; }
 
     /// <summary>Layers hidden during the run (HUD, capture overlay).</summary>
     public CanvasLayer[] Overlays { get; set; } = Array.Empty<CanvasLayer>();
@@ -88,7 +88,6 @@ public partial class LookDevDriver : Node
 
         RenderingServer.ViewportSetMeasureRenderTime(GetViewport().GetViewportRid(), true);
         _grabber = FrameGrabber.Create(GetViewport());
-        _script = Run().GetEnumerator();
     }
 
     public override void _PhysicsProcess(double delta)
@@ -133,7 +132,7 @@ public partial class LookDevDriver : Node
         (_gc0, _gc1, _gc2) = (GC.CollectionCount(0), GC.CollectionCount(1), GC.CollectionCount(2));
 
         _lastFrameUsec = now;
-        _script.MoveNext();
+        (_script ??= Run().GetEnumerator()).MoveNext();
     }
 
     private IEnumerable<int> Run()

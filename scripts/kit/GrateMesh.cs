@@ -17,5 +17,5 @@ public partial class GrateMesh : KitMesh
 
     [Export] public float Bar { get => _bar; set { _bar = value; RequestUpdate(); } }
 
-    protected override void Build(MeshBuilder builder) => KitShapes.Grate(builder, ToNumerics(Size), Spacing, Bar);
+    protected override void Build(MeshBuilder builder) => KitShapes.Grate(builder, Size.ToCore(), Spacing, Bar);
 }

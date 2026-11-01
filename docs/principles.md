@@ -34,13 +34,13 @@ Rules:
 - **Adapters stay thin.** A Godot node that grows its own rules (timers, state machines, formulas) is a smell: move the rules into a core class the node owns, and test them there.
 - **The core never calls the engine.** Time comes in as a `dt` argument, randomness as a seeded generator passed in, the world as plain data (boxes, rays already cast, positions). No static singletons, no hidden global state.
 - **Vectors at the seam.** The core uses `System.Numerics`; adapters convert to and from Godot types. Keep conversions in one place (an extension class), not spread through gameplay code.
-- **The compiler enforces the boundary.** The core will live in its own project with no Godot reference (roadmap, prototype item P1), so a Godot type in core code does not compile. Until then, a pure file is listed in the test project and must stay Godot-free.
+- **The compiler enforces the boundary.** The core lives in its own project (`core/TheDeep.Core.csproj`) with no Godot reference, so a Godot type in core code does not compile. The game and the tests reference it.
 - **Godot's strengths are still used.** Scenes, resources, physics, rendering, shaders and the importer are the engine's job and stay there. Don't rebuild them in C#. The aim is clean dependencies, not a second engine.
 
 ## 3. Data first
 
 - **Numbers live in resources**: movement and combat in `player_tuning.tres`, a species' stats in its `.tres`, a mechanism's knobs as its exports. Never a magic number in a rule.
-- **Text lives in the line book** (`resources/text/lines.tres`): stable id, speaker, text, delivery notes. Never a string shown to the player in code or in a scene.
+- **Text lives in the world's line book** (the prototype's is `worlds/prototype/lines.tres`): stable id, speaker, text, delivery notes. Never a string shown to the player in code or in a scene.
 - **Requirements live with the geometry**: a way's requirement is a marker in the room scene. Items (keys, codes) are part of that same requirement language, so the solver sees them.
 - **New content is data.** Adding a room, a species, a biome, a key door or a dialogue should mean new content files. New code is for a truly new behavior.
 - Names that cross systems (action names, physics layers, shader globals) are constants in one class each (`InputActions`, `PhysicsLayers`, `ShaderGlobals`).

@@ -217,7 +217,8 @@ public class MachinesTests
     [Fact]
     public void ClosedSurfacePathGoesAroundTheBox()
     {
-        SurfacePath path = SurfacePath.AroundBox(new Vector2(0f, 0f), new Vector2(2f, 4f), new[] { true, true, true, true }, 0.1f)!;
+        SurfacePath? path = SurfacePath.AroundBox(new Vector2(0f, 0f), new Vector2(2f, 4f), new[] { true, true, true, true }, 0.1f);
+        Assert.NotNull(path);
         Assert.True(path.Closed);
         // Four faces plus four quarter circles of radius 0.1.
         Assert.Equal(12f + MathF.Tau * 0.1f, path.Length, 1);
@@ -230,7 +231,8 @@ public class MachinesTests
     [Fact]
     public void OpenSurfacePathLeavesOutTheFaceOnTheFloor()
     {
-        SurfacePath path = SurfacePath.AroundBox(new Vector2(0f, 0f), new Vector2(2f, 4f), new[] { false, true, true, true }, 0f)!;
+        SurfacePath? path = SurfacePath.AroundBox(new Vector2(0f, 0f), new Vector2(2f, 4f), new[] { false, true, true, true }, 0f);
+        Assert.NotNull(path);
         Assert.False(path.Closed);
         Assert.Equal(10f, path.Length, 2);
         // Up the right face, over the top, down the left face.

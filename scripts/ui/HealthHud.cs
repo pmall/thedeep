@@ -17,7 +17,8 @@ public partial class HealthHud : CanvasLayer
     [Export] public float RestOpacity { get; set; } = 0.55f;
     [Export] public float BrightTime { get; set; } = 2.5f;
 
-    private Control _canvas = null!;
+    private Control? _canvas;
+    private Control Canvas => _canvas ??= new Control { MouseFilter = Control.MouseFilterEnum.Ignore };
     private int _shown;
     private float _bright;
     private float _lostFlash;
@@ -26,10 +27,9 @@ public partial class HealthHud : CanvasLayer
     public override void _Ready()
     {
         Layer = 70;
-        _canvas = new Control { MouseFilter = Control.MouseFilterEnum.Ignore };
-        _canvas.SetAnchorsPreset(Control.LayoutPreset.FullRect);
-        _canvas.Draw += DrawPips;
-        AddChild(_canvas);
+        Canvas.SetAnchorsPreset(Control.LayoutPreset.FullRect);
+        Canvas.Draw += DrawPips;
+        AddChild(Canvas);
         _shown = Player.Vitality?.Current ?? 0;
     }
 
@@ -51,13 +51,13 @@ public partial class HealthHud : CanvasLayer
 
         _bright = Mathf.Max(0f, _bright - dt);
         _lostFlash = Mathf.Max(0f, _lostFlash - dt * 2.5f);
-        _canvas.QueueRedraw();
+        Canvas.QueueRedraw();
     }
 
     private void DrawPips()
     {
         Vitality v = Player.Vitality;
-        float ui = _canvas.Size.Y / 1080f;
+        float ui = Canvas.Size.Y / 1080f;
         float opacity = Mathf.Lerp(RestOpacity, 1f, Mathf.Clamp(_bright / 0.6f, 0f, 1f));
         float size = 9f * ui, gap = 24f * ui;
         var origin = new Vector2(48f * ui, 46f * ui);
@@ -76,11 +76,11 @@ public partial class HealthHud : CanvasLayer
             var diamond = new[] { c + new Vector2(0f, -s), c + new Vector2(s * 0.7f, 0f), c + new Vector2(0f, s), c + new Vector2(-s * 0.7f, 0f) };
             if (full)
             {
-                _canvas.DrawColoredPolygon(diamond, color);
+                Canvas.DrawColoredPolygon(diamond, color);
             }
             else
             {
-                _canvas.DrawPolyline(new[] { diamond[0], diamond[1], diamond[2], diamond[3], diamond[0] }, color, Mathf.Max(1f, 1.4f * ui), true);
+                Canvas.DrawPolyline(new[] { diamond[0], diamond[1], diamond[2], diamond[3], diamond[0] }, color, Mathf.Max(1f, 1.4f * ui), true);
             }
         }
     }

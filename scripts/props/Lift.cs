@@ -61,13 +61,16 @@ public partial class Lift : Node3D
     [Export] public float ReturnDelay { get; set; } = 3f;
     [Export] public float ReturnSpeed { get; set; } = 1.2f;
 
-    private LiftMotion _motion = null!;
+    private LiftMotion? _motion;
+
+    /// <summary>The lift's travel, from its exports (built on first use: they are set before the node enters the tree).</summary>
+    private LiftMotion Motion => _motion ??= new LiftMotion(Rise, Speed, Acceleration, BoardDelay, ReturnSpeed, ReturnDelay);
     private Vector3 _weightRest;
 
     /// <summary>The pilgrim, set by the session when the room loads.</summary>
     public Player? Player { get; set; }
 
-    public LiftMotion Travel => _motion;
+    public LiftMotion Travel => Motion;
 
     /// <summary>Raised when the brake lets go under a rider (for a shake).</summary>
     public event Action<Lift>? Released;
@@ -88,7 +91,6 @@ public partial class Lift : Node3D
         Cage.CollisionMask = 0;
         _weightRest = new Vector3(Weight.Position.X, WeightLow + Rise * WeightRatio, Weight.Position.Z);
         SheaveMount.Position = new Vector3(SheaveMount.Position.X, Rise + HeadHeight + SheaveClearance, SheaveMount.Position.Z);
-        _motion = new LiftMotion(Rise, Speed, Acceleration, BoardDelay, ReturnSpeed, ReturnDelay);
         Place();
     }
 
@@ -100,7 +102,7 @@ public partial class Lift : Node3D
             return;
         }
 
-        if (_motion.Step((float)delta, Ridden()))
+        if (Motion.Step((float)delta, Ridden()))
         {
             Released?.Invoke(this);
         }
@@ -122,7 +124,7 @@ public partial class Lift : Node3D
 
     private void Place()
     {
-        float offset = _motion.Offset;
+        float offset = Motion.Offset;
         Cage.Position = new Vector3(0f, offset, 0f);
         Weight.Position = _weightRest - new Vector3(0f, offset * WeightRatio, 0f);
         Sheave.Rotation = new Vector3(0f, 0f, -offset / SheaveRadius);

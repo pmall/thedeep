@@ -23,8 +23,14 @@ public partial class PlayerAttack : Node3D
     /// <summary>Height of the chest, where a swing is centered, above the feet.</summary>
     [Export] public float ChestHeight { get; set; } = 1.05f;
 
-    private Swing _swing = null!;
-    private ShaderMaterial _material = null!;
+    private Swing? _swing;
+    private ShaderMaterial? _material;
+
+    // From the exports, on first use (they are set before the node enters the tree).
+    private Swing Timing => _swing ??= new Swing(Player.Tuning.AttackWindUp, Player.Tuning.AttackActive, Player.Tuning.AttackRecover,
+        Player.Tuning.AttackCooldown);
+
+    private ShaderMaterial SlashMaterial => _material ??= (ShaderMaterial)Slash.MaterialOverride;
     private int _facing = 1;
 
     /// <summary>The hit window is open: the area it covers on the play plane, and which swing this is.</summary>
@@ -35,21 +41,18 @@ public partial class PlayerAttack : Node3D
 
     public int Facing => _facing;
 
-    public SwingPhase Phase => _swing.Phase;
+    public SwingPhase Phase => Timing.Phase;
 
     public override void _Ready()
     {
-        PlayerTuning t = Player.Tuning;
-        _swing = new Swing(t.AttackWindUp, t.AttackActive, t.AttackRecover, t.AttackCooldown);
         Slash.Mesh ??= new SlashMesh();
-        _material = (ShaderMaterial)Slash.MaterialOverride;
         Slash.Visible = false;
-        Player.Respawned += _swing.Cancel;
+        Player.Respawned += Timing.Cancel;
     }
 
     public override void _ExitTree()
     {
-        Player.Respawned -= _swing.Cancel;
+        Player.Respawned -= Timing.Cancel;
     }
 
     public override void _PhysicsProcess(double delta)
@@ -57,36 +60,36 @@ public partial class PlayerAttack : Node3D
         bool started = false;
         if (Player.InControl && Input.IsActionJustPressed(InputActions.Attack))
         {
-            started = _swing.Press();
+            started = Timing.Press();
         }
 
-        started |= _swing.Tick((float)delta);
+        started |= Timing.Tick((float)delta);
         if (started)
         {
             _facing = Player.Facing;
             Swung?.Invoke();
         }
 
-        if (_swing.Phase == SwingPhase.Active)
+        if (Timing.Phase == SwingPhase.Active)
         {
-            Striking?.Invoke(Area(), _swing.Count);
+            Striking?.Invoke(Area(), Timing.Count);
         }
     }
 
     public override void _Process(double delta)
     {
-        bool on = _swing.Phase != SwingPhase.Ready;
+        bool on = Timing.Phase != SwingPhase.Ready;
         Slash.Visible = on;
         if (!on)
         {
             return;
         }
 
-        float p = _swing.Progress;
+        float p = Timing.Progress;
         Slash.Scale = new Vector3(_facing, 1f, 1f);
         Slash.Position = Slash.Position with { X = Mathf.Abs(Slash.Position.X) * _facing };
-        _material.SetShaderParameter(ProgressParameter, p);
-        _material.SetShaderParameter(StrengthParameter, 1f - Mathf.SmoothStep(0.7f, 1f, p));
+        SlashMaterial.SetShaderParameter(ProgressParameter, p);
+        SlashMaterial.SetShaderParameter(StrengthParameter, 1f - Mathf.SmoothStep(0.7f, 1f, p));
     }
 
     /// <summary>The area a swing covers now: in front of the chest along the body's facing, on the play plane.</summary>

@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # Prints the map: the built rooms' graph (ways, placements, ability orders) and the whole game's draft
-# (docs/map-draft.md: summary, every way, every achievable order). Fails like the room check does.
+# (the world's network, worlds/prototype/map-draft.md: summary, every way, every achievable order). Fails like the room check does.
 #   tools/map.sh
 set -euo pipefail
 

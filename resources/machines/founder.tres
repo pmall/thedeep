@@ -9,6 +9,7 @@
 [ext_resource type="Script" path="res://scripts/machines/JointDriver.cs" id="3_driver"]
 [ext_resource type="Script" path="res://scripts/machines/MachineLeg.cs" id="4_leg"]
 [ext_resource type="Resource" path="res://resources/parts/founder.tres" id="5_assembly"]
+[ext_resource type="Resource" path="res://resources/biomes/volcanic.tres" id="0_habitat"]
 
 [sub_resource type="Resource" id="Behavior"]
 script = ExtResource("2_behavior")
@@ -161,7 +162,7 @@ Bend = 1
 script = ExtResource("1_species")
 Id = &"founder"
 DisplayName = "Founder"
-Layer = 2
+Habitat = ExtResource("0_habitat")
 Hostile = true
 CreedLine = &"creed.founder"
 Assembly = ExtResource("5_assembly")

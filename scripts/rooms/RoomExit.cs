@@ -85,8 +85,7 @@ public partial class RoomExit : Marker3D
         {
             if (n is Room room)
             {
-                _outward = ExitMath.Outward(new System.Numerics.Vector2(RoomPosition.X, RoomPosition.Y), new System.Numerics.Vector2(Size.X, Size.Y),
-                    new System.Numerics.Vector2(room.BoundsMin.X, room.BoundsMin.Y), new System.Numerics.Vector2(room.BoundsMax.X, room.BoundsMax.Y));
+                _outward = ExitMath.Outward(RoomPosition.ToCore(), Size.ToCore(), room.BoundsMin.ToCore(), room.BoundsMax.ToCore());
                 break;
             }
         }
