@@ -2,6 +2,8 @@
 ; Layer 1, near the surface: the perfect.jpg palette (pale blue-white, lavender haze, a touch of magenta).
 
 [ext_resource type="Script" path="res://scripts/biome/BiomeProfile.cs" id="1_biome"]
+[ext_resource type="Material" path="res://assets/materials/backdrop_cathedral.tres" id="2_far"]
+[ext_resource type="Material" path="res://assets/materials/backdrop_halls.tres" id="3_near"]
 
 [resource]
 script = ExtResource("1_biome")
@@ -47,3 +49,7 @@ Vignette = 0.75
 VignetteColor = Color(0.16, 0.15, 0.24, 1)
 Grain = 0.035
 ParticleTint = Color(0.9, 0.92, 1, 1)
+Architecture = 0
+FarSkyline = ExtResource("2_far")
+NearSkyline = ExtResource("3_near")
+Masonry = 1.0

@@ -7,6 +7,7 @@ shader_type spatial;
 
 #include "res://assets/shaders/lib/noise.gdshaderinc"
 #include "res://assets/shaders/lib/palette.gdshaderinc"
+#include "res://assets/shaders/lib/haze.gdshaderinc"
 #include "res://assets/shaders/lib/surface.gdshaderinc"
 #include "res://assets/shaders/lib/water.gdshaderinc"
 #include "res://assets/shaders/lib/frost.gdshaderinc"
@@ -175,4 +176,5 @@ void fragment() {
 	AO = 1.0 - pn.seam * 0.7 - pn.crease * 0.15;
 	AO_LIGHT_AFFECT = 0.2;
 	NORMAL = n;
+	HAZE
 }

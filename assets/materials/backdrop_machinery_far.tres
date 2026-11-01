@@ -1,0 +1,17 @@
+[gd_resource type="ShaderMaterial" format=3]
+; Far backdrop, the core: domes, great rings on edge and masts, older than the foundry.
+
+[ext_resource type="Shader" path="res://assets/shaders/backdrop_silhouette.gdshader" id="1_shader"]
+
+[resource]
+shader = ExtResource("1_shader")
+shader_parameter/style = 3
+shader_parameter/seed = 5
+shader_parameter/bay_width = 16.0
+shader_parameter/height = 40.0
+shader_parameter/height_variation = 0.35
+shader_parameter/haze = 0.72
+shader_parameter/mist_height = 22.0
+shader_parameter/mist = 0.65
+shader_parameter/window_light = 1.2
+shader_parameter/lit_share = 1.0

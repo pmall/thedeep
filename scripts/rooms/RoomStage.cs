@@ -4,8 +4,8 @@ namespace TheDeep;
 
 /// <summary>
 /// The atmosphere stack every room repeats, as one shared piece (scenes/stage/RoomStage.tscn): the
-/// environment and key light, clear air in front of the play plane, the far backdrop (two skylines and
-/// hazy pillars), the dark framing foreground above and below the play area, and dust in the air.
+/// environment and key light, clear air in front of the play plane, the far backdrop (two skylines, the depth layer's
+/// own, and its architecture standing in the haze: <see cref="BackdropArchitecture"/>), the dark framing foreground above and below the play area, and dust in the air.
 /// Everything is sized from the room's camera bounds when the room is ready (<see cref="Build"/>), so a
 /// room only states its layout and the few choices exported here. Deterministic for a given <see cref="Seed"/>.
 /// Visual only: nothing here touches gameplay. Room-specific light (shafts, lamps), water and extra
@@ -35,10 +35,22 @@ public partial class RoomStage : Node3D
     [Export] public float FarSkylineDepth { get; set; } = 70f;
     [Export] public float NearSkylineDepth { get; set; } = 48f;
 
-    /// <summary>Hazy out-of-focus pillars between the room and the skylines.</summary>
+    /// <summary>Masonry of the architecture between the room and the skylines (<see cref="BackdropArchitecture"/>).</summary>
     [Export] public Material PillarMaterial { get; set; } = null!;
 
-    /// <summary>Pillars per 10 m of backdrop width (0 for none).</summary>
+    /// <summary>Iron and plating of that architecture.</summary>
+    [Export] public Material ArchitectureMetal { get; set; } = null!;
+
+    /// <summary>Its sparse accent pieces.</summary>
+    [Export] public Material ArchitectureAccent { get; set; } = null!;
+
+    /// <summary>Its ice.</summary>
+    [Export] public Material ArchitectureIce { get; set; } = null!;
+
+    /// <summary>
+    /// How much architecture stands behind the room: 0 for none (a closed shaft), under 2 for the two far rows, else all
+    /// three (the name is older than the architecture: it once counted boxes per 10 m).
+    /// </summary>
     [Export] public float PillarDensity { get; set; } = 3.8f;
 
     /// <summary>Dark blurred silhouettes framing the screen, in front of the play plane (foreground.tres).</summary>
@@ -64,6 +76,7 @@ public partial class RoomStage : Node3D
     public void Build(Room room)
     {
         Vector2 min = room.BoundsMin, max = room.BoundsMax;
+        (_min, _max) = (min, max);
         Vector2 size = max - min;
         float centerX = (min.X + max.X) * 0.5f;
 
@@ -76,25 +89,8 @@ public partial class RoomStage : Node3D
             Material = ClearFrontMaterial,
         });
 
-        AddSkyline("FarSkyline", FarSkyline, FarSkylineDepth, min.Y - 6f, size, centerX, 90f);
-        AddSkyline("NearSkyline", NearSkyline, NearSkylineDepth, min.Y - 4f, size, centerX, 60f);
-
-        float backdropWidth = size.X + 22f;
-        if (PillarDensity > 0f)
-        {
-            AddChild(new BackdropScatter
-            {
-                Name = "FarPillars",
-                Material = PillarMaterial,
-                Count = Mathf.RoundToInt(backdropWidth * PillarDensity / 10f),
-                AreaMin = new Vector2(min.X - 10f, min.Y - 2f),
-                AreaMax = new Vector2(max.X + 12f, min.Y + 6f),
-                DepthRange = new Vector2(-38f, -14f),
-                SizeMin = new Vector3(1f, 14f, 1f),
-                SizeMax = new Vector3(3.5f, Mathf.Max(40f, size.Y + 6f), 3.5f),
-                Seed = Seed * 7 + 11,
-            });
-        }
+        _farSkyline = AddSkyline("FarSkyline", FarSkyline, FarSkylineDepth, min.Y - 6f, size, centerX, 90f);
+        _nearSkyline = AddSkyline("NearSkyline", NearSkyline, NearSkylineDepth, min.Y - 4f, size, centerX, 60f);
 
         float frameWidth = size.X + 8f;
         if (FrameBelow)
@@ -141,23 +137,110 @@ public partial class RoomStage : Node3D
         }
     }
 
-    private void AddSkyline(string name, Material? material, float depth, float bottom, Vector2 roomSize, float centerX, float minHeight)
+    private BackdropArchitecture? _architecture;
+    private Vector2 _min, _max;
+
+    /// <summary>
+    /// Raises the depth layer's architecture behind the room (again, in another layer's style, when the biome changes).
+    /// Called by the room after <see cref="Build"/> and on every biome change.
+    /// </summary>
+    public void Restyle(BiomeProfile biome)
+    {
+        Underglow(biome);
+
+        // The layer's skylines, where the room shows them.
+        if (_farSkyline is not null && biome.FarSkyline is not null)
+        {
+            _farSkyline.MaterialOverride = biome.FarSkyline;
+        }
+
+        if (_nearSkyline is not null && biome.NearSkyline is not null)
+        {
+            _nearSkyline.MaterialOverride = biome.NearSkyline;
+        }
+
+        if (_architecture is not null && (_architecture.Style == biome.Architecture || PillarDensity <= 0f))
+        {
+            return;
+        }
+
+        _architecture?.Free();
+        _architecture = null;
+        if (PillarDensity <= 0f)
+        {
+            return;
+        }
+
+        _architecture = new BackdropArchitecture
+        {
+            Name = "Architecture",
+            Style = biome.Architecture,
+            Stone = PillarMaterial,
+            Metal = ArchitectureMetal,
+            Accent = ArchitectureAccent,
+            Ice = ArchitectureIce,
+            BoundsMin = _min,
+            BoundsMax = _max,
+            Rows = PillarDensity < 2f ? 2 : 3,
+            Seed = Seed * 7 + 11,
+        };
+        AddChild(_architecture);
+    }
+
+    private MeshInstance3D? _farSkyline, _nearSkyline;
+    private DirectionalLight3D? _underglow;
+
+    /// <summary>The layer's light from below (<see cref="BiomeProfile.UnderglowEnergy"/>), made when first needed.</summary>
+    private void Underglow(BiomeProfile biome)
+    {
+        if (biome.UnderglowEnergy <= 0f)
+        {
+            if (_underglow is not null)
+            {
+                _underglow.Visible = false;
+            }
+
+            return;
+        }
+
+        if (_underglow is null)
+        {
+            _underglow = new DirectionalLight3D
+            {
+                Name = "Underglow",
+                ShadowEnabled = false,
+                LightVolumetricFogEnergy = 0.25f,
+                SkyMode = DirectionalLight3D.SkyModeEnum.LightOnly,
+            };
+            AddChild(_underglow);
+            // Shining up, a little sideways, and into the scene: onto undersides and the faces of the walls behind.
+            _underglow.LookAt(_underglow.GlobalPosition + new Vector3(0.25f, 0.8f, -0.55f), Vector3.Forward);
+        }
+
+        _underglow.Visible = true;
+        _underglow.LightColor = biome.UnderglowColor;
+        _underglow.LightEnergy = biome.UnderglowEnergy;
+    }
+
+    private MeshInstance3D? AddSkyline(string name, Material? material, float depth, float bottom, Vector2 roomSize, float centerX, float minHeight)
     {
         if (material is null)
         {
-            return;
+            return null;
         }
 
         float viewDistance = CameraDistance + depth;
         float width = roomSize.X + 2f * viewDistance * ViewHalfWidthPerMeter;
         float height = Mathf.Max(minHeight, roomSize.Y + minHeight * 0.6f);
-        AddChild(new MeshInstance3D
+        var skyline = new MeshInstance3D
         {
             Name = name,
             Mesh = new QuadMesh { Size = new Vector2(width, height), CenterOffset = new Vector3(0f, height * 0.5f, 0f) },
             MaterialOverride = material,
             CastShadow = GeometryInstance3D.ShadowCastingSetting.Off,
             Position = new Vector3(centerX, bottom, -depth),
-        });
+        };
+        AddChild(skyline);
+        return skyline;
     }
 }

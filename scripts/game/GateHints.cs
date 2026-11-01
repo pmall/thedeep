@@ -103,7 +103,8 @@ public partial class GateHints : Node
     {
         for (int i = 0; i < Player.GetSlideCollisionCount(); i++)
         {
-            if (Player.GetSlideCollision(i).GetCollider() is Block { Cracked: true, Broken: false })
+            using KinematicCollision3D collision = Player.GetSlideCollision(i); // disposed, so the engine reuses it
+            if (collision.GetCollider() is Block { Cracked: true, Broken: false })
             {
                 return true;
             }

@@ -1,0 +1,12 @@
+[gd_resource type="ShaderMaterial" format=3]
+; The sparse accent pieces of the architecture behind a room (a nave's iron ribs): the backdrop accent, hazed less.
+
+[ext_resource type="Shader" path="res://assets/shaders/metal.gdshader" id="1_shader"]
+
+[resource]
+shader = ExtResource("1_shader")
+shader_parameter/slot = 3
+shader_parameter/corrosion = 0.4
+shader_parameter/panel_size = Vector2(2.2, 1.6)
+shader_parameter/haze_per_meter = 0.016
+shader_parameter/haze_max = 0.75

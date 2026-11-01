@@ -3,11 +3,13 @@
 ; warmed from the flooded magenta toward rose (the palette warms with depth, toward the core's amber).
 
 [ext_resource type="Script" path="res://scripts/biome/BiomeProfile.cs" id="1_biome"]
+[ext_resource type="Material" path="res://assets/materials/backdrop_crags.tres" id="2_far"]
+[ext_resource type="Material" path="res://assets/materials/backdrop_halls.tres" id="3_near"]
 
 [resource]
 script = ExtResource("1_biome")
 DisplayName = "Frozen"
-Rock = Color(0.42, 0.45, 0.52, 1)
+Rock = Color(0.48, 0.51, 0.58, 1)
 Metal = Color(0.6, 0.72, 0.9, 1)
 Backdrop = Color(0.08, 0.1, 0.15, 1)
 BackdropAccent = Color(0.48, 0.16, 0.38, 1)
@@ -19,9 +21,9 @@ Foreground = Color(0.015, 0.02, 0.035, 1)
 Accent = Color(0.95, 0.33, 0.66, 1)
 Background = Color(0.03, 0.04, 0.07, 1)
 AmbientColor = Color(0.5, 0.6, 0.78, 1)
-AmbientEnergy = 0.32
+AmbientEnergy = 0.42
 KeyColor = Color(0.8, 0.88, 1, 1)
-KeyEnergy = 1.8
+KeyEnergy = 2.0
 LampColor = Color(0.86, 0.9, 1, 1)
 ShaftColor = Color(0.9, 0.95, 1, 1)
 KeyFogEnergy = 0.2
@@ -50,3 +52,7 @@ Vignette = 0.8
 VignetteColor = Color(0.1, 0.13, 0.22, 1)
 Grain = 0.035
 ParticleTint = Color(0.92, 0.95, 1, 1)
+Architecture = 1
+FarSkyline = ExtResource("2_far")
+NearSkyline = ExtResource("3_near")
+Masonry = 0.6

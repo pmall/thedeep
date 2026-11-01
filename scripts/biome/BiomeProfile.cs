@@ -47,6 +47,12 @@ public partial class BiomeProfile : Resource
     /// </summary>
     [Export(PropertyHint.Range, "0,1")] public float Frost { get; set; }
 
+    /// <summary>
+    /// How much of the layer's rock was built (rock.gdshader): 0 natural strata, 1 courses of cut stone (a cathedral's walls,
+    /// voussoirs round its arches, flagstones underfoot). Still matte rock: it never reads as metal.
+    /// </summary>
+    [Export(PropertyHint.Range, "0,1")] public float Masonry { get; set; }
+
     /// <summary>The rime's color.</summary>
     [Export] public Color FrostColor { get; set; } = new(0.88f, 0.92f, 0.98f);
 
@@ -136,6 +142,24 @@ public partial class BiomeProfile : Resource
     [ExportGroup("Particles")]
     [Export] public Color ParticleTint { get; set; } = Colors.White;
 
+    /// <summary>
+    /// Light rising from below and in front (the glow of magma, of the heart), shadowless: it lights undersides and the
+    /// walls behind the play plane that the key light leaves black. Energy 0 for none.
+    /// </summary>
+    [ExportGroup("Light")]
+    [Export] public Color UnderglowColor { get; set; } = new(1f, 0.5f, 0.2f);
+
+    [Export] public float UnderglowEnergy { get; set; }
+
+    /// <summary>The architecture standing in the haze behind the layer's rooms (<see cref="BackdropArchitecture"/>).</summary>
+    [ExportGroup("Backdrop")]
+    [Export] public BackdropStyle Architecture { get; set; }
+
+    /// <summary>The far skyline and the nearer one (backdrop_silhouette materials); null keeps the room stage's own.</summary>
+    [Export] public Material? FarSkyline { get; set; }
+
+    [Export] public Material? NearSkyline { get; set; }
+
     /// <summary>Loads res://resources/biomes/<paramref name="name"/>.tres, or null if there is none.</summary>
     public static BiomeProfile? Load(string name)
     {
@@ -160,6 +184,7 @@ public partial class BiomeProfile : Resource
         RenderingServer.GlobalShaderParameterSet(ShaderGlobals.BiomeRust, Rust);
         RenderingServer.GlobalShaderParameterSet(ShaderGlobals.BiomeSilt, Silt);
         RenderingServer.GlobalShaderParameterSet(ShaderGlobals.BiomeFrost, Frost);
+        RenderingServer.GlobalShaderParameterSet(ShaderGlobals.BiomeMasonry, Masonry);
         RenderingServer.GlobalShaderParameterSet(ShaderGlobals.BiomeFrostColor, FrostColor);
         RenderingServer.GlobalShaderParameterSet(ShaderGlobals.BiomeHaze, HazeColor);
         RenderingServer.GlobalShaderParameterSet(ShaderGlobals.BiomeShaft, ShaftColor);

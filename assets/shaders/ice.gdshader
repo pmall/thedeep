@@ -7,6 +7,7 @@ shader_type spatial;
 
 #include "res://assets/shaders/lib/noise.gdshaderinc"
 #include "res://assets/shaders/lib/palette.gdshaderinc"
+#include "res://assets/shaders/lib/haze.gdshaderinc"
 #include "res://assets/shaders/lib/surface.gdshaderinc"
 #include "res://assets/shaders/lib/frost.gdshaderinc"
 
@@ -71,4 +72,5 @@ void fragment() {
 	CLEARCOAT_ROUGHNESS = 0.05;
 	RIM = 0.3 * (1.0 - fr.cover);
 	RIM_TINT = 0.8;
+	HAZE
 }

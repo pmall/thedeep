@@ -42,6 +42,7 @@ public partial class Room : Node3D
     public void ApplyBiome(BiomeProfile biome)
     {
         Biome = biome;
+        Stage.Restyle(biome);
         biome.Apply(Stage.Environment.Environment, Stage.KeyLight, Lamps, Shafts, GlyphLights);
     }
 

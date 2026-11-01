@@ -214,6 +214,10 @@ biome_frost={
 "type": "float",
 "value": 0.0
 }
+biome_masonry={
+"type": "float",
+"value": 0.0
+}
 biome_frost_color={
 "type": "color",
 "value": Color(0.88, 0.92, 0.98, 1)

@@ -1,6 +1,6 @@
 [gd_scene format=3]
 ; The atmosphere stack every room shares (scripts/rooms/RoomStage.cs): environment, key light, clear front
-; air, skylines, far pillars, framing foreground and dust, sized from the room's bounds. A room instances
+; air, skylines, the architecture in the haze, framing foreground and dust, sized from the room's bounds. A room instances
 ; it as "Stage" and overrides only its choices (skylines, pillar density, frame, dust, seed).
 
 [ext_resource type="Script" path="res://scripts/rooms/RoomStage.cs" id="1_stage"]
@@ -8,9 +8,12 @@
 [ext_resource type="Material" path="res://assets/materials/fog_clear.tres" id="3_clear"]
 [ext_resource type="Material" path="res://assets/materials/backdrop_cathedral.tres" id="4_cathedral"]
 [ext_resource type="Material" path="res://assets/materials/backdrop_halls.tres" id="5_halls"]
-[ext_resource type="Material" path="res://assets/materials/backdrop_stone.tres" id="6_stone"]
+[ext_resource type="Material" path="res://assets/materials/architecture_stone.tres" id="6_stone"]
 [ext_resource type="Material" path="res://assets/materials/foreground.tres" id="7_fore"]
 [ext_resource type="PackedScene" path="res://scenes/fx/Dust.tscn" id="8_dust"]
+[ext_resource type="Material" path="res://assets/materials/backdrop_metal.tres" id="9_metal"]
+[ext_resource type="Material" path="res://assets/materials/architecture_accent.tres" id="10_accent"]
+[ext_resource type="Material" path="res://assets/materials/architecture_ice.tres" id="11_ice"]
 
 [node name="RoomStage" type="Node3D" node_paths=PackedStringArray("Environment", "KeyLight")]
 script = ExtResource("1_stage")
@@ -20,6 +23,9 @@ ClearFrontMaterial = ExtResource("3_clear")
 FarSkyline = ExtResource("4_cathedral")
 NearSkyline = ExtResource("5_halls")
 PillarMaterial = ExtResource("6_stone")
+ArchitectureMetal = ExtResource("9_metal")
+ArchitectureAccent = ExtResource("10_accent")
+ArchitectureIce = ExtResource("11_ice")
 FrameMaterial = ExtResource("7_fore")
 Dust = ExtResource("8_dust")
 

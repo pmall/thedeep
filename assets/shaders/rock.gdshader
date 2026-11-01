@@ -6,11 +6,15 @@ shader_type spatial;
 
 #include "res://assets/shaders/lib/noise.gdshaderinc"
 #include "res://assets/shaders/lib/palette.gdshaderinc"
+#include "res://assets/shaders/lib/haze.gdshaderinc"
 #include "res://assets/shaders/lib/surface.gdshaderinc"
 #include "res://assets/shaders/lib/water.gdshaderinc"
 #include "res://assets/shaders/lib/frost.gdshaderinc"
 
 uniform int slot : hint_enum("Rock", "Metal", "Backdrop", "Backdrop accent", "Foreground") = 0;
+
+/// How much of the rock was built, from the biome (BiomeProfile.Masonry): 0 strata, 1 courses of cut stone.
+global uniform float biome_masonry;
 
 group_uniforms strata;
 /// Layers per meter of height.
@@ -19,6 +23,13 @@ uniform float strata_frequency : hint_range(0.1, 4.0) = 1.3;
 uniform float strata_warp : hint_range(0.0, 2.0) = 0.7;
 /// Tone difference between layers.
 uniform float strata_contrast : hint_range(0.0, 0.5) = 0.2;
+
+group_uniforms masonry;
+/// Height of a course of cut stone, meters, and the blocks' length along it.
+uniform float course_height : hint_range(0.2, 2.0) = 0.7;
+uniform float block_length : hint_range(0.3, 4.0) = 1.5;
+/// Share of the biome's masonry this material takes (0 keeps it natural rock everywhere).
+uniform float masonry_share : hint_range(0.0, 1.0) = 1.0;
 
 group_uniforms cracks;
 /// Voronoi cells per meter.
@@ -62,13 +73,35 @@ struct Rock {
 	float tone;   // albedo multiplier
 };
 
-Rock rock_at(vec3 p, vec3 t, vec3 b, float seed) {
+// Courses of cut stone on a face: `along` runs with the courses, `across` over them. Returns the mortar joint (1 in it)
+// and the block's hash in .y, its tilt in tone in .z.
+vec3 masonry_at(float along, float across, float seed) {
+	float cy = across / course_height;
+	float course = floor(cy);
+	float fy = fract(cy);
+	float len = block_length * (0.75 + 0.5 * hash12(vec2(course, seed + 1.7)));
+	float cx = along / len + hash12(vec2(course, 9.1)) ;
+	float block = floor(cx);
+	float fx = fract(cx);
+	float id = hash12(vec2(block, course + seed * 13.0));
+	// Mortar 3-5 cm, the blocks' arrises worn rounder here and there.
+	float wear = 0.025 + 0.03 * id;
+	float jy = 1.0 - smoothstep(0.0, wear, min(fy, 1.0 - fy) * course_height);
+	float jx = 1.0 - smoothstep(0.0, wear, min(fx, 1.0 - fx) * len);
+	return vec3(max(jx, jy), id, hash12(vec2(block * 1.3, course - seed)));
+}
+
+Rock rock_at(vec3 p, vec3 t, vec3 b, float seed, float up) {
 	Rock r;
 	vec2 q = vec2(dot(p, t), dot(p, b));
 	float warp = fbm3(p * 0.3 + seed * 11.0, 3);
 
-	// Strata: horizontal layers of uneven thickness, some proud of the wall, joined by grooves.
-	float s = p.y * strata_frequency + (warp - 0.5) * strata_warp * 2.0 * strata_frequency;
+	// Strata: horizontal layers of uneven thickness, some proud of the wall, joined by grooves. Faults shift whole
+	// runs of layers every few meters, and the joints come and go along their length, so a wide face reads as rock
+	// rather than as long parallel lines.
+	float fault = floor(q.x / (3.5 + 2.0 * hash12(vec2(floor(q.x / 5.0), seed))));
+	float throw_ = (hash12(vec2(fault, seed + 4.0)) - 0.5) * 0.9;
+	float s = (p.y + throw_) * strata_frequency + (warp - 0.5) * strata_warp * 2.0 * strata_frequency;
 	float layer = floor(s);
 	float within = fract(s);
 	float layer_hash = hash12(vec2(layer, 3.7));
@@ -78,9 +111,25 @@ Rock rock_at(vec3 p, vec3 t, vec3 b, float seed) {
 	if (layer_hash < 0.45) {
 		joint = max(joint, (1.0 - smoothstep(0.0, 0.05, abs(within - split))) * 0.7);
 	}
+	joint *= smoothstep(0.25, 0.6, value_noise2(vec2(q.x * 0.35, layer * 1.7 + seed)));
 	r.tone = 1.0 + (layer_hash - 0.5) * 2.0 * strata_contrast + (warp - 0.5) * 0.35;
 	r.height = layer_hash * 0.035 - joint * 0.025;
 	r.cavity = joint * 0.5;
+
+	// Masonry: courses along a wall (or round an arch), flagstones on what faces up.
+	float built = biome_masonry * masonry_share;
+	if (built > 0.0) {
+		float across = up > 0.5 ? q.y : p.y;
+		vec3 m = masonry_at(q.x, across, seed);
+		float block_tone = 0.9 + 0.2 * m.y + (warp - 0.5) * 0.25;
+		r.tone = mix(r.tone, block_tone, built);
+		r.height = mix(r.height, m.z * 0.02 - m.x * 0.03, built);
+		r.cavity = mix(r.cavity, m.x * 0.7, built);
+	}
+
+	// Long stains running down the faces: wide walls never read as one flat tone.
+	float stain = smoothstep(0.45, 0.8, value_noise2(vec2(q.x * 0.6 + seed * 3.0, p.y * 0.06)));
+	r.tone *= 1.0 - 0.14 * stain * (1.0 - up);
 	if (fracture > 0.0) {
 		// Big warped cells split by wide dark fissures, a pale broken rim along each, the slabs tilted apart.
 		vec2 fq = q * 1.1 + (vec2(fbm2(q * 0.7 + seed * 2.0, 2), fbm2(q * 0.7 + 3.1 + seed, 2)) - 0.5) * 0.9;
@@ -124,14 +173,16 @@ void fragment() {
 	vec3 p = v_world_pos;
 	float seed = v_seed;
 
-	Rock r = rock_at(p, t, b, seed);
+	vec3 face_up_n = view_to_world(f.normal, INV_VIEW_MATRIX);
+	float up = abs(face_up_n.y);
+	Rock r = rock_at(p, t, b, seed, up);
 	vec3 n = f.normal;
 	float chipped = 0.0;
 	if (detail) {
 		// Bump from the height field by finite differences along the surface.
 		const float e = 0.006;
-		float hx = rock_at(p + t * e, t, b, seed).height;
-		float hy = rock_at(p + b * e, t, b, seed).height;
+		float hx = rock_at(p + t * e, t, b, seed, up).height;
+		float hy = rock_at(p + b * e, t, b, seed, up).height;
 		// Worn edges: the band's width varies along the edge.
 		float chip_noise = value_noise3(p * 3.1 + seed * 5.0);
 		float width = wear_width * (0.4 + 1.2 * chip_noise);
@@ -181,4 +232,5 @@ void fragment() {
 	AO = 1.0 - r.cavity * 0.6;
 	AO_LIGHT_AFFECT = 0.25;
 	NORMAL = n;
+	HAZE
 }

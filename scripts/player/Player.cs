@@ -403,7 +403,7 @@ public partial class Player : CharacterBody3D
     {
         for (int i = 0; i < GetSlideCollisionCount(); i++)
         {
-            KinematicCollision3D collision = GetSlideCollision(i);
+            using KinematicCollision3D collision = GetSlideCollision(i); // disposed: a live wrapper makes the engine allocate a new one next call
             Vector3 n = collision.GetNormal();
             NVector2 normal = GripMath.Snap(new NVector2(n.X, n.Y));
             if (collision.GetCollider() is CollisionObject3D body && (body.CollisionLayer & PhysicsLayers.WorldMetal) != 0 && accept(normal))
@@ -706,7 +706,7 @@ public partial class Player : CharacterBody3D
         SurfaceKind kind = SurfaceKind.Rock;
         for (int i = 0; i < GetSlideCollisionCount(); i++)
         {
-            KinematicCollision3D collision = GetSlideCollision(i);
+            using KinematicCollision3D collision = GetSlideCollision(i); // disposed: a live wrapper makes the engine allocate a new one next call
             if (collision.GetNormal().Y > 0.7f && collision.GetCollider() is CollisionObject3D body
                 && (body.CollisionLayer & PhysicsLayers.WorldMetal) != 0)
             {
