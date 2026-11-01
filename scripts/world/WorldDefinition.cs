@@ -3,7 +3,7 @@ using Godot;
 namespace TheDeep;
 
 /// <summary>
-/// A world as data (docs/principles.md, "Bricks, not rooms"): its rooms, its network, its layers and their biomes, its line book
+/// A world as data (docs/principles.md#bricks): its rooms, its network, its layers and their biomes, its line book
 /// and where it starts. The code runs whatever world it is given: the prototype is one (worlds/prototype/world.tres), the real
 /// game will be another. Picked with `--world &lt;name&gt;` (worlds/&lt;name&gt;/world.tres), else the main scene's.
 /// </summary>

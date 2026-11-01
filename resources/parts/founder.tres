@@ -1,7 +1,7 @@
 [gd_resource type="Resource" script_class="PartAssembly" format=3]
 ; The Founder (boss placeholder): the abbot of the foundry, generated from resources/parts/precentor.tres scaled by
 ; 1.2, its cope rusted and its vestments glowing like metal fresh from the mould. Placeholder until the character pass
-; (docs/roadmap.md).
+; (docs/roadmap.md#stage-polish).
 ; Joints: X forward, Y up, Z toward the camera (N near side, F far side).
 
 [ext_resource type="Script" path="res://scripts/parts/PartAssembly.cs" id="1_PartAssembly"]

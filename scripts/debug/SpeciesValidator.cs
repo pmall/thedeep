@@ -7,7 +7,7 @@ namespace TheDeep;
 
 /// <summary>
 /// Checks every machine species and quits (`-- --room MachineArena --validate-species`, run by tools/check.sh;
-/// docs/long-term.md, objective 1). Prints `SPECIES OK` and a report, or one `SPECIES CHECK` error per problem:
+/// docs/long-term.md#machines-distinct). Prints `SPECIES OK` and a report, or one `SPECIES CHECK` error per problem:
 /// - every resource in <see cref="MachineSpecies.Folder"/> loads, its id is its file name, it has a behavior and
 ///   a body whose parts, chains, drivers and legs all name existing joints, and its creed line exists;
 /// - each species then lives alone in the room for a while, first without the player, then with the player
@@ -246,7 +246,7 @@ public partial class SpeciesValidator : Node
             GD.Print($"  {s.Id,-14} {Habitat(s),-9} {(s.Hostile ? "hostile" : "peaceful"),-9} {s.Behavior?.GetType().Name,-18} seen: {acts}");
         }
 
-        // Likely duplicates: same behavior and same body (a variant, not a species; docs/long-term.md).
+        // Likely duplicates: same behavior and same body (a variant, not a species; docs/long-term.md#distinct-species).
         var duplicates = species.Where(s => s.Behavior is not null && s.Assembly is not null)
             .GroupBy(s => (s.Behavior.GetType(), s.Assembly.ResourcePath))
             .Where(g => g.Count() > 1)

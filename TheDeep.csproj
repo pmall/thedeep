@@ -15,7 +15,7 @@
     <Compile Remove="tests/**" />
   </ItemGroup>
   <ItemGroup>
-    <!-- The rules and state, Godot-free (docs/principles.md): the game is their adapter. -->
+    <!-- The rules and state, Godot-free (docs/principles.md#engine-detail): the game is their adapter. -->
     <ProjectReference Include="core/TheDeep.Core.csproj" />
   </ItemGroup>
 </Project>

@@ -9,7 +9,7 @@ using System.Threading.Tasks;
 namespace TheDeep;
 
 /// <summary>
-/// The built world proven as a whole (M7, docs/long-term.md objective 2), pure: given each room's part of the map (its exits as
+/// The built world proven as a whole (docs/long-term.md#any-order), pure: given each room's part of the map (its exits as
 /// edges, its relics and goals, its links to the rooms it leads to) and its <see cref="RoomShape"/>, it checks that
 /// - the rooms placed from their exits line up around every loop and don't overlap (<see cref="MapLayout"/>);
 /// - every room is reachable from the start, a goal is, no reachable state is a softlock, and enough ability orders are achievable
@@ -265,7 +265,7 @@ public sealed class WorldCheck
     };
 
     /// <summary>
-    /// The geometry sanity check (M7): the base moveset, simulated with the live tuning (<see cref="ReachPlanner"/>), must reach every
+    /// The geometry sanity check: the base moveset, simulated with the live tuning (<see cref="ReachPlanner"/>), must reach every
     /// exit marked for the base moveset from some way into its room, and must not reach an exit that needs an ability from a way in
     /// that needed none (that requirement would be a lie, or the geometry drifted from it). An exit an ability opens must be reached
     /// by the planner with that ability (and what the way in guarantees: abilities accumulate) from some way in; for a requirement

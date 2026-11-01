@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# The check step: build, headless import, smoke test, room and species checks, unit tests. Stops at the first failure.
+# The check step: doc citations, build, headless import, smoke test, room and species checks, unit tests. Stops at the first failure.
 # Run after every change and before every commit:  tools/check.sh
 set -euo pipefail
 
@@ -28,15 +28,18 @@ scan_log() {
     fi
 }
 
-step "1/4 build (warnings are errors)"
+step "1/5 doc section ids and citations"
+python3 tools/docrefs.py || fail "doc citations"
+
+step "2/5 build (warnings are errors)"
 dotnet build TheDeep.sln -v q -nologo || fail "dotnet build"
 
-step "2/4 headless import"
+step "3/5 headless import"
 "$GODOT" --headless --import >"$LOG_DIR/import.log" 2>&1 || { tail -20 "$LOG_DIR/import.log"; fail "godot --import exited non-zero"; }
 scan_log "$LOG_DIR/import.log" "import"
 echo "ok"
 
-step "3/4 smoke test, room and species checks (main scene, headless)"
+step "4/5 smoke test, room and species checks (main scene, headless)"
 # a) Idle boot of the main scene, exactly as the owner launches it.
 "$GODOT" --headless --path . --fixed-fps 60 --quit-after 300 >"$LOG_DIR/smoke_idle.log" 2>&1 \
     || { tail -20 "$LOG_DIR/smoke_idle.log"; fail "main scene exited non-zero"; }
@@ -117,7 +120,7 @@ scan_log "$LOG_DIR/species.log" "species check"
 grep -q 'SPECIES OK' "$LOG_DIR/species.log" || { tail -20 "$LOG_DIR/species.log"; fail "species check did not report SPECIES OK"; }
 grep -E '^  [a-z]|SPECIES OK' "$LOG_DIR/species.log"
 
-step "4/4 unit tests"
+step "5/5 unit tests"
 if [ -f tests/TheDeep.Tests/TheDeep.Tests.csproj ]; then
     dotnet test tests/TheDeep.Tests/TheDeep.Tests.csproj -v q -nologo || fail "unit tests"
 else

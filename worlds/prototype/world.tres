@@ -1,5 +1,5 @@
 [gd_resource type="Resource" script_class="WorldDefinition" format=3]
-; The prototype world (docs/roadmap.md, stage A): our playground, 40 rooms over the flooded, frozen and volcanic layers and
+; The prototype world (docs/roadmap.md#stage-prototype): our playground, 40 rooms over the flooded, frozen and volcanic layers and
 ; the core, where every brick is proven. Its network is map-draft.md beside this file; the lab rooms (MechanicsLab,
 ; MachineArena) sit with its rooms, outside the game (Room.InGame off).
 

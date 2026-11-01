@@ -1,6 +1,6 @@
 [gd_scene format=3]
 
-; The machine arena (M5): the first species living side by side on a flooded hall floor, for look-dev
+; The machine arena: the first species living side by side on a flooded hall floor, for look-dev
 ; and for watching their behaviors. West to east: a congregation of Votaries praying toward a shrine
 ; (a gallery above lets the player pass over their reach), a Gleaner picking over scrap, and a Limpet
 ; asleep on a metal reliquary; a Lamplighter waits near the start. Run it with `-- --room MachineArena`.

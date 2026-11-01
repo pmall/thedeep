@@ -5,7 +5,7 @@ using TheDeep.States;
 namespace TheDeep;
 
 /// <summary>
-/// A gate the pilgrim can't pass yet says so (roadmap W1): pressing into a metal wall or ceiling without Mag-grip, a mooring ring
+/// A gate the pilgrim can't pass yet says so: pressing into a metal wall or ceiling without Mag-grip, a mooring ring
 /// in sight without the Harpoon, against cracked rock without the Drill, pressing down in deep water without Ballast, thrown
 /// back by heat without Heat plating. Meeting one for a moment shows the pilgrim's line about it (<see cref="GateKinds"/>) in
 /// the <see cref="HintLine"/>, once per room visit for each kind.

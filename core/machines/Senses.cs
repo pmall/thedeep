@@ -4,7 +4,7 @@ using System.Numerics;
 namespace TheDeep;
 
 /// <summary>
-/// The senses of the behavior vocabulary (docs/long-term.md): seeing the player, feeling them near, hearing
+/// The senses of the behavior vocabulary (docs/long-term.md#machines-distinct): seeing the player, feeling them near, hearing
 /// an impact, noticing nearby machines. Pure functions of a <see cref="Perception"/>, so brains combine them
 /// freely and tests can call them directly.
 /// </summary>

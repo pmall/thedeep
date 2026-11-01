@@ -5,8 +5,8 @@ namespace TheDeep;
 
 /// <summary>
 /// A connection marker inside a room scene: where the room connects to another one, and what it takes.
-/// The map is never listed by hand: the extractor (M7) builds the world graph from these markers, and
-/// room transitions (M6) use them. The marker sits where the player stands on arrival through it.
+/// The map is never listed by hand: the room check builds the world graph from these markers, and
+/// room travel uses them. The marker sits where the player stands on arrival through it.
 /// The requirement is for leaving through this exit; the way back is the target exit's own.
 /// </summary>
 public partial class RoomExit : Marker3D

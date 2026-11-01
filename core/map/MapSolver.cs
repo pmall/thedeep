@@ -76,11 +76,11 @@ public sealed class MapReport
 }
 
 /// <summary>
-/// The "any order, proven on every build" solver (docs/long-term.md, objective 2), pure. It explores every
+/// The "any order, proven on every build" solver (docs/long-term.md#any-order), pure. It explores every
 /// state (room, abilities owned) reachable from the start: crossing an exit needs its requirement; entering
-/// a room takes its relics (abilities only ever help, so taking them is never a choice). Guarantee 1: from
+/// a room takes its relics (abilities only ever help, so taking them is never a choice). No softlock (docs/long-term.md#no-softlock): from
 /// every reachable state some goal stays reachable (no softlock), else it reports the state and the path
-/// there. Guarantee 2: it lists the orders in which all the map's abilities can be collected.
+/// there. Order freedom (docs/long-term.md#order-freedom): it lists the orders in which all the map's abilities can be collected.
 /// </summary>
 public static class MapSolver
 {
@@ -158,7 +158,7 @@ public static class MapSolver
     }
 
     /// <summary>
-    /// The solver with the rooms' insides (objective 2 without trusting the rooms): a room is not one place but what can be reached in
+    /// The solver with the rooms' insides (any order, without trusting the rooms): a room is not one place but what can be reached in
     /// it from each way in, with the abilities owned (<paramref name="inside"/>): which exits, which relics, the goal. Explores every
     /// (room, way in, abilities) reachable from waking in the start room; from each, some goal must stay reachable. Catches what the
     /// room-level <see cref="Solve"/> can't: a drop into the part of a room that only an ability leads out of, a relic behind a wall.

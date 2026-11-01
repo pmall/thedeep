@@ -1,5 +1,5 @@
 [gd_resource type="Resource" script_class="PartAssembly" format=3]
-; The pilgrim, built from parts (docs/art-direction.md, NieR): a slender android, dark with white trim,
+; The pilgrim, built from parts (docs/art-direction.md#character): a slender android, dark with white trim,
 ; a swallowtail coat, a white braid and a lantern at the hip. Joints follow HumanoidBone; R is the near side (+Z).
 
 [ext_resource type="Script" path="res://scripts/parts/PartAssembly.cs" id="1_assembly"]

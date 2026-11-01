@@ -5,8 +5,7 @@ using Godot;
 namespace TheDeep;
 
 /// <summary>
-/// Finds the exports a scene left empty that its type says are always there (docs/principles.md, "Optional exports are T? and
-/// checked"): every <c>[Export]</c> of a non-nullable reference type (declared <c>= null!</c>, injected by the engine) that holds
+/// Finds the exports a scene left empty that its type says are always there (docs/principles.md#types-truth): every <c>[Export]</c> of a non-nullable reference type (declared <c>= null!</c>, injected by the engine) that holds
 /// null, on a node, and on the resources its exports reach (a machine's species, its body, a room's biome, a world's layers). An
 /// optional export is <c>T?</c>, so it is never one of them.
 /// </summary>

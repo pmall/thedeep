@@ -1,21 +1,21 @@
 # Art direction
 
-Read this before any visual work. Art matters in every stage: every room is built to this direction. In the prototype ([roadmap.md](roadmap.md)), the stage bricks (P2) and the pilgrim (P3) are where the look is pushed to its bar, so that the real game is assembled from pieces that already look right.
+Read this before any visual work. Every room is built to this direction. In the prototype, `docs/roadmap.md#stage-bricks` and `docs/roadmap.md#pilgrim` are where the look is pushed to its bar, so that the real game is assembled from pieces that already look right. How a material or effect is made is in its shader's header comment (`assets/shaders/`).
 
-## The look
+## The look `#look`
 
-**Overall style:** the **ambiance of *Metroid Dread*** (its white areas with a touch of purple; north star [`perfect.jpg`](references/perfect.jpg), "perfect" per the owner) and a **character in the style of *NieR: Automata***. The references are about colors and graphical style, not about props or venues. Details in the reference board below. Everything should feel **graceful** ([vision.md](vision.md)): restraint, clean shapes, fluid motion.
+**Overall style:** the **ambiance of *Metroid Dread*** (its white areas with a touch of purple; north star [`perfect.jpg`](references/perfect.jpg), "perfect" per the owner) and a **character in the style of *NieR: Automata***. The references are about colors and graphical style, not about props or venues. Details in `docs/art-direction.md#references`. Everything should feel **graceful** (`docs/vision.md#graceful`).
 
 - **A bright stage in a dark frame.** The play area is pale and misty (blue-white surfaces, lavender haze, white light shafts). The edges of the screen are dark silhouettes. The result is moody and high-contrast, never flat pastel.
 - **White plus one accent.** The base is pale blue-white and cool grey. The accent is a saturated **purple/magenta**, used sparingly, roughly 10–15% of the screen at most.
-- **The palette tracks depth:** pale and misty near the surface, with the accent and light getting warmer with depth, down to dark amber and ember near the core. Machine colors follow the same palette. *Proposed; owner to confirm.*
+- **The palette tracks depth:** pale and misty near the surface, with the accent and light getting warmer with depth, down to dark amber and ember near the core. Machine colors follow the same palette. *Proposed; owner to confirm* (`docs/roadmap.md#open-decisions`).
 - Environments: ruined pilgrim machinery, drowned halls of ancient servers, industrial cathedrals. (The setting decides the props, not the references.)
-- **Three depth layers:** a blurred foreground, the play plane, and a hazy backdrop with parallax. The camera is a narrow-FOV perspective camera (not orthographic) so these layers really move at different speeds.
+- **Three depth layers:** a blurred foreground, the play plane, and a hazy backdrop with parallax (the camera: `docs/architecture.md#tech-stack`).
 - Gameplay readability first: the player, hazards and grippable **metal** versus non-grippable **rock** must read at a glance in every lighting setup.
 
-## The signature (owner, 2026-11-01)
+## The signature `#signature`
 
-The game gets a **visual signature**: one global pass over the image that makes every frame look painted by the same hand, so the game is recognized from a single screenshot. The owner's first idea: **gouache**, a little painted. A shader only this game uses. Designed at the start of roadmap item P2; until it exists, this section is the brief.
+Owner, 2026-11-01. The game gets a **visual signature**: one global pass over the image that makes every frame look painted by the same hand, so the game is recognized from a single screenshot. The owner's first idea: **gouache**, a little painted. A shader only this game uses. It is designed first in `docs/roadmap.md#stage-bricks`, before the rest of the visual work; until it exists, this section is the brief.
 
 What gouache means here:
 - **Flat, matte, opaque color** laid in areas, with soft brush edges, not photographic gradients. Detail simplified where the eye doesn't need it (the backdrop, the haze), kept where it does (the play plane, the pilgrim).
@@ -27,27 +27,30 @@ What gouache means here:
 Constraints:
 - **Readability first**: the pilgrim, hazards, interactables and metal versus rock must read at least as well as without the pass. Gameplay edges are never smeared away.
 - **Graceful**: restraint. Painted, not noisy. It must stay calm in motion: no shimmer, crawling or flicker as the camera moves (judge it from video, not only stills).
-- **Inside the frame budget** (≤ 10 ms p99 at 1080p on the RTX 3060): the rooms already sit near 9.6 ms, so GPU time must be won back or the pass made cheap (a lower-resolution pass, a compute effect).
+- **Inside the frame budget** (`docs/principles.md#performance`): the rooms already sit near 9.6 ms p99, so GPU time must be won back or the pass made cheap (a lower-resolution pass, a compute effect).
 - **Swappable and tunable**: one `CompositorEffect`-style pass with its strengths in the `BiomeProfile` (per layer), and a switch to see the frame without it for comparison.
 - **Process**: two or three variants rendered on the same photo spots and as a short video; the owner picks; then it is tuned per biome, and every visual judged afterwards is judged through it.
 
-## Production rules
+## Production rules `#production-rules`
 
-1. **Procedural first, pushed to the maximum** (owner decision). All visuals come from code: shaders, generated meshes, lighting, fog, particles, post-processing. The game must look good this way alone. Authored models (a Blender MCP) come only once procedural has gone as far as it can: from the end of the prototype, the pilgrim first (roadmap, direction 3).
-2. **Everything visual is swappable.** Another art source comes later. Materials, kit pieces and machine parts are referenced through resources, so a procedural version can be replaced by an authored one without touching gameplay or rooms.
-3. **Visuals never decide gameplay.** Rock versus metal is the physics layer, not the material. Collision shapes are simple and kept separate from visual meshes.
-4. **Judge with images, not code.** For every visual change, render captures before and after and look at them (see [testing.md](testing.md)). Keep within the frame budget: 1080p at 60 fps on the owner's RTX 3060, target ≤ 10 ms per frame.
-5. The player and the machines share one **modular part system**. Building it is both an art task and the foundation of the bestiary ([long-term.md](long-term.md)).
+- **Procedural first, pushed to the maximum; Blender to finish** `#procedural-first` (owner, 2026-11-01). All visuals come from code first: shaders, generated meshes, lighting, fog, particles, post-processing. The game must look good this way alone. When procedural has gone as far as it can, the owner gives access to Blender (an MCP) to finish what code does worst (`docs/roadmap.md#beyond-procedural`). That may come at the end of the prototype, the pilgrim first (a really cool character may need real modeling), not only in polish. Never use Blender to make up for a procedural look that wasn't pushed.
+- **Everything visual is swappable** `#swappable`. Materials, kit pieces and machine parts are referenced through resources, so a procedural version can be replaced by an authored one without touching gameplay or rooms. A material is a `.tres` referenced by scenes, never a shader assigned in code.
+- **Visuals never decide gameplay** `#visuals-never-gameplay`. Rock versus metal is the physics layer, not the material. Collision is simple boxes (`Block`), kept apart from visual meshes: kit pieces are visual only.
+- **Judge with images, not code** `#judge-images`. For every visual change, render captures before and after and look at them (`docs/testing.md#lookdev`), within the frame budget (`docs/principles.md#performance`).
+- **One part system** `#shared-parts` for the pilgrim and the machines. Building it is both an art task and the foundation of the bestiary (`docs/long-term.md#machines-distinct`).
+- **The play plane is the brightest layer** `#midground`: pieces behind it use the darker, duller `*_mid` materials, so only grippable metal reads as bright pale metal. Keep heavy rust off metal where the grip read matters most: its value gets close to rock.
+- **Machines against the pilgrim** `#machine-palette`: native machines take the biome palette, shells at mid value with dark limbs, the saturated accent only on small devotional plates; the pilgrim keeps its own colors (human-built, foreign at every depth) and stays the highest-contrast figure. Eyes turn the hazard color only on hostile machines, alert or striking (color means gameplay).
 
-## Reference board
+## Reference board `#references`
 
 The owner's screenshots are in `docs/references/` (Godot ignores the `docs/` folder). **They are about colors and graphical style only. Don't copy their props, venues or layouts.** The owner's split:
 - **Ambiance (world, light, color): *Metroid Dread*,** especially its white areas with a touch of purple.
 - **Character (the android): *NieR: Automata*.**
+- Earlier references, now secondary: *Ori*, *Hollow Knight: Silksong*, *Castlevania: Belmont's Curse*.
 
 To view the `.avif` file, convert it first: `ffmpeg -i in.avif out.png` in the scratchpad.
 
-### Ambiance: *Metroid Dread*
+### Ambiance: *Metroid Dread* `#ambiance`
 Images: [`perfect.jpg`](references/perfect.jpg) (**north star**), [`dread-white-lab.jpeg`](references/dread-white-lab.jpeg), [`dread-station-melee.avif`](references/dread-station-melee.avif).
 - **Colors:** pale blue-white and cool grey base, lavender-grey mist, with saturated magenta-purple as the only strong decor color (`perfect.jpg`). Black for structure and the void below the play plane. Small warm accents on the player pop against it.
 - **Color means gameplay:** the world is almost monochrome, so saturated emissive colors (like Dread's red hazard pads and door locks) are reserved for hazards, interactables, doors and pickups.
@@ -56,78 +59,35 @@ Images: [`perfect.jpg`](references/perfect.jpg) (**north star**), [`dread-white-
 - **Depth:** dark framing foreground, bright play plane, hazy backdrop, with fog between them. Edges of the screen darker than the center.
 - **Effects:** crisp white arcs and sparks on hits, soft volumetric mist.
 - **Concrete targets:**
-  - The Flooded `BiomeProfile` reproduces the `perfect.jpg` palette: pale base, lavender fog, magenta accent (M0, M3). Side-by-side capture against `perfect.jpg` to judge it.
-  - A color-rule check in captures: saturated emissive only on gameplay elements (M1–M3).
-  - A glossy pale ceramic-metal material with bevels and rim light; rock stays clearly different from metal (M1).
-  - Light shafts with visible particles in about 20% of rooms; vignette plus foreground silhouettes darken the edges (M3).
-  - White slash arc and spark VFX for the basic attack (M4, M6).
+  - The Flooded `BiomeProfile` reproduces the `perfect.jpg` palette: pale base, lavender fog, magenta accent. Side-by-side capture against `perfect.jpg` to judge it.
+  - A color-rule check in captures: saturated emissive only on gameplay elements.
+  - A glossy pale ceramic-metal material with bevels and rim light; rock stays clearly different from metal.
+  - Light shafts with visible particles in about 20% of rooms; vignette plus foreground silhouettes darken the edges.
+  - White slash arc and spark VFX for the basic attack.
 
-### Character: *NieR: Automata*
+### Character: *NieR: Automata* `#character`
 Images: [`nier-tank-catwalk.jpg`](references/nier-tank-catwalk.jpg), [`nier-amusement-park.jpeg`](references/nier-amusement-park.jpeg), [`nier-factory-furnace.png`](references/nier-factory-furnace.png) (all show 2B or 9S in the 2D side-scrolling sections).
 - **Silhouette:** a slender, elegant humanoid android, human proportions, small next to the world. Instantly readable at gameplay size.
 - **Colors:** mostly black, with white/silver highlights (hair, trims) and very little else. It stays readable against the pale Dread world through value contrast (dark on light). One small glowing element can carry the purple accent.
 - **Motion:** graceful and fast, acrobatic, with flowing secondary motion (skirt or coat tails, hair, ribbons, cables) trailing behind moves.
 - **Fits the theme:** NieR's androids are human-built machines, as is ours ([theme.md](theme.md)), so it should look foreign among the native machines.
 - **Concrete targets:**
-  - The M4 pilgrim follows this: humanoid, dark with white highlights, flowing secondary motion, built from the part system.
+  - The pilgrim follows this: humanoid, dark with white highlights, flowing secondary motion, built from the part system.
   - In every capture, the android is the highest-contrast element on the play plane.
 
-### Summary: the game's look in one line
+### Summary: the game's look in one line `#look-in-one-line`
 A pale, misty *Dread* world in white, grey and a touch of purple, where color means gameplay, crossed by a dark, elegant *NieR* android.
 
-## Current state
+## Open issues `#art-open`
 
-M1 material library in place (2026-10-24), judged on the test room's photo spots:
-- **Rock** (`assets/shaders/rock.gdshader`): warm-neutral matte stone in uneven horizontal strata, sparse tapering cracks, pale silt in crevices and on ledges, chipped paler edges, grime near the bottom of each block. **Wet stone** is the same shader with `wetness`: darker, glossy, flat mirror-like puddles on top faces (the test room floor; reflections come from SSR).
-- **Metal** (`metal.gdshader`): pale blue-white glossy ceramic-metal (clearcoat, rim), each face cut into panels that fit it, with seams, a crisp panel bevel, rivets on some panels, faint wet streaks, rust in the creases, coating chipped at the box edges. **Rust** is the same shader with `corrosion` (the shaft's right wall). Panels and gloss keep even rusty metal readable as metal, but its value gets close to rock: keep heavy rust off metal where the grip read matters most.
-- **Faith glyphs** (`glyph.gdshader`): generated pilgrim markings on a quad, the biome accent mixed toward white, breathing slowly. Decor, so kept soft: saturated emissives stay for gameplay.
-- Every block varies slightly (tone, panel size, crack layout) from a seed taken from its position.
-- The palette gained `Rust` and `Silt` in `BiomeProfile`.
-- Backdrop pillars use the rock shader without detail (strata and tone only); the magenta hulks use metal panels.
+What the visual work still owes (`docs/roadmap.md#stage-bricks`, `docs/roadmap.md#pilgrim`):
+- Each layer's rooms against their references from the photo spots: the core's murky walls, the flooded rooms' wide shots.
+- Back walls dressed for the remaining frozen rooms (the Underice and Sounding walls stay dark) and the flooded rooms.
+- Frozen: the frozen fall stops well above the terraces (columns, not a curtain to the ground); the organ pipes have flat tops (no mouths); Rimefall's shelf face is one plain 14 m wall in the wide shot.
+- Flooded: the play plane is still a little darker and bluer than `perfect.jpg` outside the shaft; judge with the owner before pushing the palette brighter.
+- The pilgrim: the hair still reads a little like a helmet; against dark server racks the black body loses contrast (rim light or a lighter backdrop there).
+- Machines: limbs are still plain tapered pods (the Votary's arms and legs read thin); the arena's metal reliquary is a bare block; the arena's wide shot is hazy at that distance.
 
-M2 environment kit in place (2026-10-24):
-- **Generated meshes** (`scripts/kit/`): bevelled blocks (real chamfers with smooth normals replace M1's fake shader bevel), clustered and faceted columns, pipes with rounded bends and flanges, sagging cable bundles, round and pointed (Gothic) arches, iron ribs with an inner fin, grates, server racks with missing and pulled-out bays, seeded heaps of broken machinery (a fallen tank, a gear, plates, pipe stubs).
-- The materials draw on any piece through its surface frame, so pipes get welded seams and collars, arches get strata, and racks get panels with no extra work.
-- **Midground rule:** pieces behind the play plane use the `*_mid` materials (darker, duller), so the play plane stays the brightest layer and only grippable metal reads as bright pale metal.
-- The test room is now a drowned industrial cathedral: a two-tier arcade (clustered piers and pointed arches below, slim columns and round arches above), two rows of server racks on a wet back floor, a rust pipe run, risers behind the shaft, cables between the capitals, wrecks, and magenta iron ribs far back (they replace M1's floating magenta boxes as the backdrop accent).
-- Cost: 5.8 ms average per frame at 1080p (4.5 ms before).
+## Decisions `#art-decisions`
 
-M3 atmosphere in place (2026-10-24):
-- **Volumetric fog** everywhere behind the play plane, its density, albedo, self-light and forward scattering set by the biome. A `ClearFront` fog volume with negative density keeps the air in front of the play plane clear, so haze and shafts never wash out gameplay (depth fog still applies).
-- **Light shafts** are shadowed spot lights high behind the room (`Shafts`, color from the biome). The arcade shaft falls from the upper left like `perfect.jpg`'s; a shadow-only grate out of frame (`Tracery`) cuts it into rays. The key light only faintly lights the fog (`KeyFogEnergy`), so the shafts stand out.
-- **Ambient particles** (`scenes/fx/`): dust motes, floating silt, drips. They take no ambient light and only a tenth of the key light, so motes vanish in the dark and glow in shafts and near lamps; far ones turn into soft bokeh through depth of field.
-- **Water**: the back of the hall is flooded (racks, piers and wrecks stand in it). The surface shader shows the scene below sinking into the deep-water color with depth and reflects the scene above with its own short screen-space march (Godot's SSR skips transparent surfaces); ripples are slow and faint, for calm still water. Under the surface, a fog volume in the deep-water color. Rock and metal draw warped caustic filaments under water and reflected onto walls up to 2.5 m above it.
-- **Backdrop skylines**: two far quads with procedural silhouettes, the drowned cathedral (bays, lancet windows with mullion and rose, pinnacles, spires) and towers of ancient servers with a few lit bands. They do their own haze toward the biome's light `HazeColor`, with mist rising from below, so they read as pale layered shapes with real parallax.
-- **Framing foreground**: a dark pipe along the bottom edge and cables under the ceiling, in front of the play plane and blurred by depth of field; they stay out of the play area.
-- **Finishing pass** (`ScreenGrade`): an elliptical vignette toward a dark tint of the palette and a fine midtone grain at 24 Hz, both set per biome. Glow tuned for a gentle bloom on emissives; the faith glyphs now light the stone around them (`GlyphLights`).
-- **GI**: SDFGI was tried and rejected for now: +1.7 ms average and p99 over budget (11.4 ms) for a barely visible change in this lighting. VoxelGI needs a bake; revisit when rooms get darker interiors.
-- Cost: 6.9 ms average per frame at 1080p, p99 7.8 ms (5.8 ms before M3).
-
-Still missing compared with `perfect.jpg`: the play plane is still a little darker and bluer than the reference outside the shaft; judge with the owner before pushing the palette brighter.
-
-M4 pilgrim, first pass (2026-10-24):
-- Built from parts (`resources/parts/pilgrim.tres`, materials in `assets/materials/pilgrim/`, shader `android.gdshader`): matte black suit, black lacquer shell, white ceramic trim drawn along each part's edges (cuffs, boot tops, coat piping), silver hair with strands, a violet visor slit, a lantern whose warm glow is the carried light. Its colors are its own, not the biome's: the human-built android looks foreign at every depth.
-- Animation: run cycle with planted feet by IK, lean into acceleration, landing compression, leap, fall and dash poses, breathing idle, turning through the camera. Effects: grit on rock, sparks on metal, landing and dash dust, dash trail, camera shake on hard landings. Judge on `Motion.png` from `tools/capture.sh`.
-- Open: hair still reads a little like a helmet; against the dark server racks the black body loses contrast (rim light or a lighter backdrop there).
-
-M5 machines, first prototypes (2026-10-25), in the machine arena (`worlds/prototype/rooms/MachineArena.tscn`):
-- **Palette:** native machines take the biome palette through `machine.gdshader`, the opposite of the pilgrim: shells in the biome's metal color but at **mid value** (`shell.tres`, tone 0.5) with a pale silt trim along their edges, underbodies and limbs dark (`frame`), old plating in the biome's rust (`corroded`), cloth dark with a thin piping of the backdrop accent (`robe`); the saturated accent itself only on small devotional plates (`vestment`). Pale bright metal stays the sign of grippable metal, and the black pilgrim stays the highest-contrast figure. Each species sets its wear (rust eating in from the edges) and tone.
-- **Color means gameplay:** eyes and sensors glow calm (the accent mixed toward white) and turn the hazard red-orange only on **hostile** species when alert or striking; peaceful ones never do. Dormant machines barely glow.
-- **The four silhouettes**, each told apart at a glance: the **Votary**, tall, hooded, a glyph halo behind its head, kneeling and bowing with a curved blade folded against its chest and a censer swinging on a chain; the **Gleaner**, a low scavenger on four high-kneed legs under a heap of scrap, an eye on a stalk; the **Lamplighter**, a small floating reliquary under a rotor, one round eye, three cables trailing little lights; the **Limpet**, a domed mag-tank on two treads with a prayer wheel on its back and a drill under its brow.
-- Open: limbs are still plain tapered pods (the Votary's arms and legs read thin); the arena's metal reliquary is a bare block; the wide shot is hazy at that distance.
-
-M8 frozen layer, first pass (2026-10-29), in Rimefall, the Choir and the Coldstacks:
-- **Palette** (`resources/biomes/frozen.tres`): rime-white stone a little cooler and darker than the flooded rock, pale blue ceramic-metal (bluer than the rime, so it never reads as frosted stone), blue-black backdrop and void, a cold blue-white key and shafts, blue fog and haze. The accent warms from the flooded magenta toward **rose** (the depth progression toward the core's amber).
-- **Rime** (`lib/frost.gdshaderinc`, the biome's `Frost`): snow caps on whatever faces up, their edges wandering with wind-scoured thin patches, hoarfrost in crevices and along edges, sparse glinting crystals. Metal takes less than half of it (in its seams and on top faces), so the panels between stay bare and glossy and the grip read holds. Dormant machines are rimed too; the rime falls away as they rouse.
-- **Ice** (`ice.gdshader`): opaque, with depth faked: a dark navy heart paling to a blue-white rind at the edges and at grazing angles, thin white fracture planes, trapped bubbles, a glossy clearcoat skin. Icicles (`IcicleMesh`) fringe the undersides of ledges and galleries; long columns of them make Rimefall's frozen fall.
-- **Air**: rime flakes fall slowly through shafts and roof openings and turn into soft bokeh out of focus.
-- Open: the frozen fall stops well above the terraces (columns, not a curtain to the ground); the organ pipes have flat tops (no mouths); Rimefall's shelf face is one plain 14 m wall in the wide shot.
-
-Phase 2, the shared stage (2026-11-01), judged on every room's photo spots:
-- **Architecture in the haze** (`BackdropArchitecture`, replacing M3's scattered boxes): rows of real structures at 15, 24 and 36 m behind the play plane, in the depth layer's style (`BiomeProfile.Architecture`): cathedral naves (clustered piers, pointed arches, slimmer arcaded tiers, the odd broken pier, fallen arch or magenta iron rib) in the flooded layer; archive stacks (rack towers, walkways fringed with icicles) in the frozen; a foundry (chimneys, trusses, hanging chains) in the volcanic; machinery (great rings on hubs, spokes, pistons) in the core. Their materials (`architecture_*.tres`, `backdrop_metal.tres`) take the biome's haze by distance (`lib/haze.gdshaderinc`: the lit color dimmed, the haze added as emission; writing `FOG` turned every material using the shader black), so the rows recede in value. They share one cheap shader (`architecture.gdshader`: a palette color with a little tone per piece, stone courses or panel seams drawn from the world, rime on what faces up in a frosted layer, no bump), not the play plane's rock, metal and ice: they cover much of the screen, hazed and out of focus, where that detail costs the most and shows the least. Archive towers and the frozen walls' racks are `StackMesh` shelves (a few dozen triangles), not `RackMesh` drive bays, and the wall racks and shelves cast no shadow.
-- **Skylines by layer** (`BiomeProfile.FarSkyline`/`NearSkyline`): the drowned cathedral and server halls (flooded), ice crags with towers sunk in them and the halls (frozen), smokestacks with glowing mouths and drifting smoke over sawtooth sheds (volcanic), domes, rings on edge and masts (core).
-- **Masonry** (`BiomeProfile.Masonry`, rock.gdshader): rock built into courses of cut stone (staggered blocks, worn mortar joints, voussoirs following arches, flagstones on top faces) where the layer was built: all of the flooded cathedral, most of the core, some of the frozen archive, none of the volcanic basalt. Strata elsewhere now break at faults and fade along their length, and long stains run down wide faces: big walls no longer read as wood grain.
-- **Volcanic and core light** (toward `nier-factory-furnace.png`): dark near-neutral fog and ambient, a cool neutral key, cool pale metal (grippable still reads), the warmth only in lamps, shafts, glow and the haze behind; an **underglow** (`BiomeProfile.Underglow*`) from below and in front lights the undersides and the walls behind the play plane the way magma would.
-- **Dressed back walls** (`WallDressing` over pure `WallLayout`, one node per wall: an area, a style, a seed; scaled up on walls far behind): a foundry's wall (iron pilasters and girders, grated furnace mouths with molten metal behind, pipes, chains with weights) in all ten volcanic rooms; ancient machinery (pistons, panels, wheels on hubs, glowing slits in the accent) in the six core rooms; an archive (stone piers, iron shelves of racks with looted gaps, icicles under the shelves) on the Sounding, Underice, Calving and Bore walls. The frozen layer has a cool **underglow** too (light off snow and ice), and thinner fog.
-- The core retuned for value: charcoal masonry, pale bronze metal (the brightest thing behind the pilgrim is what it can grip), its wall machinery dark and hazed (pistons cut short, bands, wheels, panels of uneven height), a dimmer, less saturated haze in the core and the volcanic layer.
-- Open: the Underice and Sounding back walls stay dark.
+- **No SDFGI for now** (2026-10-24): +1.7 ms average and p99 over budget for a barely visible change in this lighting. VoxelGI needs a bake. Revisit when rooms get darker interiors.

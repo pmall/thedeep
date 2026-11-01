@@ -9,7 +9,8 @@ namespace TheDeep;
 /// and eases into its upper stop while the weight sinks past it (<see cref="LiftMotion"/>, pure). The node's origin is the
 /// top of the cage floor, centered, at the lower stop. The cage's collision is rock (never grippable) and it is not a
 /// <see cref="Block"/>: the map's geometry check rides it as a <see cref="LiftPath"/> (<see cref="Path"/>). Visual pieces
-/// (the weight, the sheave, the ropes) only follow the travel.
+/// (the weight, the sheave, the ropes) only follow the travel. A lift that carries the pilgrim into another room ends in a
+/// hatch exit at its upper stop; the far side is an arrival-only exit on solid floor, since nothing goes back down that way.
 /// </summary>
 public partial class Lift : Node3D
 {

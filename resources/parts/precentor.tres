@@ -1,7 +1,7 @@
 [gd_resource type="Resource" script_class="PartAssembly" format=3]
 ; The Precentor (boss placeholder): the choir's conductor, a Votary half again as tall, generated from
 ; resources/parts/votary.tres scaled by 1.55, with a long cope, a great glyph halo and a straight baton
-; in place of the curved blade. Placeholder until the character pass (docs/roadmap.md).
+; in place of the curved blade. Placeholder until the bosses are made (docs/roadmap.md#stage-polish).
 ; Joints: X forward, Y up, Z toward the camera (N near side, F far side).
 
 [ext_resource type="Script" path="res://scripts/parts/PartAssembly.cs" id="1_PartAssembly"]

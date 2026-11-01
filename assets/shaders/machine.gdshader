@@ -1,4 +1,4 @@
-// Machine: the native machines of the Deep (docs/long-term.md, objective 1). Their shells take the biome
+// Machine: the native machines of the Deep (docs/long-term.md#machines-distinct). Their shells take the biome
 // palette (pale ceramic-metal near the surface, warmer with depth), worn by rust along their edges; the
 // pilgrim's android shader is the opposite, its own colors at every depth. One shader for every machine
 // part, read through the parts' surface frame (lib/surface): panel lines across a limb, trim along its

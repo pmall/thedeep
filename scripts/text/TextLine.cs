@@ -3,7 +3,7 @@ using Godot;
 namespace TheDeep;
 
 /// <summary>
-/// One line of text as data (docs/roadmap.md, "Later: audio"): a stable id, who says it, the words, and
+/// One line of text as data (docs/roadmap.md#audio): a stable id, who says it, the words, and
 /// optional delivery notes, so voices can be generated per id in a batch and regenerated when text changes.
 /// </summary>
 [GlobalClass]

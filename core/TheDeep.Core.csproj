@@ -1,5 +1,5 @@
 <Project Sdk="Microsoft.NET.Sdk">
-  <!-- The game's core (docs/principles.md, "The engine is a detail"): its rules and state in plain C#, with no reference
+  <!-- The game's core (docs/principles.md#engine-detail): its rules and state in plain C#, with no reference
        to Godot, so a Godot type here does not compile. The game (TheDeep.csproj) and the tests reference it. -->
   <PropertyGroup>
     <TargetFramework>net8.0</TargetFramework>

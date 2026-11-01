@@ -3,7 +3,7 @@ using Godot;
 namespace TheDeep;
 
 /// <summary>
-/// A machine species as data (docs/long-term.md, objective 1): who it is, its body (parts from the shared
+/// A machine species as data (docs/long-term.md#machines-distinct): who it is, its body (parts from the shared
 /// library), how it moves, its stats, its palette, its behavior and its animation. Machines in rooms are
 /// all the same <see cref="Machine"/> node pointing at a species; adding a species is one .tres in
 /// <see cref="Folder"/>, plus a brain only when its behavior is truly new.
@@ -21,7 +21,7 @@ public partial class MachineSpecies : Resource
     /// <summary>The biome it lives in (the layer of the descent it belongs to: its palette there reads as its own).</summary>
     [Export] public BiomeProfile Habitat { get; set; } = null!;
 
-    /// <summary>Can it hurt the player? About a third of species should not (docs/long-term.md).</summary>
+    /// <summary>Can it hurt the player? About a third of species should not (docs/long-term.md#machines-distinct).</summary>
     [Export] public bool Hostile { get; set; }
 
     /// <summary>Id of its creed, a line in the world's line book (placeholder text, stored as data for voicing later).</summary>
@@ -46,7 +46,7 @@ public partial class MachineSpecies : Resource
     /// <summary>m/s².</summary>
     [Export] public float Acceleration { get; set; } = 20f;
 
-    /// <summary>Hits it takes (combat comes with M6).</summary>
+    /// <summary>Hits it takes.</summary>
     [Export] public int Health { get; set; } = 3;
 
     /// <summary>Health a landed blow takes from the pilgrim.</summary>

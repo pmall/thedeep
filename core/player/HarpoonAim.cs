@@ -5,7 +5,7 @@ using System.Numerics;
 namespace TheDeep;
 
 /// <summary>
-/// Which anchor the Harpoon fires at, pure (docs/gameplay.md). Anchors within <c>range</c> of the chest, not
+/// Which anchor the Harpoon fires at, pure (docs/gameplay.md#harpoon). Anchors within <c>range</c> of the chest, not
 /// closer than <c>minDistance</c>, and in clear sight are candidates. Held input aims: only anchors within
 /// <see cref="AimCone"/> of it count, the best lined up first. With no input the pilgrim looks ahead and up:
 /// anchors in front beat anchors above, which beat anchors behind; nearer ones win within a group.

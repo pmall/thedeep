@@ -27,7 +27,7 @@ public partial class OwnerCapture : CanvasLayer
     [Export] public Player Player { get; set; } = null!;
     [Export] public World World { get; set; } = null!;
 
-    /// <summary>Video frame rate. The game's own frame rate is unaffected.</summary>
+    /// <summary>Video frame rate. The game's own frame rate is unaffected; lower it to 30 if a heavy scene ever drops frames while recording.</summary>
     [Export] public int VideoFps { get; set; } = 60;
 
     /// <summary>Wider frames are scaled down to this width in the video.</summary>

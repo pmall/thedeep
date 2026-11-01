@@ -4,7 +4,7 @@ using Godot;
 namespace TheDeep;
 
 /// <summary>
-/// The end of the game, a placeholder until the final touch (roadmap, phase 5): the screen fades to a warm black, a title
+/// The end of the game, a placeholder until the final touch (docs/roadmap.md#stage-polish): the screen fades to a warm black, a title
 /// and two lines ease in one after another, hold, and fade. Text comes from the line book (ending.*).
 /// </summary>
 public partial class EndCard : CanvasLayer

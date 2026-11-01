@@ -1,7 +1,7 @@
 namespace TheDeep;
 
 /// <summary>
-/// What a world's map is held to (docs/long-term.md, objective 2), from its network file's <c>target</c> statements: at least
+/// What a world's map is held to (docs/long-term.md#order-freedom), from its network file's <c>target</c> statements: at least
 /// <see cref="Orders"/> achievable ability orders, every ability obtainable at <see cref="Positions"/> places in the order or
 /// more, and between <see cref="MinRooms"/> and <see cref="MaxRooms"/> rooms. A world that names no target is held to none.
 /// </summary>

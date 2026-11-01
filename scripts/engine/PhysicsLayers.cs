@@ -6,12 +6,19 @@ namespace TheDeep;
 /// </summary>
 public static class PhysicsLayers
 {
+    /// <summary>Rock blocks: solid, never gripped.</summary>
     public const uint WorldRock = 1u << 0;
+    /// <summary>Metal blocks: solid, and what Mag-grip holds.</summary>
     public const uint WorldMetal = 1u << 1;
+    /// <summary>The pilgrim.</summary>
     public const uint Player = 1u << 2;
+    /// <summary>Machines.</summary>
     public const uint Enemy = 1u << 3;
+    /// <summary>Damage zones.</summary>
     public const uint Hazard = 1u << 4;
+    /// <summary>Water the pilgrim swims in.</summary>
     public const uint Water = 1u << 5;
+    /// <summary>Areas that react to the pilgrim: room exits, events.</summary>
     public const uint Trigger = 1u << 6;
 
     /// <summary>Everything the player stands on or collides with.</summary>

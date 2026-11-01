@@ -9,7 +9,7 @@ public readonly record struct GripPose(Vector2 Feet, Vector2 Up);
 /// <summary>
 /// The geometry of mag-grip, pure. Gameplay blocks are axis-aligned boxes, so every surface normal is one
 /// of ±X, ±Y; the player stands on a surface with its up along the normal, its local +X (its "forward"
-/// when facing +1) along <see cref="Tangent"/>. Corners snap (docs/gameplay.md): an inner corner (a wall
+/// when facing +1) along <see cref="Tangent"/>. Corners snap (docs/gameplay.md#mag-grip): an inner corner (a wall
 /// ahead) turns the player onto that wall, an outer corner (the surface ends) wraps it around the edge.
 /// Positions are on the play plane; the feet are the body's origin.
 /// </summary>

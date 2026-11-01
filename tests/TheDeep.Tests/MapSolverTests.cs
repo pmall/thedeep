@@ -12,7 +12,7 @@ public class MapSolverTests
         g.AddEdge(new MapEdge(b, a, a, b, Requirement.Parse(bToA)));
     }
 
-    /// <summary>The M6 slice: the Nave's metal wall needs the Mag-grip found down in the Reliquary.</summary>
+    /// <summary>The first slice: the Nave's metal wall needs the Mag-grip found down in the Reliquary.</summary>
     private static MapGraph Slice()
     {
         var g = new MapGraph { Start = "Narthex" };

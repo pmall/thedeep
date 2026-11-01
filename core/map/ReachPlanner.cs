@@ -59,7 +59,7 @@ public readonly record struct LiftPath(Box Platform, float Rise);
 public readonly record struct Ledge(float Y, float MinX, float MaxX, bool Swim = false);
 
 /// <summary>
-/// What the base moveset can reach in one room, pure (M7's geometry sanity check, docs/long-term.md): the
+/// What the base moveset can reach in one room, pure (the geometry sanity check, docs/long-term.md#any-order): the
 /// pilgrim's body as a box walks along ledges and is simulated tick by tick through jumps (full and cut),
 /// walk-offs and air dashes, with the real tuning numbers and collisions against the room's solids. From
 /// an arrival point it finds every ledge it can stand on and every trigger area (an exit) its body can

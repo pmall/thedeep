@@ -9,8 +9,7 @@ namespace TheDeep;
 /// Runs the machines of the current room. Each physics tick it gathers what they can perceive (the
 /// player and whether each machine can see them, impacts from the player's landings and dashes, the
 /// machines around each one) and steps every machine in a fixed order, so runs are deterministic. A strike
-/// that lands near the player throws sparks, shakes the camera and raises <see cref="PlayerStruck"/>
-/// (damage comes with M6).
+/// that lands near the player throws sparks, shakes the camera and raises <see cref="PlayerStruck"/>.
 /// </summary>
 public partial class MachineDirector : Node
 {

@@ -6,7 +6,7 @@ using NVector2 = System.Numerics.Vector2;
 namespace TheDeep;
 
 /// <summary>
-/// A machine in a room: one node type for every species (docs/long-term.md: never one scene per enemy).
+/// A machine in a room: one node type for every species (docs/long-term.md#machines-distinct: never one scene per enemy).
 /// On ready it builds its body from <see cref="Species"/> (parts, collision, brain, palette). Each physics
 /// tick the <see cref="MachineDirector"/> hands it a <see cref="Perception"/> through <see cref="Step"/>:
 /// its brain decides, its locomotion moves it (walking, hovering, or crawling over the metal block it

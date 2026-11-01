@@ -1,6 +1,6 @@
 [gd_resource type="Resource" script_class="BiomeProfile" format=3]
 ; Layer 4, the core: what the machines call paradise. Ancient machinery, older than the foundry, dark bronze and black
-; iron in a crimson haze; the accent is ember red, the glow of the heart they descend toward (docs/art-direction.md: the
+; iron in a crimson haze; the accent is ember red, the glow of the heart they descend toward (docs/art-direction.md#look: the
 ; palette warms with depth, to dark amber and ember at the core).
 
 [ext_resource type="Script" path="res://scripts/biome/BiomeProfile.cs" id="1_biome"]

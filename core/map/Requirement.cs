@@ -8,7 +8,7 @@ namespace TheDeep;
 /// What a connection needs, as an expression over <see cref="Ability"/> names: <c>MagGrip | Harpoon</c>,
 /// <c>Drill &amp; (Ballast | HeatPlating)</c>. <c>&amp;</c> binds tighter than <c>|</c>. Empty (or
 /// <c>None</c>) means the base moveset. Stored as alternatives, each a set of abilities that is enough
-/// on its own (disjunctive normal form), which is what the map solver (M7) consumes.
+/// on its own (disjunctive normal form), which is what the map solver consumes.
 /// </summary>
 public sealed class Requirement
 {

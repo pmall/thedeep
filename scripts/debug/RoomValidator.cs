@@ -9,7 +9,8 @@ namespace TheDeep;
 /// Checks every room scene of the world (<see cref="WorldDefinition.RoomsFolder"/>) and quits (`-- --validate-rooms`, run by
 /// tools/check.sh). Prints `ROOMS OK` or one error per problem:
 /// - the spawn point and every exit lie inside the camera bounds;
-/// - gameplay blocks are axis-aligned with their edges on the block grid, kit pieces have their origin on the piece grid;
+/// - gameplay blocks are axis-aligned with their edges on the block grid, kit pieces have their origin on the piece grid
+///   (dressing generators only their own: the pieces they build are not owned by the room);
 /// - exits have unique names, a valid requirement, an existing target room and exit, and a target that leads
 ///   back unless they are one-way;
 /// - the room has at least one photo spot;

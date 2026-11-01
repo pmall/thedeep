@@ -1,6 +1,6 @@
 [gd_resource type="Resource" script_class="PartAssembly" format=3]
 ; Nirvanary (boss placeholder): what waits at the center, generated from resources/parts/archivist.tres scaled by 1.5
-; (tools/scaleparts.py), its robes become embers. Placeholder until the character pass (docs/roadmap.md).
+; (tools/scaleparts.py), its robes become embers. Placeholder until the bosses are made (docs/roadmap.md#stage-polish).
 
 [ext_resource type="Script" path="res://scripts/parts/PartAssembly.cs" id="1_PartAssembly"]
 [ext_resource type="Script" path="res://scripts/parts/RigJoint.cs" id="2_RigJoint"]

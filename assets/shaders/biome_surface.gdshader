@@ -1,6 +1,6 @@
 // Placeholder surface whose color comes from the current biome palette: BiomeProfile pushes the
 // palette into the global uniforms below (declared in project.godot [shader_globals]).
-// Roadmap M1 replaces this with the real material library, which reads the same palette.
+// Still used by the foreground silhouettes; the material library reads the same palette.
 shader_type spatial;
 
 global uniform vec4 biome_rock;

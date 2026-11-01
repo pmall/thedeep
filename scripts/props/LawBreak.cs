@@ -4,12 +4,13 @@ using Godot;
 namespace TheDeep;
 
 /// <summary>
-/// One of the three laws holding the pilgrim back (docs/theme.md): at the lip of a lethal drop (the third law), the
+/// One of the three laws holding the pilgrim back (docs/theme.md#law-per-act): at the lip of a lethal drop (the third law), the
 /// pilgrim's own refusal stands as a veil of glyphs it cannot walk through, and the law's words rise as it nears.
 /// Pressing on toward the drop strains against it; held long enough (<see cref="BreakTime"/>, slipping back when
 /// let go), the law breaks: the veil scatters, the words go out, and the way is open for good (<see cref="Session"/>
 /// remembers it by this node's room and name, and calls <see cref="Settle"/> on later visits). A story beat, not an
-/// ability gate: the veil is not a <see cref="Block"/>, and the map counts the way as open.
+/// ability gate (docs/theme.md#laws-outside-abilities): the veil is not a <see cref="Block"/>, and the map counts the way
+/// as open; the world's network names it as a <c>milestone</c>, which the draft check holds to story order.
 /// </summary>
 public partial class LawBreak : Node3D
 {

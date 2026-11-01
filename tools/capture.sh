@@ -1,15 +1,17 @@
 #!/usr/bin/env bash
-# Look-dev captures: renders every photo spot and reel of the start room and the machine arena to PNG at
-# 1080p, measures frame times over a scripted run in each, and compares with the previous run (before/after sheet).
+# Look-dev captures: renders every photo spot and reel of the rooms in ROOMS (every room of the game, the machine arena,
+# the mechanics lab) to PNG at 1080p, measures frame times over a scripted run in each, and compares with the previous
+# run (before/after sheet). A run's folder holds <Room>-<Spot>.png, the reels' contact sheets (Motion, Combat, Grip,
+# Harpoon, Machines .png), perf.json (the first room) and perf-<Room>.json (frame, GPU and render CPU times, garbage
+# collections, the slowest frames), run.txt, the Godot logs, and compare/ (one image per spot, sheet.png with all).
 #
 #   tools/capture.sh [label]                 new run in lookdev/<date>_<time>[-label]/, compared with the latest run
 #   tools/capture.sh [label] --against DIR   compare with DIR instead
 #   tools/capture.sh [label] --biome NAME    render with resources/biomes/NAME.tres instead of each room's own
-# (the start room's frame times go to perf.json, the arena's to perf-MachineArena.json)
 #   tools/capture.sh [label] --rooms "A B"   render only these rooms (quick looks while building a room)
 #   tools/capture.sh --compare BEFORE AFTER  only build the sheet for two existing runs
 #
-# Opens a small window for about a minute (rendering needs a GPU). See docs/testing.md.
+# Opens a small window for about a minute (rendering needs a GPU). See docs/testing.md#lookdev.
 set -euo pipefail
 
 cd "$(dirname "$0")/.."

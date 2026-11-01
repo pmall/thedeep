@@ -129,7 +129,7 @@ public class MapDraftTests
         Assert.Equal(new MapTargets(Orders: 24, Positions: 2, MinRooms: 40, MaxRooms: 60), d.Targets);
         Assert.Equal(new[] { "Flooded", "Frozen", "Volcanic", "Core" }, d.LayerOrder);
 
-        // The design's rule (docs/map-draft.md, "Order freedom"): Mag-grip or Harpoon first, Heat plating after Drill or Ballast.
+        // The design's rule (worlds/prototype/map-draft.md#draft-order-freedom): Mag-grip or Harpoon first, Heat plating after Drill or Ballast.
         Assert.All(report.Orders, o => Assert.Contains(o[0], new[] { Ability.MagGrip, Ability.Harpoon }));
         Assert.All(report.Orders, o => Assert.True(Array.IndexOf(o, Ability.HeatPlating) > Math.Min(Array.IndexOf(o, Ability.Drill), Array.IndexOf(o, Ability.Ballast))));
         Assert.Equal(32, report.Orders.Count);

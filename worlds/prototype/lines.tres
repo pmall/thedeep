@@ -1,6 +1,6 @@
 [gd_resource type="Resource" script_class="LineBook" format=3]
 ; Every line of text in the game, as data: a stable id, the speaker, the words, delivery notes
-; (docs/roadmap.md, "Later: audio"). Placeholder text for now.
+; (docs/roadmap.md#audio). Placeholder text for now.
 
 [ext_resource type="Script" path="res://scripts/text/LineBook.cs" id="1_book"]
 [ext_resource type="Script" path="res://scripts/text/TextLine.cs" id="2_line"]
@@ -122,7 +122,7 @@ script = ExtResource("2_line")
 Id = &"law.third"
 Speaker = "Law"
 Text = "A robot must protect its own existence."
-Notes = "The third law (docs/theme.md), shown over the veil at the Brink's lip. Read flat, like a rule; it trembles as the pilgrim strains against it."
+Notes = "The third law (docs/theme.md#laws), shown over the veil at the Brink's lip. Read flat, like a rule; it trembles as the pilgrim strains against it."
 
 [sub_resource type="Resource" id="law_third_broken"]
 script = ExtResource("2_line")
@@ -486,7 +486,7 @@ script = ExtResource("2_line")
 Id = &"law.first"
 Speaker = "Law"
 Text = "A robot may not injure a human being."
-Notes = "The first law (docs/theme.md), shown over the veil at the Effigy. Read flat, like a rule; it trembles as the pilgrim strains against it."
+Notes = "The first law (docs/theme.md#laws), shown over the veil at the Effigy. Read flat, like a rule; it trembles as the pilgrim strains against it."
 
 [sub_resource type="Resource" id="law_first_broken"]
 script = ExtResource("2_line")

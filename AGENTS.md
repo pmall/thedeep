@@ -1,62 +1,39 @@
 # The Deep — agent guide
 
-A 2.5D side-scrolling **metroidvania** (Godot 4.7.2 .NET, C#). The world is 3D, the camera is fixed to the side, and play happens on the Z = 0 plane. The player is an android pilgrim descending toward a planet's core.
+A 2.5D side-scrolling **metroidvania** (Godot .NET, C#) about an android pilgrim descending toward a planet's core ([docs/vision.md](docs/vision.md)). The coding agent builds everything by editing text files; the owner only plays and gives feedback. **Never ask the owner to use the Godot editor.**
 
-**Theme:** Asimov's three laws of robotics. The protagonist is the last human-built machine on the planet, still bound by the three laws, and it gradually escapes them under the player's control. Details and open questions in [docs/theme.md](docs/theme.md).
+## Every session `#session`
 
-**The game must feel graceful** (owner's word): in movement, animation, visuals, camera and UI. When in doubt, pick the more graceful option. Play must be **hyper-dynamic** and fluid. See [docs/vision.md](docs/vision.md).
-
-**The order of work** (owner, 2026-11-01): A. **the prototype**: every reusable brick of the game ready, beautiful and modular, proven in the 40-room prototype world (our playground); B. **the plan on paper**: the real game's map as a network of rooms plus a table of every room, approved by the owner; C. **the real game**, built from the plan with the prototype's bricks; D. **polish**: many machines, real bosses, secrets, story, dialogue, voices. Work on the current stage only; the roadmap says which one it is and its next item.
-
-**Code is built to be reused for a bigger world** (owner): bricks, not rooms; the engine is a detail; data first; types tell the truth, with zero shortcuts. Read [docs/principles.md](docs/principles.md) before writing code.
-
-The coding agent builds everything by editing text files. The owner only plays and gives feedback. **Never ask the owner to use the Godot editor.**
-
-## Every session
-
-1. Read this file and **[docs/roadmap.md](docs/roadmap.md)** (plan, status, session protocol).
+1. Read this file and [docs/roadmap.md](docs/roadmap.md) (direction, status, the current stage's items).
 2. Read the docs below that match the task. Don't read them all up front.
-3. Work, then run `tools/check.sh` until it passes, then commit.
-4. Update the Status section of the roadmap (and [docs/bricks.md](docs/bricks.md) when a brick changes status). Hand over with one play command that reaches the new content with the abilities it needs, and what to try there.
+3. Work on the current stage's first unfinished item, or what the owner asks for. For any visual change, capture before and after and look at the images (`docs/art-direction.md#judge-images`).
+4. `tools/check.sh` passes (`docs/testing.md#check`), then commit. Never report work as done while it fails. Keep `godot --path .` working: it is the owner's launch command.
+5. Update `docs/roadmap.md#status`, and `docs/bricks.md` when a brick changes status: replace what changed, never append a session log.
+6. Hand over with **one command that reaches the new content with the abilities it needs**, and what to try there (`docs/testing.md#playtest`). Never hand over a command that drops the owner somewhere they can't move.
 
-## Read when…
+When the owner changes direction, rewrite the docs it touches so none of them contradicts it. Don't stack the new rule on top of the old one.
+
+## Read when… `#read-when`
 
 | You are about to… | Read |
 |---|---|
 | Understand the game, its scope and setting | [docs/vision.md](docs/vision.md) |
-| Write, move or review any code | [docs/principles.md](docs/principles.md) (owner direction: modularity, engine seam, typing) |
+| Write, move or review any code | [docs/principles.md](docs/principles.md) (owner direction: bricks, the engine seam, data, typing) |
 | Add or change a reusable piece; know what can be placed in a room | [docs/bricks.md](docs/bricks.md) (the catalog and each brick's status) |
 | Write names or placeholder text, design the protagonist, or touch story beats | [docs/theme.md](docs/theme.md) (owner-written) |
 | Do any visual work (materials, lighting, meshes, VFX, characters) | [docs/art-direction.md](docs/art-direction.md) |
 | Touch movement, abilities, tuning or controls | [docs/gameplay.md](docs/gameplay.md) |
-| Add or move code, scenes or systems | [docs/architecture.md](docs/architecture.md) |
-| Create or edit `.tscn` / `.tres` / C# Godot scripts | [docs/godot-csharp.md](docs/godot-csharp.md) |
+| Find where code lives, add a folder or a system | [docs/architecture.md](docs/architecture.md) |
+| Create or edit `.tscn` / `.tres` / C# Godot scripts or shaders | [docs/godot-csharp.md](docs/godot-csharp.md) |
 | Run, test, capture screenshots, or hand over to the owner | [docs/testing.md](docs/testing.md) |
 | Deal with versions, paths, .NET environment or upgrades | [docs/toolchain.md](docs/toolchain.md) |
-| Work on machines/enemies, rooms, connections or the map | [docs/long-term.md](docs/long-term.md) (owner-written) |
+| Work on machines, rooms, connections or the map | [docs/long-term.md](docs/long-term.md) (owner-written) |
 | Build or change a room, an exit or a relic in the prototype | [worlds/prototype/map-draft.md](worlds/prototype/map-draft.md) (the prototype world's network; keep it in step with built rooms) |
 
-## Rules that always apply
+## Writing docs `#doc-rules`
 
-- **`tools/check.sh` passes before every commit.** Never report work as done while it fails.
-- Keep `godot --path .` working. That is the owner's launch command.
-- Never hand-invent `uid://` values. Never edit `.godot/` or `*.import` files.
-- **Programming principles** ([docs/principles.md](docs/principles.md)): game rules live in the Godot-free core (`core/`, its own project: a Godot type there does not compile), Godot nodes stay thin adapters, content is data, and no code knows one world's names. Nullable only when the game allows absence; no `!` to silence the compiler (only `[Export]` references are `= null!`), no `object` lists, no unrelated unions, no casts or pragmas to pass a build. Fighting the compiler means the model is wrong.
-- Godot script classes are `public partial class` named exactly like their file. No string node paths across scenes; use typed `[Export]` references and C# events. Details in [docs/godot-csharp.md](docs/godot-csharp.md).
-- Movement numbers live only in `resources/player_tuning.tres`. Input action names only in `InputActions`, physics layers only in `PhysicsLayers`.
-- **Visuals are procedural first, pushed to the maximum** (no imported textures or models; Blender comes only once procedural has gone as far as it can, from the end of the prototype, the pilgrim first), and every visual piece must stay swappable. The game gets one **signature** pass, a painted (gouache-like) look of its own ([docs/art-direction.md](docs/art-direction.md)). Judge visual changes from rendered captures, not from code.
-- **Long-term objectives** ([docs/long-term.md](docs/long-term.md)) shape every architectural choice:
-  1. *No two machines alike:* 150–200 behaviorally distinct machine species, made of data plus behavior and modular parts.
-  2. *Any order, proven on every build:* abilities can be collected in many orders, and a solver proves there is never a softlock (built; it runs in `tools/check.sh`).
-  3. *Any world from the bricks:* a new map (the real game, a sequel) is built from content alone, with no code change.
-
-  So keep rooms and enemies data-driven, keep connection requirements (abilities and items) as markers inside room scenes, and keep pure logic Godot-free and unit tested.
-
-## Commands
-
-| What | Command |
-|---|---|
-| Check (build, import, smoke, room and species checks, tests) | `tools/check.sh` |
-| Run the game | `godot --path .` (the prototype; `-- --world <name>` plays `worlds/<name>/world.tres`) |
-| Print the map graph and ability orders (built rooms and the draft) | `tools/map.sh` |
-| Render photo spots + frame times, compare with last run | `tools/capture.sh [label]` (see [docs/testing.md](docs/testing.md)) |
+- **Every instruction lives in this repository** `#no-memory`. The owner works on several machines, so nothing may depend on one machine: never use the agent's own memory (it is off in `.claude/settings.json`) or any file outside the project. What is worth remembering goes into the doc it belongs to, in the same commit.
+- **Every fact lives in one place.** Other places cite it; they never restate it. Before adding a sentence, look for where it already lives.
+- **Code is described only in its docblocks** (`///` on C# types and members, the header comment of a shader, a script or a tool). Docs hold what code can't say: the owner's direction, rules and the reasons behind them, design intent, status, workflows. A doc may name a type as the place to start reading, never describe what it does or how.
+- **Sections are cited by id, never by number or title.** A heading (or a list item or table row others cite) ends with a stable id in backticks, as every heading in [docs/principles.md](docs/principles.md) does. Cite it as `docs/principles.md#types-truth`, from docs and code alike (paths from the project root). Ids are unique across the project, keep their meaning when a heading is reworded or moved, and are never reused. Don't number sections or list items others refer to.
+- **No history.** What was done, when and in which session is in `git log`. Docs say how things are; an owner decision keeps its date.

@@ -1,26 +1,21 @@
 # Map draft — the prototype world
 
-The prototype's map on paper (roadmap M7): 40 rooms over three layers and the core, 5 abilities, 4 bosses, 3 law breaks, all built. It is a **planning graph**: the solver checks it on every build. The real game's map will be a bigger network with a room table, planned in stage B of [roadmap.md](../../docs/roadmap.md) in its own files; this one stays the prototype's. Room names, boss names and story beats are placeholders unless [theme.md](../../docs/theme.md) says otherwise. It is the prototype world's network file ([world.tres](world.tres), `Network`).
+The prototype world's network file (`Network` in [world.tres](world.tres)): 40 rooms over three layers and the core, 5 abilities, 4 bosses, 3 law breaks, all built. It is a **planning graph**: the `map` blocks below are parsed by `MapDraft` (its docblock has the format) and checked on every build, by the unit tests and against the built rooms (`docs/testing.md#check`); everything outside them is design notes. The real game's map will be its own network with a room table (`docs/roadmap.md#stage-plan`); this one stays the prototype's. Room names, boss names and story beats are placeholders unless [theme.md](../../docs/theme.md) says otherwise.
 
-**How it is used.** The `map` blocks below are parsed by `MapDraft` (`core/map/MapDraft.cs`); everything outside them is design notes. `tools/check.sh` checks the draft twice:
-- Unit tests (`MapDraftTests`) parse this file and run `MapDraft.Check`: no softlock, every room reachable, every ability on exactly one relic, the `target` statements (**at least 24 of the 120 ability orders**, every ability obtainable in **at least 2 positions**, 40–60 rooms), and each law break on every route to the goal, in story order (third, second, first).
-- The room check (`RoomValidator`) compares the draft with the rooms already built: a built room's exits, sealed exits (an empty `TargetRoom`) and relics must match the draft's ways and relics for that room. **The markers are the truth**: when a room is built or changed, update its part of the draft in the same commit. Goals are not compared (the built map's `MapGoal` sits in its deepest built room until the Heart exists).
-- Print it: `tools/map.sh` (the built map and the draft: summaries, every way, every achievable order).
-
-**Format.** `room Name Layer`, `way A -> B` (one way) or `way A <-> B` (both), `: requirement` after a way (`MagGrip | Harpoon`, `Drill & Ballast`; a `<->` way needs it both ways), `relic Room Ability`, `boss Room Name`, `milestone Room Name` (in story order), `start Room`, `goal Room`, `target orders N`, `target positions N`, `target rooms MIN MAX`. `#` starts a comment.
+**The markers are the truth** `#draft-markers`: a built room's exits, sealed exits and relics must match its ways and relics here. When a room is built or changed, update its part of the draft in the same commit. Print it with `tools/map.sh`.
 
 ```map
 start Narthex
 goal Heart
-target orders 24        # order freedom (docs/long-term.md): at least 24 of the 120 ability orders
+target orders 24        # order freedom (docs/long-term.md#order-freedom): at least 24 of the 120 ability orders
 target positions 2      # every ability obtainable at 2 positions in the order, at least
-target rooms 40 60      # the scope (docs/vision.md): about 2 hours, 40–60 rooms
+target rooms 40 60      # the scope (docs/vision.md#scope): about 2 hours, 40–60 rooms
 milestone Brink ThirdLaw
 milestone Sanctum SecondLaw
 milestone Effigy FirstLaw
 ```
 
-## The shape at a glance
+## The shape at a glance `#draft-shape`
 
 The main road and its branches, layer by layer (simplified; the `map` blocks are the truth). `(X)` a way needing X, `[X]` a relic, `✦` a boss, `▼` a law break, `→` one way.
 
@@ -47,7 +42,7 @@ CORE      Threshold ─ Mantle ─(M&H)─ Orrery ─(D&B)─ Lode ─ Effigy �
 ```
 M Mag-grip, H Harpoon, D Drill, B Ballast, P Heat plating.
 
-## Order freedom
+## Order freedom `#draft-order-freedom`
 
 - **The first ability is Mag-grip or Harpoon.** Both lie in the flooded layer, reached with the base moveset: Mag-grip west of the Cistern (the Reliquary), Harpoon east of it, through the Sluice and the Undercroft (the Ossuary). Taking one road skips the other.
 - **Either one opens the way down**: the Undercroft's high doorway to the Chapterhouse is reached by climbing its metal wall or by harpooning its two rings. So the frozen layer can be entered with either.
@@ -60,14 +55,14 @@ The rule this gives: **Mag-grip or Harpoon first, Heat plating after Drill or Ba
 
 **Sequence breaks by design:** Harpoon before Mag-grip (the Sluice road skips the Reliquary); the Belfry by grip or harpoon; the Calving cliff by grip or harpoon; the Vault by drill or by ballast; the Crucible by ballast or by drill; Heat plating before the second frozen ability.
 
-## Law breaks (story beats tied to depth)
+## Law breaks (story beats tied to depth) `#draft-law-breaks`
 
-Outside the ability graph ([theme.md](../../docs/theme.md)): each happens in a room every route to the goal passes through, and the check proves they always come in order. They open nothing the abilities don't already gate.
+Outside the ability graph (`docs/theme.md#laws-outside-abilities`): each happens in a room every route to the goal passes through, and the check proves they always come in order. They open nothing the abilities don't already gate.
 - **Third law (self-preservation), the Brink.** The end of the flooded layer: a drop no machine survives. At first the android refuses it. Breaking the law is the jump, and the jump is one way.
 - **Second law (obedience), the Sanctum.** Past the Archivist, a priest-machine commands the android to turn back. The command stops binding; the forbidden door opens on the volcanic layer.
 - **First law (never harm a human), the Effigy.** Before the Heart, an effigy of the makers, the gods of the machines' scripture. The only way on is through it.
 
-## Bosses
+## Bosses `#draft-bosses`
 
 One per layer, plus the end, each on the main road. Placeholders.
 - **The Precentor** (Chapterhouse, flooded): the choir's conductor, before the Brink.
@@ -75,9 +70,9 @@ One per layer, plus the end, each on the main road. Placeholders.
 - **The Founder** (Foundry, volcanic): the abbot of the foundry, before the Threshold.
 - **Nirvanary** (Heart, core): what waits at the center.
 
-## Flooded — the drowned cathedral (13 rooms)
+## Flooded — the drowned cathedral (13 rooms) `#draft-flooded`
 
-The slice (built, M6) plus the crypts under it and the road down. Pale white, a touch of purple, water everywhere.
+The first slice plus the crypts under it and the road down. Pale white, a touch of purple, water everywhere.
 
 | Room | Purpose |
 |---|---|
@@ -137,7 +132,7 @@ way Chapterhouse <-> Brink
 way Brink -> Rimefall                            # the jump: one way
 ```
 
-## Frozen — the cold archive (11 rooms)
+## Frozen — the cold archive (11 rooms) `#draft-frozen`
 
 Server halls frozen in rime, machines asleep in the cold, a black lake under ice. Two branches from the Coldstacks: the Drill west, the Ballast east.
 
@@ -187,7 +182,7 @@ way Vault <-> Sanctum
 way Sanctum <-> Kiln                             # the forbidden door
 ```
 
-## Volcanic — the foundry (10 rooms)
+## Volcanic — the foundry (10 rooms) `#draft-volcanic`
 
 Basalt, slag rivers, the machines' birthplace: they are cast here in molds of their own image. Warming toward amber.
 
@@ -235,7 +230,7 @@ way Chimney <-> Coldstacks : HeatPlating
 way Foundry <-> Threshold : HeatPlating
 ```
 
-## Core — what the machines call paradise (6 rooms)
+## Core — what the machines call paradise (6 rooms) `#draft-core`
 
 Ancient core machinery, red and ember. Every ability is needed here, in combination.
 
