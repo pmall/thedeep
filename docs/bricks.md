@@ -20,6 +20,7 @@ Every piece a world is built from ([principles.md](principles.md), "Bricks, not 
 | Ambient particles | dust, silt, drips, rime, embers | working | P2 |
 | `WaterBody` (scenery) | a water surface with reflections, caustics and underwater haze | working | P2 |
 | Screen grade | vignette and grain from the biome | working | P2 |
+| **The signature** | the game's own painted (gouache-like) pass over the whole image, tuned per biome ([art-direction.md](art-direction.md)) | missing | P2 (first) |
 
 ## Level: what the pilgrim plays on
 

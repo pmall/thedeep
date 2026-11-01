@@ -13,9 +13,27 @@ Read this before any visual work. Art matters in every stage: every room is buil
 - **Three depth layers:** a blurred foreground, the play plane, and a hazy backdrop with parallax. The camera is a narrow-FOV perspective camera (not orthographic) so these layers really move at different speeds.
 - Gameplay readability first: the player, hazards and grippable **metal** versus non-grippable **rock** must read at a glance in every lighting setup.
 
+## The signature (owner, 2026-11-01)
+
+The game gets a **visual signature**: one global pass over the image that makes every frame look painted by the same hand, so the game is recognized from a single screenshot. The owner's first idea: **gouache**, a little painted. A shader only this game uses. Designed at the start of roadmap item P2; until it exists, this section is the brief.
+
+What gouache means here:
+- **Flat, matte, opaque color** laid in areas, with soft brush edges, not photographic gradients. Detail simplified where the eye doesn't need it (the backdrop, the haze), kept where it does (the play plane, the pilgrim).
+- **Strokes that follow form**: brushwork oriented along edges and surfaces (an anisotropic Kuwahara-type filter, or strokes driven by the scene's normals and depth), not a uniform blur.
+- **Pigment and paper**: a fine grain and granulation in flat areas, a slightly darker rim where colors meet, as paint pools at a stroke's edge. Anchored to the world or to surfaces where it can be, so it doesn't slide over a moving image like a dirty screen.
+- **A limited palette**: colors pulled toward the biome palette, so a frame looks mixed from a few pigments.
+- **Ours alone**: something tied to the game's world, such as a grain that, up close, is made of the machines' glyphs and data, or strokes that tighten and turn mechanical as the pilgrim breaks its laws. Variants should try at least one idea no off-the-shelf filter gives.
+
+Constraints:
+- **Readability first**: the pilgrim, hazards, interactables and metal versus rock must read at least as well as without the pass. Gameplay edges are never smeared away.
+- **Graceful**: restraint. Painted, not noisy. It must stay calm in motion: no shimmer, crawling or flicker as the camera moves (judge it from video, not only stills).
+- **Inside the frame budget** (≤ 10 ms p99 at 1080p on the RTX 3060): the rooms already sit near 9.6 ms, so GPU time must be won back or the pass made cheap (a lower-resolution pass, a compute effect).
+- **Swappable and tunable**: one `CompositorEffect`-style pass with its strengths in the `BiomeProfile` (per layer), and a switch to see the frame without it for comparison.
+- **Process**: two or three variants rendered on the same photo spots and as a short video; the owner picks; then it is tuned per biome, and every visual judged afterwards is judged through it.
+
 ## Production rules
 
-1. **Procedural only, pushed to the maximum** (owner decision). All visuals come from code: shaders, generated meshes, lighting, fog, particles, post-processing. The game must look good this way alone. Authored models (a Blender MCP) come only at the very end, as polish (roadmap, "Later: beyond procedural art").
+1. **Procedural first, pushed to the maximum** (owner decision). All visuals come from code: shaders, generated meshes, lighting, fog, particles, post-processing. The game must look good this way alone. Authored models (a Blender MCP) come only once procedural has gone as far as it can: from the end of the prototype, the pilgrim first (roadmap, direction 3).
 2. **Everything visual is swappable.** Another art source comes later. Materials, kit pieces and machine parts are referenced through resources, so a procedural version can be replaced by an authored one without touching gameplay or rooms.
 3. **Visuals never decide gameplay.** Rock versus metal is the physics layer, not the material. Collision shapes are simple and kept separate from visual meshes.
 4. **Judge with images, not code.** For every visual change, render captures before and after and look at them (see [testing.md](testing.md)). Keep within the frame budget: 1080p at 60 fps on the owner's RTX 3060, target ≤ 10 ms per frame.
