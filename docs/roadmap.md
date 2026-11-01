@@ -33,7 +33,8 @@ The plan we follow from session to session: the owner's direction, where we are,
 - **Phase 2, extended visuals, under way.**
   - Performance pass done: every room's frame p99 is under 10 ms at 1080p (the worst, the Vault, 9.97; most 6–8). Collections were the spikes: garbage is down from about 635 KB per frame to 1–4 KB in most rooms (rays through kept nodes, chain meshes written in place, no per-tick LINQ); `perf*.json` reports `alloc_kb_per_frame`, and `THEDEEP_ALLOC_SAMPLE=1 tools/capture.sh` the types allocating.
   - The shared stage: real architecture in the haze, skylines and light by layer, masonry ([art-direction.md](art-direction.md), "Phase 2, the shared stage").
-  - Left: the rooms one layer at a time (the volcanic and core interiors first: bare boxes; then the frozen; then the flooded), each against its references.
+  - The rooms' back walls dressed (`WallDressing`): every volcanic and core room, four frozen ones.
+  - Left: each layer's rooms against their references, from the photo spots (the core's murky walls, the frozen open items in [art-direction.md](art-direction.md), the flooded rooms' wide shots).
 - **Next:** the owner plays from `godot --path . -- --new` to the end (phase 1's done-when) and says where a gate didn't read or a way was unclear; then phase 2 (extended visuals). The bosses (the Founder, Nirvanary) are clones of earlier bodies and brains, placeholders until phase 4.
 
 ## Session protocol

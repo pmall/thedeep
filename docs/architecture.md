@@ -127,7 +127,8 @@ scripts/
   rooms/dressing/          dressing generators (visual only, seeded): Colonnade (piers + arches + beam + cables),
                            RackRow (a row of variants with gaps and toppled pieces); pure DressingLayout; Spinner (old
                            machinery still turning: spins its children on physics ticks); BackdropArchitecture (the
-                           stage's rows of naves, stacks, foundries or machinery) over pure BackdropLayout
+                           stage's rows of naves, stacks, foundries or machinery) over pure BackdropLayout; WallDressing
+                           (a back wall dressed as a foundry, machinery or an archive) over pure WallLayout
   rooms/RoomExit.cs        connection marker: target room + exit, requirement expression, one-way flag; ArrivalOnly for the
                            far end of a one-way drop from another room (no target, no trigger, not a sealed way)
   rooms/PhotoSpot.cs       look-dev camera marker (position = camera) + player placement
@@ -315,7 +316,7 @@ Code with no Godot types is compiled straight into the xUnit project via `<Compi
 - `capture/VideoEncoder.cs` (plain .NET; its tests run the real ffmpeg)
 - `kit/MeshData.cs`, `kit/MeshBuilder.cs`, `kit/Profile.cs`, `kit/PathFrame.cs`, `kit/SweepPath.cs`, `kit/KitShapes.cs` (System.Numerics; icicles too)
 - `props/LiftMotion.cs`
-- `map/Requirement.cs`, `map/GridSnap.cs`, `map/ExitMath.cs`, `map/MapState.cs`, `map/MapGraph.cs`, `map/MapSolver.cs`, `map/MapDraft.cs`, `map/MapLayout.cs`, `map/ReachPlanner.cs`, `rooms/dressing/DressingLayout.cs`, `rooms/dressing/BackdropLayout.cs`, `player/GripMath.cs`, `player/HarpoonAim.cs`, `combat/Vitality.cs`, `combat/Swing.cs`, `game/SaveData.cs`
+- `map/Requirement.cs`, `map/GridSnap.cs`, `map/ExitMath.cs`, `map/MapState.cs`, `map/MapGraph.cs`, `map/MapSolver.cs`, `map/MapDraft.cs`, `map/MapLayout.cs`, `map/ReachPlanner.cs`, `rooms/dressing/DressingLayout.cs`, `rooms/dressing/BackdropLayout.cs`, `rooms/dressing/WallLayout.cs`, `player/GripMath.cs`, `player/HarpoonAim.cs`, `combat/Vitality.cs`, `combat/Swing.cs`, `game/SaveData.cs`
 - `parts/PartShapes.cs`, `parts/PlanarIk.cs`, `parts/VerletChain.cs`, `parts/Humanoid*.cs`, `parts/PartCategory.cs`, `player/MotionMode.cs`, `player/PilgrimMotion.cs`
 - `ui/ButtonNames.cs`
 - `machines/MachineAct.cs`, `Perception.cs`, `Intent.cs`, `Senses.cs`, `Steering.cs`, `PrayerCycle.cs`, `StrikeAction.cs`, `MachineBrain.cs`, `SurfacePath.cs`, `LegGait.cs`, `machines/brains/*.cs` (including `ConductorBrain`, `SwoopBrain`)

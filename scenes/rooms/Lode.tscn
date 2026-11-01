@@ -23,6 +23,7 @@
 [ext_resource type="Script" path="res://scripts/rooms/Room.cs" id="16_room"]
 [ext_resource type="Resource" path="res://resources/biomes/core.tres" id="17_core"]
 [ext_resource type="PackedScene" path="res://scenes/stage/RoomStage.tscn" id="18_stage"]
+[ext_resource type="Script" path="res://scripts/rooms/dressing/WallDressing.cs" id="19_wall"]
 
 [sub_resource type="PrimitiveMesh" id="blockmesh_1"]
 script = ExtResource("8_blockmesh")
@@ -139,6 +140,14 @@ SectionMaterial = ExtResource("7_water_section")
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 25, 8, -16)
 mesh = SubResource("blockmesh_1")
 material_override = ExtResource("9_stone_mid")
+
+; the back wall dressed: a machinery's wall at 1.75x (WallDressing)
+[node name="WallDressing" type="Node3D" parent="Kit"]
+transform = Transform3D(1.75, 0, 0, 0, 1.75, 0, 0, 0, 1.75, 25, -12, -15.25)
+script = ExtResource("19_wall")
+Style = 1
+Size = Vector2(45.7143, 22.8571)
+Seed = 23
 
 [node name="Seams" type="Node3D" parent="Kit"]
 

@@ -25,6 +25,7 @@
 [ext_resource type="Script" path="res://scripts/rooms/Room.cs" id="17_room"]
 [ext_resource type="Resource" path="res://resources/biomes/frozen.tres" id="18_frozen"]
 [ext_resource type="PackedScene" path="res://scenes/stage/RoomStage.tscn" id="19_stage"]
+[ext_resource type="Script" path="res://scripts/rooms/dressing/WallDressing.cs" id="20_wall"]
 
 [sub_resource type="PrimitiveMesh" id="blockmesh_1"]
 script = ExtResource("8_blockmesh")
@@ -187,6 +188,14 @@ material_override = ExtResource("9_ice_mid")
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 31, 10, -14.5)
 mesh = SubResource("blockmesh_2")
 material_override = ExtResource("10_stone_mid")
+
+; the back wall dressed: a archive's wall at 1.75x (WallDressing)
+[node name="WallDressing" type="Node3D" parent="Kit"]
+transform = Transform3D(1.75, 0, 0, 0, 1.75, 0, 0, 0, 1.75, 31, -3, -13.75)
+script = ExtResource("20_wall")
+Style = 2
+Size = Vector2(38.8571, 14.8571)
+Seed = 312
 
 [node name="FloorBack" type="MeshInstance3D" parent="Kit"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 31, -0.5, -8)

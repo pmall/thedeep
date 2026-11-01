@@ -45,6 +45,7 @@
     <Compile Include="../../scripts/map/ReachPlanner.cs" Link="Shared/ReachPlanner.cs" />
     <Compile Include="../../scripts/rooms/dressing/DressingLayout.cs" Link="Shared/DressingLayout.cs" />
     <Compile Include="../../scripts/rooms/dressing/BackdropLayout.cs" Link="Shared/BackdropLayout.cs" />
+    <Compile Include="../../scripts/rooms/dressing/WallLayout.cs" Link="Shared/WallLayout.cs" />
     <Compile Include="../../scripts/props/LiftMotion.cs" Link="Shared/LiftMotion.cs" />
     <Compile Include="../../scripts/parts/PartShapes.cs" Link="Shared/PartShapes.cs" />
     <Compile Include="../../scripts/parts/PlanarIk.cs" Link="Shared/PlanarIk.cs" />

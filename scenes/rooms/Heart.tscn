@@ -25,6 +25,7 @@
 [ext_resource type="Script" path="res://scripts/rooms/Room.cs" id="19_room"]
 [ext_resource type="Resource" path="res://resources/biomes/core.tres" id="20_core"]
 [ext_resource type="PackedScene" path="res://scenes/stage/RoomStage.tscn" id="21_stage"]
+[ext_resource type="Script" path="res://scripts/rooms/dressing/WallDressing.cs" id="22_wall"]
 
 [sub_resource type="PrimitiveMesh" id="blockmesh_1"]
 script = ExtResource("9_blockmesh")
@@ -165,6 +166,14 @@ HintLine = &""
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 30, 15, -24)
 mesh = SubResource("blockmesh_1")
 material_override = ExtResource("10_stone_mid")
+
+; the back wall dressed: a machinery's wall at 2.5x (WallDressing)
+[node name="WallDressing" type="Node3D" parent="Kit"]
+transform = Transform3D(2.5, 0, 0, 0, 2.5, 0, 0, 0, 2.5, 30, -20, -23.25)
+script = ExtResource("22_wall")
+Style = 1
+Size = Vector2(44, 28)
+Seed = 807
 
 ; the heart of the planet, molten and slow
 [node name="HeartCore" type="MeshInstance3D" parent="Kit"]

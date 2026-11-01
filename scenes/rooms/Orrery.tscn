@@ -26,6 +26,7 @@
 [ext_resource type="Script" path="res://scripts/rooms/Room.cs" id="19_room"]
 [ext_resource type="Resource" path="res://resources/biomes/core.tres" id="20_core"]
 [ext_resource type="PackedScene" path="res://scenes/stage/RoomStage.tscn" id="21_stage"]
+[ext_resource type="Script" path="res://scripts/rooms/dressing/WallDressing.cs" id="22_wall"]
 
 [sub_resource type="PrimitiveMesh" id="blockmesh_1"]
 script = ExtResource("9_blockmesh")
@@ -220,6 +221,14 @@ transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 40, -12, 0)
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 25, 0, -22)
 mesh = SubResource("blockmesh_1")
 material_override = ExtResource("10_stone_mid")
+
+; the back wall dressed: a machinery's wall at 2.25x (WallDressing)
+[node name="WallDressing" type="Node3D" parent="Kit"]
+transform = Transform3D(2.25, 0, 0, 0, 2.25, 0, 0, 0, 2.25, 25, -35, -21.25)
+script = ExtResource("22_wall")
+Style = 1
+Size = Vector2(40, 31.1111)
+Seed = 8
 
 ; the dark centre the rings turn around, glowing
 [node name="Centre" type="MeshInstance3D" parent="Kit"]

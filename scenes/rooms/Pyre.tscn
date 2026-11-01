@@ -24,6 +24,7 @@
 [ext_resource type="Script" path="res://scripts/rooms/Room.cs" id="18_room"]
 [ext_resource type="Resource" path="res://resources/biomes/volcanic.tres" id="19_volcanic"]
 [ext_resource type="PackedScene" path="res://scenes/stage/RoomStage.tscn" id="20_stage"]
+[ext_resource type="Script" path="res://scripts/rooms/dressing/WallDressing.cs" id="21_wall"]
 
 [sub_resource type="PrimitiveMesh" id="blockmesh_1"]
 script = ExtResource("10_blockmesh")
@@ -154,6 +155,14 @@ transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 22.5, 0, 0)
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 13, 9, -16)
 mesh = SubResource("blockmesh_1")
 material_override = ExtResource("11_stone_mid")
+
+; the back wall dressed: a foundry's wall at 1.75x (WallDressing)
+[node name="WallDressing" type="Node3D" parent="Kit"]
+transform = Transform3D(1.75, 0, 0, 0, 1.75, 0, 0, 0, 1.75, 13, -13, -15.25)
+script = ExtResource("21_wall")
+Style = 0
+Size = Vector2(34.2857, 25.1429)
+Seed = 219
 
 ; the coals of the pyre
 [node name="Coals" type="MeshInstance3D" parent="Kit"]

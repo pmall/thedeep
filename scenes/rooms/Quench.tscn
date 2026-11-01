@@ -25,6 +25,7 @@
 [ext_resource type="Script" path="res://scripts/rooms/Room.cs" id="18_room"]
 [ext_resource type="Resource" path="res://resources/biomes/volcanic.tres" id="19_volcanic"]
 [ext_resource type="PackedScene" path="res://scenes/stage/RoomStage.tscn" id="20_stage"]
+[ext_resource type="Script" path="res://scripts/rooms/dressing/WallDressing.cs" id="21_wall"]
 
 [sub_resource type="PrimitiveMesh" id="blockmesh_1"]
 script = ExtResource("9_blockmesh")
@@ -205,6 +206,14 @@ SectionMaterial = ExtResource("8_water_section")
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 22, 20, -18)
 mesh = SubResource("blockmesh_1")
 material_override = ExtResource("10_stone_mid")
+
+; the back wall dressed: a foundry's wall at 2.0x (WallDressing)
+[node name="WallDressing" type="Node3D" parent="Kit"]
+transform = Transform3D(2.0, 0, 0, 0, 2.0, 0, 0, 0, 2.0, 22, -12, -17.25)
+script = ExtResource("21_wall")
+Style = 0
+Size = Vector2(40, 32)
+Seed = 691
 
 [node name="Buttresses" type="Node3D" parent="Kit"]
 
