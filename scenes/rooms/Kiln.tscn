@@ -136,19 +136,24 @@ transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 26.5, -27, 0)
 Size = Vector3(59, 10, 4)
 Material = ExtResource("1_basalt")
 
-; ledges up the west wall to the upper floor
+; ledges up the west wall to the upper floor, 2.5 m apart (a jump with room to spare)
 [node name="LedgeA" parent="Geometry" instance=ExtResource("2_block")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 1.5, -19.25, 0)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 1.5, -19.75, 0)
 Size = Vector3(3, 0.5, 4)
 Material = ExtResource("1_basalt")
 
 [node name="LedgeB" parent="Geometry" instance=ExtResource("2_block")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 4.5, -16.25, 0)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 4.5, -17.25, 0)
 Size = Vector3(3, 0.5, 4)
 Material = ExtResource("1_basalt")
 
 [node name="LedgeC" parent="Geometry" instance=ExtResource("2_block")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 1.5, -13.25, 0)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 1.5, -14.75, 0)
+Size = Vector3(3, 0.5, 4)
+Material = ExtResource("1_basalt")
+
+[node name="LedgeD" parent="Geometry" instance=ExtResource("2_block")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 4.5, -12.25, 0)
 Size = Vector3(3, 0.5, 4)
 Material = ExtResource("1_basalt")
 

@@ -34,13 +34,17 @@ public partial class RoomValidator : Node
 
     /// <summary>What the geometry check needs of a room: its solids, its open exits, and where the pilgrim can wake.</summary>
     private sealed record RoomShape(List<Box> Solids, List<ExitShape> Exits, List<System.Numerics.Vector2> Wakes, List<System.Numerics.Vector2> Anchors,
-        List<LiftPath> Lifts, List<Box> Sound, List<Box> Waters, List<Box> Heat);
+        List<LiftPath> Lifts, List<Box> Sound, List<Box> Waters, List<Box> Heat, List<(Box Area, Ability Ability)> Relics, List<Box> Goals, List<Box> Metal,
+        System.Numerics.Vector2 Spawn);
 
     private sealed record ExitShape(string Name, System.Numerics.Vector2 Position, System.Numerics.Vector2 Size, string Requires, int ArrivalSide, bool Sealed);
     private bool _done;
 
-    /// <summary>The abilities the geometry check simulates (Mag-grip is not).</summary>
-    private const Ability Simulated = Ability.Harpoon | Ability.Drill | Ability.Ballast | Ability.HeatPlating;
+    /// <summary>The abilities the geometry check simulates (all five).</summary>
+    private const Ability Simulated = Ability.MagGrip | Ability.Harpoon | Ability.Drill | Ability.Ballast | Ability.HeatPlating;
+
+    /// <summary>Each simulated ability on its own.</summary>
+    private static readonly Ability[] Singles = { Ability.MagGrip, Ability.Harpoon, Ability.Drill, Ability.Ballast, Ability.HeatPlating };
 
     /// <summary>The simulated abilities taken together, fewest first, for ways that need more than one.</summary>
     private static readonly Ability[] Combined = Enumerable.Range(1, (int)Simulated)
@@ -49,6 +53,12 @@ public partial class RoomValidator : Node
 
     /// <summary>A room whose ways in print what they reach (`--reach-report &lt;Room&gt;`), to debug the geometry check.</summary>
     public string ReachReport { get; set; } = "";
+
+    /// <summary>With `--reach-report`, the abilities every way in is walked with (`--abilities`), instead of what the way guarantees.</summary>
+    public Ability? ReachWith { get; set; }
+
+    /// <summary>With `--reach-report`, print the clumsier pilgrim's reach (`--slack-report`).</summary>
+    public bool SlackReport { get; set; }
 
     /// <summary>The start room's scene path (the world's start room).</summary>
     public string StartRoom { get; set; } = "";
@@ -212,7 +222,14 @@ public partial class RoomValidator : Node
         var anchors = room.All<HarpoonAnchor>().Select(a => N(new Vector2(a.GlobalPosition.X, a.GlobalPosition.Y))).ToList();
         var waters = room.All<WaterBody>().Where(w => w.Swim).Select(w => w.PlayRegion).ToList();
         var heat = room.All<HeatZone>().Select(z => z.Region).ToList();
-        _shapes[name] = new RoomShape(solids, exitShapes, wakes, anchors, room.All<Lift>().Select(l => l.Path).ToList(), sound, waters, heat);
+        // Where walking takes a relic (its range from the feet) and reaches a goal (the feet inside its area), as trigger boxes.
+        var relics = room.All<AbilityRelic>().Select(r => (Box.Around(N(new Vector2(r.GlobalPosition.X, r.GlobalPosition.Y + 0.1f)),
+            new System.Numerics.Vector2(1.6f, 0.4f)), r.Ability)).ToList();
+        var goals = room.All<MapGoal>().Where(g => g.Size != Vector2.Zero)
+            .Select(g => Box.Around(N(new Vector2(g.GlobalPosition.X, g.GlobalPosition.Y)), N(g.Size) + new System.Numerics.Vector2(0f, 0f))).ToList();
+        var metal = room.Blocks().Where(b => b.Surface == SurfaceKind.Metal && !b.Cracked).Select(BoxOf).ToList();
+        _shapes[name] = new RoomShape(solids, exitShapes, wakes, anchors, room.All<Lift>().Select(l => l.Path).ToList(), sound, waters, heat,
+            relics, goals, metal, N(new Vector2(room.SpawnPoint.GlobalPosition.X, room.SpawnPoint.GlobalPosition.Y)));
 
         if (room.All<MapGoal>().Any())
         {
@@ -268,6 +285,7 @@ public partial class RoomValidator : Node
         }
 
         CheckGeometry();
+        string inside = CheckInside();
         MapReport report = MapSolver.Solve(_graph);
         foreach (string room in report.UnreachableRooms)
         {
@@ -307,6 +325,8 @@ public partial class RoomValidator : Node
         {
             text.Append($"; {ability} at {string.Join("/", at.Select(i => i + 1))}");
         }
+
+        text.Append('\n').Append(inside);
 
         if (Report)
         {
@@ -373,164 +393,266 @@ public partial class RoomValidator : Node
         return text.ToString();
     }
 
-    /// <summary>
-    /// The geometry sanity check (M7): the base moveset, simulated with the live tuning (<see cref="ReachPlanner"/>), must reach
-    /// every exit marked for the base moveset from some way into its room, and must not reach an exit that needs an ability
-    /// from a way in that needed none (that requirement would be a lie, or the geometry drifted from it). An exit the Harpoon
-    /// opens must be reached by the base moveset and the Harpoon, zipping between the room's anchors, from some way in the
-    /// Harpoon allows (the anchors are where the requirement says they are). Sealed exits (rooms not built yet) are held to
-    /// their requirement too, so a gate is right before the room behind it exists. Lifts are ridden from their lower stop. An exit
-    /// the Drill opens must be reached by the base moveset with every cracked block gone, from some way in (abilities accumulate,
-    /// so whatever a way in needed, the pilgrim may hold the Drill there too; a rule of thumb: it bores any cracked rock it reaches).
-    /// Every planner swims the room's water (floating, as without Ballast); an exit Ballast opens must be reached by a planner that
-    /// sinks and rises anywhere in the water, from some way in. Heat zones are space no planner enters without Heat plating; an
-    /// exit Heat plating opens must be reached by a planner that walks through them. A way that needs simulated abilities
-    /// together (Ballast and the Drill) must be reached by a planner with all of them.
-    /// </summary>
-    private void CheckGeometry()
+    /// <summary>The planner numbers, from the live tuning (the single source).</summary>
+    private (MoveLimits Move, HarpoonLimits Harpoon, GripLimits Grip, WaterLimits Water, float Rise)? _tuning;
+
+    private (MoveLimits Move, HarpoonLimits Harpoon, GripLimits Grip, WaterLimits Water, float Rise) Tuning()
     {
+        if (_tuning is { } t)
+        {
+            return t;
+        }
+
         var tuning = GD.Load<PlayerTuning>("res://resources/player_tuning.tres");
-        var limits = new MoveLimits(tuning.RunSpeed, tuning.AirAcceleration, tuning.AirDeceleration, tuning.JumpHeight, tuning.JumpTimeToApex,
+        var move = new MoveLimits(tuning.RunSpeed, tuning.AirAcceleration, tuning.AirDeceleration, tuning.JumpHeight, tuning.JumpTimeToApex,
             tuning.JumpCutFactor, tuning.FallGravityMultiplier, tuning.ApexHangThreshold, tuning.ApexGravityMultiplier, tuning.MaxFallSpeed,
             tuning.DashDistance, tuning.DashDuration, tuning.DashExitSpeedFactor, tuning.AirDashes);
         var harpoon = new HarpoonLimits(tuning.HarpoonRange, tuning.HarpoonMinDistance, tuning.HarpoonZipSpeed, tuning.HarpoonZipAcceleration,
             tuning.HarpoonExitSpeedFactor, tuning.HarpoonExitLift);
-        WaterLimits water = tuning.Water;
-        float rise = 0.85f * tuning.JumpTakeOffSpeed;
+        var grip = new GripLimits(tuning.GripLeapAwaySpeed, tuning.GripLeapUpFactor, tuning.GripRegrabDelay);
+        _tuning = t = (move, harpoon, grip, tuning.Water, 0.85f * tuning.JumpTakeOffSpeed);
+        return t;
+    }
+
+    private readonly System.Collections.Concurrent.ConcurrentDictionary<(string Room, Ability With, bool Clumsy), ReachPlanner> _planners = new();
+
+    /// <summary>
+    /// The planner for a room with some abilities (cached): Mag-grip walks its metal, the Harpoon zips between its anchors, the Drill
+    /// bores what it reaches (the cracked blocks gone), Ballast sinks and rises in its water, Heat plating walks through its heat.
+    /// </summary>
+    private ReachPlanner Planner(string room, Ability with, bool clumsy = false) => _planners.GetOrAdd((room, with & Simulated, clumsy), key =>
+    {
+        RoomShape shape = _shapes[key.Room];
+        Ability g = key.With;
+        var t = Tuning();
+        bool grip = (g & Ability.MagGrip) != 0;
+        return new ReachPlanner(key.Clumsy ? t.Move.Clumsy() : t.Move, (g & Ability.Drill) != 0 ? shape.Sound : shape.Solids, (g & Ability.Harpoon) != 0 ? t.Harpoon : null,
+            shape.Anchors, shape.Lifts, t.Water, shape.Waters, ballast: (g & Ability.Ballast) != 0,
+            hazards: (g & Ability.HeatPlating) != 0 ? null : shape.Heat, grip: grip ? t.Grip : null, metal: grip ? shape.Metal : null);
+    });
+
+    /// <summary>
+    /// A way into a room: arriving through an exit (<see cref="Exit"/>, its index) by an edge needing <see cref="Requires"/>, or waking
+    /// (Exit −1); where and how the body enters, and the abilities every option of the requirement holds (<see cref="Guaranteed"/>:
+    /// whoever arrives through a way only the Drill opens has the Drill, and bores what it reaches there).
+    /// </summary>
+    private sealed record WayIn(string What, System.Numerics.Vector2 At, System.Numerics.Vector2 Velocity, int Steer, int Exit, bool Base,
+        Ability Guaranteed);
+
+    private WayIn Arriving(RoomShape shape, int index, Requirement requires)
+    {
+        ExitShape x = shape.Exits[index];
+        bool vertical = ExitMath.IsVertical(x.Size);
+        var velocity = !vertical ? System.Numerics.Vector2.Zero
+            : x.ArrivalSide != 0 ? new System.Numerics.Vector2(0f, Tuning().Rise) : new System.Numerics.Vector2(0f, -5f);
+        return new WayIn($"arriving through {x.Name}", x.Position, velocity, vertical ? x.ArrivalSide : 0, index, requires.IsMetBy(Ability.None),
+            requires.Options.Aggregate(Simulated, (all, option) => all & option));
+    }
+
+    private List<WayIn> WaysIn(string room)
+    {
+        RoomShape shape = _shapes[room];
+        var ways = new List<WayIn>();
+        foreach (MapEdge edge in _graph.Edges.Where(e => e.To == room))
+        {
+            int index = shape.Exits.FindIndex(x => x.Name == edge.ToExit);
+            if (index >= 0)
+            {
+                ways.Add(Arriving(shape, index, edge.Requires));
+            }
+        }
+
+        foreach (System.Numerics.Vector2 wake in shape.Wakes)
+        {
+            ways.Add(new WayIn($"waking at ({wake.X:0.#}, {wake.Y:0.#})", wake, System.Numerics.Vector2.Zero, 0, -1, true, Ability.None));
+        }
+
+        return ways;
+    }
+
+    private static string Describe(Ability a) => a switch
+    {
+        Ability.MagGrip => "Mag-grip",
+        Ability.Harpoon => "the Harpoon",
+        Ability.Drill => "the Drill",
+        Ability.Ballast => "Ballast",
+        Ability.HeatPlating => "Heat plating",
+        _ => $"{a} together",
+    };
+
+    /// <summary>
+    /// The geometry sanity check (M7): the base moveset, simulated with the live tuning (<see cref="ReachPlanner"/>), must reach every
+    /// exit marked for the base moveset from some way into its room, and must not reach an exit that needs an ability from a way in
+    /// that needed none (that requirement would be a lie, or the geometry drifted from it). An exit an ability opens must be reached
+    /// by the planner with that ability (and what the way in guarantees: abilities accumulate) from some way in; for a requirement
+    /// with several options, by each option on its own; for abilities needed together, by all of them. All five are simulated:
+    /// Mag-grip walks metal, the Harpoon zips between anchors, the Drill bores cracked rock, Ballast sinks and rises in water, Heat
+    /// plating walks through heat. Sealed exits (rooms not built yet) are held to their requirement too, so a gate is right before
+    /// the room behind it exists. Lifts are ridden from their lower stop.
+    /// </summary>
+    private void CheckGeometry()
+    {
         foreach ((string room, RoomShape shape) in _shapes.OrderBy(r => r.Key, System.StringComparer.Ordinal))
         {
-            var planner = new ReachPlanner(limits, shape.Solids, lifts: shape.Lifts, water: water, waters: shape.Waters, hazards: shape.Heat);
-            var harpooner = new ReachPlanner(limits, shape.Solids, harpoon, shape.Anchors, shape.Lifts, water, shape.Waters, hazards: shape.Heat);
-            var driller = new ReachPlanner(limits, shape.Sound, lifts: shape.Lifts, water: water, waters: shape.Waters, hazards: shape.Heat);
-            var sinker = new ReachPlanner(limits, shape.Solids, lifts: shape.Lifts, water: water, waters: shape.Waters, ballast: true,
-                hazards: shape.Heat);
-            var plated = new ReachPlanner(limits, shape.Solids, lifts: shape.Lifts, water: water, waters: shape.Waters);
-            bool cracked = shape.Sound.Count < shape.Solids.Count;
             var triggers = shape.Exits.Select(e => Box.Around(e.Position, e.Size)).ToList();
-
-            // Ways in: arriving through an exit (by the edge leading here: its requirement is what the pilgrim has at least), or waking.
-            var entries = new List<(string What, System.Numerics.Vector2 At, System.Numerics.Vector2 Velocity, int Steer, bool Base, bool Harpoon, bool Drill,
-                int Exit)>();
-            // What each way in guarantees: the abilities every option of its requirement holds (whoever arrives through a way only the
-            // Drill opens has the Drill, and bores what it reaches; through one only Heat plating opens, heat is no obstacle).
-            var guaranteed = new List<Ability>();
-            foreach (MapEdge edge in _graph.Edges.Where(e => e.To == room))
+            List<WayIn> ways = WaysIn(room);
+            var memo = new Dictionary<(int, Ability), HashSet<int>>();
+            HashSet<int> Reached(int w, Ability with)
             {
-                int index = shape.Exits.FindIndex(x => x.Name == edge.ToExit);
-                if (index < 0)
+                with = (with | ways[w].Guaranteed) & Simulated;
+                return memo.TryGetValue((w, with), out HashSet<int>? r) ? r
+                    : memo[(w, with)] = Planner(room, with).Reach(ways[w].At, ways[w].Velocity, triggers, ways[w].Steer).Triggers;
+            }
+
+            if (ReachReport == room)
+            {
+                // `--reach-report <Room>`: the ledges each way in reaches, to see where a planner stops (with `--slack-report`, the clumsy pilgrim's).
+                for (int w = 0; w < ways.Count; w++)
+                {
+                    ReachPlanner p = Planner(room, ReachWith ?? ways[w].Guaranteed, clumsy: SlackReport);
+                    var (exits, ledges) = p.Reach(ways[w].At, ways[w].Velocity, triggers, ways[w].Steer);
+                    GD.Print($"REACH {room} {ways[w].What} [{ReachWith ?? ways[w].Guaranteed}]: exits " +
+                             string.Join(", ", exits.Select(t => shape.Exits[t].Name)) + "; ledges " +
+                             string.Join(" ", ledges.OrderBy(l => p.Ledges[l].Y).Select(l => $"{(p.Ledges[l].Swim ? "~" : "")}{p.Ledges[l].Y:0.##}@{p.Ledges[l].MinX:0.##}..{p.Ledges[l].MaxX:0.##}")));
+                }
+
+                ReachPlanner none = Planner(room, Ability.None);
+                GD.Print($"REACH {room} all ledges: " + string.Join(" ", none.Ledges.OrderBy(l => l.Y).Select(l => $"{(l.Swim ? "~" : "")}{l.Y:0.##}@{l.MinX:0.##}..{l.MaxX:0.##}")));
+            }
+
+            for (int i = 0; i < shape.Exits.Count; i++)
+            {
+                ExitShape x = shape.Exits[i];
+                var others = Enumerable.Range(0, ways.Count).Where(w => ways[w].Exit != i).ToList();
+                if (others.Count == 0 || !Requirement.TryParse(x.Requires, out Requirement r, out _))
                 {
                     continue;
                 }
 
-                ExitShape x = shape.Exits[index];
-                bool vertical = ExitMath.IsVertical(x.Size);
-                var velocity = !vertical ? System.Numerics.Vector2.Zero
-                    : x.ArrivalSide != 0 ? new System.Numerics.Vector2(0f, rise) : new System.Numerics.Vector2(0f, -5f);
-                entries.Add(($"arriving through {x.Name}", x.Position, velocity, vertical ? x.ArrivalSide : 0,
-                    edge.Requires.IsMetBy(Ability.None), edge.Requires.IsMetBy(Ability.Harpoon), true, index));
-                guaranteed.Add(edge.Requires.Options.Aggregate(Simulated, (all, option) => all & option));
-            }
-
-            foreach (System.Numerics.Vector2 wake in shape.Wakes)
-            {
-                entries.Add(($"waking at ({wake.X:0.#}, {wake.Y:0.#})", wake, System.Numerics.Vector2.Zero, 0, true, true, true, -1));
-                guaranteed.Add(Ability.None);
-            }
-
-            var planners = new Dictionary<Ability, ReachPlanner> { [Ability.None] = planner };
-            ReachPlanner With(Ability g) => planners.TryGetValue(g, out ReachPlanner? p) ? p : planners[g] = new ReachPlanner(limits,
-                (g & Ability.Drill) != 0 ? shape.Sound : shape.Solids, (g & Ability.Harpoon) != 0 ? harpoon : null, shape.Anchors, shape.Lifts, water,
-                shape.Waters, ballast: (g & Ability.Ballast) != 0, hazards: (g & Ability.HeatPlating) != 0 ? null : shape.Heat);
-            var reachedFrom = entries.Select((e, n) => With(guaranteed[n]).Reach(e.At, e.Velocity, triggers, e.Steer).Triggers).ToList();
-            if (ReachReport == room)
-            {
-                // `--reach-report <Room>`: the ledges each way in reaches, to see where a planner stops.
-                for (int n = 0; n < entries.Count; n++)
+                if (r.IsMetBy(Ability.None))
                 {
-                    ReachPlanner p = With(guaranteed[n]);
-                    var (_, ledges) = p.Reach(entries[n].At, entries[n].Velocity, triggers, entries[n].Steer);
-                    GD.Print($"REACH {room} {entries[n].What} [{guaranteed[n]}]: exits " +
-                             string.Join(", ", reachedFrom[n].Select(t => shape.Exits[t].Name)) + "; ledges " +
-                             string.Join(" ", ledges.OrderBy(l => p.Ledges[l].Y).Select(l => $"{(p.Ledges[l].Swim ? "~" : "")}{p.Ledges[l].Y:0.##}@{p.Ledges[l].MinX:0.##}..{p.Ledges[l].MaxX:0.##}")));
-                }
-
-                GD.Print($"REACH {room} all ledges: " + string.Join(" ", planner.Ledges.OrderBy(l => l.Y).Select(l => $"{(l.Swim ? "~" : "")}{l.Y:0.##}@{l.MinX:0.##}..{l.MaxX:0.##}")));
-            }
-            var zippedFrom = shape.Anchors.Count == 0 ? reachedFrom
-                : entries.Select(e => harpooner.Reach(e.At, e.Velocity, triggers, e.Steer).Triggers).ToList();
-            var boredFrom = !cracked ? reachedFrom : entries.Select(e => driller.Reach(e.At, e.Velocity, triggers, e.Steer).Triggers).ToList();
-            var sunkFrom = shape.Waters.Count == 0 ? reachedFrom
-                : entries.Select(e => sinker.Reach(e.At, e.Velocity, triggers, e.Steer).Triggers).ToList();
-            var platedFrom = shape.Heat.Count == 0 ? reachedFrom
-                : entries.Select(e => plated.Reach(e.At, e.Velocity, triggers, e.Steer).Triggers).ToList();
-            for (int i = 0; i < shape.Exits.Count; i++)
-            {
-                ExitShape x = shape.Exits[i];
-                bool baseExit = Requirement.TryParse(x.Requires, out Requirement r, out _) && r.IsMetBy(Ability.None);
-                if (baseExit && !x.Sealed && entries.Count > 0 && !Enumerable.Range(0, entries.Count).Any(e => entries[e].Exit != i && reachedFrom[e].Contains(i))
-                    && entries.Any(e => e.Exit != i))
-                {
-                    _problems.Add($"{room}: exit {x.Name} needs nothing, but the base moveset reaches it from no way into the room");
-                }
-
-                if (!baseExit && Requirement.TryParse(x.Requires, out Requirement needs, out _) && needs.IsMetBy(Ability.Harpoon)
-                    && entries.Any(e => e.Harpoon && e.Exit != i)
-                    && !Enumerable.Range(0, entries.Count).Any(e => entries[e].Harpoon && entries[e].Exit != i && zippedFrom[e].Contains(i)))
-                {
-                    _problems.Add($"{room}: exit {x.Name} needs {x.Requires}, but the Harpoon reaches it from no way into the room " +
-                                  $"({shape.Anchors.Count} anchors)");
-                }
-
-                if (!baseExit && Requirement.TryParse(x.Requires, out Requirement drill, out _) && drill.IsMetBy(Ability.Drill)
-                    && entries.Any(e => e.Drill && e.Exit != i)
-                    && !Enumerable.Range(0, entries.Count).Any(e => entries[e].Drill && entries[e].Exit != i && boredFrom[e].Contains(i)))
-                {
-                    _problems.Add($"{room}: exit {x.Name} needs {x.Requires}, but the Drill reaches it from no way into the room " +
-                                  $"({shape.Solids.Count - shape.Sound.Count} cracked blocks)");
-                }
-
-                if (!baseExit && Requirement.TryParse(x.Requires, out Requirement ballast, out _) && ballast.IsMetBy(Ability.Ballast)
-                    && entries.Any(e => e.Exit != i)
-                    && !Enumerable.Range(0, entries.Count).Any(e => entries[e].Exit != i && sunkFrom[e].Contains(i)))
-                {
-                    _problems.Add($"{room}: exit {x.Name} needs {x.Requires}, but Ballast reaches it from no way into the room " +
-                                  $"({shape.Waters.Count} waters)");
-                }
-
-                if (!baseExit && Requirement.TryParse(x.Requires, out Requirement heat, out _) && heat.IsMetBy(Ability.HeatPlating)
-                    && entries.Any(e => e.Exit != i)
-                    && !Enumerable.Range(0, entries.Count).Any(e => entries[e].Exit != i && platedFrom[e].Contains(i)))
-                {
-                    _problems.Add($"{room}: exit {x.Name} needs {x.Requires}, but Heat plating reaches it from no way into the room " +
-                                  $"({shape.Heat.Count} heat zones)");
-                }
-
-                // A way that needs abilities together (Ballast & Drill): the planner with all of them, from any way in.
-                if (!baseExit && Requirement.TryParse(x.Requires, out Requirement together, out _)
-                    && !together.IsMetBy(Ability.Harpoon) && !together.IsMetBy(Ability.Drill) && !together.IsMetBy(Ability.Ballast)
-                    && !together.IsMetBy(Ability.HeatPlating)
-                    && Combined.FirstOrDefault(c => together.IsMetBy(c)) is var combined && combined != Ability.None
-                    && entries.Any(e => e.Exit != i))
-                {
-                    var both = new ReachPlanner(limits, (combined & Ability.Drill) != 0 ? shape.Sound : shape.Solids,
-                        (combined & Ability.Harpoon) != 0 ? harpoon : null, shape.Anchors, shape.Lifts, water, shape.Waters,
-                        ballast: (combined & Ability.Ballast) != 0, hazards: (combined & Ability.HeatPlating) != 0 ? null : shape.Heat);
-                    if (!Enumerable.Range(0, entries.Count).Any(e => entries[e].Exit != i
-                            && both.Reach(entries[e].At, entries[e].Velocity, triggers, entries[e].Steer).Triggers.Contains(i)))
+                    if (!x.Sealed && !others.Any(w => Reached(w, Ability.None).Contains(i)))
                     {
-                        _problems.Add($"{room}: exit {x.Name} needs {x.Requires}, but {combined} together reach it from no way into the room");
+                        _problems.Add($"{room}: exit {x.Name} needs nothing, but the base moveset reaches it from no way into the room");
                     }
+
+                    continue;
                 }
 
-                if (!baseExit)
+                // Each way the requirement can be met: every single ability that meets it, else the fewest abilities together.
+                var options = Singles.Where(a => r.IsMetBy(a)).ToList();
+                if (options.Count == 0 && Combined.FirstOrDefault(c => r.IsMetBy(c)) is var together && together != Ability.None)
                 {
-                    foreach (int e in Enumerable.Range(0, entries.Count).Where(e => entries[e].Base && entries[e].Exit != i && reachedFrom[e].Contains(i)))
-                    {
-                        _problems.Add($"{room}: exit {x.Name} needs {x.Requires}, but the base moveset reaches it {entries[e].What}");
-                    }
+                    options.Add(together);
+                }
+
+                foreach (Ability a in options.Where(a => !others.Any(w => Reached(w, a).Contains(i))))
+                {
+                    _problems.Add($"{room}: exit {x.Name} needs {x.Requires}, but {Describe(a)} reaches it from no way into the room");
+                }
+
+                foreach (int w in others.Where(w => ways[w].Base && Reached(w, Ability.None).Contains(i)))
+                {
+                    _problems.Add($"{room}: exit {x.Name} needs {x.Requires}, but the base moveset reaches it {ways[w].What}");
                 }
             }
         }
+    }
+
+    /// <summary>
+    /// The map with the rooms' insides (<see cref="MapSolver.SolveInside"/>): each room walked by the planner from the way the pilgrim
+    /// came in, with the abilities it owns, taking the relics it reaches there (then walking again with them), leaving only through
+    /// the exits it reaches. From waking in the start room, no reachable (room, way in, abilities) may be a softlock, the goal must be
+    /// reached (its <see cref="MapGoal"/> area walked into), and every relic taken. Returns the summary.
+    /// </summary>
+    private string CheckInside()
+    {
+        var reaches = new System.Collections.Concurrent.ConcurrentDictionary<WayState, RoomReach>();
+        InsideReport report = MapSolver.SolveInside(_graph, state => reaches[state] = Inside(state, clumsy: false));
+        CheckSlack(reaches);
+
+        foreach (MapItem item in report.UntakenItems)
+        {
+            _problems.Add($"map inside the rooms: the {item.Ability} relic in {item.Room} is reached from no way into the room");
+        }
+
+        foreach ((WayState state, IReadOnlyList<WayState> path) in report.Softlocks.Take(5))
+        {
+            _problems.Add($"map inside the rooms: softlock in {state}: no goal can be reached from there; reached by {string.Join(" → ", path)}");
+        }
+
+        if (!report.GoalReachable)
+        {
+            _problems.Add("map inside the rooms: no goal is reached walking the rooms from where the pilgrim comes in" +
+                          (report.UnenteredRooms.Count > 0 ? $"; never entered: {string.Join(", ", report.UnenteredRooms)}" : ""));
+        }
+
+        return $"INSIDE OK: {report.ReachableStates} states (room, way in, abilities), every room walked from each way in, no softlock; " +
+               "a clumsier pilgrim reaches all the same";
+    }
+
+    /// <summary>What the planner reaches in a room from the way in of <paramref name="state"/>, taking the relics it reaches there.</summary>
+    private RoomReach Inside(WayState state, bool clumsy)
+    {
+        RoomShape shape = _shapes[state.Room];
+        WayIn way = state.Entry == ""
+            ? new WayIn("waking", shape.Spawn, System.Numerics.Vector2.Zero, 0, -1, true, Ability.None)
+            : Arriving(shape, shape.Exits.FindIndex(x => x.Name == state.Entry), Requirement.None);
+        int relics = shape.Exits.Count, goals = relics + shape.Relics.Count;
+        var triggers = shape.Exits.Select(e => Box.Around(e.Position, e.Size)).Concat(shape.Relics.Select(r => r.Area)).Concat(shape.Goals).ToList();
+        Ability owned = state.Owned;
+        while (true)
+        {
+            HashSet<int> reached = Planner(state.Room, owned, clumsy).Reach(way.At, way.Velocity, triggers, way.Steer).Triggers;
+            Ability more = Enumerable.Range(0, shape.Relics.Count).Where(r => reached.Contains(relics + r))
+                .Aggregate(owned, (o, r) => o | shape.Relics[r].Ability);
+            if (more != owned)
+            {
+                owned = more; // walked again with what the relic gives (the planner starts over from the way in: never less)
+                continue;
+            }
+
+            var exits = shape.Exits.Where((x, i) => !x.Sealed && reached.Contains(i)).Select(x => x.Name).ToList();
+            return new RoomReach(owned, exits, Enumerable.Range(goals, shape.Goals.Count).Any(reached.Contains));
+        }
+    }
+
+    /// <summary>
+    /// Room for error: every state the inside check walked is walked again by a clumsier pilgrim (<see cref="MoveLimits.Clumsy"/>:
+    /// jumps 10% lower, dashes 15% shorter, runs 8% slower, never takes off from the very end of a ledge), which must reach every way
+    /// out, relic and goal the exact one does. A way only perfect play takes is a problem, once per room, way in and way out (with the
+    /// fewest abilities). Before this held (2026-11-01), ladders of 3 m steps against a 3.2 m jump made the second room a trial.
+    /// </summary>
+    private void CheckSlack(System.Collections.Concurrent.ConcurrentDictionary<WayState, RoomReach> reaches)
+    {
+        var states = reaches.Keys.ToList();
+        var clumsy = new RoomReach[states.Count];
+        System.Threading.Tasks.Parallel.For(0, states.Count, i => clumsy[i] = Inside(states[i], clumsy: true));
+        var seen = new HashSet<(string, string, string)>();
+        var lines = new List<string>();
+        foreach (int i in Enumerable.Range(0, states.Count).OrderBy(i => System.Numerics.BitOperations.PopCount((uint)states[i].Owned)))
+        {
+            WayState s = states[i];
+            RoomReach exact = reaches[s], loose = clumsy[i];
+            var missed = exact.Exits.Except(loose.Exits).Select(x => $"exit {x}").ToList();
+            Ability lost = exact.Owned & ~loose.Owned;
+            if (lost != Ability.None)
+            {
+                missed.Add($"the {lost} relic");
+            }
+
+            if (exact.Goal && !loose.Goal)
+            {
+                missed.Add("the goal");
+            }
+
+            foreach (string m in missed.Where(m => seen.Add((s.Room, s.Entry, m))))
+            {
+                lines.Add($"{s} : only near-perfect play reaches {m} (a clumsier pilgrim does not; tools: --reach-report {s.Room} --slack-report)");
+            }
+        }
+
+        _problems.AddRange(lines.Order(System.StringComparer.Ordinal).Select(l => $"no room for error: {l}"));
     }
 
     private static void CheckExit(RoomExit exit, string path, bool inside, System.Action<string> problem)

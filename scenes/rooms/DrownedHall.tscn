@@ -318,13 +318,14 @@ Size = Vector3(5, 0.5, 4)
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 26, 1, 0)
 Size = Vector3(4, 2, 4)
 
+; the pillar and the ledge under the slab: two 2.5 m steps back west (a jump with room to spare)
 [node name="MetalPillar" parent="Geometry" instance=ExtResource("2_block")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 32, 3, 0)
-Size = Vector3(2, 6, 4)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 32, 2.5, 0)
+Size = Vector3(2, 5, 4)
 Surface = 1
 
 [node name="LedgeUnderSlab" parent="Geometry" instance=ExtResource("2_block")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 39, 2.75, 0)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 39, 2.25, 0)
 Size = Vector3(4, 0.5, 4)
 
 [node name="MetalSlab" parent="Geometry" instance=ExtResource("2_block")]
@@ -348,36 +349,46 @@ Material = ExtResource("10_rust")
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 60.75, 25.75, 0)
 Size = Vector3(7.5, 0.5, 4)
 
+; the ladder up the shaft: ledges on alternating walls, 2.5 m apart (a jump with room to spare), the last beside the
+; right wall's top
 [node name="ShaftLedge1" parent="Geometry" instance=ExtResource("2_block")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 47.5, 2.75, 0)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 47.5, 2.25, 0)
 Size = Vector3(3, 0.5, 4)
 
 [node name="ShaftLedge2" parent="Geometry" instance=ExtResource("2_block")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 54.5, 5.75, 0)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 54.5, 4.75, 0)
 Size = Vector3(3, 0.5, 4)
 
 [node name="ShaftLedge3" parent="Geometry" instance=ExtResource("2_block")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 47.5, 8.75, 0)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 47.5, 7.25, 0)
 Size = Vector3(3, 0.5, 4)
 
 [node name="ShaftLedge4" parent="Geometry" instance=ExtResource("2_block")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 54.5, 11.75, 0)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 54.5, 9.75, 0)
 Size = Vector3(3, 0.5, 4)
 
 [node name="ShaftLedge5" parent="Geometry" instance=ExtResource("2_block")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 47.5, 14.75, 0)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 47.5, 12.25, 0)
 Size = Vector3(3, 0.5, 4)
 
 [node name="ShaftLedge6" parent="Geometry" instance=ExtResource("2_block")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 54.5, 17.75, 0)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 54.5, 14.75, 0)
 Size = Vector3(3, 0.5, 4)
 
 [node name="ShaftLedge7" parent="Geometry" instance=ExtResource("2_block")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 47.5, 20.75, 0)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 47.5, 17.25, 0)
 Size = Vector3(3, 0.5, 4)
 
 [node name="ShaftLedge8" parent="Geometry" instance=ExtResource("2_block")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 54.5, 23.75, 0)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 54.5, 19.75, 0)
+Size = Vector3(3, 0.5, 4)
+
+[node name="ShaftLedge9" parent="Geometry" instance=ExtResource("2_block")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 47.5, 22.25, 0)
+Size = Vector3(3, 0.5, 4)
+
+[node name="ShaftLedge10" parent="Geometry" instance=ExtResource("2_block")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 54.5, 24.75, 0)
 Size = Vector3(3, 0.5, 4)
 
 [node name="Anchors" type="Node3D" parent="."]

@@ -117,29 +117,39 @@ transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -1, -9.5, 0)
 Size = Vector3(4, 17, 4)
 Material = ExtResource("1_basalt")
 
-; a stair of ledges down to the ash floor
+; a stair of ledges down to the ash floor, 2 to 2.5 m apart
 [node name="Stair0" parent="Geometry" instance=ExtResource("2_block")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 15, -3.25, 0)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 15, -2.75, 0)
 Size = Vector3(4, 0.5, 4)
 Material = ExtResource("1_basalt")
 
 [node name="Stair1" parent="Geometry" instance=ExtResource("2_block")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 10, -6.25, 0)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 10, -4.75, 0)
 Size = Vector3(4, 0.5, 4)
 Material = ExtResource("1_basalt")
 
 [node name="Stair2" parent="Geometry" instance=ExtResource("2_block")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 15, -9.25, 0)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 15, -7.25, 0)
 Size = Vector3(4, 0.5, 4)
 Material = ExtResource("1_basalt")
 
 [node name="Stair3" parent="Geometry" instance=ExtResource("2_block")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 10, -12.25, 0)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 10, -9.25, 0)
 Size = Vector3(4, 0.5, 4)
 Material = ExtResource("1_basalt")
 
 [node name="Stair4" parent="Geometry" instance=ExtResource("2_block")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 15, -15.25, 0)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 15, -11.75, 0)
+Size = Vector3(4, 0.5, 4)
+Material = ExtResource("1_basalt")
+
+[node name="Stair5" parent="Geometry" instance=ExtResource("2_block")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 10, -13.75, 0)
+Size = Vector3(4, 0.5, 4)
+Material = ExtResource("1_basalt")
+
+[node name="Stair6" parent="Geometry" instance=ExtResource("2_block")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 15, -16.25, 0)
 Size = Vector3(4, 0.5, 4)
 Material = ExtResource("1_basalt")
 

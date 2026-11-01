@@ -10,8 +10,17 @@ public sealed record MoveLimits(
     float RunSpeed, float AirAcceleration, float AirDeceleration, float JumpHeight, float JumpTimeToApex, float JumpCutFactor,
     float FallGravityMultiplier, float ApexHangThreshold, float ApexGravityMultiplier, float MaxFallSpeed,
     float DashDistance, float DashDuration, float DashExitSpeedFactor, int AirDashes,
-    float Width = 0.7f, float Height = 1.6f)
+    float Width = 0.7f, float Height = 1.6f, float EdgeMargin = 0f)
 {
+    /// <summary>
+    /// A clumsier pilgrim, for the slack report: jumps a little lower, dashes a little shorter, runs a little slower, and never takes
+    /// off from the very end of a ledge. A way only these limits miss asks for near-perfect play.
+    /// </summary>
+    public MoveLimits Clumsy() => this with
+    {
+        JumpHeight = JumpHeight * 0.9f, DashDistance = DashDistance * 0.85f, RunSpeed = RunSpeed * 0.92f, EdgeMargin = 0.3f,
+    };
+
     public float Gravity => JumpMath.Gravity(JumpHeight, JumpTimeToApex);
     public float TakeOff => JumpMath.TakeOffSpeed(JumpHeight, JumpTimeToApex);
 }
@@ -21,6 +30,12 @@ public sealed record MoveLimits(
 /// center, the nearest an anchor may be, the pull's top speed and acceleration, and the release (speed kept, lift).
 /// </summary>
 public sealed record HarpoonLimits(float Range, float MinDistance, float ZipSpeed, float ZipAcceleration, float ExitSpeedFactor, float ExitLift);
+
+/// <summary>
+/// Mag-grip's numbers (from <c>player_tuning.tres</c>), for a planner that may also walk on metal: the leap off a wall (speed away,
+/// share of a jump's take-off upward) and how long after letting go the body can't grip again.
+/// </summary>
+public sealed record GripLimits(float LeapAwaySpeed, float LeapUpFactor, float RegrabDelay);
 
 /// <summary>An axis-aligned solid on the play plane.</summary>
 public readonly record struct Box(float MinX, float MinY, float MaxX, float MaxY)
@@ -60,6 +75,10 @@ public readonly record struct Ledge(float Y, float MinX, float MaxX, bool Swim =
 /// which is a ledge to swim along and jump from. Floors deeper than a jump out of the water are not take-off points. With
 /// <c>ballast</c>, a body in water reaches every point of the water connected to where it went in (sinking and rising at
 /// will), touching what the body passes and standing on every floor it finds there.
+/// Mag-grip (<see cref="GripLimits"/> and the metal solids): a body pushing into a metal wall (walking, jumping or falling, not
+/// dashing) or rising into a metal ceiling grips it, and then walks the whole surface connected to that point: along each face,
+/// around a metal block's corners, onto a metal wall met at an inner corner, standing up on a top; it touches what its body
+/// passes (lying along the normal), and from anywhere on a wall it leaps off or lets go, from anywhere under a ceiling it drops.
 /// Hazards (heat zones, for a planner without Heat plating) are space the body never enters: a trajectory that touches one
 /// ends there, and no ledge or water reaches into one.
 /// </summary>
@@ -85,6 +104,23 @@ public sealed class ReachPlanner
     private readonly List<Box> _waters;
     private readonly bool _ballast;
     private readonly List<Box> _hazards;
+    private readonly GripLimits? _grip;
+
+    /// <summary>The solids (by index) that are metal, with Mag-grip.</summary>
+    private readonly HashSet<int> _metal = new();
+
+    /// <summary>With Mag-grip: poses on metal surfaces where the body fits, grouped into the parts walkable together.</summary>
+    private readonly List<GripNode> _gripNodes = new();
+    private readonly List<List<int>> _gripParts = new();
+    private readonly Dictionary<(int X, int Y), List<int>> _gripCells = new();
+
+    /// <summary>Spacing of the grip poses along a face, meters.</summary>
+    private const float GripStep = 0.25f;
+
+    /// <summary>Two grip poses this close (and not on opposite faces) are one walk apart: along a face, or round a corner.</summary>
+    private const float GripLink = 0.8f;
+
+    private readonly record struct GripNode(Vector2 Feet, Vector2 Up, bool Launch, int Part);
 
     /// <summary>With Ballast, the water reachable together (feet positions on a grid where the body fits, by connected part).</summary>
     private readonly Dictionary<(int X, int Y), int> _cellPart = new();
@@ -95,7 +131,7 @@ public sealed class ReachPlanner
 
     public ReachPlanner(MoveLimits limits, IEnumerable<Box> solids, HarpoonLimits? harpoon = null, IEnumerable<Vector2>? anchors = null,
         IEnumerable<LiftPath>? lifts = null, WaterLimits? water = null, IEnumerable<Box>? waters = null, bool ballast = false,
-        IEnumerable<Box>? hazards = null)
+        IEnumerable<Box>? hazards = null, GripLimits? grip = null, IEnumerable<Box>? metal = null)
     {
         _m = limits;
         _hazards = hazards?.ToList() ?? new List<Box>();
@@ -111,6 +147,24 @@ public sealed class ReachPlanner
         if (_ballast)
         {
             FindWaterParts();
+        }
+
+        if (grip is not null && metal is not null)
+        {
+            var metalBoxes = metal.ToHashSet();
+            for (int i = 0; i < _solids.Count; i++)
+            {
+                if (metalBoxes.Contains(_solids[i]))
+                {
+                    _metal.Add(i);
+                }
+            }
+
+            _grip = _metal.Count > 0 ? grip : null;
+            if (_grip is not null)
+            {
+                FindGripParts();
+            }
         }
     }
 
@@ -143,6 +197,18 @@ public sealed class ReachPlanner
         }
 
         var sunkParts = new HashSet<int>();
+        var grippedParts = new HashSet<int>();
+        var gripQueue = new Queue<int>();
+
+        // With Mag-grip: gripping a metal surface at a pose (feet, up) walks the whole part of the surface connected to it.
+        void Grab(Vector2 feet, Vector2 up)
+        {
+            int node = GripNodeNear(feet, up);
+            if (node >= 0 && grippedParts.Add(_gripNodes[node].Part))
+            {
+                gripQueue.Enqueue(_gripNodes[node].Part);
+            }
+        }
 
         // With Ballast: everywhere in the water connected to where the body went in.
         void Sink(Vector2 feet)
@@ -193,15 +259,21 @@ public sealed class ReachPlanner
         // The arrival itself: falling (or rising) from the marker, with and without steering.
         foreach (int dir in steer != 0 ? new[] { steer } : new[] { -1, 0, 1 })
         {
-            Simulate(arrival, velocity, dir, jumpTicks: 0, dashTick: -1, triggers, reachedTriggers, Land, Sink);
+            Simulate(arrival, velocity, dir, jumpTicks: 0, dashTick: -1, triggers, reachedTriggers, Land, Sink, Grab);
         }
 
-        while (queue.Count > 0 || anchorQueue.Count > 0)
+        while (queue.Count > 0 || anchorQueue.Count > 0 || gripQueue.Count > 0)
         {
+            if (queue.Count == 0 && gripQueue.Count > 0)
+            {
+                Walk(_gripParts[gripQueue.Dequeue()], triggers, reachedTriggers, Land, Sink, Grab);
+                continue;
+            }
+
             if (queue.Count == 0)
             {
                 (int a, Vector2 from) = anchorQueue.Dequeue();
-                LetGo(_anchors[a], from, triggers, reachedTriggers, Land, Sink);
+                LetGo(_anchors[a], from, triggers, reachedTriggers, Land, Sink, Grab);
                 Fire(_anchors[a]);
                 continue;
             }
@@ -228,7 +300,7 @@ public sealed class ReachPlanner
                     {
                         foreach (int dash in new[] { -1, 6, 14, 22, 30 })
                         {
-                            Simulate(at, running, dir, jump, dash, triggers, reachedTriggers, Land, Sink);
+                            Simulate(at, running, dir, jump, dash, triggers, reachedTriggers, Land, Sink, Grab);
                         }
                     }
 
@@ -237,7 +309,7 @@ public sealed class ReachPlanner
                     {
                         foreach (int dash in new[] { -1, 4, 12, 20 })
                         {
-                            Simulate(at, running, dir, jumpTicks: 0, dash, triggers, reachedTriggers, Land, Sink);
+                            Simulate(at, running, dir, jumpTicks: 0, dash, triggers, reachedTriggers, Land, Sink, Grab);
                         }
                     }
                 }
@@ -245,6 +317,193 @@ public sealed class ReachPlanner
         }
 
         return (reachedTriggers, reachedLedges);
+    }
+
+    /// <summary>
+    /// Gripping a part of the metal surface: walking all of it, touching what the body passes, standing up on its tops, and leaping
+    /// off (or letting go of) its walls and dropping from under its ceilings, every meter or so.
+    /// </summary>
+    private void Walk(List<int> part, IReadOnlyList<Box> triggers, HashSet<int> reachedTriggers, Action<int> land, Action<Vector2> sink,
+        Action<Vector2, Vector2> grab)
+    {
+        GripLimits g = _grip!;
+        int regrab = (int)MathF.Ceiling(g.RegrabDelay / Dt);
+        float centerHeight = _m.Height * 0.5f;
+        foreach (int n in part)
+        {
+            GripNode node = _gripNodes[n];
+            Box body = GripBody(node.Feet, node.Up);
+            for (int t = 0; t < triggers.Count; t++)
+            {
+                if (body.Overlaps(triggers[t]))
+                {
+                    reachedTriggers.Add(t);
+                }
+            }
+
+            if (node.Up.Y > 0.5f)
+            {
+                land(LedgeAt(node.Feet));
+                continue;
+            }
+
+            if (!node.Launch)
+            {
+                continue;
+            }
+
+            // Upright again, turned about the body's center (GripMath.Upright).
+            Vector2 upright = node.Feet + node.Up * centerHeight - new Vector2(0f, centerHeight);
+            foreach (int dir in new[] { -1, 0, 1 })
+            {
+                if (node.Up.Y < -0.5f)
+                {
+                    // Under a ceiling: the leap pushes off downward.
+                    foreach (int dash in new[] { -1, 8 })
+                    {
+                        Simulate(upright, new Vector2(dir * _m.RunSpeed, -2f), dir, 0, dash, triggers, reachedTriggers, land, sink, grab,
+                            airborne: true, gripFrom: regrab);
+                    }
+
+                    continue;
+                }
+
+                var leap = new Vector2(node.Up.X * g.LeapAwaySpeed, _m.TakeOff * g.LeapUpFactor);
+                foreach (int dash in new[] { -1, 10 })
+                {
+                    Simulate(upright, leap, dir, 0, dash, triggers, reachedTriggers, land, sink, grab, airborne: true, gripFrom: regrab);
+                }
+
+                Simulate(upright, node.Up * 1.5f, dir, 0, -1, triggers, reachedTriggers, land, sink, grab, airborne: true, gripFrom: regrab);
+            }
+        }
+    }
+
+    /// <summary>The body lying along <paramref name="up"/> from feet on a surface (upright on a floor).</summary>
+    private Box GripBody(Vector2 feet, Vector2 up) =>
+        Box.Around(feet + up * (_m.Height * 0.5f), MathF.Abs(up.X) > 0.5f ? new Vector2(_m.Height, _m.Width) : new Vector2(_m.Width, _m.Height));
+
+    /// <summary>The grip pose with this <paramref name="up"/> nearest to <paramref name="feet"/> (within a meter), or −1.</summary>
+    private int GripNodeNear(Vector2 feet, Vector2 up)
+    {
+        int best = -1;
+        float bestDistance = 1f;
+        int cx = (int)MathF.Floor(feet.X), cy = (int)MathF.Floor(feet.Y);
+        for (int dx = -1; dx <= 1; dx++)
+        {
+            for (int dy = -1; dy <= 1; dy++)
+            {
+                if (!_gripCells.TryGetValue((cx + dx, cy + dy), out List<int>? cell))
+                {
+                    continue;
+                }
+
+                foreach (int n in cell)
+                {
+                    float d = Vector2.Distance(_gripNodes[n].Feet, feet);
+                    if (_gripNodes[n].Up == up && d <= bestDistance)
+                    {
+                        best = n;
+                        bestDistance = d;
+                    }
+                }
+            }
+        }
+
+        return best;
+    }
+
+    /// <summary>
+    /// With Mag-grip: every pose on a metal face (every <see cref="GripStep"/>) where the body fits, linked to the poses a short walk
+    /// away (along the face, round a block's outer corner, onto a wall at an inner corner, up onto a top), grouped into parts.
+    /// </summary>
+    private void FindGripParts()
+    {
+        foreach (int i in _metal.Order())
+        {
+            Box b = _solids[i];
+            var faces = new (Vector2 Up, Vector2 From, Vector2 To)[]
+            {
+                (new Vector2(-1f, 0f), new Vector2(b.MinX, b.MinY), new Vector2(b.MinX, b.MaxY)),
+                (new Vector2(1f, 0f), new Vector2(b.MaxX, b.MinY), new Vector2(b.MaxX, b.MaxY)),
+                (new Vector2(0f, -1f), new Vector2(b.MinX, b.MinY), new Vector2(b.MaxX, b.MinY)),
+                (new Vector2(0f, 1f), new Vector2(b.MinX, b.MaxY), new Vector2(b.MaxX, b.MaxY)),
+            };
+            foreach ((Vector2 up, Vector2 from, Vector2 to) in faces)
+            {
+                int steps = Math.Max(1, (int)MathF.Ceiling(Vector2.Distance(from, to) / GripStep));
+                for (int k = 0; k <= steps; k++)
+                {
+                    Vector2 feet = Vector2.Lerp(from, to, k / (float)steps);
+                    Box body = GripBody(feet, up);
+                    var inner = new Box(body.MinX + Skin, body.MinY + Skin, body.MaxX - Skin, body.MaxY - Skin);
+                    if (_solids.Any(s => s.Overlaps(inner)) || _hazards.Any(h => h.Overlaps(inner)))
+                    {
+                        continue;
+                    }
+
+                    var key = ((int)MathF.Floor(feet.X), (int)MathF.Floor(feet.Y));
+                    if (!_gripCells.TryGetValue(key, out List<int>? cell))
+                    {
+                        _gripCells[key] = cell = new List<int>();
+                    }
+
+                    cell.Add(_gripNodes.Count);
+                    _gripNodes.Add(new GripNode(feet, up, k % 4 == 0 || k == steps, -1));
+                }
+            }
+        }
+
+        // Union the poses a short walk apart.
+        int[] root = Enumerable.Range(0, _gripNodes.Count).ToArray();
+        int Find(int x)
+        {
+            while (root[x] != x)
+            {
+                x = root[x] = root[root[x]];
+            }
+
+            return x;
+        }
+
+        for (int n = 0; n < _gripNodes.Count; n++)
+        {
+            GripNode a = _gripNodes[n];
+            int cx = (int)MathF.Floor(a.Feet.X), cy = (int)MathF.Floor(a.Feet.Y);
+            for (int dx = -1; dx <= 1; dx++)
+            {
+                for (int dy = -1; dy <= 1; dy++)
+                {
+                    if (!_gripCells.TryGetValue((cx + dx, cy + dy), out List<int>? cell))
+                    {
+                        continue;
+                    }
+
+                    foreach (int m in cell.Where(m => m > n))
+                    {
+                        GripNode b = _gripNodes[m];
+                        if (Vector2.Dot(a.Up, b.Up) > -0.5f && Vector2.Distance(a.Feet, b.Feet) <= GripLink)
+                        {
+                            root[Find(m)] = Find(n);
+                        }
+                    }
+                }
+            }
+        }
+
+        var parts = new Dictionary<int, int>();
+        for (int n = 0; n < _gripNodes.Count; n++)
+        {
+            int r = Find(n);
+            if (!parts.TryGetValue(r, out int part))
+            {
+                parts[r] = part = _gripParts.Count;
+                _gripParts.Add(new List<int>());
+            }
+
+            _gripParts[part].Add(n);
+            _gripNodes[n] = _gripNodes[n] with { Part = part };
+        }
     }
 
     /// <summary>Standing on a lift's platform anywhere along <paramref name="on"/>, carried up the whole of its rise.</summary>
@@ -264,7 +523,7 @@ public sealed class ReachPlanner
 
     /// <summary>Pulled from <paramref name="from"/> to <paramref name="anchor"/> (the body's center), then letting go there.</summary>
     private void LetGo(Vector2 anchor, Vector2 from, IReadOnlyList<Box> triggers, HashSet<int> reachedTriggers, Action<int> land,
-        Action<Vector2> sink)
+        Action<Vector2> sink, Action<Vector2, Vector2> grab)
     {
         HarpoonLimits h = _harpoon!;
         float distance = Vector2.Distance(from, anchor);
@@ -278,7 +537,7 @@ public sealed class ReachPlanner
             {
                 foreach (int dash in new[] { -1, 6, 14 })
                 {
-                    Simulate(feet, release, dir, jump, dash, triggers, reachedTriggers, land, sink, airborne: true);
+                    Simulate(feet, release, dir, jump, dash, triggers, reachedTriggers, land, sink, grab, airborne: true);
                 }
             }
         }
@@ -306,10 +565,20 @@ public sealed class ReachPlanner
         return true;
     }
 
-    /// <summary>Where on a ledge to take off: its ends, and every 2 m between.</summary>
+    /// <summary>Where on a ledge to take off: its ends (or <see cref="MoveLimits.EdgeMargin"/> inside them), and every 2 m between.</summary>
     private IEnumerable<float> TakeOffs(Ledge l)
     {
         float a = l.MinX, b = l.MaxX;
+        if (b - a > 2f * _m.EdgeMargin)
+        {
+            a += _m.EdgeMargin;
+            b -= _m.EdgeMargin;
+        }
+        else
+        {
+            a = b = (a + b) * 0.5f;
+        }
+
         yield return a;
         if (b - a > 0.01f)
         {
@@ -329,7 +598,8 @@ public sealed class ReachPlanner
     /// on, floating, until it settles on the float line (a landing on that swim ledge), or with Ballast reports where it went in.
     /// </summary>
     private void Simulate(Vector2 start, Vector2 velocity, int dir, int jumpTicks, int dashTick, IReadOnlyList<Box> triggers,
-        HashSet<int> reachedTriggers, Action<int> land, Action<Vector2> sink, bool airborne = false)
+        HashSet<int> reachedTriggers, Action<int> land, Action<Vector2> sink, Action<Vector2, Vector2> grab, bool airborne = false,
+        int gripFrom = 0)
     {
         Vector2 p = start, v = velocity;
         bool jumping = jumpTicks != 0, cut = false;
@@ -416,14 +686,30 @@ public sealed class ReachPlanner
             }
 
             // Move X, then Y, stopping at faces.
-            p.X = MoveAxis(p, v.X * Dt, horizontal: true, out bool hitX);
+            bool grips = _grip is not null && dashLeft == 0 && tick >= gripFrom;
+            float pushX = v.X;
+            p.X = MoveAxis(p, v.X * Dt, horizontal: true, out bool hitX, out int solidX);
             if (hitX)
             {
                 v.X = 0f;
+                if (grips && dir != 0 && MathF.Sign(pushX) == dir && _metal.Contains(solidX))
+                {
+                    // Pushing into a metal wall: onto it, the body turning about its center (GripMath.OntoWall). The trajectory goes
+                    // on too, sliding down the wall (a pilgrim that lets the stick go a moment doesn't grip).
+                    Box wall = _solids[solidX];
+                    grab(new Vector2(dir > 0 ? wall.MinX : wall.MaxX, p.Y + _m.Height * 0.5f), new Vector2(-dir, 0f));
+                }
             }
 
             float before = p.Y;
-            p.Y = MoveAxis(p, v.Y * Dt, horizontal: false, out bool hitY);
+            float pushY = v.Y;
+            p.Y = MoveAxis(p, v.Y * Dt, horizontal: false, out bool hitY, out int solidY);
+            if (hitY && grips && pushY > 0f && _metal.Contains(solidY))
+            {
+                // Rising into a metal ceiling: hanging under it (GripMath.OntoCeiling); or not, bumping it (as above).
+                grab(new Vector2(p.X, _solids[solidY].MinY), new Vector2(0f, -1f));
+            }
+
             if (MathF.Abs(p.Y - before) > 1e-5f)
             {
                 airborne = true;
@@ -459,13 +745,13 @@ public sealed class ReachPlanner
         WaterLimits w = _w!;
         v.X = WaterMotion.Horizontal(v.X, dir, w, Dt);
         v.Y = WaterMotion.Vertical(v.Y, p.Y, water.MaxY, sunk: false, w, Dt);
-        p.X = MoveAxis(p, v.X * Dt, horizontal: true, out bool hitX);
+        p.X = MoveAxis(p, v.X * Dt, horizontal: true, out bool hitX, out _);
         if (hitX)
         {
             v.X = 0f;
         }
 
-        p.Y = MoveAxis(p, v.Y * Dt, horizontal: false, out bool hitY);
+        p.Y = MoveAxis(p, v.Y * Dt, horizontal: false, out bool hitY, out _);
         Touch(p, triggers, reachedTriggers);
         if (InHazard(p))
         {
@@ -537,13 +823,15 @@ public sealed class ReachPlanner
     private Box BodyAt(Vector2 feet) => new(feet.X - _m.Width * 0.5f, feet.Y, feet.X + _m.Width * 0.5f, feet.Y + _m.Height);
 
     /// <summary>Moves the body along one axis by <paramref name="delta"/>, stopping against the first solid.</summary>
-    private float MoveAxis(Vector2 p, float delta, bool horizontal, out bool hit)
+    private float MoveAxis(Vector2 p, float delta, bool horizontal, out bool hit, out int hitSolid)
     {
         hit = false;
+        hitSolid = -1;
         Box body = BodyAt(p);
         float moved = delta;
-        foreach (Box s in _solids)
+        for (int i = 0; i < _solids.Count; i++)
         {
+            Box s = _solids[i];
             if (horizontal)
             {
                 if (body.MinY >= s.MaxY - Skin || body.MaxY <= s.MinY + Skin)
@@ -555,11 +843,13 @@ public sealed class ReachPlanner
                 {
                     moved = s.MinX - body.MaxX - Skin;
                     hit = true;
+                    hitSolid = i;
                 }
                 else if (delta < 0f && body.MinX >= s.MaxX - Skin && body.MinX + moved < s.MaxX)
                 {
                     moved = s.MaxX - body.MinX + Skin;
                     hit = true;
+                    hitSolid = i;
                 }
             }
             else
@@ -573,11 +863,13 @@ public sealed class ReachPlanner
                 {
                     moved = s.MinY - body.MaxY - Skin;
                     hit = true;
+                    hitSolid = i;
                 }
                 else if (delta < 0f && body.MinY >= s.MaxY - Skin && body.MinY + moved < s.MaxY)
                 {
                     moved = s.MaxY - body.MinY + Skin;
                     hit = true;
+                    hitSolid = i;
                 }
             }
         }

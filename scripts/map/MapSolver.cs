@@ -10,6 +10,41 @@ public readonly record struct SolverState(string Room, Ability Owned)
     public override string ToString() => Owned == Ability.None ? Room : $"{Room} [{Owned}]";
 }
 
+/// <summary>
+/// A place in the game as the inside solver sees it: a room, the way the pilgrim came in (an exit's name; "" for waking at the
+/// start), and the abilities owned on arriving.
+/// </summary>
+public readonly record struct WayState(string Room, string Entry, Ability Owned)
+{
+    public override string ToString() => $"{Room} via {(Entry == "" ? "the start" : Entry)}{(Owned == Ability.None ? "" : $" [{Owned}]")}";
+}
+
+/// <summary>
+/// What a pilgrim can do inside a room, come in through <see cref="WayState.Entry"/> with <see cref="WayState.Owned"/>: the abilities
+/// it owns once it has taken the relics it can reach there, the exits it can reach (their requirements still apply), and whether it
+/// reaches a goal. The geometry planner answers it for the built rooms; tests answer it by hand.
+/// </summary>
+public readonly record struct RoomReach(Ability Owned, IReadOnlyCollection<string> Exits, bool Goal);
+
+/// <summary>What the inside solver found.</summary>
+public sealed class InsideReport
+{
+    public int ReachableStates { get; init; }
+
+    public bool GoalReachable { get; init; }
+
+    /// <summary>Reachable states from which no goal can be reached, each with the path (states) that leads there from the start.</summary>
+    public IReadOnlyList<(WayState State, IReadOnlyList<WayState> Path)> Softlocks { get; init; } = Array.Empty<(WayState, IReadOnlyList<WayState>)>();
+
+    /// <summary>Rooms no reachable state is in.</summary>
+    public IReadOnlyList<string> UnenteredRooms { get; init; } = Array.Empty<string>();
+
+    /// <summary>Relics no reachable state takes.</summary>
+    public IReadOnlyList<MapItem> UntakenItems { get; init; } = Array.Empty<MapItem>();
+
+    public bool SoftlockFree => GoalReachable && Softlocks.Count == 0;
+}
+
 /// <summary>What the solver found.</summary>
 public sealed class MapReport
 {
@@ -119,6 +154,99 @@ public static class MapSolver
             Orders = orders,
             AbilityCount = count,
             Positions = positions,
+        };
+    }
+
+    /// <summary>
+    /// The solver with the rooms' insides (objective 2 without trusting the rooms): a room is not one place but what can be reached in
+    /// it from each way in, with the abilities owned (<paramref name="inside"/>): which exits, which relics, the goal. Explores every
+    /// (room, way in, abilities) reachable from waking in the start room; from each, some goal must stay reachable. Catches what the
+    /// room-level <see cref="Solve"/> can't: a drop into the part of a room that only an ability leads out of, a relic behind a wall.
+    /// <paramref name="inside"/> is called once per state, from several threads at once.
+    /// </summary>
+    public static InsideReport SolveInside(MapGraph map, Func<WayState, RoomReach> inside)
+    {
+        var start = new WayState(map.Start, "", Ability.None);
+        var parent = new Dictionary<WayState, WayState?> { [start] = null };
+        var successors = new Dictionary<WayState, List<WayState>>();
+        var goals = new HashSet<WayState>();
+        var taken = new HashSet<(string Room, Ability Ability)>();
+        var level = new List<WayState> { start };
+        while (level.Count > 0)
+        {
+            // One breadth-first level at a time, the rooms walked in parallel (the planner is the cost).
+            var reach = new RoomReach[level.Count];
+            System.Threading.Tasks.Parallel.For(0, level.Count, i => reach[i] = inside(level[i]));
+            var next = new List<WayState>();
+            for (int i = 0; i < level.Count; i++)
+            {
+                WayState s = level[i];
+                RoomReach r = reach[i];
+                if (r.Goal)
+                {
+                    goals.Add(s);
+                }
+
+                foreach (Ability gained in Enum.GetValues<Ability>().Where(a => a != Ability.None && (r.Owned & a) != 0 && (s.Owned & a) == 0))
+                {
+                    taken.Add((s.Room, gained));
+                }
+
+                var after = new List<WayState>();
+                foreach (MapEdge edge in map.From(s.Room).Where(e => r.Exits.Contains(e.FromExit) && e.Requires.IsMetBy(r.Owned)))
+                {
+                    var t = new WayState(edge.To, edge.ToExit, r.Owned);
+                    after.Add(t);
+                    if (!parent.ContainsKey(t))
+                    {
+                        parent[t] = s;
+                        next.Add(t);
+                    }
+                }
+
+                successors[s] = after;
+            }
+
+            level = next;
+        }
+
+        var good = new HashSet<WayState>(goals);
+        bool grew = true;
+        while (grew)
+        {
+            grew = false;
+            foreach (WayState s in parent.Keys)
+            {
+                if (!good.Contains(s) && successors[s].Any(good.Contains))
+                {
+                    good.Add(s);
+                    grew = true;
+                }
+            }
+        }
+
+        List<WayState> PathOf(WayState s)
+        {
+            var path = new List<WayState>();
+            for (WayState? at = s; at is { } a; at = parent[a])
+            {
+                path.Add(a);
+            }
+
+            path.Reverse();
+            return path;
+        }
+
+        return new InsideReport
+        {
+            ReachableStates = parent.Count,
+            GoalReachable = good.Contains(start),
+            Softlocks = parent.Keys.Where(s => !good.Contains(s))
+                .Select(s => (s, (IReadOnlyList<WayState>)PathOf(s)))
+                .OrderBy(p => p.Item2.Count).ThenBy(p => p.s.Room, StringComparer.Ordinal).ThenBy(p => p.s.Entry, StringComparer.Ordinal)
+                .ThenBy(p => p.s.Owned).ToList(),
+            UntakenItems = map.Items.Where(item => !taken.Contains((item.Room, item.Ability))).ToList(),
+            UnenteredRooms = map.Rooms.Where(r => !parent.Keys.Any(s => s.Room == r)).ToList(),
         };
     }
 

@@ -164,4 +164,54 @@ public class ReachPlannerTests
         var low = new[] { B(9f, 0f, 11f, 1.5f) };
         Assert.Contains(0, new ReachPlanner(Limits, solids, hazards: low).Reach(Vector2.Zero, Vector2.Zero, new[] { far }).Triggers);
     }
+
+    // Mag-grip's live tuning.
+    private static readonly GripLimits Grip = new(LeapAwaySpeed: 6.5f, LeapUpFactor: 0.85f, RegrabDelay: 0.25f);
+
+    private static bool Grips(IEnumerable<Box> solids, IEnumerable<Box> metal, Vector2 from, Box target) =>
+        new ReachPlanner(Limits, solids, grip: Grip, metal: metal).Reach(from, Vector2.Zero, new[] { target }).Triggers.Contains(0);
+
+    [Fact]
+    public void GripClimbsAMetalWallOntoItsTop()
+    {
+        // A 10 m metal tower: no jump reaches its top; gripping its side walks up and round onto it.
+        Box tower = B(4f, 0f, 6f, 10f);
+        var solids = new[] { B(-10f, -2f, 30f, 0f), tower, B(-10f, 20f, 30f, 21f) };
+        Box top = B(4.5f, 10.2f, 5.5f, 11f);
+        Assert.False(Reaches(solids, new Vector2(0f, 0f), top));
+        Assert.True(Grips(solids, new[] { tower }, new Vector2(0f, 0f), top));
+    }
+
+    [Fact]
+    public void GripNeedsMetal()
+    {
+        Box tower = B(4f, 0f, 6f, 10f);
+        var solids = new[] { B(-10f, -2f, 30f, 0f), tower, B(-10f, 20f, 30f, 21f) };
+        Assert.False(Grips(solids, new Box[0], new Vector2(0f, 0f), B(4.5f, 10.2f, 5.5f, 11f)));
+    }
+
+    [Fact]
+    public void GripWalksUnderACeilingAndDropsBeyondAWall()
+    {
+        // A rock wall too high to jump: up the metal pillar, a jump from its top onto the metal slab's underside, along under it past
+        // the wall, and a drop on the far side.
+        Box pillar = B(2f, 0f, 3f, 6f);
+        Box slab = B(2f, 8f, 14f, 9f);
+        Box wall = B(7f, 0f, 8f, 4.5f);
+        var solids = new[] { B(-10f, -2f, 30f, 0f), pillar, slab, wall, B(-10f, 20f, 30f, 21f) };
+        Box beyond = B(10f, 0.1f, 11f, 1f);
+        Assert.False(Reaches(solids, new Vector2(0f, 0f), beyond));
+        Assert.True(Grips(solids, new[] { pillar, slab }, new Vector2(0f, 0f), beyond));
+    }
+
+    [Fact]
+    public void GripCatchesAMetalWallAcrossAPit()
+    {
+        // A jump over a pit into the face of a metal tower: gripped in the air, climbed onto its top.
+        Box tower = B(6f, -30f, 9f, 12f);
+        var solids = new[] { B(-20f, -2f, 0f, 0f), tower, B(-20f, -32f, 40f, -30f) };
+        Box top = B(7f, 12.1f, 8f, 13f);
+        Assert.False(Reaches(solids, new Vector2(-3f, 0f), top));
+        Assert.True(Grips(solids, new[] { tower }, new Vector2(-3f, 0f), top));
+    }
 }

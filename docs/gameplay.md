@@ -10,6 +10,8 @@
 
 All numbers live in `resources/player_tuning.tres` (see "Tuning" below).
 
+**Room metrics** (for building rooms): a full jump rises 3.2 m, so a step the pilgrim must climb is at most **2.5 m**; a ladder of ledges rises 2.5 m per ledge (never 3). A gap crossed at one height is at most about **8 m** with a running jump and the air dash. These leave room for error: the room check walks every room again with a clumsier pilgrim (jumps 10% lower, dashes 15% shorter, runs 8% slower, never taking off from a ledge's very end) and fails on any way only near-perfect play takes ([testing.md](testing.md)). A room that moves the tuning (a higher jump) moves these too.
+
 ## Combat, health and the pilgrimage (M6)
 
 - **Attack** (J / X, pad X): a quick swing, a pale crescent sweeping from above to the front (`PlayerAttack`, timing in `Swing`, pure). It never stops the pilgrim: momentum carries through. Upright and on Mag-grip surfaces. A press during the recovery is buffered, so swings chain. Each machine the hit window reaches takes one hit per swing (`MachineDirector` resolves hits against each machine's body box): it flashes, reels (its brain stunned 0.35 s, a wind-up lost) and is pushed back; when its health (`MachineSpecies.Health`) is gone it folds down and is gone until the room is entered again.
@@ -43,7 +45,7 @@ These gate the map. Every ability is one simple state or rule: no systemic or em
 
 The player can collect them in many orders, and that freedom is proven by a solver ([long-term.md](long-term.md), objective 2).
 
-**Mag-grip (implemented, M6).** `GripState` with pure geometry in `GripMath` (unit tested). Metal is the physics layer only (`world_metal`, set by `Block.Surface`).
+**Mag-grip (implemented, M6).** `GripState` with pure geometry in `GripMath` (unit tested). Metal is the physics layer only (`world_metal`, set by `Block.Surface`). The room check simulates it (`ReachPlanner` with `GripLimits`): a way Mag-grip opens must be reached by gripping the room's metal.
 - **Attach:** press into a metal wall (on the ground or in the air), or rise into a metal ceiling (a jump). The body turns about its center so it swings out from the wall; its up becomes the surface normal (`UpDirection` and the body's rotation about Z, so the collider turns with it).
 - **Move:** held input along the surface (up/down on a wall, left/right under a ceiling, in screen terms) at `GripSpeed`. **Pull away** from the surface to let go, **jump** to leap off (away from a wall at `GripLeapAwaySpeed` and up at `GripLeapUpFactor` of a jump; downward from a ceiling), **dash** to let go and dash. `GripRegrabDelay` keeps the same surface from catching the player straight back.
 - **Corners snap** (a later pass may smooth them): a metal wall ahead turns the player onto it (inner corner); a surface's end wraps the player around the edge onto the end face (outer corner); reaching a floor stands it up. After a corner, the input that led there keeps meaning "keep going" until it changes, so holding up climbs a wall, turns under the ceiling and walks along it. A rock face ahead just stops the player; a rock end face lets go.

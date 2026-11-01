@@ -125,4 +125,57 @@ public class MapSolverTests
         g.AddGoal("B");
         Assert.Null(MapSolver.Route(g));
     }
+
+    /// <summary>A room's inside by hand: from each way in (and with what), the exits reached; relics and goals as given.</summary>
+    private static System.Func<WayState, RoomReach> Inside(System.Func<WayState, (Ability, string[], bool)> rule) => s =>
+    {
+        (Ability owned, string[] exits, bool goal) = rule(s);
+        return new RoomReach(owned, exits, goal);
+    };
+
+    /// <summary>The slice with every room fully walkable: the Reliquary gives Mag-grip, the Descent is the goal.</summary>
+    private static (Ability, string[], bool) Open(MapGraph g, WayState s) =>
+        (s.Room == "Reliquary" ? s.Owned | Ability.MagGrip : s.Owned, g.From(s.Room).Select(e => e.FromExit).ToArray(), s.Room == "Descent");
+
+    [Fact]
+    public void InsideTheSliceWalkedOpenHasNoSoftlock()
+    {
+        MapGraph g = Slice();
+        InsideReport r = MapSolver.SolveInside(g, Inside(s => Open(g, s)));
+        Assert.True(r.SoftlockFree);
+        Assert.Empty(r.UntakenItems);
+    }
+
+    [Fact]
+    public void ARelicBehindAWallIsNeverTaken()
+    {
+        // The Reliquary's relic stands behind a wall no way in gets past: the room-level solver can't see it, the inside one can.
+        MapGraph g = Slice();
+        Assert.True(MapSolver.Solve(g).SoftlockFree);
+        InsideReport r = MapSolver.SolveInside(g, Inside(s =>
+        {
+            (Ability owned, string[] exits, bool goal) = Open(g, s);
+            return (s.Room == "Reliquary" ? s.Owned : owned, exits, goal);
+        }));
+
+        Assert.False(r.GoalReachable);
+        Assert.Equal("Reliquary", Assert.Single(r.UntakenItems).Room);
+    }
+
+    [Fact]
+    public void AWayInThatReachesNoWayOutIsASoftlock()
+    {
+        // Coming into the Nave from the Cistern below (with Mag-grip), the pilgrim lands where only the Cistern's way back is reached.
+        MapGraph g = Slice();
+        InsideReport r = MapSolver.SolveInside(g, Inside(s =>
+        {
+            (Ability owned, string[] exits, bool goal) = Open(g, s);
+            return s.Room == "Nave" && s.Entry == "Cistern" ? (owned, new[] { "Cistern" }, false) : (owned, exits, goal);
+        }));
+
+        Assert.False(r.SoftlockFree);
+        Assert.Contains(r.Softlocks, p => p.State == new WayState("Nave", "Cistern", Ability.MagGrip));
+        Assert.Equal(new[] { "Narthex", "DrownedHall", "Nave", "Cistern", "Reliquary", "Cistern", "Nave" },
+            r.Softlocks.First(p => p.State == new WayState("Nave", "Cistern", Ability.MagGrip)).Path.Select(p => p.Room));
+    }
 }

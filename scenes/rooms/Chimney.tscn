@@ -65,53 +65,63 @@ transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 7.25, -1, 0)
 Size = Vector3(1.5, 2, 4)
 Material = ExtResource("1_basalt")
 
-; ledges of slag set hard, zig-zag up the throat
+; ledges of slag set hard, zig-zag up the throat, 2.5 m apart
 [node name="Ledge0" parent="Geometry" instance=ExtResource("2_block")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.5, 2.75, 0)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.5, 2.25, 0)
 Size = Vector3(4, 0.5, 4)
 Material = ExtResource("1_basalt")
 
 [node name="Ledge1" parent="Geometry" instance=ExtResource("2_block")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 6, 5.75, 0)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 6, 4.75, 0)
 Size = Vector3(4, 0.5, 4)
 Material = ExtResource("1_basalt")
 
 [node name="Ledge2" parent="Geometry" instance=ExtResource("2_block")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.5, 8.75, 0)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.5, 7.25, 0)
 Size = Vector3(4, 0.5, 4)
 Material = ExtResource("1_basalt")
 
 [node name="Ledge3" parent="Geometry" instance=ExtResource("2_block")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 6, 11.75, 0)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 6, 9.75, 0)
 Size = Vector3(4, 0.5, 4)
 Material = ExtResource("1_basalt")
 
 [node name="Ledge4" parent="Geometry" instance=ExtResource("2_block")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.5, 14.75, 0)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.5, 12.25, 0)
 Size = Vector3(4, 0.5, 4)
 Material = ExtResource("1_basalt")
 
 [node name="Ledge5" parent="Geometry" instance=ExtResource("2_block")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 6, 17.75, 0)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 6, 14.75, 0)
 Size = Vector3(4, 0.5, 4)
 Material = ExtResource("1_basalt")
 
 [node name="Ledge6" parent="Geometry" instance=ExtResource("2_block")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.5, 20.75, 0)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.5, 17.25, 0)
 Size = Vector3(4, 0.5, 4)
 Material = ExtResource("1_basalt")
 
 [node name="Ledge7" parent="Geometry" instance=ExtResource("2_block")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 6, 23.75, 0)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 6, 19.75, 0)
 Size = Vector3(4, 0.5, 4)
 Material = ExtResource("1_basalt")
 
 [node name="Ledge8" parent="Geometry" instance=ExtResource("2_block")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.5, 26.75, 0)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.5, 22.25, 0)
 Size = Vector3(4, 0.5, 4)
 Material = ExtResource("1_basalt")
 
 [node name="Ledge9" parent="Geometry" instance=ExtResource("2_block")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 6, 24.75, 0)
+Size = Vector3(4, 0.5, 4)
+Material = ExtResource("1_basalt")
+
+[node name="Ledge10" parent="Geometry" instance=ExtResource("2_block")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.5, 27.25, 0)
+Size = Vector3(4, 0.5, 4)
+Material = ExtResource("1_basalt")
+
+[node name="Ledge11" parent="Geometry" instance=ExtResource("2_block")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 6, 29.75, 0)
 Size = Vector3(4, 0.5, 4)
 Material = ExtResource("1_basalt")

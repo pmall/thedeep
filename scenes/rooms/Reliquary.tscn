@@ -2,7 +2,7 @@
 
 ; The Reliquary, west of the Cistern (map offset (65, -4.5)): a quiet chapel, a dead end. A pilgrim shrine
 ; by the doorway; at the far end, in a shaft of light, the altar where the Mag-grip relic rests. A metal
-; pillar under a metal slab invites a first climb right after the pickup (an optional ledge with glyphs).
+; pier hanging from a metal slab invites a first climb right after the pickup (an optional ledge with glyphs).
 ; The way back out is the doorway east, then up the Cistern's metal flue: it needs the relic.
 
 [ext_resource type="Script" path="res://scripts/kit/ColumnMesh.cs" id="1_column"]
@@ -209,10 +209,11 @@ Size = Vector3(43, 4, 4)
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 8, 0.25, 0)
 Size = Vector3(7, 0.5, 4)
 
-; a first climb: up the pillar, under the slab, around its end
+; a first climb: a metal pier hanging from the slab, its foot 3 m over the floor (walked under on the way to the altar):
+; jump to its side, grip up it, under the slab, around its end
 [node name="MetalPillar" parent="Geometry" instance=ExtResource("5_block")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 19.75, 3.5, 0)
-Size = Vector3(1.5, 7, 4)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 19.75, 6.75, 0)
+Size = Vector3(1.5, 7.5, 4)
 Surface = 1
 
 [node name="MetalSlab" parent="Geometry" instance=ExtResource("5_block")]

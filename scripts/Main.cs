@@ -162,7 +162,8 @@ public partial class Main : Node3D
         {
             AddChild(new RoomValidator
             {
-                StartRoom = _gameStart, Report = Array.IndexOf(args, "--map-report") >= 0, ReachReport = ArgumentValue(args, "--reach-report") ?? "",
+                StartRoom = _gameStart, Report = Array.IndexOf(args, "--map-report") >= 0, ReachReport = ArgumentValue(args, "--reach-report") ?? "", SlackReport = Array.IndexOf(args, "--slack-report") >= 0,
+                ReachWith = ArgumentValue(args, AbilitiesArgument) is { } with ? ParseAbilities(with) : null,
             });
         }
         else if (Array.IndexOf(args, ValidateTravelArgument) >= 0)

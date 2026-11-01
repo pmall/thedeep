@@ -112,9 +112,15 @@ transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 71.25, 11.25, 0)
 Size = Vector3(47.5, 3.5, 4)
 Material = ExtResource("1_basalt")
 
+; the steps up from the pool's lip to the west floor, 2.5 m each (a jump with room to spare)
+[node name="StepWestUpper" parent="Geometry" instance=ExtResource("2_block")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 7.5, -5.25, 0)
+Size = Vector3(3, 7.5, 4)
+Material = ExtResource("1_basalt")
+
 [node name="StepWest" parent="Geometry" instance=ExtResource("2_block")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 10.5, -6, 0)
-Size = Vector3(3, 6, 4)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 10.5, -6.5, 0)
+Size = Vector3(3, 5, 4)
 Material = ExtResource("1_basalt")
 
 ; the coolant pool's walls
@@ -134,8 +140,8 @@ Size = Vector3(3, 2, 4)
 Material = ExtResource("1_basalt")
 
 [node name="PlatformOne" parent="Geometry" instance=ExtResource("2_block")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 20.5, -7, 0)
-Size = Vector3(7, 2, 4)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 20.5, -7.25, 0)
+Size = Vector3(7, 1.5, 4)
 Material = ExtResource("1_basalt")
 
 [node name="PlatformTwo" parent="Geometry" instance=ExtResource("2_block")]
@@ -151,17 +157,17 @@ Material = ExtResource("1_basalt")
 
 ; ledges up to the Chimney
 [node name="LedgeA" parent="Geometry" instance=ExtResource("2_block")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 41.5, 0.75, 0)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 41.5, 0.25, 0)
 Size = Vector3(3, 0.5, 4)
 Material = ExtResource("1_basalt")
 
 [node name="LedgeB" parent="Geometry" instance=ExtResource("2_block")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 47.5, 3.75, 0)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 47.5, 2.75, 0)
 Size = Vector3(3, 0.5, 4)
 Material = ExtResource("1_basalt")
 
 [node name="LedgeC" parent="Geometry" instance=ExtResource("2_block")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 44.5, 6.25, 0)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 44.5, 5.25, 0)
 Size = Vector3(3, 0.5, 4)
 Material = ExtResource("1_basalt")
 
@@ -178,8 +184,8 @@ Material = ExtResource("1_basalt")
 Cracked = true
 
 [node name="PlatformFourEast" parent="Geometry" instance=ExtResource("2_block")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 65.5, -4.5, 0)
-Size = Vector3(5, 3, 4)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 65.5, -4.25, 0)
+Size = Vector3(5, 3.5, 4)
 Material = ExtResource("1_basalt")
 
 ; the plug's shaft, walled off from the river all the way down

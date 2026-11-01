@@ -73,6 +73,7 @@ Note on full freedom: making all 120 orders possible means every ability must be
 ### Automated checks (added to `tools/check.sh` once there is a map)
 
 - The solver runs on every build. A softlock fails the build and prints the exact state and path that leads to it.
+- Rooms are not trusted to be one place: the inside check walks each room from each way in with the abilities owned (the geometry planner simulates the moveset and all five abilities), so a state is (room, way in, abilities), and only the exits and relics reached from there count.
 - The order-freedom count is printed. Falling below the target fails the build.
 - The geometry sanity check fails the build on any mismatch.
 

@@ -221,10 +221,10 @@ transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 15.5, 6.25, 0)
 Size = Vector3(1, 5.5, 4)
 Surface = 1
 
-; buttresses either side of the closed gate
+; buttresses either side of the closed gate: 2.5 m steps up to it and on over (a jump with room to spare)
 [node name="ButtressWest" parent="Geometry" instance=ExtResource("2_block")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 38.5, -2.5, 0)
-Size = Vector3(3, 3, 4)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 38.5, -2.75, 0)
+Size = Vector3(3, 2.5, 4)
 
 ; the last floodgate, closed to its waist: climb over
 [node name="GateLow" parent="Geometry" instance=ExtResource("2_block")]
@@ -233,8 +233,8 @@ Size = Vector3(2, 5, 4)
 Surface = 1
 
 [node name="ButtressEast" parent="Geometry" instance=ExtResource("2_block")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 43.5, -2.5, 0)
-Size = Vector3(3, 3, 4)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 43.5, -2.75, 0)
+Size = Vector3(3, 2.5, 4)
 
 [node name="Exits" type="Node3D" parent="."]
 

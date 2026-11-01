@@ -183,7 +183,8 @@ scripts/
                            water, heat)
   map/ExitMath.cs, map/MapState.cs   pure: arrival through an exit, room placement, the visited rooms
   map/MapGraph.cs, MapSolver.cs, MapLayout.cs, ReachPlanner.cs   pure (M7): the map graph, the order solver (softlocks,
-                           achievable orders), the layout check, the base-moveset reach planner (geometry check)
+                           achievable orders; SolveInside: states are room, way in, abilities), the layout check, the reach
+                           planner (the moveset and all five abilities, for the geometry and inside checks)
   map/MapDraft.cs          pure (M7): the whole game's draft map (the `map` blocks of docs/map-draft.md): parser,
                            its targets (orders, positions, scope, law-break milestones), its agreement with built rooms
   map/MapGoal.cs           marker: where the journey ends (for the solver); with a size, an area showing the end of the build;
