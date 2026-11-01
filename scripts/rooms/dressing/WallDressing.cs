@@ -20,7 +20,10 @@ public partial class WallDressing : Node3D
     /// <summary>Iron (pilasters, girders, pipes, chains); rust_mid.tres when unset.</summary>
     [Export] public Material? Iron { get; set; }
 
-    /// <summary>Plating (panels, wheels, pistons); metal_mid.tres when unset.</summary>
+    /// <summary>
+    /// Plating (panels, wheels, pistons, racks); when unset, backdrop_metal.tres for machinery (dark, hazed: in the core's pale
+    /// bronze the midground plating outshone the play plane and its grippable metal), metal_mid.tres otherwise.
+    /// </summary>
     [Export] public Material? Plate { get; set; }
 
     /// <summary>What glows in a furnace mouth; furnace_mouth.tres when unset.</summary>
@@ -41,7 +44,7 @@ public partial class WallDressing : Node3D
     public override void _Ready()
     {
         Iron ??= GD.Load<Material>("res://assets/materials/rust_mid.tres");
-        Plate ??= GD.Load<Material>("res://assets/materials/metal_mid.tres");
+        Plate ??= GD.Load<Material>(Style == WallStyle.Machinery ? "res://assets/materials/backdrop_metal.tres" : "res://assets/materials/metal_mid.tres");
         Molten ??= GD.Load<Material>("res://assets/materials/furnace_mouth.tres");
         Glow ??= GD.Load<Material>("res://assets/materials/glow_strip.tres");
         Stone ??= GD.Load<Material>("res://assets/materials/stone_mid.tres");

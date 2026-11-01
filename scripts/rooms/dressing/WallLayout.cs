@@ -10,7 +10,7 @@ public enum WallStyle
     /// <summary>A foundry's wall: iron pilasters, girders, grated furnace mouths glowing, pipes, chains hanging (volcanic).</summary>
     Foundry,
 
-    /// <summary>Ancient machinery set in the wall: panels, wheels on hubs, pistons, glowing slits (the core).</summary>
+    /// <summary>Ancient machinery set in the wall: pistons, bands, wheels on hubs, panels of uneven height, glowing slits (the core).</summary>
     Machinery,
 
     /// <summary>An archive's wall: stone piers, iron shelves of server racks with gaps, icicles under the shelves (frozen).</summary>
@@ -186,24 +186,56 @@ public static class WallLayout
     {
         var list = new List<WallPlacement>();
         List<float> xs = Pilasters(width);
-        foreach (float x in xs)
+        for (int k = 0; k < xs.Count; k++)
         {
-            list.Add(new WallPlacement(WallPiece.Piston, new Vector3(x, 0f, 0.4f), new Vector2(0.45f, height)));
+            // Pistons on the bay lines, some cut short (the machine stopped mid-stroke).
+            float tall = H(seed, 7, k) < 0.3f ? height * (0.45f + 0.3f * H(seed, 8, k)) : height;
+            list.Add(new WallPlacement(WallPiece.Piston, new Vector3(xs[k], 0f, 0.4f), new Vector2(0.45f, tall)));
+        }
+
+        // A band across the wall, two on a tall one: the frame the machinery hangs in.
+        float band = MathF.Min(5f, height * 0.3f);
+        list.Add(new WallPlacement(WallPiece.Girder, new Vector3(0f, band, 0.55f), new Vector2(width, 0.5f)));
+        if (height > 16f)
+        {
+            list.Add(new WallPlacement(WallPiece.Girder, new Vector3(0f, height * 0.78f, 0.55f), new Vector2(width, 0.5f)));
         }
 
         for (int i = 0; i + 1 < xs.Count; i++)
         {
             float a = xs[i] + 0.5f, b = xs[i + 1] - 0.5f;
             float mid = (a + b) * 0.5f, span = b - a;
-            // Every bay a panel set in the wall, a glowing slit along its foot; some carry a wheel on a hub.
-            list.Add(new WallPlacement(WallPiece.Panel, new Vector3(mid, height * 0.5f, 0.1f), new Vector2(span - 0.4f, height - 1.5f)));
-            list.Add(new WallPlacement(WallPiece.Slit, new Vector3(mid, 1.2f + 2.5f * H(seed, 1, i), 0.25f), new Vector2(span * 0.7f, 0.12f)));
-            if (H(seed, 2, i) < 0.55f)
+            if (H(seed, 2, i) < 0.5f)
             {
-                float r = MathF.Min(span * 0.42f, height * 0.3f) * (0.7f + 0.3f * H(seed, 3, i));
-                float y = MathF.Min(height - r - 0.5f, r + 2f + (height - 2f * r - 2.5f) * H(seed, 4, i));
+                // A wheel on a hub, above the band; a glowing slit under it.
+                float r = MathF.Min(span * 0.45f, (height - band) * 0.32f) * (0.75f + 0.25f * H(seed, 3, i));
+                float y = band + 0.5f + r + (height - band - 1f - 2f * r) * H(seed, 4, i);
                 list.Add(new WallPlacement(WallPiece.Wheel, new Vector3(mid, y, 0.5f), new Vector2(r, r), H(seed, 5, i) * MathF.PI));
                 list.Add(new WallPlacement(WallPiece.Hub, new Vector3(mid, y, 0.3f), new Vector2(r * 0.2f, r * 0.2f)));
+                list.Add(new WallPlacement(WallPiece.Slit, new Vector3(mid, band - 1f, 0.25f), new Vector2(span * 0.6f, 0.14f)));
+            }
+            else
+            {
+                // Panels of uneven height stacked up the bay, gaps of bare wall between; a slit along some.
+                float y = 0.6f;
+                int n = 0;
+                while (y < height - 1.5f && n < 6)
+                {
+                    float h = 1.6f + 3.4f * H(seed, 10 + n, i);
+                    h = MathF.Min(h, height - 0.8f - y);
+                    float w = span * (0.55f + 0.4f * H(seed, 20 + n, i));
+                    if (H(seed, 30 + n, i) > 0.25f)
+                    {
+                        list.Add(new WallPlacement(WallPiece.Panel, new Vector3(mid, y + h * 0.5f, 0.1f), new Vector2(w, h)));
+                        if (H(seed, 40 + n, i) < 0.35f)
+                        {
+                            list.Add(new WallPlacement(WallPiece.Slit, new Vector3(mid, y + h * 0.5f, 0.25f), new Vector2(w * 0.8f, 0.12f)));
+                        }
+                    }
+
+                    y += h + 0.4f + 1.2f * H(seed, 50 + n, i);
+                    n++;
+                }
             }
         }
 
