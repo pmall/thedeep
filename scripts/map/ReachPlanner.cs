@@ -13,12 +13,13 @@ public sealed record MoveLimits(
     float Width = 0.7f, float Height = 1.6f, float EdgeMargin = 0f, float LedgeAssist = 0f)
 {
     /// <summary>
-    /// A clumsier pilgrim, for the slack report: jumps a little lower, dashes a little shorter, runs a little slower, never takes
-    /// off from the very end of a ledge, and gets no ledge assist. A way only these limits miss asks for near-perfect play.
+    /// A clumsier pilgrim, for the slack report: jumps 18% lower, dashes 35% shorter, runs 20% slower, never takes off from the very
+    /// end of a ledge, and gets no ledge assist (it still climbs 2.5 m steps and crosses 7.5 m gaps). A way only these limits miss asks
+    /// for too exact play (owner 2026-11-01: jumps must not be exact; the bar was 10/15/8% until then).
     /// </summary>
     public MoveLimits Clumsy() => this with
     {
-        JumpHeight = JumpHeight * 0.9f, DashDistance = DashDistance * 0.85f, RunSpeed = RunSpeed * 0.92f, EdgeMargin = 0.3f, LedgeAssist = 0f,
+        JumpHeight = JumpHeight * 0.82f, DashDistance = DashDistance * 0.65f, RunSpeed = RunSpeed * 0.8f, EdgeMargin = 0.3f, LedgeAssist = 0f,
     };
 
     public float Gravity => JumpMath.Gravity(JumpHeight, JumpTimeToApex);

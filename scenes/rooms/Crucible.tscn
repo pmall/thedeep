@@ -214,7 +214,7 @@ transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 14, 19.25, 0)
 script = ExtResource("4_exit")
 TargetRoom = "res://scenes/rooms/Quench.tscn"
 TargetExit = "Crucible"
-Size = Vector2(3, 2)
+Size = Vector2(3, 3)
 
 ; where the Basalt's hole drops in (one way)
 [node name="Basalt" type="Marker3D" parent="Exits"]

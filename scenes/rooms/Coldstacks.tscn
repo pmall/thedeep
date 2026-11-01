@@ -192,6 +192,12 @@ Size = Vector3(2, 11, 4)
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 51, -11.75, 0)
 Size = Vector3(2, 8.5, 4)
 
+; a fallen rack beam caught across the middle of the well: a stepping stone between the floors (owner 2026-11-01: the 8 m
+; jump across was too exact), narrow enough to drop past on either side
+[node name="WellBeam" parent="Geometry" instance=ExtResource("1_block")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 50.5, -0.75, 0)
+Size = Vector3(2, 0.5, 4)
+
 ; the corridor under the east floor
 [node name="Corridor" parent="Geometry" instance=ExtResource("1_block")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 57, -13, 0)
@@ -208,7 +214,7 @@ Cracked = true
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 72.5, -13, 0)
 Size = Vector3(13, 6, 4)
 
-; the east floor, over the corridor (8 m across the well from the west floor: a running jump and a dash, with room to spare)
+; the east floor, over the corridor (8 m across the well from the west floor, by the beam in the middle)
 [node name="Slab" parent="Geometry" instance=ExtResource("1_block")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 66.5, -1, 0)
 Size = Vector3(25, 2, 4)

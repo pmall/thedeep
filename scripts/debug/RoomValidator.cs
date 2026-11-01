@@ -619,7 +619,7 @@ public partial class RoomValidator : Node
 
     /// <summary>
     /// Room for error: every state the inside check walked is walked again by a clumsier pilgrim (<see cref="MoveLimits.Clumsy"/>:
-    /// jumps 10% lower, dashes 15% shorter, runs 8% slower, never takes off from the very end of a ledge, no ledge assist), which must reach every way
+    /// jumps 18% lower, dashes 35% shorter, runs 20% slower, never takes off from the very end of a ledge, no ledge assist), which must reach every way
     /// out, relic and goal the exact one does. A way only perfect play takes is a problem, once per room, way in and way out (with the
     /// fewest abilities). Before this held (2026-11-01), ladders of 3 m steps against a 3.2 m jump made the second room a trial.
     /// </summary>
