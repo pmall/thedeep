@@ -14,11 +14,16 @@
 [ext_resource type="Material" path="res://assets/materials/backdrop_metal.tres" id="9_metal"]
 [ext_resource type="Material" path="res://assets/materials/architecture_accent.tres" id="10_accent"]
 [ext_resource type="Material" path="res://assets/materials/architecture_ice.tres" id="11_ice"]
+[ext_resource type="CompositorEffect" path="res://resources/stage/paint_pass.tres" id="12_paint"]
+
+[sub_resource type="Compositor" id="Compositor_paint"]
+compositor_effects = Array[CompositorEffect]([ExtResource("12_paint")])
 
 [node name="RoomStage" type="Node3D" node_paths=PackedStringArray("Environment", "KeyLight")]
 script = ExtResource("1_stage")
 Environment = NodePath("WorldEnvironment")
 KeyLight = NodePath("Sun")
+Paint = ExtResource("12_paint")
 ClearFrontMaterial = ExtResource("3_clear")
 FarSkyline = ExtResource("4_cathedral")
 NearSkyline = ExtResource("5_halls")
@@ -31,6 +36,7 @@ Dust = ExtResource("8_dust")
 
 [node name="WorldEnvironment" type="WorldEnvironment" parent="."]
 environment = ExtResource("2_env")
+compositor = SubResource("Compositor_paint")
 
 ; from the upper front left, so block faces facing the camera are lit and tops catch the light
 [node name="Sun" type="DirectionalLight3D" parent="."]

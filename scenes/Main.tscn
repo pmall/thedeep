@@ -23,6 +23,10 @@
 [ext_resource type="Script" path="res://scripts/game/GateHints.cs" id="22_gates"]
 [ext_resource type="Script" path="res://scripts/ui/HintLine.cs" id="23_hint"]
 [ext_resource type="Script" path="res://scripts/ui/EndCard.cs" id="24_end"]
+[ext_resource type="CompositorEffect" path="res://resources/stage/paint_pass.tres" id="25_paint"]
+[ext_resource type="Resource" path="res://resources/paint/gouache.tres" id="26_gouache"]
+[ext_resource type="Resource" path="res://resources/paint/poster.tres" id="27_poster"]
+[ext_resource type="Resource" path="res://resources/paint/scripture.tres" id="28_scripture"]
 
 [sub_resource type="CylinderMesh" id="HarpoonLine"]
 top_radius = 0.016
@@ -54,6 +58,7 @@ Health = NodePath("HealthHud")
 Hint = NodePath("HintLine")
 MapScreen = NodePath("MapScreen")
 Hints = NodePath("GateHints")
+Paint = ExtResource("25_paint")
 
 ; Loads the room scenes of its world (first child, so the room exists before the camera and HUD are ready). The world
 ; played unless `--world` picks another: the prototype.
@@ -122,6 +127,7 @@ Hint = NodePath("../HintLine")
 [node name="SideCamera" parent="." node_paths=PackedStringArray("Target", "World") instance=ExtResource("6_camera")]
 Target = NodePath("../Player")
 World = NodePath("../World")
+Paint = ExtResource("25_paint")
 
 [node name="ScreenGrade" parent="." instance=ExtResource("10_grade")]
 
@@ -150,10 +156,13 @@ Player = NodePath("../Player")
 Player = NodePath("../Player")
 World = NodePath("../World")
 
+; F9 cycles the paint: the biome's own, each variant here, then none.
 [node name="DebugCheats" type="Node" parent="." node_paths=PackedStringArray("Player", "World")]
 script = ExtResource("5_cheats")
 Player = NodePath("../Player")
 World = NodePath("../World")
+Paint = ExtResource("25_paint")
+PaintVariants = [ExtResource("26_gouache"), ExtResource("27_poster"), ExtResource("28_scripture")]
 
 [node name="OwnerCapture" parent="." node_paths=PackedStringArray("Player", "World") instance=ExtResource("7_capture")]
 Player = NodePath("../Player")

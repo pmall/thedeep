@@ -138,6 +138,10 @@ public partial class BiomeProfile : Resource
     /// <summary>Film grain strength (0 none; around 0.03 is subtle).</summary>
     [Export] public float Grain { get; set; } = 0.03f;
 
+    /// <summary>How the layer is painted (<see cref="PaintPass"/>); null leaves the frame unpainted.</summary>
+    [ExportGroup("Paint")]
+    [Export] public PaintStyle? Paint { get; set; }
+
     /// <summary>Tint of ambient particles (dust, silt, drips, bubbles; later embers or ice).</summary>
     [ExportGroup("Particles")]
     [Export] public Color ParticleTint { get; set; } = Colors.White;
@@ -167,12 +171,15 @@ public partial class BiomeProfile : Resource
         return ResourceLoader.Exists(path) ? ResourceLoader.Load<BiomeProfile>(path) : null;
     }
 
+    /// <summary>The layer's pigments: the colors <see cref="PaintPass"/> pulls each hue toward, a frame mixed from a few paints.</summary>
+    public Color[] Pigments => new[] { Rock, Metal, Backdrop, HazeColor, Accent, LampColor };
+
     /// <summary>
-    /// Re-themes a room: sets the palette globals, then the environment, key light, lamps, light shafts and
+    /// Re-themes a room: sets the palette globals, then the environment, the paint, key light, lamps, light shafts and
     /// glyph lights.
     /// Only colors, energies and grading change; effects (SSAO, glow on/off…) stay as the room set them.
     /// </summary>
-    public void Apply(Environment environment, DirectionalLight3D keyLight, Light3D[] lamps, Light3D[] shafts, Light3D[] glyphLights)
+    public void Apply(Environment environment, PaintPass paint, DirectionalLight3D keyLight, Light3D[] lamps, Light3D[] shafts, Light3D[] glyphLights)
     {
         RenderingServer.GlobalShaderParameterSet(ShaderGlobals.BiomeRock, Rock);
         RenderingServer.GlobalShaderParameterSet(ShaderGlobals.BiomeMetal, Metal);
@@ -215,6 +222,8 @@ public partial class BiomeProfile : Resource
         environment.AdjustmentSaturation = Saturation;
         environment.AdjustmentColorCorrection = Lift == Colors.Black && Gain == Colors.White ? null : GradeLookup();
         environment.GlowIntensity = GlowIntensity;
+
+        paint.Use(Paint, Pigments);
 
         keyLight.LightColor = KeyColor;
         keyLight.LightEnergy = KeyEnergy;

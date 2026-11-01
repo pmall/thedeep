@@ -31,9 +31,10 @@ The headless checks, one driver each in `scripts/debug/`; the driver's docblock 
 | Start in a room, with the abilities a route there needs | `godot --path . -- --room <Name>` (`--abilities all`, `none` or `MagGrip,Drill` says otherwise) |
 | Another world | `godot --path . -- --world <name>` (`worlds/<name>/world.tres`; every check takes it too) |
 | Start with another biome | `godot --path . -- --biome volcanic` |
+| Paint with another style, or not at all (`docs/art-direction.md#signature`) | `godot --path . -- --paint poster` (`none` for the raw render) |
 | Print the map (built rooms and the network: ways, placements, orders) | `tools/map.sh` |
 | Where the geometry check's planner stops in a room | `godot --headless --path . -- --room MechanicsLab --validate-rooms --reach-report <Room>` (`--abilities …`, `--slack-report` for the clumsy pilgrim) |
-| Look-dev captures and frame times | `tools/capture.sh [label]` (`docs/testing.md#lookdev`) |
+| Look-dev captures and frame times | `tools/capture.sh [label]` (`docs/testing.md#lookdev`; `--paint NAME` for another paint style) |
 | UI screens to PNGs (windowed) | `godot --path . -- --room Undercroft --ui-shot <dir>` |
 | Windowed capture check (needs a GPU; after touching capture code) | `godot --path . -- --capture-test` (add `--disable-vsync` before `--` for the raw cost) |
 
@@ -72,7 +73,7 @@ When the owner says "look at the last screenshot/video": `ls -t captures | head`
 What the owner does to test a build. Remind them of this when handing over:
 
 1. `godot --path .` resumes from the last shrine rested at; `-- --new` starts over; the hand-over's command (`AGENTS.md#session`) goes straight to the new content.
-2. Controls are on screen in debug builds, for the keyboard or the pad in hand (`docs/gameplay.md#controls`). F1–F5 toggle the abilities, F6 cycles the biome, F7 shows the debug readout. The room's name and the pilgrim's position in it sit top right, so remarks and screenshots say where they were made.
+2. Controls are on screen in debug builds, for the keyboard or the pad in hand (`docs/gameplay.md#controls`). F1–F5 toggle the abilities, F6 cycles the biome, F9 cycles the paint, F7 shows the debug readout. The room's name and the pilgrim's position in it sit top right, so remarks and screenshots say where they were made.
 3. To watch the machines: `godot --path . -- --room MachineArena`.
 4. To report something: F12 (or a video with F10), then "look at the last screenshot".
 5. Feedback is given in plain words ("floaty jump", "camera lags"); the agent turns it into tuning. The owner may also edit `resources/player_tuning.tres` and relaunch, with no rebuild.

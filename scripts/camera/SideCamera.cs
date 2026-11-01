@@ -6,11 +6,16 @@ namespace TheDeep;
 /// Locked side-view camera looking down -Z at the play plane. Smoothly follows the player with a
 /// look-ahead in the direction of travel, and never shows outside the room's bounds.
 /// Narrow-FOV perspective (not orthographic) so the backdrop and foreground layers get parallax.
+/// Its depth of field blurs only an unpainted frame: while <see cref="Paint"/> paints, the brush simplifies the far
+/// instead, and the blur would smear its strokes.
 /// </summary>
 public partial class SideCamera : Camera3D
 {
     [Export] public Player Target { get; set; } = null!;
     [Export] public World World { get; set; } = null!;
+
+    /// <summary>The rooms' painted pass (the shared resources/stage/paint_pass.tres).</summary>
+    [Export] public PaintPass Paint { get; set; } = null!;
 
     /// <summary>Distance from the play plane (Z = 0) to the camera.</summary>
     [Export] public float Distance { get; set; } = 22f;
@@ -77,6 +82,7 @@ public partial class SideCamera : Camera3D
 
     public override void _Process(double delta)
     {
+        BlurUnlessPainted();
         if (_framingShot)
         {
             return;
@@ -153,6 +159,17 @@ public partial class SideCamera : Camera3D
         Fov = _followFov;
         Attributes = _followAttributes;
         SnapToTarget();
+    }
+
+    /// <summary>Depth of field on while the frame is unpainted, off while <see cref="Paint"/> paints.</summary>
+    private void BlurUnlessPainted()
+    {
+        bool blur = !Paint.Enabled || Paint.Style is null;
+        if (Attributes is CameraAttributesPractical practical && practical.DofBlurFarEnabled != blur)
+        {
+            practical.DofBlurFarEnabled = blur;
+            practical.DofBlurNearEnabled = blur;
+        }
     }
 
     /// <summary>Sets <paramref name="attributes"/> to the blur bands of <paramref name="source"/> moved by <paramref name="shift"/> meters, so the play plane stays sharp.</summary>

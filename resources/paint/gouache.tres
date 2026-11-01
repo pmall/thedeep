@@ -1,0 +1,28 @@
+[gd_resource type="Resource" script_class="PaintStyle" format=3]
+; Variant A, gouache: flat matte paint with soft brush edges, a light paper grain, restrained.
+
+[ext_resource type="Script" path="res://scripts/biome/PaintStyle.cs" id="1_style"]
+
+[resource]
+script = ExtResource("1_style")
+DisplayName = "Gouache"
+RadiusNear = 2.0
+RadiusFar = 9.0
+Sharpness = 8.0
+Anisotropy = 1.0
+Mechanical = 0.0
+Strength = 1.0
+Wobble = 2.5
+Density = 0.2
+Strokes = 0.85
+StrokeSize = 10.0
+StrokeGrowth = 2.0
+StrokeJitter = 0.6
+Detail = 0.75
+Pooling = 0.4
+Granulation = 0.25
+GrainCell = 3.0
+Glyphs = 0.0
+Bands = 6.0
+BandStrength = 0.4
+PalettePull = 0.2

@@ -1,0 +1,14 @@
+[remap]
+
+importer="glsl"
+type="RDShaderFile"
+uid="uid://bgp2vh85aqyge"
+path="res://.godot/imported/paint_paper.glsl-30818f584a67849b722f0c31ed3abfde.res"
+
+[deps]
+
+source_file="res://assets/shaders/paint/paint_paper.glsl"
+dest_files=["res://.godot/imported/paint_paper.glsl-30818f584a67849b722f0c31ed3abfde.res"]
+
+[params]
+

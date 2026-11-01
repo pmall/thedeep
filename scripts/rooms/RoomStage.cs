@@ -22,6 +22,9 @@ public partial class RoomStage : Node3D
     [Export] public WorldEnvironment Environment { get; set; } = null!;
     [Export] public DirectionalLight3D KeyLight { get; set; } = null!;
 
+    /// <summary>The painted pass in the environment's compositor (resources/stage/paint_pass.tres, one shared instance).</summary>
+    [Export] public PaintPass Paint { get; set; } = null!;
+
     /// <summary>Cancels the volumetric fog in front of the play plane (fog_clear.tres).</summary>
     [Export] public Material ClearFrontMaterial { get; set; } = null!;
 

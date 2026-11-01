@@ -43,7 +43,7 @@ public partial class Room : Node3D
     {
         Biome = biome;
         Stage.Restyle(biome);
-        biome.Apply(Stage.Environment.Environment, Stage.KeyLight, Lamps, Shafts, GlyphLights);
+        biome.Apply(Stage.Environment.Environment, Stage.Paint, Stage.KeyLight, Lamps, Shafts, GlyphLights);
     }
 
     /// <summary>The room's look-dev camera spots (tools/capture.sh), in scene order.</summary>
