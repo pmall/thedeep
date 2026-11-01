@@ -1,5 +1,4 @@
 using System.Collections.Generic;
-using System.Linq;
 using Godot;
 using TheDeep.States;
 using NVector2 = System.Numerics.Vector2;
@@ -30,6 +29,10 @@ public partial class HarpoonRig : Node3D
     [Export] public Node3D Head { get; set; } = null!;
 
     private readonly List<HarpoonAnchor> _anchors = new();
+    private readonly List<NVector2> _points = new();
+    private PlaneRay _ray = null!;
+    private System.Func<int, bool> _inSight = null!;
+    private NVector2 _sightFrom;
 
     /// <summary>The anchor the pilgrim would fire at if it had the Harpoon (null with it): a ring out of reach, for the gate hints.</summary>
     public HarpoonAnchor? OutOfReach { get; private set; }
@@ -41,6 +44,8 @@ public partial class HarpoonRig : Node3D
     {
         TopLevel = true;
         PhysicsInterpolationMode = PhysicsInterpolationModeEnum.Off;
+        _ray = PlaneRay.AddTo(this, PhysicsLayers.Solid);
+        _inSight = i => InSight(_sightFrom, _points[i]);
         World.RoomLoaded += OnRoomLoaded;
         OnRoomLoaded(World.Room);
         Line.Visible = false;
@@ -139,17 +144,22 @@ public partial class HarpoonRig : Node3D
         PlayerInput input = Player.CurrentInput;
         var aim = input.MoveY != 0 ? new NVector2(input.MoveX, input.MoveY) : NVector2.Zero;
         int facing = input.MoveX != 0 ? input.MoveX : Player.WorldFacing;
-        var points = _anchors.Select(a => a.Point).ToList();
+        _points.Clear();
+        foreach (HarpoonAnchor anchor in _anchors)
+        {
+            _points.Add(anchor.Point);
+        }
+
+        _sightFrom = center;
         int skip = Player.LastAnchor is { } last ? _anchors.IndexOf(last) : -1;
-        int index = HarpoonAim.Pick(center, aim, facing, points, t.HarpoonRange, t.HarpoonMinDistance, i => InSight(center, points[i]), skip);
+        int index = HarpoonAim.Pick(center, aim, facing, _points, t.HarpoonRange, t.HarpoonMinDistance, _inSight, skip);
         return index >= 0 ? _anchors[index] : null;
     }
 
     private bool InSight(NVector2 from, NVector2 to)
     {
         NVector2 end = to - NVector2.Normalize(to - from) * SightMargin;
-        var query = PhysicsRayQueryParameters3D.Create(new Vector3(from.X, from.Y, 0f), new Vector3(end.X, end.Y, 0f), PhysicsLayers.Solid);
-        return GetWorld3D().DirectSpaceState.IntersectRay(query).Count == 0;
+        return !_ray.Cast(new Vector3(from.X, from.Y, 0f), new Vector3(end.X, end.Y, 0f));
     }
 
     private void OnRoomLoaded(Room room)

@@ -333,4 +333,4 @@ Keep these Godot-free. When adding testable logic, put it in a Godot-free file a
 - Standard C# naming: PascalCase types, methods and properties; `_camelCase` private fields. One class per file, with the file named after the class.
 - Namespace `TheDeep` (player states: `TheDeep.States`).
 - Nullable reference types on, warnings are errors. Exported node and resource references are declared `= null!;`.
-- `unsafe` is allowed in the game assembly only for `FrameGrabber`, which copies frames out of Godot's native buffers through `Godot.NativeInterop` to avoid multi-megabyte allocations every frame. Don't spread it.
+- `unsafe` is allowed in the game assembly only for `FrameGrabber`, which copies frames out of Godot's native buffers through `Godot.NativeInterop` to avoid multi-megabyte allocations every frame, and `NativeMeshArrays`, which writes a chain's mesh arrays straight into the engine array (through the managed indexer each packed array registers a finalizable disposer: seven per chain per frame). Don't spread it.

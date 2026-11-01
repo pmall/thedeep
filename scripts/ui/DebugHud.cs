@@ -61,6 +61,8 @@ public partial class DebugHud : CanvasLayer
         }
     }
 
+    private (string, int, int) _roomShown;
+
     public override void _Process(double delta)
     {
         if (!Visible)
@@ -71,7 +73,13 @@ public partial class DebugHud : CanvasLayer
         if (World.RoomName != "")
         {
             Vector3 at = World.Room.ToLocal(Player.GlobalPosition);
-            _room.Text = $"{World.RoomName}   {at.X:0.0}, {at.Y:0.0}";
+            var shown = (World.RoomName, Mathf.RoundToInt(at.X * 10f), Mathf.RoundToInt(at.Y * 10f));
+            if (shown != _roomShown)
+            {
+                // Rebuilt only when what it shows changes: a new string every frame is garbage.
+                _roomShown = shown;
+                _room.Text = $"{World.RoomName}   {at.X:0.0}, {at.Y:0.0}";
+            }
         }
 
         if (!_info.Visible)

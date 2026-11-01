@@ -84,6 +84,17 @@ public partial class PartBody : Node3D
         }
     }
 
+    public override void _Notification(int what)
+    {
+        if (what == NotificationPredelete)
+        {
+            foreach (Chain chain in _chains)
+            {
+                chain.Mesh.Arrays.Dispose();
+            }
+        }
+    }
+
     public override void _Process(double delta)
     {
         float t = (float)Engine.GetPhysicsInterpolationFraction();
@@ -195,7 +206,8 @@ public partial class PartBody : Node3D
         m.Builder.Sweep(m.Path, m.Profile, scales: m.Scales);
         var mesh = (ArrayMesh)chain.Skin.Mesh;
         mesh.ClearSurfaces();
-        mesh.AddSurfaceFromArrays(Mesh.PrimitiveType.Triangles, KitMesh.ToArrays(m.Builder.Finish(), m.Arrays));
+        // The empty blend shapes and LODs are passed kept: left out, the binding makes a new engine array and dictionary each call.
+        mesh.AddSurfaceFromArrays(Mesh.PrimitiveType.Triangles, KitMesh.ToArrays(m.Builder.Finish(), m.Arrays), NoBlendShapes, NoLods);
 
         // The pendant hangs along the last link.
         NVector3 tip = points[^1];
@@ -210,6 +222,9 @@ public partial class PartBody : Node3D
         chain.End.GlobalTransform = new Transform3D(new Basis(y.Cross(z), y, z), new Vector3(tip.X, tip.Y, tip.Z));
     }
 
+    private static readonly Godot.Collections.Array<Godot.Collections.Array> NoBlendShapes = new();
+    private static readonly Godot.Collections.Dictionary NoLods = new();
+
     private static NVector3 ToNumerics(Vector3 v) => new(v.X, v.Y, v.Z);
 
     private sealed record Chain(PartChain Spec, Node3D Joint, VerletChain Sim, MeshInstance3D Skin, Node3D End, NVector3[] Previous, ChainMesh Mesh);
@@ -222,7 +237,7 @@ public partial class PartBody : Node3D
         public readonly Profile Profile;
         public readonly MeshBuilder Builder = new();
         public readonly List<PathFrame> Path = new();
-        public readonly KitMesh.Buffers Arrays = new();
+        public readonly KitMesh.Buffers Arrays = new(kept: true);
 
         public ChainMesh(PartChain spec, int count)
         {

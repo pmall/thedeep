@@ -52,6 +52,8 @@ public partial class LookDevDriver : Node
     private int _pendingSaves;
     private ulong _lastFrameUsec;
     private bool _measuring;
+    private long _allocatedAtStart, _allocated;
+    private readonly AllocationSampler? _sampler = System.Environment.GetEnvironmentVariable("THEDEEP_ALLOC_SAMPLE") == "1" ? new() : null;
 
     public Player Player { get; set; } = null!;
     public Room Room { get; set; } = null!;
@@ -248,11 +250,22 @@ public partial class LookDevDriver : Node
         }
 
         _measuring = true;
+        _allocatedAtStart = GC.GetAllocatedBytesForCurrentThread();
+        if (_sampler is not null)
+        {
+            _sampler.FollowThisThread();
+            _sampler.Active = true;
+        }
         for (int i = 0; i < MeasuredFrames; i++)
         {
             yield return 0;
         }
 
+        _allocated = GC.GetAllocatedBytesForCurrentThread() - _allocatedAtStart;
+        if (_sampler is not null)
+        {
+            _sampler.Active = false;
+        }
         _measuring = false;
         _demo = null;
         DemoInput.ReleaseAll();
@@ -301,6 +314,10 @@ public partial class LookDevDriver : Node
             {
                 ["gen0"] = _frames.Sum(f => f.Gc0), ["gen1"] = _frames.Sum(f => f.Gc1), ["gen2"] = _frames.Sum(f => f.Gc2),
             },
+            // Managed bytes allocated on the main thread (game logic and physics) per frame of the run.
+            ["alloc_kb_per_frame"] = Math.Round(_allocated / 1024.0 / Math.Max(1, _frame.Count), 2),
+            // What allocated during the run (sampled about every 100 KB, all threads).
+            ["alloc_types"] = _sampler?.Top(12) ?? new[] { "not sampled (THEDEEP_ALLOC_SAMPLE=1 samples)" },
             // The slowest frames with what else happened in them, and in the frame before (monitors lag a frame).
             ["slowest"] = Enumerable.Range(0, _frames.Count).OrderByDescending(i => _frames[i].Frame).Take(12).OrderBy(i => i)
                 .Select(i => string.Create(CultureInfo.InvariantCulture,
@@ -335,6 +352,7 @@ public partial class LookDevDriver : Node
             _problems.Enqueue(problem);
         }
 
+        _sampler?.Dispose();
         if (_problems.IsEmpty)
         {
             GD.Print(string.Create(CultureInfo.InvariantCulture, $"LOOKDEV OK: {_saved.Count} spots ({string.Join(", ", _saved)}) in {OutputDir}"));

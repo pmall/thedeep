@@ -45,6 +45,34 @@ public partial class WaterBody : Node3D
     /// <summary>The look of a swimmable body's front (<c>water_section.tres</c>); none for scenery water.</summary>
     [Export] public Material? SectionMaterial { get; set; }
 
+    private static readonly System.Collections.Generic.List<WaterBody> Swimmable = new();
+
+    /// <summary>
+    /// The surface height of the swimmable water whose play-plane region holds (<paramref name="x"/>, <paramref name="y"/>),
+    /// or null. Read from the bodies in the tree, so it allocates nothing (a physics point query returns engine dictionaries).
+    /// </summary>
+    public static float? SurfaceAt(float x, float y)
+    {
+        foreach (WaterBody water in Swimmable)
+        {
+            Box r = water.PlayRegion;
+            if (x >= r.MinX && x <= r.MaxX && y >= r.MinY && y <= r.MaxY)
+            {
+                return r.MaxY;
+            }
+        }
+
+        return null;
+    }
+
+    public override void _EnterTree()
+    {
+        if (Swim)
+        {
+            Swimmable.Add(this);
+        }
+    }
+
     /// <summary>The surface's height.</summary>
     public float SurfaceY => GlobalPosition.Y;
 
@@ -111,6 +139,7 @@ public partial class WaterBody : Node3D
 
     public override void _ExitTree()
     {
+        Swimmable.Remove(this);
         if (!Globals)
         {
             return;

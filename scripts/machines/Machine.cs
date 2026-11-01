@@ -44,6 +44,7 @@ public partial class Machine : CharacterBody3D
     [Export] public int Seed { get; set; }
 
     private Node3D _frame = null!;
+    private PlaneRay _ray = null!;
     private PartBody _body = null!;
     private MachineAnimator _animator = null!;
     private Vector3 _spawn;
@@ -102,6 +103,7 @@ public partial class Machine : CharacterBody3D
 
     public override void _Ready()
     {
+        _ray = PlaneRay.AddTo(this, PhysicsLayers.Solid);
         CollisionLayer = PhysicsLayers.Enemy;
         CollisionMask = PhysicsLayers.Solid;
         AxisLockLinearZ = true;
@@ -365,17 +367,14 @@ public partial class Machine : CharacterBody3D
     /// <summary>A wall or a drop just beyond the body toward <paramref name="direction"/>.</summary>
     private bool Probe(int direction)
     {
-        PhysicsDirectSpaceState3D space = GetWorld3D().DirectSpaceState;
         float edge = GlobalPosition.X + direction * (Species.BodySize.X * 0.5f + ProbeAhead);
         float knee = GlobalPosition.Y + Mathf.Min(0.4f, Species.BodySize.Y * 0.5f);
-        var wall = PhysicsRayQueryParameters3D.Create(new Vector3(GlobalPosition.X, knee, 0f), new Vector3(edge, knee, 0f), PhysicsLayers.Solid);
-        if (space.IntersectRay(wall).Count > 0)
+        if (_ray.Cast(new Vector3(GlobalPosition.X, knee, 0f), new Vector3(edge, knee, 0f)))
         {
             return true;
         }
 
-        var drop = PhysicsRayQueryParameters3D.Create(new Vector3(edge, knee, 0f), new Vector3(edge, GlobalPosition.Y - 0.6f, 0f), PhysicsLayers.Solid);
-        return space.IntersectRay(drop).Count == 0;
+        return !_ray.Cast(new Vector3(edge, knee, 0f), new Vector3(edge, GlobalPosition.Y - 0.6f, 0f));
     }
 
     /// <summary>A crawler's surface: the faces of the nearest metal block that nothing else touches.</summary>

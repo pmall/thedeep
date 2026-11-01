@@ -23,7 +23,7 @@ public partial class World : Node3D
     public Room Room => _room ?? throw new InvalidOperationException("no room loaded yet");
 
     /// <summary>The loaded room's name: its scene's file name.</summary>
-    public string RoomName => _room is null ? "" : NameOf(_room.SceneFilePath);
+    public string RoomName { get; private set; } = "";
 
     /// <summary>The rooms visited so far and where they sit.</summary>
     public MapState Map { get; } = new();
@@ -55,6 +55,7 @@ public partial class World : Node3D
         }
 
         _room = scene.Instantiate<Room>();
+        RoomName = NameOf(_room.SceneFilePath); // kept: read every frame, and the engine's string is converted anew on each read
         AddChild(_room);
         if (map)
         {

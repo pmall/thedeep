@@ -184,8 +184,9 @@ public sealed class MeshBuilder
     {
         float start = path[0].Distance;
         float length = path[^1].Distance - start;
-        foreach (Profile.Segment s in profile.Segments)
+        for (int si = 0; si < profile.Segments.Count; si++) // not foreach: over the interface it boxes an enumerator
         {
+            Profile.Segment s = profile.Segments[si];
             int previousA = -1, previousB = -1;
             Vector2 run = s.B - s.A;
             float runLength = run.Length();

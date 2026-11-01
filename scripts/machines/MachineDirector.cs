@@ -37,6 +37,7 @@ public partial class MachineDirector : Node
     private readonly List<Impact> _impacts = new();
     private readonly List<Impact> _heard = new();
     private readonly List<Neighbor> _neighbors = new();
+    private PlaneRay _sight = null!;
 
     /// <summary>Machines already hit by a swing (by the swing's number), so a swing hits each once.</summary>
     private readonly HashSet<(Machine, int)> _struck = new();
@@ -54,6 +55,7 @@ public partial class MachineDirector : Node
 
     public override void _Ready()
     {
+        _sight = PlaneRay.AddTo(this, PhysicsLayers.Solid);
         World.RoomLoaded += OnRoomLoaded;
         Player.Landed += OnLanded;
         Player.Dashed += OnDashed;
@@ -92,7 +94,6 @@ public partial class MachineDirector : Node
         _impacts.Clear();
 
         Vector3 chest = Player.GlobalPosition + Chest;
-        PhysicsDirectSpaceState3D space = Player.GetWorld3D().DirectSpaceState;
         foreach (Machine machine in _machines)
         {
             if (machine.Broken)
@@ -104,8 +105,7 @@ public partial class MachineDirector : Node
             PlayerTrace? player = null;
             if (PlayerPresent)
             {
-                var sight = PhysicsRayQueryParameters3D.Create(machine.SensorPosition, chest, PhysicsLayers.Solid);
-                bool inSight = space.IntersectRay(sight).Count == 0;
+                bool inSight = !_sight.Cast(machine.SensorPosition, chest);
                 player = new PlayerTrace(Flat(chest), Flat(Player.Velocity), inSight);
             }
 

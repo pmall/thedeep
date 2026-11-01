@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using System.Linq;
 using Godot;
 
@@ -93,8 +94,7 @@ public partial class Session : Node
             return;
         }
 
-        if (!_goalShown && room.All<MapGoal>().FirstOrDefault(g => g.Contains(p)) is { } goal
-            && !(goal.Ending && room.All<BossSeal>().Any(s => !s.Won)))
+        if (!_goalShown && GoalAt(room, p) is { } goal && !(goal.Ending && BossLeft(room)))
         {
             _goalShown = true;
             if (goal.Ending)
@@ -106,7 +106,7 @@ public partial class Session : Node
             _ = Banner.Show(goal.TitleLine, goal.HintLine, 5f);
         }
 
-        if (room.All<Proclamation>().FirstOrDefault(s => !_spoken.Contains(s) && s.Contains(p)) is { } spoken)
+        if (Unspoken(room, p) is { } spoken)
         {
             _spoken.Add(spoken);
             _ = Banner.Show(spoken.SpeakerLine, spoken.TextLine, 5f);
@@ -114,10 +114,10 @@ public partial class Session : Node
         }
 
         bool standing = Player.IsUpright && Player.IsOnFloor();
-        Shrine? near = standing ? room.All<Shrine>().FirstOrDefault(s => Flat(s.GlobalPosition).DistanceTo(Flat(p)) <= RestRange) : null;
+        Shrine? near = standing ? Near(room.All<Shrine>(), p, RestRange) : null;
         Prompt(near);
         ScripturePlate? plate = standing && near is null
-            ? room.All<ScripturePlate>().FirstOrDefault(s => Flat(s.GlobalPosition).DistanceTo(Flat(p)) <= ReadRange)
+            ? Near(room.All<ScripturePlate>(), p, ReadRange)
             : null;
         PromptPlate(plate);
         if (near is not null && Input.IsActionJustPressed(InputActions.Interact))
@@ -132,10 +132,71 @@ public partial class Session : Node
             _ = Banner.Show(plate.TitleLine, plate.TextLine, 6f);
         }
 
-        if (room.All<AbilityRelic>().FirstOrDefault(r => !r.Taken && Flat(r.GlobalPosition).DistanceTo(Flat(p)) <= RelicRange) is { } relic)
+        foreach (AbilityRelic relic in room.All<AbilityRelic>())
         {
-            Take(relic);
+            if (!relic.Taken && Flat(relic.GlobalPosition).DistanceTo(Flat(p)) <= RelicRange)
+            {
+                Take(relic);
+                break;
+            }
         }
+    }
+
+    // Per-tick lookups, written as loops over the room's kept lists: LINQ with a lambda capturing the position allocates every tick.
+
+    private static T? Near<T>(IReadOnlyList<T> nodes, Vector3 p, float range) where T : Node3D
+    {
+        for (int i = 0; i < nodes.Count; i++)
+        {
+            if (Flat(nodes[i].GlobalPosition).DistanceTo(Flat(p)) <= range)
+            {
+                return nodes[i];
+            }
+        }
+
+        return null;
+    }
+
+    private static MapGoal? GoalAt(Room room, Vector3 p)
+    {
+        IReadOnlyList<MapGoal> goals = room.All<MapGoal>();
+        for (int i = 0; i < goals.Count; i++)
+        {
+            if (goals[i].Contains(p))
+            {
+                return goals[i];
+            }
+        }
+
+        return null;
+    }
+
+    private static bool BossLeft(Room room)
+    {
+        IReadOnlyList<BossSeal> seals = room.All<BossSeal>();
+        for (int i = 0; i < seals.Count; i++)
+        {
+            if (!seals[i].Won)
+            {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    private Proclamation? Unspoken(Room room, Vector3 p)
+    {
+        IReadOnlyList<Proclamation> said = room.All<Proclamation>();
+        for (int i = 0; i < said.Count; i++)
+        {
+            if (!_spoken.Contains(said[i]) && said[i].Contains(p))
+            {
+                return said[i];
+            }
+        }
+
+        return null;
     }
 
     private void Prompt(Shrine? shrine)

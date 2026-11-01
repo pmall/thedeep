@@ -28,11 +28,34 @@ public partial class KitMesh : PrimitiveMesh
     public static Array ToArrays(MeshData mesh) => ToArrays(mesh, new Buffers());
 
     /// <summary>
-    /// Kept buffers for <see cref="ToArrays(MeshData, Buffers)"/>, for a mesh rebuilt every frame with the same topology (a chain):
-    /// the managed arrays and the Godot array are reused, so nothing is left for the garbage collector.
+    /// Buffers for <see cref="ToArrays(MeshData, Buffers)"/>. Kept (<c>new Buffers(kept: true)</c>) for a mesh rebuilt every frame with
+    /// the same topology (a chain): the managed arrays are reused and the Godot array's slots written in place
+    /// (<see cref="NativeMeshArrays"/>), so nothing is left for the garbage collector. Dispose kept buffers with their mesh.
     /// </summary>
-    public sealed class Buffers
+    public sealed class Buffers : System.IDisposable
     {
+        private readonly NativeMeshArrays? _native;
+        private readonly Array? _arrays;
+
+        public Buffers(bool kept = false)
+        {
+            if (kept)
+            {
+                _native = new NativeMeshArrays();
+            }
+            else
+            {
+                _arrays = new Array();
+            }
+        }
+
+        /// <summary>The Godot array the slots are written into.</summary>
+        public Array Arrays => _native?.Managed ?? _arrays!;
+
+        internal NativeMeshArrays? Native => _native;
+
+        public void Dispose() => _native?.Dispose();
+
         public Vector3[] Positions = System.Array.Empty<Vector3>();
         public Vector3[] Normals = System.Array.Empty<Vector3>();
         public float[] Tangents = System.Array.Empty<float>();
@@ -40,7 +63,6 @@ public partial class KitMesh : PrimitiveMesh
         public Vector2[] Uvs = System.Array.Empty<Vector2>();
         public Vector2[] Patches = System.Array.Empty<Vector2>();
         public int[] Indices = System.Array.Empty<int>();
-        public readonly Array Arrays = new();
 
         public void Fit(int vertices, int indices)
         {
@@ -92,6 +114,18 @@ public partial class KitMesh : PrimitiveMesh
         }
 
         mesh.Indices.CopyTo(buffers.Indices);
+        if (buffers.Native is { } native)
+        {
+            native.Set(ArrayType.Vertex, positions);
+            native.Set(ArrayType.Normal, normals);
+            native.Set(ArrayType.Tangent, tangents);
+            native.Set(ArrayType.Color, colors);
+            native.Set(ArrayType.TexUV, uvs);
+            native.Set(ArrayType.TexUV2, patches);
+            native.Set(ArrayType.Index, buffers.Indices);
+            return native.Managed;
+        }
+
         Array arrays = buffers.Arrays;
         arrays[(int)ArrayType.Vertex] = positions;
         arrays[(int)ArrayType.Normal] = normals;

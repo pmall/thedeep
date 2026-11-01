@@ -31,6 +31,9 @@ public partial class Player : CharacterBody3D
     private readonly Countdown _stun = new();
     private int _steerDirection;
     private CapsuleShape3D _capsule = null!;
+    private PlaneRay _ray = null!;
+    private ShapeProbe _fit = null!;
+    private readonly KinematicCollision3D _moveHit = new();
     private Vector3 _capsuleOffset;
 
     /// <summary>Raised after <see cref="Respawn"/> teleports the player.</summary>
@@ -155,6 +158,8 @@ public partial class Player : CharacterBody3D
         _capsuleOffset = collision.Position;
         CollisionLayer = PhysicsLayers.Player;
         CollisionMask = PhysicsLayers.Solid;
+        _ray = PlaneRay.AddTo(this, PhysicsLayers.Solid);
+        _fit = ShapeProbe.AddTo(this, _capsule, PhysicsLayers.Solid);
         States = new PlayerStateSet(this);
         _state = States.Idle;
         _state.Enter();
@@ -436,15 +441,13 @@ public partial class Player : CharacterBody3D
         // The top of the wall, looked for from above the reach, just past its face.
         float probeX = GlobalPosition.X + dir * (_capsule.Radius + AssistReach);
         float assist = Tuning.LedgeAssistHeight;
-        var query = PhysicsRayQueryParameters3D.Create(new Vector3(probeX, GlobalPosition.Y + assist + 0.05f, 0f),
-            new Vector3(probeX, GlobalPosition.Y, 0f), PhysicsLayers.Solid);
-        Godot.Collections.Dictionary hit = GetWorld3D().DirectSpaceState.IntersectRay(query);
-        if (hit.Count == 0 || hit["normal"].AsVector3().Y < 0.5f)
+        if (!_ray.Cast(new Vector3(probeX, GlobalPosition.Y + assist + 0.05f, 0f), new Vector3(probeX, GlobalPosition.Y, 0f))
+            || _ray.GetCollisionNormal().Y < 0.5f)
         {
             return false;
         }
 
-        float top = hit["position"].AsVector3().Y;
+        float top = _ray.GetCollisionPoint().Y;
         if (top - GlobalPosition.Y > assist)
         {
             return false;
@@ -464,9 +467,7 @@ public partial class Player : CharacterBody3D
     /// <summary>What a ray on the play plane first hits: metal, rock, or null (nothing).</summary>
     public SurfaceKind? SurfaceRay(NVector2 from, NVector2 to)
     {
-        var query = PhysicsRayQueryParameters3D.Create(new Vector3(from.X, from.Y, 0f), new Vector3(to.X, to.Y, 0f), PhysicsLayers.Solid);
-        Godot.Collections.Dictionary hit = GetWorld3D().DirectSpaceState.IntersectRay(query);
-        if (hit.Count == 0 || hit["collider"].AsGodotObject() is not CollisionObject3D body)
+        if (!_ray.Cast(new Vector3(from.X, from.Y, 0f), new Vector3(to.X, to.Y, 0f)) || _ray.Body is not { } body)
         {
             return null;
         }
@@ -477,14 +478,13 @@ public partial class Player : CharacterBody3D
     /// <summary>Where a ray on the play plane first hits metal, or null (rock, or nothing, in the way).</summary>
     public NVector2? MetalRay(NVector2 from, NVector2 to)
     {
-        var query = PhysicsRayQueryParameters3D.Create(new Vector3(from.X, from.Y, 0f), new Vector3(to.X, to.Y, 0f), PhysicsLayers.Solid);
-        Godot.Collections.Dictionary hit = GetWorld3D().DirectSpaceState.IntersectRay(query);
-        if (hit.Count == 0 || hit["collider"].AsGodotObject() is not CollisionObject3D body || (body.CollisionLayer & PhysicsLayers.WorldMetal) == 0)
+        if (!_ray.Cast(new Vector3(from.X, from.Y, 0f), new Vector3(to.X, to.Y, 0f)) || _ray.Body is not { } body
+            || (body.CollisionLayer & PhysicsLayers.WorldMetal) == 0)
         {
             return null;
         }
 
-        Vector3 p = hit["position"].AsVector3();
+        Vector3 p = _ray.GetCollisionPoint();
         return new NVector2(p.X, p.Y);
     }
 
@@ -493,14 +493,7 @@ public partial class Player : CharacterBody3D
     {
         var basis = new Basis(Vector3.Back, GripMath.Angle(pose.Up));
         var origin = new Vector3(pose.Feet.X + pose.Up.X * 0.05f, pose.Feet.Y + pose.Up.Y * 0.05f, 0f);
-        var query = new PhysicsShapeQueryParameters3D
-        {
-            Shape = _capsule,
-            Transform = new Transform3D(basis, origin) * new Transform3D(Basis.Identity, _capsuleOffset),
-            CollisionMask = PhysicsLayers.Solid,
-            Margin = 0f,
-        };
-        return GetWorld3D().DirectSpaceState.IntersectShape(query, 1).Count == 0;
+        return !_fit.Overlaps(new Transform3D(basis, origin) * new Transform3D(Basis.Identity, _capsuleOffset));
     }
 
     /// <summary>
@@ -650,31 +643,12 @@ public partial class Player : CharacterBody3D
     }
 
     /// <summary>The surface height of the swimmable water at <paramref name="point"/>, or null.</summary>
-    private float? WaterAt(Vector3 point)
-    {
-        var query = new PhysicsPointQueryParameters3D
-        {
-            Position = point with { Z = 0f },
-            CollisionMask = PhysicsLayers.Water,
-            CollideWithAreas = true,
-            CollideWithBodies = false,
-        };
-        foreach (Godot.Collections.Dictionary hit in GetWorld3D().DirectSpaceState.IntersectPoint(query, 4))
-        {
-            if (hit["collider"].AsGodotObject() is Area3D { } area && area.GetParent() is WaterBody water)
-            {
-                return water.SurfaceY;
-            }
-        }
-
-        return null;
-    }
+    private static float? WaterAt(Vector3 point) => WaterBody.SurfaceAt(point.X, point.Y);
 
     /// <summary>The unbroken cracked rock the body would hit first moving by <paramref name="motion"/>, or null.</summary>
     private Block? CrackedAt(Vector3 motion)
     {
-        var hit = new KinematicCollision3D();
-        return TestMove(GlobalTransform, motion, hit) && hit.GetCollider() is Block { Cracked: true, Broken: false } block ? block : null;
+        return TestMove(GlobalTransform, motion, _moveHit) && _moveHit.GetCollider() is Block { Cracked: true, Broken: false } block ? block : null;
     }
 
     private void ReadInput()
