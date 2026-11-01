@@ -25,15 +25,58 @@ public partial class KitMesh : PrimitiveMesh
     }
 
     /// <summary>Godot mesh arrays for <paramref name="mesh"/>, with the surface frame the materials read.</summary>
-    public static Array ToArrays(MeshData mesh)
+    public static Array ToArrays(MeshData mesh) => ToArrays(mesh, new Buffers());
+
+    /// <summary>
+    /// Kept buffers for <see cref="ToArrays(MeshData, Buffers)"/>, for a mesh rebuilt every frame with the same topology (a chain):
+    /// the managed arrays and the Godot array are reused, so nothing is left for the garbage collector.
+    /// </summary>
+    public sealed class Buffers
+    {
+        public Vector3[] Positions = System.Array.Empty<Vector3>();
+        public Vector3[] Normals = System.Array.Empty<Vector3>();
+        public float[] Tangents = System.Array.Empty<float>();
+        public Color[] Colors = System.Array.Empty<Color>();
+        public Vector2[] Uvs = System.Array.Empty<Vector2>();
+        public Vector2[] Patches = System.Array.Empty<Vector2>();
+        public int[] Indices = System.Array.Empty<int>();
+        public readonly Array Arrays = new();
+
+        public void Fit(int vertices, int indices)
+        {
+            if (Positions.Length != vertices)
+            {
+                Positions = new Vector3[vertices];
+                Normals = new Vector3[vertices];
+                Tangents = new float[vertices * 4];
+                Colors = new Color[vertices];
+                Uvs = new Vector2[vertices];
+                Patches = new Vector2[vertices];
+            }
+
+            if (Indices.Length != indices)
+            {
+                Indices = new int[indices];
+            }
+
+            if (Arrays.Count != (int)ArrayType.Max)
+            {
+                Arrays.Resize((int)ArrayType.Max);
+            }
+        }
+    }
+
+    /// <summary>Godot mesh arrays for <paramref name="mesh"/>, written into <paramref name="buffers"/> (returns its Godot array).</summary>
+    public static Array ToArrays(MeshData mesh, Buffers buffers)
     {
         int count = mesh.VertexCount;
-        var positions = new Vector3[count];
-        var normals = new Vector3[count];
-        var tangents = new float[count * 4];
-        var colors = new Color[count];
-        var uvs = new Vector2[count];
-        var patches = new Vector2[count];
+        buffers.Fit(count, mesh.Indices.Count);
+        Vector3[] positions = buffers.Positions;
+        Vector3[] normals = buffers.Normals;
+        float[] tangents = buffers.Tangents;
+        Color[] colors = buffers.Colors;
+        Vector2[] uvs = buffers.Uvs;
+        Vector2[] patches = buffers.Patches;
         for (int i = 0; i < count; i++)
         {
             positions[i] = ToGodot(mesh.Positions[i]);
@@ -48,15 +91,15 @@ public partial class KitMesh : PrimitiveMesh
             patches[i] = new Vector2(mesh.PatchSizes[i].X, mesh.PatchSizes[i].Y);
         }
 
-        var arrays = new Array();
-        arrays.Resize((int)ArrayType.Max);
+        mesh.Indices.CopyTo(buffers.Indices);
+        Array arrays = buffers.Arrays;
         arrays[(int)ArrayType.Vertex] = positions;
         arrays[(int)ArrayType.Normal] = normals;
         arrays[(int)ArrayType.Tangent] = tangents;
         arrays[(int)ArrayType.Color] = colors;
         arrays[(int)ArrayType.TexUV] = uvs;
         arrays[(int)ArrayType.TexUV2] = patches;
-        arrays[(int)ArrayType.Index] = mesh.Indices.ToArray();
+        arrays[(int)ArrayType.Index] = buffers.Indices;
         return arrays;
     }
 

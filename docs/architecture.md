@@ -75,7 +75,7 @@ scenes/
   camera/ScreenGrade.tscn  finishing pass over the 3D view: vignette + grain (strengths from the biome)
   fx/                      ambient particle effects (AmbientParticles): Dust, Silt, Drips, Rime (falling flakes); one-shot
                            bursts: Grit, Puff, Sparks (the pilgrim's), Rubble (cracked rock shattering)
-  ui/DebugHud.tscn         debug builds: room name and position and the controls manual (always; F8 hides the manual); F7: state/velocity/abilities readout
+  ui/DebugHud.tscn         debug builds: room name and position and the gameplay controls (always; F8 hides them); F7: state/velocity/abilities readout and the debug keys
   ui/OwnerCapture.tscn     F12 screenshot / F10 video: REC dot + saved-file toast
 scripts/
   Main.cs                  spawns the player; user args: `--room` (with the abilities a route there needs, from the draft's
@@ -173,7 +173,7 @@ scripts/
   map/Requirement.cs       ability requirement expressions (`MagGrip | Harpoon`), parsed to alternatives
   map/GridSnap.cs          the kit grid (block edges 0.5 m, piece origins 0.25 m)
   ui/DebugHud.cs
-  ui/ControlsManual.cs     debug builds: every control, its buttons (keyboard or gamepad, the device last used) lit while held
+  ui/ControlsManual.cs     debug builds: the gameplay controls (keyboard or gamepad, the device last used) or the debug keys, lit while held
   ui/ButtonNames.cs        pure: gamepad button and axis names and shapes, key cap names, which device the last input means
   ui/ScreenFade.cs         the veil for transitions; ui/MapScreen.cs: the minimal map (M / Tab / LB): visited rooms, the ways
                            not yet taken (a dot if open now, rings in the gate's colors if not), a legend
@@ -213,7 +213,7 @@ scripts/
                            lake bed down into the Underice and back,
                            `-- --room Chapterhouse --encounter-check`
   debug/PlaythroughCheck.cs  the whole run from a new game to the end along the solver's route, `-- --playthrough-check`
-  debug/UiShot.cs          renders a gate hint (with the manual for the keyboard), the manual for the gamepad, the map screen and the end card to PNGs (`-- --ui-shot <dir>`, windowed)
+  debug/UiShot.cs          renders a gate hint (with the keyboard's controls and the debug keys), the gamepad's controls, the map screen and the end card to PNGs (`-- --ui-shot <dir>`, windowed)
   debug/CaptureTestDriver.cs  windowed capture check + frame times (`-- --capture-test`)
   debug/LookDevDriver.cs   photo spots + frame times for tools/capture.sh (`-- --lookdev <dir>`)
   debug/DemoInput.cs       scripted run/jump/dash input for drivers
@@ -329,6 +329,7 @@ Keep these Godot-free. When adding testable logic, put it in a Godot-free file a
 
 ## Code conventions
 
+- **Per-frame code allocates nothing** (`_Process`, `_PhysicsProcess` and what they call). A garbage collection is a dropped frame, and engine objects (arrays and dictionaries from the engine, query parameters, node wrappers) are finalizable, so they survive into gen1 and make every collection slow. Keep buffers and reuse them (`KitMesh.Buffers`, `MeshBuilder.Clear`, `SweepPath.FromPoints(…, frames)`), ask the room for nodes through `Room.All<T>()` (kept, never walk the tree per tick), avoid LINQ and `GetChildren()` per tick. `tools/capture.sh` reports the collections in each run (`gc` in `perf*.json`); a scripted run should see a handful, not one every few frames.
 - Standard C# naming: PascalCase types, methods and properties; `_camelCase` private fields. One class per file, with the file named after the class.
 - Namespace `TheDeep` (player states: `TheDeep.States`).
 - Nullable reference types on, warnings are errors. Exported node and resource references are declared `= null!;`.

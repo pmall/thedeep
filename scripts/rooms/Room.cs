@@ -68,8 +68,45 @@ public partial class Room : Node3D
     /// <summary>The room's gameplay blocks, in scene order.</summary>
     public IEnumerable<Block> Blocks() => Find<Block>(this);
 
-    /// <summary>Every node of type <typeparamref name="T"/> in the room, in scene order (shrines, relics…).</summary>
-    public IEnumerable<T> All<T>() where T : Node => Find<T>(this);
+    /// <summary>
+    /// Every node of type <typeparamref name="T"/> in the room, in scene order (shrines, relics…). Found once and kept until a node
+    /// enters or leaves the room: the session asks every physics tick, and walking the room's tree each time allocated about
+    /// 250 KB a frame (a garbage collection every few frames, each one a dropped frame).
+    /// </summary>
+    public IReadOnlyList<T> All<T>() where T : Node
+    {
+        if (_found.TryGetValue(typeof(T), out object? kept))
+        {
+            return (List<T>)kept;
+        }
+
+        var found = new List<T>(Find<T>(this));
+        _found[typeof(T)] = found;
+        return found;
+    }
+
+    private readonly Dictionary<System.Type, object> _found = new();
+
+    public override void _EnterTree()
+    {
+        _found.Clear();
+        GetTree().NodeAdded += Changed;
+        GetTree().NodeRemoved += Changed;
+    }
+
+    public override void _ExitTree()
+    {
+        GetTree().NodeAdded -= Changed;
+        GetTree().NodeRemoved -= Changed;
+    }
+
+    private void Changed(Node node)
+    {
+        if (_found.Count > 0 && IsAncestorOf(node))
+        {
+            _found.Clear();
+        }
+    }
 
     private static IEnumerable<T> Find<T>(Node parent) where T : Node
     {

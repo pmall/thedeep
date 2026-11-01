@@ -163,7 +163,7 @@ public partial class PartBody : Node3D
                 _geometry.Add(pendant);
             }
 
-            _chains.Add(new Chain(spec, joint, sim, skin, end, new NVector3[sim.Points.Length]));
+            _chains.Add(new Chain(spec, joint, sim, skin, end, new NVector3[sim.Points.Length], new ChainMesh(spec, sim.Points.Length)));
         }
 
         ResetChains();
@@ -180,7 +180,7 @@ public partial class PartBody : Node3D
     {
         NVector3[] current = chain.Sim.Points;
         int count = current.Length;
-        var points = new NVector3[count];
+        NVector3[] points = chain.Mesh.Points;
         for (int i = 0; i < count; i++)
         {
             points[i] = NVector3.Lerp(chain.Previous[i], current[i], t);
@@ -188,23 +188,14 @@ public partial class PartBody : Node3D
 
         // The chain's broad face (a ribbon's) looks along the joint's Z axis, toward the camera when facing right.
         Vector3 faceAxis = chain.Joint.GetGlobalTransformInterpolated().Basis.Z.Normalized();
-        PartChain spec = chain.Spec;
-        var scales = new NVector2[count];
-        for (int i = 0; i < count; i++)
-        {
-            float k = 1f + (spec.Taper - 1f) * i / (count - 1);
-            scales[i] = new NVector2(k, spec.Shape == ChainShape.Ribbon ? 1f : k);
-        }
-
-        var builder = new MeshBuilder();
-        Profile profile = spec.Shape == ChainShape.Ribbon
-            ? Profile.Rect(spec.Width, spec.Thickness, spec.Thickness * RibbonBevelShare)
-            : Profile.Circle(spec.Width * 0.5f, TubeSides);
-        List<PathFrame> path = SweepPath.FromPoints(points, ToNumerics(faceAxis));
-        builder.Sweep(path, profile, scales: scales);
+        // Rebuilt every frame from kept buffers (ChainMesh), so drawing a chain leaves nothing for the garbage collector.
+        ChainMesh m = chain.Mesh;
+        m.Builder.Clear();
+        SweepPath.FromPoints(points, ToNumerics(faceAxis), m.Path);
+        m.Builder.Sweep(m.Path, m.Profile, scales: m.Scales);
         var mesh = (ArrayMesh)chain.Skin.Mesh;
         mesh.ClearSurfaces();
-        mesh.AddSurfaceFromArrays(Mesh.PrimitiveType.Triangles, KitMesh.ToArrays(builder.Finish()));
+        mesh.AddSurfaceFromArrays(Mesh.PrimitiveType.Triangles, KitMesh.ToArrays(m.Builder.Finish(), m.Arrays));
 
         // The pendant hangs along the last link.
         NVector3 tip = points[^1];
@@ -221,5 +212,31 @@ public partial class PartBody : Node3D
 
     private static NVector3 ToNumerics(Vector3 v) => new(v.X, v.Y, v.Z);
 
-    private sealed record Chain(PartChain Spec, Node3D Joint, VerletChain Sim, MeshInstance3D Skin, Node3D End, NVector3[] Previous);
+    private sealed record Chain(PartChain Spec, Node3D Joint, VerletChain Sim, MeshInstance3D Skin, Node3D End, NVector3[] Previous, ChainMesh Mesh);
+
+    /// <summary>What drawing one chain reuses every frame: its profile and taper (fixed), the builder, path and arrays.</summary>
+    private sealed class ChainMesh
+    {
+        public readonly NVector3[] Points;
+        public readonly NVector2[] Scales;
+        public readonly Profile Profile;
+        public readonly MeshBuilder Builder = new();
+        public readonly List<PathFrame> Path = new();
+        public readonly KitMesh.Buffers Arrays = new();
+
+        public ChainMesh(PartChain spec, int count)
+        {
+            Points = new NVector3[count];
+            Scales = new NVector2[count];
+            for (int i = 0; i < count; i++)
+            {
+                float k = 1f + (spec.Taper - 1f) * i / (count - 1);
+                Scales[i] = new NVector2(k, spec.Shape == ChainShape.Ribbon ? 1f : k);
+            }
+
+            Profile = spec.Shape == ChainShape.Ribbon
+                ? Profile.Rect(spec.Width, spec.Thickness, spec.Thickness * RibbonBevelShare)
+                : Profile.Circle(spec.Width * 0.5f, TubeSides);
+        }
+    }
 }

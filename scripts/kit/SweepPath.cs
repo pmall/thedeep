@@ -11,7 +11,11 @@ public static class SweepPath
     /// Frames through <paramref name="points"/>. The up axis starts as close to <paramref name="upHint"/>
     /// as possible and is carried along without twisting (parallel transport).
     /// </summary>
-    public static List<PathFrame> FromPoints(IReadOnlyList<Vector3> points, Vector3 upHint)
+    public static List<PathFrame> FromPoints(IReadOnlyList<Vector3> points, Vector3 upHint) =>
+        FromPoints(points, upHint, new List<PathFrame>(points.Count));
+
+    /// <summary>As <see cref="FromPoints(IReadOnlyList{Vector3}, Vector3)"/>, into <paramref name="frames"/> (cleared first; reused every frame).</summary>
+    public static List<PathFrame> FromPoints(IReadOnlyList<Vector3> points, Vector3 upHint, List<PathFrame> frames)
     {
         int count = points.Count;
         if (count < 2)
@@ -19,7 +23,7 @@ public static class SweepPath
             throw new ArgumentException("a path needs at least two points", nameof(points));
         }
 
-        var frames = new List<PathFrame>(count);
+        frames.Clear();
         Vector3 up = Vector3.Zero;
         float distance = 0f;
         for (int i = 0; i < count; i++)

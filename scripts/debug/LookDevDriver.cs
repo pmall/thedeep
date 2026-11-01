@@ -3,6 +3,7 @@ using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
+using System.Linq;
 using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
@@ -37,6 +38,12 @@ public partial class LookDevDriver : Node
     private readonly FrameTimeStats _frame = new();
     private readonly FrameTimeStats _gpu = new();
     private readonly FrameTimeStats _cpu = new();
+    private readonly FrameTimeStats _process = new();
+    private readonly FrameTimeStats _physics = new();
+
+    /// <summary>Per measured frame: frame, GPU, render CPU, process and physics script times (ms) and the GCs since the last frame.</summary>
+    private readonly List<(double Frame, double Gpu, double Cpu, double Process, double Physics, int Gc0, int Gc1, int Gc2)> _frames = new();
+    private int _gc0, _gc1, _gc2;
     private IEnumerator<int> _script = null!;
     private FrameGrabber? _grabber;
     private DemoInput? _demo;
@@ -112,7 +119,16 @@ public partial class LookDevDriver : Node
             _frame.Add((now - _lastFrameUsec) / 1000.0);
             _gpu.Add(RenderingServer.ViewportGetMeasuredRenderTimeGpu(viewport));
             _cpu.Add(RenderingServer.ViewportGetMeasuredRenderTimeCpu(viewport) + RenderingServer.GetFrameSetupTimeCpu());
+            _process.Add(Performance.GetMonitor(Performance.Monitor.TimeProcess) * 1000.0);
+            _physics.Add(Performance.GetMonitor(Performance.Monitor.TimePhysicsProcess) * 1000.0);
+            int gc0 = GC.CollectionCount(0), gc1 = GC.CollectionCount(1), gc2 = GC.CollectionCount(2);
+            _frames.Add(((now - _lastFrameUsec) / 1000.0, RenderingServer.ViewportGetMeasuredRenderTimeGpu(viewport),
+                RenderingServer.ViewportGetMeasuredRenderTimeCpu(viewport) + RenderingServer.GetFrameSetupTimeCpu(),
+                Performance.GetMonitor(Performance.Monitor.TimeProcess) * 1000.0, Performance.GetMonitor(Performance.Monitor.TimePhysicsProcess) * 1000.0,
+                gc0 - _gc0, gc1 - _gc1, gc2 - _gc2));
         }
+
+        (_gc0, _gc1, _gc2) = (GC.CollectionCount(0), GC.CollectionCount(1), GC.CollectionCount(2));
 
         _lastFrameUsec = now;
         _script.MoveNext();
@@ -279,6 +295,17 @@ public partial class LookDevDriver : Node
             ["frame"] = Summary(_frame),
             ["gpu"] = Summary(_gpu),
             ["cpu"] = Summary(_cpu),
+            ["process"] = Summary(_process),
+            ["physics"] = Summary(_physics),
+            ["gc"] = new Dictionary<string, int>
+            {
+                ["gen0"] = _frames.Sum(f => f.Gc0), ["gen1"] = _frames.Sum(f => f.Gc1), ["gen2"] = _frames.Sum(f => f.Gc2),
+            },
+            // The slowest frames with what else happened in them, and in the frame before (monitors lag a frame).
+            ["slowest"] = Enumerable.Range(0, _frames.Count).OrderByDescending(i => _frames[i].Frame).Take(12).OrderBy(i => i)
+                .Select(i => string.Create(CultureInfo.InvariantCulture,
+                    $"#{i} frame {_frames[i].Frame:0.0} gpu {_frames[i].Gpu:0.0} cpu {_frames[i].Cpu:0.0} process {_frames[i].Process:0.0} physics {_frames[i].Physics:0.0} gc {_frames[i].Gc0}/{_frames[i].Gc1}/{_frames[i].Gc2}"))
+                .ToArray(),
             ["frames"] = _frame.Count,
             ["gpu_name"] = RenderingServer.GetVideoAdapterName(),
             ["godot"] = (string)Engine.GetVersionInfo()["string"],

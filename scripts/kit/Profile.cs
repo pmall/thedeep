@@ -19,19 +19,20 @@ public sealed class Profile
 
     public IReadOnlyList<Segment> Segments { get; }
 
+    private readonly Vector2[] _outline;
+
     private Profile(IReadOnlyList<Segment> segments)
     {
         Segments = segments;
+        _outline = new Vector2[segments.Count];
+        for (int i = 0; i < _outline.Length; i++)
+        {
+            _outline[i] = segments[i].A;
+        }
     }
 
     /// <summary>The outline points, in order (the start of every segment).</summary>
-    public IEnumerable<Vector2> Outline()
-    {
-        foreach (Segment s in Segments)
-        {
-            yield return s.A;
-        }
-    }
+    public IReadOnlyList<Vector2> Outline() => _outline;
 
     /// <summary>
     /// A circle (or a regular polygon). <paramref name="smooth"/>: one round patch that wraps around;

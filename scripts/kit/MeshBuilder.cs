@@ -1,6 +1,5 @@
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Numerics;
 
 namespace TheDeep;
@@ -21,6 +20,21 @@ public sealed class MeshBuilder
 
     /// <summary>Per-part random value given to the vertices added next (see <see cref="MeshData.Variations"/>).</summary>
     public float Variation { get; set; }
+
+    /// <summary>Empties the builder to build again, keeping its buffers (a mesh rebuilt every frame allocates nothing).</summary>
+    public void Clear()
+    {
+        _mesh.Positions.Clear();
+        _mesh.Normals.Clear();
+        _mesh.Tangents.Clear();
+        _mesh.Uvs.Clear();
+        _mesh.PatchSizes.Clear();
+        _mesh.Heights.Clear();
+        _mesh.Variations.Clear();
+        _mesh.Indices.Clear();
+        Transform = Matrix4x4.Identity;
+        Variation = 0f;
+    }
 
     /// <summary>
     /// Adds a vertex. <paramref name="uAxis"/> and <paramref name="vAxis"/> are the directions in which
@@ -296,11 +310,13 @@ public sealed class MeshBuilder
 
     private void Cap(PathFrame frame, Profile profile, float facing, Vector2 scale)
     {
-        List<Vector2> outline = profile.Outline().Select(p => p * scale).ToList();
-        Vector2 min = outline[0], max = outline[0];
+        // Allocation-free: chains are rebuilt every frame (PartBody).
+        IReadOnlyList<Vector2> outline = profile.Outline();
+        Vector2 min = outline[0] * scale, max = min;
         Vector2 sum = Vector2.Zero;
-        foreach (Vector2 p in outline)
+        for (int i = 0; i < outline.Count; i++)
         {
+            Vector2 p = outline[i] * scale;
             min = Vector2.Min(min, p);
             max = Vector2.Max(max, p);
             sum += p;
@@ -308,14 +324,14 @@ public sealed class MeshBuilder
 
         Vector2 size = max - min;
         Vector3 normal = frame.Tangent * facing;
-        int Add(Vector2 p) => Vertex(frame.Place(p), normal, frame.Side, frame.Up, p - min, size);
-
-        int center = Add(sum / outline.Count);
-        int first = Add(outline[0]);
+        Vector2 middle = sum / outline.Count;
+        int center = Vertex(frame.Place(middle), normal, frame.Side, frame.Up, middle - min, size);
+        int first = Vertex(frame.Place(outline[0] * scale), normal, frame.Side, frame.Up, outline[0] * scale - min, size);
         int previous = first;
         for (int i = 1; i < outline.Count; i++)
         {
-            int current = Add(outline[i]);
+            Vector2 p = outline[i] * scale;
+            int current = Vertex(frame.Place(p), normal, frame.Side, frame.Up, p - min, size);
             Triangle(center, previous, current);
             previous = current;
         }
@@ -326,7 +342,12 @@ public sealed class MeshBuilder
     /// <summary>Finishes the mesh: heights are measured from its lowest point.</summary>
     public MeshData Finish()
     {
-        float bottom = _mesh.Positions.Count > 0 ? _mesh.Positions.Min(p => p.Y) : 0f;
+        float bottom = _mesh.Positions.Count > 0 ? float.MaxValue : 0f;
+        foreach (Vector3 p in _mesh.Positions)
+        {
+            bottom = MathF.Min(bottom, p.Y);
+        }
+
         for (int i = 0; i < _mesh.Positions.Count; i++)
         {
             _mesh.Heights[i] = _mesh.Positions[i].Y - bottom;
