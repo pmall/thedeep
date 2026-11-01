@@ -10,15 +10,15 @@ public sealed record MoveLimits(
     float RunSpeed, float AirAcceleration, float AirDeceleration, float JumpHeight, float JumpTimeToApex, float JumpCutFactor,
     float FallGravityMultiplier, float ApexHangThreshold, float ApexGravityMultiplier, float MaxFallSpeed,
     float DashDistance, float DashDuration, float DashExitSpeedFactor, int AirDashes,
-    float Width = 0.7f, float Height = 1.6f, float EdgeMargin = 0f)
+    float Width = 0.7f, float Height = 1.6f, float EdgeMargin = 0f, float LedgeAssist = 0f)
 {
     /// <summary>
-    /// A clumsier pilgrim, for the slack report: jumps a little lower, dashes a little shorter, runs a little slower, and never takes
-    /// off from the very end of a ledge. A way only these limits miss asks for near-perfect play.
+    /// A clumsier pilgrim, for the slack report: jumps a little lower, dashes a little shorter, runs a little slower, never takes
+    /// off from the very end of a ledge, and gets no ledge assist. A way only these limits miss asks for near-perfect play.
     /// </summary>
     public MoveLimits Clumsy() => this with
     {
-        JumpHeight = JumpHeight * 0.9f, DashDistance = DashDistance * 0.85f, RunSpeed = RunSpeed * 0.92f, EdgeMargin = 0.3f,
+        JumpHeight = JumpHeight * 0.9f, DashDistance = DashDistance * 0.85f, RunSpeed = RunSpeed * 0.92f, EdgeMargin = 0.3f, LedgeAssist = 0f,
     };
 
     public float Gravity => JumpMath.Gravity(JumpHeight, JumpTimeToApex);
@@ -79,6 +79,10 @@ public readonly record struct Ledge(float Y, float MinX, float MaxX, bool Swim =
 /// dashing) or rising into a metal ceiling grips it, and then walks the whole surface connected to that point: along each face,
 /// around a metal block's corners, onto a metal wall met at an inner corner, standing up on a top; it touches what its body
 /// passes (lying along the normal), and from anywhere on a wall it leaps off or lets go, from anywhere under a ceiling it drops.
+/// Only metal holds (rock going on in the same plane is the surface's end), and water lets go of a body whose center it drowns
+/// (<see cref="GripMath.Drowned"/>): no grip pose lies there.
+/// Ledge assist: an airborne body (not dashing) pressing into a wall whose top is at most <see cref="MoveLimits.LedgeAssist"/> above
+/// its feet is lifted onto it, as the pilgrim is.
 /// Hazards (heat zones, for a planner without Heat plating) are space the body never enters: a trajectory that touches one
 /// ends there, and no ledge or water reaches into one.
 /// </summary>
@@ -379,6 +383,10 @@ public sealed class ReachPlanner
         }
     }
 
+    /// <summary>Whether a gripping body centered at <paramref name="center"/> is drowned in some water (water lets go of it).</summary>
+    private bool Drowned(Vector2 center) =>
+        _w is not null && _waters.Any(w => center.X > w.MinX && center.X < w.MaxX && center.Y > w.MinY && GripMath.Drowned(center.Y, w.MaxY, _w));
+
     /// <summary>The body lying along <paramref name="up"/> from feet on a surface (upright on a floor).</summary>
     private Box GripBody(Vector2 feet, Vector2 up) =>
         Box.Around(feet + up * (_m.Height * 0.5f), MathF.Abs(up.X) > 0.5f ? new Vector2(_m.Height, _m.Width) : new Vector2(_m.Width, _m.Height));
@@ -437,7 +445,7 @@ public sealed class ReachPlanner
                     Vector2 feet = Vector2.Lerp(from, to, k / (float)steps);
                     Box body = GripBody(feet, up);
                     var inner = new Box(body.MinX + Skin, body.MinY + Skin, body.MaxX - Skin, body.MaxY - Skin);
-                    if (_solids.Any(s => s.Overlaps(inner)) || _hazards.Any(h => h.Overlaps(inner)))
+                    if (_solids.Any(s => s.Overlaps(inner)) || _hazards.Any(h => h.Overlaps(inner)) || Drowned(feet + up * (_m.Height * 0.5f)))
                     {
                         continue;
                     }
@@ -689,6 +697,14 @@ public sealed class ReachPlanner
             bool grips = _grip is not null && dashLeft == 0 && tick >= gripFrom;
             float pushX = v.X;
             p.X = MoveAxis(p, v.X * Dt, horizontal: true, out bool hitX, out int solidX);
+            if (hitX && dashLeft == 0 && dir != 0 && MathF.Sign(pushX) == dir && airborne && LedgeAssist(p, dir, _solids[solidX]) is { } lifted)
+            {
+                // Just short of a ledge's top: lifted onto it, keeping the way and the speed (Player.LedgeAssist).
+                p = lifted;
+                v = new Vector2(dir * MathF.Max(MathF.Abs(pushX), AssistSpeed * _m.RunSpeed), 0f);
+                hitX = false;
+            }
+
             if (hitX)
             {
                 v.X = 0f;
@@ -738,6 +754,30 @@ public sealed class ReachPlanner
             }
         }
     }
+
+    /// <summary>
+    /// Ledge assist (<see cref="MoveLimits.LedgeAssist"/>): a body with its feet at <paramref name="p"/>, against the side of
+    /// <paramref name="wall"/> moving <paramref name="dir"/>, whose top is a little above the feet: the feet on the top, just past
+    /// the edge, if the body fits there; otherwise null.
+    /// </summary>
+    private Vector2? LedgeAssist(Vector2 p, int dir, Box wall)
+    {
+        float rise = wall.MaxY - p.Y;
+        if (_m.LedgeAssist <= 0f || rise <= 0f || rise > _m.LedgeAssist)
+        {
+            return null;
+        }
+
+        var lifted = new Vector2(p.X + dir * AssistReach, wall.MaxY + Skin);
+        Box body = Box.Around(lifted + new Vector2(0f, _m.Height * 0.5f), new Vector2(_m.Width, _m.Height));
+        return _solids.Any(s => s.Overlaps(body)) ? null : lifted;
+    }
+
+    /// <summary>How far past the wall's face ledge assist moves the body (Player.LedgeAssist's), meters.</summary>
+    private const float AssistReach = 0.15f;
+
+    /// <summary>The least speed a ledge assist leaves the body with, as a share of the run speed (Player.LedgeAssist's).</summary>
+    private const float AssistSpeed = 0.6f;
 
     /// <summary>One tick floating in <paramref name="water"/>; returns true once settled (on the float line, or wading on a floor).</summary>
     private bool Swim(ref Vector2 p, ref Vector2 v, int dir, Box water, IReadOnlyList<Box> triggers, HashSet<int> reachedTriggers, Action<int> land)

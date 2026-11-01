@@ -75,7 +75,7 @@ scenes/
   camera/ScreenGrade.tscn  finishing pass over the 3D view: vignette + grain (strengths from the biome)
   fx/                      ambient particle effects (AmbientParticles): Dust, Silt, Drips, Rime (falling flakes); one-shot
                            bursts: Grit, Puff, Sparks (the pilgrim's), Rubble (cracked rock shattering)
-  ui/DebugHud.tscn         state/velocity/abilities readout + control hints
+  ui/DebugHud.tscn         debug builds: room name and position (always); F7: state/velocity/abilities readout + control hints
   ui/OwnerCapture.tscn     F12 screenshot / F10 video: REC dot + saved-file toast
 scripts/
   Main.cs                  spawns the player; user args: `--room` (with the abilities a route there needs, from the draft's

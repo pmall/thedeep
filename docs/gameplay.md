@@ -5,12 +5,13 @@
 ## Base moveset (implemented)
 
 - **Run**
-- **Jump** with variable height (release early for a short hop), coyote time and a jump buffer
+- **Jump** with variable height (release early for a short hop), coyote time and a jump buffer (0.15 s each)
+- **Ledge assist** (owner, 2026-11-01: jumps felt too exact, against the hyper-dynamic goal): airborne and pressing into a wall whose top is at most `LedgeAssistHeight` (0.6 m) above the feet, the pilgrim is lifted onto it, just past the edge, keeping its way and speed (at least 60% of a run); the visible body eases up from where it was (`Player.LedgeAssist`, from the jump and fall states; not from a dash). The map's planner does the same, so no gate is jumped by it unproven.
 - **Dash** on the ground and in the air (one air dash per airtime, refilled on landing), with a short cooldown. A ground dash can be cancelled into a jump.
 
 All numbers live in `resources/player_tuning.tres` (see "Tuning" below).
 
-**Room metrics** (for building rooms): a full jump rises 3.2 m, so a step the pilgrim must climb is at most **2.5 m**; a ladder of ledges rises 2.5 m per ledge (never 3). A gap crossed at one height is at most about **8 m** with a running jump and the air dash. These leave room for error: the room check walks every room again with a clumsier pilgrim (jumps 10% lower, dashes 15% shorter, runs 8% slower, never taking off from a ledge's very end) and fails on any way only near-perfect play takes ([testing.md](testing.md)). A room that moves the tuning (a higher jump) moves these too.
+**Room metrics** (for building rooms): a full jump rises 3.2 m, so a step the pilgrim must climb is at most **2.5 m**; a ladder of ledges rises 2.5 m per ledge (never 3). A gap crossed at one height is at most about **8 m** with a running jump and the air dash. These leave room for error: the room check walks every room again with a clumsier pilgrim (jumps 10% lower, dashes 15% shorter, runs 8% slower, never taking off from a ledge's very end, no ledge assist) and fails on any way only near-perfect play takes ([testing.md](testing.md)). The ledge assist is extra forgiveness on top, never a reason for a higher step: with it a ledge up to about 3.6 m is reached, so a wall that gates an ability (Mag-grip's, the Harpoon's) stays well above that (the room check proves it). A room that moves the tuning (a higher jump) moves these too.
 
 ## Combat, health and the pilgrimage (M6)
 
@@ -48,7 +49,7 @@ The player can collect them in many orders, and that freedom is proven by a solv
 **Mag-grip (implemented, M6).** `GripState` with pure geometry in `GripMath` (unit tested). Metal is the physics layer only (`world_metal`, set by `Block.Surface`). The room check simulates it (`ReachPlanner` with `GripLimits`): a way Mag-grip opens must be reached by gripping the room's metal.
 - **Attach:** press into a metal wall (on the ground or in the air), or rise into a metal ceiling (a jump). The body turns about its center so it swings out from the wall; its up becomes the surface normal (`UpDirection` and the body's rotation about Z, so the collider turns with it).
 - **Move:** held input along the surface (up/down on a wall, left/right under a ceiling, in screen terms) at `GripSpeed`. **Pull away** from the surface to let go, **jump** to leap off (away from a wall at `GripLeapAwaySpeed` and up at `GripLeapUpFactor` of a jump; downward from a ceiling), **dash** to let go and dash. `GripRegrabDelay` keeps the same surface from catching the player straight back.
-- **Corners snap** (a later pass may smooth them): a metal wall ahead turns the player onto it (inner corner); a surface's end wraps the player around the edge onto the end face (outer corner); reaching a floor stands it up. After a corner, the input that led there keeps meaning "keep going" until it changes, so holding up climbs a wall, turns under the ceiling and walks along it. A rock face ahead just stops the player; a rock end face lets go.
+- **Corners snap** (a later pass may smooth them): a metal wall ahead turns the player onto it (inner corner); a surface's end wraps the player around the edge onto the end face (outer corner); reaching a floor stands it up. After a corner, the input that led there keeps meaning "keep going" until it changes, so holding up climbs a wall, turns under the ceiling and walks along it. A rock face ahead just stops the player; a rock end face lets go. **Only metal holds:** where the metal ends and rock goes on in the same plane, the player lets go (until 2026-11-01 it slid on along the rock: down the Descent's flooded gate, through its water and into the Sluice without Ballast). **Water lets go too:** walked down into swimmable water, once the body's center is deeper than `WaterEnterDepth` (`GripMath.Drowned`) the player lets go and swims, so deep water stays Ballast's gate even beside metal. The planner places no grip pose on rock or drowned.
 - **The visible body eases** into each new pose (`PlayerVisual.CarryOver`): the collider snaps, the body follows in about a tenth of a second. Animation sees the body's own frame, so walking on a wall plays the run cycle; the coat and braid still hang toward the world's floor.
 - A grip surface refills the air dash. Travelling through an exit while gripping stands the player up first.
 - Checked headless in `scenes/rooms/MechanicsLab.tscn` (`GripCheck`, in `tools/check.sh`); look-dev shoots a grip reel there (`Grip.png`).
@@ -99,4 +100,4 @@ Input actions are defined in `project.godot` and mirrored in `scripts/core/Input
 | `debug_respawn` | R | Back |
 | `debug_toggle_{mag_grip,harpoon,drill,ballast,heat_plating}` | F1–F5 | — |
 | `debug_cycle_biome` | F6 | — |
-| `debug_toggle_hud` (state readout) | F7 | — |
+| `debug_toggle_hud` (state readout and controls; the room name and position show in debug builds without it) | F7 | — |

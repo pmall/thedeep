@@ -172,7 +172,7 @@ public partial class Main : Node3D
         }
         else if (Array.IndexOf(args, GripCheckArgument) >= 0)
         {
-            AddChild(new GripCheck { Player = Player });
+            AddChild(new GripCheck { Player = Player, World = World });
         }
         else if (Array.IndexOf(args, HarpoonCheckArgument) >= 0)
         {

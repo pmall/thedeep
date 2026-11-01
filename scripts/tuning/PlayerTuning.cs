@@ -33,6 +33,11 @@ public partial class PlayerTuning : Resource
     [Export] public float CoyoteTime { get; set; } = 0.1f;
     /// <summary>A jump pressed this long before landing still fires on landing.</summary>
     [Export] public float JumpBufferTime { get; set; } = 0.12f;
+    /// <summary>
+    /// Ledge assist: airborne and pressing into a wall whose top is at most this far above the feet, the pilgrim is lifted onto
+    /// it, keeping its way and speed (a jump that ends just short of a ledge still makes it).
+    /// </summary>
+    [Export] public float LedgeAssistHeight { get; set; } = 0.6f;
 
     [ExportGroup("Dash")]
     [Export] public float DashDistance { get; set; } = 4.5f;

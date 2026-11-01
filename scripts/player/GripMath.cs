@@ -32,6 +32,12 @@ public static class GripMath
     /// </summary>
     public static float Along(Vector2 input, Vector2 up) => Vector2.Dot(input, Tangent(up));
 
+    /// <summary>
+    /// Whether a gripping body whose center is at <paramref name="centerY"/> is drowned in water whose surface is at
+    /// <paramref name="surface"/>: its center deeper than a swimmer's feet must be (the water lets go of it, and it swims).
+    /// </summary>
+    public static bool Drowned(float centerY, float surface, WaterLimits w) => surface - centerY > w.EnterDepth;
+
     /// <summary>Whether held input pulls away from the surface (letting go).</summary>
     public static bool PullsAway(Vector2 input, Vector2 up) => Vector2.Dot(input, up) > 0.5f;
 

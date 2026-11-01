@@ -46,4 +46,7 @@ public sealed class FallState : PlayerState
 
         return null;
     }
+
+    /// <summary>Just short of a ledge's top: lifted onto it (ledge assist), landing next tick.</summary>
+    public override PlayerState? AfterMove() => Player.LedgeAssist() ? Player.States.Fall : null;
 }

@@ -3,25 +3,35 @@ using Godot;
 
 namespace TheDeep;
 
-/// <summary>Corner readout of the player's movement state and abilities, for playtesting. Hidden until F7.</summary>
+/// <summary>
+/// Playtesting readouts. In debug builds, the room's name and where the pilgrim stands in it (meters, the room's own frame) sit in
+/// the top right corner at all times, so a remark (or an F12 screenshot) says where it was made. F7 adds the movement state,
+/// velocity and abilities, and the controls. Release builds show nothing.
+/// </summary>
 public partial class DebugHud : CanvasLayer
 {
     [Export] public Player Player { get; set; } = null!;
+    [Export] public World World { get; set; } = null!;
 
     private readonly StringBuilder _text = new();
     private Label _info = null!;
+    private Label _controls = null!;
+    private Label _room = null!;
 
     public override void _Ready()
     {
         _info = GetNode<Label>("%Info");
-        Visible = false;
+        _controls = GetNode<Label>("%Controls");
+        _room = GetNode<Label>("%Room");
+        _info.Visible = _controls.Visible = false;
+        Visible = OS.IsDebugBuild();
     }
 
     public override void _UnhandledInput(InputEvent @event)
     {
-        if (@event.IsActionPressed(InputActions.DebugToggleHud))
+        if (@event.IsActionPressed(InputActions.DebugToggleHud) && OS.IsDebugBuild())
         {
-            Visible = !Visible;
+            _info.Visible = _controls.Visible = !_info.Visible;
             GetViewport().SetInputAsHandled();
         }
     }
@@ -29,6 +39,17 @@ public partial class DebugHud : CanvasLayer
     public override void _Process(double delta)
     {
         if (!Visible)
+        {
+            return;
+        }
+
+        if (World.RoomName != "")
+        {
+            Vector3 at = World.Room.ToLocal(Player.GlobalPosition);
+            _room.Text = $"{World.RoomName}   {at.X:0.0}, {at.Y:0.0}";
+        }
+
+        if (!_info.Visible)
         {
             return;
         }

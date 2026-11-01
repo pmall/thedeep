@@ -149,8 +149,9 @@ script = ExtResource("16_map")
 World = NodePath("../World")
 Player = NodePath("../Player")
 
-[node name="DebugHud" parent="." node_paths=PackedStringArray("Player") instance=ExtResource("4_hud")]
+[node name="DebugHud" parent="." node_paths=PackedStringArray("Player", "World") instance=ExtResource("4_hud")]
 Player = NodePath("../Player")
+World = NodePath("../World")
 
 [node name="DebugCheats" type="Node" parent="." node_paths=PackedStringArray("Player", "World")]
 script = ExtResource("5_cheats")

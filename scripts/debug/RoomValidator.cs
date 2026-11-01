@@ -406,7 +406,7 @@ public partial class RoomValidator : Node
         var tuning = GD.Load<PlayerTuning>("res://resources/player_tuning.tres");
         var move = new MoveLimits(tuning.RunSpeed, tuning.AirAcceleration, tuning.AirDeceleration, tuning.JumpHeight, tuning.JumpTimeToApex,
             tuning.JumpCutFactor, tuning.FallGravityMultiplier, tuning.ApexHangThreshold, tuning.ApexGravityMultiplier, tuning.MaxFallSpeed,
-            tuning.DashDistance, tuning.DashDuration, tuning.DashExitSpeedFactor, tuning.AirDashes);
+            tuning.DashDistance, tuning.DashDuration, tuning.DashExitSpeedFactor, tuning.AirDashes, LedgeAssist: tuning.LedgeAssistHeight);
         var harpoon = new HarpoonLimits(tuning.HarpoonRange, tuning.HarpoonMinDistance, tuning.HarpoonZipSpeed, tuning.HarpoonZipAcceleration,
             tuning.HarpoonExitSpeedFactor, tuning.HarpoonExitLift);
         var grip = new GripLimits(tuning.GripLeapAwaySpeed, tuning.GripLeapUpFactor, tuning.GripRegrabDelay);
@@ -619,7 +619,7 @@ public partial class RoomValidator : Node
 
     /// <summary>
     /// Room for error: every state the inside check walked is walked again by a clumsier pilgrim (<see cref="MoveLimits.Clumsy"/>:
-    /// jumps 10% lower, dashes 15% shorter, runs 8% slower, never takes off from the very end of a ledge), which must reach every way
+    /// jumps 10% lower, dashes 15% shorter, runs 8% slower, never takes off from the very end of a ledge, no ledge assist), which must reach every way
     /// out, relic and goal the exact one does. A way only perfect play takes is a problem, once per room, way in and way out (with the
     /// fewest abilities). Before this held (2026-11-01), ladders of 3 m steps against a 3.2 m jump made the second room a trial.
     /// </summary>

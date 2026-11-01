@@ -46,4 +46,7 @@ public sealed class JumpState : PlayerState
 
         return Player.Velocity.Y <= 0f || Player.IsOnCeiling() ? Player.States.Fall : null;
     }
+
+    /// <summary>Just short of a ledge's top: lifted onto it (ledge assist), landing next tick.</summary>
+    public override PlayerState? AfterMove() => Player.LedgeAssist() ? Player.States.Fall : null;
 }

@@ -9,7 +9,8 @@ namespace TheDeep.States;
 /// leaps off, dash lets go and dashes. Corners snap (<see cref="GripMath"/>): a metal wall ahead turns
 /// the player onto it, the end of a surface wraps it around the edge; after a corner the held input keeps
 /// meaning "keep going" until it changes. Reaching a floor stands the player up. Metal is the physics
-/// layer only (world_metal), never the look.
+/// layer only (world_metal), never the look. Only metal holds: where the metal ends and rock goes on in the same plane, the
+/// player lets go; so does a body walked down into water (its center <see cref="GripMath.Drowned"/>): water lets go of it.
 /// </summary>
 public sealed class GripState : PlayerState
 {
@@ -18,6 +19,9 @@ public sealed class GripState : PlayerState
 
     /// <summary>How far ahead of the feet, past a surface's end, the edge is searched for.</summary>
     private const float EdgeSearch = 1f;
+
+    /// <summary>How far past the feet the surface under the body's middle is looked for.</summary>
+    private const float SurfaceProbe = 0.3f;
 
     private float _speed;
     private NVector2? _lockedInput;
@@ -64,6 +68,12 @@ public sealed class GripState : PlayerState
         if (Player.HarpoonFire() is { } harpoon)
         {
             return harpoon;
+        }
+
+        // Walked down into water: the water lets go of the body, and it swims.
+        if (Player.CenterWater is { } surface && GripMath.Drowned(Player.Center.Y, surface, Player.Water))
+        {
+            return LetGo();
         }
 
         if (Player.JumpPressed)
@@ -121,7 +131,9 @@ public sealed class GripState : PlayerState
 
         if (Player.IsOnFloor())
         {
-            return null;
+            // Under the body's middle, rock going on in the same plane past the metal's end: the metal ended, let go.
+            NVector2 center = Player.Center;
+            return Player.SurfaceRay(center, feet - up * SurfaceProbe) == SurfaceKind.Rock ? LetGo() : null;
         }
 
         // The surface ended under the feet: wrap around its edge if the end face is metal.

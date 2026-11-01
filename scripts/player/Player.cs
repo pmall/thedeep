@@ -108,6 +108,9 @@ public partial class Player : CharacterBody3D
     /// <summary>The height of the surface of the water the feet are in (a swimmable <see cref="WaterBody"/>), or null out of water.</summary>
     public float? WaterSurface { get; private set; }
 
+    /// <summary>The height of the surface of the water the body's center is in, or null: what lets go of a Mag-grip under water.</summary>
+    public float? CenterWater { get; private set; }
+
     /// <summary>Ballast's tanks are full: in water the body sinks instead of floating. Emptied whenever the pilgrim leaves the water.</summary>
     public bool Sunk { get; set; }
 
@@ -184,6 +187,7 @@ public partial class Player : CharacterBody3D
 
         ReadInput();
         WaterSurface = WaterAt(GlobalPosition + Vector3.Up * 0.02f);
+        CenterWater = IsUpright ? WaterSurface : WaterAt(new Vector3(Center.X, Center.Y, 0f));
         if (WaterSurface is null)
         {
             Sunk = false;
@@ -207,6 +211,7 @@ public partial class Player : CharacterBody3D
             Bore(Velocity * dt * 2f);
         }
 
+        PushSpeed = Velocity.X;
         MoveAndSlide();
         StayOnPlayPlane();
         if (_state.AfterMove() is { } after && after != _state)
@@ -404,6 +409,69 @@ public partial class Player : CharacterBody3D
         }
 
         return null;
+    }
+
+    /// <summary>The horizontal speed the body had going into the last move (before a wall stopped it).</summary>
+    public float PushSpeed { get; private set; }
+
+    /// <summary>How far past the wall's face ledge assist moves the body (as the map's planner does), meters.</summary>
+    private const float AssistReach = 0.15f;
+
+    /// <summary>The least speed a ledge assist leaves the body with, as a share of the run speed (as the map's planner does).</summary>
+    private const float AssistSpeed = 0.6f;
+
+    /// <summary>
+    /// Ledge assist, after an airborne move: pressing into a wall whose top is at most <see cref="PlayerTuning.LedgeAssistHeight"/>
+    /// above the feet lifts the pilgrim onto it, just past the edge, keeping its way and speed; the visible body eases up from where
+    /// it was. Returns whether it did. Called by the jump and fall states.
+    /// </summary>
+    public bool LedgeAssist()
+    {
+        int dir = CurrentInput.MoveX;
+        if (!IsUpright || dir == 0 || !IsOnWall() || GetWallNormal().X * dir > -0.5f || Mathf.Sign(PushSpeed) != dir)
+        {
+            return false;
+        }
+
+        // The top of the wall, looked for from above the reach, just past its face.
+        float probeX = GlobalPosition.X + dir * (_capsule.Radius + AssistReach);
+        float assist = Tuning.LedgeAssistHeight;
+        var query = PhysicsRayQueryParameters3D.Create(new Vector3(probeX, GlobalPosition.Y + assist + 0.05f, 0f),
+            new Vector3(probeX, GlobalPosition.Y, 0f), PhysicsLayers.Solid);
+        Godot.Collections.Dictionary hit = GetWorld3D().DirectSpaceState.IntersectRay(query);
+        if (hit.Count == 0 || hit["normal"].AsVector3().Y < 0.5f)
+        {
+            return false;
+        }
+
+        float top = hit["position"].AsVector3().Y;
+        if (top - GlobalPosition.Y > assist)
+        {
+            return false;
+        }
+
+        var feet = new NVector2(GlobalPosition.X + dir * AssistReach, top + 0.01f);
+        if (!Fits(new GripPose(feet, new NVector2(0f, 1f))))
+        {
+            return false;
+        }
+
+        Orient(new GripPose(feet, new NVector2(0f, 1f)));
+        Velocity = new Vector3(dir * Mathf.Max(Mathf.Abs(PushSpeed), AssistSpeed * Tuning.RunSpeed), 0f, 0f);
+        return true;
+    }
+
+    /// <summary>What a ray on the play plane first hits: metal, rock, or null (nothing).</summary>
+    public SurfaceKind? SurfaceRay(NVector2 from, NVector2 to)
+    {
+        var query = PhysicsRayQueryParameters3D.Create(new Vector3(from.X, from.Y, 0f), new Vector3(to.X, to.Y, 0f), PhysicsLayers.Solid);
+        Godot.Collections.Dictionary hit = GetWorld3D().DirectSpaceState.IntersectRay(query);
+        if (hit.Count == 0 || hit["collider"].AsGodotObject() is not CollisionObject3D body)
+        {
+            return null;
+        }
+
+        return (body.CollisionLayer & PhysicsLayers.WorldMetal) != 0 ? SurfaceKind.Metal : SurfaceKind.Rock;
     }
 
     /// <summary>Where a ray on the play plane first hits metal, or null (rock, or nothing, in the way).</summary>

@@ -33,6 +33,19 @@ public class ReachPlannerTests
     }
 
     [Theory]
+    [InlineData(3.6f, true)]   // just out of a jump's reach: the ledge assist lifts the pilgrim onto it
+    [InlineData(4.2f, false)]  // beyond the assist
+    public void LedgeAssistLiftsOntoALedgeJustOutOfReach(float height, bool reachable)
+    {
+        var solids = new[] { B(-10f, -2f, 30f, 0f), B(6f, 0f, 10f, height) };
+        Box top = B(7.5f, height + 0.2f, 8.5f, height + 1f);
+        Assert.False(Reaches(solids, new Vector2(0f, 0f), top));
+        var assisted = new ReachPlanner(Limits with { LedgeAssist = 0.6f }, solids);
+        Assert.Equal(reachable, assisted.Reach(new Vector2(0f, 0f), Vector2.Zero, new[] { top }).Triggers.Contains(0));
+        Assert.Equal(0f, (Limits with { LedgeAssist = 0.6f }).Clumsy().LedgeAssist);
+    }
+
+    [Theory]
     [InlineData(6f, true)]     // a running jump
     [InlineData(9f, true)]     // with the air dash
     [InlineData(13f, false)]   // beyond both
@@ -202,6 +215,27 @@ public class ReachPlannerTests
         Box beyond = B(10f, 0.1f, 11f, 1f);
         Assert.False(Reaches(solids, new Vector2(0f, 0f), beyond));
         Assert.True(Grips(solids, new[] { pillar, slab }, new Vector2(0f, 0f), beyond));
+    }
+
+    [Fact]
+    public void GripLetsGoWhereTheMetalEnds()
+    {
+        // A tower with a metal foot and rock above it in the same plane: the grip holds only on the metal.
+        Box foot = B(4f, 0f, 6f, 2f);
+        var solids = new[] { B(-10f, -2f, 30f, 0f), foot, B(4f, 2f, 6f, 10f), B(-10f, 20f, 30f, 21f) };
+        Assert.False(Grips(solids, new[] { foot }, new Vector2(0f, 0f), B(4.5f, 10.2f, 5.5f, 11f)));
+    }
+
+    [Fact]
+    public void WaterLetsGoOfAGrip()
+    {
+        // The far bank's face is metal down into the pool: a grip holds only above the water, so the doorway low in the far wall stays
+        // Ballast's.
+        var planner = new ReachPlanner(Limits, Pool, water: WaterMotionTests.Water, waters: new[] { PoolWater }, grip: Grip, metal: new[] { Pool[2] });
+        Box onTheFace = B(19.5f, 0.2f, 20f, 0.6f);
+        (HashSet<int> reached, _) = planner.Reach(new Vector2(-5f, 0f), Vector2.Zero, new[] { Doorway, onTheFace });
+        Assert.Contains(1, reached);
+        Assert.DoesNotContain(0, reached);
     }
 
     [Fact]
