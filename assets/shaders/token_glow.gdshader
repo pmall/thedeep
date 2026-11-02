@@ -6,7 +6,7 @@ render_mode cull_back;
 
 /// The item kind's color (sRGB); dimmed by the door once it is open.
 instance uniform vec4 tint : source_color = vec4(0.95, 0.78, 0.52, 1.0);
-uniform float energy : hint_range(0.0, 8.0) = 3.5;
+uniform float energy : hint_range(0.0, 8.0) = 2.2;
 
 void fragment() {
 	float breathe = 0.85 + 0.15 * sin(TIME * 1.3);

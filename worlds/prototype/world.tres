@@ -1,6 +1,6 @@
 [gd_resource type="Resource" script_class="WorldDefinition" format=3]
 ; The prototype world (docs/roadmap.md#stage-prototype): our playground, 40 rooms over the flooded, frozen and volcanic layers and
-; the core, where every brick is proven. Its network is map-draft.md beside this file; the lab rooms (MechanicsLab,
+; the core, and the Sacristy behind its locked door, where every brick is proven. Its network is map-draft.md beside this file; the lab rooms (MechanicsLab,
 ; MachineArena) sit with its rooms, outside the game (Room.InGame off).
 
 [ext_resource type="Script" path="res://scripts/world/WorldDefinition.cs" id="1_world"]
@@ -11,6 +11,7 @@
 [ext_resource type="Resource" path="res://resources/biomes/frozen.tres" id="6_frozen"]
 [ext_resource type="Resource" path="res://resources/biomes/volcanic.tres" id="7_volcanic"]
 [ext_resource type="Resource" path="res://resources/biomes/core.tres" id="8_core"]
+[ext_resource type="Resource" path="res://worlds/prototype/items/sacristy_key.tres" id="9_sacristy_key"]
 
 [sub_resource type="Resource" id="layer_flooded"]
 script = ExtResource("2_layer")
@@ -38,5 +39,6 @@ RoomsFolder = "res://worlds/prototype/rooms"
 Network = "res://worlds/prototype/map-draft.md"
 StartRoom = ExtResource("3_start")
 Layers = [SubResource("layer_flooded"), SubResource("layer_frozen"), SubResource("layer_volcanic"), SubResource("layer_core")]
+Items = [ExtResource("9_sacristy_key")]
 Lines = ExtResource("4_lines")
 SaveName = "save"

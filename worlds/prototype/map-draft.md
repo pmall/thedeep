@@ -1,6 +1,6 @@
 # Map draft — the prototype world
 
-The prototype world's network file (`Network` in [world.tres](world.tres)): 40 rooms over three layers and the core, 5 abilities, 4 bosses, 3 law breaks, all built. It is a **planning graph**: the `map` blocks below are parsed by `MapDraft` (its docblock has the format) and checked on every build, by the unit tests and against the built rooms (`docs/testing.md#check`); everything outside them is design notes. The real game's map will be its own network with a room table (`docs/roadmap.md#stage-plan`); this one stays the prototype's. Room names, boss names and story beats are placeholders unless [theme.md](../../docs/theme.md) says otherwise.
+The prototype world's network file (`Network` in [world.tres](world.tres)): 41 rooms over three layers and the core, 5 abilities, 1 key, 4 bosses, 3 law breaks, all built. It is a **planning graph**: the `map` blocks below are parsed by `MapDraft` (its docblock has the format) and checked on every build, by the unit tests and against the built rooms (`docs/testing.md#check`); everything outside them is design notes. The real game's map will be its own network with a room table (`docs/roadmap.md#stage-plan`); this one stays the prototype's. Room names, boss names and story beats are placeholders unless [theme.md](../../docs/theme.md) says otherwise.
 
 **The markers are the truth** `#draft-markers`: a built room's exits, sealed exits and relics must match its ways and relics here. When a room is built or changed, update its part of the draft in the same commit. Print it with `tools/map.sh`.
 
@@ -20,7 +20,7 @@ milestone Effigy FirstLaw
 The main road and its branches, layer by layer (simplified; the `map` blocks are the truth). `(X)` a way needing X, `[X]` a relic, `✦` a boss, `▼` a law break, `→` one way.
 
 ```
-FLOODED   Narthex ─ DrownedHall ─(M|H)→ Belfry → back down
+FLOODED   Narthex ─ DrownedHall ─(M|H)→ Belfry → back down;   Narthex ─(key)─ Sacristy, west of it
                       │
                     Nave ─(M)→ Descent ─(B)→ Sluice   (the flooded gate drains, one way)
                       ↓ hatch
@@ -40,7 +40,7 @@ VOLCANIC                                            Kiln ─ Slag ─(B)─ Quen
                                                               Ashfall ─(M|H)─ Bellows ─ Foundry ✦ ─(P)─ Threshold
 CORE      Threshold ─ Mantle ─(M&H)─ Orrery ─(D&B)─ Lode ─ Effigy ▼ first law ─ Heart ✦ goal
 ```
-M Mag-grip, H Harpoon, D Drill, B Ballast, P Heat plating.
+M Mag-grip, H Harpoon, D Drill, B Ballast, P Heat plating; (key) the Sacristy key, on the Scriptorium's gallery.
 
 ## Order freedom `#draft-order-freedom`
 
@@ -70,7 +70,7 @@ One per layer, plus the end, each on the main road. Placeholders.
 - **The Founder** (Foundry, volcanic): the abbot of the foundry, before the Threshold.
 - **Nirvanary** (Heart, core): what waits at the center.
 
-## Flooded — the drowned cathedral (13 rooms) `#draft-flooded`
+## Flooded — the drowned cathedral (14 rooms) `#draft-flooded`
 
 The first slice plus the crypts under it and the road down. Pale white, a touch of purple, water everywhere.
 
@@ -88,6 +88,7 @@ The first slice plus the crypts under it and the road down. Pale white, a touch 
 | Ossuary | Racks of dead machines, kept like relics: **Harpoon**, then two rings up to a gallery. *(built)* |
 | Scriptorium | Up the Undercroft's metal flue (Mag-grip): Votaries copying scripture at lecterns, a gallery over them. Three plates to read (lore), a shrine. *(built)* |
 | Chapterhouse | A chapter house half drowned, its vault on one pier. **Boss: the Precentor** (placeholder): the gates fall behind and ahead until it breaks. *(built)* |
+| Sacristy | Off the Narthex, behind its locked door (the key on the Scriptorium's gallery): a side chapel, an empty dais under a shaft of light, a plate. A dead end, for a reward. *(built)* |
 | Brink | The lip of the first deep descent, a last shrine. **Third law**: a veil the pilgrim cannot pass until it presses on and breaks it. One way down, to Rimefall. *(built)* |
 
 ```map
@@ -104,9 +105,11 @@ room Ossuary Flooded
 room Scriptorium Flooded
 room Chapterhouse Flooded
 room Brink Flooded
+room Sacristy Flooded
 
 # the slice (built: these must match the scenes' markers)
 way Narthex <-> DrownedHall
+way Narthex <-> Sacristy : SacristyKey           # the locked door in the porch's west wall
 way DrownedHall <-> Nave
 way DrownedHall -> Belfry : MagGrip | Harpoon   # up the shaft
 way Belfry -> DrownedHall                        # dropping back down
@@ -125,6 +128,7 @@ way Undercroft <-> Ossuary
 relic Ossuary Harpoon
 way Undercroft -> Scriptorium : MagGrip         # up the metal flue
 way Scriptorium -> Undercroft                    # dropping back down it
+item Scriptorium SacristyKey                     # on the gallery's far end
 way Undercroft -> Chapterhouse : MagGrip | Harpoon   # the high doorway: the wall or the rings
 way Chapterhouse -> Undercroft                   # dropping back onto the ledge
 boss Chapterhouse Precentor

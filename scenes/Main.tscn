@@ -45,7 +45,7 @@ height = 0.3
 radial_segments = 8
 rings = 1
 
-[node name="Main" type="Node3D" node_paths=PackedStringArray("World", "Player", "Machines", "Capture", "Camera", "Hud", "Travel", "Session", "Health", "Hint", "MapScreen", "Hints")]
+[node name="Main" type="Node3D" node_paths=PackedStringArray("World", "Player", "Machines", "Capture", "Camera", "Hud", "Travel", "Session", "Health", "Hint", "MapScreen", "Hints", "Keyring")]
 script = ExtResource("1_main")
 World = NodePath("World")
 Player = NodePath("Player")
@@ -59,6 +59,7 @@ Health = NodePath("HealthHud")
 Hint = NodePath("HintLine")
 MapScreen = NodePath("MapScreen")
 Hints = NodePath("GateHints")
+Keyring = NodePath("Keyring")
 Paint = ExtResource("25_paint")
 
 ; Loads the room scenes of its world (first child, so the room exists before the camera and HUD are ready). The world
@@ -119,7 +120,7 @@ EndCard = NodePath("../EndCard")
 
 ; A gate the pilgrim can't pass yet says so: its line, low on the screen.
 ; The items and the doors they open (Keyring): taking keys and codes, opening locked doors, the line at a door without its item.
-[node name="Keyring" type="Node" parent="." node_paths=PackedStringArray("World", "Player", "Session", "Banner", "Hint", "Camera")]
+[node name="Keyring" type="Node" parent="." node_paths=PackedStringArray("World", "Player", "Session", "Banner", "Hint", "Camera", "Travel")]
 script = ExtResource("29_keyring")
 World = NodePath("../World")
 Player = NodePath("../Player")
@@ -127,6 +128,7 @@ Session = NodePath("../Session")
 Banner = NodePath("../Banner")
 Hint = NodePath("../HintLine")
 Camera = NodePath("../SideCamera")
+Travel = NodePath("../RoomTravel")
 
 [node name="GateHints" type="Node" parent="." node_paths=PackedStringArray("World", "Player", "Harpoon", "Hint")]
 script = ExtResource("22_gates")

@@ -27,7 +27,7 @@ Every piece a world is built from (`docs/principles.md#bricks`). The prototype's
 | Brick | Status | Item |
 |---|---|---|
 | `Block` (rock, metal, cracked) | ready | — |
-| `RoomExit` | ready | `docs/roadmap.md#game-systems` (items in requirements) |
+| `RoomExit` | ready | — |
 | `HarpoonAnchor` | working (look) | `docs/roadmap.md#stage-bricks` |
 | `WaterBody` (swim) | ready | — |
 | `HeatZone` | working (look) | `docs/roadmap.md#stage-bricks` |
@@ -35,7 +35,7 @@ Every piece a world is built from (`docs/principles.md#bricks`). The prototype's
 | `Portcullis` | working | — |
 | `MapGoal` | ready | — |
 | `PhotoSpot` | ready | — |
-| Locked door + key or code | missing | `docs/roadmap.md#game-systems` |
+| `LockedDoor` (a key's lock or a code's seal, on an exit) | working (look) | `docs/roadmap.md#stage-bricks` |
 | Hidden passage | missing | `docs/roadmap.md#game-systems` |
 | Switch and mechanism | missing | `docs/roadmap.md#game-systems` |
 
@@ -78,7 +78,7 @@ Every piece a world is built from (`docs/principles.md#bricks`). The prototype's
 |---|---|---|
 | `AbilityRelic` | working | `docs/roadmap.md#pilgrim` (the moment) |
 | Power-up | missing | `docs/roadmap.md#game-systems` |
-| Inventory | missing | `docs/roadmap.md#game-systems` |
+| Items: `ItemDefinition`, `ItemPickup` (keys, codes), held by `Inventory`, played by `Keyring` | working (look; no code in a world yet) | `docs/roadmap.md#stage-bricks` |
 
 ## Systems `#bricks-systems`
 
@@ -88,7 +88,7 @@ Every piece a world is built from (`docs/principles.md#bricks`). The prototype's
 | `Session`, `Shrine`, save | working | `docs/roadmap.md#game-systems` (items in the save) |
 | Room travel (`RoomTravel`) | ready | — |
 | Map screen (`MapScreen`) | working | `docs/roadmap.md#game-systems` |
-| Gate hints (`GateHints`) | ready | `docs/roadmap.md#game-systems` (keys) |
+| Gate hints (`GateHints`; a locked door's line is the `Keyring`'s) | ready | — |
 | End card (`EndCard`) | working placeholder | — |
 | Camera (`SideCamera`) | working | `docs/roadmap.md#feel-fight` |
 

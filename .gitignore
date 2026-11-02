@@ -17,3 +17,5 @@ obj/
 # Look-dev runs (tools/capture.sh)
 /lookdev/
 .claude/worktrees/
+# Python bytecode (the tools)
+__pycache__/

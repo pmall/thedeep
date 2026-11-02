@@ -138,7 +138,7 @@ public sealed class WorldCheck
             return text.ToString();
         }
 
-        text.Append($"MAP OK: {Graph.Rooms.Count} rooms, {Graph.Edges.Count} exits, {Graph.Relics.Count} relics, {Graph.Items.Count} items, ")
+        text.Append($"MAP OK: {Graph.Rooms.Count} rooms, {Graph.Edges.Count} exits, {Graph.Relics.Count} relics, {Graph.Items.Count} item{(Graph.Items.Count == 1 ? "" : "s")}, ")
             .Append($"{solved.ReachableStates} states, no softlock, ")
             .Append(solved.AbilityCount == 0 ? "no abilities on the map" : $"{solved.Orders.Count} of {solved.PossibleOrders} ability orders");
         foreach ((Ability ability, SortedSet<int> at) in solved.Positions)

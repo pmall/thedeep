@@ -18,6 +18,7 @@ public partial class Keyring : Node
     [Export] public Banner Banner { get; set; } = null!;
     [Export] public HintLine Hint { get; set; } = null!;
     [Export] public SideCamera Camera { get; set; } = null!;
+    [Export] public RoomTravel Travel { get; set; } = null!;
 
     /// <summary>How close (meters, on the play plane) the pilgrim must stand to take an item.</summary>
     [Export] public float TakeRange { get; set; } = 1.2f;
@@ -34,10 +35,25 @@ public partial class Keyring : Node
     public override void _Ready()
     {
         World.RoomLoaded += OnRoomLoaded;
+        Travel.Travelled += OnTravelled;
         OnRoomLoaded(World.Room);
     }
 
-    public override void _ExitTree() => World.RoomLoaded -= OnRoomLoaded;
+    public override void _ExitTree()
+    {
+        World.RoomLoaded -= OnRoomLoaded;
+        Travel.Travelled -= OnTravelled;
+    }
+
+    /// <summary>Arrived through a locked door from its far side (which needs its item): it stands open already, for good.</summary>
+    private void OnTravelled(RoomExit arrival)
+    {
+        if (arrival.Door is { Opened: false } door && Player.Items.Holds(door.Item.Id))
+        {
+            door.Settle();
+            Session.Remember(door.Name);
+        }
+    }
 
     public override void _PhysicsProcess(double delta)
     {

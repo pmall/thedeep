@@ -58,6 +58,8 @@ EXT = {
     'law': ('PackedScene', 'res://scenes/props/LawBreak.tscn'),
     'lift': ('PackedScene', 'res://scenes/props/Lift.tscn'),
     'plate': ('PackedScene', 'res://scenes/props/ScripturePlate.tscn'),
+    'pickup': ('PackedScene', 'res://scenes/props/ItemPickup.tscn'),
+    'door': ('PackedScene', 'res://scenes/props/LockedDoor.tscn'),
     # resources
     'flooded': ('Resource', 'res://resources/biomes/flooded.tres'),
     'frozen': ('Resource', 'res://resources/biomes/frozen.tres'),
@@ -234,9 +236,26 @@ class Room:
         """A harpoon anchor: its origin is where the pilgrim's center is pulled to (keep a body's height of air below it)."""
         return self.node('Anchors/' + name, instance='anchor', comment=comment, transform=Raw(transform((pos[0], pos[1], 0))))
 
+    def item_resource(self, item):
+        """An item of the world (worlds/<world>/items/<item>.tres, e.g. 'sacristy_key') as an ExtResource."""
+        key = 'item_' + item
+        EXT.setdefault(key, ('Resource', f'res://worlds/{self.world}/items/{item}.tres'))
+        return self.ext(key)
+
+    def pickup(self, name, pos, item, comment=''):
+        """An item lying on the floor at `pos` (ItemPickup); `item` names the world's item file (sacristy_key)."""
+        return self.node('Props/' + name, instance='pickup', comment=comment, transform=Raw(transform((pos[0], pos[1], 0))),
+                         Item=self.item_resource(item))
+
+    def door(self, name, pos, item, comment=''):
+        """A locked door (LockedDoor) closing on the floor at `pos`, opened by `item`; point an exit's `door` at `name`."""
+        return self.node('Props/' + name, instance='door', comment=comment, transform=Raw(transform((pos[0], pos[1], 0))),
+                         Item=self.item_resource(item))
+
     def exit(self, name, pos, size, target='', target_exit='', requires='', one_way=False, arrival_side=0, arrival_only=False,
-             comment=''):
-        """An exit marker; `arrival_only` for the far end of a one-way drop from another room (no target, no trigger)."""
+             comment='', door=''):
+        """An exit marker; `arrival_only` for the far end of a one-way drop from another room (no target, no trigger); `door`: the
+        name of the locked door (under Props) that bars it."""
         props = {'transform': Raw(transform((pos[0], pos[1], 0))), 'script': self.ext('exit')}
         if target:
             props['TargetRoom'] = f'res://worlds/{self.world}/rooms/{target}.tscn'
@@ -249,8 +268,10 @@ class Room:
             props['ArrivalSide'] = arrival_side
         if arrival_only:
             props['ArrivalOnly'] = True
+        if door:
+            props['Door'] = Raw(f'NodePath("../../Props/{door}")')
         props['Size'] = Raw(vec(*size))
-        return self.node('Exits/' + name, type='Marker3D', comment=comment, **props)
+        return self.node('Exits/' + name, type='Marker3D', comment=comment, node_paths=['Door'] if door else None, **props)
 
     def goal(self, name, pos, size=None, title='', hint='', comment='', ending=False):
         """Where the journey ends, for the map solver (a MapGoal marker); with a size, an area showing the banner lines;

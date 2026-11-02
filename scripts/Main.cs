@@ -74,6 +74,9 @@ public partial class Main : Node3D
     /// <summary>User argument that runs the scripted Heat plating check (see HeatCheck), used by tools/check.sh.</summary>
     private const string HeatCheckArgument = "--heat-check";
 
+    /// <summary>User argument that runs the key and locked door check (see KeyCheck), used by tools/check.sh.</summary>
+    private const string KeyCheckArgument = "--key-check";
+
     /// <summary>User argument that plays the whole run from a new game to the end (see PlaythroughCheck), used by tools/check.sh.</summary>
     private const string PlaythroughCheckArgument = "--playthrough-check";
 
@@ -95,6 +98,7 @@ public partial class Main : Node3D
     [Export] public PaintPass Paint { get; set; } = null!;
     [Export] public MapScreen MapScreen { get; set; } = null!;
     [Export] public GateHints Hints { get; set; } = null!;
+    [Export] public Keyring Keyring { get; set; } = null!;
 
     /// <summary>`--ui-shot &lt;dir&gt;`: renders a gate hint and the map screen to PNGs (see UiShot; windowed).</summary>
     private const string UiShotArgument = "--ui-shot";
@@ -106,7 +110,7 @@ public partial class Main : Node3D
     private static readonly string[] DriverArguments =
     {
         SmokeArgument, CaptureTestArgument, LookDevArgument, ValidateRoomsArgument, ValidateTravelArgument, ValidateSpeciesArgument,
-        UiShotArgument, PlaythroughCheckArgument, GripCheckArgument, CombatCheckArgument, HarpoonCheckArgument, EncounterCheckArgument, DrillCheckArgument, BallastCheckArgument, HeatCheckArgument,
+        UiShotArgument, PlaythroughCheckArgument, GripCheckArgument, CombatCheckArgument, HarpoonCheckArgument, EncounterCheckArgument, DrillCheckArgument, BallastCheckArgument, HeatCheckArgument, KeyCheckArgument,
     };
 
     private SaveData? _resume;
@@ -234,6 +238,10 @@ public partial class Main : Node3D
         else if (Array.IndexOf(args, BallastCheckArgument) >= 0)
         {
             AddChild(new BallastCheck { Player = Player, World = World, Hints = Hints });
+        }
+        else if (Array.IndexOf(args, KeyCheckArgument) >= 0)
+        {
+            AddChild(new KeyCheck { Player = Player, World = World, Keyring = Keyring, Session = Session });
         }
         else if (Array.IndexOf(args, HeatCheckArgument) >= 0)
         {

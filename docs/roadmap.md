@@ -18,9 +18,10 @@ The plan we follow from session to session: the owner's direction, where we are,
 
 ## Status `#status`
 
-- **The prototype world is built and proven**: 40 rooms over the flooded, frozen and volcanic layers and the core, 5 abilities, 4 placeholder bosses, 3 law breaks, the end card ([map-draft.md](../worlds/prototype/map-draft.md)). The checks walk it from inside every room with a clumsy pilgrim and play it from a new game to the end (`docs/testing.md#check`).
+- **The prototype world is built and proven**: 41 rooms over the flooded, frozen and volcanic layers and the core, 5 abilities, a key and its locked door (the Sacristy), 4 placeholder bosses, 3 law breaks, the end card ([map-draft.md](../worlds/prototype/map-draft.md)). The checks walk it from inside every room with a clumsy pilgrim and play it from a new game to the end (`docs/testing.md#check`).
 - **Last owner playtest** (2026-11-01): "in good direction"; Mag-grip liked.
-- **Current item:** `docs/roadmap.md#stage-bricks`, starting with the signature (needs the desktop's GPU, `docs/toolchain.md#gpu`): the pass and three variants are built (`docs/art-direction.md#signature-state`); **waiting for the owner's pick**, then it is tuned per biome.
+- **Current item:** `docs/roadmap.md#stage-bricks`, starting with the signature (needs the desktop's GPU, `docs/toolchain.md#gpu`): the pass and three variants are built (`docs/art-direction.md#signature-state`); **waiting for the owner's pick**, then it is tuned per biome (and its GPU spikes won back).
+- **While the pick waits**, `docs/roadmap.md#game-systems` has begun with what needs no pick: **keys and locked doors are done** (items in the requirement language and the solver, the save, the map screen, a door's line; the Sacristy behind the Narthex's west door, its key on the Scriptorium's gallery; `KeyCheck`). A code is the same brick with another kind; no world places one yet. Next there: a power-up on the Sacristy's empty dais, then the dialogue box and the room kinds.
 
 ---
 

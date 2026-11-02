@@ -2,7 +2,8 @@
 
 ; The Narthex (slice room 1, the start): the porch of the drowned cathedral, where the pilgrim wakes. Calm:
 ; a shrine to rest at (save point), a Lamplighter that comes to meet the pilgrim, a fallen column to hop.
-; The arcade behind opens onto the cathedral skyline. East, a low doorway into the Drowned Hall.
+; The arcade behind opens onto the cathedral skyline. East, a low doorway into the Drowned Hall. West, the Sacristy's
+; doorway, barred by a locked door seen from the first step (its key lies up in the Scriptorium).
 
 [ext_resource type="Script" path="res://scripts/kit/ColumnMesh.cs" id="1_column"]
 [ext_resource type="Script" path="res://scripts/kit/ArchMesh.cs" id="2_arch"]
@@ -26,6 +27,8 @@
 [ext_resource type="Script" path="res://scripts/rooms/Room.cs" id="20_room"]
 [ext_resource type="Resource" path="res://resources/biomes/flooded.tres" id="21_flooded"]
 [ext_resource type="PackedScene" path="res://scenes/stage/RoomStage.tscn" id="22_stage"]
+[ext_resource type="PackedScene" path="res://scenes/props/LockedDoor.tscn" id="23_door"]
+[ext_resource type="Resource" path="res://worlds/prototype/items/sacristy_key.tres" id="24_sacristy_key"]
 
 [sub_resource type="PrimitiveMesh" id="column_1"]
 script = ExtResource("1_column")
@@ -112,9 +115,15 @@ transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 18, -1, 0)
 Size = Vector3(44, 2, 4)
 Material = ExtResource("7_wet_stone")
 
+; west wall above the Sacristy's doorway
 [node name="WallLeft" parent="Geometry" instance=ExtResource("8_block")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -2, 12, 0)
-Size = Vector3(4, 24, 4)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -2, 14, 0)
+Size = Vector3(4, 20, 4)
+
+; the doorway's head, deep enough to take the locked door's gate when it rises
+[node name="DoorHead" parent="Geometry" instance=ExtResource("8_block")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.75, 14, 0)
+Size = Vector3(1.5, 20, 4)
 
 [node name="Ceiling" parent="Geometry" instance=ExtResource("8_block")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 20, 22, 0)
@@ -150,7 +159,22 @@ TargetRoom = "res://worlds/prototype/rooms/DrownedHall.tscn"
 TargetExit = "WestGate"
 Size = Vector2(1, 4)
 
+; west doorway into the Sacristy, barred by its locked door
+[node name="West" type="Marker3D" parent="Exits" node_paths=PackedStringArray("Door")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -1, 0, 0)
+script = ExtResource("9_exit")
+TargetRoom = "res://worlds/prototype/rooms/Sacristy.tscn"
+TargetExit = "East"
+Requires = "SacristyKey"
+Door = NodePath("../../Props/SacristyDoor")
+Size = Vector2(1, 4)
+
 [node name="Props" type="Node3D" parent="."]
+
+; the Sacristy's locked door, under the doorway's head
+[node name="SacristyDoor" parent="Props" instance=ExtResource("23_door")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.5, 0, 0)
+Item = ExtResource("24_sacristy_key")
 
 ; a pilgrim shrine on the dais: rest here to save and heal
 [node name="Shrine" parent="Props" instance=ExtResource("10_shrine")]
@@ -269,3 +293,10 @@ transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 18, 10, 40)
 script = ExtResource("19_spot")
 PlayerPosition = Vector3(18, 0, 0)
 Fov = 50
+
+; the Sacristy's locked door, close
+[node name="SacristyDoor" type="Marker3D" parent="PhotoSpots"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 3, 2.4, 9)
+script = ExtResource("19_spot")
+PlayerPosition = Vector3(3.5, 0, 0)
+PlayerFacing = -1
