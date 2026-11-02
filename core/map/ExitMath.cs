@@ -65,6 +65,14 @@ public static class ExitMath
         outward == 0 || velocityX * outward > 0.1f || moveX == outward;
 
     /// <summary>
+    /// Whether a player leaving the area of a doorway it just arrived through (still disarmed) went back out through it, past its
+    /// outer side (<paramref name="outward"/>), rather than into the room. <paramref name="offset"/> is the player's from the marker.
+    /// Without this the doorway would only re-arm, and the pilgrim turning back at once would walk off the room's edge and fall out.
+    /// A hatch never: falling back below its marker (sinking in a drain) is still in the room.
+    /// </summary>
+    public static bool WentBack(Vector2 offset, Vector2 size, int outward) => !IsVertical(size) && offset.X * outward > 0f;
+
+    /// <summary>
     /// Where a room's origin sits on the map, given the room it was entered from: the departure marker
     /// and the arrival marker are the same place in the world.
     /// </summary>

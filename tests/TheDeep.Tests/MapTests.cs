@@ -52,6 +52,15 @@ public class MapTests
     }
 
     [Fact]
+    public void TurningBackAtAnArrivalGoesBackThroughIt()
+    {
+        Vector2 door = new(1f, 4f), hatch = new(2f, 1f);
+        Assert.True(ExitMath.WentBack(new Vector2(-0.9f, 0f), door, -1));
+        Assert.False(ExitMath.WentBack(new Vector2(0.9f, 0f), door, -1));
+        Assert.False(ExitMath.WentBack(new Vector2(0f, -1f), hatch, 0));
+    }
+
+    [Fact]
     public void ADoorwayIsLeftOnlyByMovingOut()
     {
         // Falling into a west doorway from a flue above, or standing in it: stays.

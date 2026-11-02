@@ -64,6 +64,7 @@ public partial class RoomExit : Marker3D
 
     private Player? _inside;
     private int _outward;
+    private bool _wentBack;
 
     /// <summary>An exit with a target room has a trigger area; one leading to a room not built yet stays sealed.</summary>
     public bool Open => TargetRoom != "";
@@ -104,6 +105,13 @@ public partial class RoomExit : Marker3D
 
     public override void _PhysicsProcess(double delta)
     {
+        if (_wentBack)
+        {
+            _wentBack = false;
+            Crossed?.Invoke(this);
+            return;
+        }
+
         // Inside a doorway's area, the player leaves once it moves or presses out of the room (ExitMath.Leaves). Its body must
         // really be there: the area's report can be stale after a teleport (a respawn), and a pilgrim far off once crossed.
         if (_inside is not null && Armed && Holds(_inside) && ExitMath.Leaves(_outward, _inside.Velocity.X, _inside.CurrentInput.MoveX))
@@ -121,7 +129,10 @@ public partial class RoomExit : Marker3D
         return Mathf.Abs(p.X - at.X) <= Size.X * 0.5f + 0.6f && p.Y + 0.9f >= at.Y - Size.Y * 0.5f - 1f && p.Y <= at.Y + Size.Y * 0.5f + 1f;
     }
 
-    /// <summary>The player just arrived through here: entering again only counts after leaving the area.</summary>
+    /// <summary>
+    /// The player just arrived through here: entering again only counts after leaving the area, and leaving a doorway back out
+    /// through its outer side travels at once (<see cref="ExitMath.WentBack"/>).
+    /// </summary>
     public void Disarm() => Armed = false;
 
     private void OnBodyEntered(Node3D body)
@@ -134,9 +145,11 @@ public partial class RoomExit : Marker3D
 
     private void OnBodyExited(Node3D body)
     {
-        if (body is Player)
+        if (body is Player player)
         {
             _inside = null;
+            // Crossed on the next tick, not here: a room being freed reports its player leaving every area, and frees its exits before then.
+            _wentBack = !Armed && Holds(player) && ExitMath.WentBack(player.GlobalPosition.Flat() - RoomPosition.ToCore(), Size.ToCore(), _outward);
             Armed = true;
         }
     }
