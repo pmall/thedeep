@@ -293,7 +293,11 @@ public partial class Session : Node
     public event System.Action? Ended;
 
     /// <summary>Death: the veil falls, the pilgrim wakes at the last shrine rested at, whole, the room renewed.</summary>
-    private void OnDied() => Return();
+    private void OnDied()
+    {
+        GD.Print($"[died] in {World.RoomName} at {Player.GlobalPosition}");
+        Return();
+    }
 
     /// <summary>
     /// Fallen out of the room (below its camera bounds: a drop into a room not built yet, like the Brink's): the same
@@ -301,6 +305,7 @@ public partial class Session : Node
     /// </summary>
     private void FellOut()
     {
+        GD.Print($"[fell out] of {World.RoomName} at {Player.GlobalPosition}, moving {Player.Velocity}, {Player.CurrentState.GetType().Name}");
         Player.Velocity = Vector3.Zero;
         Return();
     }
