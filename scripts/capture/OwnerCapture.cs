@@ -115,7 +115,8 @@ public partial class OwnerCapture : CanvasLayer
         }
     }
 
-    private void TakeScreenshot()
+    /// <summary>What F12 does: saves a screenshot and its game state to captures/.</summary>
+    public void TakeScreenshot()
     {
         FrameFormat? format = _grabber?.CurrentFormat(out _);
         if (_grabber is null || format is not { } frame)

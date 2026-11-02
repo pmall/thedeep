@@ -31,6 +31,7 @@ The headless checks, one driver each in `scripts/debug/`; the driver's docblock 
 | Start in a room, with the abilities a route there needs | `godot --path . -- --room <Name>` (`--abilities all`, `none` or `MagGrip,Drill` says otherwise) |
 | Another world | `godot --path . -- --world <name>` (`worlds/<name>/world.tres`; every check takes it too) |
 | Start with another biome | `godot --path . -- --biome volcanic` |
+| One screenshot of a room's start, then quit (to captures/, as F12) | `godot --path . -- --room Undercroft --shot` (with `--paint NAME` to compare styles) |
 | Paint with another style, or not at all (`docs/art-direction.md#signature`) | `godot --path . -- --paint poster` (`none` for the raw render) |
 | Print the map (built rooms and the network: ways, placements, orders) | `tools/map.sh` |
 | Where the geometry check's planner stops in a room | `godot --headless --path . -- --room MechanicsLab --validate-rooms --reach-report <Room>` (`--abilities …`, `--slack-report` for the clumsy pilgrim) |

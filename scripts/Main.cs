@@ -26,6 +26,12 @@ public partial class Main : Node3D
     /// <summary>`--paint &lt;name&gt;`: paint every room with resources/paint/&lt;name&gt;.tres instead of its biome's style; `none` for the raw render.</summary>
     private const string PaintArgument = "--paint";
 
+    /// <summary>`--shot`: plays normally, takes one F12 screenshot after <see cref="ShotDelay"/> (the camera settled), then quits.</summary>
+    private const string ShotArgument = "--shot";
+
+    /// <summary>Seconds of play before the `--shot` screenshot.</summary>
+    private const double ShotDelay = 1.5;
+
     /// <summary>`--world &lt;name&gt;`: play worlds/&lt;name&gt;/world.tres instead of the main scene's world (the prototype).</summary>
     private const string WorldArgument = "--world";
 
@@ -190,6 +196,12 @@ public partial class Main : Node3D
             {
                 GD.PushError($"no paint style named {paintName} in {PaintStyle.Folder}");
             }
+        }
+
+        if (Array.IndexOf(args, ShotArgument) >= 0)
+        {
+            Capture.Saved += _ => GetTree().Quit();
+            GetTree().CreateTimer(ShotDelay).Timeout += Capture.TakeScreenshot;
         }
 
         if (Array.IndexOf(args, ValidateRoomsArgument) >= 0)
