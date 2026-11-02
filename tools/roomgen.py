@@ -60,6 +60,7 @@ EXT = {
     'plate': ('PackedScene', 'res://scenes/props/ScripturePlate.tscn'),
     'pickup': ('PackedScene', 'res://scenes/props/ItemPickup.tscn'),
     'door': ('PackedScene', 'res://scenes/props/LockedDoor.tscn'),
+    'powerup': ('PackedScene', 'res://scenes/props/PowerUp.tscn'),
     # resources
     'flooded': ('Resource', 'res://resources/biomes/flooded.tres'),
     'frozen': ('Resource', 'res://resources/biomes/frozen.tres'),
@@ -246,6 +247,13 @@ class Room:
         """An item lying on the floor at `pos` (ItemPickup); `item` names the world's item file (sacristy_key)."""
         return self.node('Props/' + name, instance='pickup', comment=comment, transform=Raw(transform((pos[0], pos[1], 0))),
                          Item=self.item_resource(item))
+
+    def power_up(self, name, pos, stat='Defense', amount=1, comment=''):
+        """A power-up (PowerUp) standing on the floor at `pos`: `stat` Strength or Defense, adding `amount`."""
+        props = {'transform': Raw(transform((pos[0], pos[1], 0))), 'Stat': {'Strength': 0, 'Defense': 1}[stat]}
+        if amount != 1:
+            props['Amount'] = amount
+        return self.node('Props/' + name, instance='powerup', comment=comment, **props)
 
     def door(self, name, pos, item, comment=''):
         """A locked door (LockedDoor) closing on the floor at `pos`, opened by `item`; point an exit's `door` at `name`."""

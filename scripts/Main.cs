@@ -74,6 +74,9 @@ public partial class Main : Node3D
     /// <summary>User argument that runs the scripted Heat plating check (see HeatCheck), used by tools/check.sh.</summary>
     private const string HeatCheckArgument = "--heat-check";
 
+    /// <summary>User argument that runs the power-up check (see PowerUpCheck), used by tools/check.sh.</summary>
+    private const string PowerUpCheckArgument = "--powerup-check";
+
     /// <summary>User argument that runs the key and locked door check (see KeyCheck), used by tools/check.sh.</summary>
     private const string KeyCheckArgument = "--key-check";
 
@@ -99,6 +102,7 @@ public partial class Main : Node3D
     [Export] public MapScreen MapScreen { get; set; } = null!;
     [Export] public GateHints Hints { get; set; } = null!;
     [Export] public Keyring Keyring { get; set; } = null!;
+    [Export] public PowerUps PowerUps { get; set; } = null!;
 
     /// <summary>`--ui-shot &lt;dir&gt;`: renders a gate hint and the map screen to PNGs (see UiShot; windowed).</summary>
     private const string UiShotArgument = "--ui-shot";
@@ -110,7 +114,7 @@ public partial class Main : Node3D
     private static readonly string[] DriverArguments =
     {
         SmokeArgument, CaptureTestArgument, LookDevArgument, ValidateRoomsArgument, ValidateTravelArgument, ValidateSpeciesArgument,
-        UiShotArgument, PlaythroughCheckArgument, GripCheckArgument, CombatCheckArgument, HarpoonCheckArgument, EncounterCheckArgument, DrillCheckArgument, BallastCheckArgument, HeatCheckArgument, KeyCheckArgument,
+        UiShotArgument, PlaythroughCheckArgument, GripCheckArgument, CombatCheckArgument, HarpoonCheckArgument, EncounterCheckArgument, DrillCheckArgument, BallastCheckArgument, HeatCheckArgument, KeyCheckArgument, PowerUpCheckArgument,
     };
 
     private SaveData? _resume;
@@ -238,6 +242,10 @@ public partial class Main : Node3D
         else if (Array.IndexOf(args, BallastCheckArgument) >= 0)
         {
             AddChild(new BallastCheck { Player = Player, World = World, Hints = Hints });
+        }
+        else if (Array.IndexOf(args, PowerUpCheckArgument) >= 0)
+        {
+            AddChild(new PowerUpCheck { Player = Player, World = World, PowerUps = PowerUps, Session = Session });
         }
         else if (Array.IndexOf(args, KeyCheckArgument) >= 0)
         {

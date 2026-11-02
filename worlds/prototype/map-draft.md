@@ -88,7 +88,7 @@ The first slice plus the crypts under it and the road down. Pale white, a touch 
 | Ossuary | Racks of dead machines, kept like relics: **Harpoon**, then two rings up to a gallery. *(built)* |
 | Scriptorium | Up the Undercroft's metal flue (Mag-grip): Votaries copying scripture at lecterns, a gallery over them. Three plates to read (lore), a shrine. *(built)* |
 | Chapterhouse | A chapter house half drowned, its vault on one pier. **Boss: the Precentor** (placeholder): the gates fall behind and ahead until it breaks. *(built)* |
-| Sacristy | Off the Narthex, behind its locked door (the key on the Scriptorium's gallery): a side chapel, an empty dais under a shaft of light, a plate. A dead end, for a reward. *(built)* |
+| Sacristy | Off the Narthex, behind its locked door (the key on the Scriptorium's gallery): a side chapel, a power-up (defense) on a dais under a shaft of light, a plate. A dead end, a reward. *(built)* |
 | Brink | The lip of the first deep descent, a last shrine. **Third law**: a veil the pilgrim cannot pass until it presses on and breaks it. One way down, to Rimefall. *(built)* |
 
 ```map

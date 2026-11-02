@@ -142,7 +142,7 @@ public partial class MachineDirector : Node
 
             Rect2 body = machine.BodyRect.Intersection(area);
             Vector2 at = body.GetCenter();
-            bool broke = machine.TakeHit(Player.Tuning.AttackDamage, Player.GlobalPosition.X,
+            bool broke = machine.TakeHit(Player.AttackDamage, Player.GlobalPosition.X,
                 Player.Tuning.AttackKnockback);
             HitSparks?.Emit(new Vector3(at.X, at.Y, 0.3f), broke ? 1.5f : 0.7f);
             Camera?.AddShake(broke ? 0.3f : 0.12f);

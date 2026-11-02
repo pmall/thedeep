@@ -2,36 +2,37 @@
 
 ; The Sacristy, behind the locked door in the Narthex's west wall (map offset (-26, 0)): the side chapel where the makers
 ; kept what they would not carry down. Its key lies on the Scriptorium's gallery, so it is a way back to the start once Mag-grip
-; has taken the pilgrim up the Undercroft's flue. A dead end: an empty dais under a shaft of light (where a reward will rest), a
+; has taken the pilgrim up the Undercroft's flue. A dead end: a power-up (defense) on a dais under a shaft of light, a
 ; plate, an arcade onto the skyline. The way out is the doorway east, back through the door (it needs the key too: only a holder
 ; of it is ever here).
 
 [ext_resource type="Material" path="res://assets/materials/wet_stone.tres" id="1_wet_stone"]
 [ext_resource type="PackedScene" path="res://scenes/kit/Block.tscn" id="2_block"]
-[ext_resource type="Script" path="res://scripts/rooms/RoomExit.cs" id="3_exit"]
-[ext_resource type="PackedScene" path="res://scenes/props/ScripturePlate.tscn" id="4_plate"]
-[ext_resource type="Material" path="res://assets/materials/glyphs.tres" id="5_glyphs"]
-[ext_resource type="Script" path="res://scripts/kit/BlockMesh.cs" id="6_blockmesh"]
-[ext_resource type="Script" path="res://scripts/kit/ColumnMesh.cs" id="7_column"]
-[ext_resource type="Script" path="res://scripts/kit/ArchMesh.cs" id="8_arch"]
-[ext_resource type="Script" path="res://scripts/rooms/dressing/Colonnade.cs" id="9_colonnade"]
-[ext_resource type="Material" path="res://assets/materials/stone_mid.tres" id="10_stone_mid"]
-[ext_resource type="PackedScene" path="res://scenes/fx/Dust.tscn" id="11_dust"]
-[ext_resource type="Script" path="res://scripts/rooms/PhotoSpot.cs" id="12_spot"]
-[ext_resource type="Script" path="res://scripts/rooms/Room.cs" id="13_room"]
-[ext_resource type="Resource" path="res://resources/biomes/flooded.tres" id="14_flooded"]
-[ext_resource type="PackedScene" path="res://scenes/stage/RoomStage.tscn" id="15_stage"]
+[ext_resource type="PackedScene" path="res://scenes/props/PowerUp.tscn" id="3_powerup"]
+[ext_resource type="Script" path="res://scripts/rooms/RoomExit.cs" id="4_exit"]
+[ext_resource type="PackedScene" path="res://scenes/props/ScripturePlate.tscn" id="5_plate"]
+[ext_resource type="Material" path="res://assets/materials/glyphs.tres" id="6_glyphs"]
+[ext_resource type="Script" path="res://scripts/kit/BlockMesh.cs" id="7_blockmesh"]
+[ext_resource type="Script" path="res://scripts/kit/ColumnMesh.cs" id="8_column"]
+[ext_resource type="Script" path="res://scripts/kit/ArchMesh.cs" id="9_arch"]
+[ext_resource type="Script" path="res://scripts/rooms/dressing/Colonnade.cs" id="10_colonnade"]
+[ext_resource type="Material" path="res://assets/materials/stone_mid.tres" id="11_stone_mid"]
+[ext_resource type="PackedScene" path="res://scenes/fx/Dust.tscn" id="12_dust"]
+[ext_resource type="Script" path="res://scripts/rooms/PhotoSpot.cs" id="13_spot"]
+[ext_resource type="Script" path="res://scripts/rooms/Room.cs" id="14_room"]
+[ext_resource type="Resource" path="res://resources/biomes/flooded.tres" id="15_flooded"]
+[ext_resource type="PackedScene" path="res://scenes/stage/RoomStage.tscn" id="16_stage"]
 
 [sub_resource type="QuadMesh" id="QuadMesh_1"]
 size = Vector2(5, 0.3)
 
 [sub_resource type="PrimitiveMesh" id="blockmesh_2"]
-script = ExtResource("6_blockmesh")
+script = ExtResource("7_blockmesh")
 Size = Vector3(30, 1, 14)
 Bevel = 0.1
 
 [sub_resource type="PrimitiveMesh" id="column_3"]
-script = ExtResource("7_column")
+script = ExtResource("8_column")
 Height = 8
 Radius = 0.4
 Sides = 16
@@ -40,7 +41,7 @@ Plinth = 0.55
 Capital = 0.45
 
 [sub_resource type="PrimitiveMesh" id="arch_4"]
-script = ExtResource("8_arch")
+script = ExtResource("9_arch")
 Span = 8
 Rise = 4.5
 Thickness = 0.55
@@ -48,7 +49,7 @@ Depth = 1
 Segments = 32
 
 [sub_resource type="PrimitiveMesh" id="column_5"]
-script = ExtResource("7_column")
+script = ExtResource("8_column")
 Height = 9.5
 Radius = 0.3
 Sides = 12
@@ -57,7 +58,7 @@ Plinth = 0.5
 Capital = 0.4
 
 [sub_resource type="PrimitiveMesh" id="arch_6"]
-script = ExtResource("8_arch")
+script = ExtResource("9_arch")
 Span = 3
 Rise = 4
 Thickness = 0.4
@@ -65,10 +66,10 @@ Depth = 0.8
 Segments = 24
 
 [node name="Sacristy" type="Node3D" node_paths=PackedStringArray("SpawnPoint", "Stage", "Shafts", "GlyphLights")]
-script = ExtResource("13_room")
+script = ExtResource("14_room")
 SpawnPoint = NodePath("SpawnPoint")
 Stage = NodePath("Stage")
-Biome = ExtResource("14_flooded")
+Biome = ExtResource("15_flooded")
 Shafts = [NodePath("Shafts/Dais")]
 GlyphLights = [NodePath("Props/Plate/Light"), NodePath("Glyphs/DaisLight")]
 BoundsMin = Vector2(-1, -2)
@@ -78,7 +79,7 @@ BoundsMax = Vector2(26, 16)
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 21, 0, 0)
 
 ; The shared atmosphere stack (environment, key light, clear front air, skylines, far pillars, frame, dust).
-[node name="Stage" parent="." instance=ExtResource("15_stage")]
+[node name="Stage" parent="." instance=ExtResource("16_stage")]
 Seed = 21
 DustDensity = 1.6
 PillarDensity = 2.4
@@ -103,33 +104,38 @@ Size = Vector3(31, 4, 4)
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 26, 9, 0)
 Size = Vector3(4, 10, 4)
 
-; the empty dais, in the shaft of light
+; the dais, in the shaft of light
 [node name="Dais" parent="Geometry" instance=ExtResource("2_block")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 7, 0.25, 0)
 Size = Vector3(6, 0.5, 4)
+
+[node name="Props" type="Node3D" parent="."]
+
+; what the makers kept: a defense power-up on the dais
+[node name="Defense" parent="Props" instance=ExtResource("3_powerup")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 7, 0.5, 0)
+Stat = 1
 
 [node name="Exits" type="Node3D" parent="."]
 
 ; east doorway back through the locked door, into the Narthex
 [node name="East" type="Marker3D" parent="Exits"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 25, 0, 0)
-script = ExtResource("3_exit")
+script = ExtResource("4_exit")
 TargetRoom = "res://worlds/prototype/rooms/Narthex.tscn"
 TargetExit = "West"
 Requires = "SacristyKey"
 Size = Vector2(1, 4)
 
-[node name="Props" type="Node3D" parent="."]
-
 ; the sacristy's plate: what was kept here
-[node name="Plate" parent="Props" instance=ExtResource("4_plate")]
+[node name="Plate" parent="Props" instance=ExtResource("5_plate")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 14, 0, 0)
 TitleLine = &"plate.sacristy.title"
 TextLine = &"plate.sacristy.text"
 
 [node name="Shafts" type="Node3D" parent="."]
 
-; a single shaft onto the empty dais
+; a single shaft onto the dais
 [node name="Dais" type="SpotLight3D" parent="Shafts"]
 transform = Transform3D(-0.7071, 0.6288, -0.3234, 0, 0.4573, 0.8893, 0.7071, 0.6288, -0.3234, -7, 40, -14)
 light_energy = 4.5
@@ -146,7 +152,7 @@ spot_angle_attenuation = 2
 [node name="Dais" type="MeshInstance3D" parent="Glyphs"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 7, 0.25, 2.01)
 mesh = SubResource("QuadMesh_1")
-material_override = ExtResource("5_glyphs")
+material_override = ExtResource("6_glyphs")
 cast_shadow = 0
 
 [node name="DaisLight" type="OmniLight3D" parent="Glyphs"]
@@ -166,10 +172,10 @@ material_override = ExtResource("1_wet_stone")
 ; an arcade between the play floor and the chapel
 [node name="Arcade" type="Node3D" parent="Kit"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, -4.5)
-script = ExtResource("9_colonnade")
+script = ExtResource("10_colonnade")
 Pier = SubResource("column_3")
 Arch = SubResource("arch_4")
-Material = ExtResource("10_stone_mid")
+Material = ExtResource("11_stone_mid")
 Bays = 3
 Span = 8
 ArchHeight = 8
@@ -179,10 +185,10 @@ Seed = 22
 ; the back wall: tall lancets onto the skyline
 [node name="Lancets" type="Node3D" parent="Kit"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -1, 0, -12)
-script = ExtResource("9_colonnade")
+script = ExtResource("10_colonnade")
 Pier = SubResource("column_5")
 Arch = SubResource("arch_6")
-Material = ExtResource("10_stone_mid")
+Material = ExtResource("11_stone_mid")
 Bays = 9
 Span = 3
 ArchHeight = 9.5
@@ -192,7 +198,7 @@ Seed = 23
 
 [node name="Particles" type="Node3D" parent="."]
 
-[node name="Dust" parent="Particles" instance=ExtResource("11_dust")]
+[node name="Dust" parent="Particles" instance=ExtResource("12_dust")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 12, 6, -1)
 Extents = Vector3(13, 6, 2)
 
@@ -201,13 +207,13 @@ Extents = Vector3(13, 6, 2)
 ; gameplay framing at the doorway
 [node name="Start" type="Marker3D" parent="PhotoSpots"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 19, 3.9, 20)
-script = ExtResource("12_spot")
+script = ExtResource("13_spot")
 PlayerPosition = Vector3(21, 0, 0)
 PlayerFacing = -1
 
-; the empty dais in its shaft of light
+; the dais and its power-up in the shaft of light
 [node name="Dais" type="Marker3D" parent="PhotoSpots"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 9, 3.2, 14)
-script = ExtResource("12_spot")
+script = ExtResource("13_spot")
 PlayerPosition = Vector3(11.5, 0, 0)
 PlayerFacing = -1

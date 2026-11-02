@@ -12,7 +12,8 @@ public sealed record SavedWay(string Room, string Exit, float X, float Y, string
 
 /// <summary>
 /// What a save holds, pure: the shrine the pilgrim last rested at (where it comes back after dying or
-/// relaunching), its abilities and items, what is done for good (relics taken, doors opened...), and the map of visited rooms. Stored as JSON in
+/// relaunching), its abilities, items and prowess, what is done for good (relics taken, doors opened...), and the map of visited
+/// rooms. Stored as JSON in
 /// user://save.json by <see cref="SaveFile"/>.
 /// </summary>
 public sealed class SaveData
@@ -29,6 +30,11 @@ public sealed class SaveData
 
     /// <summary>The abilities owned (<see cref="Ability"/> flags).</summary>
     public int Abilities { get; set; }
+
+    /// <summary>What the power-ups taken add (<see cref="Prowess"/>): damage per blow, and health.</summary>
+    public int Strength { get; set; }
+
+    public int Defense { get; set; }
 
     /// <summary>The items held (keys, codes), by id (empty in a save from before items).</summary>
     public List<string> Items { get; set; } = new();

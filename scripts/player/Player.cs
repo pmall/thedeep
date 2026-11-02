@@ -74,6 +74,19 @@ public partial class Player : CharacterBody3D
     /// <summary>The items held (keys, codes): the doors they open (<see cref="LockedDoor"/>).</summary>
     public Inventory Items { get; } = new();
 
+    /// <summary>What the power-ups taken add: damage per blow, health (<see cref="Strengthen"/>).</summary>
+    public Prowess Prowess { get; private set; } = Prowess.None;
+
+    /// <summary>A blow's damage: the moveset's, and the strength the power-ups add.</summary>
+    public int AttackDamage => Prowess.AttackDamage(Tuning.AttackDamage);
+
+    /// <summary>Holds exactly <paramref name="prowess"/> (a save, a power-up taken): its health's maximum follows, restored to it.</summary>
+    public void Strengthen(Prowess prowess)
+    {
+        Prowess = prowess;
+        Vitality.SetMax(prowess.MaxHealth(Tuning.MaxHealth));
+    }
+
     /// <summary>The pilgrim's health (MaxHealth hits, a grace period after each).</summary>
     public Vitality Vitality => _vitality ??= new Vitality(Tuning.MaxHealth, Tuning.HurtGrace);
 

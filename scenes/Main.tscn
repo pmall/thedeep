@@ -28,6 +28,7 @@
 [ext_resource type="Resource" path="res://resources/paint/poster.tres" id="27_poster"]
 [ext_resource type="Resource" path="res://resources/paint/scripture.tres" id="28_scripture"]
 [ext_resource type="Script" path="res://scripts/game/Keyring.cs" id="29_keyring"]
+[ext_resource type="Script" path="res://scripts/game/PowerUps.cs" id="30_powerups"]
 
 [sub_resource type="CylinderMesh" id="HarpoonLine"]
 top_radius = 0.016
@@ -45,7 +46,7 @@ height = 0.3
 radial_segments = 8
 rings = 1
 
-[node name="Main" type="Node3D" node_paths=PackedStringArray("World", "Player", "Machines", "Capture", "Camera", "Hud", "Travel", "Session", "Health", "Hint", "MapScreen", "Hints", "Keyring")]
+[node name="Main" type="Node3D" node_paths=PackedStringArray("World", "Player", "Machines", "Capture", "Camera", "Hud", "Travel", "Session", "Health", "Hint", "MapScreen", "Hints", "Keyring", "PowerUps")]
 script = ExtResource("1_main")
 World = NodePath("World")
 Player = NodePath("Player")
@@ -60,6 +61,7 @@ Hint = NodePath("HintLine")
 MapScreen = NodePath("MapScreen")
 Hints = NodePath("GateHints")
 Keyring = NodePath("Keyring")
+PowerUps = NodePath("PowerUps")
 Paint = ExtResource("25_paint")
 
 ; Loads the room scenes of its world (first child, so the room exists before the camera and HUD are ready). The world
@@ -129,6 +131,14 @@ Banner = NodePath("../Banner")
 Hint = NodePath("../HintLine")
 Camera = NodePath("../SideCamera")
 Travel = NodePath("../RoomTravel")
+
+; The power-ups (PowerUps): taking them, the stat they raise.
+[node name="PowerUps" type="Node" parent="." node_paths=PackedStringArray("World", "Player", "Session", "Banner")]
+script = ExtResource("30_powerups")
+World = NodePath("../World")
+Player = NodePath("../Player")
+Session = NodePath("../Session")
+Banner = NodePath("../Banner")
 
 [node name="GateHints" type="Node" parent="." node_paths=PackedStringArray("World", "Player", "Harpoon", "Hint")]
 script = ExtResource("22_gates")

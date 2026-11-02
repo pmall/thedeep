@@ -75,6 +75,8 @@ CHECKS=(
     "heat|HEAT OK|HEAT CHECK|1000|--room MechanicsLab --heat-check"
     # KeyCheck: the Sacristy key and its locked door, in place.
     "key|KEY OK|KEY CHECK|2000|--room Narthex --key-check"
+    # PowerUpCheck: power-ups taken, in the Sacristy.
+    "powerup|POWERUP OK|POWERUP CHECK|1500|--room Sacristy --powerup-check"
     # CombatCheck, EncounterCheck, PlaythroughCheck, SpeciesValidator.
     "combat|COMBAT OK|COMBAT CHECK|4000|--room MechanicsLab --combat-check"
     "encounter|ENCOUNTER OK|ENCOUNTER CHECK|9000|--room Chapterhouse --encounter-check"

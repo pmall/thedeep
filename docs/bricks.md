@@ -77,7 +77,7 @@ Every piece a world is built from (`docs/principles.md#bricks`). The prototype's
 | Brick | Status | Item |
 |---|---|---|
 | `AbilityRelic` | working | `docs/roadmap.md#pilgrim` (the moment) |
-| Power-up | missing | `docs/roadmap.md#game-systems` |
+| `PowerUp` (strength or defense, for good: `Prowess`), played by `PowerUps` | working (look) | `docs/roadmap.md#stage-bricks` |
 | Items: `ItemDefinition`, `ItemPickup` (keys, codes), held by `Inventory`, played by `Keyring` | working (look; no code in a world yet) | `docs/roadmap.md#stage-bricks` |
 
 ## Systems `#bricks-systems`

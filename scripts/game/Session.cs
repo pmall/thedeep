@@ -72,6 +72,7 @@ public partial class Session : Node
         _pilgrimage = new Pilgrimage(data);
         Player.Abilities.Set((Ability)data.Abilities, true);
         Player.Items.Restore(_pilgrimage.Held);
+        Player.Strengthen(_pilgrimage.Prowess);
         World.Map.Restore(data.MapRooms(), World.RoomName, data.MapWays(), data.Taken);
         // Entered again where the save placed it (or at the origin): its ways out are read afresh from the room.
         World.Enter(World.Room, World.Map.Find(World.RoomName)?.Offset ?? System.Numerics.Vector2.Zero);
@@ -421,6 +422,9 @@ public partial class Session : Node
     /// <summary>Whether the node <paramref name="node"/> of <paramref name="room"/> is done for good (taken, beaten, broken, opened).</summary>
     public bool Done(string room, string node) => _pilgrimage.Done(room, node);
 
+    /// <summary>Whether the node <paramref name="node"/> of the current room is done for good.</summary>
+    public bool Done(string node) => _pilgrimage.Done(World.RoomName, node);
+
     /// <summary>Whether an item pickup lies taken (<see cref="Pilgrimage.ItemTaken"/>).</summary>
     public bool ItemTaken(string room, string node, string item, ItemSet held) => _pilgrimage.ItemTaken(room, node, item, held);
 
@@ -436,7 +440,7 @@ public partial class Session : Node
 
     private void Write()
     {
-        _pilgrimage.Record(Player.Abilities.Unlocked, Player.Items.Held, World.Map);
+        _pilgrimage.Record(Player.Abilities.Unlocked, Player.Items.Held, Player.Prowess, World.Map);
         if (Persist)
         {
             SaveFile.Write(World.Definition.SavePath, Save);

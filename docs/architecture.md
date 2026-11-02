@@ -41,6 +41,7 @@ The type to open first for each system; its docblock leads on.
 | A world, its rooms and travel | `WorldDefinition`, `World`, `Room`, `RoomExit`, `RoomTravel`, `RoomStage` |
 | The run and the save | `Session` (over `Pilgrimage`), `SaveFile` |
 | Items (keys, codes) and locked doors | `ItemDefinition`, `Keyring` (over `Inventory`); in the requirement language, `Requirement` |
+| Power-ups | `PowerUp`, `PowerUps` (over `Prowess`) |
 | Machines | `Machine`, `MachineSpecies`, `MachineDirector`; brains in `core/machines/brains/` |
 | The map and its proof | `MapGraph`, `MapSolver`, `ReachPlanner`, `MapDraft`, `WorldCheck`; fed by `RoomValidator` |
 | Looks | `BiomeProfile`, the painted signature `PaintPass` (its compute shaders in `assets/shaders/paint/`), the kit (`KitMesh`, `KitShapes`), the part system (`PartAssembly`, `PartBody`), `assets/shaders/` |

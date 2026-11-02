@@ -64,7 +64,8 @@ public class PilgrimageTests
         var p = new Pilgrimage(new SaveData());
         var map = new MapState();
         map.Enter("Narthex", System.Numerics.Vector2.Zero, new System.Numerics.Vector2(-2f, -2f), new System.Numerics.Vector2(38f, 22f));
-        p.Record(Ability.MagGrip | Ability.Ballast, ItemSet.Of("CryptKey"), map);
+        p.Record(Ability.MagGrip | Ability.Ballast, ItemSet.Of("CryptKey"), new Prowess(1, 2), map);
+        Assert.Equal(new Prowess(1, 2), p.Prowess);
         Assert.Equal((int)(Ability.MagGrip | Ability.Ballast), p.Save.Abilities);
         Assert.Equal(new[] { "CryptKey" }, p.Save.Items);
         Assert.Equal(ItemSet.Of("CryptKey"), p.Held);

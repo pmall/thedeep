@@ -1,0 +1,45 @@
+[gd_scene format=3]
+; A power-up (scripts/props/PowerUp.cs): a shard turning over a low pedestal, glowing in its stat's color (PowerStats). Place it
+; with its origin on the floor; set Stat and Amount.
+
+[ext_resource type="Script" path="res://scripts/props/PowerUp.cs" id="1_power"]
+[ext_resource type="Script" path="res://scripts/kit/ColumnMesh.cs" id="2_column"]
+[ext_resource type="Material" path="res://assets/materials/stone_mid.tres" id="3_stone_mid"]
+[ext_resource type="Material" path="res://assets/materials/token_glow.tres" id="4_glow"]
+
+[sub_resource type="PrimitiveMesh" id="Pedestal"]
+script = ExtResource("2_column")
+Height = 0.55
+Radius = 0.34
+Sides = 8
+Shafts = 1
+Plinth = 0.18
+Capital = 0.14
+
+; an octahedron: a sphere of four sides and two rings, stretched tall
+[sub_resource type="SphereMesh" id="Shard"]
+radius = 0.17
+height = 0.62
+radial_segments = 4
+rings = 2
+
+[node name="PowerUp" type="Node3D" node_paths=PackedStringArray("Shard", "Light")]
+script = ExtResource("1_power")
+Shard = NodePath("Shard")
+Light = NodePath("Light")
+
+[node name="Pedestal" type="MeshInstance3D" parent="."]
+mesh = SubResource("Pedestal")
+material_override = ExtResource("3_stone_mid")
+
+[node name="Shard" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.05, 0)
+mesh = SubResource("Shard")
+material_override = ExtResource("4_glow")
+cast_shadow = 0
+
+[node name="Light" type="OmniLight3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.05, 0.6)
+light_energy = 1.1
+light_volumetric_fog_energy = 0.5
+omni_range = 3.5

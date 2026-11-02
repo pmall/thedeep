@@ -3,7 +3,7 @@ using System.Collections.Generic;
 namespace TheDeep;
 
 /// <summary>
-/// The run's progress and its rules, pure: what is done for good (relics and items taken, bosses beaten, laws broken, cracked rock bored,
+/// The run's progress and its rules, pure: what is done for good (relics, items and power-ups taken, bosses beaten, laws broken, cracked rock bored,
 /// locked doors opened, by room and node), the shrine last rested at, what the save keeps, and the moments of a visit to a room (the end of what is built is
 /// shown once per visit; the end of the game only once its room's boss is broken). The session node applies it to the rooms.
 /// </summary>
@@ -53,12 +53,17 @@ public sealed class Pilgrimage
     public bool RelicEmpty(string room, string relic, Ability ability, Ability owned) => Done(room, relic) || (owned & ability) != 0;
 
     /// <summary>What the save keeps of the pilgrim and the map, before it is written.</summary>
-    public void Record(Ability owned, ItemSet held, MapState map)
+    public void Record(Ability owned, ItemSet held, Prowess prowess, MapState map)
     {
         Save.Abilities = (int)owned;
         Save.Items = new List<string>(held.Ids);
+        Save.Strength = prowess.Strength;
+        Save.Defense = prowess.Defense;
         Save.SetMap(map);
     }
+
+    /// <summary>What the save's power-ups add.</summary>
+    public Prowess Prowess => new(Save.Strength, Save.Defense);
 
     /// <summary>The items the save holds.</summary>
     public ItemSet Held => ItemSet.Of(Save.Items);
