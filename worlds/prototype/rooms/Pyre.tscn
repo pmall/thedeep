@@ -2,7 +2,8 @@
 
 ; The Pyre, east of the Ashfall, behind its heat (map offset (319, -144)): where the machines are given to the fire. A
 ; pyre burns on an altar under a tall flue, broken machines laid around it; a scripture plate tells the rite, and a shrine
-; keeps watch. Only reached with Heat plating; the heat here is harmless to the plated.
+; keeps watch. Only reached with Heat plating; the heat here is harmless to the plated. A trap (an Ambush): two of the broken
+; machines rise as the pilgrim steps past the doorway, a gate falling behind it, until both are broken again.
 
 [ext_resource type="Material" path="res://assets/materials/basalt.tres" id="1_basalt"]
 [ext_resource type="PackedScene" path="res://scenes/kit/Block.tscn" id="2_block"]
@@ -25,6 +26,10 @@
 [ext_resource type="Resource" path="res://resources/biomes/volcanic.tres" id="19_volcanic"]
 [ext_resource type="PackedScene" path="res://scenes/stage/RoomStage.tscn" id="20_stage"]
 [ext_resource type="Script" path="res://scripts/rooms/dressing/WallDressing.cs" id="21_wall"]
+[ext_resource type="PackedScene" path="res://scenes/props/Portcullis.tscn" id="22_portcullis"]
+[ext_resource type="Script" path="res://scripts/props/Ambush.cs" id="23_ambush"]
+[ext_resource type="Script" path="res://scripts/machines/Machine.cs" id="24_machine"]
+[ext_resource type="Resource" path="res://resources/machines/votary.tres" id="25_votary"]
 
 [sub_resource type="PrimitiveMesh" id="blockmesh_1"]
 script = ExtResource("10_blockmesh")
@@ -114,6 +119,12 @@ transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 15, 0.75, 0)
 Size = Vector3(6, 1.5, 4)
 Material = ExtResource("3_rust")
 
+; the doorway's head, deep enough to take the trap's gate when it rises
+[node name="GateHead" parent="Geometry" instance=ExtResource("2_block")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 1.75, 10, 0)
+Size = Vector3(1.5, 12, 4)
+Material = ExtResource("1_basalt")
+
 [node name="Exits" type="Node3D" parent="."]
 
 ; west, back through the heat into the Ashfall
@@ -145,9 +156,36 @@ transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 7, 0, 0)
 TitleLine = &"lore.pyre.title"
 TextLine = &"lore.pyre"
 
+; the trap's gate, under the doorway's head: it falls behind the pilgrim when the dead rise
+[node name="AmbushGate" parent="Props" instance=ExtResource("22_portcullis")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 1.75, 0, 0)
+
 ; a shrine keeping watch over the pyre
 [node name="Shrine" parent="Props" instance=ExtResource("9_shrine")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 22.5, 0, 0)
+
+[node name="Machines" type="Node3D" parent="."]
+
+; two of the broken machines laid by the pyre, risen by the trap (not there until it springs)
+[node name="RisenWest" type="CharacterBody3D" parent="Machines"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 9.5, 0, 0)
+script = ExtResource("24_machine")
+Species = ExtResource("25_votary")
+StartFacing = -1
+
+[node name="RisenEast" type="CharacterBody3D" parent="Machines"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 20, 0, 0)
+script = ExtResource("24_machine")
+Species = ExtResource("25_votary")
+StartFacing = -1
+
+; the trap: stepping past the doorway springs it
+[node name="Ambush" type="Node3D" parent="." node_paths=PackedStringArray("Wave", "Gates")]
+script = ExtResource("23_ambush")
+Wave = [NodePath("../Machines/RisenWest"), NodePath("../Machines/RisenEast")]
+Gates = [NodePath("../Props/AmbushGate")]
+ArenaMin = Vector2(3.5, -1)
+ArenaMax = Vector2(25, 12)
 
 [node name="Kit" type="Node3D" parent="."]
 

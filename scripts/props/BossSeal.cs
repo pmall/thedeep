@@ -5,8 +5,8 @@ namespace TheDeep;
 
 /// <summary>
 /// A boss's arena: when the pilgrim steps inside it while the boss stands, the gates fall behind and ahead; when the
-/// boss breaks, they rise and stay up. Once beaten, a boss is gone for good (<see cref="Session"/> remembers it by
-/// this node's room and name, and calls <see cref="Settle"/> when the room is entered again). Dying in the fight
+/// boss breaks, they rise and stay up (the core's <see cref="ArenaFight"/>). Once beaten, a boss is gone for good (<see cref="Arenas"/>
+/// remembers it by this node's room and name, and calls <see cref="Settle"/> when the room is entered again). Dying in the fight
 /// reloads the room, boss and gates renewed. The gates are not part of the map: the ways stay open on paper.
 /// </summary>
 public partial class BossSeal : Node3D
@@ -24,17 +24,15 @@ public partial class BossSeal : Node3D
     [Export] public StringName FallenLine { get; set; } = "";
     [Export] public StringName FallenHintLine { get; set; } = "";
 
-    private enum Phase { Waiting, Fighting, Won }
+    private readonly ArenaFight _fight = new();
 
-    private Phase _phase;
-
-    /// <summary>The pilgrim, set by the session when the room loads (it lives outside the room's scene).</summary>
+    /// <summary>The pilgrim, set when the room loads (it lives outside the room's scene).</summary>
     public Player? Player { get; set; }
 
-    public bool Fighting => _phase == Phase.Fighting;
+    public bool Fighting => _fight.Phase == ArenaPhase.Fighting;
 
     /// <summary>The boss is broken (this visit, or for good before).</summary>
-    public bool Won => _phase == Phase.Won;
+    public bool Won => _fight.Phase == ArenaPhase.Won;
 
     /// <summary>The fight began: the gates are falling.</summary>
     public event Action<BossSeal>? Began;
@@ -45,16 +43,16 @@ public partial class BossSeal : Node3D
     /// <summary>Beaten before: no boss, the gates up.</summary>
     public void Settle()
     {
-        _phase = Phase.Won;
+        _fight.Settle();
         Boss.Gone();
     }
 
     public override void _PhysicsProcess(double delta)
     {
-        switch (_phase)
+        bool pilgrimIn = Player is { InControl: true } player && Inside(player);
+        switch (_fight.Step(pilgrimIn, !Boss.Broken))
         {
-            case Phase.Waiting when Player is { } player && Inside(player) && !Boss.Broken && player.InControl:
-                _phase = Phase.Fighting;
+            case ArenaChange.Began:
                 foreach (Portcullis gate in Gates)
                 {
                     gate.Close();
@@ -62,14 +60,15 @@ public partial class BossSeal : Node3D
 
                 Began?.Invoke(this);
                 break;
-            case Phase.Fighting when Boss.Broken:
-                _phase = Phase.Won;
+            case ArenaChange.Cleared:
                 foreach (Portcullis gate in Gates)
                 {
                     gate.Open();
                 }
 
                 Defeated?.Invoke(this);
+                break;
+            case ArenaChange.None:
                 break;
         }
     }

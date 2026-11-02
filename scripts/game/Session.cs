@@ -7,7 +7,7 @@ namespace TheDeep;
 /// <summary>
 /// The game's flow around the pilgrim: resting at shrines (heal and save), taking ability relics (items and their doors are the
 /// <see cref="Keyring"/>'s), reading
-/// scripture plates, lines spoken to it (<see cref="Proclamation"/>), boss fights (<see cref="BossSeal"/>), law breaks
+/// scripture plates, lines spoken to it (<see cref="Proclamation"/>), law breaks
 /// (<see cref="LawBreak"/>), lifts (<see cref="Lift"/>) and cracked rock broken by the Drill (it stays broken), dying or
 /// falling out of a room and coming back at the last shrine rested at, the end of what is built
 /// (<see cref="MapGoal"/> areas), and starting from the save. The progress and its rules are the core's
@@ -339,23 +339,6 @@ public partial class Session : Node
             }
         }
 
-        foreach (BossSeal seal in room.All<BossSeal>())
-        {
-            seal.Player = Player;
-            if (_pilgrimage.Done(name, seal.Name))
-            {
-                seal.Settle();
-                continue;
-            }
-
-            seal.Began += OnBossBegan;
-            seal.Defeated += OnBossDefeated;
-            foreach (Portcullis gate in seal.Gates)
-            {
-                gate.Slammed += _ => Camera.AddShake(0.3f);
-            }
-        }
-
         foreach (Block block in room.Blocks().Where(b => b.Cracked))
         {
             if (_pilgrimage.Done(name, block.Name))
@@ -389,16 +372,6 @@ public partial class Session : Node
 
             law.Broke += OnLawBroke;
         }
-    }
-
-    private void OnBossBegan(BossSeal seal) => _ = Banner.Show(seal.NameLine, "", 2.5f);
-
-    /// <summary>A boss broken: remembered (and saved) at once, so it never stands again.</summary>
-    private void OnBossDefeated(BossSeal seal)
-    {
-        Remember(seal.Name);
-        Camera.AddShake(0.5f);
-        _ = Banner.Show(seal.FallenLine, seal.FallenHintLine, 4f);
     }
 
     /// <summary>Cracked rock broken by the Drill: remembered (and saved) at once, so the way stays open.</summary>

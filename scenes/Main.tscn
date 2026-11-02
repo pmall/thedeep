@@ -31,6 +31,7 @@
 [ext_resource type="Script" path="res://scripts/game/PowerUps.cs" id="30_powerups"]
 [ext_resource type="Script" path="res://scripts/dialogue/Conversations.cs" id="31_conversations"]
 [ext_resource type="Script" path="res://scripts/ui/DialogueBox.cs" id="32_dialogue_box"]
+[ext_resource type="Script" path="res://scripts/game/Arenas.cs" id="33_arenas"]
 
 [sub_resource type="CylinderMesh" id="HarpoonLine"]
 top_radius = 0.016
@@ -151,6 +152,15 @@ World = NodePath("../World")
 Player = NodePath("../Player")
 Session = NodePath("../Session")
 Box = NodePath("../DialogueBox")
+
+; The sealed arenas (Arenas): a boss's and an ambush's, handed the pilgrim, settled, remembered.
+[node name="Arenas" type="Node" parent="." node_paths=PackedStringArray("World", "Player", "Session", "Banner", "Camera")]
+script = ExtResource("33_arenas")
+World = NodePath("../World")
+Player = NodePath("../Player")
+Session = NodePath("../Session")
+Banner = NodePath("../Banner")
+Camera = NodePath("../SideCamera")
 
 [node name="GateHints" type="Node" parent="." node_paths=PackedStringArray("World", "Player", "Harpoon", "Hint")]
 script = ExtResource("22_gates")

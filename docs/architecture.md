@@ -43,6 +43,7 @@ The type to open first for each system; its docblock leads on.
 | Items (keys, codes) and locked doors | `ItemDefinition`, `Keyring` (over `Inventory`); in the requirement language, `Requirement` |
 | Power-ups | `PowerUp`, `PowerUps` (over `Prowess`) |
 | Conversations | `Conversation`, `Conversations` (over `DialogueFlow`), `DialogueBox` |
+| Sealed arenas (bosses, ambushes) | `Arenas`, `BossSeal`, `Ambush` (over `ArenaFight`) |
 | Machines | `Machine`, `MachineSpecies`, `MachineDirector`; brains in `core/machines/brains/` |
 | The map and its proof | `MapGraph`, `MapSolver`, `ReachPlanner`, `MapDraft`, `WorldCheck`; fed by `RoomValidator` |
 | Looks | `BiomeProfile`, the painted signature `PaintPass` (its compute shaders in `assets/shaders/paint/`), the kit (`KitMesh`, `KitShapes`), the part system (`PartAssembly`, `PartBody`), `assets/shaders/` |

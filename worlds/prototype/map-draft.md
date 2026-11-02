@@ -199,7 +199,7 @@ Basalt, slag rivers, the machines' birthplace: they are cast here in molds of th
 | Crucible | Where plating is cast, under both: a great crucible pouring into glowing moulds, **Heat plating** on a dais between them, a shrine; the coolant falls from the Quench's drain into a basin, gantries climb back to it. *(built)* |
 | Ashfall | East of the Slag: a pit under a broken flue, ash raining through; a stair of ledges down to the ash floor, a Gleaner; the Pyre behind a curtain of heat (Heat plating), a hatch down to the Bellows. *(built)* |
 | Bellows | Under the Ashfall: a bellows the size of a nave, still heaving; gantries back up to the hatch; its iron frame (Mag-grip) or the rings on its ribs (Harpoon) up to the high door on to the Foundry; a shrine. *(built)* |
-| Pyre | Through the heat (Heat plating): where machines are given to the fire; a pyre on an altar, broken machines laid round it, a scripture plate, a shrine. *(built)* |
+| Pyre | Through the heat (Heat plating): where machines are given to the fire; a pyre on an altar, broken machines laid round it, a scripture plate, a shrine. **A trap**: two of the dead rise behind a falling gate. *(built)* |
 | Chimney | A narrow vent from the Slag's roof up to the slag welling in the Coldstacks' floor: ledges up its throat, its molten mouth passed only with Heat plating. The shortcut home. *(built)* |
 | Foundry | The great foundry, an arcade over a molten channel. **Boss: the Founder** (placeholder: the Precentor's brain, heavier). The vents to the core, a shaft of heat in the floor, need Heat plating. *(built)* |
 

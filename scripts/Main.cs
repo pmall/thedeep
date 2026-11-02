@@ -74,6 +74,9 @@ public partial class Main : Node3D
     /// <summary>User argument that runs the scripted Heat plating check (see HeatCheck), used by tools/check.sh.</summary>
     private const string HeatCheckArgument = "--heat-check";
 
+    /// <summary>User argument that runs the ambush check (see AmbushCheck), used by tools/check.sh.</summary>
+    private const string AmbushCheckArgument = "--ambush-check";
+
     /// <summary>User argument that runs the dialogue check (see DialogueCheck), used by tools/check.sh.</summary>
     private const string DialogueCheckArgument = "--dialogue-check";
 
@@ -119,7 +122,7 @@ public partial class Main : Node3D
     private static readonly string[] DriverArguments =
     {
         SmokeArgument, CaptureTestArgument, LookDevArgument, ValidateRoomsArgument, ValidateTravelArgument, ValidateSpeciesArgument,
-        UiShotArgument, PlaythroughCheckArgument, GripCheckArgument, CombatCheckArgument, HarpoonCheckArgument, EncounterCheckArgument, DrillCheckArgument, BallastCheckArgument, HeatCheckArgument, KeyCheckArgument, PowerUpCheckArgument, DialogueCheckArgument,
+        UiShotArgument, PlaythroughCheckArgument, GripCheckArgument, CombatCheckArgument, HarpoonCheckArgument, EncounterCheckArgument, DrillCheckArgument, BallastCheckArgument, HeatCheckArgument, KeyCheckArgument, PowerUpCheckArgument, DialogueCheckArgument, AmbushCheckArgument,
     };
 
     private SaveData? _resume;
@@ -247,6 +250,10 @@ public partial class Main : Node3D
         else if (Array.IndexOf(args, BallastCheckArgument) >= 0)
         {
             AddChild(new BallastCheck { Player = Player, World = World, Hints = Hints });
+        }
+        else if (Array.IndexOf(args, AmbushCheckArgument) >= 0)
+        {
+            AddChild(new AmbushCheck { Player = Player, World = World, Session = Session });
         }
         else if (Array.IndexOf(args, DialogueCheckArgument) >= 0)
         {

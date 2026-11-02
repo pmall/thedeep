@@ -59,7 +59,7 @@ Every piece a world is built from (`docs/principles.md#bricks`). The prototype's
 | Brains (`core/machines/brains/`) | working placeholders | `docs/roadmap.md#stage-polish` (the bestiary) |
 | Species (`resources/machines/`, 10 placeholders) | working placeholders | `docs/roadmap.md#stage-polish` |
 | `BossSeal` | working | — |
-| Ambush | missing | `docs/roadmap.md#game-systems` |
+| `Ambush` (a wave that stands up behind falling gates; with `BossSeal`, over the core's `ArenaFight`, played by `Arenas`) | working | — |
 
 ## Story and text `#bricks-text`
 
