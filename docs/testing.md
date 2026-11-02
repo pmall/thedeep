@@ -2,7 +2,7 @@
 
 ## The check: `tools/check.sh` `#check`
 
-Run it after every change and before every commit. It stops at the first failure: the doc citations (`tools/docrefs.py`, `AGENTS.md#doc-rules`), the build (warnings are errors), the headless import (every shader compiled), the headless checks, then the unit tests (`tests/TheDeep.Tests`, xUnit over the core; `VideoEncoderTests` run the real `ffmpeg`). Logs go to `.godot/check/`.
+Run it after every change and before every commit. **It must get faster** (owner, 2026-11-02): it takes several minutes today; measure each step and cut the slowest (running the headless checks in parallel is the first idea), without checking less. It stops at the first failure: the doc citations (`tools/docrefs.py`, `AGENTS.md#doc-rules`), the build (warnings are errors), the headless import (every shader compiled), the headless checks, then the unit tests (`tests/TheDeep.Tests`, xUnit over the core; `VideoEncoderTests` run the real `ffmpeg`). Logs go to `.godot/check/`.
 
 The headless checks, one driver each in `scripts/debug/`; the driver's docblock says what it proves and what it prints:
 
