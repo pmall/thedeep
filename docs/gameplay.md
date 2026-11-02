@@ -49,7 +49,7 @@ These gate the map. Every ability is one simple state or rule: no systemic or em
 | Ability | What it does | What it gates |
 |---|---|---|
 | **Mag-grip** `#mag-grip` | Walk on **metal** walls and ceilings; rock can't be gripped, and water lets go of it | Vertical shafts and ceilings made of metal |
-| **Harpoon** `#harpoon` | Fire at a mooring ring in sight (hold up or down to aim) and zip to it | Gaps with rings |
+| **Harpoon** `#harpoon` | Fire at a mooring ring in sight (hold up or down to aim) and zip to it; a ring in sight that the camera doesn't frame is shown by a chevron at the screen's edge (owner, 2026-11-02: targets off screen were invisible) | Gaps with rings |
 | **Drill** `#drill` | A dash bores through **cracked rock**; down + dash dives through cracked floors. Broken rock stays broken | Cracked rock walls and floors |
 | **Ballast** `#ballast` | Without it the pilgrim floats; with it, in water, hold down to sink and walk the bottom, up or jump to rise | Exits under water, under walls that reach into it |
 | **Heat plating** `#heat-plating` | Passive: heat (vents, the air over slag) no longer burns. Without it heat throws the pilgrim back, so it is never crossed. Slag itself kills, plated or not | Vents and molten mouths |

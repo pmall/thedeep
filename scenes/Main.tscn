@@ -28,6 +28,7 @@
 [ext_resource type="Resource" path="res://resources/paint/poster.tres" id="27_poster"]
 [ext_resource type="Resource" path="res://resources/paint/scripture.tres" id="28_scripture"]
 [ext_resource type="Script" path="res://scripts/game/Keyring.cs" id="29_keyring"]
+[ext_resource type="Script" path="res://scripts/ui/AnchorPointer.cs" id="30_pointer"]
 [ext_resource type="Script" path="res://scripts/game/PowerUps.cs" id="30_powerups"]
 [ext_resource type="Script" path="res://scripts/dialogue/Conversations.cs" id="31_conversations"]
 [ext_resource type="Script" path="res://scripts/ui/DialogueBox.cs" id="32_dialogue_box"]
@@ -50,7 +51,7 @@ height = 0.3
 radial_segments = 8
 rings = 1
 
-[node name="Main" type="Node3D" node_paths=PackedStringArray("World", "Player", "Machines", "Capture", "Camera", "Hud", "Travel", "Session", "Health", "Hint", "MapScreen", "Hints", "Keyring", "PowerUps", "Conversations", "DialogueBox", "Secrets")]
+[node name="Main" type="Node3D" node_paths=PackedStringArray("World", "Player", "Machines", "Capture", "Camera", "Hud", "Travel", "Session", "Health", "Hint", "MapScreen", "Hints", "Keyring", "PowerUps", "Conversations", "DialogueBox", "Secrets", "Pointer")]
 script = ExtResource("1_main")
 World = NodePath("World")
 Player = NodePath("Player")
@@ -62,6 +63,7 @@ Travel = NodePath("RoomTravel")
 Session = NodePath("Session")
 Health = NodePath("HealthHud")
 Hint = NodePath("HintLine")
+Pointer = NodePath("AnchorPointer")
 MapScreen = NodePath("MapScreen")
 Hints = NodePath("GateHints")
 Keyring = NodePath("Keyring")
@@ -191,6 +193,12 @@ script = ExtResource("15_fade")
 [node name="HealthHud" type="CanvasLayer" parent="." node_paths=PackedStringArray("Player")]
 script = ExtResource("18_health")
 Player = NodePath("../Player")
+
+; points at the Harpoon's target when the camera doesn't frame it
+[node name="AnchorPointer" type="CanvasLayer" parent="." node_paths=PackedStringArray("Player", "Camera")]
+script = ExtResource("30_pointer")
+Player = NodePath("../Player")
+Camera = NodePath("../SideCamera")
 
 [node name="Banner" type="CanvasLayer" parent="."]
 script = ExtResource("19_banner")

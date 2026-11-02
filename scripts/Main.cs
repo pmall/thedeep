@@ -111,6 +111,7 @@ public partial class Main : Node3D
     [Export] public Session Session { get; set; } = null!;
     [Export] public HealthHud Health { get; set; } = null!;
     [Export] public HintLine Hint { get; set; } = null!;
+    [Export] public AnchorPointer Pointer { get; set; } = null!;
 
     /// <summary>The rooms' painted pass (the shared resources/stage/paint_pass.tres), held here so `--paint` lasts the whole run.</summary>
     [Export] public PaintPass Paint { get; set; } = null!;
@@ -251,7 +252,7 @@ public partial class Main : Node3D
         }
         else if (Array.IndexOf(args, HarpoonCheckArgument) >= 0)
         {
-            AddChild(new HarpoonCheck { Player = Player, World = World });
+            AddChild(new HarpoonCheck { Player = Player, World = World, Pointer = Pointer });
         }
         else if (Array.IndexOf(args, DrillCheckArgument) >= 0)
         {

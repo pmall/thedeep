@@ -10,12 +10,13 @@ namespace TheDeep;
 /// through the real input actions: no anchor is in sight without the ability; with it, the near anchor is; firing
 /// pulls the pilgrim to it and lets go rising, the air dash back; firing again chains to the next anchor (the one
 /// just left is skipped); an anchor behind a solid or out of range is never in sight; a jump during the pull
-/// cancels into a jump. Each step has a time limit. Prints `HARPOON OK` or `HARPOON CHECK` errors.
+/// cancels into a jump; the edge pointer shows the anchor in sight only when it is off screen. Each step has a time limit. Prints `HARPOON OK` or `HARPOON CHECK` errors.
 /// </summary>
 public partial class HarpoonCheck : Node
 {
     public required Player Player { get; init; }
     public required World World { get; init; }
+    public required AnchorPointer Pointer { get; init; }
 
     private readonly List<Step> _steps = new();
     private readonly List<string> _problems = new();
@@ -38,14 +39,21 @@ public partial class HarpoonCheck : Node
 
     public override void _Ready()
     {
+        float margin = Pointer.Margin;
         _steps.Add(new("no anchor in sight without the Harpoon", 0.3f,
             () => { Player.Abilities.Lock(Ability.Harpoon); Place(11f, 0f); },
             () => Player.AnchorInSight is not null, Hold: true));
         _steps.Add(new("with it, the near anchor is in sight", 0.3f,
             () => Player.Abilities.Unlock(Ability.Harpoon),
             () => Player.AnchorInSight == A));
+        _steps.Add(new("the anchor framed: no pointer at the screen's edge", 0.3f,
+            () => { },
+            () => Pointer.Pointing, Hold: true));
+        _steps.Add(new("the anchor unframed (an edge wider than the screen): the pointer shows", 0.3f,
+            () => Pointer.Margin = 100000f,
+            () => Pointer.Pointing && Player.AnchorInSight == A));
         _steps.Add(new("fire: the line flies out and the pull begins", 0.3f,
-            () => Press(InputActions.Harpoon),
+            () => { Pointer.Margin = margin; Press(InputActions.Harpoon); },
             () => Player.CurrentState == Player.States.Harpoon && Player.States.Harpoon.Bitten));
         _steps.Add(new("reach the anchor, let go rising with the air dash back", 1.5f,
             () => { Release(InputActions.Harpoon); _closest = float.MaxValue; },
