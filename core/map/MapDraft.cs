@@ -220,8 +220,8 @@ public sealed class MapDraft
 
     /// <summary>
     /// Checks the draft as a whole-game design: the solver's guarantees (no softlock, the goal reachable, every
-    /// room reachable), every ability on exactly one relic, the order freedom targets, the scope, and the
-    /// milestones: each one on every route to the goal, and met in story order whatever the route.
+    /// room reachable), every ability the world uses on exactly one relic (and every ability a way needs used), the order freedom
+    /// targets, the scope, and the milestones: each one on every route to the goal, and met in story order whatever the route.
     /// </summary>
     public (MapReport Report, List<string> Problems) Check()
     {
@@ -246,12 +246,18 @@ public sealed class MapDraft
             problems.Add($"softlock at {state}: no goal can be reached from there; reached by {string.Join(" → ", path)}");
         }
 
+        // A world needn't use all five abilities (docs/roadmap.md#open-decisions): one it uses lies in one relic, one it doesn't in none.
+        Ability needed = Graph.Edges.SelectMany(e => e.Requires.Options).Aggregate(Ability.None, (all, option) => all | option.Abilities);
         foreach (Ability a in Enum.GetValues<Ability>().Where(a => a != Ability.None))
         {
             int relics = Graph.Relics.Count(i => i.Ability == a);
-            if (relics != 1)
+            if (relics > 1)
             {
-                problems.Add($"{a} lies in {relics} relics (one each)");
+                problems.Add($"{a} lies in {relics} relics (one at most)");
+            }
+            else if (relics == 0 && needed.HasFlag(a))
+            {
+                problems.Add($"a way needs {a}, but no relic holds it");
             }
             else if (report.Positions.TryGetValue(a, out SortedSet<int>? at) && at.Count < Targets.Positions)
             {

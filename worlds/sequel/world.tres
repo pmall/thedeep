@@ -1,0 +1,26 @@
+[gd_resource type="Resource" script_class="WorldDefinition" format=3]
+; The sequel world (docs/roadmap.md#sequel-test): a second, small world built from the prototype's bricks and content alone, 7 rooms
+; on one layer (Brine, a variant of the frozen layer). Its network is network.md beside this file. Played with `-- --world sequel`.
+
+[ext_resource type="Script" path="res://scripts/world/WorldDefinition.cs" id="1_world"]
+[ext_resource type="Script" path="res://scripts/world/WorldLayer.cs" id="2_layer"]
+[ext_resource type="PackedScene" path="res://worlds/sequel/rooms/Quay.tscn" id="3_start"]
+[ext_resource type="Resource" path="res://worlds/sequel/lines.tres" id="4_lines"]
+[ext_resource type="Resource" path="res://resources/biomes/brine.tres" id="5_brine"]
+[ext_resource type="Resource" path="res://worlds/sequel/items/strongroom_key.tres" id="6_strongroom_key"]
+[ext_resource type="Resource" path="res://worlds/sequel/items/weir_lever.tres" id="7_weir_lever"]
+
+[sub_resource type="Resource" id="layer_brine"]
+script = ExtResource("2_layer")
+Name = "Brine"
+Biome = ExtResource("5_brine")
+
+[resource]
+script = ExtResource("1_world")
+RoomsFolder = "res://worlds/sequel/rooms"
+Network = "res://worlds/sequel/network.md"
+StartRoom = ExtResource("3_start")
+Layers = [SubResource("layer_brine")]
+Items = [ExtResource("6_strongroom_key"), ExtResource("7_weir_lever")]
+Lines = ExtResource("4_lines")
+SaveName = "save-sequel"

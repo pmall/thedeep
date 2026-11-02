@@ -1,0 +1,161 @@
+[gd_scene format=3]
+
+; The Hold, up the Locks' iron wall: a cargo hold of the sea-wall, its walls all rock (no grip here). The Harpoon on a cradle
+; mid-floor. Two mooring rings rise to a ledge high on the east wall and the way on to the Weir (Harpoon); the Strongroom's key
+; lies on that ledge. West, the doorway back out onto the top of the Locks' iron wall.
+
+[ext_resource type="Material" path="res://assets/materials/wet_stone.tres" id="1_wet_stone"]
+[ext_resource type="PackedScene" path="res://scenes/kit/Block.tscn" id="2_block"]
+[ext_resource type="Script" path="res://scripts/rooms/RoomExit.cs" id="3_exit"]
+[ext_resource type="PackedScene" path="res://scenes/props/AbilityRelic.tscn" id="4_relic"]
+[ext_resource type="PackedScene" path="res://scenes/props/HarpoonAnchor.tscn" id="5_anchor"]
+[ext_resource type="Resource" path="res://worlds/sequel/items/strongroom_key.tres" id="6_item_strongroom_key"]
+[ext_resource type="PackedScene" path="res://scenes/props/ItemPickup.tscn" id="7_pickup"]
+[ext_resource type="PackedScene" path="res://scenes/props/Shrine.tscn" id="8_shrine"]
+[ext_resource type="Script" path="res://scripts/rooms/PhotoSpot.cs" id="9_spot"]
+[ext_resource type="Script" path="res://scripts/rooms/Room.cs" id="10_room"]
+[ext_resource type="Resource" path="res://resources/biomes/brine.tres" id="11_brine"]
+[ext_resource type="PackedScene" path="res://scenes/stage/RoomStage.tscn" id="12_stage"]
+
+[node name="Hold" type="Node3D" node_paths=PackedStringArray("SpawnPoint", "Stage", "Lamps", "Shafts", "GlyphLights")]
+script = ExtResource("10_room")
+SpawnPoint = NodePath("SpawnPoint")
+Stage = NodePath("Stage")
+Biome = ExtResource("11_brine")
+Lamps = [NodePath("Lamps/Ledge")]
+Shafts = [NodePath("Shafts/Cradle")]
+GlyphLights = [NodePath("Props/Shrine/Light")]
+BoundsMin = Vector2(-1.5, -2)
+BoundsMax = Vector2(57.5, 25)
+
+[node name="SpawnPoint" type="Marker3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 6, 0, 0)
+
+; The shared atmosphere stack (environment, key light, clear front air, skylines, far pillars, frame, dust).
+[node name="Stage" parent="." instance=ExtResource("12_stage")]
+Seed = 25
+DustDensity = 2.4
+PillarDensity = 3.6
+
+[node name="Geometry" type="Node3D" parent="."]
+
+[node name="Floor" parent="Geometry" instance=ExtResource("2_block")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 28, -2, 0)
+Size = Vector3(62, 4, 4)
+Material = ExtResource("1_wet_stone")
+
+[node name="Ceiling" parent="Geometry" instance=ExtResource("2_block")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 28, 25.5, 0)
+Size = Vector3(62, 3, 4)
+
+; the west wall over the doorway
+[node name="WallWest" parent="Geometry" instance=ExtResource("2_block")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -1.5, 14, 0)
+Size = Vector3(3, 20, 4)
+
+; the east wall: rock, not gripped
+[node name="WallEast" parent="Geometry" instance=ExtResource("2_block")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 57.5, 7.25, 0)
+Size = Vector3(3, 14.5, 4)
+
+; over the high doorway to the Weir
+[node name="WallEastTop" parent="Geometry" instance=ExtResource("2_block")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 57.5, 21.25, 0)
+Size = Vector3(3, 5.5, 4)
+
+; the ledge before the high doorway
+[node name="Ledge" parent="Geometry" instance=ExtResource("2_block")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 53, 14, 0)
+Size = Vector3(6, 1, 4)
+
+; the Harpoon's cradle
+[node name="Cradle" parent="Geometry" instance=ExtResource("2_block")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 28, 0.25, 0)
+Size = Vector3(4, 0.5, 4)
+
+; a cargo crate: a hop
+[node name="Crate" parent="Geometry" instance=ExtResource("2_block")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 39.5, 1, 0)
+Size = Vector3(3, 2, 4)
+
+[node name="Exits" type="Node3D" parent="."]
+
+; west doorway back out onto the Locks' iron wall
+[node name="West" type="Marker3D" parent="Exits"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -1, 0, 0)
+script = ExtResource("3_exit")
+TargetRoom = "res://worlds/sequel/rooms/Locks.tscn"
+TargetExit = "Hold"
+Size = Vector2(1, 4)
+
+; the high doorway on to the Weir, past the ledge
+[node name="East" type="Marker3D" parent="Exits"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 57, 14.5, 0)
+script = ExtResource("3_exit")
+TargetRoom = "res://worlds/sequel/rooms/Weir.tscn"
+TargetExit = "West"
+Requires = "Harpoon"
+Size = Vector2(1, 4)
+
+[node name="Props" type="Node3D" parent="."]
+
+; the Harpoon on its cradle
+[node name="Harpoon" parent="Props" instance=ExtResource("4_relic")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 28, 0.5, 0)
+Ability = 2
+NameLine = &"ability.harpoon.name"
+HintLine = &"ability.harpoon.hint"
+
+[node name="Anchors" type="Node3D" parent="."]
+
+; two mooring rings up to the ledge: the Harpoon's way to the Weir
+[node name="Low" parent="Anchors" instance=ExtResource("5_anchor")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 46, 7.5, 0)
+
+[node name="High" parent="Anchors" instance=ExtResource("5_anchor")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 49, 15.5, 0)
+
+; the Strongroom's key, on the ledge
+[node name="Key" parent="Props" instance=ExtResource("7_pickup")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 53, 14.5, 0)
+Item = ExtResource("6_item_strongroom_key")
+
+; a pilgrim shrine by the west door
+[node name="Shrine" parent="Props" instance=ExtResource("8_shrine")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 10, 0, 0)
+
+[node name="Shafts" type="Node3D" parent="."]
+
+; straight down onto the cradle
+[node name="Cradle" type="SpotLight3D" parent="Shafts"]
+transform = Transform3D(-1, 0, 0, 0, 0.1414, 0.9899, 0, 0.9899, -0.1414, 28, 44, -2.5)
+light_energy = 5
+light_volumetric_fog_energy = 12
+shadow_enabled = true
+spot_range = 80
+spot_attenuation = 0.25
+spot_angle = 10
+spot_angle_attenuation = 2
+
+[node name="Lamps" type="Node3D" parent="."]
+
+; a lamp over the ledge
+[node name="Ledge" type="OmniLight3D" parent="Lamps"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 53, 17, 1.5)
+light_energy = 2
+omni_range = 8
+shadow_enabled = true
+
+[node name="PhotoSpots" type="Node3D" parent="."]
+
+; the cradle and the rings beyond
+[node name="Cradle" type="Marker3D" parent="PhotoSpots"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 26, 4, 22)
+script = ExtResource("9_spot")
+PlayerPosition = Vector3(24, 0, 0)
+
+; the rings up to the ledge
+[node name="Rings" type="Marker3D" parent="PhotoSpots"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 48, 11, 24)
+script = ExtResource("9_spot")
+PlayerPosition = Vector3(44, 0, 0)

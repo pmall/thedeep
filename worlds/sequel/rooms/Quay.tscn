@@ -1,0 +1,185 @@
+[gd_scene format=3]
+
+; The Quay (the sequel world's start, worlds/sequel/network.md): a landing on a sea-wall frozen in brine, where the pilgrim
+; wakes. A shrine, a Lamplighter that comes to meet the pilgrim and talks (once), a bollard to hop. East, the doorway into the
+; Locks. West, the Strongroom's doorway, barred by a locked door (its key lies on the Hold's high ledge).
+
+[ext_resource type="Material" path="res://assets/materials/wet_stone.tres" id="1_wet_stone"]
+[ext_resource type="PackedScene" path="res://scenes/kit/Block.tscn" id="2_block"]
+[ext_resource type="Script" path="res://scripts/rooms/RoomExit.cs" id="3_exit"]
+[ext_resource type="Resource" path="res://worlds/sequel/items/strongroom_key.tres" id="4_item_strongroom_key"]
+[ext_resource type="PackedScene" path="res://scenes/props/LockedDoor.tscn" id="5_door"]
+[ext_resource type="PackedScene" path="res://scenes/props/Shrine.tscn" id="6_shrine"]
+[ext_resource type="Script" path="res://scripts/machines/Machine.cs" id="7_machine"]
+[ext_resource type="Resource" path="res://resources/machines/lamplighter.tres" id="8_lamplighter"]
+[ext_resource type="PackedScene" path="res://scenes/props/Conversation.tscn" id="9_conversation"]
+[ext_resource type="Material" path="res://assets/materials/glyphs.tres" id="10_glyphs"]
+[ext_resource type="PackedScene" path="res://scenes/fx/Drips.tscn" id="11_drips"]
+[ext_resource type="Script" path="res://scripts/rooms/PhotoSpot.cs" id="12_spot"]
+[ext_resource type="Script" path="res://scripts/rooms/Room.cs" id="13_room"]
+[ext_resource type="Resource" path="res://resources/biomes/brine.tres" id="14_brine"]
+[ext_resource type="PackedScene" path="res://scenes/stage/RoomStage.tscn" id="15_stage"]
+
+[sub_resource type="QuadMesh" id="QuadMesh_1"]
+size = Vector2(5, 0.3)
+
+[node name="Quay" type="Node3D" node_paths=PackedStringArray("SpawnPoint", "Stage", "Lamps", "Shafts", "GlyphLights")]
+script = ExtResource("13_room")
+SpawnPoint = NodePath("SpawnPoint")
+Stage = NodePath("Stage")
+Biome = ExtResource("14_brine")
+Lamps = [NodePath("Lamps/Door")]
+Shafts = [NodePath("Shafts/Shrine")]
+GlyphLights = [NodePath("Props/Shrine/Light"), NodePath("Glyphs/DaisLight")]
+BoundsMin = Vector2(-1.5, -2)
+BoundsMax = Vector2(37.5, 15)
+
+[node name="SpawnPoint" type="Marker3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 5, 0, 0)
+
+; The shared atmosphere stack (environment, key light, clear front air, skylines, far pillars, frame, dust).
+[node name="Stage" parent="." instance=ExtResource("15_stage")]
+Seed = 21
+DustDensity = 2
+PillarDensity = 3
+
+[node name="Geometry" type="Node3D" parent="."]
+
+[node name="Floor" parent="Geometry" instance=ExtResource("2_block")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 18, -2, 0)
+Size = Vector3(42, 4, 4)
+Material = ExtResource("1_wet_stone")
+
+[node name="Ceiling" parent="Geometry" instance=ExtResource("2_block")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 18, 15.5, 0)
+Size = Vector3(42, 3, 4)
+
+; the west wall over the doorway
+[node name="WallWest" parent="Geometry" instance=ExtResource("2_block")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -1.5, 9, 0)
+Size = Vector3(3, 10, 4)
+
+; the doorway's head, deep enough to take the locked door's gate when it rises
+[node name="DoorHead" parent="Geometry" instance=ExtResource("2_block")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.75, 9, 0)
+Size = Vector3(1.5, 10, 4)
+
+; the east wall over the doorway
+[node name="WallEast" parent="Geometry" instance=ExtResource("2_block")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 37.5, 9, 0)
+Size = Vector3(3, 10, 4)
+
+; an iron bollard frozen to the quay: a hop
+[node name="Bollard" parent="Geometry" instance=ExtResource("2_block")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 23.25, 0.75, 0)
+Size = Vector3(2.5, 1.5, 4)
+
+; the shrine on a low dais
+[node name="Dais" parent="Geometry" instance=ExtResource("2_block")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 12, 0.25, 0)
+Size = Vector3(6, 0.5, 4)
+
+[node name="Exits" type="Node3D" parent="."]
+
+; west doorway into the Strongroom, barred by its locked door
+[node name="West" type="Marker3D" parent="Exits" node_paths=PackedStringArray("Door")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -1, 0, 0)
+script = ExtResource("3_exit")
+TargetRoom = "res://worlds/sequel/rooms/Strongroom.tscn"
+TargetExit = "East"
+Requires = "StrongroomKey"
+Door = NodePath("../../Props/StrongroomDoor")
+Size = Vector2(1, 4)
+
+; east doorway into the Locks
+[node name="East" type="Marker3D" parent="Exits"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 37, 0, 0)
+script = ExtResource("3_exit")
+TargetRoom = "res://worlds/sequel/rooms/Locks.tscn"
+TargetExit = "West"
+Size = Vector2(1, 4)
+
+[node name="Props" type="Node3D" parent="."]
+
+; the Strongroom's locked door, under the doorway's head
+[node name="StrongroomDoor" parent="Props" instance=ExtResource("5_door")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.5, 0, 0)
+Item = ExtResource("4_item_strongroom_key")
+
+; a pilgrim shrine on the dais: rest here to save and heal
+[node name="Shrine" parent="Props" instance=ExtResource("6_shrine")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 12, 0.5, 0)
+
+[node name="Machines" type="Node3D" parent="."]
+
+; a Lamplighter waits over the bollard and follows the pilgrim
+[node name="Lamplighter" type="CharacterBody3D" parent="Machines"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 20, 5.5, 0)
+script = ExtResource("7_machine")
+Species = ExtResource("8_lamplighter")
+StartFacing = -1
+
+; the Lamplighter's welcome, heard once (it follows the pilgrim, 4 m off: talked to from there)
+[node name="Conversation" parent="Machines/Lamplighter" instance=ExtResource("9_conversation")]
+Lines = Array[StringName]([&"dialogue.quay_lamplighter.wake", &"dialogue.quay_lamplighter.sea", &"dialogue.quay_lamplighter.down"])
+Range = 4.6
+Once = true
+
+[node name="Shafts" type="Node3D" parent="."]
+
+; from the upper left onto the shrine
+[node name="Shrine" type="SpotLight3D" parent="Shafts"]
+transform = Transform3D(-0.7071, 0.6288, -0.3234, 0, 0.4573, 0.8893, 0.7071, 0.6288, -0.3234, -6, 40, -14)
+light_energy = 6
+light_volumetric_fog_energy = 12
+shadow_enabled = true
+spot_range = 80
+spot_attenuation = 0.25
+spot_angle = 10
+spot_angle_attenuation = 2
+
+[node name="Lamps" type="Node3D" parent="."]
+
+; a sodium lamp by the doorway east
+[node name="Door" type="OmniLight3D" parent="Lamps"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 33, 3.5, 1.2)
+light_energy = 2
+omni_range = 8
+shadow_enabled = true
+
+[node name="Glyphs" type="Node3D" parent="."]
+
+; faith glyphs along the dais
+[node name="Dais" type="MeshInstance3D" parent="Glyphs"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 12, 0.25, 2.01)
+mesh = SubResource("QuadMesh_1")
+material_override = ExtResource("10_glyphs")
+cast_shadow = 0
+
+[node name="DaisLight" type="OmniLight3D" parent="Glyphs"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 12, 0.25, 2.71)
+light_energy = 0.4
+light_volumetric_fog_energy = 0
+omni_range = 2
+
+[node name="Particles" type="Node3D" parent="."]
+
+; brine dripping from the ceiling
+[node name="Drips" parent="Particles" instance=ExtResource("11_drips")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 18, 13.5, -1)
+Extents = Vector3(12, 0.05, 0.8)
+
+[node name="PhotoSpots" type="Node3D" parent="."]
+
+; gameplay framing at the spawn point
+[node name="Start" type="Marker3D" parent="PhotoSpots"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 9, 3.9, 22)
+script = ExtResource("12_spot")
+PlayerPosition = Vector3(5, 0, 0)
+
+; the Strongroom's locked door, close
+[node name="Door" type="Marker3D" parent="PhotoSpots"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 3, 2.4, 9)
+script = ExtResource("12_spot")
+PlayerPosition = Vector3(3.5, 0, 0)
+PlayerFacing = -1

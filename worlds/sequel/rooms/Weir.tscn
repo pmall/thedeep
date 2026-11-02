@@ -1,0 +1,153 @@
+[gd_scene format=3]
+
+; The Weir, through the Hold's high doorway: a weir across the sea-wall's channel, a pool of open brine in its floor. East, the
+; way on to the Beacon, barred by a sluice gate; its lever stands a few steps back from it (a switch and its mechanism).
+
+[ext_resource type="Material" path="res://assets/materials/wet_stone.tres" id="1_wet_stone"]
+[ext_resource type="PackedScene" path="res://scenes/kit/Block.tscn" id="2_block"]
+[ext_resource type="Script" path="res://scripts/rooms/RoomExit.cs" id="3_exit"]
+[ext_resource type="Resource" path="res://worlds/sequel/items/weir_lever.tres" id="4_item_weir_lever"]
+[ext_resource type="PackedScene" path="res://scenes/props/LockedDoor.tscn" id="5_door"]
+[ext_resource type="PackedScene" path="res://scenes/props/Lever.tscn" id="6_lever"]
+[ext_resource type="Script" path="res://scripts/rooms/WaterBody.cs" id="7_water_body"]
+[ext_resource type="Material" path="res://assets/materials/water.tres" id="8_water"]
+[ext_resource type="Material" path="res://assets/materials/underwater.tres" id="9_underwater"]
+[ext_resource type="Material" path="res://assets/materials/water_section.tres" id="10_water_section"]
+[ext_resource type="Script" path="res://scripts/rooms/PhotoSpot.cs" id="11_spot"]
+[ext_resource type="Script" path="res://scripts/rooms/Room.cs" id="12_room"]
+[ext_resource type="Resource" path="res://resources/biomes/brine.tres" id="13_brine"]
+[ext_resource type="PackedScene" path="res://scenes/stage/RoomStage.tscn" id="14_stage"]
+
+[node name="Weir" type="Node3D" node_paths=PackedStringArray("SpawnPoint", "Stage", "Lamps", "Shafts")]
+script = ExtResource("12_room")
+SpawnPoint = NodePath("SpawnPoint")
+Stage = NodePath("Stage")
+Biome = ExtResource("13_brine")
+Lamps = [NodePath("Lamps/Gate")]
+Shafts = [NodePath("Shafts/Pool")]
+BoundsMin = Vector2(-1.5, -5)
+BoundsMax = Vector2(41.5, 15)
+
+[node name="SpawnPoint" type="Marker3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 3, 0, 0)
+
+; The shared atmosphere stack (environment, key light, clear front air, skylines, far pillars, frame, dust).
+[node name="Stage" parent="." instance=ExtResource("14_stage")]
+Seed = 26
+DustDensity = 2
+PillarDensity = 3
+
+[node name="Geometry" type="Node3D" parent="."]
+
+[node name="FloorWest" parent="Geometry" instance=ExtResource("2_block")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 4.5, -2, 0)
+Size = Vector3(15, 4, 4)
+Material = ExtResource("1_wet_stone")
+
+; the bed of the open pool, 4 m down
+[node name="PoolBed" parent="Geometry" instance=ExtResource("2_block")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 15.5, -5, 0)
+Size = Vector3(7, 2, 4)
+
+[node name="FloorEast" parent="Geometry" instance=ExtResource("2_block")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 31, -2, 0)
+Size = Vector3(24, 4, 4)
+Material = ExtResource("1_wet_stone")
+
+[node name="Ceiling" parent="Geometry" instance=ExtResource("2_block")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 20, 15.5, 0)
+Size = Vector3(46, 3, 4)
+
+; the west wall over the doorway
+[node name="WallWest" parent="Geometry" instance=ExtResource("2_block")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -1.5, 9, 0)
+Size = Vector3(3, 10, 4)
+
+; the doorway's head, deep enough to take the gate when it rises
+[node name="DoorHead" parent="Geometry" instance=ExtResource("2_block")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 39.25, 9, 0)
+Size = Vector3(1.5, 10, 4)
+
+; the east wall over the doorway
+[node name="WallEast" parent="Geometry" instance=ExtResource("2_block")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 41.5, 9, 0)
+Size = Vector3(3, 10, 4)
+
+[node name="Exits" type="Node3D" parent="."]
+
+; west doorway back out onto the Hold's ledge
+[node name="West" type="Marker3D" parent="Exits"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -1, 0, 0)
+script = ExtResource("3_exit")
+TargetRoom = "res://worlds/sequel/rooms/Hold.tscn"
+TargetExit = "East"
+Size = Vector2(1, 4)
+
+; east doorway on to the Beacon, barred by the sluice gate
+[node name="East" type="Marker3D" parent="Exits" node_paths=PackedStringArray("Door")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 41, 0, 0)
+script = ExtResource("3_exit")
+TargetRoom = "res://worlds/sequel/rooms/Beacon.tscn"
+TargetExit = "West"
+Requires = "WeirLever"
+Door = NodePath("../../Props/SluiceGate")
+Size = Vector2(1, 4)
+
+[node name="Props" type="Node3D" parent="."]
+
+; the sluice gate, held by a mechanism
+[node name="SluiceGate" parent="Props" instance=ExtResource("5_door")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 39.25, 0, 0)
+Item = ExtResource("4_item_weir_lever")
+
+; its lever, a few steps back from the gate
+[node name="Lever" parent="Props" instance=ExtResource("6_lever")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 33, 0, 0)
+Item = ExtResource("4_item_weir_lever")
+
+; the open pool
+[node name="Water" type="Node3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 15.5, -0.5, -9)
+script = ExtResource("7_water_body")
+Size = Vector2(7, 22.1)
+Depth = 3.5
+Swim = true
+SurfaceMaterial = ExtResource("8_water")
+UnderwaterMaterial = ExtResource("9_underwater")
+SectionMaterial = ExtResource("10_water_section")
+
+[node name="Shafts" type="Node3D" parent="."]
+
+; straight down onto the pool
+[node name="Pool" type="SpotLight3D" parent="Shafts"]
+transform = Transform3D(-1, 0, 0, 0, 0.1414, 0.9899, 0, 0.9899, -0.1414, 15.5, 40, -2.5)
+light_energy = 5
+light_volumetric_fog_energy = 12
+shadow_enabled = true
+spot_range = 80
+spot_attenuation = 0.25
+spot_angle = 10
+spot_angle_attenuation = 2
+
+[node name="Lamps" type="Node3D" parent="."]
+
+; a sodium lamp over the lever
+[node name="Gate" type="OmniLight3D" parent="Lamps"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 36, 3.5, 1.2)
+light_energy = 2
+omni_range = 8
+shadow_enabled = true
+
+[node name="PhotoSpots" type="Node3D" parent="."]
+
+; the gate and its lever
+[node name="Gate" type="Marker3D" parent="PhotoSpots"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 35, 2.6, 10)
+script = ExtResource("11_spot")
+PlayerPosition = Vector3(31, 0, 0)
+
+; the pool across the floor
+[node name="Pool" type="Marker3D" parent="PhotoSpots"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 15, 4, 20)
+script = ExtResource("11_spot")
+PlayerPosition = Vector3(8, 0, 0)

@@ -135,6 +135,16 @@ public class MapDraftTests
         Assert.Equal(32, report.Orders.Count);
     }
 
+    /// <summary>A world may use fewer than the five abilities: only the ones its ways need must lie in a relic, and none in two.</summary>
+    [Fact]
+    public void AWorldUsesTheAbilitiesItPlaces()
+    {
+        const string map = "start A\nroom A L\nroom B L\nway A -> B : MagGrip\nway B -> A\nrelic A MagGrip\ngoal B\n";
+        Assert.Empty(MapDraft.Parse(map).Check().Problems);
+        Assert.Contains("a way needs Harpoon, but no relic holds it", MapDraft.Parse(map + "way B -> A : Harpoon\n").Check().Problems);
+        Assert.Contains("MagGrip lies in 2 relics (one at most)", MapDraft.Parse(map + "relic B MagGrip\n").Check().Problems);
+    }
+
     [Fact]
     public void TargetsAreWhatTheNetworkNames()
     {

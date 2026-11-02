@@ -1,0 +1,107 @@
+[gd_scene format=3]
+
+; The Beacon, past the Weir's sluice gate: the sea-wall's lamp room at the end of the way, its great lamp cold. Reaching the lamp
+; ends the sequel's run (the end card, then a new game).
+
+[ext_resource type="Material" path="res://assets/materials/wet_stone.tres" id="1_wet_stone"]
+[ext_resource type="PackedScene" path="res://scenes/kit/Block.tscn" id="2_block"]
+[ext_resource type="Script" path="res://scripts/rooms/RoomExit.cs" id="3_exit"]
+[ext_resource type="Script" path="res://scripts/map/MapGoal.cs" id="4_goal"]
+[ext_resource type="Script" path="res://scripts/rooms/PhotoSpot.cs" id="5_spot"]
+[ext_resource type="Script" path="res://scripts/rooms/Room.cs" id="6_room"]
+[ext_resource type="Resource" path="res://resources/biomes/brine.tres" id="7_brine"]
+[ext_resource type="PackedScene" path="res://scenes/stage/RoomStage.tscn" id="8_stage"]
+
+[node name="Beacon" type="Node3D" node_paths=PackedStringArray("SpawnPoint", "Stage", "Lamps", "Shafts")]
+script = ExtResource("6_room")
+SpawnPoint = NodePath("SpawnPoint")
+Stage = NodePath("Stage")
+Biome = ExtResource("7_brine")
+Lamps = [NodePath("Lamps/Lamp")]
+Shafts = [NodePath("Shafts/Lamp")]
+BoundsMin = Vector2(-1.5, -2)
+BoundsMax = Vector2(31.5, 17)
+
+[node name="SpawnPoint" type="Marker3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 3, 0, 0)
+
+; The shared atmosphere stack (environment, key light, clear front air, skylines, far pillars, frame, dust).
+[node name="Stage" parent="." instance=ExtResource("8_stage")]
+Seed = 27
+DustDensity = 2
+PillarDensity = 3
+
+[node name="Geometry" type="Node3D" parent="."]
+
+[node name="Floor" parent="Geometry" instance=ExtResource("2_block")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 15, -2, 0)
+Size = Vector3(36, 4, 4)
+Material = ExtResource("1_wet_stone")
+
+[node name="Ceiling" parent="Geometry" instance=ExtResource("2_block")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 15, 17.5, 0)
+Size = Vector3(36, 3, 4)
+
+; the west wall over the doorway
+[node name="WallWest" parent="Geometry" instance=ExtResource("2_block")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -1.5, 10, 0)
+Size = Vector3(3, 12, 4)
+
+[node name="WallEast" parent="Geometry" instance=ExtResource("2_block")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 31.5, 8, 0)
+Size = Vector3(3, 16, 4)
+
+; the lamp's plinth
+[node name="Plinth" parent="Geometry" instance=ExtResource("2_block")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 22, 0.5, 0)
+Size = Vector3(6, 1, 4)
+
+[node name="Exits" type="Node3D" parent="."]
+
+; west doorway back through the Weir's sluice gate
+[node name="West" type="Marker3D" parent="Exits"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -1, 0, 0)
+script = ExtResource("3_exit")
+TargetRoom = "res://worlds/sequel/rooms/Weir.tscn"
+TargetExit = "East"
+Requires = "WeirLever"
+Size = Vector2(1, 4)
+
+; the cold lamp: reaching it ends the run
+[node name="Lamp" type="Marker3D" parent="Exits"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 22, 2, 0)
+script = ExtResource("4_goal")
+Ending = true
+Size = Vector2(8, 4)
+TitleLine = &""
+HintLine = &""
+
+[node name="Shafts" type="Node3D" parent="."]
+
+; straight down onto the lamp
+[node name="Lamp" type="SpotLight3D" parent="Shafts"]
+transform = Transform3D(-1, 0, 0, 0, 0.1414, 0.9899, 0, 0.9899, -0.1414, 22, 36, -2.5)
+light_energy = 6
+light_volumetric_fog_energy = 12
+shadow_enabled = true
+spot_range = 80
+spot_attenuation = 0.25
+spot_angle = 10
+spot_angle_attenuation = 2
+
+[node name="Lamps" type="Node3D" parent="."]
+
+; the lamp's last glow
+[node name="Lamp" type="OmniLight3D" parent="Lamps"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 22, 4.5, 1.5)
+light_energy = 3
+omni_range = 10
+shadow_enabled = true
+
+[node name="PhotoSpots" type="Node3D" parent="."]
+
+; the plinth and the lamp
+[node name="Lamp" type="Marker3D" parent="PhotoSpots"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 16, 4, 18)
+script = ExtResource("5_spot")
+PlayerPosition = Vector3(14, 0, 0)

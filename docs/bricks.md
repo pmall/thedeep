@@ -8,7 +8,7 @@ Every piece a world is built from (`docs/principles.md#bricks`). The prototype's
 
 | Brick | Status | Item |
 |---|---|---|
-| `BiomeProfile` (flooded, frozen, volcanic, core) | working | `docs/roadmap.md#stage-bricks` |
+| `BiomeProfile` (flooded, frozen, volcanic, core; brine, the sequel world's variant of frozen) | working | `docs/roadmap.md#stage-bricks` |
 | Material library (`assets/materials/`, `assets/shaders/`) | working | `docs/roadmap.md#stage-bricks` |
 | `RoomStage` | working | `docs/roadmap.md#stage-bricks` |
 | Skylines (`backdrop_silhouette.gdshader`) | working | `docs/roadmap.md#stage-bricks` |

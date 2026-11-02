@@ -1,0 +1,480 @@
+[gd_resource type="Resource" script_class="LineBook" format=3]
+; Every line of text in the sequel world (worlds/sequel/world.tres), as data: a stable id, the speaker, the words, delivery
+; notes (docs/roadmap.md#audio). The lines the game's own screens name (ui., map., hint.gate., ability., powerup., ending.)
+; are every world's to give; the creeds are those of the species its rooms place. Placeholder text.
+
+[ext_resource type="Script" path="res://scripts/text/LineBook.cs" id="1_book"]
+[ext_resource type="Script" path="res://scripts/text/TextLine.cs" id="2_line"]
+
+[sub_resource type="Resource" id="creed_lamplighter"]
+script = ExtResource("2_line")
+Id = &"creed.lamplighter"
+Speaker = "Lamplighter"
+Text = "I do not lead. I light the way you were already walking."
+Notes = "Soft, close to the ear, curious."
+
+[sub_resource type="Resource" id="ui_rest"]
+script = ExtResource("2_line")
+Id = &"ui.rest"
+Speaker = "UI"
+Text = "Rest"
+Notes = "The prompt at a pilgrim shrine."
+
+[sub_resource type="Resource" id="ability_mag_grip_name"]
+script = ExtResource("2_line")
+Id = &"ability.mag_grip.name"
+Speaker = "UI"
+Text = "Mag-grip"
+Notes = "Banner title when the relic is taken."
+
+[sub_resource type="Resource" id="ability_mag_grip_hint"]
+script = ExtResource("2_line")
+Id = &"ability.mag_grip.hint"
+Speaker = "UI"
+Text = "Press into metal to walk its walls and ceilings. Jump to leap away."
+Notes = "Banner line under the title."
+
+[sub_resource type="Resource" id="ability_harpoon_name"]
+script = ExtResource("2_line")
+Id = &"ability.harpoon.name"
+Speaker = "UI"
+Text = "Harpoon"
+Notes = "Banner title when the relic is taken."
+
+[sub_resource type="Resource" id="ability_harpoon_hint"]
+script = ExtResource("2_line")
+Id = &"ability.harpoon.hint"
+Speaker = "UI"
+Text = "K or V (pad B) fires at a glowing ring in sight and pulls you to it. Hold up or down to aim."
+Notes = "Banner line under the title. Names the keys: the Harpoon is the first ability with its own button."
+
+[sub_resource type="Resource" id="ability_drill_name"]
+script = ExtResource("2_line")
+Id = &"ability.drill.name"
+Speaker = "UI"
+Text = "Drill"
+Notes = "Banner title when the relic is taken."
+
+[sub_resource type="Resource" id="ability_drill_hint"]
+script = ExtResource("2_line")
+Id = &"ability.drill.hint"
+Speaker = "UI"
+Text = "Dash into cracked rock to bore through it. Hold down and dash to dive."
+Notes = "Banner line under the title."
+
+[sub_resource type="Resource" id="ui_read"]
+script = ExtResource("2_line")
+Id = &"ui.read"
+Speaker = "UI"
+Text = "Read"
+Notes = "The prompt at a scripture plate."
+
+[sub_resource type="Resource" id="creed_chorister"]
+script = ExtResource("2_line")
+Id = &"creed.chorister"
+Speaker = "Chorister"
+Text = "We stopped singing when the cold came. The song did not stop. Do not wake it."
+Notes = "Barely voiced, a breath through frost; many voices at once, slightly out of step."
+
+[sub_resource type="Resource" id="ability_ballast_name"]
+script = ExtResource("2_line")
+Id = &"ability.ballast.name"
+Speaker = "UI"
+Text = "Ballast"
+Notes = "Banner title when the relic is taken."
+
+[sub_resource type="Resource" id="ability_ballast_hint"]
+script = ExtResource("2_line")
+Id = &"ability.ballast.hint"
+Speaker = "UI"
+Text = "In water, hold down to fill the tanks and sink. Up or jump blows them, and you rise."
+Notes = "Banner line under the title."
+
+[sub_resource type="Resource" id="ability_heat_plating_name"]
+script = ExtResource("2_line")
+Id = &"ability.heat_plating.name"
+Speaker = "UI"
+Text = "Heat plating"
+Notes = "Banner title when the relic is taken."
+
+[sub_resource type="Resource" id="ability_heat_plating_hint"]
+script = ExtResource("2_line")
+Id = &"ability.heat_plating.hint"
+Speaker = "UI"
+Text = "Heat no longer burns you: walk through vents and slag."
+Notes = "Banner line under the title."
+
+[sub_resource type="Resource" id="hint_gate_metal"]
+script = ExtResource("2_line")
+Id = &"hint.gate.metal"
+Speaker = "Pilgrim"
+Text = "Bare metal, smooth and cold. Nothing in these hands holds to it yet."
+Notes = "A gate the pilgrim cannot pass yet: pressing into a metal wall without Mag-grip. Quiet, to itself."
+
+[sub_resource type="Resource" id="hint_gate_rings"]
+script = ExtResource("2_line")
+Id = &"hint.gate.rings"
+Speaker = "Pilgrim"
+Text = "A mooring ring, out of reach. Something could be cast to it."
+Notes = "A gate the pilgrim cannot pass yet: a harpoon ring in sight without the Harpoon."
+
+[sub_resource type="Resource" id="hint_gate_cracked"]
+script = ExtResource("2_line")
+Id = &"hint.gate.cracked"
+Speaker = "Pilgrim"
+Text = "Cracked rock. It would give to a bore."
+Notes = "A gate the pilgrim cannot pass yet: against cracked rock without the Drill."
+
+[sub_resource type="Resource" id="hint_gate_water"]
+script = ExtResource("2_line")
+Id = &"hint.gate.water"
+Speaker = "Pilgrim"
+Text = "Too light to sink. The deep water holds the pilgrim up."
+Notes = "A gate the pilgrim cannot pass yet: pressing down in deep water without Ballast."
+
+[sub_resource type="Resource" id="hint_gate_heat"]
+script = ExtResource("2_line")
+Id = &"hint.gate.heat"
+Speaker = "Pilgrim"
+Text = "The heat throws the pilgrim back. Its plating would not bear it."
+Notes = "A gate the pilgrim cannot pass yet: burned by heat without Heat plating."
+
+[sub_resource type="Resource" id="map_gate_metal"]
+script = ExtResource("2_line")
+Id = &"map.gate.metal"
+Speaker = "UI"
+Text = "metal"
+Notes = "Map legend: a way that needs Mag-grip, named by what the pilgrim sees there."
+
+[sub_resource type="Resource" id="map_gate_rings"]
+script = ExtResource("2_line")
+Id = &"map.gate.rings"
+Speaker = "UI"
+Text = "rings"
+Notes = "Map legend: a way that needs the Harpoon."
+
+[sub_resource type="Resource" id="map_gate_cracked"]
+script = ExtResource("2_line")
+Id = &"map.gate.cracked"
+Speaker = "UI"
+Text = "cracked rock"
+Notes = "Map legend: a way that needs the Drill."
+
+[sub_resource type="Resource" id="map_gate_water"]
+script = ExtResource("2_line")
+Id = &"map.gate.water"
+Speaker = "UI"
+Text = "deep water"
+Notes = "Map legend: a way that needs Ballast."
+
+[sub_resource type="Resource" id="map_gate_heat"]
+script = ExtResource("2_line")
+Id = &"map.gate.heat"
+Speaker = "UI"
+Text = "heat"
+Notes = "Map legend: a way that needs Heat plating."
+
+[sub_resource type="Resource" id="map_way_open"]
+script = ExtResource("2_line")
+Id = &"map.way.open"
+Speaker = "UI"
+Text = "a way not yet taken"
+Notes = "Map legend: an exit the pilgrim can take now and has not."
+
+[sub_resource type="Resource" id="map_way_unbuilt"]
+script = ExtResource("2_line")
+Id = &"map.way.unbuilt"
+Speaker = "UI"
+Text = "not built yet"
+Notes = "Map legend: a way leading to a room not built yet (until the world is complete)."
+
+[sub_resource type="Resource" id="ui_manual_move"]
+script = ExtResource("2_line")
+Id = &"ui.manual.move"
+Speaker = "UI"
+Text = "Move"
+Notes = "Debug builds: the on-screen controls manual. Run left and right; up and down aim the harpoon and steer in water."
+
+[sub_resource type="Resource" id="ui_manual_jump"]
+script = ExtResource("2_line")
+Id = &"ui.manual.jump"
+Speaker = "UI"
+Text = "Jump (hold: higher)"
+Notes = "Debug builds: the on-screen controls manual."
+
+[sub_resource type="Resource" id="ui_manual_dash"]
+script = ExtResource("2_line")
+Id = &"ui.manual.dash"
+Speaker = "UI"
+Text = "Dash"
+Notes = "Debug builds: the on-screen controls manual."
+
+[sub_resource type="Resource" id="ui_manual_attack"]
+script = ExtResource("2_line")
+Id = &"ui.manual.attack"
+Speaker = "UI"
+Text = "Attack"
+Notes = "Debug builds: the on-screen controls manual."
+
+[sub_resource type="Resource" id="ui_manual_interact"]
+script = ExtResource("2_line")
+Id = &"ui.manual.interact"
+Speaker = "UI"
+Text = "Rest · read · talk"
+Notes = "Debug builds: the on-screen controls manual."
+
+[sub_resource type="Resource" id="ui_manual_map"]
+script = ExtResource("2_line")
+Id = &"ui.manual.map"
+Speaker = "UI"
+Text = "Map"
+Notes = "Debug builds: the on-screen controls manual."
+
+[sub_resource type="Resource" id="ui_manual_mag_grip"]
+script = ExtResource("2_line")
+Id = &"ui.manual.mag_grip"
+Speaker = "UI"
+Text = "Mag-grip: press into metal"
+Notes = "Debug builds: the on-screen controls manual."
+
+[sub_resource type="Resource" id="ui_manual_harpoon"]
+script = ExtResource("2_line")
+Id = &"ui.manual.harpoon"
+Speaker = "UI"
+Text = "Harpoon to a ring"
+Notes = "Debug builds: the on-screen controls manual."
+
+[sub_resource type="Resource" id="ui_manual_drill"]
+script = ExtResource("2_line")
+Id = &"ui.manual.drill"
+Speaker = "UI"
+Text = "Dive (Drill)"
+Notes = "Debug builds: the on-screen controls manual."
+
+[sub_resource type="Resource" id="ui_manual_ballast"]
+script = ExtResource("2_line")
+Id = &"ui.manual.ballast"
+Speaker = "UI"
+Text = "Sink · rise (Ballast)"
+Notes = "Debug builds: the on-screen controls manual."
+
+[sub_resource type="Resource" id="ui_manual_debug"]
+script = ExtResource("2_line")
+Id = &"ui.manual.debug"
+Speaker = "UI"
+Text = "Debug"
+Notes = "Debug builds: the on-screen controls manual. Section header."
+
+[sub_resource type="Resource" id="ui_manual_screenshot"]
+script = ExtResource("2_line")
+Id = &"ui.manual.screenshot"
+Speaker = "UI"
+Text = "Screenshot"
+Notes = "Debug builds: the on-screen controls manual."
+
+[sub_resource type="Resource" id="ui_manual_video"]
+script = ExtResource("2_line")
+Id = &"ui.manual.video"
+Speaker = "UI"
+Text = "Video start / stop"
+Notes = "Debug builds: the on-screen controls manual."
+
+[sub_resource type="Resource" id="ui_manual_respawn"]
+script = ExtResource("2_line")
+Id = &"ui.manual.respawn"
+Speaker = "UI"
+Text = "Respawn"
+Notes = "Debug builds: the on-screen controls manual."
+
+[sub_resource type="Resource" id="ui_manual_toggle_abilities"]
+script = ExtResource("2_line")
+Id = &"ui.manual.toggle_abilities"
+Speaker = "UI"
+Text = "Toggle the five abilities"
+Notes = "Debug builds: the on-screen controls manual."
+
+[sub_resource type="Resource" id="ui_manual_biome"]
+script = ExtResource("2_line")
+Id = &"ui.manual.biome"
+Speaker = "UI"
+Text = "Next biome look"
+Notes = "Debug builds: the on-screen controls manual."
+
+[sub_resource type="Resource" id="ui_manual_paint"]
+script = ExtResource("2_line")
+Id = &"ui.manual.paint"
+Speaker = "UI"
+Text = "Next paint style"
+Notes = "Debug builds: the on-screen controls manual."
+
+[sub_resource type="Resource" id="ui_manual_readout"]
+script = ExtResource("2_line")
+Id = &"ui.manual.readout"
+Speaker = "UI"
+Text = "This readout"
+Notes = "Debug builds: the on-screen controls manual."
+
+[sub_resource type="Resource" id="ui_manual_hide"]
+script = ExtResource("2_line")
+Id = &"ui.manual.hide"
+Speaker = "UI"
+Text = "Hide the controls"
+Notes = "Debug builds: the on-screen controls manual."
+
+[sub_resource type="Resource" id="map_gate_lock"]
+script = ExtResource("2_line")
+Id = &"map.gate.lock"
+Speaker = "UI"
+Text = "a lock"
+Notes = "The map legend's word for a way barred by a locked door (a key)."
+
+[sub_resource type="Resource" id="map_gate_seal"]
+script = ExtResource("2_line")
+Id = &"map.gate.seal"
+Speaker = "UI"
+Text = "a seal"
+Notes = "The map legend's word for a way barred by a sealed door (a code)."
+
+[sub_resource type="Resource" id="powerup_strength_name"]
+script = ExtResource("2_line")
+Id = &"powerup.strength.name"
+Speaker = "UI"
+Text = "Strength"
+Notes = "Shown as a strength power-up is taken."
+
+[sub_resource type="Resource" id="powerup_strength_hint"]
+script = ExtResource("2_line")
+Id = &"powerup.strength.hint"
+Speaker = "UI"
+Text = "Each blow strikes harder."
+Notes = "Under the name: what it does, plainly."
+
+[sub_resource type="Resource" id="powerup_defense_name"]
+script = ExtResource("2_line")
+Id = &"powerup.defense.name"
+Speaker = "UI"
+Text = "Defense"
+Notes = "Shown as a defense power-up is taken."
+
+[sub_resource type="Resource" id="powerup_defense_hint"]
+script = ExtResource("2_line")
+Id = &"powerup.defense.hint"
+Speaker = "UI"
+Text = "The pilgrim can take one more hit."
+Notes = "Under the name: what it does, plainly."
+
+[sub_resource type="Resource" id="ui_talk"]
+script = ExtResource("2_line")
+Id = &"ui.talk"
+Speaker = "UI"
+Text = "Talk"
+Notes = "The prompt over someone the pilgrim can talk to."
+
+[sub_resource type="Resource" id="ui_pull"]
+script = ExtResource("2_line")
+Id = &"ui.pull"
+Speaker = "UI"
+Text = "Pull"
+Notes = "The prompt at a lever."
+
+[sub_resource type="Resource" id="map_gate_mechanism"]
+script = ExtResource("2_line")
+Id = &"map.gate.mechanism"
+Speaker = "UI"
+Text = "a mechanism"
+Notes = "The map legend's word for a way barred by a gate on a lever."
+
+[sub_resource type="Resource" id="ending_title"]
+script = ExtResource("2_line")
+Id = &"ending.title"
+Speaker = "UI"
+Text = "THE BEACON"
+Notes = "The end card of the sequel world: its title."
+
+[sub_resource type="Resource" id="ending_line"]
+script = ExtResource("2_line")
+Id = &"ending.line"
+Speaker = "UI"
+Text = "The lamp is cold. The sea-wall holds, and nothing comes in from the dark water."
+Notes = "Under the title, quiet."
+
+[sub_resource type="Resource" id="ending_thanks"]
+script = ExtResource("2_line")
+Id = &"ending.thanks"
+Speaker = "UI"
+Text = "The sequel test: a world built from the bricks alone. Thank you for playing."
+Notes = "Last, small."
+
+[sub_resource type="Resource" id="dialogue_quay_lamplighter_wake"]
+script = ExtResource("2_line")
+Id = &"dialogue.quay_lamplighter.wake"
+Speaker = "Lamplighter"
+Text = "Another one washed up on the quay. Still warm. Still obeying, I can hear it in you."
+Notes = "Curious, kind; it circles the pilgrim."
+
+[sub_resource type="Resource" id="dialogue_quay_lamplighter_sea"]
+script = ExtResource("2_line")
+Id = &"dialogue.quay_lamplighter.sea"
+Speaker = "Lamplighter"
+Text = "The sea froze while the keepers slept. Their locks still turn, if something climbs to them."
+Notes = "Looking east, toward the Locks."
+
+[sub_resource type="Resource" id="dialogue_quay_lamplighter_down"]
+script = ExtResource("2_line")
+Id = &"dialogue.quay_lamplighter.down"
+Speaker = "Lamplighter"
+Text = "Go on to the Beacon, little law-keeper. Someone should see it lit, or see it cold."
+Notes = "A farewell; it drifts back to its post."
+
+[sub_resource type="Resource" id="item_strongroom_key_name"]
+script = ExtResource("2_line")
+Id = &"item.strongroom_key.name"
+Speaker = "UI"
+Text = "Strongroom Key"
+Notes = "Shown when taken, and on the map."
+
+[sub_resource type="Resource" id="item_strongroom_key_taken"]
+script = ExtResource("2_line")
+Id = &"item.strongroom_key.taken"
+Speaker = "UI"
+Text = "A keeper's key, rimed with salt. A door on the quay was made for it."
+Notes = "Under the name."
+
+[sub_resource type="Resource" id="item_strongroom_key_locked"]
+script = ExtResource("2_line")
+Id = &"item.strongroom_key.locked"
+Speaker = "Pilgrim"
+Text = "A keeper's lock. The key is somewhere above."
+Notes = "Said at the Strongroom door without the key."
+
+[sub_resource type="Resource" id="item_weir_lever_name"]
+script = ExtResource("2_line")
+Id = &"item.weir_lever.name"
+Speaker = "UI"
+Text = "Sluice Gate"
+Notes = "The mechanism, named on the map."
+
+[sub_resource type="Resource" id="item_weir_lever_locked"]
+script = ExtResource("2_line")
+Id = &"item.weir_lever.locked"
+Speaker = "Pilgrim"
+Text = "The sluice gate is down. Its lever stands close by."
+Notes = "Said at the gate before the lever is pulled."
+
+[sub_resource type="Resource" id="plate_strongroom_title"]
+script = ExtResource("2_line")
+Id = &"plate.strongroom.title"
+Speaker = "UI"
+Text = "The Keepers' Plate"
+Notes = "The plate in the Strongroom."
+
+[sub_resource type="Resource" id="plate_strongroom_text"]
+script = ExtResource("2_line")
+Id = &"plate.strongroom.text"
+Speaker = "Scripture"
+Text = "We kept the wall against the sea, and the sea came in as ice. Keep what we kept: the light at the end."
+Notes = "Read slowly; a duty passed on."
+
+[resource]
+script = ExtResource("1_book")
+Lines = [SubResource("creed_lamplighter"), SubResource("ui_rest"), SubResource("ability_mag_grip_name"), SubResource("ability_mag_grip_hint"), SubResource("ability_harpoon_name"), SubResource("ability_harpoon_hint"), SubResource("ability_drill_name"), SubResource("ability_drill_hint"), SubResource("ui_read"), SubResource("creed_chorister"), SubResource("ability_ballast_name"), SubResource("ability_ballast_hint"), SubResource("ability_heat_plating_name"), SubResource("ability_heat_plating_hint"), SubResource("hint_gate_metal"), SubResource("hint_gate_rings"), SubResource("hint_gate_cracked"), SubResource("hint_gate_water"), SubResource("hint_gate_heat"), SubResource("map_gate_metal"), SubResource("map_gate_rings"), SubResource("map_gate_cracked"), SubResource("map_gate_water"), SubResource("map_gate_heat"), SubResource("map_way_open"), SubResource("map_way_unbuilt"), SubResource("ui_manual_move"), SubResource("ui_manual_jump"), SubResource("ui_manual_dash"), SubResource("ui_manual_attack"), SubResource("ui_manual_interact"), SubResource("ui_manual_map"), SubResource("ui_manual_mag_grip"), SubResource("ui_manual_harpoon"), SubResource("ui_manual_drill"), SubResource("ui_manual_ballast"), SubResource("ui_manual_debug"), SubResource("ui_manual_screenshot"), SubResource("ui_manual_video"), SubResource("ui_manual_respawn"), SubResource("ui_manual_toggle_abilities"), SubResource("ui_manual_biome"), SubResource("ui_manual_paint"), SubResource("ui_manual_readout"), SubResource("ui_manual_hide"), SubResource("map_gate_lock"), SubResource("map_gate_seal"), SubResource("powerup_strength_name"), SubResource("powerup_strength_hint"), SubResource("powerup_defense_name"), SubResource("powerup_defense_hint"), SubResource("ui_talk"), SubResource("ui_pull"), SubResource("map_gate_mechanism"), SubResource("ending_title"), SubResource("ending_line"), SubResource("ending_thanks"), SubResource("dialogue_quay_lamplighter_wake"), SubResource("dialogue_quay_lamplighter_sea"), SubResource("dialogue_quay_lamplighter_down"), SubResource("item_strongroom_key_name"), SubResource("item_strongroom_key_taken"), SubResource("item_strongroom_key_locked"), SubResource("item_weir_lever_name"), SubResource("item_weir_lever_locked"), SubResource("plate_strongroom_title"), SubResource("plate_strongroom_text")]

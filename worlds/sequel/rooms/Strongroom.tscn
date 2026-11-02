@@ -1,0 +1,104 @@
+[gd_scene format=3]
+
+; The Strongroom, off the Quay's west end behind its locked door (the key on the Hold's high ledge): a vault of the sea-wall's
+; keepers, a strength power-up on a dais, a scripture plate. A dead end.
+
+[ext_resource type="Material" path="res://assets/materials/wet_stone.tres" id="1_wet_stone"]
+[ext_resource type="PackedScene" path="res://scenes/kit/Block.tscn" id="2_block"]
+[ext_resource type="Script" path="res://scripts/rooms/RoomExit.cs" id="3_exit"]
+[ext_resource type="PackedScene" path="res://scenes/props/PowerUp.tscn" id="4_powerup"]
+[ext_resource type="PackedScene" path="res://scenes/props/ScripturePlate.tscn" id="5_plate"]
+[ext_resource type="Script" path="res://scripts/rooms/PhotoSpot.cs" id="6_spot"]
+[ext_resource type="Script" path="res://scripts/rooms/Room.cs" id="7_room"]
+[ext_resource type="Resource" path="res://resources/biomes/brine.tres" id="8_brine"]
+[ext_resource type="PackedScene" path="res://scenes/stage/RoomStage.tscn" id="9_stage"]
+
+[node name="Strongroom" type="Node3D" node_paths=PackedStringArray("SpawnPoint", "Stage", "Shafts", "GlyphLights")]
+script = ExtResource("7_room")
+SpawnPoint = NodePath("SpawnPoint")
+Stage = NodePath("Stage")
+Biome = ExtResource("8_brine")
+Shafts = [NodePath("Shafts/Dais")]
+GlyphLights = [NodePath("Props/Plate/Light")]
+BoundsMin = Vector2(-1.5, -2)
+BoundsMax = Vector2(21.5, 11)
+
+[node name="SpawnPoint" type="Marker3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 17, 0, 0)
+
+; The shared atmosphere stack (environment, key light, clear front air, skylines, far pillars, frame, dust).
+[node name="Stage" parent="." instance=ExtResource("9_stage")]
+Seed = 22
+DustDensity = 1.5
+PillarDensity = 2.5
+
+[node name="Geometry" type="Node3D" parent="."]
+
+[node name="Floor" parent="Geometry" instance=ExtResource("2_block")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 10, -2, 0)
+Size = Vector3(26, 4, 4)
+Material = ExtResource("1_wet_stone")
+
+[node name="Ceiling" parent="Geometry" instance=ExtResource("2_block")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 10, 10.5, 0)
+Size = Vector3(26, 3, 4)
+
+[node name="WallWest" parent="Geometry" instance=ExtResource("2_block")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -1.5, 4.5, 0)
+Size = Vector3(3, 9, 4)
+
+; the east wall over the doorway
+[node name="WallEast" parent="Geometry" instance=ExtResource("2_block")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 21.5, 6.5, 0)
+Size = Vector3(3, 5, 4)
+
+; the dais of the power-up
+[node name="Dais" parent="Geometry" instance=ExtResource("2_block")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 7, 0.25, 0)
+Size = Vector3(4, 0.5, 4)
+
+[node name="Exits" type="Node3D" parent="."]
+
+; east doorway back onto the Quay, through its locked door
+[node name="East" type="Marker3D" parent="Exits"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 21, 0, 0)
+script = ExtResource("3_exit")
+TargetRoom = "res://worlds/sequel/rooms/Quay.tscn"
+TargetExit = "West"
+Requires = "StrongroomKey"
+Size = Vector2(1, 4)
+
+[node name="Props" type="Node3D" parent="."]
+
+; a strength power-up on the dais
+[node name="Strength" parent="Props" instance=ExtResource("4_powerup")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 7, 0.5, 0)
+Stat = 0
+
+; the keepers' plate
+[node name="Plate" parent="Props" instance=ExtResource("5_plate")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 13, 0, 0)
+TitleLine = &"plate.strongroom.title"
+TextLine = &"plate.strongroom.text"
+
+[node name="Shafts" type="Node3D" parent="."]
+
+; straight down onto the dais
+[node name="Dais" type="SpotLight3D" parent="Shafts"]
+transform = Transform3D(-1, 0, 0, 0, 0.1414, 0.9899, 0, 0.9899, -0.1414, 7, 30, -2.5)
+light_energy = 5
+light_volumetric_fog_energy = 12
+shadow_enabled = true
+spot_range = 80
+spot_attenuation = 0.25
+spot_angle = 10
+spot_angle_attenuation = 2
+
+[node name="PhotoSpots" type="Node3D" parent="."]
+
+; the dais and the plate
+[node name="Dais" type="Marker3D" parent="PhotoSpots"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 9, 3, 14)
+script = ExtResource("6_spot")
+PlayerPosition = Vector3(11, 0, 0)
+PlayerFacing = -1

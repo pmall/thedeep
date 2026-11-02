@@ -1,0 +1,122 @@
+[gd_scene format=3]
+
+; The Chantry, east of the Locks' low doorway: the keepers' chapel, Mag-grip on an altar under a shaft of light. Its east wall is
+; iron to try the grip on, up to a ledge with glyphs. A dead end: the way out is the west doorway.
+
+[ext_resource type="Material" path="res://assets/materials/wet_stone.tres" id="1_wet_stone"]
+[ext_resource type="PackedScene" path="res://scenes/kit/Block.tscn" id="2_block"]
+[ext_resource type="Script" path="res://scripts/rooms/RoomExit.cs" id="3_exit"]
+[ext_resource type="PackedScene" path="res://scenes/props/AbilityRelic.tscn" id="4_relic"]
+[ext_resource type="Material" path="res://assets/materials/glyphs.tres" id="5_glyphs"]
+[ext_resource type="Script" path="res://scripts/rooms/PhotoSpot.cs" id="6_spot"]
+[ext_resource type="Script" path="res://scripts/rooms/Room.cs" id="7_room"]
+[ext_resource type="Resource" path="res://resources/biomes/brine.tres" id="8_brine"]
+[ext_resource type="PackedScene" path="res://scenes/stage/RoomStage.tscn" id="9_stage"]
+
+[sub_resource type="QuadMesh" id="QuadMesh_1"]
+size = Vector2(3.5, 0.3)
+
+[node name="Chantry" type="Node3D" node_paths=PackedStringArray("SpawnPoint", "Stage", "Shafts", "GlyphLights")]
+script = ExtResource("7_room")
+SpawnPoint = NodePath("SpawnPoint")
+Stage = NodePath("Stage")
+Biome = ExtResource("8_brine")
+Shafts = [NodePath("Shafts/Altar")]
+GlyphLights = [NodePath("Glyphs/LedgeLight")]
+BoundsMin = Vector2(-1.5, -2)
+BoundsMax = Vector2(29.5, 15)
+
+[node name="SpawnPoint" type="Marker3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 3, 0, 0)
+
+; The shared atmosphere stack (environment, key light, clear front air, skylines, far pillars, frame, dust).
+[node name="Stage" parent="." instance=ExtResource("9_stage")]
+Seed = 24
+DustDensity = 1.8
+PillarDensity = 3
+
+[node name="Geometry" type="Node3D" parent="."]
+
+[node name="Floor" parent="Geometry" instance=ExtResource("2_block")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 14, -2, 0)
+Size = Vector3(34, 4, 4)
+Material = ExtResource("1_wet_stone")
+
+[node name="Ceiling" parent="Geometry" instance=ExtResource("2_block")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 14, 15.5, 0)
+Size = Vector3(34, 3, 4)
+
+; the west wall over the doorway
+[node name="WallWest" parent="Geometry" instance=ExtResource("2_block")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -1.5, 9, 0)
+Size = Vector3(3, 10, 4)
+
+; the east wall: iron, to try the grip on
+[node name="WallEast" parent="Geometry" instance=ExtResource("2_block")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 29.5, 7, 0)
+Size = Vector3(3, 14, 4)
+Surface = 1
+
+; an iron ledge high on the east wall (optional)
+[node name="Ledge" parent="Geometry" instance=ExtResource("2_block")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 26, 8.5, 0)
+Size = Vector3(4, 1, 4)
+Surface = 1
+
+; the altar
+[node name="Altar" parent="Geometry" instance=ExtResource("2_block")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 15, 0.25, 0)
+Size = Vector3(6, 0.5, 4)
+
+[node name="Exits" type="Node3D" parent="."]
+
+; west doorway back into the Locks
+[node name="West" type="Marker3D" parent="Exits"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -1, 0, 0)
+script = ExtResource("3_exit")
+TargetRoom = "res://worlds/sequel/rooms/Locks.tscn"
+TargetExit = "East"
+Size = Vector2(1, 4)
+
+[node name="Props" type="Node3D" parent="."]
+
+; Mag-grip on the altar, in the shaft of light
+[node name="MagGrip" parent="Props" instance=ExtResource("4_relic")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 15, 0.5, 0)
+Ability = 1
+
+[node name="Shafts" type="Node3D" parent="."]
+
+; straight down onto the altar
+[node name="Altar" type="SpotLight3D" parent="Shafts"]
+transform = Transform3D(-1, 0, 0, 0, 0.1414, 0.9899, 0, 0.9899, -0.1414, 15, 30, -2.5)
+light_energy = 6
+light_volumetric_fog_energy = 12
+shadow_enabled = true
+spot_range = 80
+spot_attenuation = 0.25
+spot_angle = 10
+spot_angle_attenuation = 2
+
+[node name="Glyphs" type="Node3D" parent="."]
+
+; glyphs on the ledge: the reward
+[node name="Ledge" type="MeshInstance3D" parent="Glyphs"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 26, 8.5, 2.01)
+mesh = SubResource("QuadMesh_1")
+material_override = ExtResource("5_glyphs")
+cast_shadow = 0
+
+[node name="LedgeLight" type="OmniLight3D" parent="Glyphs"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 26, 8.5, 2.71)
+light_energy = 0.4
+light_volumetric_fog_energy = 0
+omni_range = 2
+
+[node name="PhotoSpots" type="Node3D" parent="."]
+
+; the relic on its altar
+[node name="Altar" type="Marker3D" parent="PhotoSpots"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 15, 3, 14)
+script = ExtResource("6_spot")
+PlayerPosition = Vector3(12, 0.5, 0)

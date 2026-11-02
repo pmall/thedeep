@@ -19,6 +19,7 @@ The headless checks, one driver each in `scripts/debug/`; the driver's docblock 
 | Combat and the session in the lab; the fight moveset (the chain, the hit stop, the down strike's bounce, the dash strike) | `CombatCheck`, `FightCheck` |
 | Bosses, law breaks, lifts and the rooms where abilities are proven in place | `EncounterCheck` |
 | The whole run, a new game to the end along the solver's route | `PlaythroughCheck` |
+| The sequel world (`docs/roadmap.md#sequel-test`), a fixture: its rooms and map (from the Strongroom, its room without machines), every exit crossed, the whole run | `RoomValidator`, `TravelValidator`, `PlaythroughCheck` with `--world sequel` |
 
 `godot --path .` runs the last *built* assembly; it does not compile. The check builds, so after a passing check the owner's launch command is up to date.
 
@@ -32,7 +33,7 @@ The headless checks, one driver each in `scripts/debug/`; the driver's docblock 
 | Run the game (the prototype) | `godot --path .` |
 | A new game | `godot --path . -- --new` |
 | Start in a room, with the abilities and items a route there needs | `godot --path . -- --room <Name>` (`--abilities all`, `none` or `MagGrip,Drill` says otherwise; `--items SacristyKey` adds items) |
-| Another world | `godot --path . -- --world <name>` (`worlds/<name>/world.tres`; every check takes it too) |
+| Another world | `godot --path . -- --world <name>` (`worlds/<name>/world.tres`; every check takes it too): `--world sequel --new` plays the sequel world |
 | Start with another biome | `godot --path . -- --biome volcanic` |
 | One screenshot of a room's start, then quit (to captures/, as F12) | `godot --path . -- --room Undercroft --shot` (with `--paint NAME` to compare styles) |
 | Paint with another style, or not at all (`docs/art-direction.md#signature`) | `godot --path . -- --paint poster` (`none` for the raw render) |
