@@ -68,6 +68,9 @@ touch "$ROOT/.gdignore" # Godot must not import the captures
 
 # godot runs the last built assembly, so build first.
 dotnet build TheDeep.sln -v q -nologo >"$out/build.log" 2>&1 || { tail -20 "$out/build.log"; fail "dotnet build"; }
+# Running the game does not import: shaders changed since the last import (or their includes) are compiled here.
+tools/glsl_includes.sh
+"$GODOT" --headless --import >"$out/import.log" 2>&1 || { tail -20 "$out/import.log"; fail "godot --import"; }
 
 # The rooms rendered: the drowned hall first (perf.json, compared run to run), then the slice rooms, the arena and the lab.
 ROOMS=(DrownedHall Narthex Belfry Nave Cistern Reliquary Descent Sluice Undercroft Ossuary Scriptorium Chapterhouse Brink Rimefall Choir Coldstacks Counterweight Calving Bore Mere Sounding Underice Vault Sanctum Kiln Slag Chimney Quench Basalt Crucible Ashfall Pyre Bellows Foundry Threshold Mantle Orrery Lode Effigy Heart MachineArena MechanicsLab)

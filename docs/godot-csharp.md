@@ -34,6 +34,7 @@ The owner never opens the Godot editor. Every `.tscn`, `.tres`, `.cs` file and `
 - Shared shader code lives in `assets/shaders/lib/*.gdshaderinc` (`#include "res://…"`). Varyings can only be **assigned** in `vertex()` itself, not in a function it calls, and built-ins (`UV`, `COLOR`, `TANGENT`…) are only readable in `vertex()`/`fragment()` themselves, hence the `SURFACE_VERTEX` and `SURFACE` macros in `lib/surface.gdshaderinc`.
 - Per-instance values use `instance uniform` in the shader and `SetInstanceShaderParameter` in C#; keep their names in a constants class like `ShaderGlobals` (none are in use today).
 - Vertex colors are stored as **8-bit** (`COLOR`): fine for 0–1 values, not for meters (the kit stores height / 8 m). Godot's `BINORMAL` is `cross(NORMAL, TANGENT) * tangent.w`.
+- Compute shaders (`*.glsl`, `RDShaderFile`) share code through `#include` of a `.glslinc` (not `.glsl`: Godot would import it as a shader of its own). Godot reimports a `.glsl` only when its own text changes, never when an include does; `tools/glsl_includes.sh` (run by the check and the capture) forgets the stale imports.
 - `tools/check.sh` (headless import) compiles every shader and fails on `SHADER ERROR`, so a broken shader never reaches the look-dev step.
 - `.tscn` and `.tres` files accept `;` comment lines after the header line. Use them sparingly, for instance to say what a photo spot shows.
 

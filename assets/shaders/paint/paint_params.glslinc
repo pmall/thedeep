@@ -36,8 +36,11 @@ vec3 from_pigment(vec3 x) {
 
 // View depth (meters along the view direction) from the reverse-Z depth buffer: the device projection maps view depth
 // z to d = (B - A z) / z.
+// Never NaN, infinite or behind the camera: anything odd reads as the far plane.
 float view_depth(float d) {
-	return p.lens.y / (d + p.lens.x);
+	float z = p.lens.y / (d + p.lens.x);
+	float far_ = p.lens.y / p.lens.x;
+	return (isnan(z) || isinf(z) || z <= 0.0) ? far_ : min(z, far_);
 }
 
 // The world position seen at uv (0..1, y down) at view depth z.

@@ -35,6 +35,7 @@ step "2/5 build (warnings are errors)"
 dotnet build TheDeep.sln -v q -nologo || fail "dotnet build"
 
 step "3/5 headless import"
+tools/glsl_includes.sh
 "$GODOT" --headless --import >"$LOG_DIR/import.log" 2>&1 || { tail -20 "$LOG_DIR/import.log"; fail "godot --import exited non-zero"; }
 scan_log "$LOG_DIR/import.log" "import"
 echo "ok"

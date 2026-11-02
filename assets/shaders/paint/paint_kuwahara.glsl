@@ -24,7 +24,7 @@ const float PI = 3.14159265;
 // The zero crossing of the sector weights and the sector overlap (the paper's defaults).
 const float ZERO_CROSSING = 0.58;
 // The most taps the brush takes each way from its center.
-const int MAX_REACH = 5;
+const int MAX_REACH = 3;
 // The sharpness deep in the haze.
 const float FAR_SHARPNESS = 1.5;
 // Variance hardness: how strongly a calm sector wins over a busy one.
@@ -43,7 +43,10 @@ void main() {
 	// The brush grows from the play plane into the haze.
 	float plane = p.cam_right.w;
 	float far_t = smoothstep(plane + 2.0, plane + 45.0, z);
-	float radius = max(mix(p.brush.x, p.brush.y, far_t), 0.5);
+	float radius = clamp(mix(p.brush.x, p.brush.y, far_t), 0.5, 16.0);
+	if (isnan(radius)) {
+		radius = 0.5;
+	}
 	// Far away the calm sectors win less sharply: edges soften into the haze, as a painter loses them.
 	float q = mix(p.brush.z, FAR_SHARPNESS, far_t);
 	float alpha = p.brush.w;
@@ -77,8 +80,8 @@ void main() {
 	mat2 S = mat2(0.5 / a, 0.0, 0.0, 0.5 / b);
 	mat2 SR = S * R;
 
-	// At most about 2 taps per radius on each side (4 along a stretched stroke).
-	float stride = max(1.0, radius / 2.0);
+	// About 1.5 taps per radius on each side (3 along a stretched stroke), never more than MAX_REACH.
+	float stride = max(1.0, radius / 1.5);
 	// Never more than MAX_REACH taps each way, whatever the inputs: the cost stays bounded.
 	int max_x = clamp(int(sqrt(a * a * cos_phi * cos_phi + b * b * sin_phi * sin_phi) / stride), 0, MAX_REACH);
 	int max_y = clamp(int(sqrt(a * a * sin_phi * sin_phi + b * b * cos_phi * cos_phi) / stride), 0, MAX_REACH);
