@@ -44,6 +44,9 @@ public partial class Main : Node3D
     /// </summary>
     private const string AbilitiesArgument = "--abilities";
 
+    /// <summary>`--items &lt;ids&gt;`: start holding these items (the world's item ids joined by commas: `SacristyKey,KilnLever`).</summary>
+    private const string ItemsArgument = "--items";
+
     /// <summary>`--shard K/N` with `--validate-travel`: cross only every Nth exit from the Kth (1-based), so the check can run in parts.</summary>
     private const string ShardArgument = "--shard";
 
@@ -338,7 +341,7 @@ public partial class Main : Node3D
     /// <summary>
     /// A room picked with `--room` starts with the abilities and items a route there needs (the world's network and its solver: the
     /// fewest a pilgrim can hold arriving there), so any room can be tried as a player would come to it; `--abilities` says otherwise
-    /// (and holds no items).
+    /// (and holds no items), `--items` adds items.
     /// </summary>
     private void GrantStartAbilities(string[] args)
     {
@@ -366,6 +369,18 @@ public partial class Main : Node3D
             {
                 GD.PushError($"the world's network ({World.Definition.Network}): {e.Message}");
             }
+        }
+
+        if (ArgumentValue(args, ItemsArgument) is { } ids)
+        {
+            string[] named = ids.Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
+            foreach (string unknown in named.Where(id => World.Definition.Item(id) is null))
+            {
+                GD.PushError($"--items: {unknown} is not one of the world's items ({string.Join(", ", World.Definition.Items.Select(i => i.Id))})");
+            }
+
+            items = items.Union(ItemSet.Of(named.Where(id => World.Definition.Item(id) is not null)));
+            grant ??= Ability.None;
         }
 
         if (grant is { } owned)

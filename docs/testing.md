@@ -31,7 +31,7 @@ The headless checks, one driver each in `scripts/debug/`; the driver's docblock 
 | Unit tests only | `dotnet test tests/TheDeep.Tests/TheDeep.Tests.csproj` |
 | Run the game (the prototype) | `godot --path .` |
 | A new game | `godot --path . -- --new` |
-| Start in a room, with the abilities a route there needs | `godot --path . -- --room <Name>` (`--abilities all`, `none` or `MagGrip,Drill` says otherwise) |
+| Start in a room, with the abilities and items a route there needs | `godot --path . -- --room <Name>` (`--abilities all`, `none` or `MagGrip,Drill` says otherwise; `--items SacristyKey` adds items) |
 | Another world | `godot --path . -- --world <name>` (`worlds/<name>/world.tres`; every check takes it too) |
 | Start with another biome | `godot --path . -- --biome volcanic` |
 | One screenshot of a room's start, then quit (to captures/, as F12) | `godot --path . -- --room Undercroft --shot` (with `--paint NAME` to compare styles) |
