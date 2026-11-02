@@ -233,7 +233,9 @@ public partial class RoomValidator : Node
         var relics = room.All<AbilityRelic>()
             .Select(r => (Box.Around(r.GlobalPosition.Flat() + new NVector2(0f, 0.1f), new NVector2(1.6f, 0.4f)), r.Ability)).ToList();
         var items = room.All<ItemPickup>()
-            .Select(i => (Box.Around(i.GlobalPosition.Flat() + new NVector2(0f, 0.1f), new NVector2(1.6f, 0.4f)), i.Item.Id)).ToList();
+            .Select(i => (Box.Around(i.GlobalPosition.Flat() + new NVector2(0f, 0.1f), new NVector2(1.6f, 0.4f)), i.Item.Id))
+            .Concat(room.All<Lever>().Select(l => (Box.Around(l.GlobalPosition.Flat() + new NVector2(0f, 0.1f), new NVector2(2f * l.Range, 0.4f)), l.Item.Id)))
+            .ToList();
         var goals = room.All<MapGoal>().Where(g => g.Size != Vector2.Zero).Select(g => Box.Around(g.GlobalPosition.Flat(), g.Size.ToCore())).ToList();
         var metal = room.Blocks().Where(b => b.Surface == SurfaceKind.Metal && !b.Cracked).Select(BoxOf).ToList();
         world.AddRoom(name, room.BoundsMin.ToCore(), room.BoundsMax.ToCore(), new RoomShape(solids, exitShapes, wakes, anchors,
@@ -264,6 +266,11 @@ public partial class RoomValidator : Node
         foreach (ItemPickup pickup in room.All<ItemPickup>())
         {
             world.Graph.AddItem(new MapItem(name, pickup.Name, pickup.Item.Id));
+        }
+
+        foreach (Lever lever in room.All<Lever>())
+        {
+            world.Graph.AddItem(new MapItem(name, lever.Name, lever.Item.Id));
         }
 
         if (room.All<MapGoal>().Any())
@@ -394,6 +401,18 @@ public partial class RoomValidator : Node
             if (World.Definition.Item(pickup.Item.Id) != pickup.Item)
             {
                 problem($"item {pickup.Name} lays {pickup.Item.Id} ({pickup.Item.ResourcePath}), which is not one of the world's items");
+            }
+            else if (pickup.Item.Kind == ItemKind.Mechanism)
+            {
+                problem($"item {pickup.Name} lays {pickup.Item.Id}, a mechanism: a Lever sets one, nothing picks it up");
+            }
+        }
+
+        foreach (Lever lever in room.All<Lever>())
+        {
+            if (World.Definition.Item(lever.Item.Id) != lever.Item || lever.Item.Kind != ItemKind.Mechanism)
+            {
+                problem($"lever {lever.Name} sets {lever.Item.Id} ({lever.Item.ResourcePath}), which is not one of the world's mechanisms");
             }
         }
     }

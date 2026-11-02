@@ -219,8 +219,9 @@ public partial class MapScreen : CanvasLayer
     /// <summary>The items held, bottom left: a filled mark in the kind's color and the item's name, one per line.</summary>
     private void DrawHeld(ItemSet held, float ui, float ease, int size)
     {
-        float y = Canvas.Size.Y - 56f * ui - (held.Count - 1) * 26f * ui;
-        foreach (string id in held.Ids)
+        var carried = held.Ids.Where(id => ItemKinds.Carried(World.Definition.Item(id)?.Kind ?? ItemKind.Key)).ToList();
+        float y = Canvas.Size.Y - 56f * ui - (carried.Count - 1) * 26f * ui;
+        foreach (string id in carried)
         {
             ItemDefinition? item = World.Definition.Item(id);
             string name = item is null ? id : LineBook.Shared.Find(item.NameLine)?.Text ?? id;

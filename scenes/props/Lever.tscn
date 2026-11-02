@@ -1,0 +1,59 @@
+[gd_scene format=3]
+; A lever (scripts/items/Lever.cs): a handle on an iron base, its knob glowing in the mechanism's color. Place it with its origin
+; on the floor where the pilgrim pulls; set Item (an ItemDefinition of kind Mechanism), and give its gate (a LockedDoor) the same.
+
+[ext_resource type="Script" path="res://scripts/items/Lever.cs" id="1_lever"]
+[ext_resource type="Material" path="res://assets/materials/rust.tres" id="2_rust"]
+[ext_resource type="Material" path="res://assets/materials/token_glow.tres" id="3_glow"]
+
+[sub_resource type="BoxMesh" id="Base"]
+size = Vector3(0.7, 0.35, 0.5)
+
+[sub_resource type="CylinderMesh" id="Shaft"]
+top_radius = 0.04
+bottom_radius = 0.05
+height = 1.0
+radial_segments = 8
+rings = 1
+
+[sub_resource type="SphereMesh" id="KnobMesh"]
+radius = 0.11
+height = 0.22
+radial_segments = 10
+rings = 5
+
+[node name="Lever" type="Node3D" node_paths=PackedStringArray("Handle", "Knob", "Prompt")]
+script = ExtResource("1_lever")
+Handle = NodePath("Handle")
+Knob = NodePath("Handle/Knob")
+Prompt = NodePath("Prompt")
+
+[node name="Base" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.175, -0.3)
+mesh = SubResource("Base")
+material_override = ExtResource("2_rust")
+
+; the pivot, at the base's top; the handle rises from it
+[node name="Handle" type="Node3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.35, -0.3)
+
+[node name="Shaft" type="MeshInstance3D" parent="Handle"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.5, 0)
+mesh = SubResource("Shaft")
+material_override = ExtResource("2_rust")
+
+[node name="Knob" type="MeshInstance3D" parent="Handle"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.0, 0)
+mesh = SubResource("KnobMesh")
+material_override = ExtResource("3_glow")
+cast_shadow = 0
+
+; "Pull", shown when the pilgrim stands close enough (text from the line ui.pull)
+[node name="Prompt" type="Label3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 2.0, 0.6)
+pixel_size = 0.004
+billboard = 1
+modulate = Color(0.94, 0.92, 1, 0)
+outline_modulate = Color(0.05, 0.04, 0.08, 0.6)
+font_size = 48
+outline_size = 8

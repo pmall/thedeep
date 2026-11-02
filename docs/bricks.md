@@ -37,7 +37,7 @@ Every piece a world is built from (`docs/principles.md#bricks`). The prototype's
 | `PhotoSpot` | ready | — |
 | `LockedDoor` (a key's lock or a code's seal, on an exit) | working (look) | `docs/roadmap.md#stage-bricks` |
 | Hidden passage | missing | `docs/roadmap.md#game-systems` |
-| Switch and mechanism | missing | `docs/roadmap.md#game-systems` |
+| `Lever` (a switch: sets a mechanism, an item of kind Mechanism) and its gate (a `LockedDoor` for it) | working (look) | `docs/roadmap.md#stage-bricks` |
 
 ## The pilgrim `#bricks-pilgrim`
 

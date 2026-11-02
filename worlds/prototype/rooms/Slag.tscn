@@ -218,6 +218,7 @@ transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.5, 2, 0)
 script = ExtResource("3_exit")
 TargetRoom = "res://worlds/prototype/rooms/Kiln.tscn"
 TargetExit = "Slag"
+Requires = "KilnLever"
 Size = Vector2(1, 4)
 
 ; east, on to the Ashfall

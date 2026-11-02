@@ -40,7 +40,7 @@ The type to open first for each system; its docblock leads on.
 | The pilgrim | `Player` (over the core's `PilgrimControl` and `MoveRules`), its states in `scripts/player/states/`, its look `PlayerVisual` |
 | A world, its rooms and travel | `WorldDefinition`, `World`, `Room`, `RoomExit`, `RoomTravel`, `RoomStage` |
 | The run and the save | `Session` (over `Pilgrimage`), `SaveFile` |
-| Items (keys, codes) and locked doors | `ItemDefinition`, `Keyring` (over `Inventory`); in the requirement language, `Requirement` |
+| Items (keys, codes, mechanisms) and their doors, levers | `ItemDefinition`, `Keyring` (over `Inventory`); in the requirement language, `Requirement` |
 | Power-ups | `PowerUp`, `PowerUps` (over `Prowess`) |
 | Conversations | `Conversation`, `Conversations` (over `DialogueFlow`), `DialogueBox` |
 | Sealed arenas (bosses, ambushes) | `Arenas`, `BossSeal`, `Ambush` (over `ArenaFight`) |

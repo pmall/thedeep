@@ -192,7 +192,7 @@ Basalt, slag rivers, the machines' birthplace: they are cast here in molds of th
 
 | Room | Purpose |
 |---|---|
-| Kiln | Past the forbidden door, down a stair: a kiln the size of a nave, long cold, molds in the shape of machines; on its firing floor the first heat (a low vent) and a shrine. *(built)* |
+| Kiln | Past the forbidden door, down a stair: a kiln the size of a nave, long cold, molds in the shape of machines; on its firing floor the first heat (a low vent), a shrine, and the low door on to the Slag behind a gate its lever raises (a switch and its mechanism). *(built)* |
 | Slag | The hub, a cavern over a river of slag (falling in is the end): basalt platforms, heat rising between them, a shrine under the Chimney's vent; a coolant pool down to the Quench (Ballast), a cracked plug over the Basalt (Drill). *(built)* |
 | Quench | A coolant reservoir under the Slag's pool: a drop into deep coolant among sunken quench tanks; sunk (Ballast) to the drain in its floor, down into the Crucible; floating, ledges climb back to the hatch (the way home from the Crucible). *(built)* |
 | Basalt | A crust of basalt under the Slag's plug, only reached with the Drill (one way, down the plug's walled shaft): plugs dived through, a cracked wall bored, a slag channel jumped, a hole down into the Crucible (one way). *(built)* |
@@ -215,7 +215,8 @@ room Pyre Volcanic
 room Chimney Volcanic
 room Foundry Volcanic
 
-way Kiln <-> Slag
+way Kiln <-> Slag : KilnLever                    # the low door's gate, raised by its lever
+item Kiln KilnLever                              # the lever, by the door
 way Slag -> Quench : Ballast                     # sunk through the coolant pool's floor
 way Quench -> Slag                               # up the ledges to the hatch, floating up the pool
 way Slag -> Basalt : Drill                       # the dive through the plug, down the walled shaft: one way

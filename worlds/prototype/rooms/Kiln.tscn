@@ -4,7 +4,7 @@
 ; machines were fired. A stair goes down west from the door into a kiln the size of a nave, long cold: its upper floor
 ; lined with molds in the shape of machines, a drop at its west end to the firing floor. There the first heat breathes
 ; up through a crack (a low vent: jump it, or with Heat plating walk through), a pilgrim shrine, and the low door east
-; on to the Slag. Ledges up the west wall climb back to the upper floor.
+; on to the Slag, barred by a gate its lever (by the door) raises. Ledges up the west wall climb back to the upper floor.
 
 [ext_resource type="Material" path="res://assets/materials/basalt.tres" id="1_basalt"]
 [ext_resource type="PackedScene" path="res://scenes/kit/Block.tscn" id="2_block"]
@@ -25,6 +25,9 @@
 [ext_resource type="Resource" path="res://resources/biomes/volcanic.tres" id="17_volcanic"]
 [ext_resource type="PackedScene" path="res://scenes/stage/RoomStage.tscn" id="18_stage"]
 [ext_resource type="Script" path="res://scripts/rooms/dressing/WallDressing.cs" id="19_wall"]
+[ext_resource type="PackedScene" path="res://scenes/props/LockedDoor.tscn" id="21_door"]
+[ext_resource type="PackedScene" path="res://scenes/props/Lever.tscn" id="22_lever"]
+[ext_resource type="Resource" path="res://worlds/prototype/items/kiln_lever.tres" id="23_kiln_lever"]
 
 [sub_resource type="PrimitiveMesh" id="blockmesh_1"]
 script = ExtResource("8_blockmesh")
@@ -158,6 +161,12 @@ transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 4.5, -12.25, 0)
 Size = Vector3(3, 0.5, 4)
 Material = ExtResource("1_basalt")
 
+; the low door's head, deep enough to take its gate when it rises
+[node name="GateHead" parent="Geometry" instance=ExtResource("2_block")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 50.75, -11, 0)
+Size = Vector3(1.5, 14, 4)
+Material = ExtResource("1_basalt")
+
 [node name="Exits" type="Node3D" parent="."]
 
 ; back up through the forbidden door into the Sanctum
@@ -169,14 +178,26 @@ TargetExit = "Kiln"
 Size = Vector2(1, 4)
 
 ; the low door east, on to the Slag
-[node name="Slag" type="Marker3D" parent="Exits"]
+[node name="Slag" type="Marker3D" parent="Exits" node_paths=PackedStringArray("Door")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 52.5, -20, 0)
 script = ExtResource("3_exit")
 TargetRoom = "res://worlds/prototype/rooms/Slag.tscn"
 TargetExit = "West"
+Requires = "KilnLever"
+Door = NodePath("../../Props/SlagGate")
 Size = Vector2(1, 4)
 
 [node name="Props" type="Node3D" parent="."]
+
+; the gate on the low door to the Slag, held by a mechanism
+[node name="SlagGate" parent="Props" instance=ExtResource("21_door")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 50.75, -22, 0)
+Item = ExtResource("23_kiln_lever")
+
+; its lever, a few steps back from the door
+[node name="SlagLever" parent="Props" instance=ExtResource("22_lever")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 45, -22, 0)
+Item = ExtResource("23_kiln_lever")
 
 ; the first rest of the volcanic layer
 [node name="Shrine" parent="Props" instance=ExtResource("4_shrine")]
@@ -327,3 +348,9 @@ transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 26, -11, 64)
 script = ExtResource("15_spot")
 PlayerPosition = Vector3(46, 0, 0)
 Fov = 40
+
+; the gate and its lever on the firing floor
+[node name="Gate" type="Marker3D" parent="PhotoSpots"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 47, -19.6, 10)
+script = ExtResource("15_spot")
+PlayerPosition = Vector3(43, -22, 0)

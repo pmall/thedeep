@@ -5,8 +5,10 @@ namespace TheDeep;
 
 /// <summary>
 /// The items and the doors they open, in play: walking up to an <see cref="ItemPickup"/> takes its item (the pilgrim holds still
-/// while it flies in, then its name shows; held for good, saved at once); coming near a <see cref="LockedDoor"/> holding its item
-/// opens it for good, and coming near without it, the pilgrim says what it sees there, once per room visit for each door. What is
+/// while it flies in, then its name shows; held for good, saved at once); pulling a <see cref="Lever"/> (interact, no shrine or
+/// plate prompting) sets its mechanism for good; coming near a <see cref="LockedDoor"/> holding its item opens it for good (a
+/// mechanism's gate opens at once, wherever the pilgrim stands), and coming near without it, the pilgrim says what it sees there,
+/// once per room visit for each door. What is
 /// done for good is the session's to keep (<see cref="Session.Remember"/>); the rules are the core's (<see cref="Inventory"/>,
 /// <see cref="Pilgrimage"/>).
 /// </summary>
@@ -25,6 +27,10 @@ public partial class Keyring : Node
 
     private readonly HashSet<LockedDoor> _said = new();
     private bool _taking;
+    private Lever? _prompted;
+
+    /// <summary>Raised when a lever is pulled.</summary>
+    public event System.Action<Lever>? Pulled;
 
     /// <summary>Raised when a door opens for its item.</summary>
     public event System.Action<LockedDoor>? Opened;
@@ -59,6 +65,7 @@ public partial class Keyring : Node
     {
         if (_taking || !Player.InControl)
         {
+            PromptLever(null);
             return;
         }
 
@@ -75,11 +82,23 @@ public partial class Keyring : Node
             }
         }
 
+        Lever? lever = Player.IsUpright && Player.IsOnFloor() && !Session.Prompting ? NearLever(room, p) : null;
+        PromptLever(lever);
+        if (lever is not null && Input.IsActionJustPressed(InputActions.Interact))
+        {
+            lever.Pull();
+            Player.Items.Take(lever.Item.Id);
+            Session.Remember(lever.Name);
+            Camera.AddShake(0.1f);
+            Pulled?.Invoke(lever);
+        }
+
         IReadOnlyList<LockedDoor> doors = room.All<LockedDoor>();
         for (int i = 0; i < doors.Count; i++)
         {
             LockedDoor door = doors[i];
-            if (door.Opened || !door.Near(p))
+            bool mechanism = door.Item.Kind == ItemKind.Mechanism;
+            if (door.Opened || (!mechanism && !door.Near(p)))
             {
                 continue;
             }
@@ -91,12 +110,42 @@ public partial class Keyring : Node
                 Camera.AddShake(0.15f);
                 Opened?.Invoke(door);
             }
-            else if (_said.Add(door))
+            else if (door.Near(p) && _said.Add(door))
             {
                 Hint.Show(door.Item.LockedLine, ItemKinds.ColorOf(door.Item.Kind));
                 Refused?.Invoke(door);
             }
         }
+    }
+
+    private static Lever? NearLever(Room room, Vector3 p)
+    {
+        IReadOnlyList<Lever> levers = room.All<Lever>();
+        for (int i = 0; i < levers.Count; i++)
+        {
+            if (!levers[i].Pulled && levers[i].Near(p))
+            {
+                return levers[i];
+            }
+        }
+
+        return null;
+    }
+
+    private void PromptLever(Lever? lever)
+    {
+        if (_prompted == lever)
+        {
+            return;
+        }
+
+        if (_prompted is { } shown && IsInstanceValid(shown))
+        {
+            shown.ShowPrompt(false);
+        }
+
+        _prompted = lever;
+        lever?.ShowPrompt(true);
     }
 
     /// <summary>Taking an item: the pilgrim stands still while it flies in, then it is held, saved, and its name shows.</summary>
@@ -116,6 +165,7 @@ public partial class Keyring : Node
     private void OnRoomLoaded(Room room)
     {
         _said.Clear();
+        _prompted = null;
         string name = World.NameOf(room.SceneFilePath);
         foreach (ItemPickup pickup in room.All<ItemPickup>())
         {
@@ -125,9 +175,17 @@ public partial class Keyring : Node
             }
         }
 
+        foreach (Lever lever in room.All<Lever>())
+        {
+            if (Session.ItemTaken(name, lever.Name, lever.Item.Id, Player.Items.Held))
+            {
+                lever.Settle();
+            }
+        }
+
         foreach (LockedDoor door in room.All<LockedDoor>())
         {
-            if (Session.Done(name, door.Name))
+            if (Session.Done(name, door.Name) || (door.Item.Kind == ItemKind.Mechanism && Player.Items.Holds(door.Item.Id)))
             {
                 door.Settle();
             }

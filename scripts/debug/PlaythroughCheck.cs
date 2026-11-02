@@ -9,8 +9,8 @@ namespace TheDeep;
 /// The whole run, from a new game to the end (`-- --playthrough-check`, run by tools/check.sh). It reads the built map from
 /// the room scenes' markers, asks the solver for a shortest route from the start to the goal (<see cref="MapSolver.Route"/>),
 /// and plays it in the real game: every way is crossed through its real exit (the pilgrim put in its area moving out, as
-/// <see cref="TravelValidator"/> does) only once the pilgrim holds what it needs, a locked door on it opened first by coming near it;
-/// in each room on the way it takes the relics and items (walking into them), breaks the laws (pressing on at the lip through the real inputs) and fights the bosses (through the
+/// <see cref="TravelValidator"/> does) only once the pilgrim holds what it needs and a door on it stands open (a locked one opened by
+/// coming near it); in each room on the way it takes the relics and items (walking into them), pulls the levers (interact), breaks the laws (pressing on at the lip through the real inputs) and fights the bosses (through the
 /// real inputs, kept alive: the rules, not the balance) before leaving. At the goal, reaching the heart plays the end card.
 /// Moving inside a room is the geometry check's to prove (<see cref="ReachPlanner"/>); this proves the game's flow: abilities
 /// in route order, gates, bosses, laws, the end. Prints `PLAYTHROUGH OK` or `PLAYTHROUGH CHECK` errors.
@@ -32,9 +32,10 @@ public partial class PlaythroughCheck : Node
     private bool _ended;
     private AbilityRelic? _relic;
     private ItemPickup? _item;
+    private Lever? _lever;
     private LawBreak? _law;
     private BossSeal? _seal;
-    private int _bosses, _laws, _relics, _items, _doors;
+    private int _bosses, _laws, _relics, _items, _levers, _doors;
 
     public PlaythroughCheck()
     {
@@ -64,6 +65,11 @@ public partial class PlaythroughCheck : Node
                 foreach (ItemPickup pickup in room.All<ItemPickup>())
                 {
                     map.AddItem(new MapItem(name, pickup.Name, pickup.Item.Id));
+                }
+
+                foreach (Lever lever in room.All<Lever>())
+                {
+                    map.AddItem(new MapItem(name, lever.Name, lever.Item.Id));
                 }
 
                 if (room.All<MapGoal>().Any())
@@ -141,6 +147,12 @@ public partial class PlaythroughCheck : Node
                 if (_item is null)
                 {
                     _item = room.All<ItemPickup>().FirstOrDefault(i => !i.Taken && !Player.Items.Holds(i.Item.Id));
+                    if (_item is null && (_lever ?? room.All<Lever>().FirstOrDefault(l => !l.Pulled)) is { } lever)
+                    {
+                        Pull(lever);
+                        return;
+                    }
+
                     if (_item is null)
                     {
                         Begin(Phase.Law);
@@ -163,13 +175,13 @@ public partial class PlaythroughCheck : Node
 
                 break;
             case Phase.Door:
-                if (room.FindExit(Hop.FromExit)?.Door is not { Opened: false } door)
+                if (room.FindExit(Hop.FromExit)?.Door is not { } door)
                 {
                     Begin(Phase.Cross);
                     return;
                 }
 
-                if (_ticks == 1)
+                if (_ticks == 1 && !door.Opened)
                 {
                     float inward = (room.BoundsMin.X + room.BoundsMax.X) * 0.5f > door.GlobalPosition.X ? 1f : -1f;
                     Player.Respawn(door.GlobalPosition with { Z = 0f } + new Vector3(inward * 1.2f, 0.1f, 0f));
@@ -177,7 +189,7 @@ public partial class PlaythroughCheck : Node
 
                 if (door.Opened && door.Gate.Raised)
                 {
-                    _log.Add($"{World.RoomName}: {door.Name} opened with {door.Item.Id}");
+                    _log.Add($"{World.RoomName}: {door.Name} open with {door.Item.Id}");
                     _doors++;
                     Begin(Phase.Cross);
                 }
@@ -300,6 +312,30 @@ public partial class PlaythroughCheck : Node
         }
     }
 
+    /// <summary>At a lever: interact pulls it, through the real input (pressed one tick, released the next).</summary>
+    private void Pull(Lever lever)
+    {
+        if (_lever != lever)
+        {
+            _lever = lever;
+            _ticks = 0;
+            Player.Respawn(lever.GlobalPosition with { Z = 0f });
+        }
+
+        Hold(InputActions.Interact, _ticks % 20 == 10);
+        if (_ticks > 600)
+        {
+            Fail($"in {World.RoomName}, interact at the lever {lever.Name} did not pull it");
+        }
+        else if (lever.Pulled)
+        {
+            _log.Add($"{World.RoomName}: pulled {lever.Name} ({lever.Item.Id})");
+            _levers++;
+            _lever = null;
+            Hold(InputActions.Interact, false);
+        }
+    }
+
     /// <summary>A boss fight through the real inputs, the pilgrim kept alive, until the seal's gates rise.</summary>
     private void Fight(BossSeal seal)
     {
@@ -357,7 +393,7 @@ public partial class PlaythroughCheck : Node
 
     private static void Release()
     {
-        foreach (StringName action in new[] { InputActions.Attack, InputActions.MoveRight, InputActions.MoveLeft, InputActions.MoveUp,
+        foreach (StringName action in new[] { InputActions.Interact, InputActions.Attack, InputActions.MoveRight, InputActions.MoveLeft, InputActions.MoveUp,
                      InputActions.MoveDown, InputActions.Dash, InputActions.Jump })
         {
             Input.ActionRelease(action);
@@ -386,8 +422,8 @@ public partial class PlaythroughCheck : Node
 
         if (_problems.Count == 0)
         {
-            GD.Print($"PLAYTHROUGH OK: {_route.Count} ways from {_route[0].From} to {_route[^1].To}, {_relics} relics, {_items} items, {_doors} doors " +
-                     $"opened, {_laws} laws broken, {_bosses} bosses broken, the end card");
+            GD.Print($"PLAYTHROUGH OK: {_route.Count} ways from {_route[0].From} to {_route[^1].To}, {_relics} relics, {_items} items, {_levers} levers " +
+                     $"pulled, {_doors} doors passed, {_laws} laws broken, {_bosses} bosses broken, the end card");
         }
 
         GetTree().Quit(_problems.Count == 0 ? 0 : 1);
