@@ -74,6 +74,9 @@ public partial class Main : Node3D
     /// <summary>User argument that runs the scripted Heat plating check (see HeatCheck), used by tools/check.sh.</summary>
     private const string HeatCheckArgument = "--heat-check";
 
+    /// <summary>User argument that runs the fight moveset check (see FightCheck), used by tools/check.sh.</summary>
+    private const string FightCheckArgument = "--fight-check";
+
     /// <summary>User argument that runs the hidden passage check (see SecretCheck), used by tools/check.sh.</summary>
     private const string SecretCheckArgument = "--secret-check";
 
@@ -126,7 +129,7 @@ public partial class Main : Node3D
     private static readonly string[] DriverArguments =
     {
         SmokeArgument, CaptureTestArgument, LookDevArgument, ValidateRoomsArgument, ValidateTravelArgument, ValidateSpeciesArgument,
-        UiShotArgument, PlaythroughCheckArgument, GripCheckArgument, CombatCheckArgument, HarpoonCheckArgument, EncounterCheckArgument, DrillCheckArgument, BallastCheckArgument, HeatCheckArgument, KeyCheckArgument, PowerUpCheckArgument, DialogueCheckArgument, AmbushCheckArgument, SecretCheckArgument,
+        UiShotArgument, PlaythroughCheckArgument, GripCheckArgument, CombatCheckArgument, HarpoonCheckArgument, EncounterCheckArgument, DrillCheckArgument, BallastCheckArgument, HeatCheckArgument, KeyCheckArgument, PowerUpCheckArgument, DialogueCheckArgument, AmbushCheckArgument, SecretCheckArgument, FightCheckArgument,
     };
 
     private SaveData? _resume;
@@ -254,6 +257,10 @@ public partial class Main : Node3D
         else if (Array.IndexOf(args, BallastCheckArgument) >= 0)
         {
             AddChild(new BallastCheck { Player = Player, World = World, Hints = Hints });
+        }
+        else if (Array.IndexOf(args, FightCheckArgument) >= 0)
+        {
+            AddChild(new FightCheck { Player = Player, World = World });
         }
         else if (Array.IndexOf(args, SecretCheckArgument) >= 0)
         {

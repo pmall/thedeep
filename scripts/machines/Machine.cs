@@ -161,6 +161,11 @@ public partial class Machine : CharacterBody3D
         ResetPhysicsInterpolation();
     }
 
+    private float _halt;
+
+    /// <summary>Holds still for <paramref name="seconds"/> (a blow's hit stop), then goes on as it was.</summary>
+    public void Halt(float seconds) => _halt = Mathf.Max(_halt, seconds);
+
     /// <summary>Already broken (a boss beaten before): gone at once, no folding.</summary>
     public void Gone()
     {
@@ -204,6 +209,12 @@ public partial class Machine : CharacterBody3D
         if (Broken)
         {
             Fold(delta);
+            return;
+        }
+
+        if (_halt > 0f)
+        {
+            _halt -= delta; // a blow's hit stop: held where it was struck, its knockback waiting
             return;
         }
 

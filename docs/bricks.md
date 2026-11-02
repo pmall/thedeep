@@ -47,7 +47,7 @@ Every piece a world is built from (`docs/principles.md#bricks`). The prototype's
 | Animation (`PilgrimMotion`) | working (placeholder) | `docs/roadmap.md#pilgrim` |
 | Base moveset (`docs/gameplay.md#moveset`) | ready (rules), feel pass to come | `docs/roadmap.md#feel-fight` |
 | Abilities (`docs/gameplay.md#abilities`) | ready (rules), animation to come | `docs/roadmap.md#pilgrim`, `docs/roadmap.md#feel-fight` |
-| Fight moves (`PlayerAttack`) | working (one move) | `docs/roadmap.md#feel-fight` |
+| Fight moves (`PlayerAttack` over the core's `Combo`: a chain to a finisher, a down strike, a dash strike, the hit stop) | working (feel to tune with the owner) | `docs/roadmap.md#feel-fight` |
 | Effects (`PlayerEffects`) | working | `docs/roadmap.md#pilgrim` |
 | Health and grace | working | `docs/roadmap.md#feel-fight` |
 

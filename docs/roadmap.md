@@ -22,6 +22,7 @@ The plan we follow from session to session: the owner's direction, where we are,
 - **Last owner playtest** (2026-11-01): "in good direction"; Mag-grip liked.
 - **Current item:** `docs/roadmap.md#stage-bricks`, starting with the signature (needs the desktop's GPU, `docs/toolchain.md#gpu`): the pass and three variants are built (`docs/art-direction.md#signature-state`); **waiting for the owner's pick**, then it is tuned per biome (and its GPU spikes won back).
 - **While the pick waits**, `docs/roadmap.md#game-systems` was done (2026-11-02): each brick has a working example in the prototype and a check that plays it in place: keys and locked doors (the Sacristy behind the Narthex's west door, its key on the Scriptorium's gallery), power-ups (the Sacristy's and the Cell's), the dialogue box (the Narthex's Lamplighter), an ambush (the Pyre), a switch and its mechanism (the Kiln's lever, on the main road), a hidden passage (the Cell behind the Sacristy's false wall). Their looks are placeholders for `docs/roadmap.md#stage-bricks`. A code is the key brick with another kind; no world places one yet.
+- **Feel and fight** (`docs/roadmap.md#feel-fight`) has begun: the fight moveset is in (`docs/gameplay.md#fight`: a chain to a finisher, a down strike that bounces, a dash strike, the hit stop; `FightCheck`). Its feel, the camera's easing and the flow between moves wait for the owner's play.
 
 ---
 

@@ -17,7 +17,7 @@ These leave room for error, because jumps must never be exact (owner, 2026-11-01
 
 ## The pilgrimage `#pilgrimage`
 
-- **Attack:** a quick swing that never stops the pilgrim (momentum carries through); presses during the recovery are kept, so swings chain. A machine hit flashes, reels and is pushed back; broken, it is gone until the room is entered again.
+- **Attack:** the fight moveset (`docs/gameplay.md#fight`). A machine hit flashes, reels and is pushed back; broken, it is gone until the room is entered again.
 - **Health:** a few hits, shown top left as thin diamonds. A blow throws the pilgrim back and takes control away a moment, then nothing hurts for a short grace.
 - **Death:** the pilgrim wakes at the last shrine it rested at, whole, the room renewed (its machines back).
 - **Shrines:** resting heals and saves the game there.
@@ -30,6 +30,17 @@ These leave room for error, because jumps must never be exact (owner, 2026-11-01
 - **Law breaks** are story beats tied to depth, outside the ability graph (`docs/theme.md#laws-outside-abilities`): a law holds the pilgrim at its place until it presses on and breaks it, for good. Where they stand: `worlds/prototype/map-draft.md#draft-law-breaks`.
 - **Lifts** only carry the pilgrim up; once on its way a lift can't be stopped.
 - **Falling out of a room** (below its camera bounds) returns the pilgrim to its last shrine.
+
+## Fight `#fight`
+
+A few moves, done well (`docs/roadmap.md#feel-fight`). No strike stops the pilgrim: momentum carries through. Presses during a recovery are kept.
+- **The chain:** presses in rhythm give a swing, a second swing, then a **finisher** (wider, one more damage, it throws the machine far); a pause starts the chain over.
+- **Down strike:** in the air, holding down: a strike under the feet. What it hits **bounces** the pilgrim up, the air dash refilled, so it can strike again.
+- **Dash strike:** attacking during a dash lunges along it: longer, one more damage.
+- **Hits that land:** a landed blow holds the pilgrim and its target still for a few hundredths of a second (the **hit stop**), with sparks and a camera shake that grow with the strike.
+- **Power-ups** add to every blow's damage (strength) or to the pilgrim's health (defense), for good.
+
+Each strike's reach, width, damage, knockback, hit stop and bounce are `Strikes` in `player_tuning.tres`.
 
 ## Unlockable abilities `#abilities`
 

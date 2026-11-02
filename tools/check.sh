@@ -83,6 +83,8 @@ CHECKS=(
     "dialogue|DIALOGUE OK|DIALOGUE CHECK|1500|--room Narthex --dialogue-check"
     # PowerUpCheck: power-ups taken, in the Sacristy.
     "powerup|POWERUP OK|POWERUP CHECK|1500|--room Sacristy --powerup-check"
+    # FightCheck: the fight moveset on the lab's Votary.
+    "fight|FIGHT OK|FIGHT CHECK|1500|--room MechanicsLab --fight-check"
     # CombatCheck, EncounterCheck, PlaythroughCheck, SpeciesValidator.
     "combat|COMBAT OK|COMBAT CHECK|4000|--room MechanicsLab --combat-check"
     "encounter|ENCOUNTER OK|ENCOUNTER CHECK|9000|--room Chapterhouse --encounter-check"

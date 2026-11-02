@@ -130,9 +130,14 @@ public partial class MachineDirector : Node
         }
     }
 
-    /// <summary>The pilgrim's swing covers <paramref name="area"/>: every machine it reaches takes one hit per swing.</summary>
-    private void OnStriking(Rect2 area, int swing)
+    /// <summary>
+    /// The pilgrim's strike covers <paramref name="area"/>: every machine it reaches takes one blow per strike (its damage and
+    /// knockback the strike's, <paramref name="strike"/>); a landed blow holds the pilgrim and the machine still a moment (the hit
+    /// stop), and a down strike's bounces the pilgrim up.
+    /// </summary>
+    private void OnStriking(Rect2 area, int swing, StrikeShape strike)
     {
+        bool landed = false;
         foreach (Machine machine in _machines)
         {
             if (machine.Broken || !machine.BodyRect.Intersects(area) || !_struck.Add((machine, swing)))
@@ -142,11 +147,21 @@ public partial class MachineDirector : Node
 
             Rect2 body = machine.BodyRect.Intersection(area);
             Vector2 at = body.GetCenter();
-            bool broke = machine.TakeHit(Player.AttackDamage, Player.GlobalPosition.X,
-                Player.Tuning.AttackKnockback);
-            HitSparks?.Emit(new Vector3(at.X, at.Y, 0.3f), broke ? 1.5f : 0.7f);
-            Camera?.AddShake(broke ? 0.3f : 0.12f);
+            bool broke = machine.TakeHit(Player.AttackDamage + strike.ExtraDamage, Player.GlobalPosition.X, strike.Knockback);
+            machine.Halt(strike.HitStop);
+            HitSparks?.Emit(new Vector3(at.X, at.Y, 0.3f), broke || strike.Kind == StrikeKind.Finisher ? 1.5f : 0.7f);
+            Camera?.AddShake(broke ? 0.3f : strike.Kind == StrikeKind.Finisher ? 0.22f : 0.12f);
             MachineHit?.Invoke(machine, broke);
+            landed = true;
+        }
+
+        if (landed)
+        {
+            Player.HitStop(strike.HitStop);
+            if (strike.Bounce > 0f)
+            {
+                Player.Bounce(strike.Bounce);
+            }
         }
     }
 

@@ -109,12 +109,12 @@ public partial class PlayerTuning : Resource
     [Export] public float AttackActive { get; set; } = 0.1f;
     [Export] public float AttackRecover { get; set; } = 0.14f;
     [Export] public float AttackCooldown { get; set; } = 0.05f;
-    /// <summary>The area a swing hits, in front of the chest: its length forward and its height.</summary>
-    [Export] public float AttackReach { get; set; } = 1.8f;
-    [Export] public float AttackHeight { get; set; } = 1.5f;
+    /// <summary>A blow's damage, before a strike adds its own (<see cref="StrikeTuning.ExtraDamage"/>) and the power-ups theirs.</summary>
     [Export] public int AttackDamage { get; set; } = 1;
-    /// <summary>Speed a hit machine is pushed back with (walkers and flyers).</summary>
-    [Export] public float AttackKnockback { get; set; } = 3f;
+    /// <summary>Seconds after a swing ends in which a press chains to the next (<see cref="Combo"/>).</summary>
+    [Export] public float AttackChainWindow { get; set; } = 0.28f;
+    /// <summary>Each strike's reach, damage, knockback, hit stop and bounce: one per <see cref="StrikeKind"/>.</summary>
+    [Export] public StrikeTuning[] Strikes { get; set; } = System.Array.Empty<StrikeTuning>();
 
     /// <summary>Hits the pilgrim can take.</summary>
     [ExportGroup("Hurt")]
@@ -141,6 +141,18 @@ public partial class PlayerTuning : Resource
         Gravity, ApexHangThreshold, ApexGravityMultiplier, FallGravityMultiplier, MaxFallSpeed,
         CoyoteTime, JumpBufferTime, DashBufferTime, DashCooldown, HarpoonBufferTime, GripRegrabDelay,
         AirDashes, HurtKnockback, HurtLift, HurtStun);
+
+    /// <summary>The strikes as the pure <see cref="Combo"/> reads them.</summary>
+    public Combo NewCombo()
+    {
+        var shapes = new System.Collections.Generic.Dictionary<StrikeKind, StrikeShape>();
+        foreach (StrikeTuning strike in Strikes)
+        {
+            shapes[strike.Kind] = strike.Shape;
+        }
+
+        return new Combo(shapes, AttackChainWindow);
+    }
 
     /// <summary>The base moveset as the map's planner simulates it (<see cref="ReachPlanner"/>).</summary>
     public MoveLimits Move => new(RunSpeed, AirAcceleration, AirDeceleration, JumpHeight, JumpTimeToApex, JumpCutFactor,

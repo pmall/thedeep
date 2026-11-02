@@ -74,6 +74,22 @@ public partial class Player : CharacterBody3D
     /// <summary>The items held (keys, codes): the doors they open (<see cref="LockedDoor"/>).</summary>
     public Inventory Items { get; } = new();
 
+    private float _hitStop;
+
+    /// <summary>A landed blow's hit stop is holding the body still.</summary>
+    public bool HitStopped => _hitStop > 0f;
+
+    /// <summary>Holds the body still for <paramref name="seconds"/> (a landed blow), keeping its speed.</summary>
+    public void HitStop(float seconds) => _hitStop = Mathf.Max(_hitStop, seconds);
+
+    /// <summary>Bounced up off what a down strike hit, at <paramref name="speed"/> m/s, the air dash refilled.</summary>
+    public void Bounce(float speed)
+    {
+        ChangeState(States.Fall);
+        Velocity = Velocity with { Y = speed };
+        Control.RefillAirDash();
+    }
+
     /// <summary>What the power-ups taken add: damage per blow, health (<see cref="Strengthen"/>).</summary>
     public Prowess Prowess { get; private set; } = Prowess.None;
 
@@ -194,6 +210,11 @@ public partial class Player : CharacterBody3D
         }
 
         float dt = (float)delta;
+        if (_hitStop > 0f)
+        {
+            _hitStop -= dt; // a landed blow holds the body still a moment, its speed kept
+            return;
+        }
 
         Control.Tick(dt);
         Vitality.Tick(dt);
@@ -268,6 +289,7 @@ public partial class Player : CharacterBody3D
     /// </summary>
     public void Respawn(Vector3 position, int facing = 0)
     {
+        _hitStop = 0f;
         ChangeState(States.Idle);
         StandUpright();
         if (facing != 0)
