@@ -29,6 +29,8 @@
 [ext_resource type="Resource" path="res://resources/paint/scripture.tres" id="28_scripture"]
 [ext_resource type="Script" path="res://scripts/game/Keyring.cs" id="29_keyring"]
 [ext_resource type="Script" path="res://scripts/game/PowerUps.cs" id="30_powerups"]
+[ext_resource type="Script" path="res://scripts/dialogue/Conversations.cs" id="31_conversations"]
+[ext_resource type="Script" path="res://scripts/ui/DialogueBox.cs" id="32_dialogue_box"]
 
 [sub_resource type="CylinderMesh" id="HarpoonLine"]
 top_radius = 0.016
@@ -46,7 +48,7 @@ height = 0.3
 radial_segments = 8
 rings = 1
 
-[node name="Main" type="Node3D" node_paths=PackedStringArray("World", "Player", "Machines", "Capture", "Camera", "Hud", "Travel", "Session", "Health", "Hint", "MapScreen", "Hints", "Keyring", "PowerUps")]
+[node name="Main" type="Node3D" node_paths=PackedStringArray("World", "Player", "Machines", "Capture", "Camera", "Hud", "Travel", "Session", "Health", "Hint", "MapScreen", "Hints", "Keyring", "PowerUps", "Conversations", "DialogueBox")]
 script = ExtResource("1_main")
 World = NodePath("World")
 Player = NodePath("Player")
@@ -62,6 +64,8 @@ MapScreen = NodePath("MapScreen")
 Hints = NodePath("GateHints")
 Keyring = NodePath("Keyring")
 PowerUps = NodePath("PowerUps")
+Conversations = NodePath("Conversations")
+DialogueBox = NodePath("DialogueBox")
 Paint = ExtResource("25_paint")
 
 ; Loads the room scenes of its world (first child, so the room exists before the camera and HUD are ready). The world
@@ -140,6 +144,14 @@ Player = NodePath("../Player")
 Session = NodePath("../Session")
 Banner = NodePath("../Banner")
 
+; The conversations (Conversations): talking to someone, their lines in the dialogue box.
+[node name="Conversations" type="Node" parent="." node_paths=PackedStringArray("World", "Player", "Session", "Box")]
+script = ExtResource("31_conversations")
+World = NodePath("../World")
+Player = NodePath("../Player")
+Session = NodePath("../Session")
+Box = NodePath("../DialogueBox")
+
 [node name="GateHints" type="Node" parent="." node_paths=PackedStringArray("World", "Player", "Harpoon", "Hint")]
 script = ExtResource("22_gates")
 World = NodePath("../World")
@@ -163,6 +175,9 @@ Player = NodePath("../Player")
 
 [node name="Banner" type="CanvasLayer" parent="."]
 script = ExtResource("19_banner")
+
+[node name="DialogueBox" type="CanvasLayer" parent="."]
+script = ExtResource("32_dialogue_box")
 
 [node name="EndCard" type="CanvasLayer" parent="."]
 script = ExtResource("24_end")

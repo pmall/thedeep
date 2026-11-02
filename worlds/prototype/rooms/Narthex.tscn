@@ -1,7 +1,7 @@
 [gd_scene format=3]
 
 ; The Narthex (slice room 1, the start): the porch of the drowned cathedral, where the pilgrim wakes. Calm:
-; a shrine to rest at (save point), a Lamplighter that comes to meet the pilgrim, a fallen column to hop.
+; a shrine to rest at (save point), a Lamplighter that comes to meet the pilgrim (and talks, once), a fallen column to hop.
 ; The arcade behind opens onto the cathedral skyline. East, a low doorway into the Drowned Hall. West, the Sacristy's
 ; doorway, barred by a locked door seen from the first step (its key lies up in the Scriptorium).
 
@@ -29,6 +29,7 @@
 [ext_resource type="PackedScene" path="res://scenes/stage/RoomStage.tscn" id="22_stage"]
 [ext_resource type="PackedScene" path="res://scenes/props/LockedDoor.tscn" id="23_door"]
 [ext_resource type="Resource" path="res://worlds/prototype/items/sacristy_key.tres" id="24_sacristy_key"]
+[ext_resource type="PackedScene" path="res://scenes/props/Conversation.tscn" id="25_conversation"]
 
 [sub_resource type="PrimitiveMesh" id="column_1"]
 script = ExtResource("1_column")
@@ -203,6 +204,12 @@ transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 20, 5.5, 0)
 script = ExtResource("12_machine")
 Species = ExtResource("13_lamplighter")
 StartFacing = -1
+
+; the Lamplighter's welcome, heard once (it follows the pilgrim, 4 m off: talked to from there)
+[node name="Conversation" parent="Machines/Lamplighter" instance=ExtResource("25_conversation")]
+Lines = Array[StringName]([&"dialogue.lamplighter.wake", &"dialogue.lamplighter.where", &"dialogue.lamplighter.light"])
+Range = 4.6
+Once = true
 
 [node name="Shafts" type="Node3D" parent="."]
 

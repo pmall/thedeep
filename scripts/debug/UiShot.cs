@@ -7,7 +7,8 @@ namespace TheDeep;
 /// <summary>
 /// Renders the game's screens for a look (`-- --ui-shot &lt;dir&gt;`, windowed: headless renders nothing): a gate hint over the
 /// room with the gameplay controls for the keyboard, Jump held, and the debug keys (hint.png), the controls for the gamepad, Dash
-/// held (manual-pad.png), then, after crossing a few open exits from the start room, the map screen (map.png), then the end card
+/// held (manual-pad.png), the dialogue box on a whole line (dialogue.png), then, after crossing a few open exits from the start room,
+/// the map screen (map.png), then the end card
 /// (end.png). For judging UI as
 /// images, like the look-dev captures; not part of tools/check.sh.
 /// </summary>
@@ -21,6 +22,7 @@ public partial class UiShot : Node
     public required EndCard EndCard { get; init; }
     public ControlsManual? Manual { get; set; }
     public ControlsManual? DebugKeys { get; set; }
+    public DialogueBox? Dialogue { get; set; }
     public string OutputDir { get; set; } = "";
 
     /// <summary>How many exits to cross before the map is shown.</summary>
@@ -74,8 +76,17 @@ public partial class UiShot : Node
             Shot("manual-pad.png");
             Input.ActionRelease(InputActions.Dash);
             SetDevice(ButtonNames.Device.Keyboard);
+            if (LineBook.Shared.Find("dialogue.lamplighter.light") is { } line)
+            {
+                Dialogue?.Show(line.Speaker, line.Text, line.Text.Length, whole: true);
+            }
         }
-        else if (_tick > 130 && _tick % 20 == 0 && _hops < Hops)
+        else if (_tick == 150)
+        {
+            Shot("dialogue.png");
+            Dialogue?.Close();
+        }
+        else if (_tick > 170 && _tick % 20 == 0 && _hops < Hops)
         {
             _visited.Add(World.RoomName);
             RoomExit? exit = World.Room.Exits().Where(e => e.Open && ResourceLoader.Exists(e.TargetRoom))

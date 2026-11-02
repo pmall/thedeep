@@ -47,6 +47,9 @@ public partial class Session : Node
 
     public SaveData Save => _pilgrimage.Save;
 
+    /// <summary>A shrine or a plate is offered (interact would rest or read): nothing else takes the press.</summary>
+    public bool Prompting => _prompted is not null || _plate is not null;
+
     /// <summary>Raised when a <see cref="Proclamation"/> speaks to the pilgrim.</summary>
     public event System.Action<Proclamation>? Spoke;
 

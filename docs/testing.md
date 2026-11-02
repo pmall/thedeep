@@ -15,7 +15,7 @@ The headless checks, one driver each in `scripts/debug/`; the driver's docblock 
 | Every machine species, alone in the arena | `SpeciesValidator` |
 | Every open exit crossed | `TravelValidator` |
 | The ledge assist and each ability through the real inputs, in the mechanics lab | `GripCheck`, `HarpoonCheck`, `DrillCheck`, `BallastCheck`, `HeatCheck` |
-| A key and its locked door in place (the Sacristy's); power-ups taken (in the Sacristy) | `KeyCheck`, `PowerUpCheck` |
+| A key and its locked door in place (the Sacristy's); power-ups taken (in the Sacristy); a conversation (the Narthex's Lamplighter) | `KeyCheck`, `PowerUpCheck`, `DialogueCheck` |
 | Combat and the session in the lab | `CombatCheck` |
 | Bosses, law breaks, lifts and the rooms where abilities are proven in place | `EncounterCheck` |
 | The whole run, a new game to the end along the solver's route | `PlaythroughCheck` |
@@ -39,7 +39,7 @@ The headless checks, one driver each in `scripts/debug/`; the driver's docblock 
 | Print the map (built rooms and the network: ways, placements, orders) | `tools/map.sh` |
 | Where the geometry check's planner stops in a room | `godot --headless --path . -- --room MechanicsLab --validate-rooms --reach-report <Room>` (`--abilities …`, `--slack-report` for the clumsy pilgrim) |
 | Look-dev captures and frame times | `tools/capture.sh [label]` (`docs/testing.md#lookdev`; `--paint NAME` for another paint style) |
-| UI screens to PNGs (windowed) | `godot --path . -- --room Undercroft --ui-shot <dir>` |
+| UI screens to PNGs (windowed) | `godot --path . --disable-vsync -- --room Undercroft --ui-shot <dir>` |
 | Windowed capture check (needs a GPU; after touching capture code) | `godot --path . -- --capture-test` (add `--disable-vsync` before `--` for the raw cost) |
 
 The full list of arguments is in `Main`; each tool's options are in its header.

@@ -70,7 +70,7 @@ Every piece a world is built from (`docs/principles.md#bricks`). The prototype's
 | `Proclamation` | working | `docs/roadmap.md#game-systems` |
 | `ScripturePlate` | working | `docs/roadmap.md#game-systems` |
 | `LawBreak` | working | — |
-| Dialogue box | missing | `docs/roadmap.md#game-systems` |
+| Dialogue: `Conversation` (lines in turn, on whoever speaks), `DialogueBox`, played by `Conversations` (over `DialogueFlow`) | working (look) | `docs/roadmap.md#stage-bricks` |
 
 ## Items and progress `#bricks-items`
 

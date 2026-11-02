@@ -74,6 +74,9 @@ public partial class Main : Node3D
     /// <summary>User argument that runs the scripted Heat plating check (see HeatCheck), used by tools/check.sh.</summary>
     private const string HeatCheckArgument = "--heat-check";
 
+    /// <summary>User argument that runs the dialogue check (see DialogueCheck), used by tools/check.sh.</summary>
+    private const string DialogueCheckArgument = "--dialogue-check";
+
     /// <summary>User argument that runs the power-up check (see PowerUpCheck), used by tools/check.sh.</summary>
     private const string PowerUpCheckArgument = "--powerup-check";
 
@@ -103,6 +106,8 @@ public partial class Main : Node3D
     [Export] public GateHints Hints { get; set; } = null!;
     [Export] public Keyring Keyring { get; set; } = null!;
     [Export] public PowerUps PowerUps { get; set; } = null!;
+    [Export] public Conversations Conversations { get; set; } = null!;
+    [Export] public DialogueBox DialogueBox { get; set; } = null!;
 
     /// <summary>`--ui-shot &lt;dir&gt;`: renders a gate hint and the map screen to PNGs (see UiShot; windowed).</summary>
     private const string UiShotArgument = "--ui-shot";
@@ -114,7 +119,7 @@ public partial class Main : Node3D
     private static readonly string[] DriverArguments =
     {
         SmokeArgument, CaptureTestArgument, LookDevArgument, ValidateRoomsArgument, ValidateTravelArgument, ValidateSpeciesArgument,
-        UiShotArgument, PlaythroughCheckArgument, GripCheckArgument, CombatCheckArgument, HarpoonCheckArgument, EncounterCheckArgument, DrillCheckArgument, BallastCheckArgument, HeatCheckArgument, KeyCheckArgument, PowerUpCheckArgument,
+        UiShotArgument, PlaythroughCheckArgument, GripCheckArgument, CombatCheckArgument, HarpoonCheckArgument, EncounterCheckArgument, DrillCheckArgument, BallastCheckArgument, HeatCheckArgument, KeyCheckArgument, PowerUpCheckArgument, DialogueCheckArgument,
     };
 
     private SaveData? _resume;
@@ -243,6 +248,13 @@ public partial class Main : Node3D
         {
             AddChild(new BallastCheck { Player = Player, World = World, Hints = Hints });
         }
+        else if (Array.IndexOf(args, DialogueCheckArgument) >= 0)
+        {
+            AddChild(new DialogueCheck
+            {
+                Player = Player, World = World, Conversations = Conversations, Box = DialogueBox, Session = Session,
+            });
+        }
         else if (Array.IndexOf(args, PowerUpCheckArgument) >= 0)
         {
             AddChild(new PowerUpCheck { Player = Player, World = World, PowerUps = PowerUps, Session = Session });
@@ -273,7 +285,7 @@ public partial class Main : Node3D
         }
         else if (ArgumentValue(args, UiShotArgument) is { } shotDir)
         {
-            AddChild(new UiShot { World = World, Player = Player, Travel = Travel, Hint = Hint, Map = MapScreen, EndCard = Session.EndCard, Manual = Hud.Manual, DebugKeys = Hud.DebugKeys, OutputDir = shotDir });
+            AddChild(new UiShot { World = World, Player = Player, Travel = Travel, Hint = Hint, Map = MapScreen, EndCard = Session.EndCard, Manual = Hud.Manual, DebugKeys = Hud.DebugKeys, Dialogue = DialogueBox, OutputDir = shotDir });
         }
         else if (Array.IndexOf(args, SmokeArgument) >= 0)
         {

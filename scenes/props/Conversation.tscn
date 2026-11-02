@@ -1,0 +1,18 @@
+[gd_scene format=3]
+; Someone to talk to (scripts/dialogue/Conversation.cs): instance it as a child of whoever speaks, its origin at their feet (or
+; where the pilgrim should stand); set Lines (and Once). "Talk" shows over it while the pilgrim may talk (the line ui.talk).
+
+[ext_resource type="Script" path="res://scripts/dialogue/Conversation.cs" id="1_conversation"]
+
+[node name="Conversation" type="Node3D" node_paths=PackedStringArray("Prompt")]
+script = ExtResource("1_conversation")
+Prompt = NodePath("Prompt")
+
+[node name="Prompt" type="Label3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 2.3, 0.6)
+pixel_size = 0.004
+billboard = 1
+modulate = Color(0.94, 0.92, 1, 0)
+outline_modulate = Color(0.05, 0.04, 0.08, 0.6)
+font_size = 48
+outline_size = 8

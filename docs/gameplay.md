@@ -57,7 +57,7 @@ Bindings are the input map in `project.godot` (names in `InputActions`). Debug b
 | `dash` (with the Drill, down + dash dives) | Shift, C | RB, RT |
 | `attack` | J, X | X |
 | `harpoon` | K, V | B, LT |
-| `interact` (rest at a shrine, read) | E | Y |
+| `interact` (rest at a shrine, read, talk; in a conversation, `interact` or `jump` moves on) | E | Y |
 | `map` | M, Tab | LB |
 | `capture_screenshot` | F12 | Share / Misc |
 | `capture_video` (start/stop) | F10 | — |
