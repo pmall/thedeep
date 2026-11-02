@@ -1,4 +1,4 @@
-"""Adds lines to the line book (worlds/prototype/lines.tres) from a throwaway script, or replaces lines with the same id.
+"""Adds lines to a line book (the prototype's, worlds/prototype/lines.tres, unless `path=` names another world's) from a throwaway script, or replaces lines with the same id.
 
     import sys; sys.path.insert(0, 'tools'); from linebook import add
     add([('hint.gate.metal', 'UI', 'Bare metal ...', 'Notes ...')])

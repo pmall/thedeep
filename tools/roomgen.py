@@ -61,9 +61,12 @@ EXT = {
     'pickup': ('PackedScene', 'res://scenes/props/ItemPickup.tscn'),
     'door': ('PackedScene', 'res://scenes/props/LockedDoor.tscn'),
     'powerup': ('PackedScene', 'res://scenes/props/PowerUp.tscn'),
+    'lever': ('PackedScene', 'res://scenes/props/Lever.tscn'),
+    'conversation': ('PackedScene', 'res://scenes/props/Conversation.tscn'),
     'falsewall': ('Script', 'res://scripts/props/FalseWall.cs'),
     # resources
     'flooded': ('Resource', 'res://resources/biomes/flooded.tres'),
+    'brine': ('Resource', 'res://resources/biomes/brine.tres'),
     'frozen': ('Resource', 'res://resources/biomes/frozen.tres'),
     'votary': ('Resource', 'res://resources/machines/votary.tres'),
     'gleaner': ('Resource', 'res://resources/machines/gleaner.tres'),
@@ -266,6 +269,18 @@ class Room:
         """A locked door (LockedDoor) closing on the floor at `pos`, opened by `item`; point an exit's `door` at `name`."""
         return self.node('Props/' + name, instance='door', comment=comment, transform=Raw(transform((pos[0], pos[1], 0))),
                          Item=self.item_resource(item))
+
+    def lever(self, name, pos, item, comment=''):
+        """A lever (Lever) standing on the floor at `pos`, setting the mechanism `item`; its gate is a `door` for the same item."""
+        return self.node('Props/' + name, instance='lever', comment=comment, transform=Raw(transform((pos[0], pos[1], 0))),
+                         Item=self.item_resource(item))
+
+    def conversation(self, speaker, lines, range=2.5, once=False, comment=''):
+        """A Conversation under `speaker` (a node path, e.g. 'Machines/Lamplighter'): `lines` (line ids) in turn, heard once if `once`."""
+        props = {'Lines': Raw('Array[StringName]([' + ', '.join(f'&"{l}"' for l in lines) + '])'), 'Range': float(range)}
+        if once:
+            props['Once'] = True
+        return self.node(speaker + '/Conversation', instance='conversation', comment=comment, **props)
 
     def exit(self, name, pos, size, target='', target_exit='', requires='', one_way=False, arrival_side=0, arrival_only=False,
              comment='', door='', hidden=False):

@@ -1,0 +1,183 @@
+[gd_scene format=3]
+
+; The Locks, east of the Quay: a lock chamber of the sea-wall, its basin frozen but for a pool of open brine in its floor (swum
+; across, or jumped). A shrine, a Chorister asleep by the east wall. East at floor level, the Chantry. High in the east wall, the
+; way on to the Hold: the wall is iron, climbed with Mag-grip; coming back from the Hold is a drop off its top.
+
+[ext_resource type="Material" path="res://assets/materials/wet_stone.tres" id="1_wet_stone"]
+[ext_resource type="PackedScene" path="res://scenes/kit/Block.tscn" id="2_block"]
+[ext_resource type="Script" path="res://scripts/rooms/RoomExit.cs" id="3_exit"]
+[ext_resource type="Script" path="res://scripts/rooms/WaterBody.cs" id="4_water_body"]
+[ext_resource type="Material" path="res://assets/materials/water.tres" id="5_water"]
+[ext_resource type="Material" path="res://assets/materials/underwater.tres" id="6_underwater"]
+[ext_resource type="Material" path="res://assets/materials/water_section.tres" id="7_water_section"]
+[ext_resource type="PackedScene" path="res://scenes/props/Shrine.tscn" id="8_shrine"]
+[ext_resource type="Script" path="res://scripts/machines/Machine.cs" id="9_machine"]
+[ext_resource type="Resource" path="res://resources/machines/chorister.tres" id="10_chorister"]
+[ext_resource type="Script" path="res://scripts/rooms/PhotoSpot.cs" id="11_spot"]
+[ext_resource type="Script" path="res://scripts/rooms/Room.cs" id="12_room"]
+[ext_resource type="Resource" path="res://resources/biomes/brine.tres" id="13_brine"]
+[ext_resource type="PackedScene" path="res://scenes/stage/RoomStage.tscn" id="14_stage"]
+
+[node name="Locks" type="Node3D" node_paths=PackedStringArray("SpawnPoint", "Stage", "Lamps", "Shafts", "GlyphLights")]
+script = ExtResource("12_room")
+SpawnPoint = NodePath("SpawnPoint")
+Stage = NodePath("Stage")
+Biome = ExtResource("13_brine")
+Lamps = [NodePath("Lamps/High")]
+Shafts = [NodePath("Shafts/Pool"), NodePath("Shafts/Wall")]
+GlyphLights = [NodePath("Props/Shrine/Light")]
+BoundsMin = Vector2(-1.5, -5)
+BoundsMax = Vector2(57.5, 23)
+
+[node name="SpawnPoint" type="Marker3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 8, 0, 0)
+
+; The shared atmosphere stack (environment, key light, clear front air, skylines, far pillars, frame, dust).
+[node name="Stage" parent="." instance=ExtResource("14_stage")]
+Seed = 23
+DustDensity = 2.2
+PillarDensity = 3.4
+
+[node name="Geometry" type="Node3D" parent="."]
+
+[node name="FloorWest" parent="Geometry" instance=ExtResource("2_block")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 8.5, -2, 0)
+Size = Vector3(23, 4, 4)
+Material = ExtResource("1_wet_stone")
+
+; the bed of the open pool, 4 m down
+[node name="PoolBed" parent="Geometry" instance=ExtResource("2_block")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 24, -5, 0)
+Size = Vector3(8, 2, 4)
+
+[node name="FloorEast" parent="Geometry" instance=ExtResource("2_block")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 43.5, -2, 0)
+Size = Vector3(31, 4, 4)
+Material = ExtResource("1_wet_stone")
+
+[node name="Ceiling" parent="Geometry" instance=ExtResource("2_block")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 28, 23.5, 0)
+Size = Vector3(62, 3, 4)
+
+; the west wall over the doorway
+[node name="WallWest" parent="Geometry" instance=ExtResource("2_block")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -1.5, 13, 0)
+Size = Vector3(3, 18, 4)
+
+; the east wall over the low doorway: iron, climbed with Mag-grip
+[node name="WallEast" parent="Geometry" instance=ExtResource("2_block")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 57.5, 9.25, 0)
+Size = Vector3(3, 10.5, 4)
+Surface = 1
+
+; over the high doorway to the Hold
+[node name="WallEastTop" parent="Geometry" instance=ExtResource("2_block")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 57.5, 20.25, 0)
+Size = Vector3(3, 3.5, 4)
+
+; a seized capstan: a hop
+[node name="Capstan" parent="Geometry" instance=ExtResource("2_block")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 45.25, 0.75, 0)
+Size = Vector3(2.5, 1.5, 4)
+
+[node name="Exits" type="Node3D" parent="."]
+
+; west doorway back onto the Quay
+[node name="West" type="Marker3D" parent="Exits"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -1, 0, 0)
+script = ExtResource("3_exit")
+TargetRoom = "res://worlds/sequel/rooms/Quay.tscn"
+TargetExit = "East"
+Size = Vector2(1, 4)
+
+; east doorway into the Chantry
+[node name="East" type="Marker3D" parent="Exits"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 57, 0, 0)
+script = ExtResource("3_exit")
+TargetRoom = "res://worlds/sequel/rooms/Chantry.tscn"
+TargetExit = "West"
+Size = Vector2(1, 4)
+
+; the high doorway on to the Hold, on top of the iron wall (coming back is a drop)
+[node name="Hold" type="Marker3D" parent="Exits"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 57, 14.5, 0)
+script = ExtResource("3_exit")
+TargetRoom = "res://worlds/sequel/rooms/Hold.tscn"
+TargetExit = "West"
+Requires = "MagGrip"
+Size = Vector2(1, 4)
+
+; the open pool: brine swum on the play plane
+[node name="Water" type="Node3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 24, -0.5, -9)
+script = ExtResource("4_water_body")
+Size = Vector2(8, 22.1)
+Depth = 3.5
+Swim = true
+SurfaceMaterial = ExtResource("5_water")
+UnderwaterMaterial = ExtResource("6_underwater")
+SectionMaterial = ExtResource("7_water_section")
+
+[node name="Props" type="Node3D" parent="."]
+
+; a pilgrim shrine by the west door
+[node name="Shrine" parent="Props" instance=ExtResource("8_shrine")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 10, 0, 0)
+
+[node name="Machines" type="Node3D" parent="."]
+
+; a Chorister asleep by the east wall
+[node name="Chorister" type="CharacterBody3D" parent="Machines"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 50, 0, 0)
+script = ExtResource("9_machine")
+Species = ExtResource("10_chorister")
+StartFacing = -1
+Seed = 1
+
+[node name="Shafts" type="Node3D" parent="."]
+
+; straight down onto the pool
+[node name="Pool" type="SpotLight3D" parent="Shafts"]
+transform = Transform3D(-1, 0, 0, 0, 0.1414, 0.9899, 0, 0.9899, -0.1414, 24, 44, -2.5)
+light_energy = 5
+light_volumetric_fog_energy = 12
+shadow_enabled = true
+spot_range = 80
+spot_attenuation = 0.25
+spot_angle = 10
+spot_angle_attenuation = 2
+
+; a soft one onto the iron wall
+[node name="Wall" type="SpotLight3D" parent="Shafts"]
+transform = Transform3D(-0.7071, 0.6288, -0.3234, 0, 0.4573, 0.8893, 0.7071, 0.6288, -0.3234, 34, 40, -10)
+light_energy = 6
+light_volumetric_fog_energy = 12
+shadow_enabled = true
+spot_range = 80
+spot_attenuation = 0.25
+spot_angle = 10
+spot_angle_attenuation = 2
+
+[node name="Lamps" type="Node3D" parent="."]
+
+; a lamp over the high doorway
+[node name="High" type="OmniLight3D" parent="Lamps"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 53, 17, 1.5)
+light_energy = 2
+omni_range = 8
+shadow_enabled = true
+
+[node name="PhotoSpots" type="Node3D" parent="."]
+
+; gameplay framing by the shrine
+[node name="Start" type="Marker3D" parent="PhotoSpots"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 12, 4, 22)
+script = ExtResource("11_spot")
+PlayerPosition = Vector3(8, 0, 0)
+
+; the iron wall up to the high doorway
+[node name="Wall" type="Marker3D" parent="PhotoSpots"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 48, 9, 26)
+script = ExtResource("11_spot")
+PlayerPosition = Vector3(52, 0, 0)

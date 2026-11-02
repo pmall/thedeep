@@ -29,6 +29,7 @@ When the owner changes direction, rewrite the docs it touches so none of them co
 | Deal with versions, paths, .NET environment or upgrades | [docs/toolchain.md](docs/toolchain.md) |
 | Work on machines, rooms, connections or the map | [docs/long-term.md](docs/long-term.md) (owner-written) |
 | Build or change a room, an exit or a relic in the prototype | [worlds/prototype/map-draft.md](worlds/prototype/map-draft.md) (the prototype world's network; keep it in step with built rooms) |
+| Change the sequel world (the check's second world) | [worlds/sequel/network.md](worlds/sequel/network.md) (its network; keep it in step with its rooms) |
 
 ## Writing docs `#doc-rules`
 

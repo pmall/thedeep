@@ -88,6 +88,11 @@ CHECKS=(
     "encounter|ENCOUNTER OK|ENCOUNTER CHECK|9000|--room Chapterhouse --encounter-check"
     "playthrough|PLAYTHROUGH OK|PLAYTHROUGH CHECK|60000|--playthrough-check"
     "species|SPECIES OK|SPECIES CHECK|9000|--room MachineArena --validate-species"
+    # The sequel world (docs/roadmap.md#sequel-test), a fixture: its rooms and map (run from the Strongroom, its room without
+    # machines, as the prototype's are from the lab), every exit crossed, and the whole run.
+    "sequel_rooms|ROOMS OK|ROOM CHECK|600|--world sequel --room Strongroom --validate-rooms"
+    "sequel_travel|TRAVEL OK|TRAVEL CHECK|20000|--world sequel --validate-travel"
+    "sequel_playthrough|PLAYTHROUGH OK|PLAYTHROUGH CHECK|20000|--world sequel --playthrough-check"
 )
 
 # Runs one check in the background: its log, then a status file with its exit code and how long it took.

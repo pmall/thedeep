@@ -1,0 +1,63 @@
+[gd_resource type="Resource" script_class="BiomeProfile" format=3]
+; The sequel world's layer (worlds/sequel/world.tres): a variant of the frozen layer, a drowned sea-wall iced over with brine.
+; The frozen rime turned sea-green, the cold blue light turned teal, lamps of sodium amber in a green-black haze, cut stone
+; under the ice (the flooded cathedral's masonry, not the archive's stacks).
+
+[ext_resource type="Script" path="res://scripts/biome/BiomeProfile.cs" id="1_biome"]
+[ext_resource type="Material" path="res://assets/materials/backdrop_crags.tres" id="2_far"]
+[ext_resource type="Material" path="res://assets/materials/backdrop_cathedral.tres" id="3_near"]
+[ext_resource type="Resource" path="res://resources/paint/gouache.tres" id="9_paint"]
+
+[resource]
+script = ExtResource("1_biome")
+DisplayName = "Brine"
+Rock = Color(0.42, 0.5, 0.5, 1)
+Metal = Color(0.62, 0.78, 0.74, 1)
+Backdrop = Color(0.05, 0.1, 0.1, 1)
+BackdropAccent = Color(0.55, 0.32, 0.14, 1)
+Rust = Color(0.4, 0.38, 0.3, 1)
+Silt = Color(0.62, 0.72, 0.66, 1)
+Frost = 0.6
+FrostColor = Color(0.78, 0.94, 0.9, 1)
+Foreground = Color(0.01, 0.025, 0.025, 1)
+Accent = Color(0.98, 0.62, 0.26, 1)
+Background = Color(0.02, 0.05, 0.05, 1)
+AmbientColor = Color(0.45, 0.66, 0.62, 1)
+AmbientEnergy = 0.42
+KeyColor = Color(0.78, 0.98, 0.92, 1)
+KeyEnergy = 1.8
+LampColor = Color(1, 0.76, 0.48, 1)
+ShaftColor = Color(0.86, 1, 0.95, 1)
+KeyFogEnergy = 0.22
+FogColor = Color(0.16, 0.3, 0.28, 1)
+FogDensity = 1.0
+FogDepthBegin = 24.0
+FogDepthEnd = 72.0
+HazeColor = Color(0.38, 0.58, 0.54, 1)
+VolumetricDensity = 0.024
+VolumetricAlbedo = Color(0.8, 0.96, 0.9, 1)
+VolumetricEmission = Color(0.02, 0.05, 0.045, 1)
+VolumetricEmissionEnergy = 1.0
+VolumetricAnisotropy = 0.35
+Exposure = 1.0
+Brightness = 1.0
+Contrast = 1.12
+Saturation = 0.92
+Lift = Color(0.01, 0.035, 0.03, 1)
+Gain = Color(1, 0.98, 0.94, 1)
+GlowIntensity = 0.65
+WaterTint = Color(0.3, 0.46, 0.42, 1)
+WaterDeep = Color(0.015, 0.05, 0.045, 1)
+CausticColor = Color(0.78, 1, 0.9, 1)
+CausticStrength = 1.1
+Vignette = 0.8
+VignetteColor = Color(0.08, 0.18, 0.16, 1)
+Grain = 0.035
+ParticleTint = Color(0.88, 1, 0.95, 1)
+Architecture = 0
+FarSkyline = ExtResource("2_far")
+NearSkyline = ExtResource("3_near")
+Masonry = 0.7
+UnderglowColor = Color(0.5, 0.82, 0.74, 1)
+UnderglowEnergy = 0.45
+Paint = ExtResource("9_paint")
