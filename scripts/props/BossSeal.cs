@@ -9,7 +9,7 @@ namespace TheDeep;
 /// remembers it by this node's room and name, and calls <see cref="Settle"/> when the room is entered again). Dying in the fight
 /// reloads the room, boss and gates renewed. The gates are not part of the map: the ways stay open on paper.
 /// </summary>
-public partial class BossSeal : Node3D
+public partial class BossSeal : Node3D, INamesLines
 {
     [Export] public Machine Boss { get; set; } = null!;
 
@@ -23,6 +23,9 @@ public partial class BossSeal : Node3D
     [Export] public StringName NameLine { get; set; } = "";
     [Export] public StringName FallenLine { get; set; } = "";
     [Export] public StringName FallenHintLine { get; set; } = "";
+
+    /// <inheritdoc/>
+    public System.Collections.Generic.IEnumerable<StringName> LineIds => new[] { NameLine, FallenLine, FallenHintLine };
 
     private readonly ArenaFight _fight = new();
 

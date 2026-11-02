@@ -53,9 +53,9 @@ public partial class EndCard : CanvasLayer
     public async Task Play()
     {
         LineBook book = LineBook.Shared;
-        TitleLabel.Text = book.Find("ending.title")?.Text ?? "";
-        LineLabel.Text = book.Find("ending.line")?.Text ?? "";
-        ThanksLabel.Text = book.Find("ending.thanks")?.Text ?? "";
+        TitleLabel.Text = book.Find(GameLines.EndingTitle)?.Text ?? "";
+        LineLabel.Text = book.Find(GameLines.EndingLine)?.Text ?? "";
+        ThanksLabel.Text = book.Find(GameLines.EndingThanks)?.Text ?? "";
         Visible = true;
         Tween tween = CreateTween();
         tween.TweenProperty(Veil, "color:a", 1f, FadeTime).SetTrans(Tween.TransitionType.Sine);

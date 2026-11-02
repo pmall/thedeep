@@ -16,6 +16,7 @@ namespace TheDeep;
 /// - the room has at least one photo spot;
 /// - no required export is left empty, in the room's nodes, the bricks it places and the resources they reach, nor in the main
 ///   scene and its world (<see cref="RequiredExports"/>).
+/// Then the world's line book: every line the code, the rooms and the world's items name is in it or its base (<see cref="LineCheck"/>).
 /// Then the map, extracted from the rooms in the game (<see cref="Room.InGame"/>) and proven by the core's <see cref="WorldCheck"/>:
 /// layout, reachability, softlocks, ability orders (`--map-report`: the whole graph), the geometry, the map from inside the rooms,
 /// room for error; and the world's network (<see cref="MapDraft"/>): its targets, its layers, and its agreement with the built rooms.
@@ -24,6 +25,7 @@ public partial class RoomValidator : Node
 {
     private readonly List<string> _problems = new();
     private readonly RequiredExports _exports = new();
+    private readonly LineCheck _lines = new();
     private bool _done;
 
     /// <summary>The world's network (its `map` blocks), or null if it doesn't parse (a problem then).</summary>
@@ -76,6 +78,7 @@ public partial class RoomValidator : Node
             AddChild(room);
             rooms++;
             exits += Check(room, path, world);
+            _lines.Add(room, path);
             RemoveChild(room);
             room.Free();
 
@@ -85,6 +88,8 @@ public partial class RoomValidator : Node
             System.GC.WaitForPendingFinalizers();
         }
 
+        _lines.Add(World.Definition);
+        _problems.AddRange(_lines.Problems(World.Definition.Lines));
         string map = world.Check(World.NameOf(StartRoom), _draft?.Targets ?? MapTargets.None, Report);
         _problems.AddRange(world.Problems);
         if (ReachReport != "")

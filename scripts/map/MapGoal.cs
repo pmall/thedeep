@@ -9,7 +9,7 @@ namespace TheDeep;
 /// is also an area: reaching it shows the banner lines (the end of the build), once per visit; an <see cref="Ending"/>
 /// goal instead closes the run (<see cref="EndCard"/>).
 /// </summary>
-public partial class MapGoal : Marker3D
+public partial class MapGoal : Marker3D, INamesLines
 {
     /// <summary>Area on the play plane (width, height), centered on the marker; zero for a marker only.</summary>
     [Export] public Vector2 Size { get; set; }
@@ -19,6 +19,9 @@ public partial class MapGoal : Marker3D
 
     [Export] public StringName TitleLine { get; set; } = "";
     [Export] public StringName HintLine { get; set; } = "";
+
+    /// <inheritdoc/>
+    public System.Collections.Generic.IEnumerable<StringName> LineIds => new[] { TitleLine, HintLine };
 
     public bool Contains(Vector3 point) =>
         Size != Vector2.Zero && Mathf.Abs(point.X - GlobalPosition.X) <= Size.X * 0.5f && Mathf.Abs(point.Y - GlobalPosition.Y) <= Size.Y * 0.5f;

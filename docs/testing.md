@@ -11,7 +11,7 @@ The headless checks, one driver each in `scripts/debug/`; the driver's docblock 
 | Check | Driver |
 |---|---|
 | The main scene boots idle for 300 frames, then the scripted smoke run | `SmokeDriver` |
-| Every room of the world, then the map: layout, solver, geometry, inside, room for error, the network | `RoomValidator` (proof in the core's `WorldCheck`) |
+| Every room of the world, then the map: layout, solver, geometry, inside, room for error, the network; then its line book: every line the code and its content name | `RoomValidator` (proof in the core's `WorldCheck`; the lines: `LineCheck`) |
 | Every machine species, alone in the arena | `SpeciesValidator` |
 | Every open exit crossed | `TravelValidator` |
 | The ledge assist and each ability through the real inputs, in the mechanics lab | `GripCheck`, `HarpoonCheck`, `DrillCheck`, `BallastCheck`, `HeatCheck` |
@@ -39,7 +39,7 @@ The headless checks, one driver each in `scripts/debug/`; the driver's docblock 
 | Paint with another style, or not at all (`docs/art-direction.md#signature`) | `godot --path . -- --paint poster` (`none` for the raw render) |
 | Print the map (built rooms and the network: ways, placements, orders) | `tools/map.sh` |
 | Where the geometry check's planner stops in a room | `godot --headless --path . -- --room MechanicsLab --validate-rooms --reach-report <Room>` (`--abilities …`, `--slack-report` for the clumsy pilgrim) |
-| Look-dev captures and frame times | `tools/capture.sh [label]` (`docs/testing.md#lookdev`; `--paint NAME` for another paint style) |
+| Look-dev captures and frame times | `tools/capture.sh [label]` (`docs/testing.md#lookdev`; `--paint NAME` for another paint style, `--world sequel` for another world's rooms) |
 | UI screens to PNGs (windowed) | `godot --path . --disable-vsync -- --room Undercroft --ui-shot <dir>` |
 | Windowed capture check (needs a GPU; after touching capture code) | `godot --path . -- --capture-test` (add `--disable-vsync` before `--` for the raw cost) |
 

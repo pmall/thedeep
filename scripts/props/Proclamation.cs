@@ -7,7 +7,7 @@ namespace TheDeep;
 /// on the play plane, centered on the node; <see cref="Session"/> shows its lines in the banner when the pilgrim's feet enter it.
 /// Text only: it opens and closes nothing.
 /// </summary>
-public partial class Proclamation : Marker3D
+public partial class Proclamation : Marker3D, INamesLines
 {
     /// <summary>The area on the play plane (width, height), centered on the node.</summary>
     [Export] public Vector2 Size { get; set; } = new(6f, 4f);
@@ -15,6 +15,9 @@ public partial class Proclamation : Marker3D
     /// <summary>Who speaks (the banner's title) and what it says.</summary>
     [Export] public StringName SpeakerLine { get; set; } = "";
     [Export] public StringName TextLine { get; set; } = "";
+
+    /// <inheritdoc/>
+    public System.Collections.Generic.IEnumerable<StringName> LineIds => new[] { SpeakerLine, TextLine };
 
     public bool Contains(Vector3 point) =>
         Mathf.Abs(point.X - GlobalPosition.X) <= Size.X * 0.5f && Mathf.Abs(point.Y - GlobalPosition.Y) <= Size.Y * 0.5f;

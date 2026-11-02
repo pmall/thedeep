@@ -9,7 +9,7 @@ namespace TheDeep;
 /// <see cref="Folder"/>, plus a brain only when its behavior is truly new.
 /// </summary>
 [GlobalClass]
-public partial class MachineSpecies : Resource
+public partial class MachineSpecies : Resource, INamesLines
 {
     public const string Folder = "res://resources/machines";
 
@@ -24,8 +24,11 @@ public partial class MachineSpecies : Resource
     /// <summary>Can it hurt the player? About a third of species should not (docs/long-term.md#machines-distinct).</summary>
     [Export] public bool Hostile { get; set; }
 
-    /// <summary>Id of its creed, a line in the world's line book (placeholder text, stored as data for voicing later).</summary>
+    /// <summary>Id of its creed, a line of the game's own book (a species is every world's; placeholder text, stored as data for voicing later).</summary>
     [Export] public StringName CreedLine { get; set; } = "";
+
+    /// <inheritdoc/>
+    public System.Collections.Generic.IEnumerable<StringName> LineIds => new[] { CreedLine };
 
     [ExportGroup("Body")]
     [Export] public PartAssembly Assembly { get; set; } = null!;

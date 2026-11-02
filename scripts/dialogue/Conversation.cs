@@ -8,10 +8,13 @@ namespace TheDeep;
 /// Make it a child of whoever speaks (a machine), and it goes where they go. With <see cref="Once"/>, it is offered until it has been
 /// heard to its end, then never again (remembered in the save).
 /// </summary>
-public partial class Conversation : Node3D
+public partial class Conversation : Node3D, INamesLines
 {
     /// <summary>The lines, in the order they are spoken (ids in the line book).</summary>
     [Export] public StringName[] Lines { get; set; } = System.Array.Empty<StringName>();
+
+    /// <inheritdoc/>
+    public System.Collections.Generic.IEnumerable<StringName> LineIds => Lines;
 
     /// <summary>How near the pilgrim must stand, meters on the play plane.</summary>
     [Export] public float Range { get; set; } = 2.5f;
@@ -29,7 +32,7 @@ public partial class Conversation : Node3D
 
     public override void _Ready()
     {
-        Prompt.Text = LineBook.Shared.Find("ui.talk")?.Text ?? "";
+        Prompt.Text = LineBook.Shared.Find(GameLines.Talk)?.Text ?? "";
         Prompt.Modulate = Prompt.Modulate with { A = 0f };
     }
 

@@ -24,7 +24,7 @@ core/                  the core: TheDeep.Core.csproj, no Godot reference. Its fo
 scripts/               the adapters: Godot nodes and resources, one folder per system
 scenes/                shared scenes: the main scene, the player, the room stage, props, the kit block, camera, fx, UI
 worlds/<name>/         one world's content: world.tres (its WorldDefinition), its network, its line book, rooms/
-resources/             the live tuning, biomes, part assemblies, machine species
+resources/             the live tuning, biomes, part assemblies, machine species, the game's own line book (lines.tres)
 assets/                shaders (shared code in shaders/lib/), materials, particle materials
 tests/TheDeep.Tests/   xUnit over the core
 tools/                 the check, look-dev captures, the map report, authoring helpers

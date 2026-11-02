@@ -33,7 +33,7 @@ public partial class WorldDefinition : Resource
     /// <summary>The world's items (keys, codes), each laid in one room by an <see cref="ItemPickup"/>.</summary>
     [Export] public ItemDefinition[] Items { get; set; } = System.Array.Empty<ItemDefinition>();
 
-    /// <summary>Every line of text the world shows.</summary>
+    /// <summary>The world's own lines, extending the game's own book (its <see cref="LineBook.Base"/>): with it, every line the world shows.</summary>
     [Export] public LineBook Lines { get; set; } = null!;
 
     /// <summary>The save's file name (user://&lt;name&gt;.json): each world keeps its own.</summary>

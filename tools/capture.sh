@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
-# Look-dev captures: renders every photo spot and reel of the rooms in ROOMS (every room of the game, the machine arena,
-# the mechanics lab) to PNG at 1080p, measures frame times over a scripted run in each, and compares with the previous
+# Look-dev captures: renders every photo spot and reel of the rooms in ROOMS (every room of the prototype, the machine arena,
+# the mechanics lab; with --world, every room of that world) to PNG at 1080p, measures frame times over a scripted run in each, and compares with the previous
 # run (before/after sheet). A run's folder holds <Room>-<Spot>.png, the reels' contact sheets (Motion, Combat, Grip,
 # Harpoon, Machines .png), perf.json (the first room) and perf-<Room>.json (frame, GPU and render CPU times, garbage
 # collections, the slowest frames), run.txt, the Godot logs, and compare/ (one image per spot, sheet.png with all).
@@ -9,6 +9,7 @@
 #   tools/capture.sh [label] --against DIR   compare with DIR instead
 #   tools/capture.sh [label] --biome NAME    render with resources/biomes/NAME.tres instead of each room's own
 #   tools/capture.sh [label] --rooms "A B"   render only these rooms (quick looks while building a room)
+#   tools/capture.sh [label] --world NAME    render worlds/NAME's rooms instead (all of them, or --rooms of them): --world sequel
 #   tools/capture.sh [label] --paint NAME    paint with resources/paint/NAME.tres instead of each biome's style (none: unpainted)
 #   tools/capture.sh --compare BEFORE AFTER  only build the sheet for two existing runs
 #
@@ -39,13 +40,14 @@ if [ "${1:-}" = "--compare" ]; then
     exit 0
 fi
 
-label="" against="" biome_args=() paint_args=() only=""
+label="" against="" biome_args=() paint_args=() world_args=() only=""
 while [ $# -gt 0 ]; do
     case "$1" in
         --against) against="${2%/}"; shift 2 ;;
         --biome) biome_args=(--biome "$2"); shift 2 ;;
         --rooms) only="$2"; shift 2 ;;
         --paint) paint_args=(--paint "$2"); shift 2 ;;
+        --world) world_args=(--world "$2"); shift 2 ;;
         -*) fail "unknown option $1" ;;
         *) label="$1"; shift ;;
     esac
@@ -61,6 +63,7 @@ touch "$ROOT/.gdignore" # Godot must not import the captures
 {
     echo "date    $(date '+%Y-%m-%d %H:%M:%S')"
     echo "label   ${label:-none}"
+    echo "world   ${world_args[1]:-prototype}"
     echo "biome   ${biome_args[1]:-room default}"
     echo "paint   ${paint_args[1]:-biome default}"
     echo "commit  $(git rev-parse --short HEAD 2>/dev/null || echo unknown)$(git diff --quiet HEAD 2>/dev/null || echo ' + uncommitted changes')"
@@ -74,6 +77,11 @@ tools/glsl_includes.sh
 
 # The rooms rendered: the drowned hall first (perf.json, compared run to run), then the slice rooms, the arena and the lab.
 ROOMS=(DrownedHall Narthex Belfry Nave Cistern Reliquary Descent Sluice Undercroft Ossuary Scriptorium Chapterhouse Brink Rimefall Choir Coldstacks Counterweight Calving Bore Mere Sounding Underice Vault Sanctum Kiln Slag Chimney Quench Basalt Crucible Ashfall Pyre Bellows Foundry Threshold Mantle Orrery Lode Effigy Heart MachineArena MechanicsLab)
+if [ ${#world_args[@]} -gt 0 ]; then
+    [ -d "worlds/${world_args[1]}/rooms" ] || fail "no world ${world_args[1]} (worlds/${world_args[1]}/rooms)"
+    ROOMS=()
+    for scene in "worlds/${world_args[1]}"/rooms/*.tscn; do ROOMS+=("$(basename "$scene" .tscn)"); done
+fi
 if [ -n "$only" ]; then read -r -a ROOMS <<<"$only"; fi
 for room in "${ROOMS[@]}"; do
     name="$room"
@@ -83,7 +91,7 @@ for room in "${ROOMS[@]}"; do
     fi
     printf '\033[1mrendering %s: photo spots, reels and frame times into %s\033[0m\n' "$name" "$out"
     "$GODOT" --path . --disable-vsync --fixed-fps 60 --resolution 960x540 -- --lookdev "$out" --size "$SIZE" --perf "$perf" \
-        "${room_args[@]}" "${biome_args[@]}" "${paint_args[@]}" >"$log" 2>&1 || { tail -20 "$log"; fail "look-dev run exited non-zero (log: $log)"; }
+        "${world_args[@]}" "${room_args[@]}" "${biome_args[@]}" "${paint_args[@]}" >"$log" 2>&1 || { tail -20 "$log"; fail "look-dev run exited non-zero (log: $log)"; }
     if grep -E "$FAIL_PATTERN" "$log" >/dev/null; then
         grep -n -E -A3 "$FAIL_PATTERN" "$log" | head -40
         fail "look-dev run printed errors (log: $log)"
