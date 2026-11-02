@@ -40,7 +40,10 @@ public sealed class WorldCheck
     private readonly List<MapLink> _links = new();
     private readonly Dictionary<string, (Vector2 Min, Vector2 Max)> _bounds = new();
     private readonly Dictionary<string, RoomShape> _shapes = new();
-    private readonly ConcurrentDictionary<(string Room, Ability With, bool Clumsy), ReachPlanner> _planners = new();
+    private readonly ConcurrentDictionary<(string Room, Ability With, bool Clumsy), Lazy<ReachPlanner>> _planners = new();
+    private readonly ConcurrentDictionary<ReachKey, Lazy<HashSet<int>>> _reaches = new();
+    private readonly Dictionary<string, Ability> _matters = new();
+    private readonly Dictionary<string, List<Box>> _triggers = new();
 
     public WorldCheck(PlannerLimits limits) => _limits = limits;
 
@@ -58,6 +61,8 @@ public sealed class WorldCheck
         Graph.AddRoom(name);
         _bounds[name] = (boundsMin, boundsMax);
         _shapes[name] = shape;
+        _matters[name] = Matters(shape);
+        _triggers[name] = shape.Exits.Select(e => Box.Around(e.Position, e.Size)).Concat(shape.Relics.Select(r => r.Area)).Concat(shape.Goals).ToList();
     }
 
     /// <summary>
@@ -206,16 +211,41 @@ public sealed class WorldCheck
     /// The planner for a room with some abilities (cached): Mag-grip walks its metal, the Harpoon zips between its anchors, the Drill
     /// bores what it reaches (the cracked blocks gone), Ballast sinks and rises in its water, Heat plating walks through its heat.
     /// </summary>
-    private ReachPlanner Planner(string room, Ability with, bool clumsy = false) => _planners.GetOrAdd((room, with & Simulated, clumsy), key =>
+    private ReachPlanner Planner(string room, Ability with, bool clumsy = false) =>
+        _planners.GetOrAdd((room, with & _matters[room], clumsy), key => new Lazy<ReachPlanner>(() => NewPlanner(key.Room, key.With, key.Clumsy))).Value;
+
+    private ReachPlanner NewPlanner(string room, Ability g, bool clumsy)
     {
-        RoomShape shape = _shapes[key.Room];
-        Ability g = key.With;
+        RoomShape shape = _shapes[room];
         bool grip = (g & Ability.MagGrip) != 0;
-        return new ReachPlanner(key.Clumsy ? _limits.Move.Clumsy() : _limits.Move, (g & Ability.Drill) != 0 ? shape.Sound : shape.Solids,
+        return new ReachPlanner(clumsy ? _limits.Move.Clumsy() : _limits.Move, (g & Ability.Drill) != 0 ? shape.Sound : shape.Solids,
             (g & Ability.Harpoon) != 0 ? _limits.Harpoon : null, shape.Anchors, shape.Lifts, _limits.Water, shape.Waters,
             ballast: (g & Ability.Ballast) != 0, hazards: (g & Ability.HeatPlating) != 0 ? null : shape.Heat,
             grip: grip ? _limits.Grip : null, metal: grip ? shape.Metal : null);
-    });
+    }
+
+    /// <summary>
+    /// The simulated abilities that change anything in a room: Mag-grip where there is metal, the Harpoon where there are anchors, the
+    /// Drill where there is cracked rock, Ballast where there is water, Heat plating where there is heat. The planner can't tell the
+    /// others from not owning them, so the walks are shared between them (the check walks a room once per set that matters).
+    /// </summary>
+    private static Ability Matters(RoomShape shape) =>
+        (shape.Metal.Count > 0 ? Ability.MagGrip : Ability.None)
+        | (shape.Anchors.Count > 0 ? Ability.Harpoon : Ability.None)
+        | (shape.Sound.Count != shape.Solids.Count ? Ability.Drill : Ability.None)
+        | (shape.Waters.Count > 0 ? Ability.Ballast : Ability.None)
+        | (shape.Heat.Count > 0 ? Ability.HeatPlating : Ability.None);
+
+    /// <summary>One walk of a room: where the body comes in, the abilities that matter there, and which pilgrim.</summary>
+    private readonly record struct ReachKey(string Room, Vector2 At, Vector2 Velocity, int Steer, Ability With, bool Clumsy);
+
+    /// <summary>
+    /// The triggers a walk of <paramref name="room"/> reaches (its exits by index, then its relics, then its goals), walked once per
+    /// way in, abilities that matter there and pilgrim (cached: the geometry, inside and room-for-error checks share the walks).
+    /// </summary>
+    private HashSet<int> Reached(string room, WayIn way, Ability with, bool clumsy = false) =>
+        _reaches.GetOrAdd(new ReachKey(room, way.At, way.Velocity, way.Steer, with & _matters[room], clumsy),
+            key => new Lazy<HashSet<int>>(() => Planner(key.Room, key.With, key.Clumsy).Reach(key.At, key.Velocity, _triggers[key.Room], key.Steer).Triggers)).Value;
 
     /// <summary>
     /// A way into a room: arriving through an exit (<see cref="Exit"/>, its index) by an edge needing a requirement, or waking
@@ -276,55 +306,59 @@ public sealed class WorldCheck
     /// </summary>
     private void CheckGeometry()
     {
-        foreach ((string room, RoomShape shape) in _shapes.OrderBy(r => r.Key, StringComparer.Ordinal))
+        var rooms = _shapes.Keys.Order(StringComparer.Ordinal).ToList();
+        var found = new List<string>[rooms.Count];
+        Parallel.For(0, rooms.Count, n => found[n] = CheckGeometry(rooms[n], _shapes[rooms[n]]));
+        foreach (List<string> problems in found)
         {
-            var triggers = shape.Exits.Select(e => Box.Around(e.Position, e.Size)).ToList();
-            List<WayIn> ways = WaysIn(room);
-            var memo = new Dictionary<(int, Ability), HashSet<int>>();
-            HashSet<int> Reached(int w, Ability with)
+            _problems.AddRange(problems);
+        }
+    }
+
+    /// <summary>The geometry check of one room (<see cref="CheckGeometry()"/>): its problems.</summary>
+    private List<string> CheckGeometry(string room, RoomShape shape)
+    {
+        var problems = new List<string>();
+        List<WayIn> ways = WaysIn(room);
+        HashSet<int> Reached(int w, Ability with) => this.Reached(room, ways[w], (with | ways[w].Guaranteed) & Simulated);
+        for (int i = 0; i < shape.Exits.Count; i++)
+        {
+            ExitShape x = shape.Exits[i];
+            var others = Enumerable.Range(0, ways.Count).Where(w => ways[w].Exit != i).ToList();
+            if (others.Count == 0 || !Requirement.TryParse(x.Requires, out Requirement r, out _))
             {
-                with = (with | ways[w].Guaranteed) & Simulated;
-                return memo.TryGetValue((w, with), out HashSet<int>? r) ? r
-                    : memo[(w, with)] = Planner(room, with).Reach(ways[w].At, ways[w].Velocity, triggers, ways[w].Steer).Triggers;
+                continue;
             }
 
-            for (int i = 0; i < shape.Exits.Count; i++)
+            if (r.IsMetBy(Ability.None))
             {
-                ExitShape x = shape.Exits[i];
-                var others = Enumerable.Range(0, ways.Count).Where(w => ways[w].Exit != i).ToList();
-                if (others.Count == 0 || !Requirement.TryParse(x.Requires, out Requirement r, out _))
+                if (!x.Sealed && !others.Any(w => Reached(w, Ability.None).Contains(i)))
                 {
-                    continue;
+                    problems.Add($"{room}: exit {x.Name} needs nothing, but the base moveset reaches it from no way into the room");
                 }
 
-                if (r.IsMetBy(Ability.None))
-                {
-                    if (!x.Sealed && !others.Any(w => Reached(w, Ability.None).Contains(i)))
-                    {
-                        _problems.Add($"{room}: exit {x.Name} needs nothing, but the base moveset reaches it from no way into the room");
-                    }
+                continue;
+            }
 
-                    continue;
-                }
+            // Each way the requirement can be met: every single ability that meets it, else the fewest abilities together.
+            var options = Singles.Where(a => r.IsMetBy(a)).ToList();
+            if (options.Count == 0 && Combined.FirstOrDefault(c => r.IsMetBy(c)) is var together && together != Ability.None)
+            {
+                options.Add(together);
+            }
 
-                // Each way the requirement can be met: every single ability that meets it, else the fewest abilities together.
-                var options = Singles.Where(a => r.IsMetBy(a)).ToList();
-                if (options.Count == 0 && Combined.FirstOrDefault(c => r.IsMetBy(c)) is var together && together != Ability.None)
-                {
-                    options.Add(together);
-                }
+            foreach (Ability a in options.Where(a => !others.Any(w => Reached(w, a).Contains(i))))
+            {
+                problems.Add($"{room}: exit {x.Name} needs {x.Requires}, but {Describe(a)} reaches it from no way into the room");
+            }
 
-                foreach (Ability a in options.Where(a => !others.Any(w => Reached(w, a).Contains(i))))
-                {
-                    _problems.Add($"{room}: exit {x.Name} needs {x.Requires}, but {Describe(a)} reaches it from no way into the room");
-                }
-
-                foreach (int w in others.Where(w => ways[w].Base && Reached(w, Ability.None).Contains(i)))
-                {
-                    _problems.Add($"{room}: exit {x.Name} needs {x.Requires}, but the base moveset reaches it {ways[w].What}");
-                }
+            foreach (int w in others.Where(w => ways[w].Base && Reached(w, Ability.None).Contains(i)))
+            {
+                problems.Add($"{room}: exit {x.Name} needs {x.Requires}, but the base moveset reaches it {ways[w].What}");
             }
         }
+
+        return problems;
     }
 
     /// <summary>
@@ -367,11 +401,10 @@ public sealed class WorldCheck
             ? new WayIn("waking", shape.Spawn, Vector2.Zero, 0, -1, true, Ability.None)
             : Arriving(shape, shape.Exits.FindIndex(x => x.Name == state.Entry), Requirement.None);
         int relics = shape.Exits.Count, goals = relics + shape.Relics.Count;
-        var triggers = shape.Exits.Select(e => Box.Around(e.Position, e.Size)).Concat(shape.Relics.Select(r => r.Area)).Concat(shape.Goals).ToList();
         Ability owned = state.Owned;
         while (true)
         {
-            HashSet<int> reached = Planner(state.Room, owned, clumsy).Reach(way.At, way.Velocity, triggers, way.Steer).Triggers;
+            HashSet<int> reached = Reached(state.Room, way, owned, clumsy);
             Ability more = Enumerable.Range(0, shape.Relics.Count).Where(r => reached.Contains(relics + r))
                 .Aggregate(owned, (o, r) => o | shape.Relics[r].Ability);
             if (more != owned)

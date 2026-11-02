@@ -24,6 +24,12 @@ public partial class TravelValidator : Node
     public required Player Player { get; init; }
     public required RoomTravel Travel { get; init; }
 
+    /// <summary>
+    /// Which part of the exits this run crosses (`--shard K/N`: every Nth exit from the Kth, 1-based), so tools/check.sh crosses
+    /// them in several Godots at once; the whole list by default.
+    /// </summary>
+    public (int Index, int Count) Shard { get; init; } = (1, 1);
+
     private readonly List<(string Room, string Exit)> _todo = new();
     private readonly List<string> _problems = new();
     private (string Room, string Exit, string TargetRoom, string TargetExit) _current;
@@ -44,6 +50,10 @@ public partial class TravelValidator : Node
 
             room.Free();
         }
+
+        var mine = _todo.Where((_, i) => i % Shard.Count == Shard.Index - 1).ToList();
+        _todo.Clear();
+        _todo.AddRange(mine);
 
         // Every ability: this crosses exits, it doesn't test their requirements (and heat would burn a pilgrim without plating).
         foreach (Ability ability in AbilitySet.All)
@@ -156,7 +166,7 @@ public partial class TravelValidator : Node
 
         if (_problems.Count == 0)
         {
-            GD.Print($"TRAVEL OK: crossed {_crossed} exits");
+            GD.Print($"TRAVEL OK: crossed {_crossed} exits{(Shard.Count > 1 ? $" (part {Shard.Index} of {Shard.Count})" : "")}");
         }
 
         GetTree().Quit(_problems.Count == 0 ? 0 : 1);

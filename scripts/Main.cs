@@ -44,6 +44,9 @@ public partial class Main : Node3D
     /// </summary>
     private const string AbilitiesArgument = "--abilities";
 
+    /// <summary>`--shard K/N` with `--validate-travel`: cross only every Nth exit from the Kth (1-based), so the check can run in parts.</summary>
+    private const string ShardArgument = "--shard";
+
     /// <summary>User argument that checks every room scene and quits (see RoomValidator), used by tools/check.sh.</summary>
     private const string ValidateRoomsArgument = "--validate-rooms";
 
@@ -214,7 +217,7 @@ public partial class Main : Node3D
         }
         else if (Array.IndexOf(args, ValidateTravelArgument) >= 0)
         {
-            AddChild(new TravelValidator { World = World, Player = Player, Travel = Travel });
+            AddChild(new TravelValidator { World = World, Player = Player, Travel = Travel, Shard = ParseShard(ArgumentValue(args, ShardArgument)) });
         }
         else if (Array.IndexOf(args, GripCheckArgument) >= 0)
         {
@@ -346,6 +349,24 @@ public partial class Main : Node3D
     }
 
     /// <summary>The argument following <paramref name="name"/>, or null.</summary>
+    /// <summary>`K/N` (1 ≤ K ≤ N) as a part of a list; the whole list when absent or malformed (said in the log).</summary>
+    private static (int Index, int Count) ParseShard(string? text)
+    {
+        if (text is null)
+        {
+            return (1, 1);
+        }
+
+        string[] parts = text.Split('/');
+        if (parts.Length == 2 && int.TryParse(parts[0], out int k) && int.TryParse(parts[1], out int n) && n >= 1 && k >= 1 && k <= n)
+        {
+            return (k, n);
+        }
+
+        GD.PushError($"{ShardArgument} takes K/N with 1 <= K <= N, not {text}");
+        return (1, 1);
+    }
+
     private static string? ArgumentValue(string[] args, string name)
     {
         int index = Array.IndexOf(args, name);

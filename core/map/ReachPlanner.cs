@@ -101,6 +101,11 @@ public sealed class ReachPlanner
 
     private readonly MoveLimits _m;
     private readonly List<Box> _solids;
+    private readonly SolidGrid _grid;
+
+    /// <summary>Each thread's list of the solids near a moving body (walks of one planner run on several threads at once).</summary>
+    [ThreadStatic]
+    private static List<int>? t_near;
     private readonly List<Ledge> _ledges;
     /// <summary>The Harpoon's numbers and the room's anchors, or null for a planner without it (or a room without anchors).</summary>
     private readonly Harpoon? _harpoon;
@@ -142,6 +147,7 @@ public sealed class ReachPlanner
         _hazards = hazards?.ToList() ?? new List<Box>();
         _lifts = lifts?.ToList() ?? new List<LiftPath>();
         _solids = solids.Concat(_lifts.Select(l => l.Platform)).ToList();
+        _grid = new SolidGrid(_solids);
         List<Box> bodies = waters?.ToList() ?? new List<Box>();
         _water = water is not null && bodies.Count > 0 ? new Waters(water, bodies) : null;
         _ballast = ballast && _water is not null;
@@ -892,7 +898,13 @@ public sealed class ReachPlanner
         hitSolid = -1;
         Box body = BodyAt(p);
         float moved = delta;
-        for (int i = 0; i < _solids.Count; i++)
+        List<int> near = t_near ??= new List<int>();
+        const float margin = 0.01f; // past the skin either side: every solid the tests below could stop at
+        _grid.Near(horizontal
+            ? new Box(MathF.Min(body.MinX, body.MinX + delta) - margin, body.MinY - margin, MathF.Max(body.MaxX, body.MaxX + delta) + margin, body.MaxY + margin)
+            : new Box(body.MinX - margin, MathF.Min(body.MinY, body.MinY + delta) - margin, body.MaxX + margin, MathF.Max(body.MaxY, body.MaxY + delta) + margin),
+            near);
+        foreach (int i in near)
         {
             Box s = _solids[i];
             if (horizontal)
