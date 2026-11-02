@@ -40,7 +40,7 @@ Rules:
 ## Data first `#data-first`
 
 - **Numbers live in resources**: movement and combat in `player_tuning.tres`, a species' stats in its `.tres`, a mechanism's knobs as its exports. Never a magic number in a rule.
-- **Text lives in the world's line book** (the prototype's is `worlds/prototype/lines.tres`): stable id, speaker, text, delivery notes. Never a string shown to the player in code or in a scene.
+- **Text lives in line books**: stable id, speaker, text, delivery notes. The game's own lines (its screens' words, the abilities, the power-ups, the species' creeds) are written once, in `resources/lines.tres`; a world's book (the prototype's is `worlds/prototype/lines.tres`) holds only its content's lines and extends the game's. Never a string shown to the player in code or in a scene.
 - **Requirements live with the geometry**: a way's requirement is a marker in the room scene. Items (keys, codes) are part of that same requirement language, so the solver sees them.
 - **New content is data.** Adding a room, a species, a biome, a key door or a dialogue should mean new content files. New code is for a truly new behavior.
 - Names that cross systems (action names, physics layers, shader globals) are constants in one class each (`InputActions`, `PhysicsLayers`, `ShaderGlobals`).

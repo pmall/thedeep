@@ -8,7 +8,7 @@ namespace TheDeep;
 /// floating over a pedestal. Walking up to it takes it (<see cref="Session"/>): the core drifts into the
 /// pilgrim, the ability unlocks, the game saves, and it is gone for good. The node stands on the floor.
 /// </summary>
-public partial class AbilityRelic : Node3D
+public partial class AbilityRelic : Node3D, INamesLines
 {
     [Export] public Ability Ability { get; set; } = Ability.MagGrip;
 
@@ -20,6 +20,9 @@ public partial class AbilityRelic : Node3D
     /// <summary>Lines naming the ability and telling how to use it (shown when taken).</summary>
     [Export] public StringName NameLine { get; set; } = "ability.mag_grip.name";
     [Export] public StringName HintLine { get; set; } = "ability.mag_grip.hint";
+
+    /// <inheritdoc/>
+    public System.Collections.Generic.IEnumerable<StringName> LineIds => new[] { NameLine, HintLine };
 
     private Vector3 _coreRest;
     private float _time;

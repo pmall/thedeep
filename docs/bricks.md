@@ -65,7 +65,7 @@ Every piece a world is built from (`docs/principles.md#bricks`). The prototype's
 
 | Brick | Status | Item |
 |---|---|---|
-| Line book (`LineBook`) | ready | — |
+| Line book (`LineBook`: the game's own, `resources/lines.tres`, which each world's extends) | ready | — |
 | `Banner`, `HintLine` | working | `docs/roadmap.md#game-systems` |
 | `Proclamation` | working | `docs/roadmap.md#game-systems` |
 | `ScripturePlate` | working | `docs/roadmap.md#game-systems` |
@@ -100,4 +100,5 @@ Every piece a world is built from (`docs/principles.md#bricks`). The prototype's
 | Reach planner (`ReachPlanner`) | ready |
 | Room, travel, species and lab checks (`docs/testing.md#check`) | ready |
 | Required exports (`RequiredExports`) | ready |
+| Line check (`LineCheck`: every line the code and a world's content name is in its book) | ready |
 | Network and room table check | missing (`docs/roadmap.md#stage-plan`) |

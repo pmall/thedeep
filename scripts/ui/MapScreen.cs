@@ -175,7 +175,7 @@ public partial class MapScreen : CanvasLayer
         var entries = new System.Collections.Generic.List<(string Text, Color Color, bool Filled)>();
         if (open)
         {
-            entries.Add((LineBook.Shared.Find("map.way.open")?.Text ?? "", Colors.White, true));
+            entries.Add((LineBook.Shared.Find(GameLines.MapWayOpen)?.Text ?? "", Colors.White, true));
         }
 
         foreach (Ability a in shown)
@@ -190,7 +190,7 @@ public partial class MapScreen : CanvasLayer
 
         if (unbuilt)
         {
-            entries.Add((LineBook.Shared.Find("map.way.unbuilt")?.Text ?? "", Line, false));
+            entries.Add((LineBook.Shared.Find(GameLines.MapWayUnbuilt)?.Text ?? "", Line, false));
         }
 
         int size = Mathf.RoundToInt(17f * ui);

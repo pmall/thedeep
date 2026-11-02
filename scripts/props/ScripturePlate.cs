@@ -7,7 +7,7 @@ namespace TheDeep;
 /// shows its words in the banner (<see cref="Session"/>). Lore, nothing more. The node is where the pilgrim stands
 /// to read, on the floor in front of the lectern. Its words are lines in the line book.
 /// </summary>
-public partial class ScripturePlate : Node3D
+public partial class ScripturePlate : Node3D, INamesLines
 {
     [Export] public OmniLight3D Light { get; set; } = null!;
     [Export] public Label3D Prompt { get; set; } = null!;
@@ -15,6 +15,9 @@ public partial class ScripturePlate : Node3D
     /// <summary>Who wrote it (the banner's title) and what it says.</summary>
     [Export] public StringName TitleLine { get; set; } = "";
     [Export] public StringName TextLine { get; set; } = "";
+
+    /// <inheritdoc/>
+    public System.Collections.Generic.IEnumerable<StringName> LineIds => new[] { TitleLine, TextLine };
 
     private float _promptShown;
     private bool _promptWanted;
@@ -24,7 +27,7 @@ public partial class ScripturePlate : Node3D
     public override void _Ready()
     {
         _baseEnergy = Light.LightEnergy;
-        Prompt.Text = LineBook.Shared.Find("ui.read")?.Text ?? "";
+        Prompt.Text = LineBook.Shared.Find(GameLines.Read)?.Text ?? "";
         Prompt.Modulate = Prompt.Modulate with { A = 0f };
     }
 

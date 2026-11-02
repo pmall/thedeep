@@ -2,7 +2,11 @@ using Godot;
 
 namespace TheDeep;
 
-/// <summary>All of a world's lines in one place (<see cref="WorldDefinition.Lines"/>): text is never hard-coded in scenes or scripts.</summary>
+/// <summary>
+/// Lines of text as data, found by id: text is never hard-coded in scenes or scripts. The game's own book holds the lines every
+/// world shares (its screens' words, the abilities, the power-ups, the species' creeds); a world's book (<see cref="WorldDefinition.Lines"/>)
+/// holds its content's lines and extends the game's through <see cref="Base"/>, so a line it gives itself wins over the game's.
+/// </summary>
 [GlobalClass]
 public partial class LineBook : Resource
 {
@@ -17,9 +21,13 @@ public partial class LineBook : Resource
     /// <summary>Makes <paramref name="book"/> the line book every line is read from.</summary>
     public static void Use(LineBook book) => _shared = book;
 
+    /// <summary>The book this one extends (a world's: the game's), asked for the lines this one doesn't have; none for the game's own.</summary>
+    [Export] public LineBook? Base { get; set; }
+
+    /// <summary>This book's own lines.</summary>
     [Export] public TextLine[] Lines { get; set; } = System.Array.Empty<TextLine>();
 
-    /// <summary>The line with <paramref name="id"/>, or null.</summary>
+    /// <summary>The line with <paramref name="id"/>, from this book or else its <see cref="Base"/>, or null.</summary>
     public TextLine? Find(StringName id)
     {
         foreach (TextLine line in Lines)
@@ -30,6 +38,6 @@ public partial class LineBook : Resource
             }
         }
 
-        return null;
+        return Base?.Find(id);
     }
 }

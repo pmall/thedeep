@@ -33,7 +33,7 @@ public partial class Lever : Node3D
 
     public override void _Ready()
     {
-        Prompt.Text = LineBook.Shared.Find("ui.pull")?.Text ?? "";
+        Prompt.Text = LineBook.Shared.Find(GameLines.Pull)?.Text ?? "";
         Prompt.Modulate = Prompt.Modulate with { A = 0f };
         Handle.RotationDegrees = new Vector3(0f, 0f, SetAngle);
         Knob.SetInstanceShaderParameter("tint", ItemKinds.ColorOf(ItemKind.Mechanism));

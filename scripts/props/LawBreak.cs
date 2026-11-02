@@ -12,7 +12,7 @@ namespace TheDeep;
 /// ability gate (docs/theme.md#laws-outside-abilities): the veil is not a <see cref="Block"/>, and the map counts the way
 /// as open; the world's network names it as a <c>milestone</c>, which the draft check holds to story order.
 /// </summary>
-public partial class LawBreak : Node3D
+public partial class LawBreak : Node3D, INamesLines
 {
     [Export] public StaticBody3D Fence { get; set; } = null!;
     [Export] public Label3D Words { get; set; } = null!;
@@ -23,6 +23,9 @@ public partial class LawBreak : Node3D
     [Export] public StringName LawLine { get; set; } = "";
     [Export] public StringName BrokenLine { get; set; } = "";
     [Export] public StringName BrokenHintLine { get; set; } = "";
+
+    /// <inheritdoc/>
+    public System.Collections.Generic.IEnumerable<StringName> LineIds => new[] { LawLine, BrokenLine, BrokenHintLine };
 
     /// <summary>Which way the forbidden side lies from the node (+1 east, −1 west).</summary>
     [Export] public int Toward { get; set; } = 1;
