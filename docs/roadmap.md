@@ -12,7 +12,7 @@ The plan we follow from session to session: the owner's direction, where we are,
 
   Why: the owner is now ambitious for the game. The prototype's world (40 rooms, 5 abilities, the solver) proved the structure. Before growing it, every reusable piece must exist and be good, so that the big world becomes a puzzle assembled from finished pieces. *"If we make a sequel, we make a new map, I have all the tools modularized at my disposal, boom, we implement it."*
 - **Programming principles** (owner, 2026-11-01): [principles.md](principles.md), which every code change follows.
-- **Procedural first, Blender to finish** (owner, 2026-11-01): `docs/art-direction.md#procedural-first`.
+- **Procedural first, Blender for the pilgrim** (owner, 2026-11-01 and 2026-11-02): `docs/art-direction.md#procedural-first`.
 - **A visual signature** (owner, 2026-11-01): `docs/art-direction.md#signature`.
 - **Three long-term objectives shape the architecture**: [long-term.md](long-term.md).
 
@@ -32,7 +32,7 @@ The items, in order. Each one ends with its bricks marked in [bricks.md](bricks.
 
 - [x] **The seams** `#seams` (done 2026-11-01): the core in its own project, the engine's nodes thin adapters over it, no `!` outside exports, a world as data (`docs/architecture.md#layout`).
 - [ ] **The signature and the stage bricks** `#stage-bricks` (the visuals, already under way). First **the signature**, by its brief and process (`docs/art-direction.md#signature`). Then every stage brick of each biome brought to the bar of [art-direction.md](art-direction.md) and past it: materials, backgrounds and architecture, water, heat, ice, light, particles, the block kit's look. Left from the visual work: `docs/art-direction.md#art-open`. Done when: the signature is chosen and in place, and every biome reads at a glance and looks "very cool" to the owner in their captures, within the frame budget.
-- [ ] **The pilgrim** `#pilgrim`: the character fully made: its look in the *NieR: Automata* spirit (the hair, the coat, contrast against dark backdrops), a rig and animation for every move and every ability (run, jump, land, dash, air dash, ledge assist, grip and its corners, harpoon throw and zip, bore and dive, swim, sink and rise, hurt, death, rest, taking a relic), secondary motion (coat, braid, cables), effects. Very dynamic animation: anticipation, follow-through, weight. Procedural first, as far as it goes; where it can't reach the bar (likely the head, the hair, the body's finest forms), this is where Blender may come in, at the end of the prototype (`docs/art-direction.md#procedural-first`). Done when: every state reads at a glance in motion, in the look-dev reels and in the owner's play.
+- [ ] **The pilgrim** `#pilgrim`: the character fully made: its look in the *NieR: Automata* spirit (the hair, the coat, contrast against dark backdrops), a rig and animation for every move and every ability (run, jump, land, dash, air dash, ledge assist, grip and its corners, harpoon throw and zip, bore and dive, swim, sink and rise, hurt, death, rest, taking a relic), secondary motion (coat, braid, cables), effects. Very dynamic animation: anticipation, follow-through, weight. Procedural first, pushed as far as it goes; only then, where it can't reach the bar (likely the head, the hair, the body's finest forms), Blender finishes it (`docs/roadmap.md#beyond-procedural`). Done when: every state reads at a glance in motion, in the look-dev reels and in the owner's play.
 - [ ] **Feel and fight** `#feel-fight`: hyper-dynamic, fluid play: moves chain and carry momentum, smooth Mag-grip corners, harpoon, dive and swim flowing into each other; the camera eased; a small fight moveset (chained swings, an air attack, a dash strike or similar: a few moves, done well) with hits that land (hit stop, sparks, knockback) and health that reads. Numbers stay in `player_tuning.tres` (`docs/principles.md#data-first`).
 - [ ] **The game systems** `#game-systems`: the bricks the real game's rooms will need, one working example of each in the prototype:
   - **Dialogue box**: a speaker and lines in turn, advanced by the player; lines from the line book. Graceful and small (the owner plays on a gamepad and wants on-screen UI small).
@@ -65,7 +65,6 @@ Only once the real game plays from start to end:
 - **Every room made rich**: its secrets, its swarms, its secret passages, its enigma, the paths toward the end.
 - **Story**: the law breaks as real moments, the ending, dialogue, scripture and creeds written for real ([theme.md](theme.md) and its open questions), cutscenes. All text stays data in the line book.
 - **Audio and voices** (`docs/roadmap.md#audio`).
-- **Beyond procedural art** (`docs/roadmap.md#beyond-procedural`), for whatever the end of the prototype left.
 - **Release:** main menu, pause, settings (graphics quality tiers, audio, controls remapping), save slots, a bestiary screen, controller polish, accessibility options, exported Linux and Windows builds. *Where release work goes is the owner's to place; default: here.*
 
 ### Audio `#audio`
@@ -76,7 +75,7 @@ Deferred by the owner. Ask before planning it. Two parts:
 
 ### Beyond procedural art `#beyond-procedural`
 
-Once the procedural look has gone as far as it can (`docs/art-direction.md#procedural-first`): the owner provides a **Blender MCP** so the agent can model the pieces code does worst (the pilgrim's head and hair, bosses, organic parts, one-off set pieces), painted by the game's own world-space shaders so they match everything else. Procedural stays the base. Thanks to the swap rule (`docs/art-direction.md#swappable`) this means replacing materials, kit meshes and part meshes, not rebuilding rooms or machines.
+For the pilgrim (`docs/art-direction.md#procedural-first`), once its procedural version has gone as far as it can in `docs/roadmap.md#pilgrim`: the owner provides a **Blender MCP** so the agent can model the parts code does worst (the head, the hair, the body's finest forms), painted by the game's own shaders so they match everything else. Thanks to the swap rule (`docs/art-direction.md#swappable`) this means replacing materials, kit meshes and part meshes, not rebuilding rooms or machines.
 
 ---
 
