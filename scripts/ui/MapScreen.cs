@@ -9,7 +9,8 @@ namespace TheDeep;
 /// exits crossed (<see cref="World.Map"/>), the current room brighter, and the pilgrim as a soft pulsing
 /// dot. The ways not yet taken show where they leave their room: a dot for one the pilgrim can take now, small rings in
 /// the gate's colors (<see cref="GateKinds"/>, <see cref="ItemKinds"/> for a locked door) for one it can't yet, a faint ring for one
-/// leading where nothing is built; a legend names what is shown, and the items held are listed small, bottom left. Opening it pauses the game and eases in over a dim veil; it closes the same way.
+/// leading where nothing is built (a hidden way, a secret's, shows only once taken, as every taken way does: by the rooms it joins); a
+/// legend names what is shown, and the items held are listed small, bottom left. Opening it pauses the game and eases in over a dim veil; it closes the same way.
 /// </summary>
 public partial class MapScreen : CanvasLayer
 {
@@ -136,7 +137,7 @@ public partial class MapScreen : CanvasLayer
         float pulse = 0.75f + 0.25f * Mathf.Sin(_time * 2.2f);
         foreach (MapWay way in World.Map.Ways)
         {
-            if (World.Map.Taken(way.Room, way.Exit) || World.Map.Find(way.Room) is not { } room)
+            if (World.Map.Taken(way.Room, way.Exit) || way.Hidden || World.Map.Find(way.Room) is not { } room)
             {
                 continue;
             }

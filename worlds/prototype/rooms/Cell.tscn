@@ -1,0 +1,163 @@
+[gd_scene format=3]
+
+; The Cell, a secret behind the Sacristy's false west wall (map offset (-45.5, 0)): a maker's cell, low and dark, found by
+; walking into a wall that is not one. A strength power-up on a low plinth, a plate. A dead end; the way out is the doorway east,
+; back through the false wall.
+
+[ext_resource type="Material" path="res://assets/materials/wet_stone.tres" id="1_wet_stone"]
+[ext_resource type="PackedScene" path="res://scenes/kit/Block.tscn" id="2_block"]
+[ext_resource type="Script" path="res://scripts/rooms/RoomExit.cs" id="3_exit"]
+[ext_resource type="PackedScene" path="res://scenes/props/PowerUp.tscn" id="4_powerup"]
+[ext_resource type="PackedScene" path="res://scenes/props/ScripturePlate.tscn" id="5_plate"]
+[ext_resource type="Material" path="res://assets/materials/glyphs.tres" id="6_glyphs"]
+[ext_resource type="Script" path="res://scripts/kit/BlockMesh.cs" id="7_blockmesh"]
+[ext_resource type="Material" path="res://assets/materials/stone_mid.tres" id="8_stone_mid"]
+[ext_resource type="PackedScene" path="res://scenes/fx/Dust.tscn" id="9_dust"]
+[ext_resource type="Script" path="res://scripts/rooms/PhotoSpot.cs" id="10_spot"]
+[ext_resource type="Script" path="res://scripts/rooms/Room.cs" id="11_room"]
+[ext_resource type="Resource" path="res://resources/biomes/flooded.tres" id="12_flooded"]
+[ext_resource type="PackedScene" path="res://scenes/stage/RoomStage.tscn" id="13_stage"]
+
+[sub_resource type="QuadMesh" id="QuadMesh_1"]
+size = Vector2(2.6, 0.3)
+
+[sub_resource type="PrimitiveMesh" id="blockmesh_2"]
+script = ExtResource("7_blockmesh")
+Size = Vector3(24, 1, 10)
+Bevel = 0.1
+
+[sub_resource type="PrimitiveMesh" id="blockmesh_3"]
+script = ExtResource("7_blockmesh")
+Size = Vector3(24, 10, 1)
+Bevel = 0.1
+
+[node name="Cell" type="Node3D" node_paths=PackedStringArray("SpawnPoint", "Stage", "Shafts", "GlyphLights")]
+script = ExtResource("11_room")
+SpawnPoint = NodePath("SpawnPoint")
+Stage = NodePath("Stage")
+Biome = ExtResource("12_flooded")
+Shafts = [NodePath("Shafts/Plinth")]
+GlyphLights = [NodePath("Props/Plate/Light"), NodePath("Glyphs/PlinthLight")]
+BoundsMin = Vector2(-1, -2)
+BoundsMax = Vector2(20, 12)
+
+[node name="SpawnPoint" type="Marker3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 16, 0, 0)
+
+; The shared atmosphere stack (environment, key light, clear front air, skylines, far pillars, frame, dust).
+[node name="Stage" parent="." instance=ExtResource("13_stage")]
+Seed = 31
+DustDensity = 1.2
+PillarDensity = 1.6
+
+[node name="Geometry" type="Node3D" parent="."]
+
+[node name="Floor" parent="Geometry" instance=ExtResource("2_block")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 9.5, -1, 0)
+Size = Vector3(25, 2, 4)
+Material = ExtResource("1_wet_stone")
+
+[node name="WallWest" parent="Geometry" instance=ExtResource("2_block")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -1, 6, 0)
+Size = Vector3(4, 12, 4)
+
+[node name="Ceiling" parent="Geometry" instance=ExtResource("2_block")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 9.5, 10, 0)
+Size = Vector3(25, 4, 4)
+
+; east wall over the low doorway back into the Sacristy
+[node name="WallEast" parent="Geometry" instance=ExtResource("2_block")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 20, 6, 0)
+Size = Vector3(4, 4, 4)
+
+; the plinth of what the maker left
+[node name="Plinth" parent="Geometry" instance=ExtResource("2_block")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 5.5, 0.25, 0)
+Size = Vector3(3, 0.5, 4)
+
+[node name="Exits" type="Node3D" parent="."]
+
+; east, back through the false wall into the Sacristy
+[node name="East" type="Marker3D" parent="Exits"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 19, 0, 0)
+script = ExtResource("3_exit")
+TargetRoom = "res://worlds/prototype/rooms/Sacristy.tscn"
+TargetExit = "West"
+Size = Vector2(1, 4)
+
+[node name="Props" type="Node3D" parent="."]
+
+; what the maker left: a strength power-up
+[node name="Strength" parent="Props" instance=ExtResource("4_powerup")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 5.5, 0.5, 0)
+Stat = 0
+
+; the maker's last words
+[node name="Plate" parent="Props" instance=ExtResource("5_plate")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 11, 0, 0)
+TitleLine = &"plate.cell.title"
+TextLine = &"plate.cell.text"
+
+[node name="Shafts" type="Node3D" parent="."]
+
+; a thin shaft onto the plinth, through a crack
+[node name="Plinth" type="SpotLight3D" parent="Shafts"]
+transform = Transform3D(-0.7071, 0.6288, -0.3234, 0, 0.4573, 0.8893, 0.7071, 0.6288, -0.3234, -8, 40, -14)
+light_energy = 3.5
+light_volumetric_fog_energy = 7
+shadow_enabled = true
+spot_range = 80
+spot_attenuation = 0.25
+spot_angle = 6
+spot_angle_attenuation = 2
+
+[node name="Glyphs" type="Node3D" parent="."]
+
+; glyphs along the plinth
+[node name="Plinth" type="MeshInstance3D" parent="Glyphs"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 5.5, 0.25, 2.01)
+mesh = SubResource("QuadMesh_1")
+material_override = ExtResource("6_glyphs")
+cast_shadow = 0
+
+[node name="PlinthLight" type="OmniLight3D" parent="Glyphs"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 5.5, 0.25, 2.71)
+light_energy = 0.3
+light_volumetric_fog_energy = 0
+omni_range = 1.6
+
+[node name="Kit" type="Node3D" parent="."]
+
+; the cell floor behind the play floor
+[node name="BackFloor" type="MeshInstance3D" parent="Kit"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 9, -0.5, -7)
+mesh = SubResource("blockmesh_2")
+material_override = ExtResource("1_wet_stone")
+
+; the cell's back wall, close: a low dark room
+[node name="BackWall" type="MeshInstance3D" parent="Kit"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 9, 4, -9.5)
+mesh = SubResource("blockmesh_3")
+material_override = ExtResource("8_stone_mid")
+
+[node name="Particles" type="Node3D" parent="."]
+
+[node name="Dust" parent="Particles" instance=ExtResource("9_dust")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 9, 4, -1)
+Extents = Vector3(9, 4, 2)
+
+[node name="PhotoSpots" type="Node3D" parent="."]
+
+; gameplay framing at the doorway
+[node name="Start" type="Marker3D" parent="PhotoSpots"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 13, 3.2, 16)
+script = ExtResource("10_spot")
+PlayerPosition = Vector3(16, 0, 0)
+PlayerFacing = -1
+
+; the power-up on its plinth
+[node name="Plinth" type="Marker3D" parent="PhotoSpots"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 7, 2.2, 8)
+script = ExtResource("10_spot")
+PlayerPosition = Vector3(9, 0, 0)
+PlayerFacing = -1

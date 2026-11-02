@@ -32,6 +32,7 @@
 [ext_resource type="Script" path="res://scripts/dialogue/Conversations.cs" id="31_conversations"]
 [ext_resource type="Script" path="res://scripts/ui/DialogueBox.cs" id="32_dialogue_box"]
 [ext_resource type="Script" path="res://scripts/game/Arenas.cs" id="33_arenas"]
+[ext_resource type="Script" path="res://scripts/game/Secrets.cs" id="34_secrets"]
 
 [sub_resource type="CylinderMesh" id="HarpoonLine"]
 top_radius = 0.016
@@ -49,7 +50,7 @@ height = 0.3
 radial_segments = 8
 rings = 1
 
-[node name="Main" type="Node3D" node_paths=PackedStringArray("World", "Player", "Machines", "Capture", "Camera", "Hud", "Travel", "Session", "Health", "Hint", "MapScreen", "Hints", "Keyring", "PowerUps", "Conversations", "DialogueBox")]
+[node name="Main" type="Node3D" node_paths=PackedStringArray("World", "Player", "Machines", "Capture", "Camera", "Hud", "Travel", "Session", "Health", "Hint", "MapScreen", "Hints", "Keyring", "PowerUps", "Conversations", "DialogueBox", "Secrets")]
 script = ExtResource("1_main")
 World = NodePath("World")
 Player = NodePath("Player")
@@ -67,6 +68,7 @@ Keyring = NodePath("Keyring")
 PowerUps = NodePath("PowerUps")
 Conversations = NodePath("Conversations")
 DialogueBox = NodePath("DialogueBox")
+Secrets = NodePath("Secrets")
 Paint = ExtResource("25_paint")
 
 ; Loads the room scenes of its world (first child, so the room exists before the camera and HUD are ready). The world
@@ -161,6 +163,13 @@ Player = NodePath("../Player")
 Session = NodePath("../Session")
 Banner = NodePath("../Banner")
 Camera = NodePath("../SideCamera")
+
+; The hidden passages (Secrets): false walls found by walking into them, remembered.
+[node name="Secrets" type="Node" parent="." node_paths=PackedStringArray("World", "Player", "Session")]
+script = ExtResource("34_secrets")
+World = NodePath("../World")
+Player = NodePath("../Player")
+Session = NodePath("../Session")
 
 [node name="GateHints" type="Node" parent="." node_paths=PackedStringArray("World", "Player", "Harpoon", "Hint")]
 script = ExtResource("22_gates")

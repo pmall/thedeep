@@ -8,7 +8,7 @@ namespace TheDeep;
 public sealed record SavedRoom(string Name, float X, float Y, float MinX, float MinY, float MaxX, float MaxY);
 
 /// <summary>A way out of a visited room on the saved map (<see cref="MapWay"/>).</summary>
-public sealed record SavedWay(string Room, string Exit, float X, float Y, string Requires, bool Built);
+public sealed record SavedWay(string Room, string Exit, float X, float Y, string Requires, bool Built, bool Hidden = false);
 
 /// <summary>
 /// What a save holds, pure: the shrine the pilgrim last rested at (where it comes back after dying or
@@ -94,7 +94,7 @@ public sealed class SaveData
         Ways.Clear();
         foreach (MapWay w in map.Ways)
         {
-            Ways.Add(new SavedWay(w.Room, w.Exit, w.Position.X, w.Position.Y, w.Requires, w.Built));
+            Ways.Add(new SavedWay(w.Room, w.Exit, w.Position.X, w.Position.Y, w.Requires, w.Built, w.Hidden));
         }
 
         Taken = new List<string>(map.TakenWays);
@@ -106,7 +106,7 @@ public sealed class SaveData
     {
         foreach (SavedWay w in Ways)
         {
-            yield return new MapWay(w.Room, w.Exit, new System.Numerics.Vector2(w.X, w.Y), w.Requires, w.Built);
+            yield return new MapWay(w.Room, w.Exit, new System.Numerics.Vector2(w.X, w.Y), w.Requires, w.Built, w.Hidden);
         }
     }
 

@@ -61,6 +61,7 @@ EXT = {
     'pickup': ('PackedScene', 'res://scenes/props/ItemPickup.tscn'),
     'door': ('PackedScene', 'res://scenes/props/LockedDoor.tscn'),
     'powerup': ('PackedScene', 'res://scenes/props/PowerUp.tscn'),
+    'falsewall': ('Script', 'res://scripts/props/FalseWall.cs'),
     # resources
     'flooded': ('Resource', 'res://resources/biomes/flooded.tres'),
     'frozen': ('Resource', 'res://resources/biomes/frozen.tres'),
@@ -248,6 +249,12 @@ class Room:
         return self.node('Props/' + name, instance='pickup', comment=comment, transform=Raw(transform((pos[0], pos[1], 0))),
                          Item=self.item_resource(item))
 
+    def false_wall(self, name, lo, hi, look='rock', depth=4, comment=''):
+        """A hidden passage's mask (FalseWall) from corner `lo` to `hi`, wearing `look` (the material its neighbouring blocks wear)."""
+        cx, cy = (lo[0] + hi[0]) / 2, (lo[1] + hi[1]) / 2
+        return self.node('Props/' + name, type='Node3D', comment=comment, transform=Raw(transform((cx, cy, 0))),
+                         script=self.ext('falsewall'), Size=Raw(vec(hi[0] - lo[0], hi[1] - lo[1], depth)), Material=self.ext(look))
+
     def power_up(self, name, pos, stat='Defense', amount=1, comment=''):
         """A power-up (PowerUp) standing on the floor at `pos`: `stat` Strength or Defense, adding `amount`."""
         props = {'transform': Raw(transform((pos[0], pos[1], 0))), 'Stat': {'Strength': 0, 'Defense': 1}[stat]}
@@ -261,7 +268,7 @@ class Room:
                          Item=self.item_resource(item))
 
     def exit(self, name, pos, size, target='', target_exit='', requires='', one_way=False, arrival_side=0, arrival_only=False,
-             comment='', door=''):
+             comment='', door='', hidden=False):
         """An exit marker; `arrival_only` for the far end of a one-way drop from another room (no target, no trigger); `door`: the
         name of the locked door (under Props) that bars it."""
         props = {'transform': Raw(transform((pos[0], pos[1], 0))), 'script': self.ext('exit')}
@@ -278,6 +285,8 @@ class Room:
             props['ArrivalOnly'] = True
         if door:
             props['Door'] = Raw(f'NodePath("../../Props/{door}")')
+        if hidden:
+            props['Hidden'] = True
         props['Size'] = Raw(vec(*size))
         return self.node('Exits/' + name, type='Marker3D', comment=comment, node_paths=['Door'] if door else None, **props)
 

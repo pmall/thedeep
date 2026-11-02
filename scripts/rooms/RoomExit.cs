@@ -46,6 +46,11 @@ public partial class RoomExit : Marker3D
     /// </summary>
     [Export] public LockedDoor? Door { get; set; }
 
+    /// <summary>
+    /// A secret's way in: a <see cref="FalseWall"/> covers it (the room check holds it to), and the map shows the way only once taken.
+    /// </summary>
+    [Export] public bool Hidden { get; set; }
+
     /// <summary>Trigger area on the play plane (width, height), centered on the marker.</summary>
     [Export] public Vector2 Size { get; set; } = new(1f, 3f);
 
@@ -99,12 +104,21 @@ public partial class RoomExit : Marker3D
 
     public override void _PhysicsProcess(double delta)
     {
-        // Inside a doorway's area, the player leaves once it moves or presses out of the room (ExitMath.Leaves).
-        if (_inside is not null && Armed && ExitMath.Leaves(_outward, _inside.Velocity.X, _inside.CurrentInput.MoveX))
+        // Inside a doorway's area, the player leaves once it moves or presses out of the room (ExitMath.Leaves). Its body must
+        // really be there: the area's report can be stale after a teleport (a respawn), and a pilgrim far off once crossed.
+        if (_inside is not null && Armed && Holds(_inside) && ExitMath.Leaves(_outward, _inside.Velocity.X, _inside.CurrentInput.MoveX))
         {
             _inside = null;
             Crossed?.Invoke(this);
         }
+    }
+
+    /// <summary>Whether the player's body (its middle) is within the trigger area, with a body's width of slack.</summary>
+    private bool Holds(Player player)
+    {
+        Vector3 p = player.GlobalPosition;
+        Vector2 at = RoomPosition;
+        return Mathf.Abs(p.X - at.X) <= Size.X * 0.5f + 0.6f && p.Y + 0.9f >= at.Y - Size.Y * 0.5f - 1f && p.Y <= at.Y + Size.Y * 0.5f + 1f;
     }
 
     /// <summary>The player just arrived through here: entering again only counts after leaving the area.</summary>

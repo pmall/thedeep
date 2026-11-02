@@ -198,6 +198,14 @@ public partial class RoomValidator : Node
         }
 
         CheckDoors(room, exits, Problem);
+        foreach (RoomExit exit in exits.Where(e => e.Hidden))
+        {
+            var trigger = new Rect2(exit.RoomPosition - exit.Size * 0.5f, exit.Size);
+            if (!room.All<FalseWall>().Any(w => w.Region.Intersects(trigger)))
+            {
+                Problem($"exit {exit.Name} is hidden, but no FalseWall covers it");
+            }
+        }
 
         if (!room.PhotoSpots().Any())
         {

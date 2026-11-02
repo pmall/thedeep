@@ -15,7 +15,7 @@ The headless checks, one driver each in `scripts/debug/`; the driver's docblock 
 | Every machine species, alone in the arena | `SpeciesValidator` |
 | Every open exit crossed | `TravelValidator` |
 | The ledge assist and each ability through the real inputs, in the mechanics lab | `GripCheck`, `HarpoonCheck`, `DrillCheck`, `BallastCheck`, `HeatCheck` |
-| A key and its locked door in place (the Sacristy's); power-ups taken (in the Sacristy); a conversation (the Narthex's Lamplighter); the Pyre's ambush | `KeyCheck`, `PowerUpCheck`, `DialogueCheck`, `AmbushCheck` |
+| A key and its locked door in place (the Sacristy's); power-ups taken (in the Sacristy); a conversation (the Narthex's Lamplighter); the Pyre's ambush; the Sacristy's hidden passage into the Cell | `KeyCheck`, `PowerUpCheck`, `DialogueCheck`, `AmbushCheck`, `SecretCheck` |
 | Combat and the session in the lab | `CombatCheck` |
 | Bosses, law breaks, lifts and the rooms where abilities are proven in place | `EncounterCheck` |
 | The whole run, a new game to the end along the solver's route | `PlaythroughCheck` |
