@@ -4,27 +4,40 @@ using System.Linq;
 
 namespace TheDeep;
 
-/// <summary>A place in the game as the solver sees it: a room, and the abilities owned on arriving there.</summary>
-public readonly record struct SolverState(string Room, Ability Owned)
+/// <summary>A place in the game as the solver sees it: a room, and the abilities owned and items held on arriving there.</summary>
+public readonly record struct SolverState(string Room, Ability Owned, ItemSet Held)
 {
-    public override string ToString() => Owned == Ability.None ? Room : $"{Room} [{Owned}]";
+    public SolverState(string room, Ability owned) : this(room, owned, ItemSet.Empty)
+    {
+    }
+
+    public override string ToString() => $"{Room}{MapSolver.Holding(Owned, Held)}";
 }
 
 /// <summary>
 /// A place in the game as the inside solver sees it: a room, the way the pilgrim came in (an exit's name; "" for waking at the
-/// start), and the abilities owned on arriving.
+/// start), and the abilities owned and items held on arriving.
 /// </summary>
-public readonly record struct WayState(string Room, string Entry, Ability Owned)
+public readonly record struct WayState(string Room, string Entry, Ability Owned, ItemSet Held)
 {
-    public override string ToString() => $"{Room} via {(Entry == "" ? "the start" : Entry)}{(Owned == Ability.None ? "" : $" [{Owned}]")}";
+    public WayState(string room, string entry, Ability owned) : this(room, entry, owned, ItemSet.Empty)
+    {
+    }
+
+    public override string ToString() => $"{Room} via {(Entry == "" ? "the start" : Entry)}{MapSolver.Holding(Owned, Held)}";
 }
 
 /// <summary>
 /// What a pilgrim can do inside a room, come in through <see cref="WayState.Entry"/> with <see cref="WayState.Owned"/>: the abilities
-/// it owns once it has taken the relics it can reach there, the exits it can reach (their requirements still apply), and whether it
-/// reaches a goal. The geometry planner answers it for the built rooms; tests answer it by hand.
+/// it owns and the items it holds once it has taken the relics and items it can reach there, the exits it can reach (their
+/// requirements still apply), and whether it reaches a goal. The geometry planner answers it for the built rooms; tests by hand.
 /// </summary>
-public readonly record struct RoomReach(Ability Owned, IReadOnlyCollection<string> Exits, bool Goal);
+public readonly record struct RoomReach(Ability Owned, ItemSet Held, IReadOnlyCollection<string> Exits, bool Goal)
+{
+    public RoomReach(Ability owned, IReadOnlyCollection<string> exits, bool goal) : this(owned, ItemSet.Empty, exits, goal)
+    {
+    }
+}
 
 /// <summary>What the inside solver found.</summary>
 public sealed class InsideReport
@@ -40,6 +53,9 @@ public sealed class InsideReport
     public IReadOnlyList<string> UnenteredRooms { get; init; } = Array.Empty<string>();
 
     /// <summary>Relics no reachable state takes.</summary>
+    public IReadOnlyList<MapRelic> UntakenRelics { get; init; } = Array.Empty<MapRelic>();
+
+    /// <summary>Items no reachable state takes.</summary>
     public IReadOnlyList<MapItem> UntakenItems { get; init; } = Array.Empty<MapItem>();
 
     public bool SoftlockFree => GoalReachable && Softlocks.Count == 0;
@@ -57,6 +73,8 @@ public sealed class MapReport
     public bool GoalReachable { get; init; }
 
     public IReadOnlyList<string> UnreachableRooms { get; init; } = Array.Empty<string>();
+
+    public IReadOnlyList<MapRelic> UnreachableRelics { get; init; } = Array.Empty<MapRelic>();
 
     public IReadOnlyList<MapItem> UnreachableItems { get; init; } = Array.Empty<MapItem>();
 
@@ -77,8 +95,8 @@ public sealed class MapReport
 
 /// <summary>
 /// The "any order, proven on every build" solver (docs/long-term.md#any-order), pure. It explores every
-/// state (room, abilities owned) reachable from the start: crossing an exit needs its requirement; entering
-/// a room takes its relics (abilities only ever help, so taking them is never a choice). No softlock (docs/long-term.md#no-softlock): from
+/// state (room, abilities owned, items held) reachable from the start: crossing an exit needs its requirement; entering
+/// a room takes its relics and items (both only ever help and are never spent, so taking them is never a choice). No softlock (docs/long-term.md#no-softlock): from
 /// every reachable state some goal stays reachable (no softlock), else it reports the state and the path
 /// there. Order freedom (docs/long-term.md#order-freedom): it lists the orders in which all the map's abilities can be collected.
 /// </summary>
@@ -87,7 +105,7 @@ public static class MapSolver
     public static MapReport Solve(MapGraph map)
     {
         // 1. Every reachable state, with how it was first reached (for softlock paths).
-        SolverState start = Enter(map, map.Start, Ability.None);
+        SolverState start = Enter(map, map.Start, Ability.None, ItemSet.Empty);
         var parent = new Dictionary<SolverState, SolverState?> { [start] = null };
         var successors = new Dictionary<SolverState, List<SolverState>>();
         var queue = new Queue<SolverState>();
@@ -98,12 +116,12 @@ public static class MapSolver
             var next = new List<SolverState>();
             foreach (MapEdge edge in map.From(s.Room))
             {
-                if (!edge.Requires.IsMetBy(s.Owned))
+                if (!edge.Requires.IsMetBy(s.Owned, s.Held))
                 {
                     continue;
                 }
 
-                SolverState t = Enter(map, edge.To, s.Owned);
+                SolverState t = Enter(map, edge.To, s.Owned, s.Held);
                 next.Add(t);
                 if (!parent.ContainsKey(t))
                 {
@@ -133,6 +151,7 @@ public static class MapSolver
 
         var softlocks = parent.Keys.Where(s => !good.Contains(s))
             .OrderBy(s => PathTo(s, parent).Count).ThenBy(s => s.Room, StringComparer.Ordinal).ThenBy(s => s.Owned)
+            .ThenBy(s => s.Held.ToString(), StringComparer.Ordinal)
             .Select(s => (s, (IReadOnlyList<SolverState>)PathTo(s, parent)))
             .ToList();
 
@@ -150,6 +169,7 @@ public static class MapSolver
             Softlocks = softlocks,
             GoalReachable = good.Contains(start),
             UnreachableRooms = map.Rooms.Where(r => !reachedRooms.Contains(r)).ToList(),
+            UnreachableRelics = map.Relics.Where(i => !reachedRooms.Contains(i.Room)).ToList(),
             UnreachableItems = map.Items.Where(i => !reachedRooms.Contains(i.Room)).ToList(),
             Orders = orders,
             AbilityCount = count,
@@ -166,11 +186,12 @@ public static class MapSolver
     /// </summary>
     public static InsideReport SolveInside(MapGraph map, Func<WayState, RoomReach> inside)
     {
-        var start = new WayState(map.Start, "", Ability.None);
+        var start = new WayState(map.Start, "", Ability.None, ItemSet.Empty);
         var parent = new Dictionary<WayState, WayState?> { [start] = null };
         var successors = new Dictionary<WayState, List<WayState>>();
         var goals = new HashSet<WayState>();
         var taken = new HashSet<(string Room, Ability Ability)>();
+        var held = new HashSet<(string Room, string Item)>();
         var level = new List<WayState> { start };
         while (level.Count > 0)
         {
@@ -192,10 +213,15 @@ public static class MapSolver
                     taken.Add((s.Room, gained));
                 }
 
-                var after = new List<WayState>();
-                foreach (MapEdge edge in map.From(s.Room).Where(e => r.Exits.Contains(e.FromExit) && e.Requires.IsMetBy(r.Owned)))
+                foreach (string item in r.Held.Ids.Where(i => !s.Held.Contains(i)))
                 {
-                    var t = new WayState(edge.To, edge.ToExit, r.Owned);
+                    held.Add((s.Room, item));
+                }
+
+                var after = new List<WayState>();
+                foreach (MapEdge edge in map.From(s.Room).Where(e => r.Exits.Contains(e.FromExit) && e.Requires.IsMetBy(r.Owned, r.Held)))
+                {
+                    var t = new WayState(edge.To, edge.ToExit, r.Owned, r.Held);
                     after.Add(t);
                     if (!parent.ContainsKey(t))
                     {
@@ -244,8 +270,9 @@ public static class MapSolver
             Softlocks = parent.Keys.Where(s => !good.Contains(s))
                 .Select(s => (s, (IReadOnlyList<WayState>)PathOf(s)))
                 .OrderBy(p => p.Item2.Count).ThenBy(p => p.s.Room, StringComparer.Ordinal).ThenBy(p => p.s.Entry, StringComparer.Ordinal)
-                .ThenBy(p => p.s.Owned).ToList(),
-            UntakenItems = map.Items.Where(item => !taken.Contains((item.Room, item.Ability))).ToList(),
+                .ThenBy(p => p.s.Owned).ThenBy(p => p.s.Held.ToString(), StringComparer.Ordinal).ToList(),
+            UntakenRelics = map.Relics.Where(relic => !taken.Contains((relic.Room, relic.Ability))).ToList(),
+            UntakenItems = map.Items.Where(item => !held.Contains((item.Room, item.Item))).ToList(),
             UnenteredRooms = map.Rooms.Where(r => !parent.Keys.Any(s => s.Room == r)).ToList(),
         };
     }
@@ -262,7 +289,7 @@ public static class MapSolver
             return false;
         }
 
-        SolverState start = Enter(map, map.Start, Ability.None);
+        SolverState start = Enter(map, map.Start, Ability.None, ItemSet.Empty);
         var seen = new HashSet<SolverState> { start };
         var queue = new Queue<SolverState>();
         queue.Enqueue(start);
@@ -274,9 +301,9 @@ public static class MapSolver
                 return true;
             }
 
-            foreach (MapEdge edge in map.From(s.Room).Where(e => e.To != avoiding && e.Requires.IsMetBy(s.Owned)))
+            foreach (MapEdge edge in map.From(s.Room).Where(e => e.To != avoiding && e.Requires.IsMetBy(s.Owned, s.Held)))
             {
-                SolverState t = Enter(map, edge.To, s.Owned);
+                SolverState t = Enter(map, edge.To, s.Owned, s.Held);
                 if (seen.Add(t))
                 {
                     queue.Enqueue(t);
@@ -288,33 +315,34 @@ public static class MapSolver
     }
 
     /// <summary>
-    /// The fewest abilities a pilgrim can own on arriving in <paramref name="room"/> from the start, before taking that room's own
-    /// relics (so a relic room is tried with its relic still lying there); ties go to the shortest route. Null if no route
-    /// reaches it. <c>--room</c> starts with these, so a room behind gates can be tried the way a player would come to it.
+    /// The fewest abilities (then items) a pilgrim can hold on arriving in <paramref name="room"/> from the start, before taking that
+    /// room's own relics and items (so a relic room is tried with its relic still lying there); ties go to the shortest route. Null if
+    /// no route reaches it. <c>--room</c> starts with these, so a room behind gates can be tried the way a player would come to it.
     /// </summary>
-    public static Ability? Arrival(MapGraph map, string room)
+    public static (Ability Owned, ItemSet Held)? Arrival(MapGraph map, string room)
     {
         if (room == map.Start)
         {
-            return Ability.None;
+            return (Ability.None, ItemSet.Empty);
         }
 
-        SolverState start = Enter(map, map.Start, Ability.None);
+        SolverState start = Enter(map, map.Start, Ability.None, ItemSet.Empty);
         var seen = new HashSet<SolverState> { start };
         var queue = new Queue<SolverState>();
         queue.Enqueue(start);
-        Ability? best = null;
+        (Ability Owned, ItemSet Held)? best = null;
         while (queue.Count > 0)
         {
             SolverState s = queue.Dequeue();
-            foreach (MapEdge edge in map.From(s.Room).Where(e => e.Requires.IsMetBy(s.Owned)))
+            foreach (MapEdge edge in map.From(s.Room).Where(e => e.Requires.IsMetBy(s.Owned, s.Held)))
             {
-                if (edge.To == room && (best is not { } b || Count(s.Owned) < Count(b)))
+                if (edge.To == room && (best is not { } b || Count(s.Owned) < Count(b.Owned)
+                        || (Count(s.Owned) == Count(b.Owned) && s.Held.Count < b.Held.Count)))
                 {
-                    best = s.Owned;
+                    best = (s.Owned, s.Held);
                 }
 
-                SolverState t = Enter(map, edge.To, s.Owned);
+                SolverState t = Enter(map, edge.To, s.Owned, s.Held);
                 if (seen.Add(t))
                 {
                     queue.Enqueue(t);
@@ -334,7 +362,7 @@ public static class MapSolver
     /// </summary>
     public static IReadOnlyList<MapEdge>? Route(MapGraph map)
     {
-        SolverState start = Enter(map, map.Start, Ability.None);
+        SolverState start = Enter(map, map.Start, Ability.None, ItemSet.Empty);
         var parent = new Dictionary<SolverState, (SolverState From, MapEdge Edge)?> { [start] = null };
         var queue = new Queue<SolverState>();
         queue.Enqueue(start);
@@ -353,9 +381,9 @@ public static class MapSolver
                 return route;
             }
 
-            foreach (MapEdge edge in map.From(s.Room).Where(e => e.Requires.IsMetBy(s.Owned)))
+            foreach (MapEdge edge in map.From(s.Room).Where(e => e.Requires.IsMetBy(s.Owned, s.Held)))
             {
-                SolverState t = Enter(map, edge.To, s.Owned);
+                SolverState t = Enter(map, edge.To, s.Owned, s.Held);
                 if (!parent.ContainsKey(t))
                 {
                     parent[t] = (s, edge);
@@ -367,9 +395,17 @@ public static class MapSolver
         return null;
     }
 
-    /// <summary>Arriving in <paramref name="room"/> with <paramref name="owned"/>: its relics are taken.</summary>
-    private static SolverState Enter(MapGraph map, string room, Ability owned) =>
-        new(room, map.In(room).Aggregate(owned, (o, item) => o | item.Ability));
+    /// <summary>Arriving in <paramref name="room"/> with <paramref name="owned"/> and <paramref name="held"/>: its relics and items are taken.</summary>
+    private static SolverState Enter(MapGraph map, string room, Ability owned, ItemSet held) =>
+        new(room, map.RelicsIn(room).Aggregate(owned, (o, relic) => o | relic.Ability),
+            map.ItemsIn(room).Aggregate(held, (h, item) => h.With(item.Item)));
+
+    /// <summary>What a state holds, for reports: <c> [MagGrip, Drill; CryptKey]</c>, empty for nothing.</summary>
+    public static string Holding(Ability owned, ItemSet held) =>
+        owned == Ability.None && held.Count == 0 ? ""
+        : held.Count == 0 ? $" [{owned}]"
+        : owned == Ability.None ? $" [{held}]"
+        : $" [{owned}; {held}]";
 
     private static List<SolverState> PathTo(SolverState s, Dictionary<SolverState, SolverState?> parent)
     {
@@ -398,13 +434,14 @@ public static class MapSolver
             return (result, 0);
         }
 
-        var seen = new HashSet<(string, string)>();
-        var queue = new Queue<(string Room, List<Ability> Taken)>();
+        var seen = new HashSet<(string, string, ItemSet)>();
+        var queue = new Queue<(string Room, List<Ability> Taken, ItemSet Held)>();
 
-        void Visit(string room, List<Ability> taken)
+        void Visit(string room, List<Ability> taken, ItemSet held)
         {
+            held = map.ItemsIn(room).Aggregate(held, (h, item) => h.With(item.Item));
             var now = new List<Ability>(taken);
-            foreach (MapItem item in map.In(room))
+            foreach (MapRelic item in map.RelicsIn(room))
             {
                 if (!now.Contains(item.Ability))
                 {
@@ -413,7 +450,7 @@ public static class MapSolver
             }
 
             string key = string.Join(",", now);
-            if (!seen.Add((room, key)))
+            if (!seen.Add((room, key, held)))
             {
                 return;
             }
@@ -423,17 +460,17 @@ public static class MapSolver
                 result.Add(now.ToArray());
             }
 
-            queue.Enqueue((room, now));
+            queue.Enqueue((room, now, held));
         }
 
-        Visit(map.Start, new List<Ability>());
+        Visit(map.Start, new List<Ability>(), ItemSet.Empty);
         while (queue.Count > 0)
         {
-            (string room, List<Ability> taken) = queue.Dequeue();
+            (string room, List<Ability> taken, ItemSet held) = queue.Dequeue();
             Ability owned = taken.Aggregate(Ability.None, (o, a) => o | a);
-            foreach (MapEdge edge in map.From(room).Where(e => e.Requires.IsMetBy(owned)))
+            foreach (MapEdge edge in map.From(room).Where(e => e.Requires.IsMetBy(owned, held)))
             {
-                Visit(edge.To, taken);
+                Visit(edge.To, taken, held);
             }
         }
 

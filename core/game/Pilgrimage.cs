@@ -1,8 +1,10 @@
+using System.Collections.Generic;
+
 namespace TheDeep;
 
 /// <summary>
-/// The run's progress and its rules, pure: what is done for good (relics taken, bosses beaten, laws broken, cracked rock bored, by
-/// room and node), the shrine last rested at, what the save keeps, and the moments of a visit to a room (the end of what is built is
+/// The run's progress and its rules, pure: what is done for good (relics and items taken, bosses beaten, laws broken, cracked rock bored,
+/// locked doors opened, by room and node), the shrine last rested at, what the save keeps, and the moments of a visit to a room (the end of what is built is
 /// shown once per visit; the end of the game only once its room's boss is broken). The session node applies it to the rooms.
 /// </summary>
 public sealed class Pilgrimage
@@ -51,11 +53,18 @@ public sealed class Pilgrimage
     public bool RelicEmpty(string room, string relic, Ability ability, Ability owned) => Done(room, relic) || (owned & ability) != 0;
 
     /// <summary>What the save keeps of the pilgrim and the map, before it is written.</summary>
-    public void Record(Ability owned, MapState map)
+    public void Record(Ability owned, ItemSet held, MapState map)
     {
         Save.Abilities = (int)owned;
+        Save.Items = new List<string>(held.Ids);
         Save.SetMap(map);
     }
+
+    /// <summary>The items the save holds.</summary>
+    public ItemSet Held => ItemSet.Of(Save.Items);
+
+    /// <summary>An item lies taken when it was, or when it is already held (a room tried with its route's items).</summary>
+    public bool ItemTaken(string room, string node, string item, ItemSet held) => Done(room, node) || held.Contains(item);
 
     /// <summary>
     /// The pilgrim reached a goal: what happens, once per visit. The end of the game ends the run, once its room's boss is broken

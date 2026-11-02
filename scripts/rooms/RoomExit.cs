@@ -18,8 +18,8 @@ public partial class RoomExit : Marker3D
     [Export] public string TargetExit { get; set; } = "";
 
     /// <summary>
-    /// Abilities needed to leave through here, as a <see cref="TheDeep.Requirement"/> expression
-    /// (<c>MagGrip | Harpoon</c>, <c>Drill &amp; Ballast</c>); empty for the base moveset.
+    /// Abilities and items needed to leave through here, as a <see cref="TheDeep.Requirement"/> expression
+    /// (<c>MagGrip | Harpoon</c>, <c>Drill &amp; Ballast</c>, <c>CryptKey</c>); empty for the base moveset.
     /// </summary>
     [Export] public string Requires { get; set; } = "";
 
@@ -39,6 +39,12 @@ public partial class RoomExit : Marker3D
     /// Rimefall's sky). It has no target and no trigger, and it is not a sealed way.
     /// </summary>
     [Export] public bool ArrivalOnly { get; set; }
+
+    /// <summary>
+    /// The locked door that bars this way, or none. Its item must be in every alternative of <see cref="Requires"/>, and in the way
+    /// back's (the room check holds both to it).
+    /// </summary>
+    [Export] public LockedDoor? Door { get; set; }
 
     /// <summary>Trigger area on the play plane (width, height), centered on the marker.</summary>
     [Export] public Vector2 Size { get; set; } = new(1f, 3f);

@@ -62,7 +62,8 @@ public sealed class WorldCheck
         _bounds[name] = (boundsMin, boundsMax);
         _shapes[name] = shape;
         _matters[name] = Matters(shape);
-        _triggers[name] = shape.Exits.Select(e => Box.Around(e.Position, e.Size)).Concat(shape.Relics.Select(r => r.Area)).Concat(shape.Goals).ToList();
+        _triggers[name] = shape.Exits.Select(e => Box.Around(e.Position, e.Size)).Concat(shape.Relics.Select(r => r.Area))
+            .Concat(shape.Items.Select(i => i.Area)).Concat(shape.Goals).ToList();
     }
 
     /// <summary>
@@ -106,6 +107,7 @@ public sealed class WorldCheck
             _problems.Add($"map layout: {problem}");
         }
 
+        _problems.AddRange(Graph.ItemProblems(_sealed.Select(s => s.Requires)).Select(p => $"map: {p}"));
         CheckGeometry();
         string inside = CheckInside();
         MapReport solved = MapSolver.Solve(Graph);
@@ -136,7 +138,7 @@ public sealed class WorldCheck
             return text.ToString();
         }
 
-        text.Append($"MAP OK: {Graph.Rooms.Count} rooms, {Graph.Edges.Count} exits, {Graph.Items.Count} relics, ")
+        text.Append($"MAP OK: {Graph.Rooms.Count} rooms, {Graph.Edges.Count} exits, {Graph.Relics.Count} relics, {Graph.Items.Count} items, ")
             .Append($"{solved.ReachableStates} states, no softlock, ")
             .Append(solved.AbilityCount == 0 ? "no abilities on the map" : $"{solved.Orders.Count} of {solved.PossibleOrders} ability orders");
         foreach ((Ability ability, SortedSet<int> at) in solved.Positions)
@@ -154,9 +156,14 @@ public sealed class WorldCheck
                 text.Append($"\n  {e.From}:{e.FromExit} → {e.To}:{e.ToExit}{(needs == "" ? "" : $"  needs {needs}")}");
             }
 
-            foreach (MapItem item in Graph.Items)
+            foreach (MapRelic item in Graph.Relics)
             {
                 text.Append($"\n  relic {item.Ability} in {item.Room} ({item.Name})");
+            }
+
+            foreach (MapItem item in Graph.Items)
+            {
+                text.Append($"\n  item {item.Item} in {item.Room} ({item.Name})");
             }
 
             AppendPlacements(text, layout);
@@ -240,7 +247,7 @@ public sealed class WorldCheck
     private readonly record struct ReachKey(string Room, Vector2 At, Vector2 Velocity, int Steer, Ability With, bool Clumsy);
 
     /// <summary>
-    /// The triggers a walk of <paramref name="room"/> reaches (its exits by index, then its relics, then its goals), walked once per
+    /// The triggers a walk of <paramref name="room"/> reaches (its exits by index, then its relics, its items, its goals), walked once per
     /// way in, abilities that matter there and pilgrim (cached: the geometry, inside and room-for-error checks share the walks).
     /// </summary>
     private HashSet<int> Reached(string room, WayIn way, Ability with, bool clumsy = false) =>
@@ -259,8 +266,9 @@ public sealed class WorldCheck
         ExitShape x = shape.Exits[index];
         bool vertical = ExitMath.IsVertical(x.Size);
         Vector2 velocity = !vertical ? Vector2.Zero : x.ArrivalSide != 0 ? new Vector2(0f, _limits.Rise) : new Vector2(0f, -5f);
-        return new WayIn($"arriving through {x.Name}", x.Position, velocity, vertical ? x.ArrivalSide : 0, index, requires.IsMetBy(Ability.None),
-            requires.Options.Aggregate(Simulated, (all, option) => all & option));
+        Requirement body = requires.WithoutItems();
+        return new WayIn($"arriving through {x.Name}", x.Position, velocity, vertical ? x.ArrivalSide : 0, index, body.IsMetBy(Ability.None),
+            body.Options.Aggregate(Simulated, (all, option) => all & option.Abilities));
     }
 
     private List<WayIn> WaysIn(string room)
@@ -325,10 +333,12 @@ public sealed class WorldCheck
         {
             ExitShape x = shape.Exits[i];
             var others = Enumerable.Range(0, ways.Count).Where(w => ways[w].Exit != i).ToList();
-            if (others.Count == 0 || !Requirement.TryParse(x.Requires, out Requirement r, out _))
+            if (others.Count == 0 || !Requirement.TryParse(x.Requires, out Requirement written, out _))
             {
                 continue;
             }
+
+            Requirement r = written.WithoutItems(); // an item opens a door at the exit itself: the body must reach the door
 
             if (r.IsMetBy(Ability.None))
             {
@@ -375,6 +385,11 @@ public sealed class WorldCheck
 
         foreach (MapItem item in report.UntakenItems)
         {
+            _problems.Add($"map inside the rooms: the {item.Item} in {item.Room} is reached from no way into the room");
+        }
+
+        foreach (MapRelic item in report.UntakenRelics)
+        {
             _problems.Add($"map inside the rooms: the {item.Ability} relic in {item.Room} is reached from no way into the room");
         }
 
@@ -400,7 +415,7 @@ public sealed class WorldCheck
         WayIn way = state.Entry == ""
             ? new WayIn("waking", shape.Spawn, Vector2.Zero, 0, -1, true, Ability.None)
             : Arriving(shape, shape.Exits.FindIndex(x => x.Name == state.Entry), Requirement.None);
-        int relics = shape.Exits.Count, goals = relics + shape.Relics.Count;
+        int relics = shape.Exits.Count, items = relics + shape.Relics.Count, goals = items + shape.Items.Count;
         Ability owned = state.Owned;
         while (true)
         {
@@ -413,8 +428,11 @@ public sealed class WorldCheck
                 continue;
             }
 
+            // Items change no walk (a door is opened at its exit), so they are taken once the walk is done.
+            ItemSet held = Enumerable.Range(0, shape.Items.Count).Where(i => reached.Contains(items + i))
+                .Aggregate(state.Held, (h, i) => h.With(shape.Items[i].Item));
             var exits = shape.Exits.Where((x, i) => !x.Sealed && reached.Contains(i)).Select(x => x.Name).ToList();
-            return new RoomReach(owned, exits, Enumerable.Range(goals, shape.Goals.Count).Any(reached.Contains));
+            return new RoomReach(owned, held, exits, Enumerable.Range(goals, shape.Goals.Count).Any(reached.Contains));
         }
     }
 
@@ -441,6 +459,11 @@ public sealed class WorldCheck
             if (lost != Ability.None)
             {
                 missed.Add($"the {lost} relic");
+            }
+
+            foreach (string item in exact.Held.Ids.Where(i => !loose.Held.Contains(i)))
+            {
+                missed.Add($"the {item}");
             }
 
             if (exact.Goal && !loose.Goal)

@@ -22,7 +22,7 @@ public class MapSolverTests
         Two(g, "Nave", "Cistern", bToA: "MagGrip");
         Two(g, "Cistern", "Reliquary");
         Two(g, "Nave", "Descent", aToB: "MagGrip");
-        g.AddItem(new MapItem("Reliquary", "MagGrip", Ability.MagGrip));
+        g.AddRelic(new MapRelic("Reliquary", "MagGrip", Ability.MagGrip));
         g.AddGoal("Descent");
         return g;
     }
@@ -58,7 +58,7 @@ public class MapSolverTests
         MapGraph g = Slice();
         g.AddEdge(new MapEdge("DrownedHall", "Pit", "Pit", "Top", Requirement.None));
         g.AddEdge(new MapEdge("Pit", "Top", "DrownedHall", "Pit", Requirement.Parse("Drill")));
-        g.AddItem(new MapItem("Pit", "Drill", Ability.Drill));
+        g.AddRelic(new MapRelic("Pit", "Drill", Ability.Drill));
         MapReport r = MapSolver.Solve(g);
 
         Assert.True(r.SoftlockFree);
@@ -87,9 +87,9 @@ public class MapSolverTests
         Two(g, "Hub", "H");
         Two(g, "Hub", "D", aToB: "Harpoon");
         Two(g, "Hub", "B", aToB: "Drill | Harpoon");
-        g.AddItem(new MapItem("H", "Relic", Ability.Harpoon));
-        g.AddItem(new MapItem("D", "Relic", Ability.Drill));
-        g.AddItem(new MapItem("B", "Relic", Ability.Ballast));
+        g.AddRelic(new MapRelic("H", "Relic", Ability.Harpoon));
+        g.AddRelic(new MapRelic("D", "Relic", Ability.Drill));
+        g.AddRelic(new MapRelic("B", "Relic", Ability.Ballast));
         g.AddGoal("Hub");
         MapReport r = MapSolver.Solve(g);
 
@@ -104,13 +104,13 @@ public class MapSolverTests
     public void ArrivalGivesTheFewestAbilitiesARouteThereNeeds()
     {
         MapGraph g = Slice();
-        Assert.Equal(Ability.None, MapSolver.Arrival(g, "Narthex"));
-        Assert.Equal(Ability.None, MapSolver.Arrival(g, "Cistern"));
+        Assert.Equal(Ability.None, MapSolver.Arrival(g, "Narthex")?.Owned);
+        Assert.Equal(Ability.None, MapSolver.Arrival(g, "Cistern")?.Owned);
         // The Reliquary's own relic is not counted: it is still lying there on arrival.
-        Assert.Equal(Ability.None, MapSolver.Arrival(g, "Reliquary"));
-        Assert.Equal(Ability.MagGrip, MapSolver.Arrival(g, "Descent"));
-        Assert.Equal(Ability.MagGrip, MapSolver.Arrival(g, "Belfry"));
-        Assert.Null(MapSolver.Arrival(g, "Nowhere"));
+        Assert.Equal(Ability.None, MapSolver.Arrival(g, "Reliquary")?.Owned);
+        Assert.Equal(Ability.MagGrip, MapSolver.Arrival(g, "Descent")?.Owned);
+        Assert.Equal(Ability.MagGrip, MapSolver.Arrival(g, "Belfry")?.Owned);
+        Assert.Null(MapSolver.Arrival(g, "Nowhere")?.Owned);
     }
 
     [Fact]
@@ -143,7 +143,7 @@ public class MapSolverTests
         MapGraph g = Slice();
         InsideReport r = MapSolver.SolveInside(g, Inside(s => Open(g, s)));
         Assert.True(r.SoftlockFree);
-        Assert.Empty(r.UntakenItems);
+        Assert.Empty(r.UntakenRelics);
     }
 
     [Fact]
@@ -159,7 +159,7 @@ public class MapSolverTests
         }));
 
         Assert.False(r.GoalReachable);
-        Assert.Equal("Reliquary", Assert.Single(r.UntakenItems).Room);
+        Assert.Equal("Reliquary", Assert.Single(r.UntakenRelics).Room);
     }
 
     [Fact]

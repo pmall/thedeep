@@ -37,7 +37,7 @@ public class MapDraftTests
         Assert.Equal(new[] { "Flooded", "Frozen" }, d.LayerOrder);
         Assert.Equal(4, d.Graph.Edges.Count);
         Assert.Equal("MagGrip | Harpoon", d.Graph.From("B").Single(e => e.To == "C").Requires.ToString());
-        Assert.Equal(Ability.MagGrip, d.Graph.In("B").Single().Ability);
+        Assert.Equal(Ability.MagGrip, d.Graph.RelicsIn("B").Single().Ability);
         Assert.Equal(new[] { ("C", "Warden") }, d.Bosses);
         Assert.Equal(new[] { "C" }, d.Graph.Goals);
     }
@@ -99,7 +99,7 @@ public class MapDraftTests
         var built = new MapGraph { Start = "A" };
         built.AddEdge(new MapEdge("A", "East", "B", "West", Requirement.None));
         built.AddEdge(new MapEdge("B", "West", "A", "East", Requirement.None));
-        built.AddItem(new MapItem("B", "Relic", Ability.MagGrip));
+        built.AddRelic(new MapRelic("B", "Relic", Ability.MagGrip));
         var sealedB = new[] { ("B", Requirement.Parse("Harpoon | MagGrip")) };
 
         Assert.Empty(d.Differences(built, sealedB));
@@ -176,12 +176,12 @@ public class MapDraftTests
     public void ARoomPickedToTryStartsWithWhatARouteThereNeeds()
     {
         MapDraft d = MapDraft.FromMarkdown(File.ReadAllText(PrototypeNetwork()));
-        Assert.Equal(Ability.None, MapSolver.Arrival(d.Graph, "Ossuary"));
-        Ability? arrival = MapSolver.Arrival(d.Graph, "Vault");
+        Assert.Equal(Ability.None, MapSolver.Arrival(d.Graph, "Ossuary")?.Owned);
+        Ability? arrival = MapSolver.Arrival(d.Graph, "Vault")?.Owned;
         Assert.NotNull(arrival);
         Ability vault = arrival.Value;
         Assert.True(vault.HasFlag(Ability.Drill) || vault.HasFlag(Ability.Ballast));
         Assert.True(vault.HasFlag(Ability.MagGrip) || vault.HasFlag(Ability.Harpoon));
-        Assert.Equal(AbilitySet.All.Aggregate(Ability.None, (a, b) => a | b), MapSolver.Arrival(d.Graph, "Heart"));
+        Assert.Equal(AbilitySet.All.Aggregate(Ability.None, (a, b) => a | b), MapSolver.Arrival(d.Graph, "Heart")?.Owned);
     }
 }

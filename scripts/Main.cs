@@ -286,12 +286,14 @@ public partial class Main : Node3D
     }
 
     /// <summary>
-    /// A room picked with `--room` starts with the abilities a route there needs (the world's network and its solver: the fewest a pilgrim
-    /// can own arriving there), so any room can be tried as a player would come to it; `--abilities` says otherwise.
+    /// A room picked with `--room` starts with the abilities and items a route there needs (the world's network and its solver: the
+    /// fewest a pilgrim can hold arriving there), so any room can be tried as a player would come to it; `--abilities` says otherwise
+    /// (and holds no items).
     /// </summary>
     private void GrantStartAbilities(string[] args)
     {
         Ability? grant = null;
+        ItemSet items = ItemSet.Empty;
         if (ArgumentValue(args, AbilitiesArgument) is { } list)
         {
             grant = ParseAbilities(list);
@@ -305,7 +307,10 @@ public partial class Main : Node3D
             try
             {
                 MapDraft draft = MapDraft.FromMarkdown(FileAccess.GetFileAsString(World.Definition.Network));
-                grant = MapSolver.Arrival(draft.Graph, World.RoomName);
+                if (MapSolver.Arrival(draft.Graph, World.RoomName) is { } arrival)
+                {
+                    (grant, items) = (arrival.Owned, arrival.Held);
+                }
             }
             catch (FormatException e)
             {
@@ -316,7 +321,9 @@ public partial class Main : Node3D
         if (grant is { } owned)
         {
             Player.Abilities.Set(owned, true);
-            GD.Print($"[start] {World.RoomName} with {(owned == Ability.None ? "no abilities" : owned.ToString())}");
+            Player.Items.Restore(items);
+            GD.Print($"[start] {World.RoomName} with {(owned == Ability.None ? "no abilities" : owned.ToString())}" +
+                     (items.Count == 0 ? "" : $", holding {items}"));
         }
     }
 

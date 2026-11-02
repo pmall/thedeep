@@ -8,8 +8,8 @@ namespace TheDeep;
 /// The minimal map (the map action: M, Tab, LB): the rooms visited so far as thin outlines placed from the
 /// exits crossed (<see cref="World.Map"/>), the current room brighter, and the pilgrim as a soft pulsing
 /// dot. The ways not yet taken show where they leave their room: a dot for one the pilgrim can take now, small rings in
-/// the gate's colors (<see cref="GateKinds"/>) for one it can't yet, a faint ring for one leading where nothing is built;
-/// a legend names what is shown. Opening it pauses the game and eases in over a dim veil; it closes the same way.
+/// the gate's colors (<see cref="GateKinds"/>, <see cref="ItemKinds"/> for a locked door) for one it can't yet, a faint ring for one
+/// leading where nothing is built; a legend names what is shown, and the items held are listed small, bottom left. Opening it pauses the game and eases in over a dim veil; it closes the same way.
 /// </summary>
 public partial class MapScreen : CanvasLayer
 {
@@ -129,7 +129,9 @@ public partial class MapScreen : CanvasLayer
     private void DrawWays(System.Func<NVector2, Vector2> screen, float ui, float ease)
     {
         Ability owned = Player.Abilities.Unlocked;
+        ItemSet held = Player.Items.Held;
         var shown = new System.Collections.Generic.SortedSet<Ability>();
+        var locks = new System.Collections.Generic.SortedSet<ItemKind>();
         bool open = false, unbuilt = false;
         float pulse = 0.75f + 0.25f * Mathf.Sin(_time * 2.2f);
         foreach (MapWay way in World.Map.Ways)
@@ -146,7 +148,7 @@ public partial class MapScreen : CanvasLayer
                 unbuilt = true;
                 Canvas.DrawArc(at, 4.5f * ui, 0f, Mathf.Tau, 20, Line with { A = 0.35f * ease }, Mathf.Max(1f, 1.4f * ui));
             }
-            else if (need.IsMetBy(owned))
+            else if (need.IsMetBy(owned, held))
             {
                 open = true;
                 Canvas.DrawCircle(at, 8f * ui, Colors.White with { A = 0.12f * ease * pulse });
@@ -154,12 +156,16 @@ public partial class MapScreen : CanvasLayer
             }
             else
             {
-                Ability[] kinds = AbilitySet.All.Where(a => need.Options.Any(o => o.HasFlag(a)) && !owned.HasFlag(a)).ToArray();
-                for (int i = 0; i < kinds.Length; i++)
+                Ability[] kinds = AbilitySet.All.Where(a => need.Options.Any(o => o.Abilities.HasFlag(a)) && !owned.HasFlag(a)).ToArray();
+                ItemKind[] items = need.Items.Ids.Where(id => !held.Contains(id))
+                    .Select(id => World.Definition.Item(id)?.Kind ?? ItemKind.Key).Distinct().ToArray();
+                var colors = kinds.Select(GateKinds.ColorOf).Concat(items.Select(ItemKinds.ColorOf)).ToArray();
+                shown.UnionWith(kinds);
+                locks.UnionWith(items);
+                for (int i = 0; i < colors.Length; i++)
                 {
-                    shown.Add(kinds[i]);
-                    Vector2 c = at + new Vector2((i - 0.5f * (kinds.Length - 1)) * 13f * ui, 0f);
-                    Canvas.DrawArc(c, 5f * ui, 0f, Mathf.Tau, 20, GateKinds.ColorOf(kinds[i]) with { A = 0.95f * ease }, Mathf.Max(1.5f, 2f * ui));
+                    Vector2 c = at + new Vector2((i - 0.5f * (colors.Length - 1)) * 13f * ui, 0f);
+                    Canvas.DrawArc(c, 5f * ui, 0f, Mathf.Tau, 20, colors[i] with { A = 0.95f * ease }, Mathf.Max(1.5f, 2f * ui));
                 }
             }
         }
@@ -174,6 +180,11 @@ public partial class MapScreen : CanvasLayer
         foreach (Ability a in shown)
         {
             entries.Add((LineBook.Shared.Find(GateKinds.MapWord(a))?.Text ?? "", GateKinds.ColorOf(a), false));
+        }
+
+        foreach (ItemKind k in locks)
+        {
+            entries.Add((LineBook.Shared.Find(ItemKinds.MapWord(k))?.Text ?? "", ItemKinds.ColorOf(k), false));
         }
 
         if (unbuilt)
@@ -200,6 +211,23 @@ public partial class MapScreen : CanvasLayer
 
             Canvas.DrawString(_font, new Vector2(x + mark, y), text, HorizontalAlignment.Left, -1, size, new Color(0.86f, 0.86f, 0.95f, 0.8f * ease));
             x += mark + _font.GetStringSize(text, HorizontalAlignment.Left, -1, size).X + gap;
+        }
+
+        DrawHeld(held, ui, ease, size);
+    }
+
+    /// <summary>The items held, bottom left: a filled mark in the kind's color and the item's name, one per line.</summary>
+    private void DrawHeld(ItemSet held, float ui, float ease, int size)
+    {
+        float y = Canvas.Size.Y - 56f * ui - (held.Count - 1) * 26f * ui;
+        foreach (string id in held.Ids)
+        {
+            ItemDefinition? item = World.Definition.Item(id);
+            string name = item is null ? id : LineBook.Shared.Find(item.NameLine)?.Text ?? id;
+            Color color = ItemKinds.ColorOf(item?.Kind ?? ItemKind.Key);
+            Canvas.DrawRect(new Rect2(new Vector2(48f * ui, y - 0.33f * size - 4f * ui), new Vector2(8f * ui, 8f * ui)), color with { A = ease });
+            Canvas.DrawString(_font, new Vector2(64f * ui, y), name, HorizontalAlignment.Left, -1, size, new Color(0.86f, 0.86f, 0.95f, 0.8f * ease));
+            y += 26f * ui;
         }
     }
 

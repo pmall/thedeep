@@ -1,0 +1,80 @@
+[gd_scene format=3]
+; An item lying in a room (scripts/items/ItemPickup.cs): a key turning over a low plinth, or a code's tablet burning there,
+; by the item's kind. Place it with its origin on the floor; set Item (an ItemDefinition of the world's).
+
+[ext_resource type="Script" path="res://scripts/items/ItemPickup.cs" id="1_pickup"]
+[ext_resource type="Script" path="res://scripts/kit/ColumnMesh.cs" id="2_column"]
+[ext_resource type="Material" path="res://assets/materials/stone_mid.tres" id="3_stone_mid"]
+[ext_resource type="Material" path="res://assets/materials/token_glow.tres" id="4_glow"]
+
+[sub_resource type="PrimitiveMesh" id="Plinth"]
+script = ExtResource("2_column")
+Height = 0.7
+Radius = 0.26
+Sides = 10
+Shafts = 1
+Plinth = 0.2
+Capital = 0.15
+
+[sub_resource type="TorusMesh" id="Bow"]
+inner_radius = 0.07
+outer_radius = 0.13
+rings = 16
+ring_segments = 8
+
+[sub_resource type="BoxMesh" id="Shaft"]
+size = Vector3(0.04, 0.34, 0.04)
+
+[sub_resource type="BoxMesh" id="Bit"]
+size = Vector3(0.1, 0.05, 0.035)
+
+[sub_resource type="BoxMesh" id="Tablet"]
+size = Vector3(0.3, 0.4, 0.04)
+
+[node name="ItemPickup" type="Node3D" node_paths=PackedStringArray("Token", "KeyLook", "CodeLook", "Light")]
+script = ExtResource("1_pickup")
+Token = NodePath("Token")
+KeyLook = NodePath("Token/Key")
+CodeLook = NodePath("Token/Code")
+Light = NodePath("Light")
+
+[node name="Plinth" type="MeshInstance3D" parent="."]
+mesh = SubResource("Plinth")
+material_override = ExtResource("3_stone_mid")
+
+[node name="Token" type="Node3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.15, 0)
+
+[node name="Key" type="Node3D" parent="Token"]
+
+; the bow stood up (the torus turned about X), the shaft hanging under it, the bit at its foot
+[node name="Bow" type="MeshInstance3D" parent="Token/Key"]
+transform = Transform3D(1, 0, 0, 0, 0, -1, 0, 1, 0, 0, 0.14, 0)
+mesh = SubResource("Bow")
+material_override = ExtResource("4_glow")
+cast_shadow = 0
+
+[node name="Shaft" type="MeshInstance3D" parent="Token/Key"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.1, 0)
+mesh = SubResource("Shaft")
+material_override = ExtResource("4_glow")
+cast_shadow = 0
+
+[node name="Bit" type="MeshInstance3D" parent="Token/Key"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.05, -0.24, 0)
+mesh = SubResource("Bit")
+material_override = ExtResource("4_glow")
+cast_shadow = 0
+
+[node name="Code" type="Node3D" parent="Token"]
+
+[node name="Tablet" type="MeshInstance3D" parent="Token/Code"]
+mesh = SubResource("Tablet")
+material_override = ExtResource("4_glow")
+cast_shadow = 0
+
+[node name="Light" type="OmniLight3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.15, 0.6)
+light_energy = 1.0
+light_volumetric_fog_energy = 0.5
+omni_range = 3.5

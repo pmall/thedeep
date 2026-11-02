@@ -1,0 +1,7 @@
+[gd_resource type="ShaderMaterial" format=3]
+; The glow of items and their locks (keys, codes), tinted per node by the item's kind (assets/shaders/token_glow.gdshader).
+
+[ext_resource type="Shader" path="res://assets/shaders/token_glow.gdshader" id="1_shader"]
+
+[resource]
+shader = ExtResource("1_shader")

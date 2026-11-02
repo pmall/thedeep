@@ -3,7 +3,7 @@ using Godot;
 namespace TheDeep;
 
 /// <summary>
-/// A gate of iron bars that drops across a way and rises again (a boss's arena, <see cref="BossSeal"/>). The node's
+/// A gate of iron bars that drops across a way and rises again (a boss's arena, <see cref="BossSeal"/>; a <see cref="LockedDoor"/>). The node's
 /// origin is the bottom of the gate where it closes; open, it hangs <see cref="Lift"/> higher, so keep a lintel or
 /// a ceiling there to take it. Its collision is rock (never grippable) and it is not a <see cref="Block"/>: the map's
 /// geometry check counts the way as open, which it is whenever no fight is on.
@@ -47,6 +47,13 @@ public partial class Portcullis : Node3D
     public void Close() => _target = 0f;
 
     public void Open() => _target = 1f;
+
+    /// <summary>Open or shut at once, without the drop or the winch (a room loaded with the gate already so).</summary>
+    public void Settle(bool open)
+    {
+        _open = _target = open ? 1f : 0f;
+        Place();
+    }
 
     public override void _PhysicsProcess(double delta)
     {

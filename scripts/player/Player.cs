@@ -71,6 +71,9 @@ public partial class Player : CharacterBody3D
 
     public AbilitySet Abilities { get; } = new();
 
+    /// <summary>The items held (keys, codes): the doors they open (<see cref="LockedDoor"/>).</summary>
+    public Inventory Items { get; } = new();
+
     /// <summary>The pilgrim's health (MaxHealth hits, a grace period after each).</summary>
     public Vitality Vitality => _vitality ??= new Vitality(Tuning.MaxHealth, Tuning.HurtGrace);
 

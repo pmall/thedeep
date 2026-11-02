@@ -1,4 +1,5 @@
 using System;
+using System.Linq;
 using Xunit;
 
 namespace TheDeep.Tests;
@@ -44,7 +45,7 @@ public class RequirementTests
 
         Assert.True(r.IsMetBy(Ability.MagGrip));
         Assert.False(r.IsMetBy(Ability.Drill));
-        Assert.Equal(new[] { Ability.MagGrip, Ability.Drill | Ability.Ballast }, r.Options);
+        Assert.Equal(new[] { Ability.MagGrip, Ability.Drill | Ability.Ballast }, r.Options.Select(o => o.Abilities));
     }
 
     [Fact]
@@ -62,7 +63,7 @@ public class RequirementTests
     {
         Requirement r = Requirement.Parse("MagGrip & Harpoon | MagGrip | MagGrip");
 
-        Assert.Equal(new[] { Ability.MagGrip }, r.Options);
+        Assert.Equal(new[] { Ability.MagGrip }, r.Options.Select(o => o.Abilities));
     }
 
     [Fact]
@@ -74,8 +75,8 @@ public class RequirementTests
     }
 
     [Theory]
-    [InlineData("Magrip", "unknown ability 'Magrip'")]
     [InlineData("MagGrip |", "expected an ability")]
+    [InlineData("2Key", "starts with a digit")]
     [InlineData("(MagGrip", "missing ')'")]
     [InlineData("MagGrip Harpoon", "unexpected 'H'")]
     [InlineData("MagGrip + Harpoon", "unexpected '+'")]
@@ -85,6 +86,47 @@ public class RequirementTests
         Assert.Contains(message, e.Message);
         Assert.False(Requirement.TryParse(text, out _, out string error));
         Assert.Contains(message, error);
+    }
+
+    [Fact]
+    public void ANameThatIsNoAbilityIsAnItem()
+    {
+        Requirement r = Requirement.Parse("Drill & CryptKey | Harpoon");
+
+        Assert.Equal(ItemSet.Of("CryptKey"), r.Items);
+        Assert.True(r.IsMetBy(Ability.Harpoon));
+        Assert.False(r.IsMetBy(Ability.Drill));
+        Assert.True(r.IsMetBy(Ability.Drill, ItemSet.Of("CryptKey")));
+        Assert.False(r.IsMetBy(Ability.None, ItemSet.Of("CryptKey", "Other")));
+        Assert.Equal("Harpoon | Drill & CryptKey", r.ToString());
+        Assert.Equal(r.Options, Requirement.Parse(r.ToString()).Options);
+    }
+
+    [Fact]
+    public void AnItemAloneIsMetByHoldingIt()
+    {
+        Requirement r = Requirement.Parse("CryptKey");
+
+        Assert.False(r.IsMetBy(Ability.None));
+        Assert.True(r.IsMetBy(Ability.None, ItemSet.Of("CryptKey")));
+    }
+
+    [Fact]
+    public void WithoutItemsIsWhatTheBodyMustDoToReachTheDoor()
+    {
+        Assert.True(Requirement.Parse("CryptKey").WithoutItems().IsMetBy(Ability.None));
+        Assert.Equal("Drill", Requirement.Parse("Drill & CryptKey").WithoutItems().ToString());
+        Assert.Equal("", Requirement.Parse("Drill | CryptKey").WithoutItems().ToString());
+        Requirement plain = Requirement.Parse("MagGrip | Harpoon");
+        Assert.Same(plain, plain.WithoutItems());
+    }
+
+    [Fact]
+    public void AnItemAlternativeCoveredByLessIsDropped()
+    {
+        Requirement r = Requirement.Parse("CryptKey & Drill | CryptKey");
+
+        Assert.Equal("CryptKey", r.ToString());
     }
 
     [Theory]

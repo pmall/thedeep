@@ -9,8 +9,8 @@ namespace TheDeep;
 /// The whole run, from a new game to the end (`-- --playthrough-check`, run by tools/check.sh). It reads the built map from
 /// the room scenes' markers, asks the solver for a shortest route from the start to the goal (<see cref="MapSolver.Route"/>),
 /// and plays it in the real game: every way is crossed through its real exit (the pilgrim put in its area moving out, as
-/// <see cref="TravelValidator"/> does) only once the pilgrim owns what it needs; in each room on the way it takes the relics
-/// (walking into them), breaks the laws (pressing on at the lip through the real inputs) and fights the bosses (through the
+/// <see cref="TravelValidator"/> does) only once the pilgrim holds what it needs, a locked door on it opened first by coming near it;
+/// in each room on the way it takes the relics and items (walking into them), breaks the laws (pressing on at the lip through the real inputs) and fights the bosses (through the
 /// real inputs, kept alive: the rules, not the balance) before leaving. At the goal, reaching the heart plays the end card.
 /// Moving inside a room is the geometry check's to prove (<see cref="ReachPlanner"/>); this proves the game's flow: abilities
 /// in route order, gates, bosses, laws, the end. Prints `PLAYTHROUGH OK` or `PLAYTHROUGH CHECK` errors.
@@ -21,7 +21,7 @@ public partial class PlaythroughCheck : Node
     public required Player Player { get; init; }
     public required Session Session { get; init; }
 
-    private enum Phase { Done = -1, Relic, Law, Boss, Cross, Arrive, End }
+    private enum Phase { Done = -1, Relic, Item, Law, Boss, Door, Cross, Arrive, End }
 
     private readonly List<string> _problems = new();
     private readonly List<string> _log = new();
@@ -31,9 +31,10 @@ public partial class PlaythroughCheck : Node
     private int _ticks;
     private bool _ended;
     private AbilityRelic? _relic;
+    private ItemPickup? _item;
     private LawBreak? _law;
     private BossSeal? _seal;
-    private int _bosses, _laws, _relics;
+    private int _bosses, _laws, _relics, _items, _doors;
 
     public PlaythroughCheck()
     {
@@ -57,7 +58,12 @@ public partial class PlaythroughCheck : Node
 
                 foreach (AbilityRelic relic in room.All<AbilityRelic>())
                 {
-                    map.AddItem(new MapItem(name, relic.Name, relic.Ability));
+                    map.AddRelic(new MapRelic(name, relic.Name, relic.Ability));
+                }
+
+                foreach (ItemPickup pickup in room.All<ItemPickup>())
+                {
+                    map.AddItem(new MapItem(name, pickup.Name, pickup.Item.Id));
                 }
 
                 if (room.All<MapGoal>().Any())
@@ -85,8 +91,8 @@ public partial class PlaythroughCheck : Node
 
     private MapEdge Hop => _route[_hop];
 
-    /// <summary>After the boss (if any) of the room: leave by the next way, or, at the route's end, reach the heart.</summary>
-    private Phase AfterBoss => _hop < _route.Count ? Phase.Cross : Phase.End;
+    /// <summary>After the boss (if any) of the room: leave by the next way (through its door first), or, at the route's end, reach the heart.</summary>
+    private Phase AfterBoss => _hop < _route.Count ? Phase.Door : Phase.End;
 
     private void Begin(Phase task)
     {
@@ -112,7 +118,7 @@ public partial class PlaythroughCheck : Node
                     _relic = room.All<AbilityRelic>().FirstOrDefault(r => !r.Taken && !Player.Abilities.Has(r.Ability));
                     if (_relic is null)
                     {
-                        Begin(Phase.Law);
+                        Begin(Phase.Item);
                         return;
                     }
 
@@ -128,6 +134,56 @@ public partial class PlaythroughCheck : Node
                 else if (_ticks > 600)
                 {
                     Fail($"in {World.RoomName}, walking into the relic did not give {_relic.Ability}");
+                }
+
+                break;
+            case Phase.Item:
+                if (_item is null)
+                {
+                    _item = room.All<ItemPickup>().FirstOrDefault(i => !i.Taken && !Player.Items.Holds(i.Item.Id));
+                    if (_item is null)
+                    {
+                        Begin(Phase.Law);
+                        return;
+                    }
+
+                    Player.Respawn(_item.GlobalPosition with { Z = 0f });
+                }
+                else if (Player.Items.Holds(_item.Item.Id) && Player.InControl)
+                {
+                    _log.Add($"{World.RoomName}: took {_item.Item.Id}");
+                    _items++;
+                    _item = null;
+                    _ticks = 0;
+                }
+                else if (_ticks > 600)
+                {
+                    Fail($"in {World.RoomName}, walking into the item did not give {_item.Item.Id}");
+                }
+
+                break;
+            case Phase.Door:
+                if (room.FindExit(Hop.FromExit)?.Door is not { Opened: false } door)
+                {
+                    Begin(Phase.Cross);
+                    return;
+                }
+
+                if (_ticks == 1)
+                {
+                    float inward = (room.BoundsMin.X + room.BoundsMax.X) * 0.5f > door.GlobalPosition.X ? 1f : -1f;
+                    Player.Respawn(door.GlobalPosition with { Z = 0f } + new Vector3(inward * 1.2f, 0.1f, 0f));
+                }
+
+                if (door.Opened && door.Gate.Raised)
+                {
+                    _log.Add($"{World.RoomName}: {door.Name} opened with {door.Item.Id}");
+                    _doors++;
+                    Begin(Phase.Cross);
+                }
+                else if (_ticks > 600)
+                {
+                    Fail($"in {World.RoomName}, coming near {door.Name} holding {door.Item.Id} did not open it");
                 }
 
                 break;
@@ -175,9 +231,10 @@ public partial class PlaythroughCheck : Node
                     return;
                 }
 
-                if (!Hop.Requires.IsMetBy(Player.Abilities.Unlocked))
+                if (!Hop.Requires.IsMetBy(Player.Abilities.Unlocked, Player.Items.Held))
                 {
-                    Fail($"the route leaves {Hop.From} by {Hop.FromExit} needing {Hop.Requires}, but the pilgrim holds only {Player.Abilities.Unlocked}");
+                    Fail($"the route leaves {Hop.From} by {Hop.FromExit} needing {Hop.Requires}, but the pilgrim holds only " +
+                         $"{MapSolver.Holding(Player.Abilities.Unlocked, Player.Items.Held)}");
                     return;
                 }
 
@@ -329,8 +386,8 @@ public partial class PlaythroughCheck : Node
 
         if (_problems.Count == 0)
         {
-            GD.Print($"PLAYTHROUGH OK: {_route.Count} ways from {_route[0].From} to {_route[^1].To}, {_relics} relics, {_laws} laws broken, " +
-                     $"{_bosses} bosses broken, the end card");
+            GD.Print($"PLAYTHROUGH OK: {_route.Count} ways from {_route[0].From} to {_route[^1].To}, {_relics} relics, {_items} items, {_doors} doors " +
+                     $"opened, {_laws} laws broken, {_bosses} bosses broken, the end card");
         }
 
         GetTree().Quit(_problems.Count == 0 ? 0 : 1);

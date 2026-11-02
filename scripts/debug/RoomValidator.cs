@@ -114,7 +114,7 @@ public partial class RoomValidator : Node
         GetTree().Quit(_problems.Count == 0 ? 0 : 1);
     }
 
-    /// <summary>The main scene as authored (not as it runs): its nodes' required exports, and its world's.</summary>
+    /// <summary>The main scene as authored (not as it runs): its nodes' required exports, and its world's; the world's item ids.</summary>
     private void CheckMainScene()
     {
         string path = GetTree().CurrentScene.SceneFilePath;
@@ -126,6 +126,23 @@ public partial class RoomValidator : Node
         finally
         {
             main.Free();
+        }
+
+        foreach (ItemDefinition item in World.Definition.Items)
+        {
+            string id = item.Id;
+            if (id == "" || !char.IsLetter(id[0]) || !id.All(c => char.IsLetterOrDigit(c) || c == '_'))
+            {
+                _problems.Add($"world item {item.ResourcePath}: its id \"{id}\" is not a word starting with a letter");
+            }
+            else if (System.Enum.TryParse(id, out Ability _))
+            {
+                _problems.Add($"world item {item.ResourcePath}: its id {id} is an ability's name");
+            }
+            else if (World.Definition.Items.Count(i => i.Id == id) > 1)
+            {
+                _problems.Add($"world item {item.ResourcePath}: another of the world's items has the id {id}");
+            }
         }
     }
 
@@ -180,6 +197,8 @@ public partial class RoomValidator : Node
             CheckExit(exit, path, Inside(exit.GlobalPosition), Problem);
         }
 
+        CheckDoors(room, exits, Problem);
+
         if (!room.PhotoSpots().Any())
         {
             Problem("no PhotoSpot (tools/capture.sh needs at least one)");
@@ -193,7 +212,7 @@ public partial class RoomValidator : Node
         return exits.Count;
     }
 
-    /// <summary>The room's part of the map: its exits (one edge each, for leaving through it), relics, goals and shape.</summary>
+    /// <summary>The room's part of the map: its exits (one edge each, for leaving through it), relics, items, goals and shape.</summary>
     private void Extract(Room room, string name, List<RoomExit> exits, WorldCheck world)
     {
         static Box BoxOf(Block b) => Box.Around(b.GlobalPosition.Flat(), new NVector2(b.Size.X, b.Size.Y));
@@ -213,10 +232,15 @@ public partial class RoomValidator : Node
         // Where walking takes a relic (its range from the feet) and reaches a goal (the feet inside its area), as trigger boxes.
         var relics = room.All<AbilityRelic>()
             .Select(r => (Box.Around(r.GlobalPosition.Flat() + new NVector2(0f, 0.1f), new NVector2(1.6f, 0.4f)), r.Ability)).ToList();
+        var items = room.All<ItemPickup>()
+            .Select(i => (Box.Around(i.GlobalPosition.Flat() + new NVector2(0f, 0.1f), new NVector2(1.6f, 0.4f)), i.Item.Id)).ToList();
         var goals = room.All<MapGoal>().Where(g => g.Size != Vector2.Zero).Select(g => Box.Around(g.GlobalPosition.Flat(), g.Size.ToCore())).ToList();
         var metal = room.Blocks().Where(b => b.Surface == SurfaceKind.Metal && !b.Cracked).Select(BoxOf).ToList();
         world.AddRoom(name, room.BoundsMin.ToCore(), room.BoundsMax.ToCore(), new RoomShape(solids, exitShapes, wakes, anchors,
-            room.All<Lift>().Select(l => l.Path).ToList(), sound, waters, heat, relics, goals, metal, room.SpawnPoint.GlobalPosition.Flat()));
+            room.All<Lift>().Select(l => l.Path).ToList(), sound, waters, heat, relics, goals, metal, room.SpawnPoint.GlobalPosition.Flat())
+        {
+            Items = items,
+        });
 
         foreach (RoomExit exit in exits.Where(e => e.TargetRoom != "" && ResourceLoader.Exists(e.TargetRoom)))
         {
@@ -234,7 +258,12 @@ public partial class RoomValidator : Node
 
         foreach (AbilityRelic relic in room.All<AbilityRelic>())
         {
-            world.Graph.AddItem(new MapItem(name, relic.Name, relic.Ability));
+            world.Graph.AddRelic(new MapRelic(name, relic.Name, relic.Ability));
+        }
+
+        foreach (ItemPickup pickup in room.All<ItemPickup>())
+        {
+            world.Graph.AddItem(new MapItem(name, pickup.Name, pickup.Item.Id));
         }
 
         if (room.All<MapGoal>().Any())
@@ -316,6 +345,84 @@ public partial class RoomValidator : Node
         }
 
         return text.ToString();
+    }
+
+    /// <summary>
+    /// Locked doors against the exits they bar: each door is one exit's (<see cref="RoomExit.Door"/>), its item is in every alternative
+    /// of that exit's requirement and of the way back's, and an exit whose requirement names an item has the door for it, or leads
+    /// through one (the way back of a door in the next room). Every item lying here is one of the world's.
+    /// </summary>
+    private void CheckDoors(Room room, List<RoomExit> exits, System.Action<string> problem)
+    {
+        foreach (LockedDoor door in room.All<LockedDoor>())
+        {
+            int barring = exits.Count(e => e.Door == door);
+            if (barring != 1)
+            {
+                problem($"locked door {door.Name} bars {barring} exits (point one exit's Door at it)");
+            }
+        }
+
+        foreach (RoomExit exit in exits.Where(e => !e.ArrivalOnly && Requirement.TryParse(e.Requires, out _, out _)))
+        {
+            Requirement requires = exit.Requirement;
+            if (exit.Door is { } door && requires.Options.Any(o => !o.Items.Contains(door.Item.Id)))
+            {
+                problem($"exit {exit.Name} is barred by {door.Name}, so every alternative of its requirement needs {door.Item.Id} (it is \"{exit.Requires}\")");
+            }
+
+            WayBack? arrival = ArrivalOf(exit);
+            if (exit.Door is { } barred && !exit.OneWay && arrival is { } way
+                && (!Requirement.TryParse(way.Requires, out Requirement back, out _) || back.Options.Any(o => !o.Items.Contains(barred.Item.Id))))
+            {
+                problem($"exit {exit.Name} is barred by {barred.Name}, so the way back ({exit.TargetRoom}:{exit.TargetExit}) needs {barred.Item.Id} " +
+                        "too, in every alternative (or mark this exit OneWay)");
+            }
+
+            foreach (string item in requires.Items.Ids)
+            {
+                bool here = exit.Door?.Item.Id == item, there = arrival?.DoorItem == item;
+                if (!here && !there)
+                {
+                    problem($"exit {exit.Name} needs {item}, but no locked door for it bars this way (on either side)");
+                }
+            }
+        }
+
+        foreach (ItemPickup pickup in room.All<ItemPickup>())
+        {
+            if (World.Definition.Item(pickup.Item.Id) != pickup.Item)
+            {
+                problem($"item {pickup.Name} lays {pickup.Item.Id} ({pickup.Item.ResourcePath}), which is not one of the world's items");
+            }
+        }
+    }
+
+    /// <summary>What the door checks read of the exit a way arrives through: its requirement, and the item of the door barring it.</summary>
+    private readonly record struct WayBack(string Requires, string? DoorItem);
+
+    /// <summary>The exit an exit leads to, in its target room (the scene instanced, then freed), or null.</summary>
+    private static WayBack? ArrivalOf(RoomExit exit)
+    {
+        if (exit.TargetRoom == "" || !ResourceLoader.Exists(exit.TargetRoom))
+        {
+            return null;
+        }
+
+        Node target = GD.Load<PackedScene>(exit.TargetRoom).Instantiate();
+        try
+        {
+            if (target.FindChild(exit.TargetExit, recursive: true, owned: true) is not RoomExit arrival)
+            {
+                return null;
+            }
+
+            return new WayBack(arrival.Requires, arrival.Door?.Item.Id);
+        }
+        finally
+        {
+            target.Free();
+        }
     }
 
     private static void CheckExit(RoomExit exit, string path, bool inside, System.Action<string> problem)

@@ -5,7 +5,8 @@ using Godot;
 namespace TheDeep;
 
 /// <summary>
-/// The game's flow around the pilgrim: resting at shrines (heal and save), taking ability relics, reading
+/// The game's flow around the pilgrim: resting at shrines (heal and save), taking ability relics (items and their doors are the
+/// <see cref="Keyring"/>'s), reading
 /// scripture plates, lines spoken to it (<see cref="Proclamation"/>), boss fights (<see cref="BossSeal"/>), law breaks
 /// (<see cref="LawBreak"/>), lifts (<see cref="Lift"/>) and cracked rock broken by the Drill (it stays broken), dying or
 /// falling out of a room and coming back at the last shrine rested at, the end of what is built
@@ -70,6 +71,7 @@ public partial class Session : Node
     {
         _pilgrimage = new Pilgrimage(data);
         Player.Abilities.Set((Ability)data.Abilities, true);
+        Player.Items.Restore(_pilgrimage.Held);
         World.Map.Restore(data.MapRooms(), World.RoomName, data.MapWays(), data.Taken);
         // Entered again where the save placed it (or at the origin): its ways out are read afresh from the room.
         World.Enter(World.Room, World.Map.Find(World.RoomName)?.Offset ?? System.Numerics.Vector2.Zero);
@@ -416,8 +418,17 @@ public partial class Session : Node
         await Banner.Show(law.BrokenLine, law.BrokenHintLine, 4f);
     }
 
-    /// <summary>Done for good (a relic taken, a boss beaten, a law broken): kept in the save, written at once.</summary>
-    private void Remember(string node)
+    /// <summary>Whether the node <paramref name="node"/> of <paramref name="room"/> is done for good (taken, beaten, broken, opened).</summary>
+    public bool Done(string room, string node) => _pilgrimage.Done(room, node);
+
+    /// <summary>Whether an item pickup lies taken (<see cref="Pilgrimage.ItemTaken"/>).</summary>
+    public bool ItemTaken(string room, string node, string item, ItemSet held) => _pilgrimage.ItemTaken(room, node, item, held);
+
+    /// <summary>
+    /// Done for good in the current room (a relic or an item taken, a boss beaten, a law broken, a door opened): kept in the save,
+    /// written at once.
+    /// </summary>
+    public void Remember(string node)
     {
         _pilgrimage.Remember(World.RoomName, node);
         Write();
@@ -425,7 +436,7 @@ public partial class Session : Node
 
     private void Write()
     {
-        _pilgrimage.Record(Player.Abilities.Unlocked, World.Map);
+        _pilgrimage.Record(Player.Abilities.Unlocked, Player.Items.Held, World.Map);
         if (Persist)
         {
             SaveFile.Write(World.Definition.SavePath, Save);

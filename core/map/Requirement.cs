@@ -5,31 +5,45 @@ using System.Linq;
 namespace TheDeep;
 
 /// <summary>
-/// What a connection needs, as an expression over <see cref="Ability"/> names: <c>MagGrip | Harpoon</c>,
-/// <c>Drill &amp; (Ballast | HeatPlating)</c>. <c>&amp;</c> binds tighter than <c>|</c>. Empty (or
-/// <c>None</c>) means the base moveset. Stored as alternatives, each a set of abilities that is enough
-/// on its own (disjunctive normal form), which is what the map solver consumes.
+/// What a connection needs, as an expression over <see cref="Ability"/> names and item ids (keys and codes, <see cref="ItemSet"/>):
+/// <c>MagGrip | Harpoon</c>, <c>Drill &amp; (Ballast | HeatPlating)</c>, <c>CryptKey</c>, <c>Drill &amp; CryptKey</c>. A name that is
+/// an ability is that ability; any other is an item (the world check fails if no item of that id lies in the world, which catches a
+/// misspelled ability too). <c>&amp;</c> binds tighter than <c>|</c>. Empty (or <c>None</c>) means the base moveset. Stored as
+/// alternatives, each enough on its own (disjunctive normal form), which is what the map solver consumes.
 /// </summary>
 public sealed class Requirement
 {
     /// <summary>Nothing needed.</summary>
-    public static readonly Requirement None = new(new[] { Ability.None });
+    public static readonly Requirement None = new(new[] { Need.Nothing });
 
-    private Requirement(IReadOnlyList<Ability> options)
+    private Requirement(IReadOnlyList<Need> options)
     {
         Options = options;
     }
 
-    /// <summary>Alternatives: owning every ability of any one of them is enough. Minimal and sorted.</summary>
-    public IReadOnlyList<Ability> Options { get; }
+    /// <summary>Alternatives: meeting any one of them is enough. Minimal and sorted.</summary>
+    public IReadOnlyList<Need> Options { get; }
 
-    public bool IsMetBy(Ability owned) => Options.Any(option => (owned & option) == option);
+    /// <summary>Every item some alternative needs.</summary>
+    public ItemSet Items => ItemSet.Of(Options.SelectMany(o => o.Items.Ids));
+
+    public bool IsMetBy(Ability owned) => IsMetBy(owned, ItemSet.Empty);
+
+    public bool IsMetBy(Ability owned, ItemSet held) => Options.Any(option => option.IsMetBy(owned, held));
+
+    /// <summary>
+    /// The requirement with its items dropped: what the body must be able to do to reach the way. An item opens a door at the way
+    /// itself (a key's lock, a code's seal), so <c>Drill &amp; CryptKey</c> is reached with the Drill, and <c>CryptKey</c> with the base
+    /// moveset.
+    /// </summary>
+    public Requirement WithoutItems() =>
+        Options.All(o => o.Items.Count == 0) ? this : new Requirement(Minimize(Options.Select(o => o with { Items = ItemSet.Empty }).ToList()));
 
     /// <summary>Parses <paramref name="text"/>, or throws <see cref="FormatException"/> saying what is wrong and where.</summary>
     public static Requirement Parse(string text)
     {
         var parser = new Parser(text);
-        List<Ability> options = parser.ParseAll();
+        List<Need> options = parser.ParseAll();
         return new Requirement(Minimize(options));
     }
 
@@ -49,17 +63,20 @@ public sealed class Requirement
         }
     }
 
-    /// <summary>Canonical text, e.g. <c>Drill &amp; Ballast | Drill &amp; HeatPlating</c>; empty when nothing is needed.</summary>
-    public override string ToString() =>
-        string.Join(" | ", Options.Select(o => string.Join(" & ", Enum.GetValues<Ability>().Where(a => a != Ability.None && o.HasFlag(a)))));
+    /// <summary>Canonical text, e.g. <c>Drill &amp; Ballast | Drill &amp; HeatPlating</c>, abilities before items; empty when nothing is needed.</summary>
+    public override string ToString() => string.Join(" | ", Options.Select(Text));
+
+    private static string Text(Need o) =>
+        string.Join(" & ", Enum.GetValues<Ability>().Where(a => a != Ability.None && o.Abilities.HasFlag(a)).Select(a => a.ToString()).Concat(o.Items.Ids));
 
     /// <summary>Drops alternatives that need more than another one does, then sorts.</summary>
-    private static List<Ability> Minimize(List<Ability> options)
+    private static List<Need> Minimize(List<Need> options)
     {
         var distinct = options.Distinct().ToList();
         return distinct
-            .Where(o => !distinct.Any(other => other != o && (o & other) == other))
-            .OrderBy(o => System.Numerics.BitOperations.PopCount((uint)o)).ThenBy(o => o)
+            .Where(o => !distinct.Any(other => !other.Equals(o) && other.IsCoveredBy(o)))
+            .OrderBy(o => System.Numerics.BitOperations.PopCount((uint)o.Abilities) + o.Items.Count).ThenBy(o => o.Abilities)
+            .ThenBy(o => o.Items.ToString(), StringComparer.Ordinal)
             .ToList();
     }
 
@@ -74,15 +91,15 @@ public sealed class Requirement
             _text = text ?? "";
         }
 
-        public List<Ability> ParseAll()
+        public List<Need> ParseAll()
         {
             SkipSpaces();
             if (_at == _text.Length)
             {
-                return new List<Ability> { Ability.None };
+                return new List<Need> { Need.Nothing };
             }
 
-            List<Ability> result = ParseOr();
+            List<Need> result = ParseOr();
             SkipSpaces();
             if (_at < _text.Length)
             {
@@ -92,7 +109,7 @@ public sealed class Requirement
             return result;
         }
 
-        private List<Ability> ParseOr()
+        private List<Need> ParseOr()
         {
             var options = ParseAnd();
             while (Accept('|'))
@@ -103,25 +120,25 @@ public sealed class Requirement
             return options;
         }
 
-        private List<Ability> ParseAnd()
+        private List<Need> ParseAnd()
         {
-            List<Ability> options = ParseAtom();
+            List<Need> options = ParseAtom();
             while (Accept('&'))
             {
-                List<Ability> right = ParseAtom();
+                List<Need> right = ParseAtom();
                 // (a | b) & (c | d) = a&c | a&d | b&c | b&d
-                options = options.SelectMany(l => right.Select(r => l | r)).ToList();
+                options = options.SelectMany(l => right.Select(l.And)).ToList();
             }
 
             return options;
         }
 
-        private List<Ability> ParseAtom()
+        private List<Need> ParseAtom()
         {
             SkipSpaces();
             if (Accept('('))
             {
-                List<Ability> inner = ParseOr();
+                List<Need> inner = ParseOr();
                 if (!Accept(')'))
                 {
                     throw Error("missing ')'");
@@ -131,24 +148,28 @@ public sealed class Requirement
             }
 
             int start = _at;
-            while (_at < _text.Length && char.IsLetter(_text[_at]))
+            while (_at < _text.Length && (char.IsLetterOrDigit(_text[_at]) || _text[_at] == '_'))
             {
                 _at++;
             }
 
             if (start == _at)
             {
-                throw Error(_at < _text.Length ? $"expected an ability, found '{_text[_at]}'" : "expected an ability");
+                throw Error(_at < _text.Length ? $"expected an ability or an item, found '{_text[_at]}'" : "expected an ability or an item");
             }
 
             string name = _text[start.._at];
-            if (!Enum.TryParse(name, ignoreCase: false, out Ability ability) || !Enum.IsDefined(ability))
+            if (!char.IsLetter(name[0]))
             {
-                string known = string.Join(", ", Enum.GetNames<Ability>());
-                throw new FormatException($"unknown ability '{name}' in \"{_text}\" (known: {known})");
+                throw new FormatException($"'{name}' in \"{_text}\" starts with a digit (an ability or an item id starts with a letter)");
             }
 
-            return new List<Ability> { ability };
+            return new List<Need>
+            {
+                Enum.TryParse(name, ignoreCase: false, out Ability ability) && Enum.IsDefined(ability)
+                    ? new Need(ability, ItemSet.Empty)
+                    : new Need(Ability.None, ItemSet.Of(name)),
+            };
         }
 
         private bool Accept(char c)

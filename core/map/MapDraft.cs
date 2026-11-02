@@ -16,6 +16,7 @@ namespace TheDeep;
 /// way A -> B : MagGrip | Harpoon  # ... needs this
 /// way A &lt;-> B                     # both ways, needing nothing (or ": req" for both)
 /// relic Reliquary MagGrip
+/// item Ossuary CryptKey           # an item (a key, a code) lying in a room; a way names it like an ability: way A -> B : CryptKey
 /// boss Chapterhouse Precentor
 /// goal Heart
 /// milestone Brink ThirdLaw        # a story beat tied to depth (outside the ability graph), in story order
@@ -147,7 +148,16 @@ public sealed class MapDraft
                     throw new FormatException($"unknown ability {args[1]}");
                 }
 
-                Graph.AddItem(new MapItem(args[0], "Relic", ability));
+                Graph.AddRelic(new MapRelic(args[0], "Relic", ability));
+                break;
+            case "item":
+                Expect(args, 2);
+                if (Enum.TryParse(args[1], out Ability _))
+                {
+                    throw new FormatException($"{args[1]} is an ability: it lies in a relic, not an item");
+                }
+
+                Graph.AddItem(new MapItem(args[0], "Item", args[1]));
                 break;
             case "goal":
                 Graph.AddGoal(Expect(args, 1)[0]);
@@ -238,7 +248,7 @@ public sealed class MapDraft
 
         foreach (Ability a in Enum.GetValues<Ability>().Where(a => a != Ability.None))
         {
-            int relics = Graph.Items.Count(i => i.Ability == a);
+            int relics = Graph.Relics.Count(i => i.Ability == a);
             if (relics != 1)
             {
                 problems.Add($"{a} lies in {relics} relics (one each)");
@@ -250,6 +260,7 @@ public sealed class MapDraft
             }
         }
 
+        problems.AddRange(Graph.ItemProblems(Array.Empty<Requirement>()));
         if (report.Orders.Count < Targets.Orders)
         {
             problems.Add($"only {report.Orders.Count} of {report.PossibleOrders} ability orders are achievable (target {Targets.Orders})");
@@ -280,7 +291,7 @@ public sealed class MapDraft
     /// <summary>
     /// Where the draft disagrees with the rooms already built (their markers are the truth). For each built room:
     /// its exits to built rooms (target and requirement) must be the draft's ways from it to built rooms, its sealed
-    /// exits (requirement) the draft's ways from it to rooms not built yet, and its relics the draft's. Goals are not
+    /// exits (requirement) the draft's ways from it to rooms not built yet, and its relics and items the draft's. Goals are not
     /// compared: a built slice may end where the whole game does not.
     /// </summary>
     public List<string> Differences(MapGraph built, IReadOnlyList<(string Room, Requirement Requires)> sealedExits)
@@ -331,8 +342,11 @@ public sealed class MapDraft
                 sealedExits.Where(s => s.Room == room).Select(s => Way("(not built)", s.Requires)).ToList(),
                 draftWays.Where(e => !built.Rooms.Contains(e.To)).Select(e => Way("(not built)", e.Requires)).ToList());
             Compare(room, "a relic",
-                built.In(room).Select(i => i.Ability.ToString()).ToList(),
-                Graph.In(room).Select(i => i.Ability.ToString()).ToList());
+                built.RelicsIn(room).Select(i => i.Ability.ToString()).ToList(),
+                Graph.RelicsIn(room).Select(i => i.Ability.ToString()).ToList());
+            Compare(room, "an item",
+                built.ItemsIn(room).Select(i => i.Item).ToList(),
+                Graph.ItemsIn(room).Select(i => i.Item).ToList());
         }
 
         return problems;

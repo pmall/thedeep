@@ -3,7 +3,7 @@ using Godot;
 namespace TheDeep;
 
 /// <summary>
-/// A world as data (docs/principles.md#bricks): its rooms, its network, its layers and their biomes, its line book
+/// A world as data (docs/principles.md#bricks): its rooms, its network, its layers and their biomes, its items, its line book
 /// and where it starts. The code runs whatever world it is given: the prototype is one (worlds/prototype/world.tres), the real
 /// game will be another. Picked with `--world &lt;name&gt;` (worlds/&lt;name&gt;/world.tres), else the main scene's.
 /// </summary>
@@ -30,6 +30,9 @@ public partial class WorldDefinition : Resource
     /// <summary>The descent's layers, from the surface down: the names the network gives its rooms, and their biomes.</summary>
     [Export] public WorldLayer[] Layers { get; set; } = System.Array.Empty<WorldLayer>();
 
+    /// <summary>The world's items (keys, codes), each laid in one room by an <see cref="ItemPickup"/>.</summary>
+    [Export] public ItemDefinition[] Items { get; set; } = System.Array.Empty<ItemDefinition>();
+
     /// <summary>Every line of text the world shows.</summary>
     [Export] public LineBook Lines { get; set; } = null!;
 
@@ -49,6 +52,20 @@ public partial class WorldDefinition : Resource
             if (string.Equals(layer.Name, name, System.StringComparison.OrdinalIgnoreCase))
             {
                 return layer;
+            }
+        }
+
+        return null;
+    }
+
+    /// <summary>The item whose id is <paramref name="id"/>, or null (an id no item of the world has: the room check reports it).</summary>
+    public ItemDefinition? Item(string id)
+    {
+        foreach (ItemDefinition item in Items)
+        {
+            if (item.Id == id)
+            {
+                return item;
             }
         }
 

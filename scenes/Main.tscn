@@ -27,6 +27,7 @@
 [ext_resource type="Resource" path="res://resources/paint/gouache.tres" id="26_gouache"]
 [ext_resource type="Resource" path="res://resources/paint/poster.tres" id="27_poster"]
 [ext_resource type="Resource" path="res://resources/paint/scripture.tres" id="28_scripture"]
+[ext_resource type="Script" path="res://scripts/game/Keyring.cs" id="29_keyring"]
 
 [sub_resource type="CylinderMesh" id="HarpoonLine"]
 top_radius = 0.016
@@ -117,6 +118,16 @@ Camera = NodePath("../SideCamera")
 EndCard = NodePath("../EndCard")
 
 ; A gate the pilgrim can't pass yet says so: its line, low on the screen.
+; The items and the doors they open (Keyring): taking keys and codes, opening locked doors, the line at a door without its item.
+[node name="Keyring" type="Node" parent="." node_paths=PackedStringArray("World", "Player", "Session", "Banner", "Hint", "Camera")]
+script = ExtResource("29_keyring")
+World = NodePath("../World")
+Player = NodePath("../Player")
+Session = NodePath("../Session")
+Banner = NodePath("../Banner")
+Hint = NodePath("../HintLine")
+Camera = NodePath("../SideCamera")
+
 [node name="GateHints" type="Node" parent="." node_paths=PackedStringArray("World", "Player", "Harpoon", "Hint")]
 script = ExtResource("22_gates")
 World = NodePath("../World")

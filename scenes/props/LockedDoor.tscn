@@ -1,0 +1,38 @@
+[gd_scene format=3]
+; A locked door (scripts/items/LockedDoor.cs): a portcullis (scenes/props/Portcullis.tscn) with a lock plate on a post at
+; its side, lit in the item kind's color. Place its origin on the floor where the gate closes (open, it hangs 5.5 m higher:
+; keep a lintel there); set Item, and point the exit it bars at it (RoomExit.Door).
+
+[ext_resource type="Script" path="res://scripts/items/LockedDoor.cs" id="1_door"]
+[ext_resource type="PackedScene" path="res://scenes/props/Portcullis.tscn" id="2_portcullis"]
+[ext_resource type="Material" path="res://assets/materials/token_glow.tres" id="3_glow"]
+[ext_resource type="Material" path="res://assets/materials/rust.tres" id="4_rust"]
+
+[sub_resource type="BoxMesh" id="Post"]
+size = Vector3(0.22, 2.2, 0.22)
+
+[sub_resource type="CylinderMesh" id="Plate"]
+top_radius = 0.13
+bottom_radius = 0.13
+height = 0.05
+radial_segments = 12
+rings = 1
+
+[node name="LockedDoor" type="Node3D" node_paths=PackedStringArray("Gate", "Lock")]
+script = ExtResource("1_door")
+Gate = NodePath("Gate")
+Lock = NodePath("Post/Lock")
+
+[node name="Gate" parent="." instance=ExtResource("2_portcullis")]
+
+[node name="Post" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.75, 1.1, -0.45)
+mesh = SubResource("Post")
+material_override = ExtResource("4_rust")
+
+; the plate faces the camera (the cylinder's axis turned to +Z), on the post's face at chest height
+[node name="Lock" type="MeshInstance3D" parent="Post"]
+transform = Transform3D(1, 0, 0, 0, 0, -1, 0, 1, 0, 0, 0.35, 0.13)
+mesh = SubResource("Plate")
+material_override = ExtResource("3_glow")
+cast_shadow = 0
