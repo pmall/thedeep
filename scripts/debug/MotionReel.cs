@@ -8,6 +8,7 @@ namespace TheDeep;
 /// - the pilgrim's motion reel in the test room: idle, run start, a run cycle, stopping and turning, then
 ///   a jump, a dash off a ledge and a hard landing from the metal slab;
 /// - the grip, harpoon and combat reels in the mechanics lab;
+/// - the swim reel in the Quench's coolant: floating, swimming across, treading water, sinking and rising; then the Drill's dive;
 /// - the machine reel in the arena: each prototype species reacting to the player (a Votary striking who
 ///   passes in front of it, the Gleaner bolting, the Limpet waking to a landing, the Lamplighter following).
 /// Each segment starts with a respawn and a reset of the room's machines; inputs and shots are listed by
@@ -46,6 +47,35 @@ public static class MotionReel
                     new(100, "drop"), new(112, "drop"), new(122, "land"), new(127, "land"), new(134, "land"), new(146, "settle"),
                 }),
         }),
+        new("Quench", "swim", "Swim", 10f, new Segment[]
+        {
+            // Dropped into the coolant: it floats, swims across, treads water, sinks on its tanks and rises again.
+            new(new Vector3(20f, 26f, 0f), 1, 340,
+                new Press[]
+                {
+                    new(50, InputActions.MoveRight, true), new(140, InputActions.MoveRight, false),
+                    new(165, InputActions.MoveDown, true), new(260, InputActions.MoveDown, false),
+                    new(262, InputActions.MoveUp, true), new(338, InputActions.MoveUp, false),
+                },
+                new Shot[]
+                {
+                    new(40, "float"), new(62, "stroke"), new(72, "stroke"), new(82, "stroke"), new(92, "stroke"), new(102, "stroke"),
+                    new(112, "stroke"), new(150, "tread"), new(158, "tread"), new(175, "sink"), new(195, "sink"), new(215, "sink"),
+                    new(245, "sunk"), new(272, "rise"), new(292, "rise"), new(312, "rise"), new(335, "rise"),
+                }),
+            // The Drill's dive from high over the coolant, straight down until the water catches it.
+            new(new Vector3(30f, 34f, 0f), 1, 70,
+                new Press[]
+                {
+                    new(8, InputActions.MoveDown, true), new(10, InputActions.Dash, true), new(12, InputActions.Dash, false),
+                    new(40, InputActions.MoveDown, false),
+                },
+                new Shot[]
+                {
+                    new(6, "fall"), new(12, "dive"), new(15, "dive"), new(18, "dive"), new(22, "dive"), new(26, "dive"), new(30, "dive"),
+                    new(38, "water"), new(48, "water"), new(62, "water"),
+                }),
+        }, Abilities: Ability.Ballast | Ability.Drill),
         new("MachineArena", "machines", "Machines", 7f, new Segment[]
         {
             // The pilgrim steps in front of the first Votary, between it and its shrine.

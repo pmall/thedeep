@@ -18,7 +18,7 @@ public sealed class DiveState : PlayerState
 
     public override bool Bores => true;
 
-    public override MotionMode Motion => MotionMode.Air;
+    public override MotionMode Motion => MotionMode.Dive;
 
     public override void Enter()
     {

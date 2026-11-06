@@ -44,7 +44,7 @@ Every piece a world is built from (`docs/principles.md#bricks`). The prototype's
 | Brick | Status | Item |
 |---|---|---|
 | Body and look (`resources/parts/pilgrim.tres`) | working (`docs/art-direction.md#art-open`) | `docs/roadmap.md#pilgrim` |
-| Animation (`PilgrimMotion`) | working (placeholder) | `docs/roadmap.md#pilgrim` |
+| Animation (`PilgrimMotion`: ground, air, dash, swim, dive, the harpoon's reach, strikes, hurt) | working (grip, ledge assist, death, rest and relic poses to come) | `docs/roadmap.md#pilgrim` |
 | Base moveset (`docs/gameplay.md#moveset`) | ready (rules), feel pass to come | `docs/roadmap.md#feel-fight` |
 | Abilities (`docs/gameplay.md#abilities`) | ready (rules), animation to come | `docs/roadmap.md#pilgrim`, `docs/roadmap.md#feel-fight` |
 | Fight moves (`PlayerAttack` over the core's `Combo`: a chain to a finisher, a down strike, a dash strike, the hit stop) | working (feel to tune with the owner) | `docs/roadmap.md#feel-fight` |

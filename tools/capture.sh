@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # Look-dev captures: renders every photo spot and reel of the rooms in ROOMS (every room of the prototype, the machine arena,
 # the mechanics lab; with --world, every room of that world) to PNG at 1080p, measures frame times over a scripted run in each, and compares with the previous
-# run (before/after sheet). A run's folder holds <Room>-<Spot>.png, the reels' contact sheets (Motion, Combat, Grip,
+# run (before/after sheet). A run's folder holds <Room>-<Spot>.png, the reels' contact sheets (Motion, Combat, Grip, Swim,
 # Harpoon, Machines .png), perf.json (the first room) and perf-<Room>.json (frame, GPU and render CPU times, garbage
 # collections, the slowest frames), run.txt, the Godot logs, and compare/ (one image per spot, sheet.png with all).
 #
@@ -104,6 +104,7 @@ if [ -d "$out/machines" ]; then python3 -I tools/motion_sheet.py "$out" machines
 if [ -d "$out/grip" ]; then python3 -I tools/motion_sheet.py "$out" grip Grip 6x6 1440x810; fi
 if [ -d "$out/harpoon" ]; then python3 -I tools/motion_sheet.py "$out" harpoon Harpoon 5x3 1440x810; fi
 if [ -d "$out/combat" ]; then python3 -I tools/motion_sheet.py "$out" combat Combat 7x4 1440x810; fi
+if [ -d "$out/swim" ]; then python3 -I tools/motion_sheet.py "$out" swim Swim 7x4 900x600; fi
 ls "$out"/*.png | sed 's/^/  /'
 
 if [ -n "$previous" ] && [ -d "$previous" ]; then

@@ -13,7 +13,7 @@ public sealed class SwimState : PlayerState
     {
     }
 
-    public override MotionMode Motion => Player.Sunk && Player.IsOnFloor() ? MotionMode.Ground : MotionMode.Air;
+    public override MotionMode Motion => Player.Sunk && Player.IsOnFloor() ? MotionMode.Ground : MotionMode.Swim;
 
     public override void Enter()
     {

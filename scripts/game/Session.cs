@@ -303,11 +303,21 @@ public partial class Session : Node
     /// <summary>
     /// Fallen out of the room (below its camera bounds): a hole the room check missed, so it is logged as an error. The pilgrim is put
     /// back at the exit it came in by (<see cref="RoomTravel.Return"/>), or, if it woke in this room, returned to its shrine like a
-    /// death, health untouched by the fall.
+    /// death, health untouched by the fall. With travel off (look-dev's scripted runs), walking out through an exit falls out too: that
+    /// is no hole, so it is only printed.
     /// </summary>
     private void FellOut()
     {
-        GD.PushError($"[fell out] of {World.RoomName} at {Player.GlobalPosition}, moving {Player.Velocity}, {Player.CurrentState.GetType().Name}");
+        string report = $"[fell out] of {World.RoomName} at {Player.GlobalPosition}, moving {Player.Velocity}, {Player.CurrentState.GetType().Name}";
+        if (Travel.Enabled)
+        {
+            GD.PushError(report);
+        }
+        else
+        {
+            GD.Print(report + " (travel off)");
+        }
+
         Player.Velocity = Vector3.Zero;
         if (!Travel.Return())
         {

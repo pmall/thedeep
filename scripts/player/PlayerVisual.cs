@@ -7,7 +7,7 @@ namespace TheDeep;
 /// <summary>
 /// The pilgrim's body: a <see cref="PartBody"/> built from its part assembly, animated procedurally by
 /// <see cref="PilgrimMotion"/> (run cycle with planted feet, leaps, dash lunge, leaning, landing
-/// compression), its coat, braid and lantern flowing behind, turning smoothly through a glance at the
+/// compression; swimming, the dive's spin, the harpoon's reach, strikes and the recoil when hurt), its coat, braid and lantern flowing behind, turning smoothly through a glance at the
 /// camera when the facing flips. Pivot is at the feet. <see cref="Player"/> calls <see cref="Animate"/>
 /// after each physics move, so physics interpolation keeps it smooth.
 /// </summary>
@@ -79,6 +79,25 @@ public partial class PlayerVisual : Node3D
 
     public void SetFacing(int facing) => _facing = facing < 0 ? -1 : 1;
 
+    /// <summary>A strike under way (<see cref="PilgrimMotion.Strike"/>); each physics tick it lasts.</summary>
+    public void Strike(float progress, float windUpEnd, float activeEnd, StrikeKind kind) =>
+        _motion?.Strike(progress, windUpEnd, activeEnd, kind);
+
+    public void EndStrike() => _motion?.EndStrike();
+
+    /// <summary>A blow landed on the pilgrim: the body recoils.</summary>
+    public void Hurt() => _motion?.Hurt();
+
+    /// <summary>Where the Harpoon's line pulls, in the world: the near arm reaches along it while on the line.</summary>
+    public void Reach(Vector3 toward)
+    {
+        if (_motion is not null)
+        {
+            Vector3 local = GetParentNode3D().GlobalBasis.Inverse() * toward;
+            _motion.Reach = new NVector2(local.X * _facing, local.Y);
+        }
+    }
+
     /// <summary>Kicks the landing compression; <paramref name="impactSpeed"/> is the downward speed at touchdown.</summary>
     public void Land(float impactSpeed) => _motion?.Land(impactSpeed);
 
@@ -102,13 +121,14 @@ public partial class PlayerVisual : Node3D
         _yaw = Motion.Damp(_yaw, TargetYaw, TurnSharpness, delta);
         float k = 1f - Mathf.Exp(-CarrySharpness * delta);
         _carry = new Transform3D(new Basis(_carry.Basis.GetRotationQuaternion().Slerp(Quaternion.Identity, k)), _carry.Origin.Lerp(Vector3.Zero, k));
-        Transform = _carry * new Transform3D(new Basis(Vector3.Up, _yaw), Vector3.Zero);
         if (_rig is null || _motion is null)
         {
+            Transform = _carry * new Transform3D(new Basis(Vector3.Up, _yaw), Vector3.Zero);
             return;
         }
 
         _motion.Update(delta, velocity.Flat(), _facing, mode);
+        Transform = _carry * new Transform3D(new Basis(Vector3.Up, _yaw + _motion.Spin), Vector3.Zero);
         _rig.Apply(_motion.Pose);
         Body.StepChains(delta, onFloor && !float.IsNaN(floorY) ? floorY + 0.02f : float.NaN);
 

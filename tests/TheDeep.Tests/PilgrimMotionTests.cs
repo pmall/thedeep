@@ -145,6 +145,105 @@ public class PilgrimMotionTests
         }
     }
 
+    [Fact]
+    public void SwimmingAcrossLeansIntoTheStrokeAndTreadingStaysUpright()
+    {
+        var motion = new PilgrimMotion(Dims, RunSpeed);
+        Run(motion, 120, Vector2.Zero, MotionMode.Swim);
+        Assert.InRange(motion.Pose[HumanoidBone.Chest], -0.2f, 0.1f);
+
+        float lowest = float.MaxValue, highest = float.MinValue;
+        for (int i = 0; i < 120; i++)
+        {
+            motion.Update(Dt, new Vector2(3.5f, 0f), 1, MotionMode.Swim);
+            lowest = MathF.Min(lowest, motion.Pose[HumanoidBone.UpperArmR]);
+            highest = MathF.Max(highest, motion.Pose[HumanoidBone.UpperArmR]);
+        }
+
+        Assert.True(motion.Pose[HumanoidBone.Chest] < -0.4f, "swimming across leans forward into the stroke");
+        Assert.True(highest - lowest > 1.2f, "the arm paddles from forward to back");
+    }
+
+    [Fact]
+    public void DivingRaisesTheArmsOverheadSpinsAndSettlesFacingAgain()
+    {
+        var motion = new PilgrimMotion(Dims, RunSpeed);
+        Run(motion, 20, new Vector2(0f, -20f), MotionMode.Dive);
+        Assert.True(motion.Pose[HumanoidBone.UpperArmR] > 2.6f && motion.Pose[HumanoidBone.UpperArmL] > 2.6f, "both arms overhead");
+        Assert.True(motion.Pose[HumanoidBone.FootR] < -1f, "toes pointed down");
+        Assert.True(motion.Spin > MathF.PI, "the body spins like a drill");
+
+        Run(motion, 90, Vector2.Zero, MotionMode.Ground);
+        Assert.Equal(0f, motion.Spin);
+    }
+
+    [Theory]
+    [InlineData(1f, 0f)]
+    [InlineData(0.6f, 0.8f)]
+    [InlineData(0f, 1f)]
+    public void OnTheHarpoonsLineTheNearArmReachesAlongIt(float x, float y)
+    {
+        var motion = new PilgrimMotion(Dims, RunSpeed) { Reach = new Vector2(x, y) };
+        Run(motion, 30, Vector2.Zero, MotionMode.Zip);
+        float along = MathF.Atan2(x, -y);
+        Assert.InRange(motion.Pose[HumanoidBone.UpperArmR], along - 0.05f, along + 0.05f);
+        Assert.InRange(motion.Pose[HumanoidBone.ForearmR], along - 0.05f, along + 0.05f);
+    }
+
+    [Fact]
+    public void AStrikeRaisesTheArmInTheWindUpSweepsItThroughTheBlowAndLetsGo()
+    {
+        var motion = new PilgrimMotion(Dims, RunSpeed);
+        Run(motion, 30, Vector2.Zero, MotionMode.Ground);
+        float rest = motion.Pose[HumanoidBone.UpperArmR];
+
+        motion.Strike(0.25f, 0.25f, 0.5f, StrikeKind.Swing);
+        motion.Update(Dt, Vector2.Zero, 1, MotionMode.Ground);
+        Assert.True(motion.Pose[HumanoidBone.UpperArmR] > 2.4f, "wound up over the shoulder");
+
+        motion.Strike(0.5f, 0.25f, 0.5f, StrikeKind.Swing);
+        motion.Update(Dt, Vector2.Zero, 1, MotionMode.Ground);
+        Assert.True(motion.Pose[HumanoidBone.UpperArmR] < 0.6f, "swept down through the front");
+        Assert.True(motion.Pose[HumanoidBone.Chest] < -0.25f, "the body behind the blow");
+
+        motion.EndStrike();
+        motion.Update(Dt, Vector2.Zero, 1, MotionMode.Ground);
+        Assert.InRange(motion.Pose[HumanoidBone.UpperArmR], rest - 0.05f, rest + 0.05f);
+    }
+
+    [Fact]
+    public void AForwardStrikeLeavesTheLegsToTheGaitAndADownStrikeTucksThem()
+    {
+        var swing = new PilgrimMotion(Dims, RunSpeed);
+        var still = new PilgrimMotion(Dims, RunSpeed);
+        Run(swing, 30, Vector2.Zero, MotionMode.Ground);
+        Run(still, 30, Vector2.Zero, MotionMode.Ground);
+        swing.Strike(0.4f, 0.25f, 0.5f, StrikeKind.Swing);
+        swing.Update(Dt, Vector2.Zero, 1, MotionMode.Ground);
+        still.Update(Dt, Vector2.Zero, 1, MotionMode.Ground);
+        Assert.Equal(still.Pose[HumanoidBone.ThighR], swing.Pose[HumanoidBone.ThighR], 3);
+
+        var down = new PilgrimMotion(Dims, RunSpeed);
+        Run(down, 20, new Vector2(0f, -3f), MotionMode.Air);
+        down.Strike(0.5f, 0.25f, 0.5f, StrikeKind.Down);
+        down.Update(Dt, new Vector2(0f, -3f), 1, MotionMode.Air);
+        Assert.True(down.Pose[HumanoidBone.ThighR] > 0.9f, "the legs tucked up");
+        Assert.InRange(down.Pose[HumanoidBone.UpperArmR], -0.4f, 0.4f);
+    }
+
+    [Fact]
+    public void HurtThrowsTheHeadBackThenRecovers()
+    {
+        var motion = new PilgrimMotion(Dims, RunSpeed);
+        Run(motion, 30, Vector2.Zero, MotionMode.Ground);
+        float rest = motion.Pose[HumanoidBone.Head];
+        motion.Hurt();
+        Run(motion, 6, Vector2.Zero, MotionMode.Ground);
+        Assert.True(motion.Pose[HumanoidBone.Head] > rest + 0.4f, "thrown back");
+        Run(motion, 40, Vector2.Zero, MotionMode.Ground);
+        Assert.InRange(motion.Pose[HumanoidBone.Head], rest - 0.05f, rest + 0.05f);
+    }
+
     private static readonly (HumanoidBone Thigh, HumanoidBone Shin)[] Legs =
     {
         (HumanoidBone.ThighR, HumanoidBone.ShinR), (HumanoidBone.ThighL, HumanoidBone.ShinL),

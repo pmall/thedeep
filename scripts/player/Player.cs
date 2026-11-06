@@ -294,6 +294,11 @@ public partial class Player : CharacterBody3D
 
         // The animation sees the body's own frame: on a wall, walking up it is walking forward.
         Vector3 localVelocity = GlobalBasis.Inverse() * Velocity;
+        if (CurrentState is HarpoonState { Anchor: { } anchor })
+        {
+            Visual.Reach(anchor.GlobalPosition - GlobalPosition - GlobalBasis.Y * ShoulderHeight);
+        }
+
         Visual.Animate(dt, localVelocity, CurrentState.Motion, IsOnFloor(), IsUpright ? GlobalPosition.Y : float.NaN);
     }
 
@@ -524,6 +529,9 @@ public partial class Player : CharacterBody3D
         return !Fit.Overlaps(new Transform3D(basis, origin) * new Transform3D(Basis.Identity, CapsuleOffset));
     }
 
+    /// <summary>Height of the shoulders over the feet, meters: the near arm reaches along the Harpoon's line from there.</summary>
+    private const float ShoulderHeight = 1.35f;
+
     /// <summary>
     /// A blow from <paramref name="from"/> (on the play plane): takes <paramref name="damage"/> health unless in the
     /// grace period, throws the pilgrim back and up, and briefly takes control away. Returns whether it hurt.
@@ -538,6 +546,7 @@ public partial class Player : CharacterBody3D
         ChangeState(States.Fall);
         Velocity = MoveRules.Knockback(GlobalPosition.X, from.X, Limits).OnPlane();
         Control.Hurt();
+        Visual.Hurt();
         Hurt?.Invoke();
         if (Vitality.Dead)
         {

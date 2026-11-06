@@ -42,7 +42,7 @@ public partial class PlayerEffects : Node
 
     public override void _PhysicsProcess(double delta)
     {
-        Trail.Track(TrailAnchor, Player.CurrentState.Motion == MotionMode.Dash, (float)delta);
+        Trail.Track(TrailAnchor, Player.CurrentState.Motion is MotionMode.Dash or MotionMode.Zip, (float)delta);
     }
 
     private void OnFootfall(Vector3 position, int side)

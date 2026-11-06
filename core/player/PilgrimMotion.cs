@@ -10,6 +10,11 @@ namespace TheDeep;
 ///   solved by IK and blended with a calm, breathing stance as the body slows;
 /// - in the air, a leap while rising that opens into a reach for the ground while falling;
 /// - in a dash, a low lunge with the arms swept back, held a moment after the dash ends;
+/// - swimming, a paddle with a flutter kick leaning into the stroke, treading water when still;
+/// - in the Drill's dive, a spike: legs together and toes pointed down, arms straight overhead, the body spinning (<see cref="Spin"/>);
+/// - on the Harpoon's line, the near arm straight along it (<see cref="Reach"/>), the body trailing behind;
+/// - over any of these, a strike (<see cref="Strike"/>: the near arm raised in the wind-up, swept through the blow, the body
+///   behind it; a down strike curls the legs up out of its way) and a recoil when hurt (<see cref="Hurt"/>);
 /// - always, a lean into acceleration and a landing compression, both on soft springs, so moves flow into
 ///   each other. Feel numbers are constants here: they shape the animation only, never the movement.
 /// </summary>
@@ -45,10 +50,26 @@ public sealed class PilgrimMotion
     private const float HardLanding = 20f;
     private const float MaxCompressionKick = 4.6f;
 
+    // Swimming: strokes per second treading water and swimming across, and the share of run speed that is a full stroke.
+    private const float TreadRate = 0.9f;
+    private const float StrokeRate = 1.5f;
+    private const float SwimShare = 0.45f;
+
+    /// <summary>The dive's spin, radians per second (two and a half turns).</summary>
+    private const float DiveSpin = MathF.Tau * 2.5f;
+
+    /// <summary>How long a hurt recoil lasts, seconds.</summary>
+    private const float HurtLength = 0.55f;
+
     private readonly HumanoidDims _dims;
     private readonly float _runSpeed;
     private readonly HumanoidPose _air = new();
     private readonly HumanoidPose _dash = new();
+    private readonly HumanoidPose _swim = new();
+    private readonly HumanoidPose _dive = new();
+    private readonly HumanoidPose _zip = new();
+    private readonly HumanoidPose _strikePose = new();
+    private readonly HumanoidPose _hurtPose = new();
 
     private float _time;
     private float _phase;
@@ -56,6 +77,14 @@ public sealed class PilgrimMotion
     private float _airWeight;
     private float _fallWeight;
     private float _dashWeight;
+    private float _swimWeight;
+    private float _diveWeight;
+    private float _zipWeight;
+    private float _swimPhase;
+    private float _swimMove;
+    private float _spin;
+    private float _hurtTime = float.MaxValue;
+    private StrikeMoment? _strike;
     private float _lastVelocityX;
     private bool _inAir;
     private bool _leadRight = true;
@@ -80,6 +109,25 @@ public sealed class PilgrimMotion
     /// <summary>How far the landing spring has lowered the hips, meters.</summary>
     public float Compression => MathF.Max(0f, _compression.Value);
 
+    /// <summary>Where the Harpoon's line pulls, in the body's frame (X forward, Y up); read in <see cref="MotionMode.Zip"/>.</summary>
+    public Vector2 Reach { get; set; } = Vector2.UnitX;
+
+    /// <summary>The dive's spin around the body's upright axis, radians (0 out of a dive, once it has settled).</summary>
+    public float Spin => _spin;
+
+    /// <summary>
+    /// A strike under way: <paramref name="progress"/> 0 to 1 through the whole swing, the wind-up over by
+    /// <paramref name="windUpEnd"/> and the blow by <paramref name="activeEnd"/> (shares of it). Called each tick it lasts;
+    /// <see cref="EndStrike"/> when it is over.
+    /// </summary>
+    public void Strike(float progress, float windUpEnd, float activeEnd, StrikeKind kind) =>
+        _strike = new StrikeMoment(Math.Clamp(progress, 0f, 1f), windUpEnd, MathF.Max(activeEnd, windUpEnd + 0.01f), kind);
+
+    public void EndStrike() => _strike = null;
+
+    /// <summary>A blow landed on the pilgrim: the body recoils, then recovers.</summary>
+    public void Hurt() => _hurtTime = 0f;
+
     /// <summary>Kicks the landing spring; <paramref name="impactSpeed"/> is the downward speed at touchdown.</summary>
     public void Land(float impactSpeed)
     {
@@ -95,6 +143,13 @@ public sealed class PilgrimMotion
         _airWeight = 0f;
         _fallWeight = 0f;
         _dashWeight = 0f;
+        _swimWeight = 0f;
+        _diveWeight = 0f;
+        _zipWeight = 0f;
+        _swimMove = 0f;
+        _spin = 0f;
+        _hurtTime = float.MaxValue;
+        _strike = null;
         _lastVelocityX = 0f;
         _inAir = false;
         _lean = new Spring(_lean.Frequency, _lean.Damping);
@@ -155,11 +210,58 @@ public sealed class PilgrimMotion
         bool dashing = mode == MotionMode.Dash;
         _dashWeight = Motion.Damp(_dashWeight, dashing ? 1f : 0f, dashing ? 32f : 8f, dt);
 
+        _swimWeight = Motion.Damp(_swimWeight, mode == MotionMode.Swim ? 1f : 0f, 10f, dt);
+        _diveWeight = Motion.Damp(_diveWeight, mode == MotionMode.Dive ? 1f : 0f, mode == MotionMode.Dive ? 30f : 10f, dt);
+        _zipWeight = Motion.Damp(_zipWeight, mode == MotionMode.Zip ? 1f : 0f, mode == MotionMode.Zip ? 25f : 9f, dt);
+        _swimMove = Motion.Damp(_swimMove, Math.Clamp(MathF.Abs(forward) / (_runSpeed * SwimShare), 0f, 1f), 5f, dt);
+        _swimPhase = Fraction(_swimPhase + dt * Lerp(TreadRate, StrokeRate, _swimMove));
+        if (mode == MotionMode.Dive)
+        {
+            _spin += DiveSpin * dt;
+        }
+        else
+        {
+            float settled = MathF.Round(_spin / MathF.Tau) * MathF.Tau;
+            _spin = Motion.Damp(_spin, settled, 10f, dt);
+            if (MathF.Abs(_spin - settled) < 0.001f)
+            {
+                _spin = 0f;
+            }
+        }
+
+        _hurtTime = _hurtTime < float.MaxValue ? _hurtTime + dt : _hurtTime;
+
         GroundPose(Pose, g, cycle, stance);
         AirPose(_air, forward);
         Pose.BlendToward(_air, _airWeight);
         DashPose(_dash, grounded: _airWeight < 0.5f);
         Pose.BlendToward(_dash, _dashWeight);
+        SwimPose(_swim);
+        Pose.BlendToward(_swim, _swimWeight);
+        DivePose(_dive);
+        Pose.BlendToward(_dive, _diveWeight);
+        ZipPose(_zip);
+        Pose.BlendToward(_zip, _zipWeight);
+        if (_strike is { } strike)
+        {
+            bool down = strike.Kind == StrikeKind.Down;
+            StrikePose(_strikePose, strike);
+            float weight = SmoothStep(0f, 0.06f, strike.Progress) * (1f - SmoothStep(strike.ActiveEnd + (1f - strike.ActiveEnd) * 0.35f, 1f, strike.Progress));
+            if (down)
+            {
+                Pose.BlendToward(_strikePose, weight);
+            }
+            else
+            {
+                Pose.BlendUpperToward(_strikePose, weight);
+            }
+        }
+
+        if (_hurtTime < HurtLength)
+        {
+            HurtPose(_hurtPose);
+            Pose.BlendToward(_hurtPose, 0.9f * SmoothStep(0f, 0.05f, _hurtTime) * (1f - SmoothStep(0.12f, HurtLength, _hurtTime)));
+        }
     }
 
     private void GroundPose(HumanoidPose pose, float g, float cycle, float stance)
@@ -310,6 +412,195 @@ public sealed class PilgrimMotion
         pose[HumanoidBone.HandL] = -1.7f;
     }
 
+    private void SwimPose(HumanoidPose pose)
+    {
+        float m = _swimMove;
+        float a = MathF.Tau * _swimPhase;
+        pose.HipsOffset = new Vector2(0f, -0.04f);
+        float torso = Lerp(-0.08f, -0.6f, m) + 0.03f * MathF.Sin(a * 2f);
+        pose[HumanoidBone.Hips] = torso * 0.6f;
+        pose[HumanoidBone.Spine] = torso * 0.85f;
+        pose[HumanoidBone.Chest] = torso;
+        pose[HumanoidBone.Neck] = torso * 0.4f;
+        pose[HumanoidBone.Head] = torso * 0.1f + 0.15f * m; // the head held up, out of the water
+
+        // Legs: a slow bicycle treading water, a quick flutter behind when swimming across.
+        for (int side = 0; side < 2; side++)
+        {
+            float s = side == 0 ? 0f : MathF.PI;
+            float tread = 0.3f + 0.35f * MathF.Sin(a + s);
+            float flutter = -0.35f + 0.28f * MathF.Sin(a * 2f + s);
+            float thigh = Lerp(tread, flutter, m);
+            float shin = thigh - Lerp(0.55f + 0.35f * MathF.Cos(a + s), 0.35f + 0.2f * MathF.Sin(a * 2f + s + 0.8f), m);
+            (HumanoidBone t, HumanoidBone k, HumanoidBone f) = side == 0
+                ? (HumanoidBone.ThighR, HumanoidBone.ShinR, HumanoidBone.FootR)
+                : (HumanoidBone.ThighL, HumanoidBone.ShinL, HumanoidBone.FootL);
+            pose[t] = thigh;
+            pose[k] = shin;
+            pose[f] = shin - Lerp(0.3f, 0.9f, m);
+        }
+
+        // Arms: sculling in front of the chest treading water, a long paddle reaching forward and pulling back when swimming.
+        for (int side = 0; side < 2; side++)
+        {
+            float s = side == 0 ? 0f : MathF.PI;
+            float stroke = MathF.Sin(a + s);
+            float scull = 0.75f + 0.25f * MathF.Sin(a * 2f + s);
+            float paddle = 1.25f + 0.8f * stroke;
+            float shoulder = Lerp(scull, paddle, m);
+            float elbow = Lerp(0.55f, 0.15f + 0.9f * MathF.Max(0f, MathF.Cos(a + s)), m); // bent coming forward, straight pulling
+            (HumanoidBone u, HumanoidBone fo, HumanoidBone h) = side == 0
+                ? (HumanoidBone.UpperArmR, HumanoidBone.ForearmR, HumanoidBone.HandR)
+                : (HumanoidBone.UpperArmL, HumanoidBone.ForearmL, HumanoidBone.HandL);
+            pose[u] = shoulder;
+            pose[fo] = shoulder + elbow;
+            pose[h] = shoulder + elbow + 0.1f;
+        }
+    }
+
+    private static void DivePose(HumanoidPose pose)
+    {
+        pose.HipsOffset = new Vector2(0f, 0.02f);
+        pose[HumanoidBone.Hips] = 0f;
+        pose[HumanoidBone.Spine] = 0f;
+        pose[HumanoidBone.Chest] = 0.02f;
+        pose[HumanoidBone.Neck] = -0.05f;
+        pose[HumanoidBone.Head] = -0.25f; // looking down where it bores
+        pose[HumanoidBone.ThighR] = 0.06f;
+        pose[HumanoidBone.ShinR] = -0.02f;
+        pose[HumanoidBone.FootR] = -1.25f;
+        pose[HumanoidBone.ThighL] = -0.04f;
+        pose[HumanoidBone.ShinL] = -0.08f;
+        pose[HumanoidBone.FootL] = -1.3f;
+        pose[HumanoidBone.UpperArmR] = 2.95f;
+        pose[HumanoidBone.ForearmR] = 3.05f;
+        pose[HumanoidBone.HandR] = 3.1f;
+        pose[HumanoidBone.UpperArmL] = 2.85f;
+        pose[HumanoidBone.ForearmL] = 2.95f;
+        pose[HumanoidBone.HandL] = 3f;
+    }
+
+    private void ZipPose(HumanoidPose pose)
+    {
+        // The angle of the line from straight down, positive forward (the pose's own measure).
+        float along = Reach.LengthSquared() > 1e-6f ? MathF.Atan2(Reach.X, -Reach.Y) : MathF.PI * 0.5f;
+        along = Math.Clamp(along, -0.4f, 3.1f);
+        float trail = Math.Clamp(Wrap(along - MathF.PI), -1.1f, 0.3f);
+        pose.HipsOffset = new Vector2(0f, -0.02f);
+        float torso = Math.Clamp(-0.25f * along, -0.55f, 0.1f);
+        pose[HumanoidBone.Hips] = torso * 0.5f;
+        pose[HumanoidBone.Spine] = torso * 0.8f;
+        pose[HumanoidBone.Chest] = torso;
+        pose[HumanoidBone.Neck] = torso * 0.4f;
+        pose[HumanoidBone.Head] = Math.Clamp(along - MathF.PI * 0.5f, -0.4f, 0.5f) * 0.4f; // eyes on the anchor
+
+        pose[HumanoidBone.UpperArmR] = along;
+        pose[HumanoidBone.ForearmR] = along;
+        pose[HumanoidBone.HandR] = along + 0.05f;
+        pose[HumanoidBone.UpperArmL] = -0.85f;
+        pose[HumanoidBone.ForearmL] = -0.45f;
+        pose[HumanoidBone.HandL] = -0.35f;
+
+        pose[HumanoidBone.ThighR] = trail + 0.4f;
+        pose[HumanoidBone.ShinR] = trail - 0.2f;
+        pose[HumanoidBone.FootR] = trail - 0.75f;
+        pose[HumanoidBone.ThighL] = trail - 0.1f;
+        pose[HumanoidBone.ShinL] = trail - 0.75f;
+        pose[HumanoidBone.FootL] = trail - 1.2f;
+    }
+
+    private static void StrikePose(HumanoidPose pose, StrikeMoment strike)
+    {
+        // Each kind keyed at three moments: ready (where the arm starts), wound up, struck. Angles: the near (sword) arm, its
+        // elbow, the far arm, the torso.
+        (float arm, float elbow, float off, float torso) ready = (0.4f, 0.4f, 0.2f, -0.1f);
+        (float arm, float elbow, float off, float torso) wound;
+        (float arm, float elbow, float off, float torso) struck;
+        switch (strike.Kind)
+        {
+            case StrikeKind.Second: // a backhand from low behind up through the front
+                wound = (-0.9f, -0.5f, 0.9f, 0.05f);
+                struck = (2.5f, 0.1f, -0.7f, -0.3f);
+                break;
+            case StrikeKind.Finisher: // the heaviest: high and cocked, all the body brought down behind it
+                wound = (3.0f, 1.0f, 1.0f, 0.3f);
+                struck = (0.1f, 0.05f, -1.1f, -0.6f);
+                break;
+            case StrikeKind.Down: // stabbed straight down between the feet
+                wound = (2.4f, 0.6f, 1.2f, 0.1f);
+                struck = (-0.05f, 0f, 1.5f, -0.35f);
+                break;
+            case StrikeKind.Dash: // thrust straight ahead, the body behind it
+                wound = (0.6f, 1.2f, -0.6f, -0.4f);
+                struck = (1.6f, 0f, -1.4f, -0.7f);
+                break;
+            default: // the first swing: from over the shoulder down through the front
+                wound = (2.8f, 0.8f, 0.7f, 0.15f);
+                struck = (0.25f, 0.05f, -0.9f, -0.4f);
+                break;
+        }
+
+        float p = strike.Progress;
+        (float arm, float elbow, float off, float torso) k;
+        if (p < strike.WindUpEnd)
+        {
+            k = Mix(ready, wound, SmoothStep(0f, strike.WindUpEnd, p));
+        }
+        else
+        {
+            float t = Math.Clamp((p - strike.WindUpEnd) / (strike.ActiveEnd - strike.WindUpEnd), 0f, 1f);
+            k = Mix(wound, struck, 1f - (1f - t) * (1f - t) * (1f - t)); // the blow fast at first, settling into the struck pose
+        }
+
+        pose.HipsOffset = new Vector2(0f, strike.Kind == StrikeKind.Down ? 0.05f : -0.05f);
+        pose[HumanoidBone.Hips] = k.torso * 0.4f;
+        pose[HumanoidBone.Spine] = k.torso * 0.75f;
+        pose[HumanoidBone.Chest] = k.torso;
+        pose[HumanoidBone.Neck] = k.torso * 0.5f;
+        pose[HumanoidBone.Head] = strike.Kind == StrikeKind.Down ? -0.45f : k.torso * 0.2f;
+        pose[HumanoidBone.UpperArmR] = k.arm;
+        pose[HumanoidBone.ForearmR] = k.arm + k.elbow;
+        pose[HumanoidBone.HandR] = k.arm + k.elbow + 0.05f;
+        pose[HumanoidBone.UpperArmL] = k.off;
+        pose[HumanoidBone.ForearmL] = k.off + 0.45f;
+        pose[HumanoidBone.HandL] = k.off + 0.55f;
+
+        // The legs: only a down strike's are used (tucked up out of the blade's way).
+        pose[HumanoidBone.ThighR] = 1.2f;
+        pose[HumanoidBone.ShinR] = -0.15f;
+        pose[HumanoidBone.FootR] = -0.5f;
+        pose[HumanoidBone.ThighL] = 0.85f;
+        pose[HumanoidBone.ShinL] = -0.45f;
+        pose[HumanoidBone.FootL] = -0.8f;
+    }
+
+    private static void HurtPose(HumanoidPose pose)
+    {
+        pose.HipsOffset = new Vector2(-0.04f, -0.04f);
+        pose[HumanoidBone.Hips] = 0.2f;
+        pose[HumanoidBone.Spine] = 0.35f;
+        pose[HumanoidBone.Chest] = 0.5f;
+        pose[HumanoidBone.Neck] = 0.55f;
+        pose[HumanoidBone.Head] = 0.75f; // thrown back
+        pose[HumanoidBone.UpperArmR] = 1.5f;
+        pose[HumanoidBone.ForearmR] = 1.95f;
+        pose[HumanoidBone.HandR] = 2.1f;
+        pose[HumanoidBone.UpperArmL] = 1.1f;
+        pose[HumanoidBone.ForearmL] = 1.6f;
+        pose[HumanoidBone.HandL] = 1.7f;
+        pose[HumanoidBone.ThighR] = 0.65f;
+        pose[HumanoidBone.ShinR] = -0.15f;
+        pose[HumanoidBone.FootR] = -0.3f;
+        pose[HumanoidBone.ThighL] = 0.2f;
+        pose[HumanoidBone.ShinL] = -0.55f;
+        pose[HumanoidBone.FootL] = -0.6f;
+    }
+
+    private static (float, float, float, float) Mix((float, float, float, float) a, (float, float, float, float) b, float t) =>
+        (Lerp(a.Item1, b.Item1, t), Lerp(a.Item2, b.Item2, t), Lerp(a.Item3, b.Item3, t), Lerp(a.Item4, b.Item4, t));
+
+    private static float Wrap(float angle) => angle - MathF.Tau * MathF.Floor((angle + MathF.PI) / MathF.Tau);
+
     private static float Lerp(float a, float b, float t) => a + (b - a) * t;
 
     private static float Fraction(float x) => x - MathF.Floor(x);
@@ -325,6 +616,8 @@ public sealed class PilgrimMotion
         t = Math.Clamp(t, 0f, 1f);
         return t * t * t * (t * (t * 6f - 15f) + 10f);
     }
+
+    private readonly record struct StrikeMoment(float Progress, float WindUpEnd, float ActiveEnd, StrikeKind Kind);
 
     /// <summary>A damped spring toward a moving target (semi-implicit Euler).</summary>
     private struct Spring

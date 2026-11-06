@@ -101,6 +101,16 @@ public partial class PlayerAttack : Node3D
         }
 
         _lastPhase = phase;
+        if (phase == SwingPhase.Ready)
+        {
+            Player.Visual.EndStrike();
+        }
+        else
+        {
+            float whole = Timing.WindUp + Timing.ActiveTime + Timing.Recover;
+            Player.Visual.Strike(Timing.Progress, Timing.WindUp / whole, (Timing.WindUp + Timing.ActiveTime) / whole, Strike.Kind);
+        }
+
         if (phase == SwingPhase.Active)
         {
             Striking?.Invoke(Area(), Timing.Count, Strike);

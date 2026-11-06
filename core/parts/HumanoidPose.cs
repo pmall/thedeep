@@ -46,4 +46,23 @@ public sealed class HumanoidPose
 
         HipsOffset = Vector2.Lerp(HipsOffset, other.HipsOffset, t);
     }
+
+    /// <summary>Blends the spine, head and arms toward <paramref name="other"/>, leaving the hips and legs (an upper-body move over the gait).</summary>
+    public void BlendUpperToward(HumanoidPose other, float t)
+    {
+        if (t <= 0f)
+        {
+            return;
+        }
+
+        for (int i = 0; i < _angles.Length; i++)
+        {
+            HumanoidBone bone = (HumanoidBone)i;
+            if (bone is HumanoidBone.Spine or HumanoidBone.Chest or HumanoidBone.Neck or HumanoidBone.Head
+                or >= HumanoidBone.UpperArmR)
+            {
+                _angles[i] += (other._angles[i] - _angles[i]) * t;
+            }
+        }
+    }
 }
