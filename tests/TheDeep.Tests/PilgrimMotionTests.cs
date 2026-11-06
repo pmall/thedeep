@@ -244,6 +244,38 @@ public class PilgrimMotionTests
         Assert.InRange(motion.Pose[HumanoidBone.Head], rest - 0.05f, rest + 0.05f);
     }
 
+    [Fact]
+    public void MomentsHoldTheirPoseAndLetGo()
+    {
+        var motion = new PilgrimMotion(Dims, RunSpeed);
+        Run(motion, 30, Vector2.Zero, MotionMode.Ground);
+        Vector2 standing = motion.Pose.HipsOffset;
+        float head = motion.Pose[HumanoidBone.Head];
+
+        motion.Moment = PilgrimMoment.Rest;
+        Run(motion, 60, Vector2.Zero, MotionMode.Ground);
+        Assert.True(motion.Pose.HipsOffset.Y < standing.Y - 0.25f, "down on one knee");
+        Assert.True(motion.Pose[HumanoidBone.Head] < head - 0.4f, "head bowed");
+        Assert.True(motion.Pose[HumanoidBone.ThighR] > 1f && motion.Pose[HumanoidBone.ShinL] < -1.2f, "one knee up, the other on the ground");
+
+        motion.Moment = PilgrimMoment.None;
+        Run(motion, 60, Vector2.Zero, MotionMode.Ground);
+        Assert.InRange(motion.Pose.HipsOffset.Y, standing.Y - 0.02f, standing.Y + 0.02f);
+
+        motion.Moment = PilgrimMoment.Relic;
+        Run(motion, 60, Vector2.Zero, MotionMode.Ground);
+        Assert.True(motion.Pose[HumanoidBone.Head] > head + 0.25f, "head back to receive it");
+        Assert.True(motion.Pose[HumanoidBone.UpperArmR] > 0.7f && motion.Pose[HumanoidBone.UpperArmL] > 0.5f, "arms open forward");
+
+        motion.Moment = PilgrimMoment.Death;
+        Run(motion, 60, Vector2.Zero, MotionMode.Ground);
+        Assert.True(motion.Pose.HipsOffset.Y < standing.Y - 0.4f, "collapsed onto the knees");
+        Assert.True(motion.Pose[HumanoidBone.Chest] < -0.5f, "slumped forward");
+
+        motion.Reset();
+        Assert.Equal(PilgrimMoment.None, motion.Moment);
+    }
+
     private static readonly (HumanoidBone Thigh, HumanoidBone Shin)[] Legs =
     {
         (HumanoidBone.ThighR, HumanoidBone.ShinR), (HumanoidBone.ThighL, HumanoidBone.ShinL),

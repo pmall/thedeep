@@ -218,12 +218,14 @@ public partial class Player : CharacterBody3D
 
     public override void _PhysicsProcess(double delta)
     {
+        float dt = (float)delta;
         if (Frozen)
         {
+            // Held still (a rest, a relic, a fade): the body still breathes and plays its moment.
+            Visual.Animate(dt, Vector3.Zero, CurrentState.Motion, IsOnFloor(), IsUpright ? GlobalPosition.Y : float.NaN);
             return;
         }
 
-        float dt = (float)delta;
         if (_hitStop > 0f)
         {
             _hitStop -= dt; // a landed blow holds the body still a moment, its speed kept

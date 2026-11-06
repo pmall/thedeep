@@ -15,6 +15,7 @@ namespace TheDeep;
 /// - on the Harpoon's line, the near arm straight along it (<see cref="Reach"/>), the body trailing behind;
 /// - over any of these, a strike (<see cref="Strike"/>: the near arm raised in the wind-up, swept through the blow, the body
 ///   behind it; a down strike curls the legs up out of its way) and a recoil when hurt (<see cref="Hurt"/>);
+/// - over everything, a held moment (<see cref="Moment"/>): kneeling to rest, opening to take a relic, collapsing in death;
 /// - always, a lean into acceleration and a landing compression, both on soft springs, so moves flow into
 ///   each other. Feel numbers are constants here: they shape the animation only, never the movement.
 /// </summary>
@@ -70,6 +71,7 @@ public sealed class PilgrimMotion
     private readonly HumanoidPose _zip = new();
     private readonly HumanoidPose _strikePose = new();
     private readonly HumanoidPose _hurtPose = new();
+    private readonly HumanoidPose _momentPose = new();
 
     private float _time;
     private float _phase;
@@ -85,6 +87,8 @@ public sealed class PilgrimMotion
     private float _spin;
     private float _hurtTime = float.MaxValue;
     private StrikeMoment? _strike;
+    private float _momentWeight;
+    private PilgrimMoment _shown;
     private float _lastVelocityX;
     private bool _inAir;
     private bool _leadRight = true;
@@ -111,6 +115,9 @@ public sealed class PilgrimMotion
 
     /// <summary>Where the Harpoon's line pulls, in the body's frame (X forward, Y up); read in <see cref="MotionMode.Zip"/>.</summary>
     public Vector2 Reach { get; set; } = Vector2.UnitX;
+
+    /// <summary>The held moment the body plays now (eased in and out); <see cref="PilgrimMoment.None"/> lets it go.</summary>
+    public PilgrimMoment Moment { get; set; }
 
     /// <summary>The dive's spin around the body's upright axis, radians (0 out of a dive, once it has settled).</summary>
     public float Spin => _spin;
@@ -150,6 +157,8 @@ public sealed class PilgrimMotion
         _spin = 0f;
         _hurtTime = float.MaxValue;
         _strike = null;
+        Moment = PilgrimMoment.None;
+        _momentWeight = 0f;
         _lastVelocityX = 0f;
         _inAir = false;
         _lean = new Spring(_lean.Frequency, _lean.Damping);
@@ -261,6 +270,18 @@ public sealed class PilgrimMotion
         {
             HurtPose(_hurtPose);
             Pose.BlendToward(_hurtPose, 0.9f * SmoothStep(0f, 0.05f, _hurtTime) * (1f - SmoothStep(0.12f, HurtLength, _hurtTime)));
+        }
+
+        if (Moment != PilgrimMoment.None)
+        {
+            _shown = Moment; // the last moment shown keeps its pose while it eases out
+        }
+
+        _momentWeight = Motion.Damp(_momentWeight, Moment != PilgrimMoment.None ? 1f : 0f, Moment == PilgrimMoment.Death ? 7f : 9f, dt);
+        if (_momentWeight > 0.001f && _shown != PilgrimMoment.None)
+        {
+            MomentPose(_momentPose, _shown);
+            Pose.BlendToward(_momentPose, SmootherStep(_momentWeight));
         }
     }
 
@@ -594,6 +615,67 @@ public sealed class PilgrimMotion
         pose[HumanoidBone.ThighL] = 0.2f;
         pose[HumanoidBone.ShinL] = -0.55f;
         pose[HumanoidBone.FootL] = -0.6f;
+    }
+
+    private void MomentPose(HumanoidPose pose, PilgrimMoment moment)
+    {
+        float breathe = 0.02f * MathF.Sin(MathF.Tau * 0.3f * _time);
+        switch (moment)
+        {
+            case PilgrimMoment.Rest: // down on the far knee, the near foot planted ahead, a hand on that knee, the other on the chest, head bowed
+                pose.HipsOffset = new Vector2(-0.05f, -0.33f);
+                Set(pose, torso: -0.38f + breathe, head: -1f);
+                pose[HumanoidBone.ThighR] = 1.3f;
+                pose[HumanoidBone.ShinR] = -0.05f;
+                pose[HumanoidBone.FootR] = 0f;
+                pose[HumanoidBone.ThighL] = -0.1f;
+                pose[HumanoidBone.ShinL] = -1.5f;
+                pose[HumanoidBone.FootL] = -1.6f;
+                SetArms(pose, 0.45f, 1.05f, 0.1f, 2.7f);
+                break;
+            case PilgrimMoment.Relic: // standing tall, chest lifted and head back, arms opened forward to receive it
+                pose.HipsOffset = new Vector2(0f, 0.01f);
+                Set(pose, torso: 0.15f + breathe, head: 0.4f);
+                pose[HumanoidBone.ThighR] = 0.06f;
+                pose[HumanoidBone.ShinR] = 0f;
+                pose[HumanoidBone.FootR] = -0.15f;
+                pose[HumanoidBone.ThighL] = -0.06f;
+                pose[HumanoidBone.ShinL] = -0.08f;
+                pose[HumanoidBone.FootL] = -0.2f;
+                SetArms(pose, 0.95f, 1.45f, 0.7f, 1.2f);
+                break;
+            default: // death: collapsed onto both knees, slumped forward, arms hanging
+                pose.HipsOffset = new Vector2(-0.1f, -0.46f);
+                Set(pose, torso: -0.65f, head: -0.75f);
+                pose[HumanoidBone.ThighR] = 0.1f;
+                pose[HumanoidBone.ShinR] = -1.45f;
+                pose[HumanoidBone.FootR] = -1.55f;
+                pose[HumanoidBone.ThighL] = -0.05f;
+                pose[HumanoidBone.ShinL] = -1.5f;
+                pose[HumanoidBone.FootL] = -1.6f;
+                SetArms(pose, 0.15f, 0.25f, -0.1f, 0f);
+                break;
+        }
+    }
+
+    private static void Set(HumanoidPose pose, float torso, float head)
+    {
+        pose[HumanoidBone.Hips] = torso * 0.4f;
+        pose[HumanoidBone.Spine] = torso * 0.75f;
+        pose[HumanoidBone.Chest] = torso;
+        pose[HumanoidBone.Neck] = torso * 0.6f + head * 0.4f;
+        pose[HumanoidBone.Head] = head;
+    }
+
+    /// <summary>The near (R) and far (L) arms: each its upper arm's and forearm's angle; the hand follows the forearm.</summary>
+    private static void SetArms(HumanoidPose pose, float nearUpper, float nearForearm, float farUpper, float farForearm)
+    {
+        pose[HumanoidBone.UpperArmR] = nearUpper;
+        pose[HumanoidBone.ForearmR] = nearForearm;
+        pose[HumanoidBone.HandR] = nearForearm + 0.1f;
+        pose[HumanoidBone.UpperArmL] = farUpper;
+        pose[HumanoidBone.ForearmL] = farForearm;
+        pose[HumanoidBone.HandL] = farForearm + 0.1f;
     }
 
     private static (float, float, float, float) Mix((float, float, float, float) a, (float, float, float, float) b, float t) =>

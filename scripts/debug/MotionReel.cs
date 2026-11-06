@@ -8,6 +8,7 @@ namespace TheDeep;
 /// - the pilgrim's motion reel in the test room: idle, run start, a run cycle, stopping and turning, then
 ///   a jump, a dash off a ledge and a hard landing from the metal slab;
 /// - the grip, harpoon and combat reels in the mechanics lab;
+/// - the moments reel at the Narthex's shrine: resting, down on one knee;
 /// - the swim reel in the Quench's coolant: floating, swimming across, treading water, sinking and rising; then the Drill's dive;
 /// - the machine reel in the arena: each prototype species reacting to the player (a Votary striking who
 ///   passes in front of it, the Gleaner bolting, the Limpet waking to a landing, the Lamplighter following).
@@ -45,6 +46,17 @@ public static class MotionReel
                     new(32, "jump"), new(38, "jump"), new(46, "rise"), new(53, "apex"), new(62, "fall"), new(70, "fall"),
                     new(78, "land"), new(82, "dash"), new(86, "dash"), new(92, "dash"),
                     new(100, "drop"), new(112, "drop"), new(122, "land"), new(127, "land"), new(134, "land"), new(146, "settle"),
+                }),
+        }),
+        new("Narthex", "moments", "Moments", 6f, new Segment[]
+        {
+            // At the Narthex's shrine: it rests, down on one knee, then rises.
+            new(new Vector3(12.4f, 0.2f, 0f), 1, 110,
+                new Press[] { new(20, InputActions.Interact, true), new(22, InputActions.Interact, false) },
+                new Shot[]
+                {
+                    new(15, "stand"), new(24, "kneel"), new(30, "kneel"), new(38, "kneel"), new(50, "rest"), new(66, "rest"),
+                    new(76, "rise"), new(82, "rise"), new(90, "rise"), new(105, "stand"),
                 }),
         }),
         new("Quench", "swim", "Swim", 10f, new Segment[]

@@ -105,6 +105,7 @@ if [ -d "$out/grip" ]; then python3 -I tools/motion_sheet.py "$out" grip Grip 6x
 if [ -d "$out/harpoon" ]; then python3 -I tools/motion_sheet.py "$out" harpoon Harpoon 5x3 1440x810; fi
 if [ -d "$out/combat" ]; then python3 -I tools/motion_sheet.py "$out" combat Combat 7x4 1440x810; fi
 if [ -d "$out/swim" ]; then python3 -I tools/motion_sheet.py "$out" swim Swim 7x4 900x600; fi
+if [ -d "$out/moments" ]; then python3 -I tools/motion_sheet.py "$out" moments Moments 5x2 700x700; fi
 ls "$out"/*.png | sed 's/^/  /'
 
 if [ -n "$previous" ] && [ -d "$previous" ]; then

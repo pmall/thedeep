@@ -35,6 +35,9 @@ public partial class Session : Node
 
     /// <summary>Dying: the veil falls this slowly, and lifts this slowly at the shrine.</summary>
     [Export] public float DeathFadeOut { get; set; } = 1.1f;
+
+    /// <summary>How long resting at a shrine holds the pilgrim, down on one knee (seconds).</summary>
+    [Export] public float RestTime { get; set; } = 0.9f;
     [Export] public float DeathFadeIn { get; set; } = 0.9f;
 
     private bool _busy;
@@ -252,7 +255,9 @@ public partial class Session : Node
         shrine.Flare();
         Player.Velocity = Vector3.Zero;
         Player.Frozen = true;
-        await ToSignal(GetTree().CreateTimer(0.6f, processAlways: false), SceneTreeTimer.SignalName.Timeout);
+        Player.Visual.Moment = PilgrimMoment.Rest;
+        await ToSignal(GetTree().CreateTimer(RestTime, processAlways: false), SceneTreeTimer.SignalName.Timeout);
+        Player.Visual.Moment = PilgrimMoment.None;
         Player.Frozen = false;
         _busy = false;
     }
@@ -263,7 +268,9 @@ public partial class Session : Node
         _busy = true;
         Player.Velocity = Vector3.Zero;
         Player.Frozen = true;
+        Player.Visual.Moment = PilgrimMoment.Relic;
         await relic.Absorb(Player, new Vector3(0f, 1.05f, 0f));
+        Player.Visual.Moment = PilgrimMoment.None;
         Player.Abilities.Unlock(relic.Ability);
         Remember(relic.Name);
         Player.Frozen = false;
@@ -297,6 +304,7 @@ public partial class Session : Node
     private void OnDied()
     {
         GD.Print($"[died] in {World.RoomName} at {Player.GlobalPosition}");
+        Player.Visual.Moment = PilgrimMoment.Death;
         Return();
     }
 

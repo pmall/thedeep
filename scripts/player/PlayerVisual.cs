@@ -85,6 +85,19 @@ public partial class PlayerVisual : Node3D
 
     public void EndStrike() => _motion?.EndStrike();
 
+    /// <summary>The held moment the body plays (resting, taking a relic, dying); None lets it go.</summary>
+    public PilgrimMoment Moment
+    {
+        get => _motion?.Moment ?? PilgrimMoment.None;
+        set
+        {
+            if (_motion is not null)
+            {
+                _motion.Moment = value;
+            }
+        }
+    }
+
     /// <summary>A blow landed on the pilgrim: the body recoils.</summary>
     public void Hurt() => _motion?.Hurt();
 
