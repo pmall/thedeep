@@ -214,8 +214,9 @@ Material = ExtResource("1_basalt")
 
 ; west, back to the Kiln
 [node name="West" type="Marker3D" parent="Exits"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.5, 2, 0)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.5, 0, 0)
 script = ExtResource("3_exit")
+Side = 0
 TargetRoom = "res://worlds/prototype/rooms/Kiln.tscn"
 TargetExit = "Slag"
 Requires = "KilnLever"
@@ -223,8 +224,9 @@ Size = Vector2(1, 4)
 
 ; east, on to the Ashfall
 [node name="East" type="Marker3D" parent="Exits"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 91.5, 2, 0)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 91.5, 0, 0)
 script = ExtResource("3_exit")
+Side = 1
 TargetRoom = "res://worlds/prototype/rooms/Ashfall.tscn"
 TargetExit = "West"
 Size = Vector2(1, 4)
@@ -233,6 +235,7 @@ Size = Vector2(1, 4)
 [node name="Chimney" type="Marker3D" parent="Exits"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 46, 9.5, 0)
 script = ExtResource("3_exit")
+Side = 3
 TargetRoom = "res://worlds/prototype/rooms/Chimney.tscn"
 TargetExit = "Bottom"
 Size = Vector2(3, 1)
@@ -241,6 +244,7 @@ Size = Vector2(3, 1)
 [node name="Quench" type="Marker3D" parent="Exits"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 13.5, -29, 0)
 script = ExtResource("3_exit")
+Side = 2
 TargetRoom = "res://worlds/prototype/rooms/Quench.tscn"
 TargetExit = "Slag"
 Requires = "Ballast"
@@ -250,6 +254,7 @@ Size = Vector2(3, 1)
 [node name="Basalt" type="Marker3D" parent="Exits"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 61.5, -29, 0)
 script = ExtResource("3_exit")
+Side = 2
 TargetRoom = "res://worlds/prototype/rooms/Basalt.tscn"
 TargetExit = "Top"
 Requires = "Drill"
@@ -313,11 +318,12 @@ Embers = ExtResource("12_embers")
 EmberDensity = 0.8
 GlowEnergy = 3
 
-; the river itself, under the platforms (the plug's shaft walled off from it)
+; the river itself, under the platforms: it swallows the pilgrim, plated or not (the plug's shaft walled off from it)
 [node name="RiverUnder" type="Node3D" parent="Heat"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 37.5, -31, 0)
 script = ExtResource("10_heatzone")
 Size = Vector2(41, 22)
+Lethal = true
 HazeMaterial = ExtResource("11_heat_haze")
 Embers = ExtResource("12_embers")
 EmberDensity = 0
@@ -327,6 +333,7 @@ GlowEnergy = 2
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 68, -31, 0)
 script = ExtResource("10_heatzone")
 Size = Vector2(6, 22)
+Lethal = true
 HazeMaterial = ExtResource("11_heat_haze")
 Embers = ExtResource("12_embers")
 EmberDensity = 0

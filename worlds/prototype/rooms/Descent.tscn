@@ -328,6 +328,7 @@ Size = Vector3(6, 0.5, 4)
 [node name="West" type="Marker3D" parent="Exits"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 1, 30, 0)
 script = ExtResource("7_exit")
+Side = 0
 TargetRoom = "res://worlds/prototype/rooms/Nave.tscn"
 TargetExit = "East"
 Size = Vector2(1, 4)
@@ -336,6 +337,7 @@ Size = Vector2(1, 4)
 [node name="Sluice" type="Marker3D" parent="Exits"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 16.5, -7.25, 0)
 script = ExtResource("7_exit")
+Side = 2
 TargetRoom = "res://worlds/prototype/rooms/Sluice.tscn"
 TargetExit = "Descent"
 Requires = "Ballast"

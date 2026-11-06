@@ -4,12 +4,10 @@ using NVector2 = System.Numerics.Vector2;
 namespace TheDeep;
 
 /// <summary>
-/// Moves the player between rooms through their <see cref="RoomExit"/> markers: walking into an open
-/// exit holds the player still under a short fade, loads the target room, places the player at the
-/// arrival exit with its momentum kept (<see cref="ExitMath"/>), snaps the camera and fades back in.
-/// The arrival exit is disarmed until the player leaves it, so arriving never bounces straight back.
-/// Every crossing is written to the log (`[travel]`), and falling out of the room soon after arriving through a doorway
-/// puts the pilgrim back standing in it (`[travel caught]`) instead of at the last shrine.
+/// Moves the player between rooms through their <see cref="RoomExit"/> markers. Every physics tick, a body touching an open exit's
+/// trigger (<see cref="Threshold.Trigger"/>: the whole opening, out past the room's edge) leaves through it: the player is held still
+/// under a short fade, the target room is loaded, the player is placed clear of the arrival exit's trigger with its speed kept
+/// (<see cref="Threshold.Arrival"/>), the camera snaps and the fade lifts. Every crossing is written to the log (`[travel]`).
 /// </summary>
 public partial class RoomTravel : Node
 {
@@ -27,15 +25,7 @@ public partial class RoomTravel : Node
     /// <summary>How long an upward arrival carries the player sideways onto the floor (it ends on landing).</summary>
     [Export] public float SteerTime { get; set; } = 0.9f;
 
-    /// <summary>
-    /// How long after arriving through a doorway a fall out of the room (below its camera bounds) is the crossing's fault, not
-    /// the pilgrim's: it is put back standing in the doorway, seconds. A doorway's marker is on its floor, so it holds there.
-    /// </summary>
-    [Export] public float ArrivalGrace { get; set; } = 4f;
-
     private bool _travelling;
-    private RoomExit? _arrival;
-    private double _sinceArrival;
 
     /// <summary>Raised after the player arrived in a new room through an exit.</summary>
     public event System.Action<RoomExit>? Travelled;
@@ -45,50 +35,36 @@ public partial class RoomTravel : Node
     /// <summary>False keeps the player in the room whatever exit they walk into (look-dev runs stay in their room).</summary>
     public bool Enabled { get; set; } = true;
 
+    /// <summary>The exit the player came into the current room through, or null (it woke there, or started there).</summary>
+    public RoomExit? Entry { get; private set; }
+
     public override void _Ready()
     {
-        World.RoomLoaded += Listen;
-        Listen(World.Room);
-    }
-
-    public override void _ExitTree()
-    {
-        World.RoomLoaded -= Listen;
+        World.RoomLoaded += _ => Entry = null;
     }
 
     public override void _PhysicsProcess(double delta)
     {
-        if (_arrival is null || _travelling)
+        if (!Enabled || _travelling || Player.Frozen)
         {
             return;
         }
 
-        _sinceArrival += delta;
-        if (!IsInstanceValid(_arrival) || _sinceArrival > ArrivalGrace)
+        Box body = Player.Body;
+        System.Collections.Generic.IReadOnlyList<RoomExit> exits = World.Room.All<RoomExit>();
+        for (int i = 0; i < exits.Count; i++)
         {
-            _arrival = null;
-            return;
-        }
-
-        if (Player.GlobalPosition.Y < World.Room.BoundsMin.Y)
-        {
-            GD.PushWarning($"[travel caught] fell out of {World.RoomName} {_sinceArrival:0.00}s after arriving through {_arrival.Name}, at {Player.GlobalPosition}, moving {Player.Velocity}, {Player.CurrentState.GetType().Name}: back in the doorway");
-            Player.Respawn(_arrival.GlobalPosition);
-            _arrival = null;
+            if (exits[i].Open && exits[i].Threshold.Crossed(body))
+            {
+                Cross(exits[i]);
+                return;
+            }
         }
     }
 
-    private void Listen(Room room)
+    private async void Cross(RoomExit exit)
     {
-        foreach (RoomExit exit in room.Exits())
-        {
-            exit.Crossed += OnCrossed;
-        }
-    }
-
-    private async void OnCrossed(RoomExit exit)
-    {
-        if (!Enabled || _travelling || !ResourceLoader.Exists(exit.TargetRoom))
+        if (!ResourceLoader.Exists(exit.TargetRoom))
         {
             return;
         }
@@ -123,7 +99,7 @@ public partial class RoomTravel : Node
         string leaving = World.RoomName, leavingExit = exit.Name, target = exit.TargetRoom;
 
         // The arrival exit's position is only known once the room is loaded: place the room on the map after.
-        Room room = World.Load(GD.Load<PackedScene>(target), map: false);
+        Room room = World.Load(World.Scene(target), map: false);
         RoomExit? arrival = room.FindExit(targetExit);
         if (arrival is null)
         {
@@ -133,21 +109,35 @@ public partial class RoomTravel : Node
             return null;
         }
 
-        NVector2 to = arrival.RoomPosition.ToCore();
-        World.Enter(room, ExitMath.RoomOffset(hereOffset, from, to));
+        Threshold to = arrival.Threshold;
+        World.Enter(room, ExitMath.RoomOffset(hereOffset, from, to.Marker));
         World.Map.Take(leaving, leavingExit);
         World.Map.Take(World.RoomName, arrival.Name);
-        NVector2 position = ExitMath.Arrival(player, from, to, arrival.Size.ToCore());
-        NVector2 keep = ExitMath.ArrivalVelocity(velocity, arrival.Size.ToCore(), ClimbRise * Player.Tuning.JumpTakeOffSpeed);
-        arrival.Disarm();
+        NVector2 position = to.Arrival(Player.BodySize, room.Solids());
+        NVector2 keep = to.ArrivalVelocity(velocity, ClimbRise * Player.Tuning.JumpTakeOffSpeed);
         GD.Print($"[travel] {leaving}:{leavingExit} → {World.RoomName}:{arrival.Name}, from {player} moving {velocity} ({Player.CurrentState.GetType().Name}), to {position} moving {keep}");
         Player.Arrive(position.OnPlane(), keep.OnPlane());
-        _arrival = ExitMath.IsVertical(arrival.Size.ToCore()) ? null : arrival;
-        _sinceArrival = 0;
-        if (arrival.ArrivalSide != 0 && keep.Y > 0f)
+        Entry = arrival;
+        if (arrival.ArrivalSide != 0 && to.Side == ExitSide.Down)
         {
             Player.Steer(arrival.ArrivalSide, SteerTime);
         }
+
         return arrival;
+    }
+
+    /// <summary>
+    /// Puts the player back where it came into the room (it fell out of it: a hole the room check missed), or returns false if it came
+    /// in some other way (waking at a shrine, starting there).
+    /// </summary>
+    public bool Return()
+    {
+        if (Entry is not { } entry || !IsInstanceValid(entry))
+        {
+            return false;
+        }
+
+        Player.Respawn(entry.Threshold.Arrival(Player.BodySize, World.Room.Solids()).OnPlane());
+        return true;
     }
 }

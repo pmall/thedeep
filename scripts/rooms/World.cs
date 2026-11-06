@@ -21,6 +21,13 @@ public partial class World : Node3D
 
     private Room? _room;
 
+    /// <summary>
+    /// Every room scene built so far, kept for the session (scenes, not rooms: small). Let go, a scene's C# wrapper is finalized by the
+    /// collection after its room is freed while the engine still holds the scene; built again later, the engine hands back that scene
+    /// with its handle released ("Handle is not initialized").
+    /// </summary>
+    private readonly Dictionary<string, PackedScene> _scenes = new();
+
     /// <summary>The loaded room. Set before any sibling after this node is ready.</summary>
     public Room Room => _room ?? throw new InvalidOperationException("no room loaded yet");
 
@@ -51,6 +58,7 @@ public partial class World : Node3D
     /// </summary>
     public Room Load(PackedScene scene, bool map = true)
     {
+        _scenes.TryAdd(scene.ResourcePath, scene);
         if (_room is not null)
         {
             // Freed now, and its C# wrappers finalized before the next room is built, while nothing else touches the engine:
@@ -85,6 +93,18 @@ public partial class World : Node3D
 
     /// <summary>The scene path of the world's room named <paramref name="name"/> (its file name without extension).</summary>
     public string RoomPath(string name) => Definition.RoomPath(name);
+
+    /// <summary>The room scene at <paramref name="path"/>, loaded once and kept for the session (see <see cref="_scenes"/>).</summary>
+    public PackedScene Scene(string path)
+    {
+        if (!_scenes.TryGetValue(path, out PackedScene? scene))
+        {
+            scene = GD.Load<PackedScene>(path);
+            _scenes[path] = scene;
+        }
+
+        return scene;
+    }
 
     /// <summary>The scene paths of every room of the world, in name order (the lab rooms too; see <see cref="Room.InGame"/>).</summary>
     public IEnumerable<string> RoomScenes() =>

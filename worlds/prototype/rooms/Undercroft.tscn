@@ -297,6 +297,7 @@ Surface = 1
 [node name="West" type="Marker3D" parent="Exits"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 1, 0, 0)
 script = ExtResource("3_exit")
+Side = 0
 TargetRoom = "res://worlds/prototype/rooms/Sluice.tscn"
 TargetExit = "East"
 Size = Vector2(1, 4)
@@ -305,6 +306,7 @@ Size = Vector2(1, 4)
 [node name="East" type="Marker3D" parent="Exits"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 57, 0, 0)
 script = ExtResource("3_exit")
+Side = 1
 TargetRoom = "res://worlds/prototype/rooms/Ossuary.tscn"
 TargetExit = "West"
 Size = Vector2(1, 4)
@@ -313,6 +315,7 @@ Size = Vector2(1, 4)
 [node name="Chapterhouse" type="Marker3D" parent="Exits"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 57, 14.5, 0)
 script = ExtResource("3_exit")
+Side = 1
 TargetRoom = "res://worlds/prototype/rooms/Chapterhouse.tscn"
 TargetExit = "West"
 Requires = "MagGrip | Harpoon"
@@ -322,6 +325,7 @@ Size = Vector2(1, 4)
 [node name="Scriptorium" type="Marker3D" parent="Exits"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 1, 23.5, 0)
 script = ExtResource("3_exit")
+Side = 3
 TargetRoom = "res://worlds/prototype/rooms/Scriptorium.tscn"
 TargetExit = "Hatch"
 Requires = "MagGrip"
@@ -331,6 +335,7 @@ Size = Vector2(2, 1)
 [node name="Lift" type="Marker3D" parent="Exits"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 42, 0, 0)
 script = ExtResource("3_exit")
+Side = 2
 ArrivalOnly = true
 Size = Vector2(4, 1)
 

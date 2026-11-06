@@ -246,6 +246,7 @@ Material = ExtResource("1_basalt")
 [node name="Top" type="Marker3D" parent="Exits"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 8, 38, 0)
 script = ExtResource("3_exit")
+Side = 3
 ArrivalOnly = true
 Size = Vector2(3, 1)
 
@@ -253,6 +254,7 @@ Size = Vector2(3, 1)
 [node name="Crucible" type="Marker3D" parent="Exits"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 7.5, 0.5, 0)
 script = ExtResource("3_exit")
+Side = 2
 TargetRoom = "res://worlds/prototype/rooms/Crucible.tscn"
 TargetExit = "Basalt"
 OneWay = true

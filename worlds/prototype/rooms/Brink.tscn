@@ -167,6 +167,7 @@ Size = Vector3(19, 3, 4)
 [node name="West" type="Marker3D" parent="Exits"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 1, 0, 0)
 script = ExtResource("3_exit")
+Side = 0
 TargetRoom = "res://worlds/prototype/rooms/Chapterhouse.tscn"
 TargetExit = "East"
 Size = Vector2(1, 4)
@@ -175,10 +176,11 @@ Size = Vector2(1, 4)
 [node name="Down" type="Marker3D" parent="Exits"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 34, -48, 0)
 script = ExtResource("3_exit")
+Side = 2
 TargetRoom = "res://worlds/prototype/rooms/Rimefall.tscn"
 TargetExit = "Sky"
 OneWay = true
-Size = Vector2(18, 1)
+Size = Vector2(20, 1)
 
 [node name="Props" type="Node3D" parent="."]
 

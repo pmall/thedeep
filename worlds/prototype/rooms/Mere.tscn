@@ -162,6 +162,7 @@ Size = Vector3(3, 2, 4)
 [node name="West" type="Marker3D" parent="Exits"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 1, 0, 0)
 script = ExtResource("3_exit")
+Side = 0
 TargetRoom = "res://worlds/prototype/rooms/Coldstacks.tscn"
 TargetExit = "Mere"
 Size = Vector2(1, 4)
@@ -170,6 +171,7 @@ Size = Vector2(1, 4)
 [node name="East" type="Marker3D" parent="Exits"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 63, 0, 0)
 script = ExtResource("3_exit")
+Side = 1
 TargetRoom = "res://worlds/prototype/rooms/Sounding.tscn"
 TargetExit = "West"
 Size = Vector2(1, 4)
@@ -178,6 +180,7 @@ Size = Vector2(1, 4)
 [node name="Underice" type="Marker3D" parent="Exits"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 32, -18.5, 0)
 script = ExtResource("3_exit")
+Side = 2
 TargetRoom = "res://worlds/prototype/rooms/Underice.tscn"
 TargetExit = "Mere"
 Requires = "Ballast"

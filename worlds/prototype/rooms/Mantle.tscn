@@ -136,16 +136,18 @@ Material = ExtResource("1_basalt")
 
 ; west, back to the Threshold
 [node name="West" type="Marker3D" parent="Exits"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.5, 2, 0)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.5, 0, 0)
 script = ExtResource("3_exit")
+Side = 0
 TargetRoom = "res://worlds/prototype/rooms/Threshold.tscn"
 TargetExit = "Mantle"
 Size = Vector2(1, 4)
 
 ; the high door east, on to the Orrery: Mag-grip, then the Harpoon
 [node name="Orrery" type="Marker3D" parent="Exits"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 49.5, 22, 0)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 49.5, 20, 0)
 script = ExtResource("3_exit")
+Side = 1
 TargetRoom = "res://worlds/prototype/rooms/Orrery.tscn"
 TargetExit = "West"
 Requires = "MagGrip & Harpoon"

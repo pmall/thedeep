@@ -74,6 +74,7 @@ Size = Vector3(6, 0.5, 4)
 [node name="West" type="Marker3D" parent="Exits"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -1, 0, 0)
 script = ExtResource("3_exit")
+Side = 0
 TargetRoom = "res://worlds/sequel/rooms/Locks.tscn"
 TargetExit = "East"
 Size = Vector2(1, 4)

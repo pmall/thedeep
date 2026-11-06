@@ -69,6 +69,18 @@ public partial class Room : Node3D
     /// <summary>The room's gameplay blocks, in scene order.</summary>
     public IEnumerable<Block> Blocks() => Find<Block>(this);
 
+    /// <summary>The room's gameplay blocks as boxes on the play plane (room positions).</summary>
+    public List<Box> Solids()
+    {
+        var solids = new List<Box>();
+        foreach (Block b in Blocks())
+        {
+            solids.Add(Box.Around(b.GlobalPosition.Flat(), new System.Numerics.Vector2(b.Size.X, b.Size.Y)));
+        }
+
+        return solids;
+    }
+
     /// <summary>
     /// Every node of type <typeparamref name="T"/> in the room, in scene order (shrines, relics…). Found once and kept until a node
     /// enters or leaves the room: the session asks every physics tick, and walking the room's tree each time allocated about

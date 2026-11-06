@@ -14,13 +14,16 @@ public sealed record RoomShape(
 {
     /// <summary>The items lying in the room (keys, codes), by id, with the box walking into takes each.</summary>
     public List<(Box Area, string Item)> Items { get; init; } = new();
+
+    /// <summary>Lethal heat (molten slag): space no pilgrim enters, plated or not.</summary>
+    public List<Box> Lethal { get; init; } = new();
 }
 
 /// <summary>
-/// An exit as the world check sees it: its trigger box, its requirement, the side an arrival through a hatch is carried toward
-/// (<see cref="ArrivalSide"/>: -1, 0, +1) and whether it is sealed (it leads to a room not built yet).
+/// An exit as the world check sees it: its trigger and arrival (<see cref="Threshold"/>), its requirement, the side an arrival up
+/// through a hatch is carried toward (<see cref="ArrivalSide"/>: -1, 0, +1) and whether it is sealed (it leads to a room not built yet).
 /// </summary>
-public sealed record ExitShape(string Name, Vector2 Position, Vector2 Size, string Requires, int ArrivalSide, bool Sealed);
+public sealed record ExitShape(string Name, Threshold Threshold, string Requires, int ArrivalSide, bool Sealed);
 
 /// <summary>
 /// The moveset's numbers the world check simulates (from <c>player_tuning.tres</c>): the base moveset, the Harpoon, Mag-grip,

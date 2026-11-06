@@ -64,9 +64,11 @@ CHECKS=(
     # RoomValidator: every room scene, then the map. Run from the lab (no machines), so the rooms are checked alone: next to a
     # live room with machines, rooms added and freed in one frame intermittently crashed the engine (a GC finalizer fatal error).
     "rooms|ROOMS OK|ROOM CHECK|600|--room MechanicsLab --validate-rooms"
-    # TravelValidator: every open exit crossed, in two halves at once (the longest check).
-    "travel1|TRAVEL OK|TRAVEL CHECK|20000|--validate-travel --shard 1/2"
-    "travel2|TRAVEL OK|TRAVEL CHECK|20000|--validate-travel --shard 2/2"
+    # TravelValidator: every open exit crossed along its opening and back, in four parts at once (the longest check).
+    "travel1|TRAVEL OK|TRAVEL CHECK|20000|--validate-travel --shard 1/4"
+    "travel2|TRAVEL OK|TRAVEL CHECK|20000|--validate-travel --shard 2/4"
+    "travel3|TRAVEL OK|TRAVEL CHECK|20000|--validate-travel --shard 3/4"
+    "travel4|TRAVEL OK|TRAVEL CHECK|20000|--validate-travel --shard 4/4"
     # The abilities through the real inputs, in the mechanics lab.
     "grip|GRIP OK|GRIP CHECK|4000|--room MechanicsLab --grip-check"
     "harpoon|HARPOON OK|HARPOON CHECK|4000|--room MechanicsLab --harpoon-check"

@@ -237,6 +237,7 @@ Size = Vector3(19, 0.5, 4)
 [node name="Floor" type="Marker3D" parent="Exits"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 36, -1, 0)
 script = ExtResource("5_exit")
+Side = 2
 TargetRoom = "res://worlds/prototype/rooms/DrownedHall.tscn"
 TargetExit = "ShaftHatch"
 ArrivalSide = -1

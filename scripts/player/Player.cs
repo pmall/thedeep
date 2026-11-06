@@ -178,6 +178,20 @@ public partial class Player : CharacterBody3D
     /// <summary>Height of the body's center above the feet.</summary>
     public float CenterHeight => CapsuleOffset.Y;
 
+    /// <summary>The body's size (width, height): the capsule's.</summary>
+    public NVector2 BodySize => new(2f * Capsule.Radius, 2f * CenterHeight);
+
+    /// <summary>The body on the play plane as the core sees it, lying along the surface it grips (upright on a floor).</summary>
+    public Box Body
+    {
+        get
+        {
+            NVector2 size = BodySize, c = Center;
+            NVector2 half = Mathf.Abs(SurfaceUp.X) > 0.5f ? new NVector2(size.Y, size.X) * 0.5f : size * 0.5f;
+            return new Box(c.X - half.X, c.Y - half.Y, c.X + half.X, c.Y + half.Y);
+        }
+    }
+
     /// <summary>How far the feet stay from a surface the body lies along after a corner: the body's radius and a little air.</summary>
     public float GripClearance => Capsule.Radius + 0.02f;
 
@@ -531,6 +545,16 @@ public partial class Player : CharacterBody3D
         }
 
         return true;
+    }
+
+    /// <summary>Swallowed (molten slag): all health gone at once, whatever the grace period or the plating, and death.</summary>
+    public void Perish()
+    {
+        if (Vitality.Kill())
+        {
+            Velocity = Vector3.Zero;
+            Died?.Invoke();
+        }
     }
 
     /// <summary>

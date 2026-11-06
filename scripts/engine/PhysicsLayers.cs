@@ -18,8 +18,6 @@ public static class PhysicsLayers
     public const uint Hazard = 1u << 4;
     /// <summary>Water the pilgrim swims in.</summary>
     public const uint Water = 1u << 5;
-    /// <summary>Areas that react to the pilgrim: room exits, events.</summary>
-    public const uint Trigger = 1u << 6;
 
     /// <summary>Everything the player stands on or collides with.</summary>
     public const uint Solid = WorldRock | WorldMetal;

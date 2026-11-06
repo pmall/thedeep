@@ -171,16 +171,18 @@ Material = ExtResource("1_basalt")
 
 ; back up through the forbidden door into the Sanctum
 [node name="East" type="Marker3D" parent="Exits"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 52.5, 2, 0)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 52.5, 0, 0)
 script = ExtResource("3_exit")
+Side = 1
 TargetRoom = "res://worlds/prototype/rooms/Sanctum.tscn"
 TargetExit = "Kiln"
-Size = Vector2(1, 4)
+Size = Vector2(1, 6)
 
 ; the low door east, on to the Slag
 [node name="Slag" type="Marker3D" parent="Exits" node_paths=PackedStringArray("Door")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 52.5, -20, 0)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 52.5, -22, 0)
 script = ExtResource("3_exit")
+Side = 1
 TargetRoom = "res://worlds/prototype/rooms/Slag.tscn"
 TargetExit = "West"
 Requires = "KilnLever"

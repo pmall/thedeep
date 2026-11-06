@@ -146,14 +146,16 @@ Size = Vector3(6, 0.5, 4)
 [node name="West" type="Marker3D" parent="Exits"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.5, 0, 0)
 script = ExtResource("2_exit")
+Side = 0
 TargetRoom = "res://worlds/prototype/rooms/Sanctum.tscn"
 TargetExit = "East"
 Size = Vector2(1, 4)
 
 ; the low door at the pool's bottom: sunk (Ballast), east into the Underice
 [node name="Underice" type="Marker3D" parent="Exits"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 57, -14, 0)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 57, -16, 0)
 script = ExtResource("2_exit")
+Side = 1
 TargetRoom = "res://worlds/prototype/rooms/Underice.tscn"
 TargetExit = "Vault"
 Requires = "Ballast"
@@ -163,6 +165,7 @@ Size = Vector2(1, 4)
 [node name="Coldstacks" type="Marker3D" parent="Exits"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 54.5, 21, 0)
 script = ExtResource("2_exit")
+Side = 3
 ArrivalOnly = true
 Size = Vector2(4, 1)
 

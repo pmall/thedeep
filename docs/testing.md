@@ -13,7 +13,7 @@ The headless checks, one driver each in `scripts/debug/`; the driver's docblock 
 | The main scene boots idle for 300 frames, then the scripted smoke run | `SmokeDriver` |
 | Every room of the world, then the map: layout, solver, geometry, inside, room for error, the network; then its line book: every line the code and its content name | `RoomValidator` (proof in the core's `WorldCheck`; the lines: `LineCheck`) |
 | Every machine species, alone in the arena | `SpeciesValidator` |
-| Every open exit crossed | `TravelValidator` |
+| Every open exit crossed low, mid and high in its opening, then back | `TravelValidator` |
 | The ledge assist and each ability through the real inputs, in the mechanics lab | `GripCheck`, `HarpoonCheck`, `DrillCheck`, `BallastCheck`, `HeatCheck` |
 | A key and its locked door in place (the Sacristy's); power-ups taken (in the Sacristy); a conversation (the Narthex's Lamplighter); the Pyre's ambush; the Sacristy's hidden passage into the Cell | `KeyCheck`, `PowerUpCheck`, `DialogueCheck`, `AmbushCheck`, `SecretCheck` |
 | Combat and the session in the lab; the fight moveset (the chain, the hit stop, the down strike's bounce, the dash strike) | `CombatCheck`, `FightCheck` |

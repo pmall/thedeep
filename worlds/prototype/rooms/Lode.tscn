@@ -110,6 +110,7 @@ Material = ExtResource("1_basalt")
 [node name="Orrery" type="Marker3D" parent="Exits"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 10, 15.5, 0)
 script = ExtResource("3_exit")
+Side = 3
 TargetRoom = "res://worlds/prototype/rooms/Orrery.tscn"
 TargetExit = "Lode"
 Requires = "Drill & Ballast"
@@ -117,8 +118,9 @@ Size = Vector2(3, 1)
 
 ; east, on to the Effigy
 [node name="Effigy" type="Marker3D" parent="Exits"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 49.5, 3, 0)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 49.5, 1, 0)
 script = ExtResource("3_exit")
+Side = 1
 TargetRoom = "res://worlds/prototype/rooms/Effigy.tscn"
 TargetExit = "West"
 Size = Vector2(1, 4)

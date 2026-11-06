@@ -79,6 +79,7 @@ Size = Vector3(3, 10, 4)
 [node name="West" type="Marker3D" parent="Exits"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -1, 0, 0)
 script = ExtResource("3_exit")
+Side = 0
 TargetRoom = "res://worlds/sequel/rooms/Hold.tscn"
 TargetExit = "East"
 Size = Vector2(1, 4)
@@ -87,6 +88,7 @@ Size = Vector2(1, 4)
 [node name="East" type="Marker3D" parent="Exits" node_paths=PackedStringArray("Door")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 41, 0, 0)
 script = ExtResource("3_exit")
+Side = 1
 TargetRoom = "res://worlds/sequel/rooms/Beacon.tscn"
 TargetExit = "West"
 Requires = "WeirLever"

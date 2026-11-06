@@ -187,16 +187,18 @@ Material = ExtResource("1_basalt")
 
 ; west, back to the Slag
 [node name="West" type="Marker3D" parent="Exits"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.5, 2, 0)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.5, 0, 0)
 script = ExtResource("4_exit")
+Side = 0
 TargetRoom = "res://worlds/prototype/rooms/Slag.tscn"
 TargetExit = "East"
 Size = Vector2(1, 4)
 
 ; east, behind the heat: the Pyre
 [node name="Pyre" type="Marker3D" parent="Exits"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 58.5, -16, 0)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 58.5, -18, 0)
 script = ExtResource("4_exit")
+Side = 1
 TargetRoom = "res://worlds/prototype/rooms/Pyre.tscn"
 TargetExit = "West"
 Requires = "HeatPlating"
@@ -206,6 +208,7 @@ Size = Vector2(1, 4)
 [node name="Bellows" type="Marker3D" parent="Exits"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 40, -18.5, 0)
 script = ExtResource("4_exit")
+Side = 2
 TargetRoom = "res://worlds/prototype/rooms/Bellows.tscn"
 TargetExit = "Ashfall"
 ArrivalSide = 1

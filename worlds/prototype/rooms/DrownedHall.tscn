@@ -405,6 +405,7 @@ transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 51, 30.5, 0)
 [node name="WestGate" type="Marker3D" parent="Exits"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 1, 0, 0)
 script = ExtResource("12_exit")
+Side = 0
 TargetRoom = "res://worlds/prototype/rooms/Narthex.tscn"
 TargetExit = "East"
 Size = Vector2(1, 4)
@@ -414,6 +415,7 @@ Size = Vector2(1, 4)
 [node name="ShaftHatch" type="Marker3D" parent="Exits"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 51, 32, 0)
 script = ExtResource("12_exit")
+Side = 3
 TargetRoom = "res://worlds/prototype/rooms/Belfry.tscn"
 TargetExit = "Floor"
 Requires = "MagGrip | Harpoon"
@@ -423,6 +425,7 @@ Size = Vector2(10, 1)
 [node name="EastGate" type="Marker3D" parent="Exits"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 63, 26, 0)
 script = ExtResource("12_exit")
+Side = 1
 TargetRoom = "res://worlds/prototype/rooms/Nave.tscn"
 TargetExit = "West"
 Size = Vector2(1, 4)

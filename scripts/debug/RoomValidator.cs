@@ -11,8 +11,8 @@ namespace TheDeep;
 /// - the spawn point and every exit lie inside the camera bounds;
 /// - gameplay blocks are axis-aligned with their edges on the block grid, kit pieces have their origin on the piece grid
 ///   (dressing generators only their own: the pieces they build are not owned by the room);
-/// - exits have unique names, a valid requirement, an existing target room and exit, and a target that leads
-///   back unless they are one-way;
+/// - exits have unique names, a valid requirement, an existing target room and exit facing the other way, and a target that leads
+///   back unless they are one-way; each exit's trigger covers its whole opening and an arrival through it fits (<see cref="Threshold.Problems"/>);
 /// - the room has at least one photo spot;
 /// - no required export is left empty, in the room's nodes, the bricks it places and the resources they reach, nor in the main
 ///   scene and its world (<see cref="RequiredExports"/>).
@@ -197,15 +197,22 @@ public partial class RoomValidator : Node
             Problem($"{same.Count()} exits are named {same.Key}");
         }
 
+        var solids = room.Blocks().Select(BoxOf).ToList();
+        var body = new NVector2(Tuning.Move.Width, Tuning.Move.Height);
         foreach (RoomExit exit in exits)
         {
             CheckExit(exit, path, Inside(exit.GlobalPosition), Problem);
+            foreach (string problem in exit.Threshold.Problems(solids, new Box(room.BoundsMin.X, room.BoundsMin.Y, room.BoundsMax.X, room.BoundsMax.Y), body, left: !exit.ArrivalOnly))
+            {
+                Problem($"exit {exit.Name}: {problem}");
+            }
         }
 
         CheckDoors(room, exits, Problem);
         foreach (RoomExit exit in exits.Where(e => e.Hidden))
         {
-            var trigger = new Rect2(exit.RoomPosition - exit.Size * 0.5f, exit.Size);
+            Box area = exit.Threshold.Area;
+            var trigger = new Rect2(area.MinX, area.MinY, area.MaxX - area.MinX, area.MaxY - area.MinY);
             if (!room.All<FalseWall>().Any(w => w.Region.Intersects(trigger)))
             {
                 Problem($"exit {exit.Name} is hidden, but no FalseWall covers it");
@@ -228,11 +235,10 @@ public partial class RoomValidator : Node
     /// <summary>The room's part of the map: its exits (one edge each, for leaving through it), relics, items, goals and shape.</summary>
     private void Extract(Room room, string name, List<RoomExit> exits, WorldCheck world)
     {
-        static Box BoxOf(Block b) => Box.Around(b.GlobalPosition.Flat(), new NVector2(b.Size.X, b.Size.Y));
         var solids = room.Blocks().Select(BoxOf).ToList();
         var sound = room.Blocks().Where(b => !b.Cracked).Select(BoxOf).ToList();
         var exitShapes = exits.Where(e => e.TargetRoom == "" || ResourceLoader.Exists(e.TargetRoom))
-            .Select(e => new ExitShape(e.Name, e.RoomPosition.ToCore(), e.Size.ToCore(), e.Requires, e.ArrivalSide, e.TargetRoom == "")).ToList();
+            .Select(e => new ExitShape(e.Name, e.Threshold, e.Requires, e.ArrivalSide, e.TargetRoom == "")).ToList();
         var wakes = room.All<Shrine>().Select(s => s.GlobalPosition.Flat()).ToList();
         if (World.RoomPath(name) == StartRoom)
         {
@@ -241,7 +247,7 @@ public partial class RoomValidator : Node
 
         var anchors = room.All<HarpoonAnchor>().Select(a => a.GlobalPosition.Flat()).ToList();
         var waters = room.All<WaterBody>().Where(w => w.Swim).Select(w => w.PlayRegion).ToList();
-        var heat = room.All<HeatZone>().Select(z => z.Region).ToList();
+        var heat = room.All<HeatZone>().Where(z => !z.Lethal).Select(z => z.Region).ToList();
         // Where walking takes a relic (its range from the feet) and reaches a goal (the feet inside its area), as trigger boxes.
         var relics = room.All<AbilityRelic>()
             .Select(r => (Box.Around(r.GlobalPosition.Flat() + new NVector2(0f, 0.1f), new NVector2(1.6f, 0.4f)), r.Ability)).ToList();
@@ -255,6 +261,7 @@ public partial class RoomValidator : Node
             room.All<Lift>().Select(l => l.Path).ToList(), sound, waters, heat, relics, goals, metal, room.SpawnPoint.GlobalPosition.Flat())
         {
             Items = items,
+            Lethal = room.All<HeatZone>().Where(z => z.Lethal).Select(z => z.Region).ToList(),
         });
 
         foreach (RoomExit exit in exits.Where(e => e.TargetRoom != "" && ResourceLoader.Exists(e.TargetRoom)))
@@ -291,6 +298,8 @@ public partial class RoomValidator : Node
             world.Graph.AddGoal(name);
         }
     }
+
+    private static Box BoxOf(Block b) => Box.Around(b.GlobalPosition.Flat(), new NVector2(b.Size.X, b.Size.Y));
 
     /// <summary>Where an exit sits in its room (the scene instanced but not run).</summary>
     private static NVector2? ArrivalPosition(string scene, string exitName)
@@ -497,6 +506,10 @@ public partial class RoomValidator : Node
             if (target.FindChild(exit.TargetExit, recursive: true, owned: true) is not RoomExit arrival)
             {
                 problem($"exit {name} leads to {exit.TargetRoom}, which has no RoomExit named '{exit.TargetExit}'");
+            }
+            else if (!Threshold.Opposite(exit.Side, arrival.Side))
+            {
+                problem($"exit {name} leads {exit.Side}, but {exit.TargetRoom}:{exit.TargetExit} leads {arrival.Side}: the two ends of a way face opposite ways");
             }
             else if (!exit.OneWay && (arrival.TargetRoom != path || arrival.TargetExit != name))
             {

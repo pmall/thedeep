@@ -1,12 +1,10 @@
-using System;
 using Godot;
 
 namespace TheDeep;
 
 /// <summary>
-/// A connection marker inside a room scene: where the room connects to another one, and what it takes.
-/// The map is never listed by hand: the room check builds the world graph from these markers, and
-/// room travel uses them. The marker sits where the player stands on arrival through it.
+/// A connection marker inside a room scene: where the room connects to another one, which way, and what it takes. Room travel
+/// crosses it (<see cref="RoomTravel"/>), and the room check builds the world graph from these markers (the map is never listed by hand).
 /// The requirement is for leaving through this exit; the way back is the target exit's own.
 /// </summary>
 public partial class RoomExit : Marker3D
@@ -29,12 +27,6 @@ public partial class RoomExit : Marker3D
     [Export] public bool OneWay { get; set; }
 
     /// <summary>
-    /// Arriving up through this exit (a hatch in the floor), the player is carried this way (−1 west, +1 east)
-    /// until it lands, onto the floor beside the opening; 0 for none. Keep that floor within 1.5 m above the marker.
-    /// </summary>
-    [Export] public int ArrivalSide { get; set; }
-
-    /// <summary>
     /// Only arrived through, never left by: the far end of a one-way drop from another room (the Brink's jump lands in
     /// Rimefall's sky). It has no target and no trigger, and it is not a sealed way.
     /// </summary>
@@ -51,22 +43,24 @@ public partial class RoomExit : Marker3D
     /// </summary>
     [Export] public bool Hidden { get; set; }
 
-    /// <summary>Trigger area on the play plane (width, height), centered on the marker.</summary>
-    [Export] public Vector2 Size { get; set; } = new(1f, 3f);
+    /// <summary>
+    /// Arriving up through this exit (a hatch in the floor), the player is carried this way (−1 west, +1 east)
+    /// until it lands, onto the floor beside the opening; 0 for none. Keep that floor within 1.5 m above the trigger.
+    /// </summary>
+    [Export] public int ArrivalSide { get; set; }
+
+    /// <summary>Which way the exit leads out of the room: a doorway in the west or east wall, a hatch in the floor or the roof.</summary>
+    [Export] public ExitSide Side { get; set; }
+
+    /// <summary>
+    /// The exit's area on the play plane (width, height): a doorway's is the stretch of floor before the opening, its marker on that floor,
+    /// as tall as the opening; a hatch's is the hole, centered on the marker, as wide as it. The trigger starts there (<see cref="Threshold"/>).
+    /// </summary>
+    [Export] public Vector2 Size { get; set; } = new(1f, 4f);
 
     public Requirement Requirement => Requirement.Parse(Requires);
 
-    /// <summary>The player is leaving through the exit (in its area while armed, and moving out through a doorway): travel through it.</summary>
-    public event Action<RoomExit>? Crossed;
-
-    /// <summary>Whether entering the area travels. False until the player has left it, after arriving through it.</summary>
-    public bool Armed { get; private set; } = true;
-
-    private Player? _inside;
-    private int _outward;
-    private bool _wentBack;
-
-    /// <summary>An exit with a target room has a trigger area; one leading to a room not built yet stays sealed.</summary>
+    /// <summary>An exit with a target room; one leading to a room not built yet stays sealed.</summary>
     public bool Open => TargetRoom != "";
 
     /// <summary>A way out leading to a room not built yet (an arrival-only marker is not one).</summary>
@@ -75,82 +69,6 @@ public partial class RoomExit : Marker3D
     /// <summary>The marker's position in its room, on the play plane (rooms are loaded at the world origin).</summary>
     public Vector2 RoomPosition => new(GlobalPosition.X, GlobalPosition.Y);
 
-    public override void _Ready()
-    {
-        if (!Open)
-        {
-            return;
-        }
-
-        var area = new Area3D
-        {
-            Name = "Trigger",
-            CollisionLayer = PhysicsLayers.Trigger,
-            CollisionMask = PhysicsLayers.Player,
-            Monitorable = false,
-        };
-        area.AddChild(new CollisionShape3D { Shape = new BoxShape3D { Size = new Vector3(Size.X, Size.Y, 2f) } });
-        area.BodyEntered += OnBodyEntered;
-        area.BodyExited += OnBodyExited;
-        AddChild(area);
-        for (Node? n = GetParent(); n is not null; n = n.GetParent())
-        {
-            if (n is Room room)
-            {
-                _outward = ExitMath.Outward(RoomPosition.ToCore(), Size.ToCore(), room.BoundsMin.ToCore(), room.BoundsMax.ToCore());
-                break;
-            }
-        }
-    }
-
-    public override void _PhysicsProcess(double delta)
-    {
-        if (_wentBack)
-        {
-            _wentBack = false;
-            Crossed?.Invoke(this);
-            return;
-        }
-
-        // Inside a doorway's area, the player leaves once it moves or presses out of the room (ExitMath.Leaves). Its body must
-        // really be there: the area's report can be stale after a teleport (a respawn), and a pilgrim far off once crossed.
-        if (_inside is not null && Armed && Holds(_inside) && ExitMath.Leaves(_outward, _inside.Velocity.X, _inside.CurrentInput.MoveX))
-        {
-            _inside = null;
-            Crossed?.Invoke(this);
-        }
-    }
-
-    /// <summary>Whether the player's body (its middle) is within the trigger area, with a body's width of slack.</summary>
-    private bool Holds(Player player)
-    {
-        Vector3 p = player.GlobalPosition;
-        Vector2 at = RoomPosition;
-        return Mathf.Abs(p.X - at.X) <= Size.X * 0.5f + 0.6f && p.Y + 0.9f >= at.Y - Size.Y * 0.5f - 1f && p.Y <= at.Y + Size.Y * 0.5f + 1f;
-    }
-
-    /// <summary>
-    /// The player just arrived through here: entering again only counts after leaving the area, and leaving a doorway back out
-    /// through its outer side travels at once (<see cref="ExitMath.WentBack"/>).
-    /// </summary>
-    public void Disarm() => Armed = false;
-
-    private void OnBodyEntered(Node3D body)
-    {
-        if (body is Player player)
-        {
-            _inside = player;
-        }
-    }
-
-    private void OnBodyExited(Node3D body)
-    {
-        if (body is Player player)
-        {
-            _inside = null;
-            // Crossed on the next tick, not here: a room being freed reports its player leaving every area, and frees its exits before then.
-            _wentBack = !Armed && Holds(player) && ExitMath.WentBack(player.GlobalPosition.Flat() - RoomPosition.ToCore(), Size.ToCore(), _outward);
-            Armed = true;
-        }
-    }
+    /// <summary>The exit's trigger and arrival (<see cref="TheDeep.Threshold"/>).</summary>
+    public Threshold Threshold => new(Side, RoomPosition.ToCore(), Size.ToCore());
 }

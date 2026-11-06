@@ -172,8 +172,9 @@ Material = ExtResource("4_metal")
 
 ; west, back onto the Bellows' ledge
 [node name="West" type="Marker3D" parent="Exits"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.5, 2, 0)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.5, 0, 0)
 script = ExtResource("5_exit")
+Side = 0
 TargetRoom = "res://worlds/prototype/rooms/Bellows.tscn"
 TargetExit = "Foundry"
 Size = Vector2(1, 4)
@@ -182,6 +183,7 @@ Size = Vector2(1, 4)
 [node name="Threshold" type="Marker3D" parent="Exits"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 55, -9.5, 0)
 script = ExtResource("5_exit")
+Side = 2
 TargetRoom = "res://worlds/prototype/rooms/Threshold.tscn"
 TargetExit = "Foundry"
 Requires = "HeatPlating"

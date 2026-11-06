@@ -227,6 +227,7 @@ Surface = 1
 [node name="East" type="Marker3D" parent="Exits"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 37, 0, 0)
 script = ExtResource("6_exit")
+Side = 1
 TargetRoom = "res://worlds/prototype/rooms/Cistern.tscn"
 TargetExit = "West"
 Size = Vector2(1, 4)

@@ -306,6 +306,7 @@ Size = Vector3(8, 0.5, 4)
 [node name="East" type="Marker3D" parent="Exits"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 75, 0, 0)
 script = ExtResource("4_exit")
+Side = 1
 TargetRoom = "res://worlds/prototype/rooms/Choir.tscn"
 TargetExit = "West"
 Size = Vector2(1, 4)
@@ -314,6 +315,7 @@ Size = Vector2(1, 4)
 [node name="Counterweight" type="Marker3D" parent="Exits"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 65, 31, 0)
 script = ExtResource("4_exit")
+Side = 3
 TargetRoom = "res://worlds/prototype/rooms/Counterweight.tscn"
 TargetExit = "Bottom"
 Size = Vector2(4, 1)
@@ -322,6 +324,7 @@ Size = Vector2(4, 1)
 [node name="Calving" type="Marker3D" parent="Exits"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 1, 14, 0)
 script = ExtResource("4_exit")
+Side = 0
 TargetRoom = "res://worlds/prototype/rooms/Calving.tscn"
 TargetExit = "East"
 Requires = "MagGrip | Harpoon"
@@ -331,6 +334,7 @@ Size = Vector2(1, 4)
 [node name="Mere" type="Marker3D" parent="Exits"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 75, -10, 0)
 script = ExtResource("4_exit")
+Side = 1
 TargetRoom = "res://worlds/prototype/rooms/Mere.tscn"
 TargetExit = "West"
 Size = Vector2(1, 4)
@@ -339,6 +343,7 @@ Size = Vector2(1, 4)
 [node name="Vault" type="Marker3D" parent="Exits"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 64, -14, 0)
 script = ExtResource("4_exit")
+Side = 2
 TargetRoom = "res://worlds/prototype/rooms/Vault.tscn"
 TargetExit = "Coldstacks"
 Requires = "Drill"
@@ -349,6 +354,7 @@ Size = Vector2(4, 1)
 [node name="Chimney" type="Marker3D" parent="Exits"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 11.5, -14, 0)
 script = ExtResource("4_exit")
+Side = 2
 TargetRoom = "res://worlds/prototype/rooms/Chimney.tscn"
 TargetExit = "Top"
 Requires = "HeatPlating"

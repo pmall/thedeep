@@ -87,6 +87,7 @@ Size = Vector3(2.5, 1.5, 4)
 [node name="West" type="Marker3D" parent="Exits"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -1, 0, 0)
 script = ExtResource("3_exit")
+Side = 0
 TargetRoom = "res://worlds/sequel/rooms/Quay.tscn"
 TargetExit = "East"
 Size = Vector2(1, 4)
@@ -95,6 +96,7 @@ Size = Vector2(1, 4)
 [node name="East" type="Marker3D" parent="Exits"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 57, 0, 0)
 script = ExtResource("3_exit")
+Side = 1
 TargetRoom = "res://worlds/sequel/rooms/Chantry.tscn"
 TargetExit = "West"
 Size = Vector2(1, 4)
@@ -103,6 +105,7 @@ Size = Vector2(1, 4)
 [node name="Hold" type="Marker3D" parent="Exits"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 57, 14.5, 0)
 script = ExtResource("3_exit")
+Side = 1
 TargetRoom = "res://worlds/sequel/rooms/Hold.tscn"
 TargetExit = "West"
 Requires = "MagGrip"

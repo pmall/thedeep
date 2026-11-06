@@ -179,6 +179,7 @@ Size = Vector3(50, 3, 4)
 [node name="East" type="Marker3D" parent="Exits"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 43, 16, 0)
 script = ExtResource("3_exit")
+Side = 1
 TargetRoom = "res://worlds/prototype/rooms/Coldstacks.tscn"
 TargetExit = "Calving"
 Requires = "MagGrip | Harpoon"
@@ -188,6 +189,7 @@ Size = Vector2(1, 4)
 [node name="West" type="Marker3D" parent="Exits"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 1, 0, 0)
 script = ExtResource("3_exit")
+Side = 0
 TargetRoom = "res://worlds/prototype/rooms/Bore.tscn"
 TargetExit = "East"
 Size = Vector2(1, 4)

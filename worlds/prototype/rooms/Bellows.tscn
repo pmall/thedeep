@@ -177,14 +177,16 @@ Material = ExtResource("1_basalt")
 [node name="Ashfall" type="Marker3D" parent="Exits"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 10, 22.5, 0)
 script = ExtResource("4_exit")
+Side = 3
 TargetRoom = "res://worlds/prototype/rooms/Ashfall.tscn"
 TargetExit = "Bellows"
 Size = Vector2(3, 1)
 
 ; the high door east, on to the Foundry
 [node name="Foundry" type="Marker3D" parent="Exits"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 55.5, 18, 0)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 55.5, 16, 0)
 script = ExtResource("4_exit")
+Side = 1
 TargetRoom = "res://worlds/prototype/rooms/Foundry.tscn"
 TargetExit = "West"
 Requires = "MagGrip | Harpoon"

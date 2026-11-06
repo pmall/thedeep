@@ -8,8 +8,8 @@ namespace TheDeep;
 /// <summary>
 /// The whole run, from a new game to the end (`-- --playthrough-check`, run by tools/check.sh). It reads the built map from
 /// the room scenes' markers, asks the solver for a shortest route from the start to the goal (<see cref="MapSolver.Route"/>),
-/// and plays it in the real game: every way is crossed through its real exit (the pilgrim put in its area moving out, as
-/// <see cref="TravelValidator"/> does) only once the pilgrim holds what it needs and a door on it stands open (a locked one opened by
+/// and plays it in the real game: every way is crossed through its real exit (the pilgrim put in its trigger moving out, its crossing the
+/// <see cref="TravelValidator"/>'s to prove) only once the pilgrim holds what it needs and a door on it stands open (a locked one opened by
 /// coming near it); in each room on the way it takes the relics and items (walking into them), pulls the levers (interact), breaks the laws (pressing on at the lip through the real inputs) and fights the bosses (through the
 /// real inputs, kept alive: the rules, not the balance) before leaving. At the goal, reaching the heart plays the end card.
 /// Moving inside a room is the geometry check's to prove (<see cref="ReachPlanner"/>); this proves the game's flow: abilities
@@ -256,16 +256,18 @@ public partial class PlaythroughCheck : Node
                     return;
                 }
 
-                Vector2 at = exit.RoomPosition, center = (room.BoundsMin + room.BoundsMax) * 0.5f;
-                bool vertical = ExitMath.IsVertical(exit.Size.ToCore());
-                Player.Respawn(new Vector3(at.X, at.Y, 0f));
-                Player.Velocity = vertical ? new Vector3(0f, at.Y > center.Y ? 10f : -10f, 0f) : new Vector3(at.X > center.X ? 7f : -7f, 0f, 0f);
-                if (!vertical)
+                // Into the trigger, moving out: crossing an opening is the travel check's to prove; this one only goes through,
+                // holding what a player holds (the move out of a doorway, and down: Ballast sinks on through water).
+                Threshold threshold = exit.Threshold;
+                Player.Respawn((threshold.Arrival(Player.BodySize) + threshold.Outward * 0.6f).OnPlane());
+                Player.Velocity = (threshold.Outward * (threshold.IsHatch ? 10f : 7f)).OnPlane();
+                Begin(Phase.Arrive);
+                if (!threshold.IsHatch)
                 {
-                    Hold(at.X > center.X ? InputActions.MoveRight : InputActions.MoveLeft, true);
+                    Hold(threshold.Side == ExitSide.East ? InputActions.MoveRight : InputActions.MoveLeft, true);
                 }
 
-                Begin(Phase.Arrive);
+                Hold(InputActions.MoveDown, threshold.Side != ExitSide.Up);
                 break;
             case Phase.Arrive:
                 if (World.RoomName == Hop.To && Player.InControl && _ticks > 30)

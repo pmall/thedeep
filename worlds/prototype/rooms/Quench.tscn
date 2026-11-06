@@ -175,6 +175,7 @@ Material = ExtResource("3_rust")
 [node name="Slag" type="Marker3D" parent="Exits"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 14, 41.5, 0)
 script = ExtResource("4_exit")
+Side = 3
 TargetRoom = "res://worlds/prototype/rooms/Slag.tscn"
 TargetExit = "Quench"
 Size = Vector2(3, 1)
@@ -183,6 +184,7 @@ Size = Vector2(3, 1)
 [node name="Crucible" type="Marker3D" parent="Exits"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 36, 1.25, 0)
 script = ExtResource("4_exit")
+Side = 2
 TargetRoom = "res://worlds/prototype/rooms/Crucible.tscn"
 TargetExit = "Quench"
 Requires = "Ballast"

@@ -213,6 +213,7 @@ Material = ExtResource("3_rust")
 [node name="Quench" type="Marker3D" parent="Exits"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 14, 19.25, 0)
 script = ExtResource("4_exit")
+Side = 3
 TargetRoom = "res://worlds/prototype/rooms/Quench.tscn"
 TargetExit = "Crucible"
 Size = Vector2(3, 3)
@@ -221,6 +222,7 @@ Size = Vector2(3, 3)
 [node name="Basalt" type="Marker3D" parent="Exits"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 39.5, 22, 0)
 script = ExtResource("4_exit")
+Side = 3
 ArrivalOnly = true
 Size = Vector2(3, 1)
 

@@ -151,6 +151,7 @@ Size = Vector3(5, 1, 4)
 [node name="Mere" type="Marker3D" parent="Exits"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 40, 23.5, 0)
 script = ExtResource("3_exit")
+Side = 3
 TargetRoom = "res://worlds/prototype/rooms/Mere.tscn"
 TargetExit = "Underice"
 Requires = "Ballast"
@@ -158,8 +159,9 @@ Size = Vector2(3, 1)
 
 ; the low door west, into the Vault's pool
 [node name="Vault" type="Marker3D" parent="Exits"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.5, 3, 0)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.5, 1, 0)
 script = ExtResource("3_exit")
+Side = 0
 TargetRoom = "res://worlds/prototype/rooms/Vault.tscn"
 TargetExit = "Underice"
 Requires = "Ballast"

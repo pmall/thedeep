@@ -144,6 +144,7 @@ Surface = 1
 [node name="Foundry" type="Marker3D" parent="Exits"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 8, 14.5, 0)
 script = ExtResource("4_exit")
+Side = 3
 TargetRoom = "res://worlds/prototype/rooms/Foundry.tscn"
 TargetExit = "Threshold"
 Requires = "HeatPlating"
@@ -151,8 +152,9 @@ Size = Vector2(3, 1)
 
 ; east, on to the Mantle
 [node name="Mantle" type="Marker3D" parent="Exits"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 49.5, 2, 0)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 49.5, 0, 0)
 script = ExtResource("4_exit")
+Side = 1
 TargetRoom = "res://worlds/prototype/rooms/Mantle.tscn"
 TargetExit = "West"
 Size = Vector2(1, 4)

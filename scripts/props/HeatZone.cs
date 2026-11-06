@@ -6,9 +6,9 @@ namespace TheDeep;
 /// A zone of heat on the play plane (a vent's column of hot air, the air over a pool of slag): <see cref="Size"/> wide and
 /// tall, rising from the node's origin. Without Heat plating, touching it burns: a blow (it takes health, throws the pilgrim
 /// back out and up, then the grace period); during the grace it still throws the pilgrim out, unhurt. With Heat plating
-/// it is harmless. It looks like heat: a shimmering haze (<see cref="HazeMaterial"/>), embers rising (<see cref="Embers"/>),
-/// a glow at its foot. Not a <see cref="Block"/>: the map's geometry check reads its <see cref="Region"/> as space no planner
-/// may enter without Heat plating.
+/// it is harmless. A <see cref="Lethal"/> zone is molten slag itself: touching it is death, plated or not. It looks like heat: a
+/// shimmering haze (<see cref="HazeMaterial"/>), embers rising (<see cref="Embers"/>), a glow at its foot. Not a <see cref="Block"/>:
+/// the map's geometry check reads its <see cref="Region"/> as space no planner may enter without Heat plating (a lethal one: ever).
 /// </summary>
 public partial class HeatZone : Node3D
 {
@@ -16,6 +16,9 @@ public partial class HeatZone : Node3D
     [Export] public Vector2 Size { get; set; } = new(2f, 6f);
 
     [Export] public int Damage { get; set; } = 1;
+
+    /// <summary>Molten slag itself, not the air over it: it swallows the pilgrim, Heat plating or not (a river of slag's bed).</summary>
+    [Export] public bool Lethal { get; set; }
 
     [Export] public Material? HazeMaterial { get; set; }
     [Export] public PackedScene? Embers { get; set; }
@@ -82,14 +85,23 @@ public partial class HeatZone : Node3D
 
     public override void _PhysicsProcess(double delta)
     {
-        if (Player is not { } player || player.Abilities.Has(Ability.HeatPlating) || !player.InControl)
+        if (Player is not { } player || (!Lethal && player.Abilities.Has(Ability.HeatPlating)) || !player.InControl)
         {
             return;
         }
 
         Rect2 body = player.BodyRect;
         Box r = Region;
-        if (body.Position.X < r.MaxX && r.MinX < body.End.X && body.Position.Y < r.MaxY && r.MinY < body.End.Y)
+        if (body.Position.X >= r.MaxX || r.MinX >= body.End.X || body.Position.Y >= r.MaxY || r.MinY >= body.End.Y)
+        {
+            return;
+        }
+
+        if (Lethal)
+        {
+            player.Perish();
+        }
+        else
         {
             // In its grace period the pilgrim is not hurt, but the heat still throws it out: no way through without the plating.
             var from = new System.Numerics.Vector2(GlobalPosition.X, player.GlobalPosition.Y);

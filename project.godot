@@ -170,7 +170,6 @@ debug_cycle_paint={
 3d_physics/layer_4="enemy"
 3d_physics/layer_5="hazard"
 3d_physics/layer_6="water"
-3d_physics/layer_7="trigger"
 
 [physics]
 

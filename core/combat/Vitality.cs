@@ -45,6 +45,19 @@ public sealed class Vitality
         return true;
     }
 
+    /// <summary>All health gone at once, grace or not (swallowed by molten slag); returns whether it was still alive.</summary>
+    public bool Kill()
+    {
+        if (Dead)
+        {
+            return false;
+        }
+
+        Current = 0;
+        Changed?.Invoke(Current);
+        return true;
+    }
+
     public void Tick(float delta) => Grace = Math.Max(0f, Grace - delta);
 
     /// <summary>Back to full health, no grace period.</summary>

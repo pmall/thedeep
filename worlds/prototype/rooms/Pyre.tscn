@@ -129,8 +129,9 @@ Material = ExtResource("1_basalt")
 
 ; west, back through the heat into the Ashfall
 [node name="West" type="Marker3D" parent="Exits"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.5, 2, 0)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.5, 0, 0)
 script = ExtResource("4_exit")
+Side = 0
 TargetRoom = "res://worlds/prototype/rooms/Ashfall.tscn"
 TargetExit = "Pyre"
 Requires = "HeatPlating"

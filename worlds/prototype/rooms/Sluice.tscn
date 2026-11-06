@@ -242,6 +242,7 @@ Size = Vector3(3, 2.5, 4)
 [node name="West" type="Marker3D" parent="Exits"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 1, 0, 0)
 script = ExtResource("3_exit")
+Side = 0
 TargetRoom = "res://worlds/prototype/rooms/Cistern.tscn"
 TargetExit = "East"
 Size = Vector2(1, 4)
@@ -251,12 +252,14 @@ Size = Vector2(1, 4)
 [node name="Descent" type="Marker3D" parent="Exits"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 22, 7.25, 0)
 script = ExtResource("3_exit")
+Side = 3
 ArrivalOnly = true
 Size = Vector2(3, 0.5)
 
 [node name="East" type="Marker3D" parent="Exits"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 61, -4, 0)
 script = ExtResource("3_exit")
+Side = 1
 TargetRoom = "res://worlds/prototype/rooms/Undercroft.tscn"
 TargetExit = "West"
 Size = Vector2(1, 4)

@@ -198,6 +198,7 @@ Size = Vector3(12, 3, 4)
 [node name="Bottom" type="Marker3D" parent="Exits"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 4, -0.5, 0)
 script = ExtResource("2_exit")
+Side = 2
 TargetRoom = "res://worlds/prototype/rooms/Coldstacks.tscn"
 TargetExit = "Counterweight"
 ArrivalSide = 1
@@ -207,6 +208,7 @@ Size = Vector2(4, 1)
 [node name="Top" type="Marker3D" parent="Exits"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 13, 29, 0)
 script = ExtResource("2_exit")
+Side = 3
 TargetRoom = "res://worlds/prototype/rooms/Undercroft.tscn"
 TargetExit = "Lift"
 OneWay = true

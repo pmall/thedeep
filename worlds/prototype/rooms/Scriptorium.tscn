@@ -206,6 +206,7 @@ Size = Vector3(22, 0.5, 4)
 [node name="Hatch" type="Marker3D" parent="Exits"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 14, -0.5, 0)
 script = ExtResource("2_exit")
+Side = 2
 TargetRoom = "res://worlds/prototype/rooms/Undercroft.tscn"
 TargetExit = "Scriptorium"
 ArrivalSide = -1

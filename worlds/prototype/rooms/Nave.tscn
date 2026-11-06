@@ -220,10 +220,10 @@ transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 27.75, -1, 0)
 Size = Vector3(61.5, 2, 4)
 Material = ExtResource("4_wet_stone")
 
-; the strip of floor between the hatch and the metal wall
+; the strip of floor between the hatch and the metal wall, and under it
 [node name="FloorEast" parent="Geometry" instance=ExtResource("5_block")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 63.75, -1, 0)
-Size = Vector3(4.5, 2, 4)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 64.75, -1, 0)
+Size = Vector3(6.5, 2, 4)
 Material = ExtResource("4_wet_stone")
 
 ; west wall above the doorway from the hall
@@ -272,6 +272,7 @@ Size = Vector3(3, 8, 4)
 [node name="West" type="Marker3D" parent="Exits"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 1, 0, 0)
 script = ExtResource("6_exit")
+Side = 0
 TargetRoom = "res://worlds/prototype/rooms/DrownedHall.tscn"
 TargetExit = "EastGate"
 Size = Vector2(1, 4)
@@ -280,6 +281,7 @@ Size = Vector2(1, 4)
 [node name="Hatch" type="Marker3D" parent="Exits"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 60, -0.5, 0)
 script = ExtResource("6_exit")
+Side = 2
 TargetRoom = "res://worlds/prototype/rooms/Cistern.tscn"
 TargetExit = "Top"
 ArrivalSide = -1
@@ -289,6 +291,7 @@ Size = Vector2(2, 1)
 [node name="East" type="Marker3D" parent="Exits"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 85, 14, 0)
 script = ExtResource("6_exit")
+Side = 1
 TargetRoom = "res://worlds/prototype/rooms/Descent.tscn"
 TargetExit = "West"
 Requires = "MagGrip"

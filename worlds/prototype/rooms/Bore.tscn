@@ -185,8 +185,8 @@ transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 9.5, -11.5, 0)
 Size = Vector3(3, 5, 4)
 
 [node name="ChamberFloorEast" parent="Geometry" instance=ExtResource("1_block")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 15.5, -11.5, 0)
-Size = Vector3(9, 5, 4)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 16.25, -11.5, 0)
+Size = Vector3(10.5, 5, 4)
 
 ; the chamber's end
 [node name="WallWest" parent="Geometry" instance=ExtResource("1_block")]
@@ -222,6 +222,7 @@ Size = Vector3(4, 12, 4)
 [node name="East" type="Marker3D" parent="Exits"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 47, 0, 0)
 script = ExtResource("2_exit")
+Side = 1
 TargetRoom = "res://worlds/prototype/rooms/Calving.tscn"
 TargetExit = "West"
 Size = Vector2(1, 4)

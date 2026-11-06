@@ -62,7 +62,7 @@ public sealed class WorldCheck
         _bounds[name] = (boundsMin, boundsMax);
         _shapes[name] = shape;
         _matters[name] = Matters(shape);
-        _triggers[name] = shape.Exits.Select(e => Box.Around(e.Position, e.Size)).Concat(shape.Relics.Select(r => r.Area))
+        _triggers[name] = shape.Exits.Select(e => e.Threshold.Trigger).Concat(shape.Relics.Select(r => r.Area))
             .Concat(shape.Items.Select(i => i.Area)).Concat(shape.Goals).ToList();
     }
 
@@ -197,7 +197,7 @@ public sealed class WorldCheck
             yield break;
         }
 
-        var triggers = shape.Exits.Select(e => Box.Around(e.Position, e.Size)).ToList();
+        var triggers = shape.Exits.Select(e => e.Threshold.Trigger).ToList();
         List<WayIn> ways = WaysIn(room);
         foreach (WayIn way in ways)
         {
@@ -227,7 +227,7 @@ public sealed class WorldCheck
         bool grip = (g & Ability.MagGrip) != 0;
         return new ReachPlanner(clumsy ? _limits.Move.Clumsy() : _limits.Move, (g & Ability.Drill) != 0 ? shape.Sound : shape.Solids,
             (g & Ability.Harpoon) != 0 ? _limits.Harpoon : null, shape.Anchors, shape.Lifts, _limits.Water, shape.Waters,
-            ballast: (g & Ability.Ballast) != 0, hazards: (g & Ability.HeatPlating) != 0 ? null : shape.Heat,
+            ballast: (g & Ability.Ballast) != 0, hazards: (g & Ability.HeatPlating) != 0 ? shape.Lethal : shape.Heat.Concat(shape.Lethal),
             grip: grip ? _limits.Grip : null, metal: grip ? shape.Metal : null);
     }
 
@@ -261,13 +261,23 @@ public sealed class WorldCheck
     /// </summary>
     private sealed record WayIn(string What, Vector2 At, Vector2 Velocity, int Steer, int Exit, bool Base, Ability Guaranteed);
 
+    /// <summary>
+    /// Arriving through an exit, placed as room travel places the body (<see cref="Threshold.Arrival"/>): through a doorway standing, up
+    /// through a hatch in a floor rising (carried toward its <see cref="ExitShape.ArrivalSide"/>), down through one in a roof falling.
+    /// </summary>
     private WayIn Arriving(RoomShape shape, int index, Requirement requires)
     {
         ExitShape x = shape.Exits[index];
-        bool vertical = ExitMath.IsVertical(x.Size);
-        Vector2 velocity = !vertical ? Vector2.Zero : x.ArrivalSide != 0 ? new Vector2(0f, _limits.Rise) : new Vector2(0f, -5f);
+        Threshold t = x.Threshold;
+        Vector2 velocity = t.Side switch
+        {
+            ExitSide.Down => t.ArrivalVelocity(Vector2.Zero, _limits.Rise),
+            ExitSide.Up => new Vector2(0f, -5f),
+            _ => Vector2.Zero,
+        };
         Requirement body = requires.WithoutItems();
-        return new WayIn($"arriving through {x.Name}", x.Position, velocity, vertical ? x.ArrivalSide : 0, index, body.IsMetBy(Ability.None),
+        return new WayIn($"arriving through {x.Name}", t.Arrival(new Vector2(_limits.Move.Width, _limits.Move.Height), shape.Solids), velocity,
+            t.Side == ExitSide.Down ? x.ArrivalSide : 0, index, body.IsMetBy(Ability.None),
             body.Options.Aggregate(Simulated, (all, option) => all & option.Abilities));
     }
 

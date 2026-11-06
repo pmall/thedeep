@@ -23,6 +23,7 @@ public partial class Session : Node
     [Export] public Banner Banner { get; set; } = null!;
     [Export] public SideCamera Camera { get; set; } = null!;
     [Export] public EndCard EndCard { get; set; } = null!;
+    [Export] public RoomTravel Travel { get; set; } = null!;
 
     /// <summary>How close (meters, on the play plane) the pilgrim must stand to rest at a shrine or take a relic.</summary>
     [Export] public float RestRange { get; set; } = 1.6f;
@@ -300,14 +301,18 @@ public partial class Session : Node
     }
 
     /// <summary>
-    /// Fallen out of the room (below its camera bounds: a drop into a room not built yet, like the Brink's): the same
-    /// return as dying, health untouched by the fall.
+    /// Fallen out of the room (below its camera bounds): a hole the room check missed, so it is logged as an error. The pilgrim is put
+    /// back at the exit it came in by (<see cref="RoomTravel.Return"/>), or, if it woke in this room, returned to its shrine like a
+    /// death, health untouched by the fall.
     /// </summary>
     private void FellOut()
     {
-        GD.Print($"[fell out] of {World.RoomName} at {Player.GlobalPosition}, moving {Player.Velocity}, {Player.CurrentState.GetType().Name}");
+        GD.PushError($"[fell out] of {World.RoomName} at {Player.GlobalPosition}, moving {Player.Velocity}, {Player.CurrentState.GetType().Name}");
         Player.Velocity = Vector3.Zero;
-        Return();
+        if (!Travel.Return())
+        {
+            Return();
+        }
     }
 
     private async void Return()

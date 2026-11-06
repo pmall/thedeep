@@ -31,7 +31,7 @@ public class WorldCheckTests
         Metal: new List<Box>(), Spawn: new Vector2(0f, 0f));
 
     private static ExitShape Doorway(string name, float x, string requires = "", float y = 1.5f) =>
-        new(name, new Vector2(x, y), new Vector2(1f, 3f), requires, ArrivalSide: 0, Sealed: false);
+        new(name, new Threshold(x > 0f ? ExitSide.East : ExitSide.West, new Vector2(x, y), new Vector2(1f, 3f)), requires, ArrivalSide: 0, Sealed: false);
 
     private static WorldCheck TwoRooms(string eastNeeds = "", float eastY = 1.5f)
     {

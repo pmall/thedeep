@@ -24,12 +24,21 @@ These leave room for error, because jumps must never be exact (owner, 2026-11-01
 - **Ability relics:** walking into one takes it: the ability unlocks, a banner names it and says how to use it, the game saves. A taken relic stays taken.
 - **Saving:** one save per world. A normal launch resumes there; `-- --new` starts fresh. Checks, look-dev and `--room` runs never read or write it.
 - **Map:** the visited rooms and the ways not taken yet; it pauses the game.
-- **Leaving a room:** walk (run, dash, drift) out through a doorway; standing in one, or dropping into one from above, never travels. Hatches in floors and ceilings are crossed whatever the way.
+- **Leaving a room:** through its exits, however the pilgrim moves (`docs/gameplay.md#leaving-a-room`).
 - **Scripture plates** and **lines spoken to the pilgrim** as it comes near: text only, lore.
 - **Bosses** are placeholders (their richness is `docs/roadmap.md#stage-polish`): a boss is an ordinary machine in an arena whose gates fall while it stands; broken, it never stands again. Dying in the fight renews it. What each one does is its species and brain.
 - **Law breaks** are story beats tied to depth, outside the ability graph (`docs/theme.md#laws-outside-abilities`): a law holds the pilgrim at its place until it presses on and breaks it, for good. Where they stand: `worlds/prototype/map-draft.md#draft-law-breaks`.
 - **Lifts** only carry the pilgrim up; once on its way a lift can't be stopped.
-- **Falling out of a room** (below its camera bounds) returns the pilgrim to its last shrine.
+
+## Leaving a room `#leaving-a-room`
+
+Owner direction (2026-11-06): room transitions as in the classics (Hollow Knight, Super Metroid), and never a fall out of the world.
+
+- **Each exit has a trigger covering its whole opening**, from the room's edge outward: a doorway's from floor to lintel, a hatch's from wall to wall. Touching it leaves the room, whatever the pilgrim is doing: walking, jumping, dashing, gripping, swinging. Standing in a doorway, or dropping into one from a flue above, is still being in the room; dipping into a hatch's hole is leaving.
+- **Arriving**, the pilgrim appears clear of the matching exit's trigger with its speed kept, never moving back out: through a doorway standing on its marker, up through a floor with a hop that clears the hole (carried onto the floor beside it), down through a roof falling. Going straight back out goes back.
+- **Each exit leads one way** (west, east, down, up), and the exit it leads to faces the other way. A doorway's marker stands on its floor, inside the room; a hatch's area is its hole. The room check holds every exit to its real opening: no room for a body over a doorway's trigger or beside a hatch's, and an arrival that fits.
+- **A place meant to kill says so**: the Slag's river of slag is lethal heat. Nothing is a fall out of the world.
+- **Falling out of a room** (below its camera bounds) is therefore a bug: the pilgrim is put back at the exit it came in by (or its shrine, if it woke there), and the log says so as an error.
 
 ## Fight `#fight`
 

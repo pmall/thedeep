@@ -120,7 +120,7 @@ Player = NodePath("../Player")
 Fade = NodePath("../ScreenFade")
 
 ; Shrines (rest: heal and save), relics, death and the return to the last shrine, the save.
-[node name="Session" type="Node" parent="." node_paths=PackedStringArray("World", "Player", "Fade", "Banner", "Camera", "EndCard")]
+[node name="Session" type="Node" parent="." node_paths=PackedStringArray("World", "Player", "Fade", "Banner", "Camera", "EndCard", "Travel")]
 script = ExtResource("17_session")
 World = NodePath("../World")
 Player = NodePath("../Player")
@@ -128,6 +128,7 @@ Fade = NodePath("../ScreenFade")
 Banner = NodePath("../Banner")
 Camera = NodePath("../SideCamera")
 EndCard = NodePath("../EndCard")
+Travel = NodePath("../RoomTravel")
 
 ; A gate the pilgrim can't pass yet says so: its line, low on the screen.
 ; The items and the doors they open (Keyring): taking keys and codes, opening locked doors, the line at a door without its item.
