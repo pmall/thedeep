@@ -85,7 +85,7 @@ A pale, misty *Dread* world in white, grey and a touch of purple, where color me
 What the visual work still owes (`docs/roadmap.md#stage-bricks`, `docs/roadmap.md#pilgrim`):
 - Each layer's rooms against their references from the photo spots: the core's murky walls, the flooded rooms' wide shots.
 - Back walls dressed for the remaining frozen rooms (the Underice and Sounding walls stay dark) and the flooded rooms.
-- Frozen: the frozen fall stops well above the terraces (columns, not a curtain to the ground); the organ pipes have flat tops (no mouths); Rimefall's shelf face is one plain 14 m wall in the wide shot.
+- Frozen: the ice over the lip of Rimefall's shelf still reads a little like hanging cloth in the wide shot (flat sheet, straight shoulders).
 - Flooded: the play plane is still a little darker and bluer than `perfect.jpg` outside the shaft; judge with the owner before pushing the palette brighter.
 - The pilgrim: the cap of the hair is still one smooth dome over its ragged locks (its crown wants strands or a parting, likely Blender's, `docs/roadmap.md#beyond-procedural`); against dark server racks the black body loses contrast (the suit's rim is up, not yet enough: a rim light or a lighter backdrop there).
 - Machines: limbs are still plain tapered pods (the Votary's arms and legs read thin); the arena's metal reliquary is a bare block; the arena's wide shot is hazy at that distance.

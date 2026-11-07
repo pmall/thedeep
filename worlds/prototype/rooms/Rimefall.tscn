@@ -26,30 +26,75 @@
 [ext_resource type="Script" path="res://scripts/rooms/Room.cs" id="18_room"]
 [ext_resource type="Resource" path="res://resources/biomes/frozen.tres" id="19_frozen"]
 [ext_resource type="PackedScene" path="res://scenes/stage/RoomStage.tscn" id="20_stage"]
+[ext_resource type="Script" path="res://scripts/kit/IceCurtainMesh.cs" id="21_curtain"]
+[ext_resource type="Material" path="res://assets/materials/rock.tres" id="22_rock"]
 
-[sub_resource type="PrimitiveMesh" id="icicles_1"]
-script = ExtResource("4_icicles")
-Width = 9
-Length = 16
-Count = 7
+[sub_resource type="PrimitiveMesh" id="curtain_1"]
+script = ExtResource("21_curtain")
+Width = 10
+Length = 22.5
+Depth = 1.4
 Seed = 31
-Spread = 0.25
 
-[sub_resource type="PrimitiveMesh" id="icicles_2"]
-script = ExtResource("4_icicles")
-Width = 12
-Length = 19
-Count = 8
+[sub_resource type="PrimitiveMesh" id="curtain_2"]
+script = ExtResource("21_curtain")
+Width = 13
+Length = 19.5
+Depth = 1.6
 Seed = 32
-Spread = 0.35
 
-[sub_resource type="PrimitiveMesh" id="icicles_3"]
-script = ExtResource("4_icicles")
+[sub_resource type="PrimitiveMesh" id="curtain_3"]
+script = ExtResource("21_curtain")
 Width = 5
-Length = 12
-Count = 9
+Length = 11
+Depth = 0.55
 Seed = 33
-Spread = 0.5
+
+[sub_resource type="PrimitiveMesh" id="curtain_overflow"]
+script = ExtResource("21_curtain")
+Width = 5
+Length = 8.5
+Depth = 1.0
+Seed = 34
+Sheet = 0.25
+
+[sub_resource type="PrimitiveMesh" id="curtain_seep"]
+script = ExtResource("21_curtain")
+Width = 2.6
+Length = 5
+Depth = 0.6
+Seed = 35
+Sheet = 0.3
+
+[sub_resource type="PrimitiveMesh" id="pilaster"]
+script = ExtResource("6_blockmesh")
+Size = Vector3(1.1, 12.6, 0.6)
+Bevel = 0.08
+
+[sub_resource type="PrimitiveMesh" id="capital"]
+script = ExtResource("6_blockmesh")
+Size = Vector3(1.6, 0.5, 0.8)
+Bevel = 0.08
+
+[sub_resource type="PrimitiveMesh" id="plinth"]
+script = ExtResource("6_blockmesh")
+Size = Vector3(30, 1, 0.8)
+Bevel = 0.1
+
+[sub_resource type="PrimitiveMesh" id="arcade_arch"]
+script = ExtResource("8_arch")
+Span = 6.2
+Rise = 3.8
+Thickness = 0.5
+Depth = 0.4
+Segments = 28
+
+[sub_resource type="PrimitiveMesh" id="icicles_capital"]
+script = ExtResource("4_icicles")
+Width = 1.4
+Length = 0.9
+Count = 6
+Seed = 36
 
 [sub_resource type="PrimitiveMesh" id="blockmesh_4"]
 script = ExtResource("6_blockmesh")
@@ -249,20 +294,22 @@ shadow_enabled = false
 
 [node name="Cascade" type="Node3D" parent="Kit"]
 
-; the frozen fall: meltwater from the dome, frozen in columns down the slope
+; the frozen fall: meltwater from the dome, frozen in a curtain down to the terraces (its foot behind them),
+; another behind it ending on the slope
 [node name="Fall" type="MeshInstance3D" parent="Kit/Cascade"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 17.5, 23, -3)
-mesh = SubResource("icicles_1")
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 17.5, 23, -3.75)
+mesh = SubResource("curtain_1")
 material_override = ExtResource("5_ice_mid")
 
 [node name="Back" type="MeshInstance3D" parent="Kit/Cascade"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 15, 23, -5.5)
-mesh = SubResource("icicles_2")
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 14, 23, -6.25)
+mesh = SubResource("curtain_2")
 material_override = ExtResource("5_ice_mid")
+cast_shadow = 0
 
 [node name="Edge" type="MeshInstance3D" parent="Kit/Cascade"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 22.5, 23, -2.25)
-mesh = SubResource("icicles_3")
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 22.5, 23, -2.75)
+mesh = SubResource("curtain_3")
 material_override = ExtResource("5_ice_mid")
 
 ; where it pooled and froze flat
@@ -324,6 +371,120 @@ material_override = ExtResource("10_ice")
 [node name="Wall" type="MeshInstance3D" parent="Kit/Icicles"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 49, 10, -1.5)
 mesh = SubResource("icicles_10")
+material_override = ExtResource("10_ice")
+
+; the shelf's face (front at Z 2): a blind arcade cut in its masonry, meltwater frozen over its lip
+[node name="ShelfFace" type="Node3D" parent="Kit"]
+
+[node name="Plinth" type="MeshInstance3D" parent="Kit/ShelfFace"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 39, -3.5, 2.25)
+mesh = SubResource("plinth")
+material_override = ExtResource("22_rock")
+
+[node name="Pilaster0" type="MeshInstance3D" parent="Kit/ShelfFace"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 25, 2.5, 2.25)
+mesh = SubResource("pilaster")
+material_override = ExtResource("22_rock")
+
+[node name="Capital0" type="MeshInstance3D" parent="Kit/ShelfFace"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 25, 9, 2.25)
+mesh = SubResource("capital")
+material_override = ExtResource("22_rock")
+
+[node name="CapitalIcicles0" type="MeshInstance3D" parent="Kit/ShelfFace"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 25, 8.75, 2.5)
+mesh = SubResource("icicles_capital")
+material_override = ExtResource("10_ice")
+
+[node name="Pilaster1" type="MeshInstance3D" parent="Kit/ShelfFace"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 32, 2.5, 2.25)
+mesh = SubResource("pilaster")
+material_override = ExtResource("22_rock")
+
+[node name="Capital1" type="MeshInstance3D" parent="Kit/ShelfFace"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 32, 9, 2.25)
+mesh = SubResource("capital")
+material_override = ExtResource("22_rock")
+
+[node name="CapitalIcicles1" type="MeshInstance3D" parent="Kit/ShelfFace"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 32, 8.75, 2.5)
+mesh = SubResource("icicles_capital")
+material_override = ExtResource("10_ice")
+
+[node name="Pilaster2" type="MeshInstance3D" parent="Kit/ShelfFace"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 39, 2.5, 2.25)
+mesh = SubResource("pilaster")
+material_override = ExtResource("22_rock")
+
+[node name="Capital2" type="MeshInstance3D" parent="Kit/ShelfFace"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 39, 9, 2.25)
+mesh = SubResource("capital")
+material_override = ExtResource("22_rock")
+
+[node name="CapitalIcicles2" type="MeshInstance3D" parent="Kit/ShelfFace"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 39, 8.75, 2.5)
+mesh = SubResource("icicles_capital")
+material_override = ExtResource("10_ice")
+
+[node name="Pilaster3" type="MeshInstance3D" parent="Kit/ShelfFace"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 46, 2.5, 2.25)
+mesh = SubResource("pilaster")
+material_override = ExtResource("22_rock")
+
+[node name="Capital3" type="MeshInstance3D" parent="Kit/ShelfFace"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 46, 9, 2.25)
+mesh = SubResource("capital")
+material_override = ExtResource("22_rock")
+
+[node name="CapitalIcicles3" type="MeshInstance3D" parent="Kit/ShelfFace"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 46, 8.75, 2.5)
+mesh = SubResource("icicles_capital")
+material_override = ExtResource("10_ice")
+
+[node name="Pilaster4" type="MeshInstance3D" parent="Kit/ShelfFace"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 53, 2.5, 2.25)
+mesh = SubResource("pilaster")
+material_override = ExtResource("22_rock")
+
+[node name="Capital4" type="MeshInstance3D" parent="Kit/ShelfFace"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 53, 9, 2.25)
+mesh = SubResource("capital")
+material_override = ExtResource("22_rock")
+
+[node name="CapitalIcicles4" type="MeshInstance3D" parent="Kit/ShelfFace"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 53, 8.75, 2.5)
+mesh = SubResource("icicles_capital")
+material_override = ExtResource("10_ice")
+
+[node name="Arch0" type="MeshInstance3D" parent="Kit/ShelfFace"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 28.5, 3, 2.25)
+mesh = SubResource("arcade_arch")
+material_override = ExtResource("22_rock")
+
+[node name="Arch1" type="MeshInstance3D" parent="Kit/ShelfFace"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 35.5, 3, 2.25)
+mesh = SubResource("arcade_arch")
+material_override = ExtResource("22_rock")
+
+[node name="Arch2" type="MeshInstance3D" parent="Kit/ShelfFace"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 42.5, 3, 2.25)
+mesh = SubResource("arcade_arch")
+material_override = ExtResource("22_rock")
+
+[node name="Arch3" type="MeshInstance3D" parent="Kit/ShelfFace"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 49.5, 3, 2.25)
+mesh = SubResource("arcade_arch")
+material_override = ExtResource("22_rock")
+
+; where the meltwater ran over the lip
+[node name="Overflow" type="MeshInstance3D" parent="Kit/ShelfFace"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 35.5, 10, 2)
+mesh = SubResource("curtain_overflow")
+material_override = ExtResource("10_ice")
+
+[node name="Seep" type="MeshInstance3D" parent="Kit/ShelfFace"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 42.75, 10, 2)
+mesh = SubResource("curtain_seep")
 material_override = ExtResource("10_ice")
 
 [node name="Glyphs" type="Node3D" parent="."]

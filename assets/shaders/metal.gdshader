@@ -162,6 +162,8 @@ void fragment() {
 	metal = mix(metal, 0.0, fr.cover);
 	coat_amount *= 1.0 - fr.cover;
 
+	// Deep in a hollow (a pipe's mouth): dark, whatever the ambient light.
+	albedo *= 1.0 - 0.9 * f.cavity;
 	ALBEDO = albedo * shade;
 	EMISSION = ALBEDO * caustics_at(v_world_pos, view_to_world(f.normal, INV_VIEW_MATRIX), TIME);
 	ROUGHNESS = clamp(rough, 0.05, 1.0);
@@ -170,7 +172,7 @@ void fragment() {
 	CLEARCOAT_ROUGHNESS = 0.15;
 	RIM = rim * (1.0 - rust) * (1.0 - fr.cover);
 	RIM_TINT = 0.6;
-	AO = 1.0 - pn.seam * 0.7 - pn.crease * 0.15;
+	AO = (1.0 - pn.seam * 0.7 - pn.crease * 0.15) * (1.0 - f.cavity);
 	AO_LIGHT_AFFECT = 0.2;
 	NORMAL = n;
 	HAZE

@@ -10,7 +10,7 @@ namespace TheDeep;
 /// be swapped for an authored mesh in a scene without touching anything else; the material only needs
 /// the surface frame (assets/shaders/lib/surface.gdshaderinc):
 /// UV = position on the patch (m), UV2 = patch size (m, negative = wraps), TANGENT = +U with the +V sign,
-/// COLOR.r = height above the piece's bottom / <see cref="HeightRange"/>, COLOR.g = per-part variation.
+/// COLOR.r = height above the piece's bottom / <see cref="HeightRange"/>, COLOR.g = per-part variation, COLOR.b = cavity.
 /// </summary>
 public partial class KitMesh : PrimitiveMesh
 {
@@ -101,7 +101,7 @@ public partial class KitMesh : PrimitiveMesh
             tangents[i * 4 + 1] = t.Y;
             tangents[i * 4 + 2] = t.Z;
             tangents[i * 4 + 3] = t.W;
-            colors[i] = new Color(Mathf.Clamp(mesh.Heights[i] / HeightRange, 0f, 1f), mesh.Variations[i], 0f);
+            colors[i] = new Color(Mathf.Clamp(mesh.Heights[i] / HeightRange, 0f, 1f), mesh.Variations[i], mesh.Cavities[i]);
             uvs[i] = mesh.Uvs[i].ToGodot();
             patches[i] = mesh.PatchSizes[i].ToGodot();
         }

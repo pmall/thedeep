@@ -29,160 +29,19 @@
 [ext_resource type="Script" path="res://scripts/rooms/Room.cs" id="21_room"]
 [ext_resource type="Resource" path="res://resources/biomes/frozen.tres" id="22_frozen"]
 [ext_resource type="PackedScene" path="res://scenes/stage/RoomStage.tscn" id="23_stage"]
+[ext_resource type="Script" path="res://scripts/kit/OrganMesh.cs" id="24_organ"]
 
-[sub_resource type="PrimitiveMesh" id="pipe_1"]
-script = ExtResource("5_pipe")
-Points = PackedVector3Array(0, 0, 0, 0, 7, 0)
-Radius = 0.304
-BendRadius = 0.5
-FlangeSpacing = 0
-
-[sub_resource type="PrimitiveMesh" id="pipe_2"]
-script = ExtResource("5_pipe")
-Points = PackedVector3Array(0, 0, 0, 0, 8.5, 0)
-Radius = 0.322
-BendRadius = 0.5
-FlangeSpacing = 0
-
-[sub_resource type="PrimitiveMesh" id="pipe_3"]
-script = ExtResource("5_pipe")
-Points = PackedVector3Array(0, 0, 0, 0, 10, 0)
-Radius = 0.34
-BendRadius = 0.5
-FlangeSpacing = 0
-
-[sub_resource type="PrimitiveMesh" id="pipe_4"]
-script = ExtResource("5_pipe")
-Points = PackedVector3Array(0, 0, 0, 0, 12, 0)
-Radius = 0.364
-BendRadius = 0.5
-FlangeSpacing = 0
-
-[sub_resource type="PrimitiveMesh" id="pipe_5"]
-script = ExtResource("5_pipe")
-Points = PackedVector3Array(0, 0, 0, 0, 13.5, 0)
+[sub_resource type="PrimitiveMesh" id="organ_front"]
+script = ExtResource("24_organ")
+Heights = PackedFloat32Array(7, 8.5, 10, 12, 13.5, 12, 10, 8.5, 7)
+Spacing = 1.0
 Radius = 0.382
-BendRadius = 0.5
-FlangeSpacing = 0
 
-[sub_resource type="PrimitiveMesh" id="pipe_6"]
-script = ExtResource("5_pipe")
-Points = PackedVector3Array(0, 0, 0, 0, 12, 0)
-Radius = 0.364
-BendRadius = 0.5
-FlangeSpacing = 0
-
-[sub_resource type="PrimitiveMesh" id="pipe_7"]
-script = ExtResource("5_pipe")
-Points = PackedVector3Array(0, 0, 0, 0, 10, 0)
-Radius = 0.34
-BendRadius = 0.5
-FlangeSpacing = 0
-
-[sub_resource type="PrimitiveMesh" id="pipe_8"]
-script = ExtResource("5_pipe")
-Points = PackedVector3Array(0, 0, 0, 0, 8.5, 0)
-Radius = 0.322
-BendRadius = 0.5
-FlangeSpacing = 0
-
-[sub_resource type="PrimitiveMesh" id="pipe_9"]
-script = ExtResource("5_pipe")
-Points = PackedVector3Array(0, 0, 0, 0, 7, 0)
-Radius = 0.304
-BendRadius = 0.5
-FlangeSpacing = 0
-
-[sub_resource type="PrimitiveMesh" id="pipe_10"]
-script = ExtResource("5_pipe")
-Points = PackedVector3Array(0, 0, 0, 0, 5, 0)
+[sub_resource type="PrimitiveMesh" id="organ_back"]
+script = ExtResource("24_organ")
+Heights = PackedFloat32Array(5, 6.5, 8, 9.5, 8, 6.5, 5, 6.5, 8, 9.5, 8, 6.5, 5)
+Spacing = 0.75
 Radius = 0.16
-BendRadius = 0.5
-FlangeSpacing = 0
-
-[sub_resource type="PrimitiveMesh" id="pipe_11"]
-script = ExtResource("5_pipe")
-Points = PackedVector3Array(0, 0, 0, 0, 6.5, 0)
-Radius = 0.16
-BendRadius = 0.5
-FlangeSpacing = 0
-
-[sub_resource type="PrimitiveMesh" id="pipe_12"]
-script = ExtResource("5_pipe")
-Points = PackedVector3Array(0, 0, 0, 0, 8, 0)
-Radius = 0.16
-BendRadius = 0.5
-FlangeSpacing = 0
-
-[sub_resource type="PrimitiveMesh" id="pipe_13"]
-script = ExtResource("5_pipe")
-Points = PackedVector3Array(0, 0, 0, 0, 9.5, 0)
-Radius = 0.16
-BendRadius = 0.5
-FlangeSpacing = 0
-
-[sub_resource type="PrimitiveMesh" id="pipe_14"]
-script = ExtResource("5_pipe")
-Points = PackedVector3Array(0, 0, 0, 0, 8, 0)
-Radius = 0.16
-BendRadius = 0.5
-FlangeSpacing = 0
-
-[sub_resource type="PrimitiveMesh" id="pipe_15"]
-script = ExtResource("5_pipe")
-Points = PackedVector3Array(0, 0, 0, 0, 6.5, 0)
-Radius = 0.16
-BendRadius = 0.5
-FlangeSpacing = 0
-
-[sub_resource type="PrimitiveMesh" id="pipe_16"]
-script = ExtResource("5_pipe")
-Points = PackedVector3Array(0, 0, 0, 0, 5, 0)
-Radius = 0.16
-BendRadius = 0.5
-FlangeSpacing = 0
-
-[sub_resource type="PrimitiveMesh" id="pipe_17"]
-script = ExtResource("5_pipe")
-Points = PackedVector3Array(0, 0, 0, 0, 6.5, 0)
-Radius = 0.16
-BendRadius = 0.5
-FlangeSpacing = 0
-
-[sub_resource type="PrimitiveMesh" id="pipe_18"]
-script = ExtResource("5_pipe")
-Points = PackedVector3Array(0, 0, 0, 0, 8, 0)
-Radius = 0.16
-BendRadius = 0.5
-FlangeSpacing = 0
-
-[sub_resource type="PrimitiveMesh" id="pipe_19"]
-script = ExtResource("5_pipe")
-Points = PackedVector3Array(0, 0, 0, 0, 9.5, 0)
-Radius = 0.16
-BendRadius = 0.5
-FlangeSpacing = 0
-
-[sub_resource type="PrimitiveMesh" id="pipe_20"]
-script = ExtResource("5_pipe")
-Points = PackedVector3Array(0, 0, 0, 0, 8, 0)
-Radius = 0.16
-BendRadius = 0.5
-FlangeSpacing = 0
-
-[sub_resource type="PrimitiveMesh" id="pipe_21"]
-script = ExtResource("5_pipe")
-Points = PackedVector3Array(0, 0, 0, 0, 6.5, 0)
-Radius = 0.16
-BendRadius = 0.5
-FlangeSpacing = 0
-
-[sub_resource type="PrimitiveMesh" id="pipe_22"]
-script = ExtResource("5_pipe")
-Points = PackedVector3Array(0, 0, 0, 0, 5, 0)
-Radius = 0.16
-BendRadius = 0.5
-FlangeSpacing = 0
 
 [sub_resource type="PrimitiveMesh" id="blockmesh_23"]
 script = ExtResource("7_blockmesh")
@@ -430,114 +289,14 @@ shadow_enabled = false
 [node name="Organ" type="Node3D" parent="Kit"]
 
 ; the organ: a front of pipes in towers, frozen silent
-[node name="Pipe0" type="MeshInstance3D" parent="Kit/Organ"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 49.5, 1, -5.5)
-mesh = SubResource("pipe_1")
-material_override = ExtResource("6_metal_mid")
-
-[node name="Pipe1" type="MeshInstance3D" parent="Kit/Organ"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 50.5, 1, -5.5)
-mesh = SubResource("pipe_2")
-material_override = ExtResource("6_metal_mid")
-
-[node name="Pipe2" type="MeshInstance3D" parent="Kit/Organ"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 51.5, 1, -5.5)
-mesh = SubResource("pipe_3")
-material_override = ExtResource("6_metal_mid")
-
-[node name="Pipe3" type="MeshInstance3D" parent="Kit/Organ"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 52.5, 1, -5.5)
-mesh = SubResource("pipe_4")
-material_override = ExtResource("6_metal_mid")
-
-[node name="Pipe4" type="MeshInstance3D" parent="Kit/Organ"]
+[node name="Front" type="MeshInstance3D" parent="Kit/Organ"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 53.5, 1, -5.5)
-mesh = SubResource("pipe_5")
+mesh = SubResource("organ_front")
 material_override = ExtResource("6_metal_mid")
 
-[node name="Pipe5" type="MeshInstance3D" parent="Kit/Organ"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 54.5, 1, -5.5)
-mesh = SubResource("pipe_6")
-material_override = ExtResource("6_metal_mid")
-
-[node name="Pipe6" type="MeshInstance3D" parent="Kit/Organ"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 55.5, 1, -5.5)
-mesh = SubResource("pipe_7")
-material_override = ExtResource("6_metal_mid")
-
-[node name="Pipe7" type="MeshInstance3D" parent="Kit/Organ"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 56.5, 1, -5.5)
-mesh = SubResource("pipe_8")
-material_override = ExtResource("6_metal_mid")
-
-[node name="Pipe8" type="MeshInstance3D" parent="Kit/Organ"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 57.5, 1, -5.5)
-mesh = SubResource("pipe_9")
-material_override = ExtResource("6_metal_mid")
-
-[node name="Back0" type="MeshInstance3D" parent="Kit/Organ"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 48.5, 1, -7.25)
-mesh = SubResource("pipe_10")
-material_override = ExtResource("6_metal_mid")
-
-[node name="Back1" type="MeshInstance3D" parent="Kit/Organ"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 49.25, 1, -7.25)
-mesh = SubResource("pipe_11")
-material_override = ExtResource("6_metal_mid")
-
-[node name="Back2" type="MeshInstance3D" parent="Kit/Organ"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 50, 1, -7.25)
-mesh = SubResource("pipe_12")
-material_override = ExtResource("6_metal_mid")
-
-[node name="Back3" type="MeshInstance3D" parent="Kit/Organ"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 50.75, 1, -7.25)
-mesh = SubResource("pipe_13")
-material_override = ExtResource("6_metal_mid")
-
-[node name="Back4" type="MeshInstance3D" parent="Kit/Organ"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 51.5, 1, -7.25)
-mesh = SubResource("pipe_14")
-material_override = ExtResource("6_metal_mid")
-
-[node name="Back5" type="MeshInstance3D" parent="Kit/Organ"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 52.25, 1, -7.25)
-mesh = SubResource("pipe_15")
-material_override = ExtResource("6_metal_mid")
-
-[node name="Back6" type="MeshInstance3D" parent="Kit/Organ"]
+[node name="Back" type="MeshInstance3D" parent="Kit/Organ"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 53, 1, -7.25)
-mesh = SubResource("pipe_16")
-material_override = ExtResource("6_metal_mid")
-
-[node name="Back7" type="MeshInstance3D" parent="Kit/Organ"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 53.75, 1, -7.25)
-mesh = SubResource("pipe_17")
-material_override = ExtResource("6_metal_mid")
-
-[node name="Back8" type="MeshInstance3D" parent="Kit/Organ"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 54.5, 1, -7.25)
-mesh = SubResource("pipe_18")
-material_override = ExtResource("6_metal_mid")
-
-[node name="Back9" type="MeshInstance3D" parent="Kit/Organ"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 55.25, 1, -7.25)
-mesh = SubResource("pipe_19")
-material_override = ExtResource("6_metal_mid")
-
-[node name="Back10" type="MeshInstance3D" parent="Kit/Organ"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 56, 1, -7.25)
-mesh = SubResource("pipe_20")
-material_override = ExtResource("6_metal_mid")
-
-[node name="Back11" type="MeshInstance3D" parent="Kit/Organ"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 56.75, 1, -7.25)
-mesh = SubResource("pipe_21")
-material_override = ExtResource("6_metal_mid")
-
-[node name="Back12" type="MeshInstance3D" parent="Kit/Organ"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 57.5, 1, -7.25)
-mesh = SubResource("pipe_22")
+mesh = SubResource("organ_back")
 material_override = ExtResource("6_metal_mid")
 
 [node name="Case" type="MeshInstance3D" parent="Kit/Organ"]
@@ -674,6 +433,12 @@ PlayerPosition = Vector3(46.5, -2, 0)
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 27.5, 0, 9)
 script = ExtResource("20_spot")
 PlayerPosition = Vector3(23.5, -2, 0)
+
+; close on the organ's pipes: their mouths
+[node name="Pipes" type="Marker3D" parent="PhotoSpots"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 53.5, 5, 6)
+script = ExtResource("20_spot")
+PlayerPosition = Vector3(50, 0, 0)
 
 ; the whole choir
 [node name="Wide" type="Marker3D" parent="PhotoSpots"]

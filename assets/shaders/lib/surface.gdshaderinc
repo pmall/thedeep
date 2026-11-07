@@ -3,7 +3,8 @@
 //   UV       position on its patch (a box face, one side of a swept profile), meters
 //   UV2      the patch size, meters; negative along an axis that wraps around (a pipe's girth): no edge there
 //   TANGENT  direction of +U, with the sign that makes BINORMAL the direction of +V
-//   COLOR.r  height above the piece's bottom / 8 m (KitMesh.HeightRange); COLOR.g per-part variation
+//   COLOR.r  height above the piece's bottom / 8 m (KitMesh.HeightRange); COLOR.g per-part variation;
+//   COLOR.b  cavity: 0 open, 1 deep in a hollow no light reaches (a pipe's mouth, its bore), for the material to darken
 // Usage: SURFACE_VERTEX as the body of vertex(), then `Surface f = SURFACE;` in fragment().
 
 // World position of the fragment.
@@ -17,6 +18,7 @@ struct Surface {
 	vec2 size;      // the patch size, meters
 	float edge;     // distance to the nearest patch edge, meters (1e3 along wrapping axes)
 	float height;   // distance above the piece's bottom, meters
+	float cavity;   // 0 open, 1 deep in a hollow (MeshData.Cavities)
 	vec3 normal;    // view space, interpolated (rounded chamfers)
 	vec3 tangent;   // view space, direction of +U
 	vec3 bitangent; // view space, direction of +V
@@ -44,6 +46,7 @@ Surface surface_from(vec2 uv, vec2 uv2, vec4 color, vec3 normal, vec3 tangent, v
 	to_edge = mix(to_edge, vec2(1e3), step(uv2, vec2(0.0)));
 	f.edge = max(0.0, min(to_edge.x, to_edge.y));
 	f.height = color.r * 8.0;
+	f.cavity = color.b;
 	f.normal = normalize(normal);
 	f.tangent = normalize(tangent);
 	f.bitangent = normalize(binormal);

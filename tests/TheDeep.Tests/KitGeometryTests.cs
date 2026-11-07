@@ -228,11 +228,13 @@ public class KitGeometryTests
         AssertFramesValid(mesh);
         Assert.Equal(0f, mesh.Heights.Min(), 4);
         Assert.All(mesh.Variations, v => Assert.InRange(v, 0f, 1f));
+        Assert.Equal(mesh.VertexCount, mesh.Cavities.Count);
+        Assert.All(mesh.Cavities, c => Assert.InRange(c, 0f, 1f));
         Assert.All(mesh.Indices, i => Assert.InRange(i, 0, mesh.VertexCount - 1));
     }
 
     public static IEnumerable<object[]> Pieces() =>
-        new[] { "column", "cluster", "pipe", "cables", "arch", "rib", "grate", "rack", "wreck", "icicles" }.Select(n => new object[] { n });
+        new[] { "column", "cluster", "pipe", "cables", "arch", "rib", "grate", "rack", "wreck", "icicles", "organ", "curtain" }.Select(n => new object[] { n });
 
     [Fact]
     public void SeededPiecesAreRepeatableAndVary()
@@ -263,6 +265,35 @@ public class KitGeometryTests
         Assert.NotEqual(a.Positions[10], other.Positions[10]);
     }
 
+    [Fact]
+    public void OrganPipesStandInARankWithMouthsCutIntoTheirFronts()
+    {
+        MeshData mesh = BuildPiece("organ", seed: 1);
+        (Vector3 min, Vector3 max) = mesh.Bounds();
+
+        Assert.True(MathF.Abs(min.Y) < 1e-3f, $"the toes are at {min.Y}");
+        Assert.Equal(6f, max.Y, 3);
+        // The tallest is 0.3 wide, the others narrower by the cube root of their height.
+        Assert.Equal(1.6f + 0.3f * (MathF.Cbrt(4f / 6f) + MathF.Cbrt(5f / 6f)), max.X - min.X, 3);
+        // The middle pipe's mouth, low on the pipe: an inner face sunk well inside its girth, facing the front and down, dark.
+        Assert.Contains(Enumerable.Range(0, mesh.VertexCount), i =>
+            mesh.Cavities[i] == 1f && mesh.Normals[i].Z > 0.3f && mesh.Normals[i].Y < -0.5f && MathF.Abs(mesh.Positions[i].X) < 0.25f
+            && mesh.Positions[i].Z < 0.3f * 0.3f && mesh.Positions[i].Y is > 1f and < 2f);
+    }
+
+    [Fact]
+    public void IceCurtainHangsFromItsRootToItsLengthInFrontOfItsBack()
+    {
+        MeshData a = BuildPiece("curtain", seed: 3), other = BuildPiece("curtain", seed: 4);
+        (Vector3 min, Vector3 max) = a.Bounds();
+
+        Assert.True(max.Y < 1e-3f, $"the curtain rises above its root to {max.Y}");
+        Assert.Equal(-6f, min.Y, 3);
+        Assert.True(min.Z > -1e-3f && max.Z <= 0.8f * 1.2f && max.Z > 0.4f, $"the curtain bulges {min.Z}..{max.Z}");
+        Assert.True(min.X >= -2f - 1e-3f && max.X <= 2f + 1e-3f);
+        Assert.NotEqual(a.Positions[40], other.Positions[40]);
+    }
+
     private static MeshData BuildPiece(string name, int seed)
     {
         var b = new MeshBuilder();
@@ -278,6 +309,8 @@ public class KitGeometryTests
             case "rack": KitShapes.Rack(b, new Vector3(1f, 2.4f, 1f), 12, seed); break;
             case "wreck": KitShapes.Wreck(b, 3f, seed); break;
             case "icicles": KitShapes.Icicles(b, 3f, 1.5f, 9, seed); break;
+            case "organ": OrganPipeShape.Rank(b, new[] { 4f, 6f, 5f }, 0.8f, 0.3f); break;
+            case "curtain": IceCurtainShape.Build(b, 4f, 6f, 0.8f, seed); break;
             default: throw new ArgumentException(name);
         }
 

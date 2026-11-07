@@ -30,6 +30,9 @@ public sealed class MeshData
     /// <summary>Random value in [0, 1) per part, so the parts of one piece don't look identical.</summary>
     public List<float> Variations { get; } = new();
 
+    /// <summary>How deep in a hollow the vertex lies, 0 (open) to 1 (where no light reaches: a pipe's mouth or bore).</summary>
+    public List<float> Cavities { get; } = new();
+
     /// <summary>Triangles, clockwise seen from the front (Godot's front-face convention).</summary>
     public List<int> Indices { get; } = new();
 
