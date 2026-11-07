@@ -47,6 +47,9 @@ public partial class LookDevDriver : Node
 
     /// <summary>Per measured frame, when THEDEEP_PAINT_TIMING=1: the paint pass's GPU ms per step (PaintPass.StepNames).</summary>
     private readonly List<double[]> _paintSteps = new();
+
+    /// <summary>Per measured frame, when THEDEEP_PAINT_TIMING=1: the wall-clock time (Unix ms), to line frames up with outside GPU logs.</summary>
+    private readonly List<long> _wallMs = new();
     private readonly bool _paintTiming = PaintPass.Timed = System.Environment.GetEnvironmentVariable("THEDEEP_PAINT_TIMING") == "1";
     private IEnumerator<int>? _script;
     private FrameGrabber? _grabber;
@@ -134,6 +137,7 @@ public partial class LookDevDriver : Node
             if (_paintTiming)
             {
                 _paintSteps.Add((double[])PaintPass.StepMs.Clone());
+                _wallMs.Add(DateTimeOffset.UtcNow.ToUnixTimeMilliseconds());
             }
         }
 
@@ -344,6 +348,11 @@ public partial class LookDevDriver : Node
             ["paint_steps_avg_ms"] = _paintTiming && _paintSteps.Count > 0
                 ? Enumerable.Range(0, PaintPass.StepNames.Length).ToDictionary(s => PaintPass.StepNames[s], s => Math.Round(_paintSteps.Average(f => f[s]), 3))
                 : new Dictionary<string, double>(),
+            // With THEDEEP_PAINT_TIMING=1, every frame: its wall-clock time (Unix ms), GPU ms and the paint steps' ms.
+            ["paint_frames"] = _paintTiming
+                ? Enumerable.Range(0, _paintSteps.Count).Select(i => string.Create(CultureInfo.InvariantCulture,
+                    $"#{i} t {_wallMs[i]} gpu {_frames[i].Gpu:0.0} paint ") + string.Join(" ", _paintSteps[i].Select(ms => ms.ToString("0.0", CultureInfo.InvariantCulture)))).ToArray()
+                : Array.Empty<string>(),
             ["frames"] = _frame.Count,
             ["gpu_name"] = RenderingServer.GetVideoAdapterName(),
             ["godot"] = (string)Engine.GetVersionInfo()["string"],

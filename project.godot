@@ -13,6 +13,7 @@ config/features=PackedStringArray("4.7", "C#", "Forward Plus")
 
 [display]
 
+display_server/driver.linuxbsd="wayland"
 window/size/viewport_width=1600
 window/size/viewport_height=900
 window/stretch/mode="canvas_items"
