@@ -1,6 +1,6 @@
 [gd_resource type="Resource" script_class="PartAssembly" format=3]
 ; The Limpet: a domed mag-tank clinging to metal on two treads, a prayer wheel on its back and a
-; drill under its brow. Origin on the surface it clings to. Joints: X forward, Y up (away from
+; drill under its brow, thrust on a ram out of a plated collar. Origin on the surface it clings to. Joints: X forward, Y up (away from
 ; the surface), Z toward the camera.
 
 [ext_resource type="Script" path="res://scripts/parts/PartAssembly.cs" id="1_PartAssembly"]
@@ -10,6 +10,8 @@
 [ext_resource type="Script" path="res://scripts/parts/PlateMesh.cs" id="5_PlateMesh"]
 [ext_resource type="Script" path="res://scripts/parts/PodMesh.cs" id="6_PodMesh"]
 [ext_resource type="Script" path="res://scripts/parts/TreadMesh.cs" id="7_TreadMesh"]
+[ext_resource type="Script" path="res://scripts/parts/LimbMesh.cs" id="15_LimbMesh"]
+[ext_resource type="Script" path="res://scripts/parts/SleeveMesh.cs" id="16_SleeveMesh"]
 [ext_resource type="Material" path="res://assets/materials/machines/shell.tres" id="8_shell"]
 [ext_resource type="Material" path="res://assets/materials/machines/frame.tres" id="9_frame"]
 [ext_resource type="Material" path="res://assets/materials/machines/corroded.tres" id="10_corroded"]
@@ -46,7 +48,7 @@ Offset = Vector3(0.3, 0.02, 0)
 script = ExtResource("2_RigJoint")
 Name = &"Drill"
 Parent = &"Arm"
-Offset = Vector3(0.18, 0, 0)
+Offset = Vector3(0.26, 0, 0)
 
 [sub_resource type="Resource" id="Joint_Eye"]
 script = ExtResource("2_RigJoint")
@@ -110,11 +112,34 @@ Rings = 6
 Sides = 10
 
 [sub_resource type="PrimitiveMesh" id="Mesh_arm"]
-script = ExtResource("6_PodMesh")
+script = ExtResource("15_LimbMesh")
 Axis = Vector3(1, 0, 0)
-Length = 0.2
-Stations = PackedVector4Array(0, 0.1, 0.1, 0, 1, 0.08, 0.08, 0)
-Rings = 4
+Length = 0.48
+Strut = 0.055
+StrutTaper = 0.85
+Knuckle = 0
+KnuckleDepth = 0.11
+EndKnuckle = 0.065
+Piston = 0.014
+PistonSide = 0.05
+Cables = 2
+CableWidth = 0.01
+CableSide = -0.045
+
+[sub_resource type="PrimitiveMesh" id="Mesh_collar"]
+script = ExtResource("16_SleeveMesh")
+Axis = Vector3(1, 0, 0)
+Length = 0.16
+From = 0
+To = 1
+Bands = 2
+WidthTop = 0.15
+WidthBottom = 0.17
+DepthTop = 0.16
+DepthBottom = 0.18
+Flare = 0.2
+Overlap = 0.2
+Sides = 14
 
 [sub_resource type="PrimitiveMesh" id="Mesh_drill"]
 script = ExtResource("4_DrillMesh")
@@ -191,6 +216,15 @@ Joint = &"Arm"
 Category = 3
 Mesh = SubResource("Mesh_arm")
 Material = ExtResource("9_frame")
+Position = Vector3(-0.22, 0, 0)
+
+[sub_resource type="Resource" id="Part_Collar"]
+script = ExtResource("3_PartSlot")
+Joint = &"Hull"
+Category = 3
+Mesh = SubResource("Mesh_collar")
+Material = ExtResource("8_shell")
+Position = Vector3(0.3, 0.02, 0)
 
 [sub_resource type="Resource" id="Part_Drill"]
 script = ExtResource("3_PartSlot")
@@ -203,4 +237,4 @@ Rotation = Vector3(0, 0, 90)
 [resource]
 script = ExtResource("1_PartAssembly")
 Joints = [SubResource("Joint_Hull"), SubResource("Joint_Dome"), SubResource("Joint_Wheel"), SubResource("Joint_Arm"), SubResource("Joint_Drill"), SubResource("Joint_Eye")]
-Parts = [SubResource("Part_TreadN"), SubResource("Part_TreadF"), SubResource("Part_Hull"), SubResource("Part_Dome"), SubResource("Part_Brow"), SubResource("Part_Eye"), SubResource("Part_Wheel"), SubResource("Part_Finial"), SubResource("Part_Arm"), SubResource("Part_Drill")]
+Parts = [SubResource("Part_TreadN"), SubResource("Part_TreadF"), SubResource("Part_Hull"), SubResource("Part_Dome"), SubResource("Part_Brow"), SubResource("Part_Eye"), SubResource("Part_Wheel"), SubResource("Part_Finial"), SubResource("Part_Collar"), SubResource("Part_Arm"), SubResource("Part_Drill")]

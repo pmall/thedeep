@@ -8,6 +8,7 @@
 [ext_resource type="Script" path="res://scripts/parts/PartChain.cs" id="4_PartChain"]
 [ext_resource type="Script" path="res://scripts/parts/PodMesh.cs" id="5_PodMesh"]
 [ext_resource type="Script" path="res://scripts/parts/LimbMesh.cs" id="16_LimbMesh"]
+[ext_resource type="Script" path="res://scripts/parts/SleeveMesh.cs" id="17_SleeveMesh"]
 [ext_resource type="Script" path="res://scripts/parts/RingMesh.cs" id="6_RingMesh"]
 [ext_resource type="Script" path="res://scripts/kit/WreckMesh.cs" id="7_WreckMesh"]
 [ext_resource type="Material" path="res://assets/materials/machines/shell.tres" id="8_shell"]
@@ -151,18 +152,30 @@ Piston = 0.014
 PistonSide = 0.05
 
 [sub_resource type="PrimitiveMesh" id="Mesh_shinFrontN"]
-script = ExtResource("5_PodMesh")
+script = ExtResource("16_LimbMesh")
 Axis = Vector3(0.1622, -0.985, 0.0579)
 Length = 0.8629
-Stations = PackedVector4Array(0, 0.055, 0.055, 0, 1, 0.02, 0.02, 0)
-Sides = 10
-Rings = 4
+Strut = 0.04
+StrutTaper = 0.22
+Knuckle = 0.05
+KnuckleDepth = 0.08
+Cables = 1
+CableWidth = 0.01
+CableSide = -0.035
 
-[sub_resource type="PrimitiveMesh" id="Mesh_kneecapFrontN"]
-script = ExtResource("5_PodMesh")
-Length = 0.08
-Stations = PackedVector4Array(0, 0, 0, 0, 0.5, 0.08, 0.08, 0, 1, 0, 0, 0)
-Rings = 6
+[sub_resource type="PrimitiveMesh" id="Mesh_greaveFrontN"]
+script = ExtResource("17_SleeveMesh")
+Axis = Vector3(0.1622, -0.985, 0.0579)
+Length = 0.8629
+From = 0.07
+To = 0.42
+Bands = 2
+WidthTop = 0.085
+WidthBottom = 0.06
+DepthTop = 0.08
+DepthBottom = 0.06
+Flare = 0.22
+Overlap = 0.15
 Sides = 10
 
 [sub_resource type="PrimitiveMesh" id="Mesh_thighFrontF"]
@@ -177,18 +190,30 @@ Piston = 0.014
 PistonSide = 0.05
 
 [sub_resource type="PrimitiveMesh" id="Mesh_shinFrontF"]
-script = ExtResource("5_PodMesh")
+script = ExtResource("16_LimbMesh")
 Axis = Vector3(0.1622, -0.985, -0.0579)
 Length = 0.8629
-Stations = PackedVector4Array(0, 0.055, 0.055, 0, 1, 0.02, 0.02, 0)
-Sides = 10
-Rings = 4
+Strut = 0.04
+StrutTaper = 0.22
+Knuckle = 0.05
+KnuckleDepth = 0.08
+Cables = 1
+CableWidth = 0.01
+CableSide = -0.035
 
-[sub_resource type="PrimitiveMesh" id="Mesh_kneecapFrontF"]
-script = ExtResource("5_PodMesh")
-Length = 0.08
-Stations = PackedVector4Array(0, 0, 0, 0, 0.5, 0.08, 0.08, 0, 1, 0, 0, 0)
-Rings = 6
+[sub_resource type="PrimitiveMesh" id="Mesh_greaveFrontF"]
+script = ExtResource("17_SleeveMesh")
+Axis = Vector3(0.1622, -0.985, -0.0579)
+Length = 0.8629
+From = 0.07
+To = 0.42
+Bands = 2
+WidthTop = 0.085
+WidthBottom = 0.06
+DepthTop = 0.08
+DepthBottom = 0.06
+Flare = 0.22
+Overlap = 0.15
 Sides = 10
 
 [sub_resource type="PrimitiveMesh" id="Mesh_thighBackN"]
@@ -203,18 +228,30 @@ Piston = 0.014
 PistonSide = -0.05
 
 [sub_resource type="PrimitiveMesh" id="Mesh_shinBackN"]
-script = ExtResource("5_PodMesh")
+script = ExtResource("16_LimbMesh")
 Axis = Vector3(-0.1622, -0.985, 0.0579)
 Length = 0.8629
-Stations = PackedVector4Array(0, 0.055, 0.055, 0, 1, 0.02, 0.02, 0)
-Sides = 10
-Rings = 4
+Strut = 0.04
+StrutTaper = 0.22
+Knuckle = 0.05
+KnuckleDepth = 0.08
+Cables = 1
+CableWidth = 0.01
+CableSide = -0.035
 
-[sub_resource type="PrimitiveMesh" id="Mesh_kneecapBackN"]
-script = ExtResource("5_PodMesh")
-Length = 0.08
-Stations = PackedVector4Array(0, 0, 0, 0, 0.5, 0.08, 0.08, 0, 1, 0, 0, 0)
-Rings = 6
+[sub_resource type="PrimitiveMesh" id="Mesh_greaveBackN"]
+script = ExtResource("17_SleeveMesh")
+Axis = Vector3(-0.1622, -0.985, 0.0579)
+Length = 0.8629
+From = 0.07
+To = 0.42
+Bands = 2
+WidthTop = 0.085
+WidthBottom = 0.06
+DepthTop = 0.08
+DepthBottom = 0.06
+Flare = 0.22
+Overlap = 0.15
 Sides = 10
 
 [sub_resource type="PrimitiveMesh" id="Mesh_thighBackF"]
@@ -229,18 +266,30 @@ Piston = 0.014
 PistonSide = -0.05
 
 [sub_resource type="PrimitiveMesh" id="Mesh_shinBackF"]
-script = ExtResource("5_PodMesh")
+script = ExtResource("16_LimbMesh")
 Axis = Vector3(-0.1622, -0.985, -0.0579)
 Length = 0.8629
-Stations = PackedVector4Array(0, 0.055, 0.055, 0, 1, 0.02, 0.02, 0)
-Sides = 10
-Rings = 4
+Strut = 0.04
+StrutTaper = 0.22
+Knuckle = 0.05
+KnuckleDepth = 0.08
+Cables = 1
+CableWidth = 0.01
+CableSide = -0.035
 
-[sub_resource type="PrimitiveMesh" id="Mesh_kneecapBackF"]
-script = ExtResource("5_PodMesh")
-Length = 0.08
-Stations = PackedVector4Array(0, 0, 0, 0, 0.5, 0.08, 0.08, 0, 1, 0, 0, 0)
-Rings = 6
+[sub_resource type="PrimitiveMesh" id="Mesh_greaveBackF"]
+script = ExtResource("17_SleeveMesh")
+Axis = Vector3(-0.1622, -0.985, -0.0579)
+Length = 0.8629
+From = 0.07
+To = 0.42
+Bands = 2
+WidthTop = 0.085
+WidthBottom = 0.06
+DepthTop = 0.08
+DepthBottom = 0.06
+Flare = 0.22
+Overlap = 0.15
 Sides = 10
 
 [sub_resource type="PrimitiveMesh" id="Mesh_carapace"]
@@ -332,15 +381,14 @@ script = ExtResource("3_PartSlot")
 Joint = &"KneeFrontN"
 Category = 1
 Mesh = SubResource("Mesh_shinFrontN")
-Material = ExtResource("13_blade")
+Material = ExtResource("9_frame")
 
 [sub_resource type="Resource" id="Part_KneeFrontN"]
 script = ExtResource("3_PartSlot")
 Joint = &"KneeFrontN"
 Category = 1
-Mesh = SubResource("Mesh_kneecapFrontN")
+Mesh = SubResource("Mesh_greaveFrontN")
 Material = ExtResource("8_shell")
-Position = Vector3(0, 0.04, 0)
 
 [sub_resource type="Resource" id="Part_ThighFrontF"]
 script = ExtResource("3_PartSlot")
@@ -354,15 +402,14 @@ script = ExtResource("3_PartSlot")
 Joint = &"KneeFrontF"
 Category = 1
 Mesh = SubResource("Mesh_shinFrontF")
-Material = ExtResource("13_blade")
+Material = ExtResource("9_frame")
 
 [sub_resource type="Resource" id="Part_KneeFrontF"]
 script = ExtResource("3_PartSlot")
 Joint = &"KneeFrontF"
 Category = 1
-Mesh = SubResource("Mesh_kneecapFrontF")
+Mesh = SubResource("Mesh_greaveFrontF")
 Material = ExtResource("8_shell")
-Position = Vector3(0, 0.04, 0)
 
 [sub_resource type="Resource" id="Part_ThighBackN"]
 script = ExtResource("3_PartSlot")
@@ -376,15 +423,14 @@ script = ExtResource("3_PartSlot")
 Joint = &"KneeBackN"
 Category = 1
 Mesh = SubResource("Mesh_shinBackN")
-Material = ExtResource("13_blade")
+Material = ExtResource("9_frame")
 
 [sub_resource type="Resource" id="Part_KneeBackN"]
 script = ExtResource("3_PartSlot")
 Joint = &"KneeBackN"
 Category = 1
-Mesh = SubResource("Mesh_kneecapBackN")
+Mesh = SubResource("Mesh_greaveBackN")
 Material = ExtResource("8_shell")
-Position = Vector3(0, 0.04, 0)
 
 [sub_resource type="Resource" id="Part_ThighBackF"]
 script = ExtResource("3_PartSlot")
@@ -398,15 +444,14 @@ script = ExtResource("3_PartSlot")
 Joint = &"KneeBackF"
 Category = 1
 Mesh = SubResource("Mesh_shinBackF")
-Material = ExtResource("13_blade")
+Material = ExtResource("9_frame")
 
 [sub_resource type="Resource" id="Part_KneeBackF"]
 script = ExtResource("3_PartSlot")
 Joint = &"KneeBackF"
 Category = 1
-Mesh = SubResource("Mesh_kneecapBackF")
+Mesh = SubResource("Mesh_greaveBackF")
 Material = ExtResource("8_shell")
-Position = Vector3(0, 0.04, 0)
 
 [sub_resource type="Resource" id="Part_Carapace"]
 script = ExtResource("3_PartSlot")
