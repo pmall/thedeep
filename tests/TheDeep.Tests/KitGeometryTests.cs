@@ -296,6 +296,24 @@ public class KitGeometryTests
     }
 
     [Fact]
+    public void IceOverALipHangsInIciclesOfScatteredLengthsWithBrokenShoulders()
+    {
+        var b = new MeshBuilder();
+        IceCurtainShape.Build(b, 5f, 8f, 1f, seed: 34, sheet: 0.25f);
+        MeshData mesh = b.Finish();
+        // How far down the curtain reaches at each column across it.
+        float[] reach = Enumerable.Range(0, mesh.VertexCount).GroupBy(i => MathF.Round(mesh.Positions[i].X, 3))
+            .OrderBy(g => g.Key).Select(g => -g.Min(i => mesh.Positions[i].Y)).ToArray();
+        int tips = Enumerable.Range(1, reach.Length - 2).Count(k => reach[k] > reach[k - 1] && reach[k] >= reach[k + 1]);
+        int flat = Enumerable.Range(1, reach.Length - 1).Count(k => MathF.Abs(reach[k] - reach[k - 1]) < 0.01f);
+
+        Assert.True(tips >= 7, $"only {tips} drips hang from the lip");
+        Assert.True(flat < reach.Length / 4, $"{flat} of {reach.Length} columns end level, a hem");
+        Assert.True(reach[0] < 0.6f && reach[^1] < 0.6f, $"the shoulders hang square, {reach[0]} and {reach[^1]} down");
+        Assert.True(reach.Max() - reach.Where((_, k) => k > 3 && k < reach.Length - 4).Min() > 4f, "the drips are all one length");
+    }
+
+    [Fact]
     public void KeyStandsItsLengthWithItsBitOnTheRight()
     {
         (Vector3 min, Vector3 max) = BuildPiece("key", seed: 0).Bounds();

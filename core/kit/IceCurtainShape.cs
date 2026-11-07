@@ -8,6 +8,8 @@ namespace TheDeep;
 /// Rounded flutes side by side, joined by a thinner sheet, thickening as they go down (ice builds up where it runs),
 /// rippled with frozen drips; each flute ends at its own length in a rounded point, the sheet between them higher (as far
 /// as the sheet's share of the length), and the outer ones shorter, so the curtain's foot is rounded rather than square.
+/// The sheet's hem is broken, not hemmed: it wanders, narrow icicles of scattered lengths hang from it between the flutes,
+/// and each shoulder falls away over its own width, so ice over a lip never reads as a hung cloth.
 /// </summary>
 public static class IceCurtainShape
 {
@@ -48,6 +50,26 @@ public static class IceCurtainShape
         var uv = new Vector2[rows, columns];
         b.Variation = (float)random.NextDouble();
 
+        // Icicles between the flutes: narrow, each its own length past the sheet's hem.
+        int icicles = Math.Max(3, (int)MathF.Round(width / 0.35f));
+        var icicleAt = new float[icicles];
+        var icicleHalf = new float[icicles];
+        var icicleReach = new float[icicles];
+        for (int i = 0; i < icicles; i++)
+        {
+            icicleAt[i] = -width * 0.5f + width * (i + 0.5f + R(-0.4f, 0.4f)) / icicles;
+            icicleHalf[i] = R(0.16f, 0.3f);
+            float t = R(0f, 1f);
+            icicleReach[i] = sheet + (1f - sheet) * 0.8f * t * t;
+        }
+
+        // Over a lip (a low sheet) the flutes end in narrower points, leaving room for the icicles between them.
+        float tipShare = 0.6f * Math.Clamp(0.55f + 0.45f * sheet / 0.62f, 0.55f, 1f);
+
+        // The shoulders: each side falls away over its own width; the hem wanders.
+        float shoulderLeft = width * R(0.12f, 0.3f), shoulderRight = width * R(0.12f, 0.3f);
+        float hemPhase = R(0f, MathF.Tau), hemPhase2 = R(0f, MathF.Tau);
+
         // How far down each column reaches (a share of the length, the longest made 1) and how thick it is across.
         var bottoms = new float[columns];
         var sections = new float[columns];
@@ -57,13 +79,22 @@ public static class IceCurtainShape
             float x = X(k);
             float side = x / (width * 0.5f);
             float taper = 1f - 0.85f * MathF.Pow(side * side, 2f);
-            bottoms[k] = sheet * taper;
+            float shoulder = MathF.Sqrt(SmoothStep(0f, x < 0f ? shoulderLeft : shoulderRight, width * 0.5f - MathF.Abs(x)));
+            float hem = 0.8f + 0.2f * MathF.Sin(x * 2.3f + hemPhase) + 0.12f * MathF.Sin(x * 6.1f + hemPhase2);
+            bottoms[k] = MathF.Max(0.02f, sheet * taper * shoulder * hem);
+            for (int i = 0; i < icicles; i++)
+            {
+                float tip = MathF.Max(0f, 1f - Square((x - icicleAt[i]) / icicleHalf[i]));
+                bottoms[k] = MathF.Max(bottoms[k], icicleReach[i] * taper * shoulder * MathF.Pow(tip, 0.5f));
+                sections[k] = MathF.Max(sections[k], 0.6f * MathF.Sqrt(tip));
+            }
+
             for (int f = 0; f < flutes; f++)
             {
                 float bump = Bump(x, f);
                 // Each flute's tip is narrower than the flute, so neighbors part before they end.
-                float tip = MathF.Max(0f, 1f - Square((x - center[f]) / (half[f] * 0.6f)));
-                bottoms[k] = MathF.Max(bottoms[k], reach[f] * taper * MathF.Pow(tip, 0.4f));
+                float tip = MathF.Max(0f, 1f - Square((x - center[f]) / (half[f] * tipShare)));
+                bottoms[k] = MathF.Max(bottoms[k], reach[f] * taper * shoulder * MathF.Pow(tip, 0.4f));
                 sections[k] = MathF.Max(sections[k], swell[f] * MathF.Sqrt(bump));
             }
 
