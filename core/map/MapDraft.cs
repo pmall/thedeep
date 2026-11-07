@@ -270,7 +270,7 @@ public sealed class MapDraft
             problems.Add($"softlock at {state}: no goal can be reached from there; reached by {string.Join(" → ", path)}");
         }
 
-        // A world needn't use all five abilities (docs/roadmap.md#open-decisions): one it uses lies in one relic, one it doesn't in none.
+        // A world needn't use all five abilities (docs/roadmap.md#stage-plan): one it uses lies in one relic, one it doesn't in none.
         Ability needed = Graph.Edges.SelectMany(e => e.Requires.Options).Aggregate(Ability.None, (all, option) => all | option.Abilities);
         foreach (Ability a in Enum.GetValues<Ability>().Where(a => a != Ability.None))
         {

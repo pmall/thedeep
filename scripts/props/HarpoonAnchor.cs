@@ -25,11 +25,11 @@ public partial class HarpoonAnchor : Node3D
 
     /// <summary>How lit the hoop is in each look (1 is the interactables' lit glow, <see cref="TokenGlow"/>).</summary>
     [Export] public float DormantGlow { get; set; } = 0.35f;
-    [Export] public float FarGlow { get; set; } = 0.55f;
+    [Export] public float FarGlow { get; set; } = 0.4f;
     [Export] public float ReadyGlow { get; set; } = 1f;
     [Export] public float SightedGlow { get; set; } = 1.8f;
     [Export] public float BittenGlow { get; set; } = 3f;
-    [Export] public float SpentGlow { get; set; } = 0.18f;
+    [Export] public float SpentGlow { get; set; } = 0.08f;
 
     /// <summary>How far the sight's marks stand out from the ring before they close on it (share of their radius).</summary>
     [Export] public float SightSpread { get; set; } = 0.7f;

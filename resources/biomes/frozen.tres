@@ -5,7 +5,7 @@
 [ext_resource type="Script" path="res://scripts/biome/BiomeProfile.cs" id="1_biome"]
 [ext_resource type="Material" path="res://assets/materials/backdrop_crags.tres" id="2_far"]
 [ext_resource type="Material" path="res://assets/materials/backdrop_halls.tres" id="3_near"]
-[ext_resource type="Resource" path="res://resources/paint/gouache.tres" id="9_paint"]
+[ext_resource type="Resource" path="res://resources/paint/poster.tres" id="9_paint"]
 
 [resource]
 script = ExtResource("1_biome")
