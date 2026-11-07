@@ -188,6 +188,28 @@ public partial class Main : Node3D
         }
     }
 
+    /// <summary>
+    /// Runs once, when the game quits (every way: a check's <c>Quit</c>, <c>--quit-after</c>, the window closed), before the
+    /// engine frees its servers. The game's nodes are freed here and every C# wrapper they leave finalized now, on the main
+    /// thread, as <see cref="World.Load"/> does between rooms: a wrapper left to the GC's finalizer thread lets go of its
+    /// engine object (a shape, a mesh) whenever that thread runs, which at exit can be while the engine is tearing down the
+    /// servers that object lives in (a crash, or RIDs reported leaked at exit). Twice: a finalizer can release the last
+    /// reference to another wrapped object.
+    /// </summary>
+    public override void _ExitTree()
+    {
+        foreach (Node child in GetChildren())
+        {
+            child.Free();
+        }
+
+        for (int pass = 0; pass < 2; pass++)
+        {
+            GC.Collect();
+            GC.WaitForPendingFinalizers();
+        }
+    }
+
     public override void _Ready()
     {
         Room room = World.Room;
