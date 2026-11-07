@@ -32,7 +32,7 @@ public sealed class HarpoonState : PlayerState
 
     public override bool AllowsTurning => false;
 
-    public override MotionMode Motion => MotionMode.Zip;
+    public override MotionMode Motion => MotionModes.Harpoon(_bitten);
 
     /// <summary>The anchor fired at (null before the first shot).</summary>
     public HarpoonAnchor? Anchor => _anchor;

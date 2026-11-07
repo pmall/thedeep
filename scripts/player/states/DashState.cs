@@ -7,9 +7,14 @@ namespace TheDeep.States;
 /// </summary>
 public sealed class DashState : PlayerState
 {
+    /// <summary>How far ahead (seconds of the dash) cracked rock turns the dash into the bore, so the body is tucked when it hits.</summary>
+    private const float BoreLookAhead = 0.08f;
+
     private float _timeLeft;
     private int _direction;
     private bool _firstTick;
+    private bool _startedGrounded;
+    private bool _boring;
 
     public DashState(Player player) : base(player)
     {
@@ -19,13 +24,15 @@ public sealed class DashState : PlayerState
 
     public override bool Bores => true;
 
-    public override MotionMode Motion => MotionMode.Dash;
+    public override MotionMode Motion => MotionModes.Dash(_startedGrounded, _boring);
 
     public override void Enter()
     {
         _direction = Player.CurrentInput.MoveX != 0 ? Player.CurrentInput.MoveX : Player.Facing;
         _timeLeft = Tuning.DashDuration;
         _firstTick = true;
+        _startedGrounded = Player.IsOnFloor();
+        _boring = false;
         Player.BeginDash(_direction);
     }
 
@@ -39,6 +46,7 @@ public sealed class DashState : PlayerState
         _timeLeft -= delta;
         float speed = Tuning.DashDistance / Tuning.DashDuration;
         Player.Velocity = new Godot.Vector3(_direction * speed, 0f, 0f);
+        _boring = _boring || Player.FacesCrack(Player.Velocity * BoreLookAhead);
 
         if (Player.HarpoonFire() is { } harpoon)
         {

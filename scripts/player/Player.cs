@@ -679,6 +679,9 @@ public partial class Player : CharacterBody3D
         }
     }
 
+    /// <summary>With the Drill, whether the body moving by <paramref name="motion"/> would run into cracked rock it can bore.</summary>
+    public bool FacesCrack(Vector3 motion) => Abilities.Has(Ability.Drill) && motion.LengthSquared() > 1e-6f && CrackedAt(motion) is not null;
+
     /// <summary>The surface height of the swimmable water at <paramref name="point"/>, or null.</summary>
     private static float? WaterAt(Vector3 point) => WaterBody.SurfaceAt(point.X, point.Y);
 

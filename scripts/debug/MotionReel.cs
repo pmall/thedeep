@@ -7,10 +7,12 @@ namespace TheDeep;
 /// The scripted reels shot by look-dev (LookDevDriver, tools/capture.sh), one or more per room:
 /// - the pilgrim's motion reel in the test room: idle, run start, a run cycle, stopping and turning, then
 ///   a jump, a dash off a ledge and a hard landing from the metal slab; then a short hop the ledge assist vaults onto the step;
+///   then a jump and an air dash at its height;
 /// - the grip, harpoon and combat reels in the mechanics lab;
 /// - the moments reel at the Narthex's shrine: resting, down on one knee;
 /// - the interactables used: the Narthex's locked door opening for its key, the Sacristy's power-up taken and its false wall
 ///   found, the Scriptorium's key taken, the Kiln's lever pulled and its gate rising;
+/// - the bore reel in the Bore: a dash with the Drill through the cracked wall from the tunnel side;
 /// - the swim reel in the Quench's coolant: floating, swimming across, treading water, sinking and rising; then the Drill's dive;
 /// - the machine reel in the arena: each prototype species reacting to the player (a Votary striking who
 ///   passes in front of it, the Gleaner bolting, the Limpet waking to a landing, the Lamplighter following).
@@ -60,6 +62,18 @@ public static class MotionReel
                 {
                     new(54, "approach"), new(58, "hop"), new(63, "hop"), new(66, "vault"), new(68, "vault"), new(70, "vault"),
                     new(73, "vault"), new(77, "vault"), new(82, "run on"), new(90, "run on"),
+                }),
+            // A jump from the floor and an air dash near its height: the tuck, the dart, the legs dropping toward the fall.
+            new(new Vector3(3f, 0f, 0f), 1, 90,
+                new Press[]
+                {
+                    new(10, InputActions.Jump, true), new(24, InputActions.Jump, false),
+                    new(26, InputActions.Dash, true), new(28, InputActions.Dash, false),
+                },
+                new Shot[]
+                {
+                    new(20, "rise"), new(27, "air dash"), new(29, "air dash"), new(31, "air dash"), new(34, "air dash"),
+                    new(38, "air dash"), new(42, "out"), new(50, "fall"), new(70, "land"),
                 }),
         }),
         new("Narthex", "moments", "Moments", 6f, new Segment[]
@@ -130,6 +144,20 @@ public static class MotionReel
                 },
                 Camera: new Vector3(47.8f, -19.6f, 9.5f)),
         }),
+        new("Bore", "bore", "Bore", 7f, new Segment[]
+        {
+            // In the tunnel under the hall, facing the cracked wall: the dash meets it, the arms thrust, the rock breaks.
+            new(new Vector3(24.5f, -9f, 0f), -1, 70,
+                new Press[]
+                {
+                    new(10, InputActions.Dash, true), new(12, InputActions.Dash, false),
+                },
+                new Shot[]
+                {
+                    new(8, "ready"), new(11, "gather"), new(13, "spear"), new(15, "spear"), new(17, "bore"), new(19, "bore"),
+                    new(22, "through"), new(28, "out"), new(40, "after"),
+                }),
+        }, Abilities: Ability.Drill),
         new("Quench", "swim", "Swim", 10f, new Segment[]
         {
             // Dropped into the coolant: it floats, swims across, treads water, sinks on its tanks and rises again.

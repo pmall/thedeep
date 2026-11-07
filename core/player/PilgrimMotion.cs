@@ -12,10 +12,18 @@ namespace TheDeep;
 /// - on a Mag-grip surface (<see cref="MotionMode.Grip"/>), the same planted-feet cycle crouched low and clinging: a shorter,
 ///   flatter stride on wider feet, the body leaned over the metal, the arms held low toward it; a kick of the landing spring
 ///   when it clamps on and at each corner (<see cref="Land"/>);
-/// - in a dash, a low lunge with the arms swept back, held a moment after the dash ends;
-/// - swimming, a paddle with a flutter kick leaning into the stroke, treading water when still;
+/// - in a dash, a low lunge with the arms swept back, held a moment after the dash ends; in the air (<see cref="MotionMode.AirDash"/>)
+///   a knee tuck that snaps flat into a dart, legs together behind, then begins to drop them toward the fall; with the Drill
+///   into cracked rock (<see cref="MotionMode.Bore"/>) the arms pulled in, then thrust together ahead as a spear, the body
+///   tucked tight behind them and juddering as it bores;
+/// - swimming, a paddle with a flutter kick leaning into the stroke, treading water when still; sinking on Ballast's tanks
+///   (<see cref="MotionMode.Sink"/>), the knees drawn up as they fill, then heavy and feet first, legs straight, arms lifted by
+///   the water and swaying; rising (<see cref="MotionMode.Rise"/>), the arms gathered high, swept down to the sides in one
+///   push, then held there, the head up and the legs kicking slowly behind;
 /// - in the Drill's dive, a spike: legs together and toes pointed down, arms straight overhead, the body spinning (<see cref="Spin"/>);
-/// - on the Harpoon's line, the near arm straight along it (<see cref="Reach"/>), the body trailing behind;
+/// - throwing the Harpoon (<see cref="MotionMode.Throw"/>), the near arm cocked high behind the head, the body leaning back,
+///   then whipped through to point along the line, past it and back; on the line, the near arm straight along it
+///   (<see cref="Reach"/>), the body trailing behind;
 /// - over any of these, a strike (<see cref="Strike"/>: the near arm raised in the wind-up, swept through the blow, the body
 ///   behind it; a down strike curls the legs up out of its way), a recoil when hurt (<see cref="Hurt"/>) and the ledge assist's
 ///   vault (<see cref="Vault"/>: a hand planted on the top, the knees tucked up over the edge);
@@ -75,6 +83,17 @@ public sealed class PilgrimMotion
     /// <summary>How long a hurt recoil lasts, seconds.</summary>
     private const float HurtLength = 0.55f;
 
+    /// <summary>The Harpoon throw's wind-up and cast end (seconds into the throw): it must fit the line's short flight.</summary>
+    private const float ThrowCocked = 0.045f;
+    private const float ThrowCast = 0.1f;
+
+    /// <summary>The air dash's knee tuck and the bore's arms drawn in, seconds before the key pose.</summary>
+    private const float DashGather = 0.045f;
+
+    /// <summary>Sinking, how long the knees stay drawn up while the tanks fill; rising, how long the arms' push lasts.</summary>
+    private const float SinkGather = 0.22f;
+    private const float RisePush = 0.3f;
+
     private readonly HumanoidDims _dims;
     private readonly float _runSpeed;
     private readonly HumanoidPose _air = new();
@@ -82,6 +101,11 @@ public sealed class PilgrimMotion
     private readonly HumanoidPose _swim = new();
     private readonly HumanoidPose _dive = new();
     private readonly HumanoidPose _zip = new();
+    private readonly HumanoidPose _airDash = new();
+    private readonly HumanoidPose _bore = new();
+    private readonly HumanoidPose _throw = new();
+    private readonly HumanoidPose _sink = new();
+    private readonly HumanoidPose _rise = new();
     private readonly HumanoidPose _strikePose = new();
     private readonly HumanoidPose _hurtPose = new();
     private readonly HumanoidPose _vaultPose = new();
@@ -96,6 +120,13 @@ public sealed class PilgrimMotion
     private float _swimWeight;
     private float _diveWeight;
     private float _zipWeight;
+    private float _airDashWeight;
+    private float _boreWeight;
+    private float _throwWeight;
+    private float _sinkWeight;
+    private float _riseWeight;
+    private MotionMode _mode;
+    private float _modeTime;
     private float _gripWeight;
     private float _swimPhase;
     private float _swimMove;
@@ -172,6 +203,12 @@ public sealed class PilgrimMotion
         _swimWeight = 0f;
         _diveWeight = 0f;
         _zipWeight = 0f;
+        _airDashWeight = 0f;
+        _boreWeight = 0f;
+        _throwWeight = 0f;
+        _sinkWeight = 0f;
+        _riseWeight = 0f;
+        _modeTime = 0f;
         _gripWeight = 0f;
         _swimMove = 0f;
         _spin = 0f;
@@ -195,6 +232,8 @@ public sealed class PilgrimMotion
     {
         float dt = MathF.Max(delta, 0f);
         _time += dt;
+        _modeTime = mode == _mode ? _modeTime + dt : 0f;
+        _mode = mode;
         float forward = velocity.X * (facing < 0 ? -1f : 1f);
         float speed = MathF.Abs(velocity.X);
         bool walking = mode is MotionMode.Ground or MotionMode.Grip; // on a surface, the feet planted on it
@@ -237,14 +276,21 @@ public sealed class PilgrimMotion
         }
 
         _inAir = airborne;
-        _airWeight = Motion.Damp(_airWeight, airborne ? 1f : mode == MotionMode.Dash ? _airWeight : 0f, airborne ? 14f : 22f, dt);
+        bool dashing = mode is MotionMode.Dash or MotionMode.AirDash or MotionMode.Bore;
+        _airWeight = Motion.Damp(_airWeight, airborne ? 1f : dashing ? _airWeight : 0f, airborne ? 14f : 22f, dt);
         _fallWeight = Motion.Damp(_fallWeight, SmoothStep(1.5f, -4.5f, velocity.Y), 9f, dt);
-        bool dashing = mode == MotionMode.Dash;
         _dashWeight = Motion.Damp(_dashWeight, dashing ? 1f : 0f, dashing ? 32f : 8f, dt);
+        _airDashWeight = Motion.Damp(_airDashWeight, mode == MotionMode.AirDash ? 1f : 0f, mode == MotionMode.AirDash ? 32f : 8f, dt);
+        _boreWeight = Motion.Damp(_boreWeight, mode == MotionMode.Bore ? 1f : 0f, mode == MotionMode.Bore ? 40f : 6f, dt);
 
-        _swimWeight = Motion.Damp(_swimWeight, mode == MotionMode.Swim ? 1f : 0f, 10f, dt);
+        bool inWater = mode is MotionMode.Swim or MotionMode.Sink or MotionMode.Rise;
+        _swimWeight = Motion.Damp(_swimWeight, inWater ? 1f : 0f, 10f, dt);
+        _sinkWeight = Motion.Damp(_sinkWeight, mode == MotionMode.Sink ? 1f : 0f, 9f, dt);
+        _riseWeight = Motion.Damp(_riseWeight, mode == MotionMode.Rise ? 1f : 0f, mode == MotionMode.Rise ? 12f : 4f, dt);
         _diveWeight = Motion.Damp(_diveWeight, mode == MotionMode.Dive ? 1f : 0f, mode == MotionMode.Dive ? 30f : 10f, dt);
-        _zipWeight = Motion.Damp(_zipWeight, mode == MotionMode.Zip ? 1f : 0f, mode == MotionMode.Zip ? 25f : 9f, dt);
+        bool harpoon = mode is MotionMode.Throw or MotionMode.Zip;
+        _zipWeight = Motion.Damp(_zipWeight, harpoon ? 1f : 0f, harpoon ? 25f : 9f, dt);
+        _throwWeight = Motion.Damp(_throwWeight, mode == MotionMode.Throw ? 1f : 0f, mode == MotionMode.Throw ? 45f : 12f, dt);
         _swimMove = Motion.Damp(_swimMove, Math.Clamp(MathF.Abs(forward) / (_runSpeed * SwimShare), 0f, 1f), 5f, dt);
         _swimPhase = Fraction(_swimPhase + dt * Lerp(TreadRate, StrokeRate, _swimMove));
         if (mode == MotionMode.Dive)
@@ -269,12 +315,41 @@ public sealed class PilgrimMotion
         Pose.BlendToward(_air, _airWeight);
         DashPose(_dash, grounded: _airWeight < 0.5f);
         Pose.BlendToward(_dash, _dashWeight);
+        if (_airDashWeight > 0.001f)
+        {
+            AirDashPose(_airDash, mode == MotionMode.AirDash ? _modeTime : float.MaxValue);
+            Pose.BlendToward(_airDash, _airDashWeight);
+        }
+
+        if (_boreWeight > 0.001f)
+        {
+            BorePose(_bore, mode == MotionMode.Bore ? _modeTime : float.MaxValue);
+            Pose.BlendToward(_bore, _boreWeight);
+        }
+
         SwimPose(_swim);
         Pose.BlendToward(_swim, _swimWeight);
+        if (_sinkWeight > 0.001f)
+        {
+            SinkPose(_sink, mode == MotionMode.Sink ? _modeTime : float.MaxValue);
+            Pose.BlendToward(_sink, _sinkWeight);
+        }
+
+        if (_riseWeight > 0.001f)
+        {
+            RisePose(_rise, mode == MotionMode.Rise ? _modeTime : float.MaxValue);
+            Pose.BlendToward(_rise, _riseWeight);
+        }
+
         DivePose(_dive);
         Pose.BlendToward(_dive, _diveWeight);
         ZipPose(_zip);
         Pose.BlendToward(_zip, _zipWeight);
+        if (_throwWeight > 0.001f)
+        {
+            ThrowPose(_throw, mode == MotionMode.Throw ? _modeTime : float.MaxValue);
+            Pose.BlendToward(_throw, _throwWeight);
+        }
         if (_strike is { } strike)
         {
             bool down = strike.Kind == StrikeKind.Down;
@@ -548,11 +623,188 @@ public sealed class PilgrimMotion
         pose[HumanoidBone.HandL] = 3f;
     }
 
+    /// <summary>The angle of the Harpoon's line from straight down, positive forward (the pose's own measure).</summary>
+    private float LineAngle() =>
+        Math.Clamp(Reach.LengthSquared() > 1e-6f ? MathF.Atan2(Reach.X, -Reach.Y) : MathF.PI * 0.5f, -0.4f, 3.1f);
+
+    /// <summary>
+    /// The air dash at <paramref name="t"/> seconds in (<see cref="float.MaxValue"/> once over, letting go): both knees snapped up,
+    /// then flat as a dart, the body laid forward, legs straight together behind, arms back along the sides; late in it the legs
+    /// begin to drop toward the fall.
+    /// </summary>
+    private static void AirDashPose(HumanoidPose pose, float t)
+    {
+        float flat = SmoothStep(DashGather * 0.4f, DashGather * 1.8f, t);
+        float drop = SmoothStep(0.11f, 0.2f, t) * 0.35f;
+        float torso = Lerp(-0.5f, -1.2f, flat) + drop * 0.6f;
+        pose.HipsOffset = new Vector2(0.03f, Lerp(0.02f, -0.01f, flat));
+        pose[HumanoidBone.Hips] = torso * 0.5f;
+        pose[HumanoidBone.Spine] = torso * 0.8f;
+        pose[HumanoidBone.Chest] = torso;
+        pose[HumanoidBone.Neck] = torso * 0.6f;
+        pose[HumanoidBone.Head] = torso * 0.25f + 0.1f; // eyes ahead, along the dart
+
+        // Knees up in the tuck; flat, both legs straight behind the laid body, feet pointed.
+        pose[HumanoidBone.ThighR] = Lerp(1.4f, -0.3f + drop, flat);
+        pose[HumanoidBone.ShinR] = Lerp(-0.3f, -0.42f + drop, flat);
+        pose[HumanoidBone.FootR] = Lerp(-0.7f, -1.5f + drop, flat);
+        pose[HumanoidBone.ThighL] = Lerp(1.2f, -0.38f + drop, flat);
+        pose[HumanoidBone.ShinL] = Lerp(-0.5f, -0.5f + drop, flat);
+        pose[HumanoidBone.FootL] = Lerp(-0.9f, -1.6f + drop, flat);
+
+        // Arms: hugged in the tuck, then laid straight back along the sides.
+        pose[HumanoidBone.UpperArmR] = Lerp(0.5f, -1.0f, flat);
+        pose[HumanoidBone.ForearmR] = Lerp(1.9f, -1.05f, flat);
+        pose[HumanoidBone.HandR] = Lerp(2.0f, -1.1f, flat);
+        pose[HumanoidBone.UpperArmL] = Lerp(0.3f, -1.15f, flat);
+        pose[HumanoidBone.ForearmL] = Lerp(1.7f, -1.2f, flat);
+        pose[HumanoidBone.HandL] = Lerp(1.8f, -1.25f, flat);
+    }
+
+    /// <summary>
+    /// The bore at <paramref name="t"/> seconds in (<see cref="float.MaxValue"/> once over): both arms drawn in to the chest, then
+    /// thrust out together ahead of the head, the body laid flat behind them with the knees tucked; juddering while it bores.
+    /// </summary>
+    private void BorePose(HumanoidPose pose, float t)
+    {
+        float thrust = SmoothStep(DashGather * 0.5f, DashGather * 1.6f, t);
+        float judder = t < float.MaxValue ? 0.035f * MathF.Sin(MathF.Tau * 22f * _time) * thrust : 0f;
+        float torso = Lerp(-0.9f, -1.35f, thrust) + judder;
+        pose.HipsOffset = new Vector2(0.04f, Lerp(-0.06f, -0.02f, thrust));
+        pose[HumanoidBone.Hips] = torso * 0.55f;
+        pose[HumanoidBone.Spine] = torso * 0.85f;
+        pose[HumanoidBone.Chest] = torso;
+        pose[HumanoidBone.Neck] = torso * 0.7f;
+        pose[HumanoidBone.Head] = torso * 0.45f - 0.2f; // tucked down behind the arms
+
+        // Knees tucked up tight under the body, the feet folded behind.
+        pose[HumanoidBone.ThighR] = 0.55f;
+        pose[HumanoidBone.ShinR] = -1.15f;
+        pose[HumanoidBone.FootR] = -1.7f;
+        pose[HumanoidBone.ThighL] = 0.4f;
+        pose[HumanoidBone.ShinL] = -1.3f;
+        pose[HumanoidBone.FootL] = -1.85f;
+
+        // Arms: drawn in, fists at the chest; then both straight ahead together, a drill-first spear along the laid spine.
+        float spear = MathF.PI + torso + 0.05f;
+        pose[HumanoidBone.UpperArmR] = Lerp(0.4f, spear, thrust);
+        pose[HumanoidBone.ForearmR] = Lerp(2.2f, spear, thrust);
+        pose[HumanoidBone.HandR] = Lerp(2.3f, spear + 0.05f, thrust);
+        pose[HumanoidBone.UpperArmL] = Lerp(0.3f, spear - 0.08f, thrust);
+        pose[HumanoidBone.ForearmL] = Lerp(2.1f, spear - 0.04f, thrust);
+        pose[HumanoidBone.HandL] = Lerp(2.2f, spear, thrust);
+    }
+
+    /// <summary>
+    /// Sinking on Ballast's tanks at <paramref name="t"/> seconds in (<see cref="float.MaxValue"/> once over): the knees drawn up as
+    /// they fill, then the legs dropped straight and together, feet first and heavy, the arms lifted by the water and swaying,
+    /// the head bowed toward the bottom.
+    /// </summary>
+    private void SinkPose(HumanoidPose pose, float t)
+    {
+        float heavy = SmoothStep(SinkGather * 0.5f, SinkGather * 1.8f, t);
+        float sway = MathF.Sin(MathF.Tau * 0.55f * _time) * heavy;
+        pose.HipsOffset = new Vector2(0f, Lerp(0.03f, -0.02f, heavy));
+        float torso = Lerp(-0.35f, 0.04f, heavy) + 0.03f * sway;
+        pose[HumanoidBone.Hips] = torso * 0.5f;
+        pose[HumanoidBone.Spine] = torso * 0.8f;
+        pose[HumanoidBone.Chest] = torso;
+        pose[HumanoidBone.Neck] = torso * 0.5f - 0.1f * heavy;
+        pose[HumanoidBone.Head] = -0.28f * heavy; // looking down where it goes
+
+        pose[HumanoidBone.ThighR] = Lerp(1.1f, 0.05f, heavy);
+        pose[HumanoidBone.ShinR] = Lerp(-0.5f, 0f, heavy);
+        pose[HumanoidBone.FootR] = Lerp(-0.9f, -0.35f, heavy);
+        pose[HumanoidBone.ThighL] = Lerp(0.95f, -0.03f, heavy);
+        pose[HumanoidBone.ShinL] = Lerp(-0.65f, -0.06f, heavy);
+        pose[HumanoidBone.FootL] = Lerp(-1.0f, -0.4f, heavy);
+
+        // Arms: hugging the knees, then floated up and out by the water rushing past, elbows soft.
+        pose[HumanoidBone.UpperArmR] = Lerp(0.9f, 2.25f + 0.12f * sway, heavy);
+        pose[HumanoidBone.ForearmR] = Lerp(1.6f, 2.6f + 0.2f * sway, heavy);
+        pose[HumanoidBone.HandR] = pose[HumanoidBone.ForearmR] + 0.15f;
+        pose[HumanoidBone.UpperArmL] = Lerp(0.7f, -2.3f - 0.12f * sway, heavy);
+        pose[HumanoidBone.ForearmL] = Lerp(1.4f, -2.65f - 0.2f * sway, heavy);
+        pose[HumanoidBone.HandL] = pose[HumanoidBone.ForearmL] - 0.15f;
+    }
+
+    /// <summary>
+    /// The buoyant rise at <paramref name="t"/> seconds in (<see cref="float.MaxValue"/> once over): the arms gathered high, swept
+    /// down to the sides in one push, then held there, the chest and head lifted toward the surface, the legs kicking slowly behind.
+    /// </summary>
+    private void RisePose(HumanoidPose pose, float t)
+    {
+        float push = SmoothStep(RisePush * 0.25f, RisePush, t);
+        float kick = MathF.Sin(MathF.Tau * 1.1f * _time) * SmoothStep(RisePush * 0.6f, RisePush * 1.5f, t);
+        pose.HipsOffset = new Vector2(0f, Lerp(-0.05f, 0.01f, push));
+        float torso = Lerp(-0.2f, 0.12f, push);
+        pose[HumanoidBone.Hips] = torso * 0.4f;
+        pose[HumanoidBone.Spine] = torso * 0.7f;
+        pose[HumanoidBone.Chest] = torso;
+        pose[HumanoidBone.Neck] = torso * 0.6f + 0.1f * push;
+        pose[HumanoidBone.Head] = 0.32f * push; // looking up at the surface
+
+        // Legs: knees bent in the gather, then long below, a slow flutter.
+        pose[HumanoidBone.ThighR] = Lerp(0.7f, 0.08f + 0.18f * kick, push);
+        pose[HumanoidBone.ShinR] = Lerp(-0.6f, -0.15f + 0.1f * kick, push);
+        pose[HumanoidBone.FootR] = Lerp(-0.8f, -0.95f, push);
+        pose[HumanoidBone.ThighL] = Lerp(0.55f, -0.12f - 0.18f * kick, push);
+        pose[HumanoidBone.ShinL] = Lerp(-0.75f, -0.3f - 0.1f * kick, push);
+        pose[HumanoidBone.FootL] = Lerp(-0.9f, -1.05f, push);
+
+        // Arms: high and wide, then pressed down to the sides, palms in.
+        pose[HumanoidBone.UpperArmR] = Lerp(2.5f, 0.12f, push);
+        pose[HumanoidBone.ForearmR] = Lerp(2.7f, 0.05f, push);
+        pose[HumanoidBone.HandR] = Lerp(2.8f, -0.1f, push);
+        pose[HumanoidBone.UpperArmL] = Lerp(-2.5f, -0.12f, push);
+        pose[HumanoidBone.ForearmL] = Lerp(-2.7f, -0.05f, push);
+        pose[HumanoidBone.HandL] = Lerp(-2.8f, 0.1f, push);
+    }
+
+    /// <summary>
+    /// The Harpoon's throw at <paramref name="t"/> seconds in (<see cref="float.MaxValue"/> once over): the near arm cocked high
+    /// behind the head and the body leaning back by <see cref="ThrowCocked"/>, whipped through to point along the line by
+    /// <see cref="ThrowCast"/>, past it and back; the far arm swings the other way, the legs split.
+    /// </summary>
+    private void ThrowPose(HumanoidPose pose, float t)
+    {
+        float along = LineAngle();
+        float cocked = SmoothStep(0f, ThrowCocked, t);
+        float cast = SmoothStep(ThrowCocked, ThrowCast, t);
+        float after = t < float.MaxValue ? MathF.Max(0f, t - ThrowCast) : 1f; // once over, the overshoot has died
+        float overshoot = 0.3f * MathF.Exp(-after * 18f) * MathF.Cos(after * 40f) * cast;
+        float torso = Lerp(Lerp(-0.1f, 0.25f, cocked), Math.Clamp(-0.3f * along, -0.6f, -0.1f), cast);
+        pose.HipsOffset = new Vector2(0f, Lerp(-0.02f, -0.06f, cast));
+        pose[HumanoidBone.Hips] = torso * 0.4f;
+        pose[HumanoidBone.Spine] = torso * 0.75f;
+        pose[HumanoidBone.Chest] = torso;
+        pose[HumanoidBone.Neck] = torso * 0.4f;
+        pose[HumanoidBone.Head] = Math.Clamp(along - MathF.PI * 0.5f, -0.4f, 0.5f) * 0.4f; // eyes on the anchor
+
+        // The near arm: from the side to cocked (elbow high, hand dropped behind the head), whipped through along the line.
+        float shoulder = Lerp(Lerp(0.3f, 2.7f, cocked), along + overshoot, cast);
+        float forearm = Lerp(Lerp(0.6f, 3.9f, cocked), along + overshoot * 1.4f, cast);
+        pose[HumanoidBone.UpperArmR] = shoulder;
+        pose[HumanoidBone.ForearmR] = forearm;
+        pose[HumanoidBone.HandR] = forearm + 0.05f;
+        float far = Lerp(Lerp(0.2f, 1.1f, cocked), -0.95f, cast);
+        pose[HumanoidBone.UpperArmL] = far;
+        pose[HumanoidBone.ForearmL] = far + Lerp(0.5f, 0.3f, cast);
+        pose[HumanoidBone.HandL] = far + Lerp(0.6f, 0.4f, cast);
+
+        // Legs split, the near knee forward taking the weight of the cast.
+        float split = Lerp(0.2f, 0.45f, cast);
+        pose[HumanoidBone.ThighR] = split;
+        pose[HumanoidBone.ShinR] = split - 0.45f;
+        pose[HumanoidBone.FootR] = split - 0.6f;
+        pose[HumanoidBone.ThighL] = -split * 0.7f;
+        pose[HumanoidBone.ShinL] = -split * 0.7f - 0.55f;
+        pose[HumanoidBone.FootL] = -split * 0.7f - 0.9f;
+    }
+
     private void ZipPose(HumanoidPose pose)
     {
-        // The angle of the line from straight down, positive forward (the pose's own measure).
-        float along = Reach.LengthSquared() > 1e-6f ? MathF.Atan2(Reach.X, -Reach.Y) : MathF.PI * 0.5f;
-        along = Math.Clamp(along, -0.4f, 3.1f);
+        float along = LineAngle();
         float trail = Math.Clamp(Wrap(along - MathF.PI), -1.1f, 0.3f);
         pose.HipsOffset = new Vector2(0f, -0.02f);
         float torso = Math.Clamp(-0.25f * along, -0.55f, 0.1f);

@@ -328,6 +328,109 @@ public class PilgrimMotionTests
         Assert.Equal(PilgrimMoment.None, motion.Moment);
     }
 
+    [Theory]
+    [InlineData(true, false, MotionMode.Dash)]
+    [InlineData(false, false, MotionMode.AirDash)]
+    [InlineData(true, true, MotionMode.Bore)]
+    [InlineData(false, true, MotionMode.Bore)]
+    public void DashModeFollowsWhereItBeganAndTheRock(bool grounded, bool boring, MotionMode expected) =>
+        Assert.Equal(expected, MotionModes.Dash(grounded, boring));
+
+    [Theory]
+    [InlineData(true, true, 0f, MotionMode.Ground)]
+    [InlineData(true, false, -4f, MotionMode.Sink)]
+    [InlineData(false, false, 3.5f, MotionMode.Rise)]
+    [InlineData(false, false, 0.5f, MotionMode.Swim)]
+    [InlineData(false, false, -1f, MotionMode.Swim)]
+    public void WaterModeSinksOnTheTanksAndRisesWhenBlown(bool sunk, bool onFloor, float velocityY, MotionMode expected) =>
+        Assert.Equal(expected, MotionModes.Water(sunk, onFloor, velocityY, 4f));
+
+    [Fact]
+    public void HarpoonThrowsUntilTheLineBites()
+    {
+        Assert.Equal(MotionMode.Throw, MotionModes.Harpoon(bitten: false));
+        Assert.Equal(MotionMode.Zip, MotionModes.Harpoon(bitten: true));
+    }
+
+    [Fact]
+    public void AirDashTucksThenFliesFlatWithLegsTogether()
+    {
+        var ground = new PilgrimMotion(Dims, RunSpeed);
+        Run(ground, 6, new Vector2(20f, 0f), MotionMode.Dash);
+
+        var motion = new PilgrimMotion(Dims, RunSpeed);
+        Run(motion, 20, new Vector2(0f, 3f), MotionMode.Air);
+        Run(motion, 2, new Vector2(20f, 0f), MotionMode.AirDash);
+        Assert.True(motion.Pose[HumanoidBone.ThighR] > 0.6f, "the knees snap up first");
+
+        Run(motion, 4, new Vector2(20f, 0f), MotionMode.AirDash);
+        HumanoidPose pose = motion.Pose;
+        Assert.True(pose[HumanoidBone.Chest] < ground.Pose[HumanoidBone.Chest] - 0.25f, "laid flatter than the ground lunge");
+        Assert.True(pose[HumanoidBone.ThighR] < 0f && pose[HumanoidBone.ThighL] < 0f, "both legs behind");
+        Assert.True(MathF.Abs(pose[HumanoidBone.ThighR] - pose[HumanoidBone.ThighL]) < 0.2f, "legs together, not split");
+        Assert.True(MathF.Abs(ground.Pose[HumanoidBone.ThighR] - ground.Pose[HumanoidBone.ThighL]) > 0.8f, "the ground dash splits them");
+    }
+
+    [Fact]
+    public void BoreDrawsTheArmsInThenSpearsThemAheadTogether()
+    {
+        var motion = new PilgrimMotion(Dims, RunSpeed);
+        Run(motion, 20, Vector2.Zero, MotionMode.Ground);
+        Run(motion, 1, new Vector2(20f, 0f), MotionMode.Bore);
+        Run(motion, 1, new Vector2(20f, 0f), MotionMode.Bore);
+        Assert.True(motion.Pose[HumanoidBone.ForearmR] - motion.Pose[HumanoidBone.UpperArmR] > 1f, "elbows folded, fists drawn in");
+
+        Run(motion, 6, new Vector2(20f, 0f), MotionMode.Bore);
+        HumanoidPose pose = motion.Pose;
+        Assert.InRange(pose[HumanoidBone.UpperArmR], 1.5f, 2.2f);
+        Assert.True(MathF.Abs(pose[HumanoidBone.UpperArmR] - pose[HumanoidBone.UpperArmL]) < 0.15f, "both arms together");
+        Assert.True(MathF.Abs(pose[HumanoidBone.ForearmR] - pose[HumanoidBone.UpperArmR]) < 0.1f, "arms straight, a spear");
+        Assert.True(pose[HumanoidBone.Chest] < -1.1f, "laid flat behind them");
+        Assert.True(pose[HumanoidBone.ShinR] < -0.9f && pose[HumanoidBone.ShinL] < -0.9f, "knees tucked");
+    }
+
+    [Fact]
+    public void ThrowCocksTheArmThenCastsItAlongTheLine()
+    {
+        var motion = new PilgrimMotion(Dims, RunSpeed) { Reach = new Vector2(1f, 0.2f) };
+        float along = MathF.Atan2(1f, -0.2f);
+        Run(motion, 20, Vector2.Zero, MotionMode.Ground);
+        Run(motion, 3, Vector2.Zero, MotionMode.Throw);
+        Assert.True(motion.Pose[HumanoidBone.UpperArmR] > along + 0.3f, "elbow raised high");
+        Assert.True(motion.Pose[HumanoidBone.ForearmR] > 3f, "hand dropped behind the head");
+        Assert.True(motion.Pose[HumanoidBone.Chest] > 0.05f, "leaning back into the wind-up");
+
+        Run(motion, 4, Vector2.Zero, MotionMode.Throw);
+        Assert.InRange(motion.Pose[HumanoidBone.UpperArmR], along - 0.3f, along + 0.35f);
+        Assert.True(motion.Pose[HumanoidBone.Chest] < -0.1f, "the body thrown after the arm");
+
+        Run(motion, 20, Vector2.Zero, MotionMode.Throw);
+        Assert.InRange(motion.Pose[HumanoidBone.UpperArmR], along - 0.05f, along + 0.05f);
+    }
+
+    [Fact]
+    public void SinkGoesFeetFirstAndRiseSweepsTheArmsDown()
+    {
+        var motion = new PilgrimMotion(Dims, RunSpeed);
+        Run(motion, 60, Vector2.Zero, MotionMode.Swim);
+        Run(motion, 5, new Vector2(0f, -2f), MotionMode.Sink);
+        Assert.True(motion.Pose[HumanoidBone.ThighR] > 0.5f, "knees drawn up as the tanks fill");
+
+        Run(motion, 60, new Vector2(0f, -4.5f), MotionMode.Sink);
+        HumanoidPose pose = motion.Pose;
+        Assert.True(MathF.Abs(pose[HumanoidBone.ThighR]) < 0.2f && MathF.Abs(pose[HumanoidBone.ThighL]) < 0.2f, "legs straight down");
+        Assert.True(MathF.Abs(pose[HumanoidBone.ShinR] - pose[HumanoidBone.ThighR]) < 0.15f, "knees straight");
+        Assert.True(MathF.Abs(pose[HumanoidBone.UpperArmR]) > 1.8f && MathF.Abs(pose[HumanoidBone.UpperArmL]) > 1.8f, "arms lifted");
+        Assert.True(pose[HumanoidBone.Head] < -0.15f, "looking down");
+
+        Run(motion, 4, new Vector2(0f, 3f), MotionMode.Rise);
+        Assert.True(MathF.Abs(motion.Pose[HumanoidBone.UpperArmR]) > 1.5f, "arms still high, gathering");
+        Run(motion, 40, new Vector2(0f, 4f), MotionMode.Rise);
+        pose = motion.Pose;
+        Assert.True(MathF.Abs(pose[HumanoidBone.UpperArmR]) < 0.4f && MathF.Abs(pose[HumanoidBone.UpperArmL]) < 0.4f, "arms swept to the sides");
+        Assert.True(pose[HumanoidBone.Head] > 0.2f, "looking up");
+    }
+
     private static readonly (HumanoidBone Thigh, HumanoidBone Shin)[] Legs =
     {
         (HumanoidBone.ThighR, HumanoidBone.ShinR), (HumanoidBone.ThighL, HumanoidBone.ShinL),
