@@ -179,6 +179,25 @@ Taper = 0.5
 Curve = -30
 Bevel = 0.006
 
+; The bob's locks, hung from under the cap's edge around the back of the head, so its lower edge is ragged hair, not a helmet's rim.
+[sub_resource type="PrimitiveMesh" id="Mesh_lock_long"]
+script = ExtResource("6_plate")
+Width = 0.056
+Length = 0.115
+Thickness = 0.01
+Taper = 0.15
+Curve = -22
+Bevel = 0.004
+
+[sub_resource type="PrimitiveMesh" id="Mesh_lock_short"]
+script = ExtResource("6_plate")
+Width = 0.05
+Length = 0.085
+Thickness = 0.01
+Taper = 0.2
+Curve = -18
+Bevel = 0.004
+
 [sub_resource type="PrimitiveMesh" id="Mesh_visor"]
 script = ExtResource("7_ring")
 RadiusX = 0.093
@@ -349,6 +368,60 @@ Mesh = SubResource("Mesh_fringe")
 Material = ExtResource("16_hair")
 Position = Vector3(0.07, 0.205, 0)
 Rotation = Vector3(0, 90, 0)
+
+[sub_resource type="Resource" id="Part_Lock1"]
+script = ExtResource("3_slot")
+Joint = &"Head"
+Category = 4
+Mesh = SubResource("Mesh_lock_long")
+Material = ExtResource("16_hair")
+Position = Vector3(-0.038, 0.105, 0.062)
+Rotation = Vector3(0, -28, 0)
+
+[sub_resource type="Resource" id="Part_Lock2"]
+script = ExtResource("3_slot")
+Joint = &"Head"
+Category = 4
+Mesh = SubResource("Mesh_lock_short")
+Material = ExtResource("16_hair")
+Position = Vector3(-0.063, 0.105, 0.043)
+Rotation = Vector3(0, -52, 0)
+
+[sub_resource type="Resource" id="Part_Lock3"]
+script = ExtResource("3_slot")
+Joint = &"Head"
+Category = 4
+Mesh = SubResource("Mesh_lock_long")
+Material = ExtResource("16_hair")
+Position = Vector3(-0.077, 0.105, 0.018)
+Rotation = Vector3(0, -75, 0)
+
+[sub_resource type="Resource" id="Part_Lock4"]
+script = ExtResource("3_slot")
+Joint = &"Head"
+Category = 4
+Mesh = SubResource("Mesh_lock_short")
+Material = ExtResource("16_hair")
+Position = Vector3(-0.079, 0.105, -0.012)
+Rotation = Vector3(0, -100, 0)
+
+[sub_resource type="Resource" id="Part_Lock5"]
+script = ExtResource("3_slot")
+Joint = &"Head"
+Category = 4
+Mesh = SubResource("Mesh_lock_long")
+Material = ExtResource("16_hair")
+Position = Vector3(-0.066, 0.105, -0.040)
+Rotation = Vector3(0, -125, 0)
+
+[sub_resource type="Resource" id="Part_Lock6"]
+script = ExtResource("3_slot")
+Joint = &"Head"
+Category = 4
+Mesh = SubResource("Mesh_lock_short")
+Material = ExtResource("16_hair")
+Position = Vector3(-0.040, 0.105, -0.061)
+Rotation = Vector3(0, -150, 0)
 
 [sub_resource type="Resource" id="Part_Visor"]
 script = ExtResource("3_slot")
@@ -665,5 +738,5 @@ Stiffness = 0.6
 [resource]
 script = ExtResource("1_assembly")
 Joints = [SubResource("Joint_Hips"), SubResource("Joint_Spine"), SubResource("Joint_Chest"), SubResource("Joint_Neck"), SubResource("Joint_Head"), SubResource("Joint_ThighR"), SubResource("Joint_ShinR"), SubResource("Joint_FootR"), SubResource("Joint_ThighL"), SubResource("Joint_ShinL"), SubResource("Joint_FootL"), SubResource("Joint_UpperArmR"), SubResource("Joint_ForearmR"), SubResource("Joint_HandR"), SubResource("Joint_UpperArmL"), SubResource("Joint_ForearmL"), SubResource("Joint_HandL")]
-Parts = [SubResource("Part_Pelvis"), SubResource("Part_Belt"), SubResource("Part_Waist"), SubResource("Part_Chest"), SubResource("Part_Neck"), SubResource("Part_Collar"), SubResource("Part_Head"), SubResource("Part_Hair"), SubResource("Part_Fringe"), SubResource("Part_Visor"), SubResource("Part_ShoulderR"), SubResource("Part_UpperArmR"), SubResource("Part_ElbowR"), SubResource("Part_ForearmR"), SubResource("Part_HandR"), SubResource("Part_ThighR"), SubResource("Part_KneeR"), SubResource("Part_KneeGuardR"), SubResource("Part_ShinR"), SubResource("Part_FootR"), SubResource("Part_ShoulderL"), SubResource("Part_UpperArmL"), SubResource("Part_ElbowL"), SubResource("Part_ForearmL"), SubResource("Part_HandL"), SubResource("Part_ThighL"), SubResource("Part_KneeL"), SubResource("Part_KneeGuardL"), SubResource("Part_ShinL"), SubResource("Part_FootL")]
+Parts = [SubResource("Part_Pelvis"), SubResource("Part_Belt"), SubResource("Part_Waist"), SubResource("Part_Chest"), SubResource("Part_Neck"), SubResource("Part_Collar"), SubResource("Part_Head"), SubResource("Part_Hair"), SubResource("Part_Fringe"), SubResource("Part_Lock1"), SubResource("Part_Lock2"), SubResource("Part_Lock3"), SubResource("Part_Lock4"), SubResource("Part_Lock5"), SubResource("Part_Lock6"), SubResource("Part_Visor"), SubResource("Part_ShoulderR"), SubResource("Part_UpperArmR"), SubResource("Part_ElbowR"), SubResource("Part_ForearmR"), SubResource("Part_HandR"), SubResource("Part_ThighR"), SubResource("Part_KneeR"), SubResource("Part_KneeGuardR"), SubResource("Part_ShinR"), SubResource("Part_FootR"), SubResource("Part_ShoulderL"), SubResource("Part_UpperArmL"), SubResource("Part_ElbowL"), SubResource("Part_ForearmL"), SubResource("Part_HandL"), SubResource("Part_ThighL"), SubResource("Part_KneeL"), SubResource("Part_KneeGuardL"), SubResource("Part_ShinL"), SubResource("Part_FootL")]
 Chains = [SubResource("Chain_TailBackR"), SubResource("Chain_TailSideR"), SubResource("Chain_LockR"), SubResource("Chain_TailBackL"), SubResource("Chain_TailSideL"), SubResource("Chain_LockL"), SubResource("Chain_Braid"), SubResource("Chain_Lantern")]
