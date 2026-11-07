@@ -22,6 +22,8 @@ public class RoomTableTests
         item B Key
         boss D Warden
         ambush A
+        powerup C strength
+        powerup C Defense
         """;
 
     private const string Header = "room\tlayer\tkinds\thappens\tmachines\titems\tnotes\n";
@@ -29,7 +31,7 @@ public class RoomTableTests
     private const string Table = "# a comment\n" + Header +
         "A\tFlooded\tstart, Ambush\tthe trap\tVotary, Gleaner\t\n" +
         "B\tFlooded\trelic, hub\tMag-grip\t\tKey\ta note\n" +
-        "C\tFlooded\tsecret\n" +
+        "C\tFlooded\tsecret, powerup\n" +
         "D\tFrozen\tgoal, boss\n";
 
     [Fact]
@@ -68,15 +70,34 @@ public class RoomTableTests
     [InlineData("D\tFrozen\tgoal, boss\n", "D\tFlooded\tgoal, boss\n", "D: the table's layer is Flooded, the network's Frozen")]
     [InlineData("B\tFlooded\trelic, hub\tMag-grip\t\tKey\ta note\n", "B\tFlooded\thub\t\t\tKey\n", "B: the network has a relic there, the table's kinds don't say relic")]
     [InlineData("D\tFrozen\tgoal, boss\n", "D\tFrozen\tgoal\n", "D: the network has a boss there, the table's kinds don't say boss")]
-    [InlineData("C\tFlooded\tsecret\n", "C\tFlooded\tboss\n", "C: the table says boss, but the network has none there")]
+    [InlineData("C\tFlooded\tsecret, powerup\n", "C\tFlooded\tboss\n", "C: the table says boss, but the network has none there")]
     [InlineData("A\tFlooded\tstart, Ambush\tthe trap\tVotary, Gleaner\t\n", "A\tFlooded\tstart\n", "A: the network has an ambush there, the table's kinds don't say ambush")]
     [InlineData("B\tFlooded\trelic, hub\tMag-grip\t\tKey\ta note\n", "B\tFlooded\trelic\n", "B: the table's items are [], the network places [Key] there")]
-    [InlineData("C\tFlooded\tsecret\n", "C\tFlooded\tcorridor\n", "the hidden way between B and C leads into and out of no secret room")]
+    [InlineData("C\tFlooded\tsecret, powerup\n", "C\tFlooded\tcorridor\n", "the hidden way between B and C leads into and out of no secret room")]
     [InlineData("D\tFrozen\tgoal, boss\n", "D\tFrozen\tgoal, boss, secret\n", "D: a secret room, but the way from A is not hidden (the network's 'hidden A D')")]
+    [InlineData("C\tFlooded\tsecret, powerup\n", "C\tFlooded\tsecret\n", "C: the network has a power-up there, the table's kinds don't say powerup")]
+    [InlineData("D\tFrozen\tgoal, boss\n", "D\tFrozen\tgoal, boss, PowerUp\n", "D: the table says powerup, but the network has none there")]
     public void ATableDisagreeingWithItsNetworkSaysWhere(string row, string instead, string problem)
     {
         var problems = RoomTable.Parse(Table.Replace(row, instead)).Check(MapDraft.Parse(Network));
         Assert.Contains(problems, p => p.StartsWith(problem));
+    }
+
+    [Fact]
+    public void APowerUpLineNamesItsRoomAndStat()
+    {
+        MapDraft d = MapDraft.Parse(Network);
+        Assert.Equal(new[] { ("C", PowerStat.Strength), ("C", PowerStat.Defense) }, d.PowerUps);
+    }
+
+    [Theory]
+    [InlineData("powerup A speed\n")]     // not a stat
+    [InlineData("powerup A 1\n")]         // a number, not a stat
+    [InlineData("powerup A\n")]           // no stat
+    [InlineData("powerup Z strength\n")]  // an undeclared room
+    public void AMalformedPowerUpLineIsAnError(string line)
+    {
+        Assert.Throws<FormatException>(() => MapDraft.Parse("start A\nroom A L\n" + line));
     }
 
     [Fact]

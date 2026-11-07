@@ -33,6 +33,7 @@ room Weir Brine
 room Beacon Brine
 
 way Quay <-> Strongroom : StrongroomKey          # the locked door in the Quay's west wall
+powerup Strongroom strength                      # on a dais
 way Quay <-> Locks
 way Locks <-> Chantry
 relic Chantry MagGrip

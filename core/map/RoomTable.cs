@@ -7,7 +7,7 @@ namespace TheDeep;
 /// <summary>
 /// What a room is for in the plan (docs/roadmap.md#stage-plan): the closed set a room table's <c>kinds</c> column draws from. Some
 /// kinds are facts the network states too, and <see cref="RoomTable.Check"/> holds them to it: <see cref="Start"/>, <see cref="Goal"/>,
-/// <see cref="Relic"/>, <see cref="Boss"/>, <see cref="Ambush"/>, <see cref="Milestone"/> (iff the network says so) and
+/// <see cref="Relic"/>, <see cref="Boss"/>, <see cref="Ambush"/>, <see cref="PowerUp"/>, <see cref="Milestone"/> (iff the network says so) and
 /// <see cref="Secret"/> (every way in hidden). The others are design intent the network can't see.
 /// </summary>
 public enum RoomKind
@@ -41,6 +41,9 @@ public enum RoomKind
 
     /// <summary>An enemy trap: the room seals while a wave stands (an <c>ambush</c>).</summary>
     Ambush,
+
+    /// <summary>A power-up lies here (a <c>powerup</c>: strength or defense, for good).</summary>
+    PowerUp,
 
     /// <summary>A puzzle: a switch and its mechanism, a code, a door to work out.</summary>
     Enigma,
@@ -159,8 +162,8 @@ public sealed class RoomTable
     }
 
     /// <summary>
-    /// Holds the table and the network to each other: the same rooms on the same layers; a start, goal, relic, boss, ambush or
-    /// milestone room where the network has one, and only there; a secret room entered only by hidden ways (at least one), and every
+    /// Holds the table and the network to each other: the same rooms on the same layers; a start, goal, relic, boss, ambush,
+    /// power-up or milestone room where the network has one, and only there; a secret room entered only by hidden ways (at least one), and every
     /// hidden way into or out of a secret room; each room's items the network's items there. Returns the problems.
     /// </summary>
     public List<string> Check(MapDraft network)
@@ -203,6 +206,7 @@ public sealed class RoomTable
             Fact(RoomKind.Relic, network.Graph.RelicsIn(r).Any(), "a relic");
             Fact(RoomKind.Boss, network.Bosses.Any(b => b.Room == r), "a boss");
             Fact(RoomKind.Ambush, network.Ambushes.Contains(r), "an ambush");
+            Fact(RoomKind.PowerUp, network.PowerUps.Any(p => p.Room == r), "a power-up");
             Fact(RoomKind.Milestone, network.Milestones.Any(m => m.Room == r), "a milestone");
 
             if (row.Kinds.Contains(RoomKind.Secret))

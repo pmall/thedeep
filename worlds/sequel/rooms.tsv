@@ -1,7 +1,7 @@
 # The sequel world's room table (RoomTable has the format; docs/roadmap.md#stage-plan): one row per room of its network.
 room	layer	kinds	happens	machines	items	notes
 Quay	Brine	start, shrine, lore	Start. A landing on a frozen sea-wall: a shrine, a Lamplighter that talks (once), the Strongroom's locked door west.	Lamplighter		
-Strongroom	Brine	lore	Behind the Quay's locked door: a strength power-up on a dais, a scripture plate. A dead end.			
+Strongroom	Brine	lore, powerup	Behind the Quay's locked door: a strength power-up on a dais, a scripture plate. A dead end.			
 Locks	Brine	hub, shrine	The hub: a pool of open brine across the floor (swum or jumped), a shrine, a Chorister asleep; the iron east wall climbed (Mag-grip) to the high doorway on to the Hold.	Chorister		
 Chantry	Brine	relic	Mag-grip on an altar; an iron wall to try it on. A dead end.			
 Hold	Brine	relic, shrine	Rock walls only: the Harpoon on a cradle, two mooring rings up to the high ledge, the Strongroom key on it, the doorway on to the Weir (Harpoon). Back west is a drop off the Locks' wall.		StrongroomKey	

@@ -279,6 +279,8 @@ public partial class RoomValidator : Node
             world.AddSealed(name, exit.Requirement);
         }
 
+        _powerUps.AddRange(room.All<PowerUp>().Select(p => (name, p.Stat)));
+
         foreach (AbilityRelic relic in room.All<AbilityRelic>())
         {
             world.Graph.AddRelic(new MapRelic(name, relic.Name, relic.Ability));
@@ -373,6 +375,25 @@ public partial class RoomValidator : Node
         }
     }
 
+    /// <summary>The built rooms' power-ups, as the room and the stat, gathered by <see cref="Extract"/>.</summary>
+    private readonly List<(string Room, PowerStat Stat)> _powerUps = new();
+
+    /// <summary>Where the network's <c>powerup</c> lines and the built rooms' <see cref="PowerUp"/> nodes disagree, room by room.</summary>
+    private IEnumerable<string> PowerUpDifferences(MapDraft draft)
+    {
+        static string Of(IEnumerable<(string Room, PowerStat Stat)> list, string room) =>
+            string.Join(", ", list.Where(p => p.Room == room).Select(p => p.Stat.ToString().ToLowerInvariant()).Order(System.StringComparer.Ordinal));
+
+        foreach (string room in draft.PowerUps.Concat(_powerUps).Select(p => p.Room).Distinct())
+        {
+            string said = Of(draft.PowerUps, room), built = Of(_powerUps, room);
+            if (said != built)
+            {
+                yield return $"{room}: the network's power-ups are [{said}], the room holds [{built}]";
+            }
+        }
+    }
+
     /// <summary>
     /// The world's network: its targets (<see cref="MapDraft.Check"/>), its layers (each one the world's), and its agreement with the
     /// built rooms; returns the summary line(s).
@@ -387,6 +408,7 @@ public partial class RoomValidator : Node
         (MapReport report, List<string> problems) = draft.Check();
         _problems.AddRange(problems.Select(p => $"map draft: {p}"));
         _problems.AddRange(draft.Differences(world.Graph, world.Sealed).Select(p => $"map draft differs from the rooms: {p}"));
+        _problems.AddRange(PowerUpDifferences(draft).Select(p => $"map draft differs from the rooms: {p}"));
         _problems.AddRange(draft.LayerOrder.Where(l => World.Definition.Layer(l) is null)
             .Select(l => $"map draft: layer {l} is not one of the world's layers ({string.Join(", ", World.Definition.Layers.Select(w => w.Name))})"));
 

@@ -20,6 +20,7 @@ namespace TheDeep;
 /// boss Chapterhouse Precentor
 /// hidden Sacristy Cell            # the way(s) between these two rooms are hidden (a false wall): a secret room's way in
 /// ambush Pyre                     # the room seals while a wave of machines stands
+/// powerup Cell strength           # a power-up lying in a room: strength or defense (outside the ability graph)
 /// goal Heart
 /// milestone Brink ThirdLaw        # a story beat tied to depth (outside the ability graph), in story order
 /// target orders 24                # at least this many achievable ability orders
@@ -51,6 +52,9 @@ public sealed class MapDraft
 
     /// <summary>The rooms that hold an ambush.</summary>
     public List<string> Ambushes { get; } = new();
+
+    /// <summary>The power-ups and the room each lies in (one line per power-up; a room may hold several).</summary>
+    public List<(string Room, PowerStat Stat)> PowerUps { get; } = new();
 
     /// <summary>Whether the way from <paramref name="from"/> to <paramref name="to"/> is hidden.</summary>
     public bool IsHidden(string from, string to) => Hidden.Any(h => (h.A == from && h.B == to) || (h.A == to && h.B == from));
@@ -115,7 +119,7 @@ public sealed class MapDraft
         }
 
         var named = draft.Graph.Rooms.Concat(draft.Milestones.Select(m => m.Room)).Concat(draft.Bosses.Select(b => b.Room))
-            .Concat(draft.Ambushes).Concat(draft.Hidden.SelectMany(h => new[] { h.A, h.B }));
+            .Concat(draft.Ambushes).Concat(draft.PowerUps.Select(p => p.Room)).Concat(draft.Hidden.SelectMany(h => new[] { h.A, h.B }));
         var unknown = named.Where(r => !draft.Layers.ContainsKey(r)).Distinct().ToList();
         if (unknown.Count > 0)
         {
@@ -193,6 +197,15 @@ public sealed class MapDraft
                 break;
             case "ambush":
                 Ambushes.Add(Expect(args, 1)[0]);
+                break;
+            case "powerup":
+                Expect(args, 2);
+                if (!Enum.TryParse(args[1], ignoreCase: true, out PowerStat stat) || !Enum.IsDefined(stat) || int.TryParse(args[1], out _))
+                {
+                    throw new FormatException($"powerup {args[0]} {args[1]}: the stat is strength or defense");
+                }
+
+                PowerUps.Add((args[0], stat));
                 break;
             case "target":
                 Target(args);

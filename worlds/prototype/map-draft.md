@@ -1,6 +1,6 @@
 # Map draft — the prototype world
 
-The prototype world's network file (`Network` in [world.tres](world.tres)): 42 rooms over three layers and the core, 5 abilities, a key, a code, a lever, a secret, an ambush, 4 bosses, 3 law breaks, all built. It is a **planning graph**: the `map` blocks below are parsed by `MapDraft` (its docblock has the format) and checked on every build, by the unit tests and against the built rooms (`docs/testing.md#check`); everything outside them is design notes. Its room table is [rooms.tsv](rooms.tsv) (`RoomTable` has the format), held to this network on every build; the real game's map will be its own network and table (`docs/roadmap.md#stage-plan`). Room names, boss names and story beats are placeholders unless [theme.md](../../docs/theme.md) says otherwise.
+The prototype world's network file (`Network` in [world.tres](world.tres)): 42 rooms over three layers and the core, 5 abilities, a key, a code, a lever, a secret, an ambush, 2 power-ups, 4 bosses, 3 law breaks, all built. It is a **planning graph**: the `map` blocks below are parsed by `MapDraft` (its docblock has the format) and checked on every build, by the unit tests and against the built rooms (`docs/testing.md#check`); everything outside them is design notes. Its room table is [rooms.tsv](rooms.tsv) (`RoomTable` has the format), held to this network on every build; the real game's map will be its own network and table (`docs/roadmap.md#stage-plan`). Room names, boss names and story beats are placeholders unless [theme.md](../../docs/theme.md) says otherwise.
 
 **The markers are the truth** `#draft-markers`: a built room's exits, sealed exits and relics must match its ways and relics here. When a room is built or changed, update its part of the draft in the same commit. Keep its row in [rooms.tsv](rooms.tsv) in step too. Print both with `tools/map.sh`.
 
@@ -98,6 +98,8 @@ way Narthex <-> DrownedHall
 way Narthex <-> Sacristy : SacristyKey           # the locked door in the porch's west wall
 way Sacristy <-> Cell                            # hidden: through the false foot of the Sacristy's west wall
 hidden Sacristy Cell                             # the false foot of the Sacristy's west wall: the Cell is a secret room
+powerup Sacristy defense                         # on a dais under the shaft of light
+powerup Cell strength                            # on a plinth
 way DrownedHall <-> Nave
 way DrownedHall -> Belfry : MagGrip | Harpoon   # up the shaft
 way Belfry -> DrownedHall                        # dropping back down

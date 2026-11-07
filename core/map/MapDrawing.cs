@@ -10,7 +10,7 @@ namespace TheDeep;
 /// <summary>
 /// The drawing of a world's network for the owner to read (docs/roadmap.md#stage-plan), pure: an SVG made from its
 /// <see cref="MapDraft"/> and its <see cref="RoomTable"/>, never drawn by hand. Each layer is a band, the surface at the top and the
-/// descent going down; each room a box with its name, its kinds and what lies in it (relics, items, a boss). A way is a line labelled
+/// descent going down; each room a box with its name, its kinds and what lies in it (relics, items, a boss, power-ups). A way is a line labelled
 /// with what it needs (names longer than <see cref="ShortName"/> letters abbreviated to their capitals, spelled out in a legend);
 /// the two directions of a way that need the same thing are one line, a one-way way has an arrowhead, a hidden way is dashed.
 /// The layout is deterministic: rooms keep their layer's band, are ordered in it by a few barycenter passes over their neighbours
@@ -110,7 +110,8 @@ public static class MapDrawing
             bool secret = kinds.Contains(RoomKind.Secret);
             var holds = graph.RelicsIn(room).Select(x => $"relic {x.Ability}")
                 .Concat(graph.ItemsIn(room).Select(x => $"item {x.Item}"))
-                .Concat(network.Bosses.Where(x => x.Room == room).Select(x => $"boss {x.Name}"));
+                .Concat(network.Bosses.Where(x => x.Room == room).Select(x => $"boss {x.Name}"))
+                .Concat(network.PowerUps.Where(x => x.Room == room).Select(x => $"power-up {x.Stat.ToString().ToLowerInvariant()}"));
             svg.Append($"<g class=\"room\" data-room=\"{X(room)}\">");
             svg.Append($"<rect x=\"{N(rx)}\" y=\"{N(ry)}\" width=\"{BoxW}\" height=\"{BoxH}\" rx=\"6\" fill=\"#ffffff\" stroke=\"{(marked ? "#8a2a10" : "#333")}\" stroke-width=\"{(marked ? 3 : 1.4)}\"{(secret ? " stroke-dasharray=\"5 3\"" : "")}/>");
             svg.Append($"<text x=\"{N(rx + 8)}\" y=\"{N(ry + 19)}\" font-size=\"14\" font-weight=\"bold\" fill=\"#1a1a1a\">{X(Fit(room, 22))}</text>");
