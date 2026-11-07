@@ -41,6 +41,20 @@ public partial class PaintPass : CompositorEffect
     /// <summary>How many pigments the composite pulls hues toward (paint_params.glslinc's palette).</summary>
     public const int PigmentCount = 6;
 
+    /// <summary>The steps in the order they run, as <see cref="StepMs"/> names them.</summary>
+    public static readonly string[] StepNames = { "prepare", "tensor", "blur_x", "blur_y", "kuwahara", "composite" };
+
+    /// <summary>
+    /// Debug only (THEDEEP_PAINT_TIMING=1, read by the perf recording): each step is bracketed by device timestamps,
+    /// and <see cref="StepMs"/> holds its GPU time. Off, the pass captures nothing.
+    /// </summary>
+    public static bool Timed { get; set; }
+
+    /// <summary>GPU ms of each step (<see cref="StepNames"/>) in the latest frame whose timestamps came back (a frame or two behind); zero while none did.</summary>
+    public static double[] StepMs { get; } = new double[6];
+
+    private static readonly string[] Stamps = { "paint:start", "paint:prepare", "paint:tensor", "paint:blur_x", "paint:blur_y", "paint:kuwahara", "paint:composite" };
+
     private static readonly StringName RenderBuffers = "render_buffers";
     private static readonly StringName ColorName = "color";
     private static readonly StringName DepthName = "depth";
@@ -154,13 +168,56 @@ public partial class PaintPass : CompositorEffect
         uint halfX = ((uint)half.X + Group - 1) / Group;
         uint halfY = ((uint)half.Y + Group - 1) / Group;
 
+        if (Timed)
+        {
+            ReadStamps(rd);
+        }
+
         // One compute list per step: the render graph puts the barriers between them.
+        Stamp(rd, 0);
         Dispatch(rd, _prepare, _prepareSet, halfX, halfY);
+        Stamp(rd, 1);
         Dispatch(rd, _tensor, _tensorSet, halfX, halfY);
+        Stamp(rd, 2);
         Dispatch(rd, _tensorBlur, _blurXSet, halfX, halfY, 1f, 0f);
+        Stamp(rd, 3);
         Dispatch(rd, _tensorBlur, _blurYSet, halfX, halfY, 0f, 1f);
+        Stamp(rd, 4);
         Dispatch(rd, _kuwahara, _kuwaharaSet, halfX, halfY);
+        Stamp(rd, 5);
         Dispatch(rd, _composite, _compositeSet, fullX, fullY);
+        Stamp(rd, 6);
+    }
+
+    private static void Stamp(RenderingDevice rd, int i)
+    {
+        if (Timed)
+        {
+            rd.CaptureTimestamp(Stamps[i]);
+        }
+    }
+
+    /// <summary>Turns the device's timestamps that came back (the frame's whose slot this is) into <see cref="StepMs"/>.</summary>
+    private static void ReadStamps(RenderingDevice rd)
+    {
+        uint count = rd.GetCapturedTimestampsCount();
+        for (uint i = 0; i + Stamps.Length <= count; i++)
+        {
+            if (rd.GetCapturedTimestampName(i) != Stamps[0])
+            {
+                continue;
+            }
+
+            for (int step = 0; step < StepMs.Length; step++)
+            {
+                // The device returns nanoseconds.
+                ulong from = rd.GetCapturedTimestampGpuTime(i + (uint)step);
+                ulong to = rd.GetCapturedTimestampGpuTime(i + (uint)step + 1);
+                StepMs[step] = to > from ? (to - from) / 1e6 : 0.0;
+            }
+
+            return;
+        }
     }
 
     public override void _Notification(int what)
