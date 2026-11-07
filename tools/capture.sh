@@ -2,8 +2,8 @@
 # Look-dev captures: renders every photo spot and reel of the rooms in ROOMS (every room of the prototype, the machine arena,
 # the mechanics lab; with --world, every room of that world) to PNG at 1080p, measures frame times over a scripted run in each, and compares with the previous
 # run (before/after sheet). A run's folder holds <Room>-<Spot>.png, the reels' contact sheets (Motion, Combat, Grip, Swim,
-# Harpoon, Machines .png), perf.json (the first room) and perf-<Room>.json (frame, GPU and render CPU times, garbage
-# collections, the slowest frames), run.txt, the Godot logs, and compare/ (one image per spot, sheet.png with all).
+# Harpoon, Machines, Moments; the interactables used: Door, Taking, Pickup, Lever .png), perf.json (the first room) and
+# perf-<Room>.json (frame, GPU and render CPU times, garbage collections, the slowest frames), run.txt, the Godot logs, and compare/ (one image per spot, sheet.png with all).
 #
 #   tools/capture.sh [label]                 new run in lookdev/<date>_<time>[-label]/, compared with the latest run
 #   tools/capture.sh [label] --against DIR   compare with DIR instead
@@ -106,6 +106,10 @@ if [ -d "$out/harpoon" ]; then python3 -I tools/motion_sheet.py "$out" harpoon H
 if [ -d "$out/combat" ]; then python3 -I tools/motion_sheet.py "$out" combat Combat 7x4 1440x810; fi
 if [ -d "$out/swim" ]; then python3 -I tools/motion_sheet.py "$out" swim Swim 7x4 900x600; fi
 if [ -d "$out/moments" ]; then python3 -I tools/motion_sheet.py "$out" moments Moments 5x2 700x700; fi
+if [ -d "$out/door" ]; then python3 -I tools/motion_sheet.py "$out" door Door 4x2 900x1000; fi
+if [ -d "$out/taking" ]; then python3 -I tools/motion_sheet.py "$out" taking Taking 6x3 800x800; fi
+if [ -d "$out/pickup" ]; then python3 -I tools/motion_sheet.py "$out" pickup Pickup 4x2 800x800; fi
+if [ -d "$out/lever" ]; then python3 -I tools/motion_sheet.py "$out" lever Lever 3x3 1800x1000; fi
 ls "$out"/*.png | sed 's/^/  /'
 
 if [ -n "$previous" ] && [ -d "$previous" ]; then

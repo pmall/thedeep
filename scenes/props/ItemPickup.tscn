@@ -1,11 +1,18 @@
 [gd_scene format=3]
-; An item lying in a room (scripts/items/ItemPickup.cs): a key turning over a low plinth, or a code's tablet burning there,
-; by the item's kind. Place it with its origin on the floor; set Item (an ItemDefinition of the world's).
+; An item lying in a room (scripts/items/ItemPickup.cs): a key rocking in the cradle of a low plinth, or a code's tablet burning
+; there, by the item's kind; the cradle's rim, the item and its light glow in the kind's color. Place it with its origin on the
+; floor; set Item (an ItemDefinition of the world's).
 
 [ext_resource type="Script" path="res://scripts/items/ItemPickup.cs" id="1_pickup"]
 [ext_resource type="Script" path="res://scripts/kit/ColumnMesh.cs" id="2_column"]
 [ext_resource type="Material" path="res://assets/materials/stone_mid.tres" id="3_stone_mid"]
 [ext_resource type="Material" path="res://assets/materials/token_glow.tres" id="4_glow"]
+[ext_resource type="Script" path="res://scripts/kit/CradleMesh.cs" id="5_cradle"]
+[ext_resource type="Material" path="res://assets/materials/fixture.tres" id="6_fixture"]
+[ext_resource type="Script" path="res://scripts/parts/RingMesh.cs" id="7_ring"]
+[ext_resource type="Script" path="res://scripts/kit/KeyMesh.cs" id="8_key"]
+[ext_resource type="Script" path="res://scripts/kit/BlockMesh.cs" id="9_block"]
+[ext_resource type="Material" path="res://assets/materials/token_glyphs.tres" id="10_glyphs"]
 
 [sub_resource type="PrimitiveMesh" id="Plinth"]
 script = ExtResource("2_column")
@@ -16,65 +23,86 @@ Shafts = 1
 Plinth = 0.2
 Capital = 0.15
 
-[sub_resource type="TorusMesh" id="Bow"]
-inner_radius = 0.07
-outer_radius = 0.13
-rings = 16
-ring_segments = 8
+[sub_resource type="PrimitiveMesh" id="Cradle"]
+script = ExtResource("5_cradle")
+Radius = 0.2
+Height = 0.34
+Prongs = 3
 
-[sub_resource type="BoxMesh" id="Shaft"]
-size = Vector3(0.04, 0.34, 0.04)
+[sub_resource type="PrimitiveMesh" id="Rim"]
+script = ExtResource("7_ring")
+RadiusX = 0.235
+RadiusZ = 0.235
+Height = 0.035
+Thickness = 0.03
+Segments = 28
 
-[sub_resource type="BoxMesh" id="Bit"]
-size = Vector3(0.1, 0.05, 0.035)
+[sub_resource type="PrimitiveMesh" id="Key"]
+script = ExtResource("8_key")
+Length = 0.6
+BowRadius = 0.14
+Thickness = 0.045
 
-[sub_resource type="BoxMesh" id="Tablet"]
-size = Vector3(0.3, 0.4, 0.04)
+[sub_resource type="PrimitiveMesh" id="TabletBack"]
+script = ExtResource("9_block")
+Size = Vector3(0.36, 0.46, 0.05)
+Bevel = 0.015
 
-[node name="ItemPickup" type="Node3D" node_paths=PackedStringArray("Token", "KeyLook", "CodeLook", "Light")]
+[sub_resource type="PrimitiveMesh" id="TabletFace"]
+script = ExtResource("9_block")
+Size = Vector3(0.28, 0.38, 0.02)
+Bevel = 0.004
+
+[node name="ItemPickup" type="Node3D" node_paths=PackedStringArray("Token", "KeyLook", "CodeLook", "Glows", "Rim", "Light")]
 script = ExtResource("1_pickup")
 Token = NodePath("Token")
 KeyLook = NodePath("Token/Key")
 CodeLook = NodePath("Token/Code")
+Glows = [NodePath("Token/Key/Key"), NodePath("Token/Code/Face"), NodePath("Rim")]
+Rim = NodePath("Rim")
 Light = NodePath("Light")
 
 [node name="Plinth" type="MeshInstance3D" parent="."]
 mesh = SubResource("Plinth")
 material_override = ExtResource("3_stone_mid")
 
+; the reliquary's claws on the plinth's top, the item floating between them
+[node name="Cradle" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.7, 0)
+mesh = SubResource("Cradle")
+material_override = ExtResource("6_fixture")
+
+; the cradle's lit rim, round the plinth's top
+[node name="Rim" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.72, 0)
+mesh = SubResource("Rim")
+material_override = ExtResource("4_glow")
+cast_shadow = 0
+
 [node name="Token" type="Node3D" parent="."]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.15, 0)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.25, 0)
 
 [node name="Key" type="Node3D" parent="Token"]
 
-; the bow stood up (the torus turned about X), the shaft hanging under it, the bit at its foot
-[node name="Bow" type="MeshInstance3D" parent="Token/Key"]
-transform = Transform3D(1, 0, 0, 0, 0, -1, 0, 1, 0, 0, 0.14, 0)
-mesh = SubResource("Bow")
-material_override = ExtResource("4_glow")
-cast_shadow = 0
-
-[node name="Shaft" type="MeshInstance3D" parent="Token/Key"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.1, 0)
-mesh = SubResource("Shaft")
-material_override = ExtResource("4_glow")
-cast_shadow = 0
-
-[node name="Bit" type="MeshInstance3D" parent="Token/Key"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.05, -0.24, 0)
-mesh = SubResource("Bit")
+[node name="Key" type="MeshInstance3D" parent="Token/Key"]
+mesh = SubResource("Key")
 material_override = ExtResource("4_glow")
 cast_shadow = 0
 
 [node name="Code" type="Node3D" parent="Token"]
 
-[node name="Tablet" type="MeshInstance3D" parent="Token/Code"]
-mesh = SubResource("Tablet")
-material_override = ExtResource("4_glow")
+[node name="Back" type="MeshInstance3D" parent="Token/Code"]
+mesh = SubResource("TabletBack")
+material_override = ExtResource("6_fixture")
+
+[node name="Face" type="MeshInstance3D" parent="Token/Code"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0.03)
+mesh = SubResource("TabletFace")
+material_override = ExtResource("10_glyphs")
 cast_shadow = 0
 
 [node name="Light" type="OmniLight3D" parent="."]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.15, 0.6)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.2, 0.6)
 light_energy = 1.0
-light_volumetric_fog_energy = 0.5
+light_volumetric_fog_energy = 0.25
 omni_range = 3.5

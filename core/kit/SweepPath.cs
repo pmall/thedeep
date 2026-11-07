@@ -140,6 +140,14 @@ public static class SweepPath
         return new List<List<PathFrame>> { left, right };
     }
 
+    /// <summary>
+    /// A circular arc in the XY plane around <paramref name="center"/>, from angle <paramref name="from"/> to <paramref name="to"/>
+    /// (radians, counterclockwise from +X as the camera sees it). The frames' side axis points out of the arc, their up axis
+    /// along +Z. A full turn (to = from + 2π) closes on itself: sweep it with wrapsAlong and no caps for a ring facing the camera.
+    /// </summary>
+    public static List<PathFrame> Arc(Vector2 center, float radius, float from, float to, int segments) =>
+        ArcFrames(center, radius, from, to, Math.Max(2, segments), 0f);
+
     /// <summary>Total length of a path.</summary>
     public static float Length(IReadOnlyList<PathFrame> frames) => frames[^1].Distance;
 

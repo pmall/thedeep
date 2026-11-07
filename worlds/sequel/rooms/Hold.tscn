@@ -161,3 +161,9 @@ PlayerPosition = Vector3(24, 0, 0)
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 48, 11, 24)
 script = ExtResource("9_spot")
 PlayerPosition = Vector3(44, 0, 0)
+
+; the Strongroom's key on the ledge, close
+[node name="Key" type="Marker3D" parent="PhotoSpots"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 51.5, 16.4, 9)
+script = ExtResource("9_spot")
+PlayerPosition = Vector3(51, 14.5, 0)

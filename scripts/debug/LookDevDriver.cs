@@ -193,6 +193,11 @@ public partial class LookDevDriver : Node
             Directory.CreateDirectory(reelDir);
             int shotCount = 0;
             Player.Abilities.Set(reel.Abilities, true);
+            foreach (string item in reel.Items ?? Array.Empty<string>())
+            {
+                Player.Items.Take(item);
+            }
+
             foreach (MotionReel.Segment segment in reel.Segments)
             {
                 DemoInput.ReleaseAll();

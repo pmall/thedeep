@@ -9,6 +9,8 @@ namespace TheDeep;
 ///   a jump, a dash off a ledge and a hard landing from the metal slab; then a short hop the ledge assist vaults onto the step;
 /// - the grip, harpoon and combat reels in the mechanics lab;
 /// - the moments reel at the Narthex's shrine: resting, down on one knee;
+/// - the interactables used: the Narthex's locked door opening for its key, the Sacristy's power-up taken and its false wall
+///   found, the Scriptorium's key taken, the Kiln's lever pulled and its gate rising;
 /// - the swim reel in the Quench's coolant: floating, swimming across, treading water, sinking and rising; then the Drill's dive;
 /// - the machine reel in the arena: each prototype species reacting to the player (a Votary striking who
 ///   passes in front of it, the Gleaner bolting, the Limpet waking to a landing, the Lamplighter following).
@@ -70,6 +72,63 @@ public static class MotionReel
                     new(15, "stand"), new(24, "kneel"), new(30, "kneel"), new(38, "kneel"), new(50, "rest"), new(66, "rest"),
                     new(76, "rise"), new(82, "rise"), new(90, "rise"), new(105, "stand"),
                 }),
+        }),
+        new("Narthex", "door", "Door", 6f, new Segment[]
+        {
+            // Holding the Sacristy's key, it walks up to the locked door: the lock turns, flares and dies, the gate rises.
+            new(new Vector3(4.5f, 0f, 0f), -1, 140,
+                new Press[] { new(8, InputActions.MoveLeft, true), new(40, InputActions.MoveLeft, false) },
+                new Shot[]
+                {
+                    new(4, "shut"), new(20, "near"), new(28, "turn"), new(34, "turn"), new(42, "flare"), new(56, "rise"),
+                    new(90, "rise"), new(136, "open"),
+                },
+                Camera: new Vector3(1.2f, 2.1f, 6f)),
+        }, Items: new[] { "SacristyKey" }),
+        new("Sacristy", "taking", "Taking", 6f, new Segment[]
+        {
+            // It walks up to the defense on the dais: the stone sinks into it, the cradle's rim flares and dies.
+            new(new Vector3(9.6f, 0.5f, 0f), -1, 90,
+                new Press[] { new(6, InputActions.MoveLeft, true), new(30, InputActions.MoveLeft, false) },
+                new Shot[]
+                {
+                    new(4, "waiting"), new(16, "near"), new(24, "taken"), new(32, "sinking"), new(42, "sinking"), new(54, "sinking"),
+                    new(66, "spent"), new(86, "spent"),
+                },
+                Camera: new Vector3(7.8f, 1.7f, 5.5f)),
+            // It walks into the foot of the west wall: the false wall fades away, the Cell's way behind it.
+            new(new Vector3(3.5f, 0f, 0f), -1, 90,
+                new Press[] { new(6, InputActions.MoveLeft, true), new(80, InputActions.MoveLeft, false) },
+                new Shot[]
+                {
+                    new(4, "wall"), new(16, "walk in"), new(24, "found"), new(32, "fading"), new(42, "fading"), new(52, "fading"),
+                    new(66, "gone"), new(86, "gone"),
+                },
+                Camera: new Vector3(1.5f, 2.2f, 8f)),
+        }),
+        new("Scriptorium", "pickup", "Pickup", 6f, new Segment[]
+        {
+            // It walks up to the key on the gallery: the key flies into it, the cradle's rim flares and dies.
+            new(new Vector3(36.6f, 4.5f, 0f), 1, 70,
+                new Press[] { new(6, InputActions.MoveRight, true), new(30, InputActions.MoveRight, false) },
+                new Shot[]
+                {
+                    new(4, "waiting"), new(14, "near"), new(20, "flying"), new(26, "flying"), new(32, "flying"), new(40, "taken"),
+                    new(52, "spent"), new(66, "spent"),
+                },
+                Camera: new Vector3(38.4f, 6f, 5.5f)),
+        }),
+        new("Kiln", "lever", "Lever", 6f, new Segment[]
+        {
+            // It pulls the lever: the handle is thrown across its quadrant, its glow dies, the gate's cog turns and the gate rises.
+            new(new Vector3(44.4f, -22f, 0f), 1, 130,
+                new Press[] { new(12, InputActions.Interact, true), new(14, InputActions.Interact, false) },
+                new Shot[]
+                {
+                    new(6, "set"), new(14, "pull"), new(17, "pull"), new(21, "pull"), new(28, "thrown"), new(45, "turning"),
+                    new(70, "turning"), new(95, "rising"), new(126, "open"),
+                },
+                Camera: new Vector3(47.8f, -19.6f, 9.5f)),
         }),
         new("Quench", "swim", "Swim", 10f, new Segment[]
         {
@@ -258,8 +317,9 @@ public static class MotionReel
     /// <param name="Sheet">The contact sheet's name (&lt;Sheet&gt;.png).</param>
     /// <param name="CameraDistance">Camera distance from the play plane when following the player or a machine.</param>
     /// <param name="Abilities">Abilities unlocked while the reel is shot.</param>
+    /// <param name="Items">Items held while it is shot (a key for its door); still held after it, as the room is the run's last.</param>
     public sealed record Reel(string Room, string Folder, string Sheet, float CameraDistance, IReadOnlyList<Segment> Segments,
-        Ability Abilities = Ability.None);
+        Ability Abilities = Ability.None, IReadOnlyList<string>? Items = null);
 
     /// <param name="Tick">Physics tick within the segment.</param>
     public readonly record struct Press(int Tick, StringName Action, bool Down);

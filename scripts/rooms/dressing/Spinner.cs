@@ -4,7 +4,7 @@ namespace TheDeep;
 
 /// <summary>
 /// Dressing that turns (visual only): spins its node about <see cref="Axis"/> at <see cref="Speed"/> radians per second,
-/// from <see cref="Phase"/>. The core's old machinery, still turning. Moved on physics ticks with interpolation, so look-dev
+/// from <see cref="Phase"/>. The core's old machinery, still turning; a power-up's crystals and rings. Moved on physics ticks with interpolation, so look-dev
 /// runs at a fixed frame rate catch it in the same pose every time.
 /// </summary>
 public partial class Spinner : Node3D

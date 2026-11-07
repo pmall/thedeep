@@ -1,0 +1,19 @@
+[gd_resource type="ShaderMaterial" format=3]
+; The ironwork of the things the pilgrim works (a lever's housing and handle, a door's lock band, an item's cradle): the
+; biome's metal darkened, its edges trimmed pale so the shape reads against any wall, worn like the machines that made it.
+
+[ext_resource type="Shader" path="res://assets/shaders/machine.gdshader" id="1_shader"]
+
+[resource]
+shader = ExtResource("1_shader")
+shader_parameter/slot = 1
+shader_parameter/tone = 0.3
+shader_parameter/roughness = 0.38
+shader_parameter/metallic = 0.55
+shader_parameter/clearcoat = 0.3
+shader_parameter/rim = 0.2
+shader_parameter/line_spacing = 0.0
+shader_parameter/trim_width = 0.012
+shader_parameter/trim_slot = 6
+shader_parameter/trim_tone = 1.0
+shader_parameter/wear_response = 0.5

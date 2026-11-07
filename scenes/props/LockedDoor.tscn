@@ -1,38 +1,171 @@
 [gd_scene format=3]
-; A locked door (scripts/items/LockedDoor.cs): a portcullis (scenes/props/Portcullis.tscn) with a lock plate on a post at
-; its side, lit in the item kind's color. Place its origin on the floor where the gate closes (open, it hangs 5.5 m higher:
-; keep a lintel there); set Item, and point the exit it bars at it (RoomExit.Door).
+; A locked door (scripts/items/LockedDoor.cs): a portcullis (scenes/props/Portcullis.tscn) with an iron band across its bars at
+; chest height and, on the band, the lock for its item's kind (scripts/items/DoorLock.cs): a key's round boss and keyhole, a
+; code's seal of burning glyphs, a mechanism's cog; it rides up with the gate. Place its origin on the floor where the gate closes
+; (open, it hangs 5.5 m higher: keep a lintel there); set Item, and point the exit it bars at it (RoomExit.Door).
 
 [ext_resource type="Script" path="res://scripts/items/LockedDoor.cs" id="1_door"]
 [ext_resource type="PackedScene" path="res://scenes/props/Portcullis.tscn" id="2_portcullis"]
 [ext_resource type="Material" path="res://assets/materials/token_glow.tres" id="3_glow"]
-[ext_resource type="Material" path="res://assets/materials/rust.tres" id="4_rust"]
+[ext_resource type="Material" path="res://assets/materials/fixture.tres" id="4_fixture"]
+[ext_resource type="Material" path="res://assets/materials/fixture_pale.tres" id="5_pale"]
+[ext_resource type="Material" path="res://assets/materials/token_glyphs.tres" id="6_glyphs"]
+[ext_resource type="Script" path="res://scripts/items/DoorLock.cs" id="7_lock"]
+[ext_resource type="Script" path="res://scripts/kit/BlockMesh.cs" id="8_block"]
+[ext_resource type="Script" path="res://scripts/kit/LockMesh.cs" id="9_boss"]
+[ext_resource type="Script" path="res://scripts/kit/KeyholeMesh.cs" id="10_keyhole"]
+[ext_resource type="Script" path="res://scripts/kit/SealMesh.cs" id="11_seal"]
+[ext_resource type="Script" path="res://scripts/kit/CogMesh.cs" id="12_cog"]
+[ext_resource type="Script" path="res://scripts/parts/RingMesh.cs" id="13_ring"]
 
-[sub_resource type="BoxMesh" id="Post"]
-size = Vector3(0.22, 2.2, 0.22)
+[sub_resource type="PrimitiveMesh" id="Band"]
+script = ExtResource("8_block")
+Size = Vector3(1.36, 0.26, 0.08)
+Bevel = 0.02
 
-[sub_resource type="CylinderMesh" id="Plate"]
-top_radius = 0.13
-bottom_radius = 0.13
-height = 0.05
-radial_segments = 12
-rings = 1
+[sub_resource type="PrimitiveMesh" id="Boss"]
+script = ExtResource("9_boss")
+Radius = 0.27
+Depth = 0.08
+Studs = 8
 
-[node name="LockedDoor" type="Node3D" node_paths=PackedStringArray("Gate", "Lock")]
+[sub_resource type="PrimitiveMesh" id="Rosette"]
+script = ExtResource("9_boss")
+Radius = 0.17
+Depth = 0.025
+Studs = 4
+
+[sub_resource type="PrimitiveMesh" id="Keyhole"]
+script = ExtResource("10_keyhole")
+Height = 0.24
+Depth = 0.025
+
+[sub_resource type="PrimitiveMesh" id="Seal"]
+script = ExtResource("11_seal")
+Size = 0.48
+Depth = 0.07
+
+[sub_resource type="PrimitiveMesh" id="Glyphs"]
+script = ExtResource("8_block")
+Size = Vector3(0.3, 0.3, 0.02)
+Bevel = 0.004
+
+[sub_resource type="PrimitiveMesh" id="CogHousing"]
+script = ExtResource("9_boss")
+Radius = 0.31
+Depth = 0.05
+Studs = 6
+
+[sub_resource type="PrimitiveMesh" id="Cog"]
+script = ExtResource("12_cog")
+Radius = 0.25
+Teeth = 12
+Depth = 0.06
+
+[sub_resource type="PrimitiveMesh" id="CogGlow"]
+script = ExtResource("13_ring")
+RadiusX = 0.115
+RadiusZ = 0.115
+Height = 0.03
+Thickness = 0.055
+Segments = 20
+
+[node name="LockedDoor" type="Node3D" node_paths=PackedStringArray("Gate", "Locks", "Light")]
 script = ExtResource("1_door")
 Gate = NodePath("Gate")
-Lock = NodePath("Post/Lock")
+Locks = [NodePath("Gate/Gate/Locks/Key"), NodePath("Gate/Gate/Locks/Code"), NodePath("Gate/Gate/Locks/Mechanism")]
+Light = NodePath("Light")
 
 [node name="Gate" parent="." instance=ExtResource("2_portcullis")]
 
-[node name="Post" type="MeshInstance3D" parent="."]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.75, 1.1, -0.45)
-mesh = SubResource("Post")
-material_override = ExtResource("4_rust")
+; the band across the bars' face (the bars stand 0.15 m either side of the plane), at chest height
+[node name="Band" type="MeshInstance3D" parent="Gate/Gate"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.35, 0.19)
+mesh = SubResource("Band")
+material_override = ExtResource("4_fixture")
 
-; the plate faces the camera (the cylinder's axis turned to +Z), on the post's face at chest height
-[node name="Lock" type="MeshInstance3D" parent="Post"]
-transform = Transform3D(1, 0, 0, 0, 0, -1, 0, 1, 0, 0, 0.35, 0.13)
-mesh = SubResource("Plate")
+; the locks' backs on the band's face
+[node name="Locks" type="Node3D" parent="Gate/Gate"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.35, 0.23)
+
+; a key's: the keyhole on its rosette turns a quarter as the key turns
+[node name="Key" type="Node3D" parent="Gate/Gate/Locks" node_paths=PackedStringArray("Turning", "Glows")]
+script = ExtResource("7_lock")
+Kind = 0
+Turning = NodePath("Turning")
+TurnDegrees = -90.0
+TurnTime = 0.5
+Glows = [NodePath("Turning/Keyhole")]
+
+[node name="Boss" type="MeshInstance3D" parent="Gate/Gate/Locks/Key"]
+mesh = SubResource("Boss")
+material_override = ExtResource("5_pale")
+
+[node name="Turning" type="Node3D" parent="Gate/Gate/Locks/Key"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0.08)
+
+[node name="Rosette" type="MeshInstance3D" parent="Gate/Gate/Locks/Key/Turning"]
+mesh = SubResource("Rosette")
+material_override = ExtResource("4_fixture")
+
+; the keyhole's eye a little above the middle, so the whole hole is centered on the rosette
+[node name="Keyhole" type="MeshInstance3D" parent="Gate/Gate/Locks/Key/Turning"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.048, 0.02)
+mesh = SubResource("Keyhole")
 material_override = ExtResource("3_glow")
 cast_shadow = 0
+
+; a code's: its glyphs burn on the seal's face, then go dark
+[node name="Code" type="Node3D" parent="Gate/Gate/Locks" node_paths=PackedStringArray("Turning", "Glows")]
+script = ExtResource("7_lock")
+Kind = 1
+Turning = NodePath("Turning")
+TurnDegrees = 0.0
+TurnTime = 0.5
+Glows = [NodePath("Turning/Glyphs")]
+
+[node name="Seal" type="MeshInstance3D" parent="Gate/Gate/Locks/Code"]
+mesh = SubResource("Seal")
+material_override = ExtResource("5_pale")
+
+[node name="Turning" type="Node3D" parent="Gate/Gate/Locks/Code"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0.08)
+
+[node name="Glyphs" type="MeshInstance3D" parent="Gate/Gate/Locks/Code/Turning"]
+mesh = SubResource("Glyphs")
+material_override = ExtResource("6_glyphs")
+cast_shadow = 0
+
+; a mechanism's: the cog turns round with the winch as the gate rises
+[node name="Mechanism" type="Node3D" parent="Gate/Gate/Locks" node_paths=PackedStringArray("Turning", "Glows")]
+script = ExtResource("7_lock")
+Kind = 2
+Turning = NodePath("Turning")
+TurnDegrees = 360.0
+TurnTime = 1.8
+Glows = [NodePath("Turning/Glow")]
+
+[node name="Housing" type="MeshInstance3D" parent="Gate/Gate/Locks/Mechanism"]
+mesh = SubResource("CogHousing")
+material_override = ExtResource("5_pale")
+
+[node name="Turning" type="Node3D" parent="Gate/Gate/Locks/Mechanism"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0.05)
+
+[node name="Cog" type="MeshInstance3D" parent="Gate/Gate/Locks/Mechanism/Turning"]
+mesh = SubResource("Cog")
+material_override = ExtResource("4_fixture")
+
+; a lit ring round the cog's hub, facing the camera (the ring's axis turned from Y to Z)
+[node name="Glow" type="MeshInstance3D" parent="Gate/Gate/Locks/Mechanism/Turning"]
+transform = Transform3D(1, 0, 0, 0, 0, -1, 0, 1, 0, 0, 0, 0.075)
+mesh = SubResource("CogGlow")
+material_override = ExtResource("3_glow")
+cast_shadow = 0
+
+; the lock's light, before the gate (it stays when the gate rises, and goes out)
+[node name="Light" type="OmniLight3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.35, 1.3)
+light_energy = 0.45
+light_volumetric_fog_energy = 0.3
+omni_range = 2.6

@@ -1,0 +1,8 @@
+[gd_resource type="ShaderMaterial" format=3]
+; A code's script burning in its kind's color (a code's tablet, its seal), tinted per node (assets/shaders/token_glow.gdshader).
+
+[ext_resource type="Shader" path="res://assets/shaders/token_glow.gdshader" id="1_shader"]
+
+[resource]
+shader = ExtResource("1_shader")
+shader_parameter/pattern = 1

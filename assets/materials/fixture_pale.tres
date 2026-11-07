@@ -1,0 +1,19 @@
+[gd_resource type="ShaderMaterial" format=3]
+; The pale plating of the things the pilgrim works (a lock's boss, a seal, a lever's quadrant): the biome's metal, glossy, with
+; panel lines and a pale trim, so the lock reads bright on its dark bars.
+
+[ext_resource type="Shader" path="res://assets/shaders/machine.gdshader" id="1_shader"]
+
+[resource]
+shader = ExtResource("1_shader")
+shader_parameter/slot = 1
+shader_parameter/tone = 0.75
+shader_parameter/roughness = 0.3
+shader_parameter/metallic = 0.3
+shader_parameter/clearcoat = 0.6
+shader_parameter/rim = 0.25
+shader_parameter/line_spacing = 0.0
+shader_parameter/trim_width = 0.012
+shader_parameter/trim_slot = 6
+shader_parameter/trim_tone = 1.15
+shader_parameter/wear_response = 0.6

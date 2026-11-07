@@ -234,7 +234,8 @@ public class KitGeometryTests
     }
 
     public static IEnumerable<object[]> Pieces() =>
-        new[] { "column", "cluster", "pipe", "cables", "arch", "rib", "grate", "rack", "wreck", "icicles", "organ", "curtain" }.Select(n => new object[] { n });
+        new[] { "column", "cluster", "pipe", "cables", "arch", "rib", "grate", "rack", "wreck", "icicles", "organ", "curtain",
+            "key", "crystal", "boss", "keyhole", "seal", "cog", "lever", "handle", "cradle" }.Select(n => new object[] { n });
 
     [Fact]
     public void SeededPiecesAreRepeatableAndVary()
@@ -294,6 +295,67 @@ public class KitGeometryTests
         Assert.NotEqual(a.Positions[40], other.Positions[40]);
     }
 
+    [Fact]
+    public void KeyStandsItsLengthWithItsBitOnTheRight()
+    {
+        (Vector3 min, Vector3 max) = BuildPiece("key", seed: 0).Bounds();
+
+        Assert.Equal(-0.3f, min.Y, 2);
+        Assert.Equal(0.3f, max.Y, 2);
+        Assert.True(max.X > 0.13f * 0.9f && min.X > -0.14f, $"the bit reaches {max.X}, the bow {min.X}");
+        Assert.True(max.Z - min.Z < 0.1f, "a key is flat toward the camera");
+    }
+
+    [Fact]
+    public void CrystalIsClosedFacetedAndSpansItsPoints()
+    {
+        MeshData mesh = BuildPiece("crystal", seed: 0);
+
+        AssertWatertight(mesh);
+        (Vector3 min, Vector3 max) = mesh.Bounds();
+        Assert.Equal(0.05f + 0.3f, max.Y, 3);
+        Assert.Equal(-0.05f - 0.2f, min.Y, 3);
+        // Flat facets: every vertex of a triangle has its triangle's normal.
+        for (int i = 0; i < mesh.Indices.Count; i += 3)
+        {
+            Assert.Equal(mesh.Normals[mesh.Indices[i]], mesh.Normals[mesh.Indices[i + 1]]);
+        }
+    }
+
+    [Theory]
+    [InlineData("boss")]
+    [InlineData("keyhole")]
+    [InlineData("seal")]
+    [InlineData("cog")]
+    public void LockPartsStandOnTheirBackPlaneFacingTheCamera(string name)
+    {
+        (Vector3 min, Vector3 max) = BuildPiece(name, seed: 0).Bounds();
+
+        Assert.True(MathF.Abs(min.Z) < 0.01f, $"{name} starts at {min.Z}");
+        Assert.True(max.Z > 0.015f && max.Z < 0.15f, $"{name} stands {max.Z} proud");
+    }
+
+    [Fact]
+    public void LeverHousingRestsOnTheFloorUnderItsQuadrant()
+    {
+        (Vector3 min, Vector3 max) = BuildPiece("lever", seed: 0).Bounds();
+
+        Assert.True(MathF.Abs(min.Y) < 1e-3f);
+        Assert.True(max.Y > 0.5f + 0.55f && max.Y < 0.5f + 0.55f + 0.12f, $"the quadrant tops out at {max.Y}");
+        (Vector3 hMin, Vector3 hMax) = BuildPiece("handle", seed: 0).Bounds();
+        Assert.Equal(0.9f, hMax.Y, 3);
+        Assert.True(hMin.Y < 0f, "the hub sits across the pivot");
+    }
+
+    [Fact]
+    public void CradleRisesFromItsCollarToItsHeight()
+    {
+        (Vector3 min, Vector3 max) = BuildPiece("cradle", seed: 0).Bounds();
+
+        Assert.True(MathF.Abs(min.Y) < 0.02f, $"the collar sits at {min.Y}");
+        Assert.True(max.Y > 0.38f && max.Y < 0.45f, $"the prongs reach {max.Y}");
+    }
+
     private static MeshData BuildPiece(string name, int seed)
     {
         var b = new MeshBuilder();
@@ -311,6 +373,15 @@ public class KitGeometryTests
             case "icicles": KitShapes.Icicles(b, 3f, 1.5f, 9, seed); break;
             case "organ": OrganPipeShape.Rank(b, new[] { 4f, 6f, 5f }, 0.8f, 0.3f); break;
             case "curtain": IceCurtainShape.Build(b, 4f, 6f, 0.8f, seed); break;
+            case "key": PropShapes.Key(b, 0.6f, 0.13f, 0.04f); break;
+            case "crystal": PropShapes.Crystal(b, 0.15f, 6, 0.1f, 0.3f, 0.2f); break;
+            case "boss": PropShapes.Boss(b, 0.25f, 0.08f, 8); break;
+            case "keyhole": PropShapes.Keyhole(b, 0.2f, 0.02f); break;
+            case "seal": PropShapes.Seal(b, 0.42f, 0.07f); break;
+            case "cog": PropShapes.Cog(b, 0.25f, 12, 0.07f); break;
+            case "lever": PropShapes.LeverBase(b, new Vector3(0.62f, 0.34f, 0.5f), 0.5f, 0.55f, MathF.PI / 4f); break;
+            case "handle": PropShapes.LeverHandle(b, 0.9f, 0.035f); break;
+            case "cradle": PropShapes.Cradle(b, 0.22f, 0.4f, 3); break;
             default: throw new ArgumentException(name);
         }
 

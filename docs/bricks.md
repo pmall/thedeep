@@ -35,9 +35,9 @@ Every piece a world is built from (`docs/principles.md#bricks`). The prototype's
 | `Portcullis` | working | — |
 | `MapGoal` | ready | — |
 | `PhotoSpot` | ready | — |
-| `LockedDoor` (a key's lock or a code's seal, on an exit) | working (look) | `docs/roadmap.md#stage-bricks` |
-| Hidden passage: `FalseWall` (found by walking in, played by `Secrets`) over a `RoomExit.Hidden` way | working (look) | `docs/roadmap.md#stage-bricks` |
-| `Lever` (a switch: sets a mechanism, an item of kind Mechanism) and its gate (a `LockedDoor` for it) | working (look) | `docs/roadmap.md#stage-bricks` |
+| `LockedDoor` (a key's lock or a code's seal, on an exit; `DoorLock`, one per kind) | ready (the gate's bars are the `Portcullis`'s) | — |
+| Hidden passage: `FalseWall` (found by walking in, played by `Secrets`) over a `RoomExit.Hidden` way | ready | — |
+| `Lever` (a switch: sets a mechanism, an item of kind Mechanism) and its gate (a `LockedDoor` for it) | ready | — |
 
 ## The pilgrim `#bricks-pilgrim`
 
@@ -77,8 +77,8 @@ Every piece a world is built from (`docs/principles.md#bricks`). The prototype's
 | Brick | Status | Item |
 |---|---|---|
 | `AbilityRelic` | working | `docs/roadmap.md#pilgrim` (the moment) |
-| `PowerUp` (strength or defense, for good: `Prowess`), played by `PowerUps` | working (look) | `docs/roadmap.md#stage-bricks` |
-| Items: `ItemDefinition`, `ItemPickup` (keys, codes), held by `Inventory`, played by `Keyring` | working (look; no code in a world yet) | `docs/roadmap.md#stage-bricks` |
+| `PowerUp` (strength or defense, for good: `Prowess`), played by `PowerUps` | ready | — |
+| Items: `ItemDefinition`, `ItemPickup` (keys, codes), held by `Inventory`, played by `Keyring` | ready for keys; a code's look is plain and no world places one yet (`docs/art-direction.md#art-open`) | `docs/roadmap.md#stage-bricks` (the code) |
 
 ## Systems `#bricks-systems`
 

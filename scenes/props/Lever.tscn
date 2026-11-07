@@ -1,50 +1,69 @@
 [gd_scene format=3]
-; A lever (scripts/items/Lever.cs): a handle on an iron base, its knob glowing in the mechanism's color. Place it with its origin
-; on the floor where the pilgrim pulls; set Item (an ItemDefinition of kind Mechanism), and give its gate (a LockedDoor) the same.
+; A lever (scripts/items/Lever.cs): a handle on an iron housing, thrown across the quadrant over its pivot; its grip and the slit
+; in the housing's face burn in the mechanism's color. Place it with its origin on the floor where the pilgrim pulls (the housing
+; stands 0.3 m behind the play plane); set Item (an ItemDefinition of kind Mechanism), and give its gate (a LockedDoor) the same.
 
 [ext_resource type="Script" path="res://scripts/items/Lever.cs" id="1_lever"]
-[ext_resource type="Material" path="res://assets/materials/rust.tres" id="2_rust"]
+[ext_resource type="Material" path="res://assets/materials/fixture.tres" id="2_fixture"]
 [ext_resource type="Material" path="res://assets/materials/token_glow.tres" id="3_glow"]
+[ext_resource type="Script" path="res://scripts/kit/LeverMesh.cs" id="4_lever_mesh"]
+[ext_resource type="Script" path="res://scripts/kit/LeverHandleMesh.cs" id="5_handle_mesh"]
+[ext_resource type="Script" path="res://scripts/kit/BlockMesh.cs" id="6_block"]
+[ext_resource type="Material" path="res://assets/materials/fixture_pale.tres" id="7_pale"]
 
-[sub_resource type="BoxMesh" id="Base"]
-size = Vector3(0.7, 0.35, 0.5)
+[sub_resource type="PrimitiveMesh" id="Housing"]
+script = ExtResource("4_lever_mesh")
+Size = Vector3(0.66, 0.36, 0.5)
+PivotHeight = 0.52
+GuideRadius = 0.56
+GuideAngle = 46.0
 
-[sub_resource type="CylinderMesh" id="Shaft"]
-top_radius = 0.04
-bottom_radius = 0.05
-height = 1.0
-radial_segments = 8
-rings = 1
+[sub_resource type="PrimitiveMesh" id="Shaft"]
+script = ExtResource("5_handle_mesh")
+Length = 0.92
+Radius = 0.036
 
-[sub_resource type="SphereMesh" id="KnobMesh"]
-radius = 0.11
-height = 0.22
-radial_segments = 10
-rings = 5
+[sub_resource type="CapsuleMesh" id="Grip"]
+radius = 0.055
+height = 0.34
+radial_segments = 12
+rings = 3
 
-[node name="Lever" type="Node3D" node_paths=PackedStringArray("Handle", "Knob", "Prompt")]
+[sub_resource type="PrimitiveMesh" id="Slit"]
+script = ExtResource("6_block")
+Size = Vector3(0.28, 0.04, 0.02)
+Bevel = 0.006
+
+[node name="Lever" type="Node3D" node_paths=PackedStringArray("Handle", "Glows", "Prompt")]
 script = ExtResource("1_lever")
 Handle = NodePath("Handle")
-Knob = NodePath("Handle/Knob")
+Glows = [NodePath("Handle/Grip"), NodePath("Slit")]
 Prompt = NodePath("Prompt")
 
-[node name="Base" type="MeshInstance3D" parent="."]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.175, -0.3)
-mesh = SubResource("Base")
-material_override = ExtResource("2_rust")
+[node name="Housing" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, -0.3)
+mesh = SubResource("Housing")
+material_override = ExtResource("2_fixture")
 
-; the pivot, at the base's top; the handle rises from it
+; the lit slit across the plinth's face, between its ribs
+[node name="Slit" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.075, -0.045)
+mesh = SubResource("Slit")
+material_override = ExtResource("3_glow")
+cast_shadow = 0
+
+; the pivot, on the housing's drum; the handle rises from it
 [node name="Handle" type="Node3D" parent="."]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.35, -0.3)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.52, -0.3)
 
 [node name="Shaft" type="MeshInstance3D" parent="Handle"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.5, 0)
 mesh = SubResource("Shaft")
-material_override = ExtResource("2_rust")
+material_override = ExtResource("7_pale")
 
-[node name="Knob" type="MeshInstance3D" parent="Handle"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.0, 0)
-mesh = SubResource("KnobMesh")
+; the grip across the handle's top (the capsule's axis turned from Y to the depth)
+[node name="Grip" type="MeshInstance3D" parent="Handle"]
+transform = Transform3D(1, 0, 0, 0, 0, -1, 0, 1, 0, 0, 0.92, 0)
+mesh = SubResource("Grip")
 material_override = ExtResource("3_glow")
 cast_shadow = 0
 

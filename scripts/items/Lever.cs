@@ -3,10 +3,12 @@ using Godot;
 namespace TheDeep;
 
 /// <summary>
-/// A lever (a switch, a room kind's piece): standing at it shows "Pull"; pulling it (interact) throws the handle and sets its
-/// mechanism (<see cref="Item"/>, an <see cref="ItemDefinition"/> of kind <see cref="ItemKind.Mechanism"/>) for good: the gate that
-/// mechanism holds (a <see cref="LockedDoor"/> for the same item) opens at once (<see cref="Keyring"/>). The map sees it as an item
-/// lying here: the solver proves the gate's way like a key's. The node stands on the floor where the pilgrim pulls.
+/// A lever (a switch, a room kind's piece): a handle on an iron housing under a quadrant, its grip and the slit on its housing
+/// burning in the mechanism's color. Standing at it shows "Pull"; pulling it (interact) throws the handle across the quadrant and
+/// sets its mechanism (<see cref="Item"/>, an <see cref="ItemDefinition"/> of kind <see cref="ItemKind.Mechanism"/>) for good: the
+/// grip and the slit flare and die, and the gate that mechanism holds (a <see cref="LockedDoor"/> for the same item) opens at once
+/// (<see cref="Keyring"/>). The map sees it as an item lying here: the solver proves the gate's way like a key's. The node stands on
+/// the floor where the pilgrim pulls.
 /// </summary>
 public partial class Lever : Node3D
 {
@@ -15,8 +17,8 @@ public partial class Lever : Node3D
     /// <summary>The handle, turned about its pivot: up (set) to down (pulled).</summary>
     [Export] public Node3D Handle { get; set; } = null!;
 
-    /// <summary>The knob's glow, in the mechanism's color while set, dark once pulled.</summary>
-    [Export] public MeshInstance3D Knob { get; set; } = null!;
+    /// <summary>The pieces that glow in the mechanism's color while it waits (the grip, the housing's slit), dark once pulled.</summary>
+    [Export] public GeometryInstance3D[] Glows { get; set; } = System.Array.Empty<GeometryInstance3D>();
 
     [Export] public Label3D Prompt { get; set; } = null!;
 
@@ -36,20 +38,29 @@ public partial class Lever : Node3D
         Prompt.Text = LineBook.Shared.Find(GameLines.Pull)?.Text ?? "";
         Prompt.Modulate = Prompt.Modulate with { A = 0f };
         Handle.RotationDegrees = new Vector3(0f, 0f, SetAngle);
-        Knob.SetInstanceShaderParameter("tint", ItemKinds.ColorOf(ItemKind.Mechanism));
+        Color color = ItemKinds.ColorOf(ItemKind.Mechanism);
+        foreach (GeometryInstance3D glow in Glows)
+        {
+            TokenGlow.Tint(glow, color);
+            TokenGlow.Light(glow, 1f);
+        }
     }
 
     public bool Near(Vector3 feet) => new Vector2(feet.X - GlobalPosition.X, feet.Y - GlobalPosition.Y).Length() <= Range;
 
     public void ShowPrompt(bool shown) => _wanted = shown;
 
-    /// <summary>Thrown: the handle swings down, the knob dims.</summary>
+    /// <summary>Thrown: the handle swings down across the quadrant and bounces on its stop, the glow flares and dies.</summary>
     public void Pull()
     {
         Pulled = true;
         _wanted = false;
-        CreateTween().TweenProperty(Handle, "rotation_degrees:z", PulledAngle, 0.35f).SetTrans(Tween.TransitionType.Back).SetEase(Tween.EaseType.Out);
-        Knob.SetInstanceShaderParameter("tint", ItemKinds.ColorOf(ItemKind.Mechanism) * 0.15f);
+        Tween tween = CreateTween();
+        tween.TweenProperty(Handle, "rotation_degrees:z", PulledAngle, 0.35f).SetTrans(Tween.TransitionType.Back).SetEase(Tween.EaseType.Out);
+        foreach (GeometryInstance3D glow in Glows)
+        {
+            TokenGlow.FlareOut(tween, glow, 2.2f, 1f);
+        }
     }
 
     /// <summary>Pulled before (from the save, or its mechanism already set): down already.</summary>
@@ -57,7 +68,10 @@ public partial class Lever : Node3D
     {
         Pulled = true;
         Handle.RotationDegrees = new Vector3(0f, 0f, PulledAngle);
-        Knob.SetInstanceShaderParameter("tint", ItemKinds.ColorOf(ItemKind.Mechanism) * 0.15f);
+        foreach (GeometryInstance3D glow in Glows)
+        {
+            TokenGlow.Light(glow, TokenGlow.Spent);
+        }
     }
 
     public override void _Process(double delta)
