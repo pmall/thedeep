@@ -2,7 +2,7 @@
 
 ; The Narthex (slice room 1, the start): the porch of the drowned cathedral, where the pilgrim wakes. Calm:
 ; a shrine to rest at (save point), a Lamplighter that comes to meet the pilgrim (and talks, once), a fallen column to hop.
-; The arcade behind opens onto the cathedral skyline. East, a low doorway into the Drowned Hall. West, the Sacristy's
+; The arcade behind stands before the porch's dressed back wall. East, a low doorway into the Drowned Hall. West, the Sacristy's
 ; doorway, barred by a locked door seen from the first step (its key lies up in the Scriptorium).
 
 [ext_resource type="Script" path="res://scripts/kit/ColumnMesh.cs" id="1_column"]
@@ -30,6 +30,8 @@
 [ext_resource type="PackedScene" path="res://scenes/props/LockedDoor.tscn" id="23_door"]
 [ext_resource type="Resource" path="res://worlds/prototype/items/sacristy_key.tres" id="24_sacristy_key"]
 [ext_resource type="PackedScene" path="res://scenes/props/Conversation.tscn" id="25_conversation"]
+[ext_resource type="Script" path="res://scripts/rooms/dressing/WallDressing.cs" id="26_walldressing"]
+[ext_resource type="Material" path="res://assets/materials/wall_stone.tres" id="27_wall_stone"]
 
 [sub_resource type="PrimitiveMesh" id="column_1"]
 script = ExtResource("1_column")
@@ -58,12 +60,12 @@ Seed = 1
 
 [sub_resource type="PrimitiveMesh" id="blockmesh_4"]
 script = ExtResource("4_blockmesh")
-Size = Vector3(48, 1, 12)
+Size = Vector3(48, 1, 8)
 Bevel = 0.1
 
 [sub_resource type="PrimitiveMesh" id="blockmesh_5"]
 script = ExtResource("4_blockmesh")
-Size = Vector3(48, 6, 1.5)
+Size = Vector3(48, 24, 1)
 Bevel = 0.1
 
 [sub_resource type="PrimitiveMesh" id="column_6"]
@@ -246,15 +248,32 @@ CableOffset = Vector3(0, 8.25, 0.75)
 Seed = 7
 
 [node name="BackFloor" type="MeshInstance3D" parent="Kit"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 18, -0.5, -8.5)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 18, -0.5, -6)
 mesh = SubResource("blockmesh_4")
 material_override = ExtResource("14_stone_mid")
 
-; a low parapet at the back of the porch
+; the back wall dressed, near enough to read through the haze: blind arches and lancets (WallDressing)
+[node name="WallDressing" type="Node3D" parent="Kit"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 18, 0, -8.75)
+script = ExtResource("26_walldressing")
+Style = 3
+Size = Vector2(43, 19)
+Seed = 131
+
+; the porch's back wall, close behind the arcade
 [node name="BackWall" type="MeshInstance3D" parent="Kit"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 18, 2.5, -14.25)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 18, 10, -9.5)
 mesh = SubResource("blockmesh_5")
-material_override = ExtResource("14_stone_mid")
+material_override = ExtResource("27_wall_stone")
+
+; a lamp close to the back wall, raking its relief so it reads in the haze
+[node name="WallLamp" type="OmniLight3D" parent="Kit"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 18, 12, -7.75)
+light_color = Color(1, 0.86, 0.68, 1)
+light_energy = 3
+light_volumetric_fog_energy = 0
+omni_range = 20
+omni_attenuation = 1.2
 
 ; a column drum fallen behind the arcade
 [node name="Drum" type="MeshInstance3D" parent="Kit"]
