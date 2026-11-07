@@ -208,6 +208,40 @@ public class PartsTests
         Assert.True(nearTip < 0.03f, "tapers to a point");
     }
 
+    [Fact]
+    public void LimbFrameHangsFromItsHousingWithItsPistonForward()
+    {
+        var b = new MeshBuilder();
+        LimbShapes.Frame(b, -Vector3.UnitY, 0.5f, new LimbFrame { Strut = 0.05f, Knuckle = 0.06f, KnuckleDepth = 0.1f, Piston = 0.02f, PistonSide = 0.08f, Cables = 2, CableSide = -0.05f });
+        MeshData mesh = b.Finish();
+        AssertValidFrames(mesh);
+        (Vector3 min, Vector3 max) = mesh.Bounds();
+        Assert.Equal(0.06f, max.Y, 2);
+        Assert.InRange(min.Y, -0.51f, -0.49f);
+        // The housing's axle reaches past its drum toward the camera.
+        Assert.True(max.Z > 0.05f + 0.01f, "the axle's boss stands out of the housing");
+        // The piston runs forward of the strut, the cables bow behind it.
+        Assert.InRange(max.X, 0.09f, 0.11f);
+        Assert.True(min.X < -0.05f, "cables bow behind");
+    }
+
+    [Fact]
+    public void SleeveBandsStepOutAtEachLip()
+    {
+        var b = new MeshBuilder();
+        var spec = new LimbSleeve { From = 0f, To = 1f, Bands = 3, WidthTop = 0.1f, WidthBottom = 0.1f, DepthTop = 0.1f, DepthBottom = 0.1f, Flare = 0.4f, Overlap = 0.2f };
+        LimbShapes.Sleeve(b, -Vector3.UnitY, 0.6f, spec);
+        MeshData mesh = b.Finish();
+        AssertValidFrames(mesh);
+        (Vector3 min, Vector3 max) = mesh.Bounds();
+        Assert.InRange(min.Y, -0.61f, -0.59f);
+        Assert.InRange(max.Y, -0.01f, 0.01f);
+        // Each lip is wider than the plating under it: the outline steps.
+        Assert.InRange(max.X, 0.059f, 0.061f);
+        float topWidth = mesh.Positions.Where(p => p.Y > -0.005f).Max(p => p.X);
+        Assert.InRange(topWidth, 0.039f, 0.041f);
+    }
+
     private static void AssertLinks(VerletChain chain)
     {
         for (int i = 1; i < chain.Points.Length; i++)

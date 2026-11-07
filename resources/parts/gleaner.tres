@@ -7,6 +7,7 @@
 [ext_resource type="Script" path="res://scripts/parts/PartSlot.cs" id="3_PartSlot"]
 [ext_resource type="Script" path="res://scripts/parts/PartChain.cs" id="4_PartChain"]
 [ext_resource type="Script" path="res://scripts/parts/PodMesh.cs" id="5_PodMesh"]
+[ext_resource type="Script" path="res://scripts/parts/LimbMesh.cs" id="16_LimbMesh"]
 [ext_resource type="Script" path="res://scripts/parts/RingMesh.cs" id="6_RingMesh"]
 [ext_resource type="Script" path="res://scripts/kit/WreckMesh.cs" id="7_WreckMesh"]
 [ext_resource type="Material" path="res://assets/materials/machines/shell.tres" id="8_shell"]
@@ -139,12 +140,15 @@ Parent = &"KneeBackF"
 Offset = Vector3(-0.14, -0.85, -0.05)
 
 [sub_resource type="PrimitiveMesh" id="Mesh_thighFrontN"]
-script = ExtResource("5_PodMesh")
+script = ExtResource("16_LimbMesh")
 Axis = Vector3(0.5599, 0.8144, 0.1527)
 Length = 0.3929
-Stations = PackedVector4Array(0, 0.085, 0.085, 0, 1, 0.06, 0.06, 0)
-Sides = 10
-Rings = 4
+Strut = 0.065
+StrutTaper = 0.7
+Knuckle = 0.055
+KnuckleDepth = 0.09
+Piston = 0.014
+PistonSide = 0.05
 
 [sub_resource type="PrimitiveMesh" id="Mesh_shinFrontN"]
 script = ExtResource("5_PodMesh")
@@ -162,12 +166,15 @@ Rings = 6
 Sides = 10
 
 [sub_resource type="PrimitiveMesh" id="Mesh_thighFrontF"]
-script = ExtResource("5_PodMesh")
+script = ExtResource("16_LimbMesh")
 Axis = Vector3(0.5599, 0.8144, -0.1527)
 Length = 0.3929
-Stations = PackedVector4Array(0, 0.085, 0.085, 0, 1, 0.06, 0.06, 0)
-Sides = 10
-Rings = 4
+Strut = 0.065
+StrutTaper = 0.7
+Knuckle = 0.055
+KnuckleDepth = 0.09
+Piston = 0.014
+PistonSide = 0.05
 
 [sub_resource type="PrimitiveMesh" id="Mesh_shinFrontF"]
 script = ExtResource("5_PodMesh")
@@ -185,12 +192,15 @@ Rings = 6
 Sides = 10
 
 [sub_resource type="PrimitiveMesh" id="Mesh_thighBackN"]
-script = ExtResource("5_PodMesh")
+script = ExtResource("16_LimbMesh")
 Axis = Vector3(-0.5599, 0.8144, 0.1527)
 Length = 0.3929
-Stations = PackedVector4Array(0, 0.085, 0.085, 0, 1, 0.06, 0.06, 0)
-Sides = 10
-Rings = 4
+Strut = 0.065
+StrutTaper = 0.7
+Knuckle = 0.055
+KnuckleDepth = 0.09
+Piston = 0.014
+PistonSide = -0.05
 
 [sub_resource type="PrimitiveMesh" id="Mesh_shinBackN"]
 script = ExtResource("5_PodMesh")
@@ -208,12 +218,15 @@ Rings = 6
 Sides = 10
 
 [sub_resource type="PrimitiveMesh" id="Mesh_thighBackF"]
-script = ExtResource("5_PodMesh")
+script = ExtResource("16_LimbMesh")
 Axis = Vector3(-0.5599, 0.8144, -0.1527)
 Length = 0.3929
-Stations = PackedVector4Array(0, 0.085, 0.085, 0, 1, 0.06, 0.06, 0)
-Sides = 10
-Rings = 4
+Strut = 0.065
+StrutTaper = 0.7
+Knuckle = 0.055
+KnuckleDepth = 0.09
+Piston = 0.014
+PistonSide = -0.05
 
 [sub_resource type="PrimitiveMesh" id="Mesh_shinBackF"]
 script = ExtResource("5_PodMesh")

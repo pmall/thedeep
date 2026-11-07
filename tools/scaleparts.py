@@ -20,7 +20,9 @@ def scale_parts(src_path, dst_path, s, header, swaps):
         k = line.split(' = ')[0] if ' = ' in line else ''
         if k in ('Offset', 'Position') and 'Vector3(' in line:
             line = re.sub(r'(Vector3)\(([^)]*)\)', lambda m: f"{m.group(1)}({', '.join(fmt(float(n) * s) for n in m.group(2).split(','))})", line)
-        elif k in ('Length', 'Width', 'Thickness', 'Bevel', 'RadiusX', 'RadiusZ', 'Height', 'Radius', 'HubRadius', 'HubHeight', 'Chord'):
+        elif k in ('Length', 'Width', 'Thickness', 'Bevel', 'RadiusX', 'RadiusZ', 'Height', 'Radius', 'HubRadius', 'HubHeight', 'Chord',
+                   'Strut', 'Knuckle', 'KnuckleDepth', 'EndKnuckle', 'Piston', 'PistonSide', 'CableWidth', 'CableSide',
+                   'WidthTop', 'WidthBottom', 'DepthTop', 'DepthBottom', 'Shift'):
             try:
                 line = f"{k} = {fmt(float(line.split(' = ')[1]) * s)}"
             except ValueError:

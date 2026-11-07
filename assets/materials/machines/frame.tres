@@ -6,7 +6,7 @@
 [resource]
 shader = ExtResource("1_shader")
 shader_parameter/slot = 1
-shader_parameter/tone = 0.32
+shader_parameter/tone = 0.22
 shader_parameter/roughness = 0.4
 shader_parameter/metallic = 0.55
 shader_parameter/clearcoat = 0.2
