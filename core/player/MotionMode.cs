@@ -4,6 +4,9 @@ namespace TheDeep;
 public enum MotionMode
 {
     Ground,
+
+    /// <summary>Walking on a Mag-grip surface (wall, ceiling or floor alike, in the body's own frame): clinging low.</summary>
+    Grip,
     Air,
     Dash,
 

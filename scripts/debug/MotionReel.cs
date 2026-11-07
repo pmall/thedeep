@@ -6,7 +6,7 @@ namespace TheDeep;
 /// <summary>
 /// The scripted reels shot by look-dev (LookDevDriver, tools/capture.sh), one or more per room:
 /// - the pilgrim's motion reel in the test room: idle, run start, a run cycle, stopping and turning, then
-///   a jump, a dash off a ledge and a hard landing from the metal slab;
+///   a jump, a dash off a ledge and a hard landing from the metal slab; then a short hop the ledge assist vaults onto the step;
 /// - the grip, harpoon and combat reels in the mechanics lab;
 /// - the moments reel at the Narthex's shrine: resting, down on one knee;
 /// - the swim reel in the Quench's coolant: floating, swimming across, treading water, sinking and rising; then the Drill's dive;
@@ -46,6 +46,18 @@ public static class MotionReel
                     new(32, "jump"), new(38, "jump"), new(46, "rise"), new(53, "apex"), new(62, "fall"), new(70, "fall"),
                     new(78, "land"), new(82, "dash"), new(86, "dash"), new(92, "dash"),
                     new(100, "drop"), new(112, "drop"), new(122, "land"), new(127, "land"), new(134, "land"), new(146, "settle"),
+                }),
+            // A short hop at the 2 m step, too low to clear it: the ledge assist lifts it on, vaulting the edge.
+            new(new Vector3(17f, 0f, 0f), 1, 110,
+                new Press[]
+                {
+                    new(5, InputActions.MoveRight, true), new(55, InputActions.Jump, true), new(61, InputActions.Jump, false),
+                    new(100, InputActions.MoveRight, false),
+                },
+                new Shot[]
+                {
+                    new(54, "approach"), new(58, "hop"), new(63, "hop"), new(66, "vault"), new(68, "vault"), new(70, "vault"),
+                    new(73, "vault"), new(77, "vault"), new(82, "run on"), new(90, "run on"),
                 }),
         }),
         new("Narthex", "moments", "Moments", 6f, new Segment[]

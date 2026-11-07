@@ -464,7 +464,7 @@ public partial class Player : CharacterBody3D
     /// <summary>
     /// Ledge assist (<see cref="TheDeep.LedgeAssist"/>), after an airborne move: pressing into a wall whose top is at most
     /// <see cref="PlayerTuning.LedgeAssistHeight"/> above the feet lifts the pilgrim onto it, just past the edge, keeping its way and
-    /// speed; the visible body eases up from where it was. Returns whether it did. Called by the jump and fall states.
+    /// speed; the visible body eases up from where it was, vaulting the edge. Returns whether it did. Called by the jump and fall states.
     /// </summary>
     public bool LedgeAssist()
     {
@@ -496,6 +496,7 @@ public partial class Player : CharacterBody3D
         }
 
         Orient(new GripPose(feet, new NVector2(0f, 1f)));
+        Visual.Vault();
         Velocity = new Vector3(dir * TheDeep.LedgeAssist.Speed(PushSpeed, Tuning.RunSpeed), 0f, 0f);
         return true;
     }

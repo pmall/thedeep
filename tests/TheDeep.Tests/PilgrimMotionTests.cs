@@ -232,6 +232,58 @@ public class PilgrimMotionTests
     }
 
     [Fact]
+    public void OnMagGripTheBodyClingsLowWithItsFeetOnTheSurface()
+    {
+        var walk = new PilgrimMotion(Dims, RunSpeed);
+        var grip = new PilgrimMotion(Dims, RunSpeed);
+        Run(walk, 90, new Vector2(5.5f, -2f), MotionMode.Ground);
+        Run(grip, 90, new Vector2(5.5f, -2f), MotionMode.Grip);
+        Assert.True(grip.Pose.HipsOffset.Y < walk.Pose.HipsOffset.Y - 0.08f, "crouched lower");
+        Assert.True(grip.Pose[HumanoidBone.Chest] < walk.Pose[HumanoidBone.Chest] - 0.15f, "leaned over the surface");
+
+        // Still planted: no foot goes through the surface, and steps still fall in turn.
+        var falls = new List<int>();
+        for (int i = 0; i < 120; i++)
+        {
+            grip.Update(Dt, new Vector2(5.5f, -2f), 1, MotionMode.Grip);
+            if (grip.Footfall != 0)
+            {
+                falls.Add(grip.Footfall);
+            }
+
+            foreach ((HumanoidBone thigh, HumanoidBone shin) in Legs)
+            {
+                Assert.True(Ankle(grip.Pose, thigh, shin).Y > Dims.AnkleHeight - 0.02f, "a foot went through the surface");
+            }
+        }
+
+        Assert.True(falls.Count >= 6, $"only {falls.Count} steps");
+
+        // Still on the surface, both feet down.
+        Run(grip, 120, new Vector2(0f, -2f), MotionMode.Grip);
+        foreach ((HumanoidBone thigh, HumanoidBone shin) in Legs)
+        {
+            Assert.InRange(Ankle(grip.Pose, thigh, shin).Y, Dims.AnkleHeight - 0.01f, Dims.AnkleHeight + 0.01f);
+        }
+    }
+
+    [Fact]
+    public void TheLedgeVaultTucksTheKneesThenRunsOn()
+    {
+        var motion = new PilgrimMotion(Dims, RunSpeed);
+        Run(motion, 60, new Vector2(RunSpeed, 0f), MotionMode.Ground);
+        motion.Vault();
+        Run(motion, 6, new Vector2(RunSpeed, 0f), MotionMode.Ground);
+        Assert.True(motion.Pose[HumanoidBone.ThighR] > 1.2f, "the knee tucked up over the edge");
+        Assert.True(motion.Pose[HumanoidBone.Chest] < -0.4f, "leaning over the top");
+        Run(motion, 30, new Vector2(RunSpeed, 0f), MotionMode.Ground);
+        foreach ((HumanoidBone thigh, HumanoidBone shin) in Legs)
+        {
+            Assert.True(Ankle(motion.Pose, thigh, shin).Y < Dims.AnkleHeight + 0.35f, "back in the run");
+        }
+    }
+
+    [Fact]
     public void HurtThrowsTheHeadBackThenRecovers()
     {
         var motion = new PilgrimMotion(Dims, RunSpeed);

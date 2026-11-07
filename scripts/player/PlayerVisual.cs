@@ -7,7 +7,8 @@ namespace TheDeep;
 /// <summary>
 /// The pilgrim's body: a <see cref="PartBody"/> built from its part assembly, animated procedurally by
 /// <see cref="PilgrimMotion"/> (run cycle with planted feet, leaps, dash lunge, leaning, landing
-/// compression; swimming, the dive's spin, the harpoon's reach, strikes and the recoil when hurt), its coat, braid and lantern flowing behind, turning smoothly through a glance at the
+/// compression; clinging on Mag-grip, swimming, the dive's spin, the harpoon's reach, strikes, the recoil when hurt and the
+/// ledge vault), its coat, braid and lantern flowing behind, turning smoothly through a glance at the
 /// camera when the facing flips. Pivot is at the feet. <see cref="Player"/> calls <see cref="Animate"/>
 /// after each physics move, so physics interpolation keeps it smooth.
 /// </summary>
@@ -100,6 +101,9 @@ public partial class PlayerVisual : Node3D
 
     /// <summary>A blow landed on the pilgrim: the body recoils.</summary>
     public void Hurt() => _motion?.Hurt();
+
+    /// <summary>The ledge assist lifted the body onto a top: it vaults the edge.</summary>
+    public void Vault() => _motion?.Vault();
 
     /// <summary>Where the Harpoon's line pulls, in the world: the near arm reaches along it while on the line.</summary>
     public void Reach(Vector3 toward)

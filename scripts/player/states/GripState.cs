@@ -23,6 +23,12 @@ public sealed class GripState : PlayerState
     /// <summary>How far past the feet the surface under the body's middle is looked for.</summary>
     private const float SurfaceProbe = 0.3f;
 
+    /// <summary>The least speed into the surface the body clamps on with, as the animation's landing sees it (m/s).</summary>
+    private const float ClampKick = 7f;
+
+    /// <summary>A corner's swing onto the next surface, as the animation's landing sees it (m/s).</summary>
+    private const float CornerKick = 4f;
+
     private float _speed;
     private NVector2? _lockedInput;
     private float _lockedAlong;
@@ -34,7 +40,7 @@ public sealed class GripState : PlayerState
 
     public override bool AllowsTurning => false;
 
-    public override MotionMode Motion => MotionMode.Ground;
+    public override MotionMode Motion => MotionMode.Grip;
 
     /// <summary>Where to attach when entered: set by <see cref="Player.GripAttach"/> just before.</summary>
     public void Prepare(GripPose pose) => _attach = pose;
@@ -43,7 +49,9 @@ public sealed class GripState : PlayerState
     {
         _speed = 0f;
         _lockedInput = null;
+        float into = -NVector2.Dot(Player.Velocity.Flat(), _attach.Up);
         Player.Orient(_attach);
+        Player.Visual.Land(Mathf.Max(into, ClampKick));
         Player.Velocity = Vector3.Zero;
         NVector2 t = GripMath.Tangent(_attach.Up);
         NVector2 facingWay = _attach.Up.X != 0f ? new NVector2(0f, 1f) : new NVector2(Player.WorldFacing, 0f);
@@ -164,6 +172,7 @@ public sealed class GripState : PlayerState
         }
 
         Player.Orient(pose);
+        Player.Visual.Land(CornerKick);
         float sign = NVector2.Dot(travel, GripMath.Tangent(pose.Up)) < 0f ? -1f : 1f;
         _speed = speed * sign;
         _lockedInput = new NVector2(Player.CurrentInput.MoveX, Player.CurrentInput.MoveY);

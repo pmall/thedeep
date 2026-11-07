@@ -9,12 +9,16 @@ namespace TheDeep;
 /// - on the ground, a run cycle with planted feet (each stride matches the speed, so feet never slide),
 ///   solved by IK and blended with a calm, breathing stance as the body slows;
 /// - in the air, a leap while rising that opens into a reach for the ground while falling;
+/// - on a Mag-grip surface (<see cref="MotionMode.Grip"/>), the same planted-feet cycle crouched low and clinging: a shorter,
+///   flatter stride on wider feet, the body leaned over the metal, the arms held low toward it; a kick of the landing spring
+///   when it clamps on and at each corner (<see cref="Land"/>);
 /// - in a dash, a low lunge with the arms swept back, held a moment after the dash ends;
 /// - swimming, a paddle with a flutter kick leaning into the stroke, treading water when still;
 /// - in the Drill's dive, a spike: legs together and toes pointed down, arms straight overhead, the body spinning (<see cref="Spin"/>);
 /// - on the Harpoon's line, the near arm straight along it (<see cref="Reach"/>), the body trailing behind;
 /// - over any of these, a strike (<see cref="Strike"/>: the near arm raised in the wind-up, swept through the blow, the body
-///   behind it; a down strike curls the legs up out of its way) and a recoil when hurt (<see cref="Hurt"/>);
+///   behind it; a down strike curls the legs up out of its way), a recoil when hurt (<see cref="Hurt"/>) and the ledge assist's
+///   vault (<see cref="Vault"/>: a hand planted on the top, the knees tucked up over the edge);
 /// - over everything, a held moment (<see cref="Moment"/>): kneeling to rest, opening to take a relic, collapsing in death;
 /// - always, a lean into acceleration and a landing compression, both on soft springs, so moves flow into
 ///   each other. Feel numbers are constants here: they shape the animation only, never the movement.
@@ -56,6 +60,15 @@ public sealed class PilgrimMotion
     private const float StrokeRate = 1.5f;
     private const float SwimShare = 0.45f;
 
+    // Mag-grip: how much lower the body clings, how much further it leans over the surface, and its stride against the run's.
+    private const float GripCrouch = 0.15f;
+    private const float GripLean = -0.4f;
+    private const float GripStride = 0.7f;
+    private const float GripLift = 0.5f;
+
+    /// <summary>How long the ledge assist's vault lasts, seconds.</summary>
+    private const float VaultLength = 0.34f;
+
     /// <summary>The dive's spin, radians per second (two and a half turns).</summary>
     private const float DiveSpin = MathF.Tau * 2.5f;
 
@@ -71,6 +84,7 @@ public sealed class PilgrimMotion
     private readonly HumanoidPose _zip = new();
     private readonly HumanoidPose _strikePose = new();
     private readonly HumanoidPose _hurtPose = new();
+    private readonly HumanoidPose _vaultPose = new();
     private readonly HumanoidPose _momentPose = new();
 
     private float _time;
@@ -82,10 +96,12 @@ public sealed class PilgrimMotion
     private float _swimWeight;
     private float _diveWeight;
     private float _zipWeight;
+    private float _gripWeight;
     private float _swimPhase;
     private float _swimMove;
     private float _spin;
     private float _hurtTime = float.MaxValue;
+    private float _vaultTime = float.MaxValue;
     private StrikeMoment? _strike;
     private float _momentWeight;
     private PilgrimMoment _shown;
@@ -135,6 +151,9 @@ public sealed class PilgrimMotion
     /// <summary>A blow landed on the pilgrim: the body recoils, then recovers.</summary>
     public void Hurt() => _hurtTime = 0f;
 
+    /// <summary>The ledge assist lifted the body onto a top: it vaults over the edge, then runs on.</summary>
+    public void Vault() => _vaultTime = 0f;
+
     /// <summary>Kicks the landing spring; <paramref name="impactSpeed"/> is the downward speed at touchdown.</summary>
     public void Land(float impactSpeed)
     {
@@ -153,9 +172,11 @@ public sealed class PilgrimMotion
         _swimWeight = 0f;
         _diveWeight = 0f;
         _zipWeight = 0f;
+        _gripWeight = 0f;
         _swimMove = 0f;
         _spin = 0f;
         _hurtTime = float.MaxValue;
+        _vaultTime = float.MaxValue;
         _strike = null;
         Moment = PilgrimMoment.None;
         _momentWeight = 0f;
@@ -176,25 +197,27 @@ public sealed class PilgrimMotion
         _time += dt;
         float forward = velocity.X * (facing < 0 ? -1f : 1f);
         float speed = MathF.Abs(velocity.X);
+        bool walking = mode is MotionMode.Ground or MotionMode.Grip; // on a surface, the feet planted on it
 
         // Lean into acceleration (measured in the world, so turning around isn't a jolt), on a spring that overshoots a little.
-        float accel = dt > 0f && mode == MotionMode.Ground ? (velocity.X - _lastVelocityX) / dt * (facing < 0 ? -1f : 1f) : 0f;
+        float accel = dt > 0f && walking ? (velocity.X - _lastVelocityX) / dt * (facing < 0 ? -1f : 1f) : 0f;
         _lastVelocityX = velocity.X;
         _lean.Step(Math.Clamp(accel * AccelLean, -MaxAccelLean, MaxAccelLean), dt);
         _compression.Step(0f, dt);
 
-        _gait = Motion.Damp(_gait, mode == MotionMode.Ground ? MathF.Min(speed / _runSpeed, 1f) : _gait, 8f, dt);
+        _gait = Motion.Damp(_gait, walking ? MathF.Min(speed / _runSpeed, 1f) : _gait, 8f, dt);
+        _gripWeight = Motion.Damp(_gripWeight, mode == MotionMode.Grip ? 1f : 0f, 12f, dt);
         float g = _gait;
-        float cycle = Lerp(WalkCycle, RunCycle, g);
+        float cycle = Lerp(WalkCycle, RunCycle, g) * Lerp(1f, GripStride, _gripWeight);
         float stance = Lerp(WalkStance, RunStance, g);
         float previous = _phase;
-        if (mode == MotionMode.Ground)
+        if (walking)
         {
             _phase = Fraction(_phase + speed * dt / cycle);
         }
 
         Footfall = 0;
-        if (mode == MotionMode.Ground && g > 0.2f && _phase != previous)
+        if (walking && g > 0.2f && _phase != previous)
         {
             if (_phase < previous)
             {
@@ -239,6 +262,7 @@ public sealed class PilgrimMotion
         }
 
         _hurtTime = _hurtTime < float.MaxValue ? _hurtTime + dt : _hurtTime;
+        _vaultTime = _vaultTime < float.MaxValue ? _vaultTime + dt : _vaultTime;
 
         GroundPose(Pose, g, cycle, stance);
         AirPose(_air, forward);
@@ -266,6 +290,12 @@ public sealed class PilgrimMotion
             }
         }
 
+        if (_vaultTime < VaultLength)
+        {
+            VaultPose(_vaultPose);
+            Pose.BlendToward(_vaultPose, 0.9f * SmoothStep(0f, 0.04f, _vaultTime) * (1f - SmoothStep(0.14f, VaultLength, _vaultTime)));
+        }
+
         if (_hurtTime < HurtLength)
         {
             HurtPose(_hurtPose);
@@ -290,30 +320,38 @@ public sealed class PilgrimMotion
         float breathe = MathF.Sin(MathF.Tau * 0.23f * _time);
         float still = 1f - g;
         float compression = Compression;
+        float cling = _gripWeight;
 
         float bob = RunBob * g * (0.5f + 0.5f * MathF.Cos(MathF.Tau * 2f * (_phase - stance * 0.5f)));
-        float hipsY = -StandBend - RunCrouch * g - bob - compression + still * 0.004f * breathe;
+        float hipsY = -StandBend - RunCrouch * g - GripCrouch * cling - bob - compression + still * 0.004f * breathe;
         pose.HipsOffset = new Vector2(0.02f * g, hipsY);
 
-        float torso = RunLean * g + _lean.Value - compression * 1.4f;
+        float torso = RunLean * g * (1f - cling) + GripLean * cling + _lean.Value - compression * 1.4f;
         float stepRock = MathF.Cos(MathF.Tau * 2f * (_phase - stance * 0.5f));
         pose[HumanoidBone.Hips] = torso * 0.35f;
         pose[HumanoidBone.Spine] = torso * 0.7f;
         pose[HumanoidBone.Chest] = torso + still * 0.014f * breathe - 0.025f * g * stepRock;
         pose[HumanoidBone.Neck] = torso * 0.55f;
-        pose[HumanoidBone.Head] = torso * 0.2f + still * 0.012f * MathF.Sin(MathF.Tau * 0.09f * _time);
+        pose[HumanoidBone.Head] = torso * 0.2f + 0.15f * cling + still * 0.012f * MathF.Sin(MathF.Tau * 0.09f * _time);
 
         float travel = MathF.Min(stance * cycle, MaxStanceTravel);
-        float lift = Lerp(WalkLift, RunLift, g);
+        float lift = Lerp(WalkLift, RunLift, g) * Lerp(1f, GripLift, cling);
         float run = SmoothStep(0f, 0.25f, g);
         Vector2 hips = new Vector2(pose.HipsOffset.X, _dims.HipsHeight + hipsY);
-        Leg(pose, HumanoidBone.ThighR, HumanoidBone.ShinR, HumanoidBone.FootR, hips, _phase, new Vector2(0.06f, 0f), travel, lift, stance, g, run);
-        Leg(pose, HumanoidBone.ThighL, HumanoidBone.ShinL, HumanoidBone.FootL, hips, Fraction(_phase + 0.5f), new Vector2(-0.1f, 0f), travel, lift, stance, g, run);
+        Leg(pose, HumanoidBone.ThighR, HumanoidBone.ShinR, HumanoidBone.FootR, hips, _phase, new Vector2(0.06f + 0.14f * cling, 0f), travel, lift, stance, g, run);
+        Leg(pose, HumanoidBone.ThighL, HumanoidBone.ShinL, HumanoidBone.FootL, hips, Fraction(_phase + 0.5f), new Vector2(-0.1f - 0.12f * cling, 0f), travel, lift, stance, g, run);
 
         // Each arm swings against the leg on its side, the elbow folding more as it comes forward.
         float swing = Lerp(IdleSwing, RunSwing, g);
         Arm(pose, HumanoidBone.UpperArmR, HumanoidBone.ForearmR, HumanoidBone.HandR, _phase, swing, g, still * breathe, compression);
         Arm(pose, HumanoidBone.UpperArmL, HumanoidBone.ForearmL, HumanoidBone.HandL, Fraction(_phase + 0.5f), swing, g, still * breathe, compression);
+
+        // Clinging, the arms swing less and hang low toward the metal, the near one ahead, the far one behind, elbows bent.
+        if (cling > 0f)
+        {
+            Cling(pose, HumanoidBone.UpperArmR, HumanoidBone.ForearmR, HumanoidBone.HandR, 0.45f, cling);
+            Cling(pose, HumanoidBone.UpperArmL, HumanoidBone.ForearmL, HumanoidBone.HandL, -0.3f, cling);
+        }
     }
 
     private void Leg(HumanoidPose pose, HumanoidBone thigh, HumanoidBone shin, HumanoidBone foot, Vector2 hips, float phase,
@@ -355,6 +393,15 @@ public sealed class PilgrimMotion
         pose[upper] = shoulder;
         pose[forearm] = shoulder + elbow;
         pose[hand] = shoulder + elbow + 0.12f;
+    }
+
+    private static void Cling(HumanoidPose pose, HumanoidBone upper, HumanoidBone forearm, HumanoidBone hand, float hold, float cling)
+    {
+        float shoulder = Lerp(pose[upper], pose[upper] * 0.4f + hold, cling);
+        float elbow = pose[forearm] - pose[upper] + 0.35f * cling;
+        pose[upper] = shoulder;
+        pose[forearm] = shoulder + elbow;
+        pose[hand] = shoulder + elbow + 0.25f * cling; // the palm turned toward the surface
     }
 
     private void AirPose(HumanoidPose pose, float forward)
@@ -593,6 +640,26 @@ public sealed class PilgrimMotion
         pose[HumanoidBone.ThighL] = 0.85f;
         pose[HumanoidBone.ShinL] = -0.45f;
         pose[HumanoidBone.FootL] = -0.8f;
+    }
+
+    private static void VaultPose(HumanoidPose pose)
+    {
+        // The near hand planted on the top just ahead, the arm straight under the leaning body; the knees tucked up over the
+        // edge; the far arm thrown back for balance; eyes ahead along the top.
+        pose.HipsOffset = new Vector2(-0.02f, -0.16f); // squatted low, so the tucked feet skim the top
+        Set(pose, torso: -0.6f, head: -0.05f);
+        pose[HumanoidBone.UpperArmR] = 0.3f;
+        pose[HumanoidBone.ForearmR] = 0.25f;
+        pose[HumanoidBone.HandR] = 1.45f;
+        pose[HumanoidBone.UpperArmL] = -0.9f;
+        pose[HumanoidBone.ForearmL] = -0.55f;
+        pose[HumanoidBone.HandL] = -0.45f;
+        pose[HumanoidBone.ThighR] = 1.65f;
+        pose[HumanoidBone.ShinR] = 0.05f;
+        pose[HumanoidBone.FootR] = -0.35f;
+        pose[HumanoidBone.ThighL] = 1.15f;
+        pose[HumanoidBone.ShinL] = -0.55f;
+        pose[HumanoidBone.FootL] = -0.9f;
     }
 
     private static void HurtPose(HumanoidPose pose)
