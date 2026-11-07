@@ -8,6 +8,8 @@
 [ext_resource type="Script" path="res://scripts/parts/PartChain.cs" id="4_PartChain"]
 [ext_resource type="Script" path="res://scripts/parts/PlateMesh.cs" id="5_PlateMesh"]
 [ext_resource type="Script" path="res://scripts/parts/PodMesh.cs" id="6_PodMesh"]
+[ext_resource type="Script" path="res://scripts/parts/LimbMesh.cs" id="17_LimbMesh"]
+[ext_resource type="Script" path="res://scripts/parts/SleeveMesh.cs" id="18_SleeveMesh"]
 [ext_resource type="Script" path="res://scripts/parts/RingMesh.cs" id="7_RingMesh"]
 [ext_resource type="Script" path="res://scripts/parts/RotorMesh.cs" id="8_RotorMesh"]
 [ext_resource type="Material" path="res://assets/materials/machines/shell.tres" id="9_shell"]
@@ -65,12 +67,18 @@ Thickness = 0.025
 Segments = 32
 
 [sub_resource type="PrimitiveMesh" id="Mesh_mast"]
-script = ExtResource("6_PodMesh")
+script = ExtResource("17_LimbMesh")
 Axis = Vector3(0, 1, 0)
 Length = 0.14
-Stations = PackedVector4Array(0, 0.05, 0.05, 0, 1, 0.03, 0.03, 0)
-Rings = 4
-Sides = 8
+Strut = 0.045
+StrutTaper = 0.6
+Knuckle = 0.055
+KnuckleDepth = 0.08
+EndKnuckle = 0.03
+Cables = 2
+CableWidth = 0.007
+CableSide = 0.035
+
 
 [sub_resource type="PrimitiveMesh" id="Mesh_rotor"]
 script = ExtResource("8_RotorMesh")
@@ -103,6 +111,28 @@ Thickness = 0.012
 Taper = 0.3
 Curve = -25
 Bevel = 0.004
+
+[sub_resource type="PrimitiveMesh" id="Mesh_spar"]
+script = ExtResource("17_LimbMesh")
+Length = 0.27
+Strut = 0.016
+StrutTaper = 0.3
+Knuckle = 0.03
+KnuckleDepth = 0.05
+
+[sub_resource type="PrimitiveMesh" id="Mesh_gland"]
+script = ExtResource("18_SleeveMesh")
+Length = 0.14
+From = 0
+To = 1
+Bands = 2
+WidthTop = 0.13
+WidthBottom = 0.08
+DepthTop = 0.13
+DepthBottom = 0.08
+Flare = 0.2
+Overlap = 0.15
+Sides = 12
 
 [sub_resource type="PrimitiveMesh" id="Mesh_bulb"]
 script = ExtResource("6_PodMesh")
@@ -174,6 +204,32 @@ Mesh = SubResource("Mesh_fin")
 Material = ExtResource("11_robe")
 Rotation = Vector3(0, 0, -55)
 
+[sub_resource type="Resource" id="Part_SparN"]
+script = ExtResource("3_PartSlot")
+Joint = &"FinN"
+Category = 1
+Mesh = SubResource("Mesh_spar")
+Material = ExtResource("10_frame")
+Position = Vector3(0, 0, 0.012)
+Rotation = Vector3(0, 0, -55)
+
+[sub_resource type="Resource" id="Part_SparF"]
+script = ExtResource("3_PartSlot")
+Joint = &"FinF"
+Category = 1
+Mesh = SubResource("Mesh_spar")
+Material = ExtResource("10_frame")
+Position = Vector3(0, 0, -0.012)
+Rotation = Vector3(0, 0, -55)
+
+[sub_resource type="Resource" id="Part_Gland"]
+script = ExtResource("3_PartSlot")
+Joint = &"Core"
+Category = 0
+Mesh = SubResource("Mesh_gland")
+Material = ExtResource("10_frame")
+Position = Vector3(-0.02, -0.28, 0)
+
 [sub_resource type="Resource" id="Chain_Tail0"]
 script = ExtResource("4_PartChain")
 Name = &"Tail0"
@@ -234,5 +290,5 @@ StaysAboveFloor = false
 [resource]
 script = ExtResource("1_PartAssembly")
 Joints = [SubResource("Joint_Core"), SubResource("Joint_Rotor"), SubResource("Joint_Eye"), SubResource("Joint_FinN"), SubResource("Joint_FinF")]
-Parts = [SubResource("Part_Body"), SubResource("Part_Band"), SubResource("Part_Mast"), SubResource("Part_Rotor"), SubResource("Part_Socket"), SubResource("Part_Eye"), SubResource("Part_FinN"), SubResource("Part_FinF")]
+Parts = [SubResource("Part_Body"), SubResource("Part_Band"), SubResource("Part_Mast"), SubResource("Part_Rotor"), SubResource("Part_Socket"), SubResource("Part_Eye"), SubResource("Part_FinN"), SubResource("Part_FinF"), SubResource("Part_SparN"), SubResource("Part_SparF"), SubResource("Part_Gland")]
 Chains = [SubResource("Chain_Tail0"), SubResource("Chain_Tail1"), SubResource("Chain_Tail2")]
