@@ -30,6 +30,13 @@
 [ext_resource type="Resource" path="res://resources/biomes/frozen.tres" id="22_frozen"]
 [ext_resource type="PackedScene" path="res://scenes/stage/RoomStage.tscn" id="23_stage"]
 [ext_resource type="Script" path="res://scripts/kit/OrganMesh.cs" id="24_organ"]
+[ext_resource type="Script" path="res://scripts/rooms/dressing/WallDressing.cs" id="25_walldressing"]
+[ext_resource type="Material" path="res://assets/materials/wall_stone.tres" id="26_wall_stone"]
+
+[sub_resource type="PrimitiveMesh" id="wall_back"]
+script = ExtResource("7_blockmesh")
+Size = Vector3(77, 38, 1.2)
+Bevel = 0.3
 
 [sub_resource type="PrimitiveMesh" id="organ_front"]
 script = ExtResource("24_organ")
@@ -285,6 +292,21 @@ omni_range = 7
 shadow_enabled = false
 
 [node name="Kit" type="Node3D" parent="."]
+
+; the back wall
+[node name="BackWall" type="MeshInstance3D" parent="Kit"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 29.5, 8, -14.5)
+mesh = SubResource("wall_back")
+material_override = ExtResource("26_wall_stone")
+
+; the back wall dressed behind the arcade: blind arches and lancets at 1.25x, rimed (WallDressing)
+[node name="WallDressing" type="Node3D" parent="Kit"]
+transform = Transform3D(1.25, 0, 0, 0, 1.25, 0, 0, 0, 1.25, 29.5, -2, -13.75)
+script = ExtResource("25_walldressing")
+Style = 3
+Size = Vector2(61.6, 20.8)
+Seed = 92
+Frost = 0.4
 
 [node name="Organ" type="Node3D" parent="Kit"]
 

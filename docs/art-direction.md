@@ -84,7 +84,8 @@ A pale, misty *Dread* world in white, grey and a touch of purple, where color me
 
 What the visual work still owes (`docs/roadmap.md#stage-bricks`, `docs/roadmap.md#pilgrim`):
 - Each layer's rooms against their references from the photo spots: the core's murky walls, the flooded rooms' wide shots.
-- Back walls dressed for the remaining frozen rooms (the Underice and Sounding walls stay dark) and the flooded rooms.
+- Flooded back walls: only the Cell's is dressed. A dressed wall as far back as the Narthex's (14 m) washes out to a flat pale plane in the flooded haze, and the Sacristy's would lie in its ceiling's shadow: the enclosed flooded rooms want a wall nearer the play plane (about 9 m, as the Cell's) or a lamp on it; the open halls keep the haze's architecture. Judge with the owner.
+- Frozen: the Underice's dressed wall now reads through its water but the cave stays dim (its ice roof shades the key light), and the pilgrim is dark against it.
 - Frozen: the ice over the lip of Rimefall's shelf still reads a little like hanging cloth in the wide shot (flat sheet, straight shoulders).
 - Flooded: the play plane is still a little darker and bluer than `perfect.jpg` outside the shaft; judge with the owner before pushing the palette brighter.
 - The pilgrim: the cap of the hair is still one smooth dome over its ragged locks (its crown wants strands or a parting, likely Blender's, `docs/roadmap.md#beyond-procedural`); against dark server racks the black body loses contrast (the suit's rim is up, not yet enough: a rim light or a lighter backdrop there).

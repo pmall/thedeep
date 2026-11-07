@@ -10,7 +10,7 @@
 [ext_resource type="Script" path="res://scripts/rooms/RoomExit.cs" id="2_exit"]
 [ext_resource type="Script" path="res://scripts/rooms/WaterBody.cs" id="3_water_body"]
 [ext_resource type="Material" path="res://assets/materials/water.tres" id="4_water"]
-[ext_resource type="Material" path="res://assets/materials/underwater.tres" id="5_underwater"]
+[ext_resource type="Material" path="res://assets/materials/underwater_clear.tres" id="5_underwater"]
 [ext_resource type="Material" path="res://assets/materials/water_section.tres" id="6_water_section"]
 [ext_resource type="Script" path="res://scripts/machines/Machine.cs" id="7_machine"]
 [ext_resource type="Resource" path="res://resources/machines/archivist.tres" id="8_archivist"]
@@ -30,6 +30,8 @@
 [ext_resource type="Script" path="res://scripts/rooms/Room.cs" id="22_room"]
 [ext_resource type="Resource" path="res://resources/biomes/frozen.tres" id="23_frozen"]
 [ext_resource type="PackedScene" path="res://scenes/stage/RoomStage.tscn" id="24_stage"]
+[ext_resource type="Script" path="res://scripts/rooms/dressing/WallDressing.cs" id="25_walldressing"]
+[ext_resource type="Material" path="res://assets/materials/wall_stone.tres" id="26_wall_stone"]
 
 [sub_resource type="PrimitiveMesh" id="rack_1"]
 script = ExtResource("11_rack")
@@ -211,6 +213,14 @@ FallenHintLine = &"boss.archivist.fallen.hint"
 
 [node name="Kit" type="Node3D" parent="."]
 
+; the back wall dressed: an archive's wall at 1.5x (WallDressing)
+[node name="WallDressing" type="Node3D" parent="Kit"]
+transform = Transform3D(1.5, 0, 0, 0, 1.5, 0, 0, 0, 1.5, 29, 0, -11.25)
+script = ExtResource("25_walldressing")
+Style = 2
+Size = Vector2(42.6667, 14.6667)
+Seed = 515
+
 [node name="Stacks" type="Node3D" parent="Kit"]
 
 ; a tier of frozen stacks
@@ -278,7 +288,7 @@ material_override = ExtResource("12_metal_mid")
 [node name="Back" type="MeshInstance3D" parent="Kit"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 29, 2, -12)
 mesh = SubResource("blockmesh_5")
-material_override = ExtResource("15_stone_mid")
+material_override = ExtResource("26_wall_stone")
 
 ; the dodging shelves' visible length
 [node name="ShelfWest" type="MeshInstance3D" parent="Kit"]

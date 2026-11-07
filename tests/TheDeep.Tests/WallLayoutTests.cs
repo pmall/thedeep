@@ -9,6 +9,7 @@ public class WallLayoutTests
     [Theory]
     [InlineData(WallStyle.Foundry)]
     [InlineData(WallStyle.Machinery)]
+    [InlineData(WallStyle.Nave)]
     public void DressingStaysOnTheWallAndRepeats(WallStyle style)
     {
         var a = WallLayout.Build(style, 44f, 24f, 5);
@@ -47,5 +48,28 @@ public class WallLayoutTests
 
         Assert.Contains(wall, p => p.Piece == WallPiece.Pipe);
         Assert.Contains(wall, p => p.Piece == WallPiece.Chain && p.Position.Y - p.Size.Y >= 0f);
+    }
+
+    [Fact]
+    public void NaveArchesSpringFromTheCapitalsAndFrostHangsIcicles()
+    {
+        var wall = WallLayout.Build(WallStyle.Nave, 44f, 24f, 4);
+        var capitals = wall.Where(p => p.Piece == WallPiece.Capital).ToList();
+        var arcade = wall.Where(p => p.Piece == WallPiece.Arch && p.Size.X > 3f).ToList();
+        Assert.NotEmpty(arcade);
+        foreach (var arch in arcade)
+        {
+            // Both feet of the ring land on a capital's top.
+            foreach (float foot in new[] { arch.Position.X - arch.Size.X * 0.5f, arch.Position.X + arch.Size.X * 0.5f })
+            {
+                Assert.Contains(capitals, c => MathF.Abs(c.Position.X - foot) < c.Size.X * 0.5f
+                    && MathF.Abs(c.Position.Y + c.Size.Y * 0.5f - arch.Position.Y) < 1e-3f);
+            }
+        }
+
+        Assert.Contains(wall, p => p.Piece == WallPiece.Recess);
+        Assert.True(wall.Count(p => p.Piece == WallPiece.Course) >= 2, "a wall 24 m tall has a tier over the arcade");
+        Assert.DoesNotContain(wall, p => p.Piece == WallPiece.Icicles);
+        Assert.Contains(WallLayout.Build(WallStyle.Nave, 44f, 24f, 4, frost: 1f), p => p.Piece == WallPiece.Icicles);
     }
 }

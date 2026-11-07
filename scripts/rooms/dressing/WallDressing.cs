@@ -32,11 +32,20 @@ public partial class WallDressing : Node3D
     /// <summary>A slit's light; glow_strip.tres when unset.</summary>
     [Export] public Material? Glow { get; set; }
 
-    /// <summary>Masonry (an archive's piers); stone_mid.tres when unset.</summary>
+    /// <summary>Masonry (an archive's piers, a nave's arcades); stone_mid.tres when unset.</summary>
     [Export] public Material? Stone { get; set; }
 
     /// <summary>Ice (icicles under shelves); ice_mid.tres when unset.</summary>
     [Export] public Material? Ice { get; set; }
+
+    /// <summary>The shadowed backs of a nave's niches and blind arches; stone_recess.tres when unset.</summary>
+    [Export] public Material? Recess { get; set; }
+
+    /// <summary>A nave's share of bays with icicles under their courses (0 to 1): a chapel of the frozen layer.</summary>
+    [Export(PropertyHint.Range, "0,1,0.05")] public float Frost { get; set; }
+
+    /// <summary>A nave's pieces repeat at a handful of sizes: each built once per wall.</summary>
+    private readonly System.Collections.Generic.Dictionary<(string, System.Numerics.Vector2), Mesh> _shared = new();
 
     /// <summary>The racks an archive's shelves carry: three variants, built once per wall.</summary>
     private readonly Mesh[] _racks = new Mesh[3];
@@ -49,16 +58,17 @@ public partial class WallDressing : Node3D
             Molten ?? GD.Load<Material>("res://assets/materials/furnace_mouth.tres"),
             Glow ?? GD.Load<Material>("res://assets/materials/glow_strip.tres"),
             Stone ?? GD.Load<Material>("res://assets/materials/stone_mid.tres"),
-            Ice ?? GD.Load<Material>("res://assets/materials/ice_mid.tres"));
+            Ice ?? GD.Load<Material>("res://assets/materials/ice_mid.tres"),
+            Recess ?? GD.Load<Material>("res://assets/materials/stone_recess.tres"));
         int i = 0;
-        foreach (WallPlacement p in WallLayout.Build(Style, Size.X, Size.Y, Seed))
+        foreach (WallPlacement p in WallLayout.Build(Style, Size.X, Size.Y, Seed, Frost))
         {
             Build(p, i++, looks);
         }
     }
 
     /// <summary>The materials the wall is built with: each export, or its default when unset.</summary>
-    private readonly record struct Looks(Material Iron, Material Plate, Material Molten, Material Glow, Material Stone, Material Ice);
+    private readonly record struct Looks(Material Iron, Material Plate, Material Molten, Material Glow, Material Stone, Material Ice, Material Recess);
 
     private void Build(WallPlacement p, int index, in Looks looks)
     {
@@ -126,11 +136,61 @@ public partial class WallDressing : Node3D
                 _racks[variant] ??= new StackMesh { Size = new Vector3(w, h, 0.9f), Shelf = 0.45f + 0.12f * variant };
                 Add(_racks[variant], looks.Plate, at, shadow: false); // hundreds against the wall: their shadows cost more than they show
                 break;
+            case WallPiece.Plinth:
+                Add(Shared(p.Piece.ToString(), p.Size, () => new BlockMesh { Size = new Vector3(w, h, 0.8f), Bevel = 0.08f }), looks.Stone, at + new Vector3(0f, h * 0.5f, 0f));
+                break;
+            case WallPiece.Shaft:
+                // A pilaster with a fillet down its face.
+                Add(Shared(p.Piece.ToString(), p.Size, () => new BlockMesh { Size = new Vector3(w, h, 0.5f), Bevel = Mathf.Min(0.06f, w * 0.2f) }), looks.Stone, at + new Vector3(0f, h * 0.5f, 0f));
+                if (w > 0.4f)
+                {
+                    Add(Shared("fillet", p.Size, () => new BlockMesh { Size = new Vector3(w * 0.4f, h, 0.2f), Bevel = 0.04f }), looks.Stone,
+                        at + new Vector3(0f, h * 0.5f, 0.3f));
+                }
+
+                break;
+            case WallPiece.Capital:
+                Add(Shared(p.Piece.ToString(), p.Size, () => new BlockMesh { Size = new Vector3(w, h, 0.8f), Bevel = 0.06f }), looks.Stone, at);
+                break;
+            case WallPiece.Arch:
+                Add(Shared(p.Piece.ToString(), p.Size, () => new ArchMesh { Span = w, Rise = h, Thickness = Mathf.Min(0.45f, w * 0.12f), Depth = 0.45f, Segments = 24 }), looks.Stone, at);
+                break;
+            case WallPiece.Recess:
+                Add(Shared(p.Piece.ToString(), p.Size, () => new BlockMesh { Size = new Vector3(w, h, 0.06f), Bevel = 0.01f }), looks.Recess, at, shadow: false);
+                break;
+            case WallPiece.Course:
+                Add(Shared(p.Piece.ToString(), p.Size, () => new BlockMesh { Size = new Vector3(w, h, 0.7f), Bevel = 0.08f }), looks.Stone, at);
+                break;
+            case WallPiece.Rose:
+                // The rose's shadowed back: a ring as wide as its radius is a disc.
+                Add(Shared("rose back", p.Size, () => new RingMesh { RadiusX = w * 0.5f, RadiusZ = w * 0.5f, Height = 0.06f, Thickness = w, Segments = 32 }), looks.Recess, at,
+                    new Basis(Vector3.Right, Mathf.Pi * 0.5f), shadow: false);
+                Add(Shared(p.Piece.ToString(), p.Size, () => new RingMesh { RadiusX = w, RadiusZ = w, Height = 0.35f, Thickness = w * 0.16f, Segments = 32 }), looks.Stone, at,
+                    new Basis(Vector3.Right, Mathf.Pi * 0.5f));
+                for (int s = 0; s < 4; s++)
+                {
+                    Add(Shared("tracery", p.Size, () => new BlockMesh { Size = new Vector3(w * 2f * 0.9f, 0.1f, 0.2f), Bevel = 0.02f }),
+                        looks.Stone, at, new Basis(Vector3.Back, p.Roll + Mathf.Pi * s / 4f));
+                }
+
+                break;
             case WallPiece.Hub:
                 Add(new ColumnMesh { Height = 0.7f, Radius = w, Sides = 12, Shafts = 1, Plinth = 0.15f, Capital = 0.15f }, looks.Plate, at,
                     new Basis(Vector3.Right, Mathf.Pi * 0.5f));
                 break;
         }
+    }
+
+    /// <summary>The mesh of this kind and size, built the first time it is asked for.</summary>
+    private Mesh Shared(string kind, System.Numerics.Vector2 size, System.Func<Mesh> build)
+    {
+        if (!_shared.TryGetValue((kind, size), out Mesh? mesh))
+        {
+            mesh = build();
+            _shared[(kind, size)] = mesh;
+        }
+
+        return mesh;
     }
 
     private void Add(Mesh mesh, Material material, Vector3 position, Basis? basis = null, bool shadow = true)

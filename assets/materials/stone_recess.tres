@@ -1,0 +1,11 @@
+[gd_resource type="ShaderMaterial" format=3]
+
+[ext_resource type="Shader" path="res://assets/shaders/rock.gdshader" id="1_shader"]
+
+; The shadowed back of a niche or a blind arch in a wall behind the play plane (WallDressing): stone_mid, much darker,
+; so the arcades read as depth cut into the wall.
+[resource]
+shader = ExtResource("1_shader")
+shader_parameter/detail = false
+shader_parameter/shade = 0.45
+shader_parameter/silt_amount = 0.2

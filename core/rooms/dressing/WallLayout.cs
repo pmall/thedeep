@@ -15,6 +15,12 @@ public enum WallStyle
 
     /// <summary>An archive's wall: stone piers, iron shelves of server racks with gaps, icicles under the shelves (frozen).</summary>
     Archive,
+
+    /// <summary>
+    /// A cathedral's wall: a plinth, stone pilasters carrying a blind arcade of pointed arches (a rose in some tympana),
+    /// string courses, tiers of lancet niches above, the odd arch fallen (flooded; the frozen layer's chapels).
+    /// </summary>
+    Nave,
 }
 
 /// <summary>The pieces a wall is dressed with; each style uses some of them.</summary>
@@ -35,6 +41,27 @@ public enum WallPiece
     Shelf,
     Rack,
     Icicles,
+
+    /// <summary>A stone band along the wall's foot (Size: length, height).</summary>
+    Plinth,
+
+    /// <summary>A stone pilaster from its foot (Size: width, height).</summary>
+    Shaft,
+
+    /// <summary>A stone block a shaft carries (Size: width, height; Position its center).</summary>
+    Capital,
+
+    /// <summary>A stone arch ring from its springing line's middle (Size: span, rise; pointed when the rise passes half the span).</summary>
+    Arch,
+
+    /// <summary>The shadowed back of a niche or a blind arch, flush on the wall (Size: width, height; Position its center).</summary>
+    Recess,
+
+    /// <summary>A stone string course along the wall (Size: length, height; Position its center).</summary>
+    Course,
+
+    /// <summary>A rose in a tympanum: a stone ring and its tracery over a recess (Size: radius, radius; Roll: the tracery's turn).</summary>
+    Rose,
 }
 
 /// <summary>
@@ -54,10 +81,15 @@ public static class WallLayout
 
     public const float PilasterWidth = 0.9f;
 
-    public static List<WallPlacement> Build(WallStyle style, float width, float height, int seed) => style switch
+    /// <summary>
+    /// The wall's pieces. <paramref name="frost"/> (0 to 1) is the share of a nave's bays with icicles under their courses;
+    /// the other styles ignore it.
+    /// </summary>
+    public static List<WallPlacement> Build(WallStyle style, float width, float height, int seed, float frost = 0f) => style switch
     {
         WallStyle.Machinery => Machinery(width, height, seed),
         WallStyle.Archive => Archive(width, height, seed),
+        WallStyle.Nave => Nave(width, height, seed, frost),
         _ => Foundry(width, height, seed),
     };
 
@@ -177,6 +209,96 @@ public static class WallLayout
                         new Vector2(pitch * 0.92f, ShelfPitch - 0.5f), Roll: (int)(H(seed, 200 + j, i * 37 + k) * 3f)));
                 }
             }
+        }
+
+        return list;
+    }
+
+    /// <summary>A nave's plinth height and its arcade pilasters' width, meters.</summary>
+    public const float NavePlinth = 0.8f;
+
+    public const float NavePilaster = 1f;
+
+    private static List<WallPlacement> Nave(float width, float height, int seed, float frost)
+    {
+        const float capital = 0.4f, course = 0.45f, ring = 0.45f, upperShaft = 0.6f;
+        var list = new List<WallPlacement>();
+        List<float> xs = Pilasters(width);
+        float gap = xs.Count > 1 ? xs[1] - xs[0] : width;
+        list.Add(new WallPlacement(WallPiece.Plinth, new Vector3(0f, 0f, 0.4f), new Vector2(width, NavePlinth)));
+
+        // The arcade: as tall as the wall allows under a pointed arch, its course and a margin.
+        float span = gap - NavePilaster + ring;
+        float rise = span * 0.62f;
+        float shaft = Math.Clamp(MathF.Min(height * 0.32f, height - NavePlinth - capital - rise - course - 0.5f), 2f, 6.5f);
+        float foot = NavePlinth;
+        for (int tier = 0; foot + shaft + capital + rise + course <= height + 1e-3f; tier++)
+        {
+            bool arcade = tier == 0;
+            float pilaster = arcade ? NavePilaster : upperShaft;
+            float spring = foot + shaft + capital;
+            foreach (float x in xs)
+            {
+                list.Add(new WallPlacement(WallPiece.Shaft, new Vector3(x, foot, 0.25f), new Vector2(pilaster, shaft)));
+                list.Add(new WallPlacement(WallPiece.Capital, new Vector3(x, foot + shaft + capital * 0.5f, 0.4f), new Vector2(pilaster + 0.4f, capital)));
+            }
+
+            float top = spring + rise;
+            for (int i = 0; i + 1 < xs.Count; i++)
+            {
+                float mid = (xs[i] + xs[i + 1]) * 0.5f;
+                float inner = xs[i + 1] - xs[i] - pilaster;
+                if (arcade)
+                {
+                    // A blind arch over a shadowed bay; a rose in some tympana; now and then the arch has fallen.
+                    list.Add(new WallPlacement(WallPiece.Recess, new Vector3(mid, (foot + spring) * 0.5f, 0.04f), new Vector2(inner, spring - foot)));
+                    if (H(seed, 1, i) >= 0.08f)
+                    {
+                        list.Add(new WallPlacement(WallPiece.Arch, new Vector3(mid, spring, 0.25f), new Vector2(span, rise)));
+                        float r = MathF.Min(inner * 0.16f, rise * 0.22f);
+                        if (H(seed, 2, i) < 0.5f && r > 0.35f)
+                        {
+                            list.Add(new WallPlacement(WallPiece.Rose, new Vector3(mid, spring + rise * 0.45f, 0.15f), new Vector2(r, r), H(seed, 3, i) * MathF.PI));
+                        }
+                    }
+                }
+                else
+                {
+                    // Lancet niches, one to three to a bay, each on its own two jambs; the odd one walled up.
+                    int n = inner > 5f ? 3 : inner > 2.6f ? 2 : 1;
+                    float lancet = MathF.Min(1.3f, inner / (n * 1.9f));
+                    for (int k = 0; k < n; k++)
+                    {
+                        if (H(seed, 10 + tier, i * 7 + k) < 0.12f)
+                        {
+                            continue;
+                        }
+
+                        float lx = xs[i] + pilaster * 0.5f + inner * (k + 0.5f) / n;
+                        float jamb = 0.18f;
+                        list.Add(new WallPlacement(WallPiece.Recess, new Vector3(lx, (foot + spring) * 0.5f + 0.2f, 0.04f), new Vector2(lancet, spring - foot - 0.4f)));
+                        list.Add(new WallPlacement(WallPiece.Shaft, new Vector3(lx - (lancet + jamb) * 0.5f, foot + 0.4f, 0.15f), new Vector2(jamb, spring - foot - 0.4f)));
+                        list.Add(new WallPlacement(WallPiece.Shaft, new Vector3(lx + (lancet + jamb) * 0.5f, foot + 0.4f, 0.15f), new Vector2(jamb, spring - foot - 0.4f)));
+                        list.Add(new WallPlacement(WallPiece.Arch, new Vector3(lx, spring, 0.15f), new Vector2(lancet + jamb, (lancet + jamb) * 0.75f)));
+                    }
+                }
+            }
+
+            list.Add(new WallPlacement(WallPiece.Course, new Vector3(0f, top + course * 0.5f, 0.35f), new Vector2(width, course)));
+            for (int i = 0; i + 1 < xs.Count; i++)
+            {
+                if (H(seed, 20 + tier, i) < frost)
+                {
+                    float mid = (xs[i] + xs[i + 1]) * 0.5f, inner = xs[i + 1] - xs[i] - pilaster;
+                    list.Add(new WallPlacement(WallPiece.Icicles, new Vector3(mid, top, 0.6f), new Vector2(inner * 0.85f, 0.5f + 0.6f * H(seed, 30 + tier, i))));
+                }
+            }
+
+            // The tiers above: slimmer shafts, lancets under a lower arch.
+            foot = top + course;
+            shaft = Math.Clamp(height * 0.18f, 2.4f, 4f);
+            span = MathF.Min(gap, 3f);
+            rise = 1.2f;
         }
 
         return list;

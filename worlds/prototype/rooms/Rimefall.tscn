@@ -28,6 +28,13 @@
 [ext_resource type="PackedScene" path="res://scenes/stage/RoomStage.tscn" id="20_stage"]
 [ext_resource type="Script" path="res://scripts/kit/IceCurtainMesh.cs" id="21_curtain"]
 [ext_resource type="Material" path="res://assets/materials/rock.tres" id="22_rock"]
+[ext_resource type="Script" path="res://scripts/rooms/dressing/WallDressing.cs" id="23_walldressing"]
+[ext_resource type="Material" path="res://assets/materials/wall_stone.tres" id="24_wall_stone"]
+
+[sub_resource type="PrimitiveMesh" id="wall_back"]
+script = ExtResource("6_blockmesh")
+Size = Vector3(70, 42, 1.2)
+Bevel = 0.3
 
 [sub_resource type="PrimitiveMesh" id="curtain_1"]
 script = ExtResource("21_curtain")
@@ -291,6 +298,21 @@ omni_range = 9
 shadow_enabled = false
 
 [node name="Kit" type="Node3D" parent="."]
+
+; the back wall
+[node name="BackWall" type="MeshInstance3D" parent="Kit"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 25.5, 12, -16)
+mesh = SubResource("wall_back")
+material_override = ExtResource("24_wall_stone")
+
+; the back wall dressed: the dome's blind arcade and lancets at 1.5x, rimed (WallDressing)
+[node name="WallDressing" type="Node3D" parent="Kit"]
+transform = Transform3D(1.5, 0, 0, 0, 1.5, 0, 0, 0, 1.5, 25.5, 0, -15.25)
+script = ExtResource("23_walldressing")
+Style = 3
+Size = Vector2(46, 20)
+Seed = 307
+Frost = 0.5
 
 [node name="Cascade" type="Node3D" parent="Kit"]
 

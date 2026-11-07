@@ -1,0 +1,10 @@
+[gd_resource type="ShaderMaterial" format=3]
+
+; Water swum through in front of a dressed wall: thinner than underwater.tres and
+; lit, so the wall behind reads through the haze instead of drowning in black.
+[ext_resource type="Shader" path="res://assets/shaders/underwater.gdshader" id="1_shader"]
+
+[resource]
+shader = ExtResource("1_shader")
+shader_parameter/density = 0.05
+shader_parameter/lit = 0.8

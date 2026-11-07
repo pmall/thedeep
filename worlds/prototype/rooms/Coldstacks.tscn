@@ -36,6 +36,13 @@
 [ext_resource type="Material" path="res://assets/materials/magma.tres" id="43_magma"]
 [ext_resource type="Resource" path="res://resources/biomes/frozen.tres" id="23_frozen"]
 [ext_resource type="PackedScene" path="res://scenes/stage/RoomStage.tscn" id="24_stage"]
+[ext_resource type="Script" path="res://scripts/rooms/dressing/WallDressing.cs" id="44_walldressing"]
+[ext_resource type="Material" path="res://assets/materials/wall_stone.tres" id="45_wall_stone"]
+
+[sub_resource type="PrimitiveMesh" id="wall_back"]
+script = ExtResource("11_blockmesh")
+Size = Vector3(93, 60, 1.2)
+Bevel = 0.3
 
 [sub_resource type="PrimitiveMesh" id="blockmesh_slag"]
 script = ExtResource("11_blockmesh")
@@ -442,6 +449,20 @@ omni_range = 12
 shadow_enabled = false
 
 [node name="Kit" type="Node3D" parent="."]
+
+; the back wall
+[node name="BackWall" type="MeshInstance3D" parent="Kit"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 37.5, 9, -14.5)
+mesh = SubResource("wall_back")
+material_override = ExtResource("45_wall_stone")
+
+; the back wall dressed: the stacks' stone galleries at 1.75x (WallDressing)
+[node name="WallDressing" type="Node3D" parent="Kit"]
+transform = Transform3D(1.75, 0, 0, 0, 1.75, 0, 0, 0, 1.75, 37.5, -1, -13.75)
+script = ExtResource("44_walldressing")
+Style = 2
+Size = Vector2(53.1429, 20.5714)
+Seed = 204
 
 [node name="Racks" type="Node3D" parent="Kit"]
 

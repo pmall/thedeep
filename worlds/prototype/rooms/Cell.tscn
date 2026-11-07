@@ -17,6 +17,8 @@
 [ext_resource type="Script" path="res://scripts/rooms/Room.cs" id="11_room"]
 [ext_resource type="Resource" path="res://resources/biomes/flooded.tres" id="12_flooded"]
 [ext_resource type="PackedScene" path="res://scenes/stage/RoomStage.tscn" id="13_stage"]
+[ext_resource type="Script" path="res://scripts/rooms/dressing/WallDressing.cs" id="14_walldressing"]
+[ext_resource type="Material" path="res://assets/materials/wall_stone.tres" id="15_wall_stone"]
 
 [sub_resource type="QuadMesh" id="QuadMesh_1"]
 size = Vector2(2.6, 0.3)
@@ -28,7 +30,7 @@ Bevel = 0.1
 
 [sub_resource type="PrimitiveMesh" id="blockmesh_3"]
 script = ExtResource("7_blockmesh")
-Size = Vector3(24, 10, 1)
+Size = Vector3(30, 16, 1)
 Bevel = 0.1
 
 [node name="Cell" type="Node3D" node_paths=PackedStringArray("SpawnPoint", "Stage", "Shafts", "GlyphLights")]
@@ -129,6 +131,14 @@ omni_range = 1.6
 
 [node name="Kit" type="Node3D" parent="."]
 
+; the back wall dressed: a maker's cell, blind arches and lancets (WallDressing)
+[node name="WallDressing" type="Node3D" parent="Kit"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 9.5, 0, -8.75)
+script = ExtResource("14_walldressing")
+Style = 3
+Size = Vector2(29, 14)
+Seed = 121
+
 ; the cell floor behind the play floor
 [node name="BackFloor" type="MeshInstance3D" parent="Kit"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 9, -0.5, -7)
@@ -137,9 +147,9 @@ material_override = ExtResource("1_wet_stone")
 
 ; the cell's back wall, close: a low dark room
 [node name="BackWall" type="MeshInstance3D" parent="Kit"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 9, 4, -9.5)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 9.5, 6.5, -9.5)
 mesh = SubResource("blockmesh_3")
-material_override = ExtResource("8_stone_mid")
+material_override = ExtResource("15_wall_stone")
 
 [node name="Particles" type="Node3D" parent="."]
 

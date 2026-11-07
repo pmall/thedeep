@@ -11,7 +11,7 @@
 [ext_resource type="Script" path="res://scripts/rooms/RoomExit.cs" id="3_exit"]
 [ext_resource type="Script" path="res://scripts/rooms/WaterBody.cs" id="4_water_body"]
 [ext_resource type="Material" path="res://assets/materials/water.tres" id="5_water"]
-[ext_resource type="Material" path="res://assets/materials/underwater.tres" id="6_underwater"]
+[ext_resource type="Material" path="res://assets/materials/underwater_clear.tres" id="6_underwater"]
 [ext_resource type="Material" path="res://assets/materials/water_section.tres" id="7_water_section"]
 [ext_resource type="Script" path="res://scripts/machines/Machine.cs" id="8_machine"]
 [ext_resource type="Resource" path="res://resources/machines/chorister.tres" id="9_chorister"]
@@ -27,6 +27,7 @@
 [ext_resource type="Script" path="res://scripts/rooms/Room.cs" id="19_room"]
 [ext_resource type="Resource" path="res://resources/biomes/frozen.tres" id="20_frozen"]
 [ext_resource type="PackedScene" path="res://scenes/stage/RoomStage.tscn" id="21_stage"]
+[ext_resource type="Script" path="res://scripts/rooms/dressing/WallDressing.cs" id="22_walldressing"]
 
 [sub_resource type="PrimitiveMesh" id="blockmesh_1"]
 script = ExtResource("10_blockmesh")
@@ -213,6 +214,14 @@ Species = ExtResource("9_chorister")
 StartFacing = -1
 
 [node name="Kit" type="Node3D" parent="."]
+
+; the far shore's wall dressed: an archive's drowned lower floor at 1.25x (WallDressing)
+[node name="WallDressing" type="Node3D" parent="Kit"]
+transform = Transform3D(1.25, 0, 0, 0, 1.25, 0, 0, 0, 1.25, 31, 0, -19.75)
+script = ExtResource("22_walldressing")
+Style = 2
+Size = Vector2(56, 8)
+Seed = 254
 
 ; the ice going back into the dark (behind the play plane)
 [node name="Sheet" type="MeshInstance3D" parent="Kit"]
