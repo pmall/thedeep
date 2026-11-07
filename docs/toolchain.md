@@ -20,10 +20,6 @@ The coding agent itself runs in the cloud; only the project's tools run on the m
 - **GPU needed:** `tools/capture.sh` (photo spots, motion reels, frame times) and the owner's F12/F10 captures render in a real window with Vulkan. Visual work is judged from these captures, and frame times only mean something on the RTX 3060, so visual items (the signature, stage bricks, the pilgrim's look) are done on the desktop. Running them while a game uses the same GPU spoils the frame times.
 - So code-only items can go on a laptop, or on the desktop while it is busy with a game; visual items need the desktop's GPU to itself while capturing.
 
-## The window: Wayland, not Xwayland `#display`
-
-The game opens a native Wayland window (`display_server/driver.linuxbsd` in `project.godot`; decided 2026-11-07 under the owner's delegation). Through Xwayland, the RTX 3060 loses 15–20 ms of a frame in bursts that land in the paint pass's longest dispatch (`docs/art-direction.md#signature-state`); on Wayland it does not. Where Wayland is missing (an X11 session), Godot falls back to X11 by itself (after printing that Wayland failed); `--display-driver x11` forces it. Under GNOME the window's title bar is drawn by libdecor (the `libdecor-0-0` package): Godot warns at start that the decoration manager is missing and that the window has no icon, which is expected.
-
 ## .NET environment `#dotnet-env`
 
 - The shell profile does **not** put .NET on `PATH`.
