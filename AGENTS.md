@@ -13,6 +13,14 @@ A 2.5D side-scrolling **metroidvania** (Godot .NET, C#) about an android pilgrim
 
 When the owner changes direction, rewrite the docs it touches so none of them contradicts it. Don't stack the new rule on top of the old one.
 
+## Orchestrating `#orchestrate`
+
+The main session orchestrates and subagents do the work (owner, 2026-11-07), so the main session's context stays small over a long session.
+- **One subagent per item**, or per well-bounded part of one. Its prompt names the item's id, the docs to read, the files in play, what done means, and that it runs `tools/check.sh` and commits only its own files. It reports back in a few lines: what changed, the commit, what it could not do, and any question for the owner.
+- **Builders run one at a time.** A subagent that builds, checks or captures has the working tree to itself: `tools/check.sh` and `tools/capture.sh` see the whole tree, and captures need the GPU to themselves (`docs/toolchain.md#gpu`). Read-only research (finding code, gathering open questions) may run beside it.
+- **The main session reads reports**, and the docs it needs to decide. It doesn't read code or logs, and looks at a capture only to judge a visual change itself.
+- **Stop at the owner's questions.** When what can be done without the owner is done, stop and hand over one exhaustive list of well-defined questions, each answerable on its own: what is asked, the options, the default until answered, and where to look. Don't go on working on guesses.
+
 ## Read when… `#read-when`
 
 | You are about to… | Read |
