@@ -13,7 +13,7 @@
 #   tools/capture.sh [label] --paint NAME    paint with resources/paint/NAME.tres instead of each biome's style (none: unpainted)
 #   tools/capture.sh --compare BEFORE AFTER  only build the sheet for two existing runs
 #
-# Opens a small window for about a minute (rendering needs a GPU). See docs/testing.md#lookdev.
+# Opens a small window: about 8 minutes for every room, under a minute for one with --rooms (rendering needs a GPU). See docs/testing.md#lookdev.
 set -euo pipefail
 
 cd "$(dirname "$0")/.."
