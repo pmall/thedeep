@@ -11,7 +11,7 @@ The headless checks, one driver each in `scripts/debug/`; the driver's docblock 
 | Check | Driver |
 |---|---|
 | The main scene boots idle for 300 frames, then the scripted smoke run | `SmokeDriver` |
-| Every room of the world, then the map: layout, solver, geometry, inside, room for error, the network; then its line book: every line the code and its content name | `RoomValidator` (proof in the core's `WorldCheck`; the lines: `LineCheck`) |
+| Every room of the world, then the map: layout, solver, geometry, inside, room for error, the network and its room table; then its line book: every line the code and its content name | `RoomValidator` (proof in the core's `WorldCheck`; the table: `RoomTable`; the lines: `LineCheck`) |
 | Every machine species, alone in the arena | `SpeciesValidator` |
 | Every open exit crossed low, mid and high in its opening, then back | `TravelValidator` |
 | The ledge assist and each ability through the real inputs, in the mechanics lab | `GripCheck`, `HarpoonCheck`, `DrillCheck`, `BallastCheck` |

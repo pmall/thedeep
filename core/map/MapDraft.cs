@@ -18,6 +18,8 @@ namespace TheDeep;
 /// relic Reliquary MagGrip
 /// item Ossuary CryptKey           # an item (a key, a code) lying in a room; a way names it like an ability: way A -> B : CryptKey
 /// boss Chapterhouse Precentor
+/// hidden Sacristy Cell            # the way(s) between these two rooms are hidden (a false wall): a secret room's way in
+/// ambush Pyre                     # the room seals while a wave of machines stands
 /// goal Heart
 /// milestone Brink ThirdLaw        # a story beat tied to depth (outside the ability graph), in story order
 /// target orders 24                # at least this many achievable ability orders
@@ -43,6 +45,15 @@ public sealed class MapDraft
 
     /// <summary>Boss fights and the room they happen in.</summary>
     public List<(string Room, string Name)> Bosses { get; } = new();
+
+    /// <summary>The hidden ways, as the two rooms they join (either way between them is hidden).</summary>
+    public List<(string A, string B)> Hidden { get; } = new();
+
+    /// <summary>The rooms that hold an ambush.</summary>
+    public List<string> Ambushes { get; } = new();
+
+    /// <summary>Whether the way from <paramref name="from"/> to <paramref name="to"/> is hidden.</summary>
+    public bool IsHidden(string from, string to) => Hidden.Any(h => (h.A == from && h.B == to) || (h.A == to && h.B == from));
 
     /// <summary>Parses the statements inside the <c>```map</c> fenced blocks of a markdown file; line numbers in errors are the file's.</summary>
     public static MapDraft FromMarkdown(string markdown)
@@ -103,11 +114,17 @@ public sealed class MapDraft
             throw new FormatException("no start room");
         }
 
-        var named = draft.Graph.Rooms.Concat(draft.Milestones.Select(m => m.Room)).Concat(draft.Bosses.Select(b => b.Room));
+        var named = draft.Graph.Rooms.Concat(draft.Milestones.Select(m => m.Room)).Concat(draft.Bosses.Select(b => b.Room))
+            .Concat(draft.Ambushes).Concat(draft.Hidden.SelectMany(h => new[] { h.A, h.B }));
         var unknown = named.Where(r => !draft.Layers.ContainsKey(r)).Distinct().ToList();
         if (unknown.Count > 0)
         {
             throw new FormatException($"rooms used but never declared: {string.Join(", ", unknown)}");
+        }
+
+        foreach ((string a, string b) in draft.Hidden.Where(h => !draft.Graph.Edges.Any(e => (e.From, e.To) == (h.A, h.B) || (e.From, e.To) == (h.B, h.A))))
+        {
+            throw new FormatException($"hidden {a} {b}: no way joins them");
         }
 
         return draft;
@@ -169,6 +186,13 @@ public sealed class MapDraft
             case "boss":
                 Expect(args, 2);
                 Bosses.Add((args[0], args[1]));
+                break;
+            case "hidden":
+                Expect(args, 2);
+                Hidden.Add((args[0], args[1]));
+                break;
+            case "ambush":
+                Ambushes.Add(Expect(args, 1)[0]);
                 break;
             case "target":
                 Target(args);

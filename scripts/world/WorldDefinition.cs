@@ -24,6 +24,9 @@ public partial class WorldDefinition : Resource
     /// </summary>
     [Export(PropertyHint.File, "*.md")] public string Network { get; set; } = "";
 
+    /// <summary>The world's room table, beside its network: one row per room (<see cref="TheDeep.RoomTable"/>), held to the network on every build.</summary>
+    [Export(PropertyHint.File, "*.tsv")] public string RoomTable { get; set; } = "";
+
     /// <summary>Where a new game starts.</summary>
     [Export] public PackedScene StartRoom { get; set; } = null!;
 

@@ -19,7 +19,8 @@ namespace TheDeep;
 /// Then the world's line book: every line the code, the rooms and the world's items name is in it or its base (<see cref="LineCheck"/>).
 /// Then the map, extracted from the rooms in the game (<see cref="Room.InGame"/>) and proven by the core's <see cref="WorldCheck"/>:
 /// layout, reachability, softlocks, ability orders (`--map-report`: the whole graph), the geometry, the map from inside the rooms,
-/// room for error; and the world's network (<see cref="MapDraft"/>): its targets, its layers, and its agreement with the built rooms.
+/// room for error; and the world's network (<see cref="MapDraft"/>): its targets, its layers, its agreement with the built rooms, and its room
+/// table held to it (<see cref="RoomTable.Check"/>; `--map-report`: each room's kinds).
 /// </summary>
 public partial class RoomValidator : Node
 {
@@ -340,6 +341,27 @@ public partial class RoomValidator : Node
         }
     }
 
+    /// <summary>The world's room table (<see cref="RoomTable"/>); a world without one is a problem.</summary>
+    private RoomTable? LoadTable()
+    {
+        string path = World.Definition.RoomTable;
+        if (path == "" || !FileAccess.FileExists(path))
+        {
+            _problems.Add($"room table: the world names none, or {path} is missing (docs/roadmap.md#stage-plan)");
+            return null;
+        }
+
+        try
+        {
+            return RoomTable.Parse(FileAccess.GetFileAsString(path));
+        }
+        catch (System.FormatException e)
+        {
+            _problems.Add($"room table ({path}): {e.Message}");
+            return null;
+        }
+    }
+
     /// <summary>
     /// The world's network: its targets (<see cref="MapDraft.Check"/>), its layers (each one the world's), and its agreement with the
     /// built rooms; returns the summary line(s).
@@ -357,9 +379,29 @@ public partial class RoomValidator : Node
         _problems.AddRange(draft.LayerOrder.Where(l => World.Definition.Layer(l) is null)
             .Select(l => $"map draft: layer {l} is not one of the world's layers ({string.Join(", ", World.Definition.Layers.Select(w => w.Name))})"));
 
+        RoomTable? table = LoadTable();
+        if (table is not null)
+        {
+            _problems.AddRange(table.Check(draft).Select(p => $"room table ({World.Definition.RoomTable}): {p}"));
+        }
+
         var text = new System.Text.StringBuilder($"DRAFT OK: {draft.Summary(report)}");
+        if (table is not null)
+        {
+            text.Append($"; room table: {table.Rows.Count} rows, held to the network");
+        }
+
         if (Report)
         {
+            if (table is not null)
+            {
+                text.Append("\nroom table (kinds):");
+                foreach (RoomRow row in table.Rows)
+                {
+                    text.Append($"\n  {row.Room} ({row.Layer}): {string.Join(", ", row.Kinds).ToLowerInvariant()}");
+                }
+            }
+
             text.Append("\ndraft ways:");
             foreach (MapEdge e in draft.Graph.Edges)
             {

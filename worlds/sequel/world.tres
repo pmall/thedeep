@@ -19,6 +19,7 @@ Biome = ExtResource("5_brine")
 script = ExtResource("1_world")
 RoomsFolder = "res://worlds/sequel/rooms"
 Network = "res://worlds/sequel/network.md"
+RoomTable = "res://worlds/sequel/rooms.tsv"
 StartRoom = ExtResource("3_start")
 Layers = [SubResource("layer_brine")]
 Items = [ExtResource("6_strongroom_key"), ExtResource("7_weir_lever")]

@@ -1,8 +1,8 @@
 # Map draft — the prototype world
 
-The prototype world's network file (`Network` in [world.tres](world.tres)): 42 rooms over three layers and the core, 5 abilities, a key, a code, a lever, a secret, an ambush, 4 bosses, 3 law breaks, all built. It is a **planning graph**: the `map` blocks below are parsed by `MapDraft` (its docblock has the format) and checked on every build, by the unit tests and against the built rooms (`docs/testing.md#check`); everything outside them is design notes. The real game's map will be its own network with a room table (`docs/roadmap.md#stage-plan`); this one stays the prototype's. Room names, boss names and story beats are placeholders unless [theme.md](../../docs/theme.md) says otherwise.
+The prototype world's network file (`Network` in [world.tres](world.tres)): 42 rooms over three layers and the core, 5 abilities, a key, a code, a lever, a secret, an ambush, 4 bosses, 3 law breaks, all built. It is a **planning graph**: the `map` blocks below are parsed by `MapDraft` (its docblock has the format) and checked on every build, by the unit tests and against the built rooms (`docs/testing.md#check`); everything outside them is design notes. Its room table is [rooms.tsv](rooms.tsv) (`RoomTable` has the format), held to this network on every build; the real game's map will be its own network and table (`docs/roadmap.md#stage-plan`). Room names, boss names and story beats are placeholders unless [theme.md](../../docs/theme.md) says otherwise.
 
-**The markers are the truth** `#draft-markers`: a built room's exits, sealed exits and relics must match its ways and relics here. When a room is built or changed, update its part of the draft in the same commit. Print it with `tools/map.sh`.
+**The markers are the truth** `#draft-markers`: a built room's exits, sealed exits and relics must match its ways and relics here. When a room is built or changed, update its part of the draft in the same commit. Keep its row in [rooms.tsv](rooms.tsv) in step too. Print both with `tools/map.sh`.
 
 ```map
 start Narthex
@@ -74,23 +74,7 @@ One per layer, plus the end, each on the main road. Placeholders.
 
 The first slice plus the crypts under it and the road down. Pale white, a touch of purple, water everywhere.
 
-| Room | Purpose |
-|---|---|
-| Narthex | Start. The pilgrim wakes at the cathedral's door. *(built)* |
-| DrownedHall | The hub: a hall half under water, the shaft up to the Belfry. *(built)* |
-| Nave | Three Votaries at prayer; a hatch down; a metal wall up to the Descent. *(built)* |
-| Cistern | Under the Nave: Gleaner, Limpet; the Reliquary west, the Sluice east. *(built)* |
-| Reliquary | **Mag-grip** and a first shrine. *(built)* |
-| Belfry | Over the hall's shaft, by grip or harpoon: shrine, bell, Lamplighter; the Pyre's litany (a code) on the lookout under the bell. *(built)* |
-| Descent | The drowned well. At its bottom the flooded gate: sink in it (Ballast) and go down with the water into the Sluice (one way), the way out without climbing back. *(built)* |
-| Sluice | The floodgate channel east of the Cistern: under a raised gate, over a culvert pit, over a closed gate (a Limpet asleep on it). A drain in its vault where the Descent's flooded gate comes down. *(built)* |
-| Undercroft | Crypts under the cathedral, the second hub: shrine, a Votary over the tombs; the high way on to the Chapterhouse by grip or rings, the flue up to the Scriptorium by grip (coming back from either is a drop); the lift from below will arrive here. *(built)* |
-| Ossuary | Racks of dead machines, kept like relics: **Harpoon**, then two rings up to a gallery. *(built)* |
-| Scriptorium | Up the Undercroft's metal flue (Mag-grip): Votaries copying scripture at lecterns, a gallery over them. Three plates to read (lore), a shrine. *(built)* |
-| Chapterhouse | A chapter house half drowned, its vault on one pier. **Boss: the Precentor** (placeholder): the gates fall behind and ahead until it breaks. *(built)* |
-| Sacristy | Off the Narthex, behind its locked door (the key on the Scriptorium's gallery): a side chapel, a power-up (defense) on a dais under a shaft of light, a plate. A false wall at the foot of its west wall hides the Cell. *(built)* |
-| Cell | **A secret**, behind the Sacristy's false west wall: a maker's cell, a strength power-up on a plinth, a plate. A dead end. *(built)* |
-| Brink | The lip of the first deep descent, a last shrine. **Third law**: a veil the pilgrim cannot pass until it presses on and breaks it. One way down, to Rimefall. *(built)* |
+Its rooms, what each is for and what happens there: their rows in [rooms.tsv](rooms.tsv).
 
 ```map
 room Narthex Flooded
@@ -113,6 +97,7 @@ room Cell Flooded
 way Narthex <-> DrownedHall
 way Narthex <-> Sacristy : SacristyKey           # the locked door in the porch's west wall
 way Sacristy <-> Cell                            # hidden: through the false foot of the Sacristy's west wall
+hidden Sacristy Cell                             # the false foot of the Sacristy's west wall: the Cell is a secret room
 way DrownedHall <-> Nave
 way DrownedHall -> Belfry : MagGrip | Harpoon   # up the shaft
 way Belfry -> DrownedHall                        # dropping back down
@@ -144,19 +129,7 @@ way Brink -> Rimefall                            # the jump: one way
 
 Server halls frozen in rime, machines asleep in the cold, a black lake under ice. Two branches from the Coldstacks: the Drill west, the Ballast east.
 
-| Room | Purpose |
-|---|---|
-| Rimefall | Where the jump from the Brink lands (its sky is only arrived through): a shelf of rime under a broken dome, a frozen cascade down terraces, a shrine at the foot. *(built)* |
-| Choir | Choristers, Votaries frozen mid-prayer, asleep along a sunken choir: footsteps never wake them, a hard landing close by does. A silent choir to walk through. *(built)* |
-| Coldstacks | The hub: endless frozen racks in stone galleries up to the roof. Shrine. The Counterweight's hatch at the top of the galleries, the Calving ledge high on the west wall (a metal buttress or two rings), the Mere along the corridor under the floor, the Vault under a plug of cracked ice (Drill), the Chimney under a slag cap (Heat plating). *(built)* |
-| Counterweight | An old lift that only rises: up through the Coldstacks' roof hatch to a landing, an iron cage on a rope over a sheave, its weight sinking past as it rises the whole shaft to a grate in the Undercroft's floor. *(built)* |
-| Calving | An ice cliff that sheds: out of the Coldstacks' high doorway onto its top, a drop to the floor (a Chorister asleep at its foot); back up by an iron girder frozen into its face (grip) or two rings (harpoon). *(built)* |
-| Bore | A mining machine frozen mid-bore, a shrine in its hall: the chamber it was cutting is a drop with **Drill** at its end, and the way out is boring through a cracked wall into the tunnel under the hall. *(built)* |
-| Mere | A frozen lake in a low cavern: leads of black water in the ice (you float in them), Choristers asleep on it; the lake swum to its bed, a shaft down to the Underice (Ballast). *(built)* |
-| Sounding | A sonar chapel on the shore, its bell over a sounding well: **Ballast** on a shelf at the waterline in the well, left by sinking under its wall. A shrine, a scripture plate. *(built)* |
-| Underice | A drowned cave under the lake, roofed with ice: sinking and rising past curtains of ice and ridges of rock to a low door up into the Vault. *(built)* |
-| Vault | The archive's heart, a tall hall of frozen stacks: entered from above by diving through the Coldstacks' ice plug (Drill, one way, into its pool) or from beneath, up from the Underice into the pool (Ballast). **Boss: the Archivist** (placeholder: it drifts high over the stacks and dives). *(built)* |
-| Sanctum | The last chapel of the frozen layer, a shrine: the Hierarch, a priest-machine, orders the pilgrim back from the forbidden door. **Second law**: a veil the pilgrim presses through. The door goes down to the Kiln. *(built)* |
+Its rooms, what each is for and what happens there: their rows in [rooms.tsv](rooms.tsv).
 
 ```map
 room Rimefall Frozen
@@ -194,18 +167,7 @@ way Sanctum <-> Kiln                             # the forbidden door
 
 Basalt, slag rivers, the machines' birthplace: they are cast here in molds of their own image. Warming toward amber.
 
-| Room | Purpose |
-|---|---|
-| Kiln | Past the forbidden door, down a stair: a kiln the size of a nave, long cold, molds in the shape of machines; on its firing floor the first heat (a low vent), a shrine, and the low door on to the Slag behind a gate its lever raises (a switch and its mechanism). *(built)* |
-| Slag | The hub, a cavern over a river of slag (falling in is the end): basalt platforms, heat rising between them, a shrine under the Chimney's vent; a coolant pool down to the Quench (Ballast), a cracked plug over the Basalt (Drill). *(built)* |
-| Quench | A coolant reservoir under the Slag's pool: a drop into deep coolant among sunken quench tanks; sunk (Ballast) to the drain in its floor, down into the Crucible; floating, ledges climb back to the hatch (the way home from the Crucible). *(built)* |
-| Basalt | A crust of basalt under the Slag's plug, only reached with the Drill (one way, down the plug's walled shaft): plugs dived through, a cracked wall bored, a slag channel jumped, a hole down into the Crucible (one way). *(built)* |
-| Crucible | Where plating is cast, under both: a great crucible pouring into glowing moulds, **Heat plating** on a dais between them, a shrine; the coolant falls from the Quench's drain into a basin, gantries climb back to it. *(built)* |
-| Ashfall | East of the Slag: a pit under a broken flue, ash raining through; a stair of ledges down to the ash floor, a Gleaner; the Pyre behind a curtain of heat (Heat plating), a hatch down to the Bellows. *(built)* |
-| Bellows | Under the Ashfall: a bellows the size of a nave, still heaving; gantries back up to the hatch; its iron frame (Mag-grip) or the rings on its ribs (Harpoon) up to the high door on to the Foundry; a shrine. *(built)* |
-| Pyre | Through the heat (Heat plating) and a low door sealed by its litany (the code on the Belfry's lookout): where machines are given to the fire; a pyre on an altar, broken machines laid round it, a scripture plate, a shrine. **A trap**: two of the dead rise behind a falling gate. *(built)* |
-| Chimney | A narrow vent from the Slag's roof up to the slag welling in the Coldstacks' floor: ledges up its throat, its molten mouth passed only with Heat plating. The shortcut home. *(built)* |
-| Foundry | The great foundry, an arcade over a molten channel. **Boss: the Founder** (placeholder: the Precentor's brain, heavier). The vents to the core, a shaft of heat in the floor, need Heat plating. *(built)* |
+Its rooms, what each is for and what happens there: their rows in [rooms.tsv](rooms.tsv).
 
 ```map
 room Kiln Volcanic
@@ -230,6 +192,7 @@ way Crucible -> Quench                           # up the gantries, floating up 
 relic Crucible HeatPlating
 way Slag <-> Ashfall
 way Ashfall <-> Pyre : HeatPlating & PyreLitany   # through the heat, the low door sealed
+ambush Pyre                                      # the Pyre seals while its wave stands
 way Ashfall <-> Bellows                          # the hatch in the ash floor; gantries back up to it
 way Bellows -> Foundry : MagGrip | Harpoon       # the bellows' iron frame or the rings on its ribs, up to the high door
 way Foundry -> Bellows                           # back out onto the high ledge, and down
@@ -243,14 +206,7 @@ way Foundry <-> Threshold : HeatPlating
 
 Ancient core machinery, red and ember. Every ability is needed here, in combination.
 
-| Room | Purpose |
-|---|---|
-| Threshold | The gate through the heat: the Foundry's vents drop into a column of heat, ledges in it climb back (Heat plating both ways); a great ring turning like a gate; a shrine. *(built)* |
-| Mantle | The first of the core: great wheels still turning; a bronze piston seized over the way (Mag-grip climbs it from beneath), rings across the air from its top (Harpoon) to the high door on to the Orrery; a Lamplighter. *(built)* |
-| Orrery | A pit where the orrery's great rings turn round a glowing centre; metal arcs step down it, mooring rings between them; at the bottom a plug of cracked glass over a flooded seam, down to the Lode (Drill and Ballast). *(built)* |
-| Lode | Molten-glass seams: the flooded crack from the Orrery sunk to its low gap (Ballast), a wall of cracked glass bored (Drill), the door on to the Effigy. *(built)* |
-| Effigy | An effigy of the makers, a stone colossus astride the way. A shrine, a scripture plate. **First law**: the way on is between its legs, through the veil. *(built)* |
-| Heart | The goal: the planet's heart turning in its rings. **Boss: Nirvanary** (placeholder: the Archivist's brain, wider); reaching the heart once it is still ends the game (the end card, then a new game). *(built)* |
+Its rooms, what each is for and what happens there: their rows in [rooms.tsv](rooms.tsv).
 
 ```map
 room Threshold Core
