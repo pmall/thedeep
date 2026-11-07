@@ -110,9 +110,10 @@ public partial class Machine : CharacterBody3D
         AxisLockLinearZ = true;
         MotionMode = Species.Locomotion == Locomotion.Walk ? MotionModeEnum.Grounded : MotionModeEnum.Floating;
         float centerY = Species.Locomotion == Locomotion.Hover ? 0f : Species.BodySize.Y * 0.5f;
+        using var body = new BoxShape3D { Size = new Vector3(Species.BodySize.X, Species.BodySize.Y, 0.6f) };
         AddChild(new CollisionShape3D
         {
-            Shape = new BoxShape3D { Size = new Vector3(Species.BodySize.X, Species.BodySize.Y, 0.6f) },
+            Shape = body,
             Position = new Vector3(0f, centerY, 0f),
             // A crawler is placed along its surface, never pushed by physics.
             Disabled = Species.Locomotion == Locomotion.Crawl,
@@ -394,9 +395,10 @@ public partial class Machine : CharacterBody3D
 
     private bool FaceIsFree(Block perch, Vector3 center, Vector3 size)
     {
-        var query = new PhysicsShapeQueryParameters3D
+        using var box = new BoxShape3D { Size = size };
+        using var query = new PhysicsShapeQueryParameters3D
         {
-            Shape = new BoxShape3D { Size = size },
+            Shape = box,
             Transform = new Transform3D(Basis.Identity, center),
             CollisionMask = PhysicsLayers.Solid,
             Exclude = new Godot.Collections.Array<Rid> { perch.GetRid() },

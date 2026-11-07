@@ -66,7 +66,9 @@ public partial class Block : StaticBody3D
             _mesh = mesh;
         }
 
-        ShapeNode.Shape = new BoxShape3D { Size = Size };
+        // The node holds the shape; the C# handle is let go at once, so shutdown never depends on when it is finalized.
+        using var shape = new BoxShape3D { Size = Size };
+        ShapeNode.Shape = shape;
     }
 
     /// <summary>The Drill bores into it, moving along <paramref name="push"/>: it shatters, and the way is open.</summary>

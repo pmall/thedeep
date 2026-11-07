@@ -84,7 +84,8 @@ public partial class WaterBody : Node3D
         if (Swim)
         {
             var area = new Area3D { CollisionLayer = PhysicsLayers.Water, CollisionMask = 0, Monitoring = false };
-            area.AddChild(new CollisionShape3D { Shape = new BoxShape3D { Size = new Vector3(Size.X, Depth, 1f) } });
+            using var box = new BoxShape3D { Size = new Vector3(Size.X, Depth, 1f) };
+            area.AddChild(new CollisionShape3D { Shape = box });
             area.Position = new Vector3(0f, -0.5f * Depth, -GlobalPosition.Z);
             AddChild(area);
             if (SectionMaterial is not null)

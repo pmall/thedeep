@@ -2,7 +2,7 @@
 
 ## The check: `tools/check.sh` `#check`
 
-Run it after every change and before every commit. In order, stopping at the first failure: the doc citations (`tools/docrefs.py`, `AGENTS.md#doc-rules`), the build (warnings are errors), the headless import (every shader compiled); then every headless check and the unit tests (`tests/TheDeep.Tests`, xUnit over the core; `VideoEncoderTests` run the real `ffmpeg`) all at once, one Godot per check, each reporting its result and its time. Logs go to `.godot/check/`.
+Run it after every change and before every commit. In order, stopping at the first failure: the doc citations (`tools/docrefs.py`, `AGENTS.md#doc-rules`), the build (warnings are errors), the headless import (every shader compiled); then every headless check and the unit tests (`tests/TheDeep.Tests`, xUnit over the core; `VideoEncoderTests` run the real `ffmpeg`) all at once, one Godot per check, each reporting its result and its time. Logs go to `.godot/check/`. Rarely, under the check's load, a check prints its passing line and then Godot crashes or reports a leak at exit: the .NET finalizers racing the engine's shutdown (shapes and meshes made in code). Rerun once; a failure that comes back is real. Shapes made in code let go of their C# handle once a node holds them, so shutdown doesn't depend on when they are finalized.
 
 **It stays fast** `#check-fast` (owner, 2026-11-02), without checking less: about 40 s on the desktop (it was three minutes). Each step prints its time; when it grows, cut the slowest. The longest are the room check (`WorldCheck`), the travel check (`TravelValidator`) and the playthrough (`PlaythroughCheck`).
 
