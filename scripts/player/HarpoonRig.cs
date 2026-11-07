@@ -8,8 +8,8 @@ namespace TheDeep;
 /// <summary>
 /// The Harpoon's eye and line (in Main). Each physics tick it picks the anchor the pilgrim would fire at
 /// (<see cref="HarpoonAim"/>: in range, in clear sight, aimed by held up/down input, else ahead and up) and
-/// hands it to <see cref="Player.AnchorInSight"/>, which brightens it. Each frame it draws the line from the
-/// pilgrim to the flying head, taut while it pulls, reeling back in when it lets go.
+/// hands it to <see cref="Player.AnchorInSight"/>, and tells every anchor of the room what to show (<see cref="AnchorLook"/>).
+/// Each frame it draws the line from the pilgrim to the flying head, taut while it pulls, reeling back in when it lets go.
 /// </summary>
 public partial class HarpoonRig : Node3D
 {
@@ -37,7 +37,6 @@ public partial class HarpoonRig : Node3D
 
     /// <summary>The anchor the pilgrim would fire at if it had the Harpoon (null with it): a ring out of reach, for the gate hints.</summary>
     public HarpoonAnchor? OutOfReach { get; private set; }
-    private HarpoonAnchor? _sighted;
     private float _reel;
     private Vector3 _reelEnd;
 
@@ -76,17 +75,12 @@ public partial class HarpoonRig : Node3D
         }
 
         Player.AnchorInSight = Player.CurrentState is HarpoonState ? null : target;
-        if (_sighted != target)
+        bool armed = Player.Abilities.Has(Ability.Harpoon);
+        foreach (HarpoonAnchor anchor in _anchors)
         {
-            if (_sighted is not null && IsInstanceValid(_sighted))
+            if (IsInstanceValid(anchor))
             {
-                _sighted.Sighted = false;
-            }
-
-            _sighted = target;
-            if (target is not null)
-            {
-                target.Sighted = true;
+                anchor.Look = LookOf(anchor, target, armed);
             }
         }
     }
@@ -161,6 +155,33 @@ public partial class HarpoonRig : Node3D
         return index >= 0 ? _anchors[index] : null;
     }
 
+    private AnchorLook LookOf(HarpoonAnchor anchor, HarpoonAnchor? target, bool armed)
+    {
+        if (!armed)
+        {
+            return AnchorLook.Dormant;
+        }
+
+        if (Player.CurrentState is HarpoonState { Anchor: { } fired } harpoon && fired == anchor)
+        {
+            return harpoon.Bitten ? AnchorLook.Bitten : AnchorLook.Sighted;
+        }
+
+        if (anchor == target)
+        {
+            return AnchorLook.Sighted;
+        }
+
+        if (anchor == Player.LastAnchor)
+        {
+            return AnchorLook.Spent;
+        }
+
+        PlayerTuning t = Player.Tuning;
+        float distance = (anchor.Point - Player.Center).Length();
+        return HarpoonAim.InReach(distance, t.HarpoonRange, t.HarpoonMinDistance) ? AnchorLook.Ready : AnchorLook.Far;
+    }
+
     private bool InSight(NVector2 from, NVector2 to)
     {
         NVector2 end = to - NVector2.Normalize(to - from) * SightMargin;
@@ -171,7 +192,6 @@ public partial class HarpoonRig : Node3D
     {
         _anchors.Clear();
         _anchors.AddRange(room.All<HarpoonAnchor>());
-        _sighted = null;
         OutOfReach = null;
         _reel = 0f;
         Player.AnchorInSight = null;

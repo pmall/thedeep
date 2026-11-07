@@ -15,6 +15,15 @@ public class HarpoonAimTests
     }
 
     [Fact]
+    public void ReachIsTheRangeBandEdgesIncluded()
+    {
+        Assert.True(HarpoonAim.InReach(9f, range: 9f, minDistance: 1.2f));
+        Assert.True(HarpoonAim.InReach(1.2f, range: 9f, minDistance: 1.2f));
+        Assert.False(HarpoonAim.InReach(9.01f, range: 9f, minDistance: 1.2f));
+        Assert.False(HarpoonAim.InReach(1.1f, range: 9f, minDistance: 1.2f));
+    }
+
+    [Fact]
     public void WithoutInputAheadBeatsAboveBeatsBehind()
     {
         Vector2 behind = new(-3f, 1f), above = new(0f, 5f), ahead = new(7f, 2f);

@@ -235,7 +235,7 @@ public class KitGeometryTests
 
     public static IEnumerable<object[]> Pieces() =>
         new[] { "column", "cluster", "pipe", "cables", "arch", "rib", "grate", "rack", "wreck", "icicles", "organ", "curtain",
-            "key", "crystal", "boss", "keyhole", "seal", "cog", "lever", "handle", "cradle" }.Select(n => new object[] { n });
+            "key", "crystal", "boss", "keyhole", "seal", "cog", "lever", "handle", "cradle", "mooring", "hoop", "sight" }.Select(n => new object[] { n });
 
     [Fact]
     public void SeededPiecesAreRepeatableAndVary()
@@ -356,6 +356,43 @@ public class KitGeometryTests
         Assert.True(max.Y > 0.38f && max.Y < 0.45f, $"the prongs reach {max.Y}");
     }
 
+    [Fact]
+    public void MooringRingHangsByItsShackleAndStaysHollow()
+    {
+        MeshData mesh = BuildPiece("mooring", seed: 0);
+        (Vector3 min, Vector3 max) = mesh.Bounds();
+
+        Assert.True(MathF.Abs(min.X + max.X) < 0.01f, $"the ring spans {min.X} to {max.X}");
+        Assert.True(MathF.Abs(min.Y + 0.52f) < 0.01f, $"the bar's foot is at {min.Y}");
+        Assert.True(MathF.Abs(max.Y - AnchorShapes.ShackleTop(0.48f, 0.08f)) < 0.01f, $"the shackle's top is at {max.Y}");
+        // Nothing fills the middle: the ring is a hole the harpoon bites through, not a stone in a setting.
+        Assert.All(mesh.Positions, p => Assert.True(new Vector2(p.X, p.Y).Length() > 0.38f, $"a vertex sits in the middle at {p}"));
+    }
+
+    [Fact]
+    public void HoopLiesWithinTheIronRingsBar()
+    {
+        MeshData mesh = BuildPiece("hoop", seed: 0);
+
+        // The mooring piece's ring is 0.48 round, 0.08 thick, 0.1 deep: the hoop's band sits just inside its bar, no deeper.
+        Assert.All(mesh.Positions, p =>
+        {
+            float r = new Vector2(p.X, p.Y).Length();
+            Assert.True(r > 0.37f && r < 0.44f, $"the hoop reaches {r} from the middle");
+            Assert.True(MathF.Abs(p.Z) <= 0.05f, $"the hoop stands {p.Z} deep");
+        });
+    }
+
+    [Fact]
+    public void SightMarksPointAtTheMiddleFromOutsideTheirRadius()
+    {
+        MeshData mesh = BuildPiece("sight", seed: 0);
+        (Vector3 min, Vector3 max) = mesh.Bounds();
+
+        Assert.All(mesh.Positions, p => Assert.True(new Vector2(p.X, p.Y).Length() > 0.59f, $"a mark reaches in to {p}"));
+        Assert.True(MathF.Abs(min.Z) < 0.001f && MathF.Abs(max.Z - 0.03f) < 0.001f, $"the marks stand {min.Z} to {max.Z}");
+    }
+
     private static MeshData BuildPiece(string name, int seed)
     {
         var b = new MeshBuilder();
@@ -382,6 +419,9 @@ public class KitGeometryTests
             case "lever": PropShapes.LeverBase(b, new Vector3(0.62f, 0.34f, 0.5f), 0.5f, 0.55f, MathF.PI / 4f); break;
             case "handle": PropShapes.LeverHandle(b, 0.9f, 0.035f); break;
             case "cradle": PropShapes.Cradle(b, 0.22f, 0.4f, 3); break;
+            case "mooring": AnchorShapes.Ring(b, 0.48f, 0.08f, 4); break;
+            case "hoop": AnchorShapes.Hoop(b, 0.4f, 0.05f, 0.06f); break;
+            case "sight": AnchorShapes.Sight(b, 0.6f, 4, 0.16f, 0.03f); break;
             default: throw new ArgumentException(name);
         }
 

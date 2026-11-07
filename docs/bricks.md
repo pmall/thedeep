@@ -28,7 +28,8 @@ Every piece a world is built from (`docs/principles.md#bricks`). The prototype's
 |---|---|---|
 | `Block` (rock, metal, cracked) | ready | — |
 | `RoomExit` | ready | — |
-| `HarpoonAnchor`; `AnchorPointer` (the edge chevron toward a ring in sight off screen) | working (look) | `docs/roadmap.md#stage-bricks` |
+| `HarpoonAnchor` (its state shown: `AnchorLook`) | ready | — |
+| `AnchorPointer` (the edge chevron toward a ring in sight off screen) | working (look) | `docs/roadmap.md#stage-bricks` |
 | `WaterBody` (swim) | ready | — |
 | `HeatZone` | working (look) | `docs/roadmap.md#stage-bricks` |
 | `Lift` | ready | — |

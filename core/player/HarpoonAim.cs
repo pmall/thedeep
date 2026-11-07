@@ -30,7 +30,7 @@ public static class HarpoonAim
         {
             Vector2 to = anchors[i] - chest;
             float distance = to.Length();
-            if (i == skip || distance > range || distance < minDistance)
+            if (i == skip || !InReach(distance, range, minDistance))
             {
                 continue;
             }
@@ -64,6 +64,9 @@ public static class HarpoonAim
 
         return best;
     }
+
+    /// <summary>Whether an anchor <paramref name="distance"/> meters from the chest can be fired at, sight aside: within the range, not too close.</summary>
+    public static bool InReach(float distance, float range, float minDistance) => distance <= range && distance >= minDistance;
 
     /// <summary>
     /// Velocity on letting go of an anchor reached along <paramref name="direction"/> (unit): the zip's speed scaled by
