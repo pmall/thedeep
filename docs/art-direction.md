@@ -89,7 +89,7 @@ What the visual work still owes (`docs/roadmap.md#stage-bricks`, `docs/roadmap.m
 - Frozen: the ice over the lip of Rimefall's shelf still reads a little like hanging cloth in the wide shot (flat sheet, straight shoulders).
 - Flooded: the play plane is still a little darker and bluer than `perfect.jpg` outside the shaft; judge with the owner before pushing the palette brighter.
 - The pilgrim: the cap of the hair is still one smooth dome over its ragged locks (its crown wants strands or a parting, likely Blender's, `docs/roadmap.md#beyond-procedural`); against dark server racks the black body loses contrast (the suit's rim is up, not yet enough: a rim light or a lighter backdrop there).
-- Machines: limbs are still plain tapered pods (the Votary's arms and legs read thin); the arena's metal reliquary is a bare block; the arena's wide shot is hazy at that distance.
+- Machines: the Votary's kind (and the Precentor and Founder made from it) wear armored limbs and the Gleaner's thighs are frames with pistons, but the Gleaner's needle shins, the Limpet's arm and the flyers' parts are still plain pods; the plated limbs' banded trims may read busy at gameplay distance (judge with the owner).
 
 ## Decisions `#art-decisions`
 

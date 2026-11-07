@@ -31,6 +31,7 @@
 
 [ext_resource type="PackedScene" path="res://scenes/stage/RoomStage.tscn" id="31_stage"]
 [ext_resource type="Script" path="res://scripts/rooms/dressing/Colonnade.cs" id="32_colonnade"]
+[ext_resource type="Material" path="res://assets/materials/metal.tres" id="33_metal"]
 [sub_resource type="QuadMesh" id="QuadMesh_shrine"]
 size = Vector2(0.5, 3.2)
 
@@ -114,6 +115,53 @@ Points = PackedVector3Array(0, -4, 0, 0, 0, 0, 30, 0, 0, 31, 0.5, 0, 56, 0.5, 0,
 Radius = 0.5
 BendRadius = 1.4
 FlangeSpacing = 4
+
+[sub_resource type="PrimitiveMesh" id="Reliquary_plinth"]
+script = ExtResource("19_blockmesh")
+Size = Vector3(3.3, 0.5, 0.5)
+Bevel = 0.06
+
+[sub_resource type="PrimitiveMesh" id="Reliquary_pilaster"]
+script = ExtResource("19_blockmesh")
+Size = Vector3(0.3, 4.2, 0.36)
+Bevel = 0.04
+
+[sub_resource type="PrimitiveMesh" id="Reliquary_cornice"]
+script = ExtResource("19_blockmesh")
+Size = Vector3(3.3, 0.4, 0.56)
+Bevel = 0.06
+
+[sub_resource type="PrimitiveMesh" id="Reliquary_jamb"]
+script = ExtResource("19_blockmesh")
+Size = Vector3(0.16, 2, 0.34)
+Bevel = 0.03
+
+[sub_resource type="PrimitiveMesh" id="Reliquary_sill"]
+script = ExtResource("19_blockmesh")
+Size = Vector3(1.7, 0.12, 0.42)
+Bevel = 0.03
+
+[sub_resource type="PrimitiveMesh" id="Reliquary_panel"]
+script = ExtResource("19_blockmesh")
+Size = Vector3(1.36, 2, 0.06)
+Bevel = 0.01
+
+[sub_resource type="PrimitiveMesh" id="Reliquary_arch"]
+script = ExtResource("18_arch")
+Span = 1.5
+Rise = 1.2
+Thickness = 0.16
+Depth = 0.36
+Segments = 20
+
+[sub_resource type="PrimitiveMesh" id="Reliquary_relics"]
+script = ExtResource("20_rack")
+Size = Vector3(1.2, 1.95, 0.12)
+Units = 9
+Seed = 3
+
+[sub_resource type="QuadMesh" id="Reliquary_glyphs"]
+size = Vector2(0.3, 0.6)
 
 [node name="MachineArena" type="Node3D" node_paths=PackedStringArray("SpawnPoint", "Stage", "Shafts", "GlyphLights")]
 script = ExtResource("1_room")
@@ -341,6 +389,66 @@ transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 33, 0, -1)
 mesh = SubResource("Scrap_2")
 material_override = ExtResource("10_rust_mid")
 
+; the reliquary's face (front at Z 2, visual only): a metal casket on a plinth between pilasters, under a cornice
+; kept below its top (the Limpet's floor); through a pointed window, the old servers it keeps
+[node name="Reliquary" type="Node3D" parent="Kit"]
+
+[node name="Plinth" type="MeshInstance3D" parent="Kit/Reliquary"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 47, 0.25, 2)
+mesh = SubResource("Reliquary_plinth")
+material_override = ExtResource("33_metal")
+
+[node name="PilasterWest" type="MeshInstance3D" parent="Kit/Reliquary"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 45.75, 2.5, 2)
+mesh = SubResource("Reliquary_pilaster")
+material_override = ExtResource("33_metal")
+
+[node name="PilasterEast" type="MeshInstance3D" parent="Kit/Reliquary"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 48.25, 2.5, 2)
+mesh = SubResource("Reliquary_pilaster")
+material_override = ExtResource("33_metal")
+
+[node name="Cornice" type="MeshInstance3D" parent="Kit/Reliquary"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 47, 4.75, 2)
+mesh = SubResource("Reliquary_cornice")
+material_override = ExtResource("33_metal")
+
+[node name="Panel" type="MeshInstance3D" parent="Kit/Reliquary"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 47, 1.5, 2)
+mesh = SubResource("Reliquary_panel")
+material_override = ExtResource("9_metal_mid")
+
+[node name="Relics" type="MeshInstance3D" parent="Kit/Reliquary"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 47, 0.5, 2)
+mesh = SubResource("Reliquary_relics")
+material_override = ExtResource("9_metal_mid")
+
+[node name="JambWest" type="MeshInstance3D" parent="Kit/Reliquary"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 46.25, 1.5, 2)
+mesh = SubResource("Reliquary_jamb")
+material_override = ExtResource("33_metal")
+
+[node name="JambEast" type="MeshInstance3D" parent="Kit/Reliquary"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 47.75, 1.5, 2)
+mesh = SubResource("Reliquary_jamb")
+material_override = ExtResource("33_metal")
+
+[node name="Sill" type="MeshInstance3D" parent="Kit/Reliquary"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 47, 0.5, 2)
+mesh = SubResource("Reliquary_sill")
+material_override = ExtResource("33_metal")
+
+[node name="Arch" type="MeshInstance3D" parent="Kit/Reliquary"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 47, 2.5, 2)
+mesh = SubResource("Reliquary_arch")
+material_override = ExtResource("33_metal")
+
+[node name="Glyphs" type="MeshInstance3D" parent="Kit/Reliquary"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 47, 3.1, 2.03)
+mesh = SubResource("Reliquary_glyphs")
+material_override = ExtResource("7_glyphs")
+cast_shadow = 0
+
 [node name="Backdrop" type="Node3D" parent="."]
 
 [node name="ForePipe" type="MeshInstance3D" parent="Backdrop"]
@@ -387,9 +495,10 @@ transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 5, 5.2, 5)
 PlayerPosition = Vector3(20, 0, 0)
 PlayerFacing = 1
 
-; the whole arena
+; the whole arena, from inside the hall's haze (a wider lens, nearer: from 56 m the flooded fog greyed it out)
 [node name="Wide" type="Marker3D" parent="PhotoSpots"]
 script = ExtResource("3_spot")
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 28, 7, 56)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 28, 7, 30)
 PlayerPosition = Vector3(2, 0, 0)
 PlayerFacing = 1
+Fov = 52
