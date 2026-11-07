@@ -636,21 +636,21 @@ public sealed class PilgrimMotion
     {
         float flat = SmoothStep(DashGather * 0.4f, DashGather * 1.8f, t);
         float drop = SmoothStep(0.11f, 0.2f, t) * 0.35f;
-        float torso = Lerp(-0.5f, -1.2f, flat) + drop * 0.6f;
+        float torso = Lerp(-0.5f, -1.45f, flat) + drop * 0.6f;
         pose.HipsOffset = new Vector2(0.03f, Lerp(0.02f, -0.01f, flat));
-        pose[HumanoidBone.Hips] = torso * 0.5f;
-        pose[HumanoidBone.Spine] = torso * 0.8f;
+        pose[HumanoidBone.Hips] = torso * Lerp(0.5f, 0.8f, flat);
+        pose[HumanoidBone.Spine] = torso * 0.9f;
         pose[HumanoidBone.Chest] = torso;
         pose[HumanoidBone.Neck] = torso * 0.6f;
         pose[HumanoidBone.Head] = torso * 0.25f + 0.1f; // eyes ahead, along the dart
 
         // Knees up in the tuck; flat, both legs straight behind the laid body, feet pointed.
-        pose[HumanoidBone.ThighR] = Lerp(1.4f, -0.3f + drop, flat);
-        pose[HumanoidBone.ShinR] = Lerp(-0.3f, -0.42f + drop, flat);
-        pose[HumanoidBone.FootR] = Lerp(-0.7f, -1.5f + drop, flat);
-        pose[HumanoidBone.ThighL] = Lerp(1.2f, -0.38f + drop, flat);
-        pose[HumanoidBone.ShinL] = Lerp(-0.5f, -0.5f + drop, flat);
-        pose[HumanoidBone.FootL] = Lerp(-0.9f, -1.6f + drop, flat);
+        pose[HumanoidBone.ThighR] = Lerp(1.4f, -0.75f + drop, flat);
+        pose[HumanoidBone.ShinR] = Lerp(-0.3f, -0.9f + drop, flat);
+        pose[HumanoidBone.FootR] = Lerp(-0.7f, -1.9f + drop, flat);
+        pose[HumanoidBone.ThighL] = Lerp(1.2f, -0.83f + drop, flat);
+        pose[HumanoidBone.ShinL] = Lerp(-0.5f, -0.98f + drop, flat);
+        pose[HumanoidBone.FootL] = Lerp(-0.9f, -2.0f + drop, flat);
 
         // Arms: hugged in the tuck, then laid straight back along the sides.
         pose[HumanoidBone.UpperArmR] = Lerp(0.5f, -1.0f, flat);
@@ -669,10 +669,10 @@ public sealed class PilgrimMotion
     {
         float thrust = SmoothStep(DashGather * 0.5f, DashGather * 1.6f, t);
         float judder = t < float.MaxValue ? 0.035f * MathF.Sin(MathF.Tau * 22f * _time) * thrust : 0f;
-        float torso = Lerp(-0.9f, -1.35f, thrust) + judder;
+        float torso = Lerp(-0.9f, -1.55f, thrust) + judder;
         pose.HipsOffset = new Vector2(0.04f, Lerp(-0.06f, -0.02f, thrust));
-        pose[HumanoidBone.Hips] = torso * 0.55f;
-        pose[HumanoidBone.Spine] = torso * 0.85f;
+        pose[HumanoidBone.Hips] = torso * 0.8f;
+        pose[HumanoidBone.Spine] = torso * 0.95f;
         pose[HumanoidBone.Chest] = torso;
         pose[HumanoidBone.Neck] = torso * 0.7f;
         pose[HumanoidBone.Head] = torso * 0.45f - 0.2f; // tucked down behind the arms

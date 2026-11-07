@@ -16,6 +16,12 @@ uniform float clearcoat_roughness : hint_range(0.0, 1.0) = 0.2;
 /// Light wrapping around the silhouette (fabric, glossy edges).
 uniform float rim : hint_range(0.0, 1.0) = 0.0;
 uniform float rim_tint : hint_range(0.0, 1.0) = 0.3;
+/// A faint cool edge along the silhouette that needs no light (emitted, strongest where the surface turns away from the
+/// camera), so a dark body still reads against a dark backdrop; thin, so the body stays black and never looks lamp-lit.
+uniform float edge_light : hint_range(0.0, 2.0) = 0.0;
+uniform vec3 edge_color : source_color = vec3(0.72, 0.78, 0.9);
+/// How tight the edge hugs the silhouette (higher, thinner).
+uniform float edge_power : hint_range(1.0, 8.0) = 3.0;
 /// Stretched highlights along the part (U): hair, brushed metal.
 uniform float anisotropy : hint_range(0.0, 1.0) = 0.0;
 /// Fine roughness grain in 1/m (fabric weave); 0 for none.
@@ -115,4 +121,8 @@ void fragment() {
 		ANISOTROPY_FLOW = vec2(1.0, 0.0);
 	}
 	EMISSION = glow_color * glow * glow_energy + vec3(0.95, 0.92, 1.0) * hurt * 0.8;
+	if (edge_light > 0.0) {
+		float facing = clamp(dot(normalize(NORMAL), normalize(VIEW)), 0.0, 1.0);
+		EMISSION += edge_color * edge_light * pow(1.0 - facing, edge_power) * (1.0 - trim);
+	}
 }
