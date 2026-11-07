@@ -8,8 +8,8 @@ namespace TheDeep;
 /// The game's flow around the pilgrim: resting at shrines (heal and save), taking ability relics (items and their doors are the
 /// <see cref="Keyring"/>'s), reading
 /// scripture plates, lines spoken to it (<see cref="Proclamation"/>), law breaks
-/// (<see cref="LawBreak"/>), lifts (<see cref="Lift"/>) and cracked rock broken by the Drill (it stays broken), dying or
-/// falling out of a room and coming back at the last shrine rested at, the end of what is built
+/// (<see cref="LawBreak"/>), lifts (<see cref="Lift"/>) and cracked rock broken by the Drill (it stays broken), burned by heat
+/// and set back on its footing, dying or falling out of a room and coming back at the last shrine rested at, the end of what is built
 /// (<see cref="MapGoal"/> areas), and starting from the save. The progress and its rules are the core's
 /// (<see cref="Pilgrimage"/>: what is done for good, the last rest, a visit's moments); this node finds them in the room and plays
 /// them. Machines come back whenever a room is entered again (it is a fresh instance); taken relics, beaten bosses and broken laws
@@ -40,6 +40,10 @@ public partial class Session : Node
     [Export] public float RestTime { get; set; } = 0.9f;
     [Export] public float DeathFadeIn { get; set; } = 0.9f;
 
+    /// <summary>Burned by heat: the veil falls this fast over the pilgrim's recoil, and lifts this fast on its footing (seconds).</summary>
+    [Export] public float ScorchFadeOut { get; set; } = 0.2f;
+    [Export] public float ScorchFadeIn { get; set; } = 0.3f;
+
     private bool _busy;
     private Shrine? _prompted;
     private ScripturePlate? _plate;
@@ -64,6 +68,7 @@ public partial class Session : Node
     {
         World.RoomLoaded += OnRoomLoaded;
         Player.Died += OnDied;
+        Player.Scorched += SetBack;
         OnRoomLoaded(World.Room);
     }
 
@@ -71,6 +76,7 @@ public partial class Session : Node
     {
         World.RoomLoaded -= OnRoomLoaded;
         Player.Died -= OnDied;
+        Player.Scorched -= SetBack;
     }
 
     /// <summary>Starts from <paramref name="data"/> (the world already loaded its room): abilities, map, the pilgrim at its shrine.</summary>
@@ -331,6 +337,21 @@ public partial class Session : Node
         {
             Return();
         }
+    }
+
+    /// <summary>
+    /// Burned by heat without its plating (`docs/gameplay.md#heat`): the veil falls quickly over the recoil, the pilgrim stands
+    /// again on its <see cref="Player.Footing"/>, in control, and the veil lifts.
+    /// </summary>
+    private async void SetBack()
+    {
+        _busy = true;
+        Player.Frozen = true;
+        await Fade.To(1f, ScorchFadeOut);
+        Player.Respawn(Player.Footing);
+        Player.Frozen = false;
+        _busy = false;
+        await Fade.To(0f, ScorchFadeIn);
     }
 
     private async void Return()

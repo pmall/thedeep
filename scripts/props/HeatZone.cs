@@ -4,9 +4,10 @@ namespace TheDeep;
 
 /// <summary>
 /// A zone of heat on the play plane (a vent's column of hot air, the air over a pool of slag): <see cref="Size"/> wide and
-/// tall, rising from the node's origin. Without Heat plating, touching it burns: a blow (it takes health, throws the pilgrim
-/// back out and up, then the grace period); during the grace it still throws the pilgrim out, unhurt. With Heat plating
-/// it is harmless. A <see cref="Lethal"/> zone is molten slag itself: touching it is death, plated or not. It looks like heat: a
+/// tall, rising from the node's origin. Without Heat plating, touching it burns (<see cref="Player.Scorch"/>: health taken
+/// unless in the grace period, and the pilgrim set back on the last ground it stood on clear of heat, its
+/// <see cref="Player.Footing"/>); ground within <see cref="FootingMargin"/> of it is no footing. With Heat plating it is
+/// harmless (`docs/gameplay.md#heat`). A <see cref="Lethal"/> zone is molten slag itself: touching it is death, plated or not. It looks like heat: a
 /// shimmering haze (<see cref="HazeMaterial"/>), embers rising (<see cref="Embers"/>), a glow at its foot. Not a <see cref="Block"/>:
 /// the map's geometry check reads its <see cref="Region"/> as space no planner may enter without Heat plating (a lethal one: ever).
 /// </summary>
@@ -16,6 +17,9 @@ public partial class HeatZone : Node3D
     [Export] public Vector2 Size { get; set; } = new(2f, 6f);
 
     [Export] public int Damage { get; set; } = 1;
+
+    /// <summary>Ground closer than this to the zone (meters, around it) is no footing to be set back on.</summary>
+    [Export] public float FootingMargin { get; set; } = 0.75f;
 
     /// <summary>Molten slag itself, not the air over it: it swallows the pilgrim, Heat plating or not (a river of slag's bed).</summary>
     [Export] public bool Lethal { get; set; }
@@ -35,7 +39,7 @@ public partial class HeatZone : Node3D
     /// <summary>The pilgrim, set by the session when the room loads.</summary>
     public Player? Player { get; set; }
 
-    /// <summary>Raised when any zone throws back a pilgrim without Heat plating (burned or repelled): the gate hints listen.</summary>
+    /// <summary>Raised when any zone burns a pilgrim without Heat plating (hurt or, in its grace, only set back): the gate hints listen.</summary>
     public static event System.Action<HeatZone>? Scorched;
 
     /// <summary>The light at its foot, in the room's lamp color.</summary>
@@ -92,6 +96,13 @@ public partial class HeatZone : Node3D
 
         Rect2 body = player.BodyRect;
         Box r = Region;
+        float m = FootingMargin;
+        if (body.Position.X >= r.MaxX + m || r.MinX - m >= body.End.X || body.Position.Y >= r.MaxY + m || r.MinY - m >= body.End.Y)
+        {
+            return;
+        }
+
+        player.NearHeat();
         if (body.Position.X >= r.MaxX || r.MinX >= body.End.X || body.Position.Y >= r.MaxY || r.MinY >= body.End.Y)
         {
             return;
@@ -100,17 +111,10 @@ public partial class HeatZone : Node3D
         if (Lethal)
         {
             player.Perish();
+            return;
         }
-        else
-        {
-            // In its grace period the pilgrim is not hurt, but the heat still throws it out: no way through without the plating.
-            var from = new System.Numerics.Vector2(GlobalPosition.X, player.GlobalPosition.Y);
-            if (!player.TakeHit(Damage, from))
-            {
-                player.Repel(from);
-            }
 
-            Scorched?.Invoke(this);
-        }
+        player.Scorch(Damage);
+        Scorched?.Invoke(this);
     }
 }

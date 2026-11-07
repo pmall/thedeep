@@ -151,9 +151,6 @@ public sealed class PilgrimControl
         _dashBuffer.Clear();
     }
 
-    /// <summary>Thrown back without harm (heat during the grace period): control is gone for a moment.</summary>
-    public void Repelled() => _stun.Start(_limits.HurtStun);
-
     /// <summary>A fresh start (a respawn): nothing kept, nothing pending, the air dashes back.</summary>
     public void Reset()
     {

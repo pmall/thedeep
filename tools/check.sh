@@ -74,7 +74,7 @@ CHECKS=(
     "harpoon|HARPOON OK|HARPOON CHECK|4000|--room MechanicsLab --harpoon-check"
     "drill|DRILL OK|DRILL CHECK|2000|--room MechanicsLab --drill-check"
     "ballast|BALLAST OK|BALLAST CHECK|2000|--room MechanicsLab --ballast-check"
-    "heat|HEAT OK|HEAT CHECK|1000|--room MechanicsLab --heat-check"
+    "heat|HEAT OK|HEAT CHECK|1500|--room Basalt --heat-check"
     # KeyCheck: the Sacristy key and its locked door, in place.
     "key|KEY OK|KEY CHECK|2000|--room Narthex --key-check"
     # SecretCheck: the Sacristy's hidden passage into the Cell.

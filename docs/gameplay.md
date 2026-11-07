@@ -19,6 +19,7 @@ These leave room for error, because jumps must never be exact (owner, 2026-11-01
 
 - **Attack:** the fight moveset (`docs/gameplay.md#fight`). A machine hit flashes, reels and is pushed back; broken, it is gone until the room is entered again.
 - **Health:** a few hits, shown top left as thin diamonds. A blow throws the pilgrim back and takes control away a moment, then nothing hurts for a short grace.
+- **Heat** `#heat` (owner feedback, 2026-11-07: the volcanic layer's heat hurt erratically, and a pilgrim fallen into a slag channel bounced in small hops, out of control): without Heat plating, touching heat (a vent's column, the air over slag) burns, as spikes and acid do in Hollow Knight. One health (none in the grace), the pilgrim recoils, and under a quick veil it stands again on the last ground it stood on clear of heat, in control. So heat is never crossed without the plating, and nobody is ever stuck in it, thrown across it, or hurt by it faster than the grace allows. With the plating heat is harmless; slag itself kills, plated or not.
 - **Death:** the pilgrim wakes at the last shrine it rested at, whole, the room renewed (its machines back).
 - **Shrines:** resting heals and saves the game there.
 - **Ability relics:** walking into one takes it: the ability unlocks, a banner names it and says how to use it, the game saves. A taken relic stays taken.
@@ -61,7 +62,7 @@ These gate the map. Every ability is one simple state or rule: no systemic or em
 | **Harpoon** `#harpoon` | Fire at a mooring ring in sight (hold up or down to aim) and zip to it; a ring in sight that the camera doesn't frame is shown by a chevron at the screen's edge (owner, 2026-11-02: targets off screen were invisible) | Gaps with rings |
 | **Drill** `#drill` | A dash bores through **cracked rock**; down + dash dives through cracked floors. Broken rock stays broken | Cracked rock walls and floors |
 | **Ballast** `#ballast` | Without it the pilgrim floats; with it, in water, hold down to sink and walk the bottom, up or jump to rise | Exits under water, under walls that reach into it |
-| **Heat plating** `#heat-plating` | Passive: heat (vents, the air over slag) no longer burns. Without it heat throws the pilgrim back, so it is never crossed. Slag itself kills, plated or not | Vents and molten mouths |
+| **Heat plating** `#heat-plating` | Passive: heat (vents, the air over slag) no longer burns (`docs/gameplay.md#heat`). Slag itself kills, plated or not | Vents and molten mouths |
 
 Rules for rooms: only the physics layer makes metal (`docs/art-direction.md#visuals-never-gameplay`); keep a body's height of air below a ring; deep water beside metal stays Ballast's gate, since water lets go of a grip. Each ability has its lab check (`docs/testing.md#check`).
 

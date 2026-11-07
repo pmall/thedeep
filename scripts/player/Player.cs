@@ -51,6 +51,18 @@ public partial class Player : CharacterBody3D
     /// <summary>Raised when the last health is lost.</summary>
     public event Action? Died;
 
+    /// <summary>Raised when heat burns the pilgrim without Heat plating and it lives (<see cref="Scorch"/>): it is to be set back on its <see cref="Footing"/>.</summary>
+    public event Action? Scorched;
+
+    /// <summary>
+    /// The last ground the pilgrim stood on, upright and in control, clear of any heat that burns it: where heat sets it back
+    /// (<see cref="Scorch"/>). Set again by every respawn and arrival.
+    /// </summary>
+    public Vector3 Footing { get; private set; }
+
+    /// <summary>The last physics frame some burning heat was near the body (<see cref="NearHeat"/>).</summary>
+    private ulong _heatNear;
+
     /// <summary>Raised after <see cref="Arrive"/> places the player in a new room.</summary>
     public event Action? Arrived;
 
@@ -275,6 +287,11 @@ public partial class Player : CharacterBody3D
             LastAnchor = null;
         }
 
+        if (IsOnFloor() && IsUpright && InControl && Engine.GetPhysicsFrames() > _heatNear + 1)
+        {
+            Footing = GlobalPosition;
+        }
+
         if (IsOnFloor() && IsUpright)
         {
             Control.Stood();
@@ -319,6 +336,7 @@ public partial class Player : CharacterBody3D
         }
 
         GlobalPosition = position with { Z = 0f };
+        Footing = GlobalPosition;
         Velocity = Vector3.Zero;
         Control.Reset();
         LastAnchor = null;
@@ -340,6 +358,7 @@ public partial class Player : CharacterBody3D
         }
 
         GlobalPosition = position with { Z = 0f };
+        Footing = GlobalPosition;
         Velocity = velocity with { Z = 0f };
         ResetPhysicsInterpolation();
         Arrived?.Invoke();
@@ -570,19 +589,36 @@ public partial class Player : CharacterBody3D
     }
 
     /// <summary>
-    /// Thrown back from <paramref name="from"/> (on the play plane) like a blow, without the damage: heat pushing the pilgrim
-    /// out while its grace period keeps blows from hurting.
+    /// Burned by heat without Heat plating: <paramref name="damage"/> health taken unless in the grace period, held where it is
+    /// in its recoil, control gone, then <see cref="Scorched"/> (the session sets it back on its <see cref="Footing"/>) or
+    /// <see cref="Died"/>. Returns whether it hurt.
     /// </summary>
-    public void Repel(NVector2 from)
+    public bool Scorch(int damage)
     {
-        if (CurrentState != States.Fall)
+        bool hurt = Vitality.Damage(damage);
+        ChangeState(States.Fall);
+        Velocity = Vector3.Zero;
+        Control.Hurt();
+        Visual.Hurt();
+        if (hurt)
         {
-            ChangeState(States.Fall);
+            Hurt?.Invoke();
         }
 
-        Velocity = MoveRules.Knockback(GlobalPosition.X, from.X, Limits).OnPlane();
-        Control.Repelled();
+        if (Vitality.Dead)
+        {
+            Died?.Invoke();
+        }
+        else
+        {
+            Scorched?.Invoke();
+        }
+
+        return hurt;
     }
+
+    /// <summary>Burning heat is near the body this tick (within its zone's margin): the ground here is no <see cref="Footing"/>.</summary>
+    public void NearHeat() => _heatNear = Engine.GetPhysicsFrames();
 
     /// <summary>
     /// Holds the horizontal input toward <paramref name="direction"/> for up to <paramref name="seconds"/>, or until
