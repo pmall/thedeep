@@ -58,7 +58,7 @@ The real game's map, designed before a single room is built. Two files per world
 
 - **The network**: every node a room, every edge a way between rooms with its requirement (nothing, an ability, abilities together or in alternative, an item), one way or both. The same language as [map-draft.md](../worlds/prototype/map-draft.md), extended with items, secrets and power-ups. Much bigger than the prototype: many paths, loops, shortcuts, secret rooms. The solver proves it like the prototype: no softlock, every room reachable, the order-freedom targets, every item placed before its door.
 - **The room table** (a `.tsv` beside the network): one row per room: name, layer (its biome is the world's for that layer), kinds (a closed set: `RoomKind`), what happens there, its machines, its items, notes; `RoomTable` has the format. The room check holds the table and the network to each other (`RoomTable.Check`: same rooms, a relic, boss or ambush room where the network has one, a secret room entered only by hidden ways, the items where the network places them). Built, with both worlds' tables (`worlds/prototype/rooms.tsv`, `worlds/sequel/rooms.tsv`); `tools/map.sh` lists each room's kinds.
-- **A drawing**: the network rendered for the owner to read on paper (generated from the files, never drawn by hand).
+- **A drawing**: the network rendered for the owner to read on paper (generated from the files, never drawn by hand): `tools/map.sh` writes it.
 - **Done when:** the owner approves the plan. Nothing is built before that.
 
 ## Stage C: the real game `#stage-real-game`

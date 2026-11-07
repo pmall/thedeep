@@ -341,6 +341,17 @@ public partial class RoomValidator : Node
         }
     }
 
+    /// <summary>Writes the network's drawing (<see cref="MapDrawing"/>) to lookdev/map-WORLD.svg, WORLD the network's folder; returns its path.</summary>
+    private string WriteDrawing(MapDraft draft, RoomTable? table)
+    {
+        string world = World.Definition.Network.GetBaseDir().GetFile();
+        string path = $"res://lookdev/map-{world}.svg";
+        DirAccess.MakeDirRecursiveAbsolute(ProjectSettings.GlobalizePath("res://lookdev"));
+        using FileAccess file = FileAccess.Open(path, FileAccess.ModeFlags.Write);
+        file.StoreString(MapDrawing.Svg(draft, table, $"{world}: the network"));
+        return ProjectSettings.GlobalizePath(path);
+    }
+
     /// <summary>The world's room table (<see cref="RoomTable"/>); a world without one is a problem.</summary>
     private RoomTable? LoadTable()
     {
@@ -393,6 +404,7 @@ public partial class RoomValidator : Node
 
         if (Report)
         {
+            text.Append($"\ndrawing: {WriteDrawing(draft, table)}");
             if (table is not null)
             {
                 text.Append("\nroom table (kinds):");

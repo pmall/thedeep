@@ -102,4 +102,4 @@ Every piece a world is built from (`docs/principles.md#bricks`). The prototype's
 | Room, travel, species and lab checks (`docs/testing.md#check`) | ready |
 | Required exports (`RequiredExports`) | ready |
 | Line check (`LineCheck`: every line the code and a world's content name is in its book) | ready |
-| Network and room table check (`MapDraft`, `RoomTable`: a world's `rooms.tsv` held to its network, kinds in `RoomKind`) | ready |
+| Network and room table check (`MapDraft`, `RoomTable`: a world's `rooms.tsv` held to its network, kinds in `RoomKind`), and its drawing (`MapDrawing`, written by `tools/map.sh`) | ready |

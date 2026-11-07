@@ -1,6 +1,7 @@
 #!/usr/bin/env bash
 # Prints the map: the built rooms' graph (ways, placements, ability orders) and the whole game's draft
 # (the world's network, worlds/prototype/map-draft.md: summary, every way, every achievable order; each room's kinds, from its room table). Fails like the room check does.
+# It also writes the network's drawing for the owner to read, lookdev/map-WORLD.svg (MapDrawing; open it in a browser).
 #   tools/map.sh                    the prototype, checked from its mechanics lab
 #   tools/map.sh WORLD ROOM         another world, checked from one of its rooms without machines (tools/map.sh sequel Strongroom)
 set -euo pipefail
