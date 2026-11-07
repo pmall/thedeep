@@ -13,6 +13,7 @@
 [ext_resource type="Resource" path="res://resources/biomes/core.tres" id="8_core"]
 [ext_resource type="Resource" path="res://worlds/prototype/items/sacristy_key.tres" id="9_sacristy_key"]
 [ext_resource type="Resource" path="res://worlds/prototype/items/kiln_lever.tres" id="10_kiln_lever"]
+[ext_resource type="Resource" path="res://worlds/prototype/items/pyre_litany.tres" id="11_pyre_litany"]
 
 [sub_resource type="Resource" id="layer_flooded"]
 script = ExtResource("2_layer")
@@ -40,6 +41,6 @@ RoomsFolder = "res://worlds/prototype/rooms"
 Network = "res://worlds/prototype/map-draft.md"
 StartRoom = ExtResource("3_start")
 Layers = [SubResource("layer_flooded"), SubResource("layer_frozen"), SubResource("layer_volcanic"), SubResource("layer_core")]
-Items = [ExtResource("9_sacristy_key"), ExtResource("10_kiln_lever")]
+Items = [ExtResource("9_sacristy_key"), ExtResource("10_kiln_lever"), ExtResource("11_pyre_litany")]
 Lines = ExtResource("4_lines")
 SaveName = "save"

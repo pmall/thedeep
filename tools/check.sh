@@ -77,6 +77,8 @@ CHECKS=(
     "heat|HEAT OK|HEAT CHECK|1500|--room Basalt --heat-check"
     # KeyCheck: the Sacristy key and its locked door, in place.
     "key|KEY OK|KEY CHECK|2000|--room Narthex --key-check"
+    # KeyCheck's Pyre plan: the Pyre's litany (a code) and its seal on the Ashfall's low door, in place.
+    "code|CODE OK|CODE CHECK|2000|--room Ashfall --code-check"
     # SecretCheck: the Sacristy's hidden passage into the Cell.
     "secret|SECRET OK|SECRET CHECK|1500|--room Sacristy --secret-check"
     # AmbushCheck: the Pyre's trap.

@@ -29,6 +29,8 @@
 [ext_resource type="Script" path="res://scripts/rooms/Room.cs" id="22_room"]
 [ext_resource type="Resource" path="res://resources/biomes/flooded.tres" id="23_flooded"]
 [ext_resource type="PackedScene" path="res://scenes/stage/RoomStage.tscn" id="24_stage"]
+[ext_resource type="PackedScene" path="res://scenes/props/ItemPickup.tscn" id="25_pickup"]
+[ext_resource type="Resource" path="res://worlds/prototype/items/pyre_litany.tres" id="26_pyre_litany"]
 
 [sub_resource type="PrimitiveMesh" id="column_1"]
 script = ExtResource("1_column")
@@ -248,6 +250,11 @@ Size = Vector2(2, 1)
 ; a pilgrim shrine beside the hole: rest here to save and heal
 [node name="Shrine" parent="Props" instance=ExtResource("6_shrine")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 31.5, 0, 0)
+
+; the Pyre's litany, a code: a maker's tablet at the lookout's west end, under the bell
+[node name="PyreLitany" parent="Props" instance=ExtResource("25_pickup")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 5, 10, 0)
+Item = ExtResource("26_pyre_litany")
 
 [node name="Machines" type="Node3D" parent="."]
 

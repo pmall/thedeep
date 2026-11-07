@@ -95,6 +95,9 @@ public partial class Main : Node3D
     /// <summary>User argument that runs the key and locked door check (see KeyCheck), used by tools/check.sh.</summary>
     private const string KeyCheckArgument = "--key-check";
 
+    /// <summary>User argument that runs the code and sealed door check (see KeyCheck.Pyre), used by tools/check.sh.</summary>
+    private const string CodeCheckArgument = "--code-check";
+
     /// <summary>User argument that plays the whole run from a new game to the end (see PlaythroughCheck), used by tools/check.sh.</summary>
     private const string PlaythroughCheckArgument = "--playthrough-check";
 
@@ -133,7 +136,7 @@ public partial class Main : Node3D
     private static readonly string[] DriverArguments =
     {
         SmokeArgument, CaptureTestArgument, LookDevArgument, ValidateRoomsArgument, ValidateTravelArgument, ValidateSpeciesArgument,
-        UiShotArgument, PlaythroughCheckArgument, GripCheckArgument, CombatCheckArgument, HarpoonCheckArgument, EncounterCheckArgument, DrillCheckArgument, BallastCheckArgument, HeatCheckArgument, KeyCheckArgument, PowerUpCheckArgument, DialogueCheckArgument, AmbushCheckArgument, SecretCheckArgument, FightCheckArgument,
+        UiShotArgument, PlaythroughCheckArgument, GripCheckArgument, CombatCheckArgument, HarpoonCheckArgument, EncounterCheckArgument, DrillCheckArgument, BallastCheckArgument, HeatCheckArgument, KeyCheckArgument, CodeCheckArgument, PowerUpCheckArgument, DialogueCheckArgument, AmbushCheckArgument, SecretCheckArgument, FightCheckArgument,
     };
 
     private SaveData? _resume;
@@ -288,6 +291,10 @@ public partial class Main : Node3D
         else if (Array.IndexOf(args, KeyCheckArgument) >= 0)
         {
             AddChild(new KeyCheck { Player = Player, World = World, Keyring = Keyring, Session = Session });
+        }
+        else if (Array.IndexOf(args, CodeCheckArgument) >= 0)
+        {
+            AddChild(new KeyCheck { Player = Player, World = World, Keyring = Keyring, Session = Session, Checked = KeyCheck.Pyre });
         }
         else if (Array.IndexOf(args, HeatCheckArgument) >= 0)
         {

@@ -6,20 +6,34 @@ using Godot;
 namespace TheDeep;
 
 /// <summary>
-/// The key and its door in place (`-- --room Narthex --key-check`, run by tools/check.sh), through the real input actions: in the
-/// Narthex without the Sacristy key, walking into the locked door is stopped by it, and the pilgrim says it is locked; in the
-/// Scriptorium, walking up to the key takes it (held, remembered, in the save); back in the Narthex, coming near the door opens it,
-/// and walking on crosses into the Sacristy; walking back out, the door stands open for good, and reloading the Narthex finds it
-/// open. Each step has a time limit. Prints `KEY OK` or `KEY CHECK` errors.
+/// An item and its door in place, through the real input actions (run by tools/check.sh): the Sacristy key
+/// (`-- --room Narthex --key-check`, <see cref="Sacristy"/>) and the Pyre's litany, a code (`-- --room Ashfall --code-check`,
+/// <see cref="Pyre"/>). Without the item, walking into the door is stopped by it, and the pilgrim says why; in the item's room,
+/// walking up to it takes it (held, remembered, in the save); back holding it, coming near the door opens it, and walking on crosses
+/// beyond; walking back out (where the room beyond lets one turn at once) the door stands open for good, and reloading its room finds
+/// it open. Each step has a time limit. Prints `KEY OK` (or `CODE OK`) or `KEY CHECK` (`CODE CHECK`) errors.
 /// </summary>
 public partial class KeyCheck : Node
 {
+    /// <summary>What is checked: the item, the room of its door (the check starts there), the room it lies in, the room beyond the
+    /// door, which way the door is walked into (-1 west), the abilities the way needs, whether the check walks back out through it,
+    /// and the word its result prints.</summary>
+    public sealed record Plan(string Item, string DoorRoom, string ItemRoom, string Beyond, int Toward, Ability[] Needs, bool WalkBack, string Tag);
+
+    public static readonly Plan Sacristy = new("SacristyKey", "Narthex", "Scriptorium", "Sacristy", -1, Array.Empty<Ability>(), true, "KEY");
+
+    /// <summary>The Pyre's ambush gate stands just inside its door, so the check does not turn back there.</summary>
+    public static readonly Plan Pyre = new("PyreLitany", "Ashfall", "Belfry", "Pyre", 1, new[] { Ability.HeatPlating }, false, "CODE");
+
     public required Player Player { get; init; }
     public required World World { get; init; }
     public required Keyring Keyring { get; init; }
     public required Session Session { get; init; }
+    public Plan Checked { get; init; } = Sacristy;
 
-    private const string Key = "SacristyKey";
+    private string Key => Checked.Item;
+    private StringName Toward => Checked.Toward < 0 ? InputActions.MoveLeft : InputActions.MoveRight;
+    private StringName Back => Checked.Toward < 0 ? InputActions.MoveRight : InputActions.MoveLeft;
 
     private readonly List<Step> _steps = new();
     private readonly List<string> _problems = new();
@@ -43,40 +57,52 @@ public partial class KeyCheck : Node
     {
         Keyring.Refused += _ => _refused = true;
         Keyring.Opened += _ => _opened = true;
-        float doorX = Door?.GlobalPosition.X ?? 0f;
+        foreach (Ability ability in Checked.Needs)
+        {
+            Player.Abilities.Unlock(ability);
+        }
 
-        _steps.Add(new("without the key, walking into the locked door is stopped by it", 2f,
-            () => { Player.Respawn(new Vector3(doorX + 3f, 0f, 0f), -1); Input.ActionPress(InputActions.MoveLeft); },
-            () => _ticks > 90 && Door is { Opened: false } && Player.GlobalPosition.X > doorX && Mathf.Abs(Player.Velocity.X) < 0.1f));
-        _steps.Add(new("and the pilgrim says it is locked", 0.5f, () => { }, () => _refused));
-        _steps.Add(new("in the Scriptorium, walking up to the key takes it, for good and in the save", 4f,
+        float doorX = Door?.GlobalPosition.X ?? 0f;
+        Vector3 doorFloor = Door?.GlobalPosition ?? Vector3.Zero;
+        Vector3 before = doorFloor - new Vector3(3f * Checked.Toward, 0f, 0f);
+        bool Shy(Player p) => Checked.Toward < 0 ? p.GlobalPosition.X > doorX : p.GlobalPosition.X < doorX;
+
+        _steps.Add(new("without the item, walking into its door is stopped by it", 2f,
+            () => { Player.Respawn(before, Checked.Toward); Input.ActionPress(Toward); },
+            () => _ticks > 90 && Door is { Opened: false } && Shy(Player) && Mathf.Abs(Player.Velocity.X) < 0.1f));
+        _steps.Add(new("and the pilgrim says why", 0.5f, () => { }, () => _refused));
+        _steps.Add(new($"in the {Checked.ItemRoom}, walking up to the item takes it, for good and in the save", 4f,
             () =>
             {
-                Input.ActionRelease(InputActions.MoveLeft);
-                Load("Scriptorium");
-                ItemPickup? pickup = World.Room.All<ItemPickup>().FirstOrDefault();
+                Input.ActionRelease(Toward);
+                Load(Checked.ItemRoom);
+                ItemPickup? pickup = World.Room.All<ItemPickup>().FirstOrDefault(p => p.Item.Id == Key);
                 Player.Respawn((pickup?.GlobalPosition ?? Vector3.Zero) + new Vector3(1.5f, 0f, 0f), -1);
                 Input.ActionPress(InputActions.MoveLeft);
             },
-            () => Player.Items.Holds(Key) && Player.InControl && World.Room.All<ItemPickup>().All(p => p.Taken)
-                  && Session.Save.Items.Contains(Key) && Session.Save.Collected.Any(c => c.StartsWith("Scriptorium/"))));
-        _steps.Add(new("back in the Narthex holding it, coming near the door opens it", 3f,
+            () => Player.Items.Holds(Key) && Player.InControl && World.Room.All<ItemPickup>().Where(p => p.Item.Id == Key).All(p => p.Taken)
+                  && Session.Save.Items.Contains(Key) && Session.Save.Collected.Any(c => c.StartsWith($"{Checked.ItemRoom}/"))));
+        _steps.Add(new($"back in the {Checked.DoorRoom} holding it, coming near the door opens it", 3f,
             () =>
             {
                 Input.ActionRelease(InputActions.MoveLeft);
-                Load("Narthex");
-                Player.Respawn(new Vector3(doorX + 3f, 0f, 0f), -1);
-                Input.ActionPress(InputActions.MoveLeft);
+                Load(Checked.DoorRoom);
+                Player.Respawn(before, Checked.Toward);
+                Input.ActionPress(Toward);
             },
             () => _opened));
-        _steps.Add(new("and walking on, under the rising gate, crosses into the Sacristy", 4f, () => { },
-            () => World.RoomName == "Sacristy" && Player.InControl));
-        _steps.Add(new("walking back out, the door stands open", 5f,
-            () => { Input.ActionRelease(InputActions.MoveLeft); Input.ActionPress(InputActions.MoveRight); },
-            () => World.RoomName == "Narthex" && Door is { Opened: true } door && door.Gate.Raised));
-        _steps.Add(new("and the Narthex loaded again finds it open, remembered", 1f,
-            () => { Input.ActionRelease(InputActions.MoveRight); Load("Narthex"); },
-            () => Door is { Opened: true } door && door.Gate.Raised && Session.Save.Collected.Contains($"Narthex/{door.Name}")));
+        _steps.Add(new($"and walking on, under the rising gate, crosses into the {Checked.Beyond}", 4f, () => { },
+            () => World.RoomName == Checked.Beyond && Player.InControl));
+        if (Checked.WalkBack)
+        {
+            _steps.Add(new("walking back out, the door stands open", 5f,
+                () => { Input.ActionRelease(Toward); Input.ActionPress(Back); },
+                () => World.RoomName == Checked.DoorRoom && Door is { Opened: true } door && door.Gate.Raised));
+        }
+
+        _steps.Add(new($"and the {Checked.DoorRoom} loaded again finds it open, remembered", 1f,
+            () => { Input.ActionRelease(Toward); Input.ActionRelease(Back); Load(Checked.DoorRoom); },
+            () => Door is { Opened: true } door && door.Gate.Raised && Session.Save.Collected.Contains($"{Checked.DoorRoom}/{door.Name}")));
         Next();
     }
 
@@ -121,13 +147,13 @@ public partial class KeyCheck : Node
         Input.ActionRelease(InputActions.MoveRight);
         foreach (string problem in _problems)
         {
-            GD.PushError($"KEY CHECK: {problem}");
+            GD.PushError($"{Checked.Tag} CHECK: {problem}");
         }
 
         if (_problems.Count == 0)
         {
-            GD.Print($"KEY OK: {_steps.Count} steps (stopped by the locked door, its line, the key taken and saved, the door opened, " +
-                     "through to the Sacristy, open behind, remembered)");
+            GD.Print($"{Checked.Tag} OK: {_steps.Count} steps (stopped by the door, its line, the {Key} taken and saved, the door opened, " +
+                     $"through to the {Checked.Beyond}, open behind, remembered)");
         }
 
         GetTree().Quit(_problems.Count == 0 ? 0 : 1);

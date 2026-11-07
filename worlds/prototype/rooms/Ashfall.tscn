@@ -25,6 +25,8 @@
 [ext_resource type="Resource" path="res://resources/biomes/volcanic.tres" id="19_volcanic"]
 [ext_resource type="PackedScene" path="res://scenes/stage/RoomStage.tscn" id="20_stage"]
 [ext_resource type="Script" path="res://scripts/rooms/dressing/WallDressing.cs" id="21_wall"]
+[ext_resource type="PackedScene" path="res://scenes/props/LockedDoor.tscn" id="22_door"]
+[ext_resource type="Resource" path="res://worlds/prototype/items/pyre_litany.tres" id="23_pyre_litany"]
 
 [sub_resource type="PrimitiveMesh" id="blockmesh_1"]
 script = ExtResource("10_blockmesh")
@@ -194,14 +196,15 @@ TargetRoom = "res://worlds/prototype/rooms/Slag.tscn"
 TargetExit = "East"
 Size = Vector2(1, 4)
 
-; east, behind the heat: the Pyre
-[node name="Pyre" type="Marker3D" parent="Exits"]
+; east, behind the heat: the Pyre, its low door sealed by its litany
+[node name="Pyre" type="Marker3D" parent="Exits" node_paths=PackedStringArray("Door")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 58.5, -18, 0)
 script = ExtResource("4_exit")
 Side = 1
 TargetRoom = "res://worlds/prototype/rooms/Pyre.tscn"
 TargetExit = "West"
-Requires = "HeatPlating"
+Requires = "HeatPlating & PyreLitany"
+Door = NodePath("../../Props/PyreSeal")
 Size = Vector2(1, 4)
 
 ; the hatch in the floor, down to the Bellows
@@ -213,6 +216,13 @@ TargetRoom = "res://worlds/prototype/rooms/Bellows.tscn"
 TargetExit = "Ashfall"
 ArrivalSide = 1
 Size = Vector2(3, 1)
+
+[node name="Props" type="Node3D" parent="."]
+
+; the seal on the Pyre's low door, under the wall's head: its litany is on the Belfry's lookout
+[node name="PyreSeal" parent="Props" instance=ExtResource("22_door")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 57, -18, 0)
+Item = ExtResource("23_pyre_litany")
 
 [node name="Heat" type="Node3D" parent="."]
 

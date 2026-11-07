@@ -79,7 +79,7 @@ Every piece a world is built from (`docs/principles.md#bricks`). The prototype's
 |---|---|---|
 | `AbilityRelic` | working | `docs/roadmap.md#pilgrim` (the moment) |
 | `PowerUp` (strength or defense, for good: `Prowess`), played by `PowerUps` | ready | — |
-| Items: `ItemDefinition`, `ItemPickup` (keys, codes), held by `Inventory`, played by `Keyring` | ready for keys; a code's look is plain and no world places one yet (`docs/art-direction.md#art-open`) | `docs/roadmap.md#stage-bricks` (the code) |
+| Items: `ItemDefinition`, `ItemPickup` (keys, codes), held by `Inventory`, played by `Keyring` | ready (a key: the Sacristy's; a code: the Pyre's litany, its script the makers' glyphs; its violet: `docs/art-direction.md#art-open`) | — |
 
 ## Systems `#bricks-systems`
 

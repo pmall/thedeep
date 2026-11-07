@@ -1,6 +1,6 @@
 # Map draft — the prototype world
 
-The prototype world's network file (`Network` in [world.tres](world.tres)): 42 rooms over three layers and the core, 5 abilities, a key, a lever, a secret, an ambush, 4 bosses, 3 law breaks, all built. It is a **planning graph**: the `map` blocks below are parsed by `MapDraft` (its docblock has the format) and checked on every build, by the unit tests and against the built rooms (`docs/testing.md#check`); everything outside them is design notes. The real game's map will be its own network with a room table (`docs/roadmap.md#stage-plan`); this one stays the prototype's. Room names, boss names and story beats are placeholders unless [theme.md](../../docs/theme.md) says otherwise.
+The prototype world's network file (`Network` in [world.tres](world.tres)): 42 rooms over three layers and the core, 5 abilities, a key, a code, a lever, a secret, an ambush, 4 bosses, 3 law breaks, all built. It is a **planning graph**: the `map` blocks below are parsed by `MapDraft` (its docblock has the format) and checked on every build, by the unit tests and against the built rooms (`docs/testing.md#check`); everything outside them is design notes. The real game's map will be its own network with a room table (`docs/roadmap.md#stage-plan`); this one stays the prototype's. Room names, boss names and story beats are placeholders unless [theme.md](../../docs/theme.md) says otherwise.
 
 **The markers are the truth** `#draft-markers`: a built room's exits, sealed exits and relics must match its ways and relics here. When a room is built or changed, update its part of the draft in the same commit. Print it with `tools/map.sh`.
 
@@ -36,11 +36,11 @@ FROZEN                              Counterweight ─ Coldstacks ─ Choir ─ R
 VOLCANIC                                            Kiln ─ Slag ─(B)─ Quench ─ Crucible[P]
                                                            ├─(D)─ Basalt ─ Crucible
                                                            ├─ Chimney ─(P)─ Coldstacks
-                                                           └─ Ashfall ─(P)─ Pyre
+                                                           └─ Ashfall ─(P, code)─ Pyre
                                                               Ashfall ─(M|H)─ Bellows ─ Foundry ✦ ─(P)─ Threshold
 CORE      Threshold ─ Mantle ─(M&H)─ Orrery ─(D&B)─ Lode ─ Effigy ▼ first law ─ Heart ✦ goal
 ```
-M Mag-grip, H Harpoon, D Drill, B Ballast, P Heat plating; (key) the Sacristy key, on the Scriptorium's gallery; ┄ a hidden way.
+M Mag-grip, H Harpoon, D Drill, B Ballast, P Heat plating; (key) the Sacristy key, on the Scriptorium's gallery; (code) the Pyre's litany, on the Belfry's lookout; ┄ a hidden way.
 
 ## Order freedom `#draft-order-freedom`
 
@@ -81,7 +81,7 @@ The first slice plus the crypts under it and the road down. Pale white, a touch 
 | Nave | Three Votaries at prayer; a hatch down; a metal wall up to the Descent. *(built)* |
 | Cistern | Under the Nave: Gleaner, Limpet; the Reliquary west, the Sluice east. *(built)* |
 | Reliquary | **Mag-grip** and a first shrine. *(built)* |
-| Belfry | Over the hall's shaft, by grip or harpoon: shrine, bell, Lamplighter. *(built)* |
+| Belfry | Over the hall's shaft, by grip or harpoon: shrine, bell, Lamplighter; the Pyre's litany (a code) on the lookout under the bell. *(built)* |
 | Descent | The drowned well. At its bottom the flooded gate: sink in it (Ballast) and go down with the water into the Sluice (one way), the way out without climbing back. *(built)* |
 | Sluice | The floodgate channel east of the Cistern: under a raised gate, over a culvert pit, over a closed gate (a Limpet asleep on it). A drain in its vault where the Descent's flooded gate comes down. *(built)* |
 | Undercroft | Crypts under the cathedral, the second hub: shrine, a Votary over the tombs; the high way on to the Chapterhouse by grip or rings, the flue up to the Scriptorium by grip (coming back from either is a drop); the lift from below will arrive here. *(built)* |
@@ -116,6 +116,7 @@ way Sacristy <-> Cell                            # hidden: through the false foo
 way DrownedHall <-> Nave
 way DrownedHall -> Belfry : MagGrip | Harpoon   # up the shaft
 way Belfry -> DrownedHall                        # dropping back down
+item Belfry PyreLitany                           # the Pyre's litany, on the lookout under the bell
 way Nave -> Cistern                              # the hatch
 way Cistern -> Nave : MagGrip                    # the metal flue
 way Nave -> Descent : MagGrip                    # the metal wall
@@ -202,7 +203,7 @@ Basalt, slag rivers, the machines' birthplace: they are cast here in molds of th
 | Crucible | Where plating is cast, under both: a great crucible pouring into glowing moulds, **Heat plating** on a dais between them, a shrine; the coolant falls from the Quench's drain into a basin, gantries climb back to it. *(built)* |
 | Ashfall | East of the Slag: a pit under a broken flue, ash raining through; a stair of ledges down to the ash floor, a Gleaner; the Pyre behind a curtain of heat (Heat plating), a hatch down to the Bellows. *(built)* |
 | Bellows | Under the Ashfall: a bellows the size of a nave, still heaving; gantries back up to the hatch; its iron frame (Mag-grip) or the rings on its ribs (Harpoon) up to the high door on to the Foundry; a shrine. *(built)* |
-| Pyre | Through the heat (Heat plating): where machines are given to the fire; a pyre on an altar, broken machines laid round it, a scripture plate, a shrine. **A trap**: two of the dead rise behind a falling gate. *(built)* |
+| Pyre | Through the heat (Heat plating) and a low door sealed by its litany (the code on the Belfry's lookout): where machines are given to the fire; a pyre on an altar, broken machines laid round it, a scripture plate, a shrine. **A trap**: two of the dead rise behind a falling gate. *(built)* |
 | Chimney | A narrow vent from the Slag's roof up to the slag welling in the Coldstacks' floor: ledges up its throat, its molten mouth passed only with Heat plating. The shortcut home. *(built)* |
 | Foundry | The great foundry, an arcade over a molten channel. **Boss: the Founder** (placeholder: the Precentor's brain, heavier). The vents to the core, a shaft of heat in the floor, need Heat plating. *(built)* |
 
@@ -228,7 +229,7 @@ way Quench -> Crucible : Ballast                 # sunk through the drain in its
 way Crucible -> Quench                           # up the gantries, floating up from the drain
 relic Crucible HeatPlating
 way Slag <-> Ashfall
-way Ashfall <-> Pyre : HeatPlating
+way Ashfall <-> Pyre : HeatPlating & PyreLitany   # through the heat, the low door sealed
 way Ashfall <-> Bellows                          # the hatch in the ash floor; gantries back up to it
 way Bellows -> Foundry : MagGrip | Harpoon       # the bellows' iron frame or the rings on its ribs, up to the high door
 way Foundry -> Bellows                           # back out onto the high ledge, and down
