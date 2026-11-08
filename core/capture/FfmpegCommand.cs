@@ -63,7 +63,7 @@ public sealed record FfmpegCommand(
             "-frames:v", "1",
         };
         args.AddRange(CodecArguments(codec));
-        args.AddRange(new[] { "-f", "null", "-" });
+        args.AddRange(["-f", "null", "-"]);
         return args;
     }
 

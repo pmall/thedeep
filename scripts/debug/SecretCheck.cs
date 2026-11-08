@@ -32,7 +32,7 @@ public partial class SecretCheck : Node
         ProcessPhysicsPriority = -100;
     }
 
-    private FalseWall? Wall => World.Room.All<FalseWall>().FirstOrDefault();
+    private FalseWall? Wall => World.Room.First<FalseWall>();
 
     public override void _Ready()
     {

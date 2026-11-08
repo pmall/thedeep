@@ -42,7 +42,7 @@ public partial class CombatCheck : Node
         }
     }
 
-    private Machine? Votary => World.Room.All<Machine>().FirstOrDefault();
+    private Machine? Votary => World.Room.First<Machine>();
 
     public override void _Ready()
     {

@@ -40,7 +40,7 @@ public partial class PowerUpCheck : Node
     public override void _Ready()
     {
         PowerUps.Taken += power => _taken.Add(power);
-        PowerUp? dais = World.Room.All<PowerUp>().FirstOrDefault();
+        PowerUp? dais = World.Room.First<PowerUp>();
         if (dais is not { Stat: PowerStat.Defense })
         {
             _problems.Add("the Sacristy has no defense power-up");

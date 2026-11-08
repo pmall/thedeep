@@ -11,34 +11,34 @@ namespace TheDeep;
 public struct Intent
 {
     /// <summary>Desired velocity, m/s. Walkers use X; flyers both; crawlers its part along their surface.</summary>
-    public Vector2 Velocity;
+    public Vector2 Velocity { get; set; }
 
     /// <summary>+1 or -1 to face that way; 0 faces the way it moves (or keeps the current facing).</summary>
-    public int Facing;
+    public int Facing { get; set; }
 
     /// <summary>Where the sensors aim, if anywhere.</summary>
-    public Vector2? LookAt;
+    public Vector2? LookAt { get; set; }
 
-    public MachineAct Act;
+    public MachineAct Act { get; set; }
 
     /// <summary>Broadcast to neighbors (<see cref="Neighbor.Signal"/>).</summary>
-    public float Signal;
+    public float Signal { get; set; }
 
     /// <summary>The strike lands this tick.</summary>
-    public bool Hit;
+    public bool Hit { get; set; }
 
     /// <summary>Devotion: bowing, kneeling, a censer swinging.</summary>
-    public float Pray;
+    public float Pray { get; set; }
 
     /// <summary>A strike: wind-up up to about 0.6, the blow at 1, then back down.</summary>
-    public float Strike;
+    public float Strike { get; set; }
 
     /// <summary>Threat: eyes turning the hazard color, a body rising to its full height.</summary>
-    public float Alert;
+    public float Alert { get; set; }
 
     /// <summary>Awake versus dormant: a sleeper unfolding, a rotor spinning up.</summary>
-    public float Rouse;
+    public float Rouse { get; set; }
 
     /// <summary>Busy hands: pecking at scrap, working a tool.</summary>
-    public float Work;
+    public float Work { get; set; }
 }

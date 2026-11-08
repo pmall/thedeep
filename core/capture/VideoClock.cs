@@ -16,15 +16,8 @@ public sealed class VideoClock
     /// <param name="maxBurst">Most frames one call may return; longer stalls are cut from the video.</param>
     public VideoClock(int fps, int maxBurst)
     {
-        if (fps <= 0)
-        {
-            throw new ArgumentOutOfRangeException(nameof(fps));
-        }
-
-        if (maxBurst <= 0)
-        {
-            throw new ArgumentOutOfRangeException(nameof(maxBurst));
-        }
+        ArgumentOutOfRangeException.ThrowIfNegativeOrZero(fps);
+        ArgumentOutOfRangeException.ThrowIfNegativeOrZero(maxBurst);
 
         Fps = fps;
         _maxBurst = maxBurst;

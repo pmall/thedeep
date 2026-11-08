@@ -32,7 +32,7 @@ public partial class FightCheck : Node
         ProcessPhysicsPriority = -100;
     }
 
-    private Machine Votary => World.Room.All<Machine>().First();
+    private Machine Votary => World.Room.First<Machine>() ?? throw new InvalidOperationException("no Machine in the room");
 
     private static void Hold(StringName action, bool held)
     {

@@ -98,6 +98,13 @@ public partial class Room : Node3D
         return found;
     }
 
+    /// <summary>The room's first node of type <typeparamref name="T"/> in scene order, or null when it has none.</summary>
+    public T? First<T>() where T : Node
+    {
+        IReadOnlyList<T> all = All<T>();
+        return all.Count > 0 ? all[0] : null;
+    }
+
     private readonly Dictionary<System.Type, object> _found = new();
 
     public override void _EnterTree()

@@ -33,6 +33,9 @@ public partial class LookDevDriver : Node
     /// <summary>Frame time the game must stay under at 1080p on the owner's RTX 3060 (docs/principles.md#performance).</summary>
     private const double BudgetMs = 10.0;
 
+    /// <summary>How the perf report is written: indented, for people to read.</summary>
+    private static readonly JsonSerializerOptions PerfJson = new() { WriteIndented = true };
+
     private readonly ConcurrentQueue<string> _problems = new();
     private readonly List<string> _saved = new();
     private readonly FrameTimeStats _frame = new();
@@ -350,7 +353,7 @@ public partial class LookDevDriver : Node
             ["gpu_name"] = RenderingServer.GetVideoAdapterName(),
             ["godot"] = (string)Engine.GetVersionInfo()["string"],
         };
-        File.WriteAllText(Path.Combine(OutputDir, PerfFile), JsonSerializer.Serialize(perf, new JsonSerializerOptions { WriteIndented = true }));
+        File.WriteAllText(Path.Combine(OutputDir, PerfFile), JsonSerializer.Serialize(perf, PerfJson));
 
         bool withinBudget = _frame.Average <= BudgetMs && _frame.Percentile(99) <= BudgetMs;
         GD.Print($"frame {_frame}");

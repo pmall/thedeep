@@ -44,7 +44,7 @@ public partial class DialogueCheck : Node
 
     public override void _Ready()
     {
-        Conversation? lamplighter = World.Room.All<Conversation>().FirstOrDefault();
+        Conversation? lamplighter = World.Room.First<Conversation>();
         if (lamplighter is null)
         {
             _problems.Add("the Narthex has no conversation");

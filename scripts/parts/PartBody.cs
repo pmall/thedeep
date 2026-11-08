@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using Godot;
 using NQuaternion = System.Numerics.Quaternion;
@@ -90,7 +91,7 @@ public partial class PartBody : Node3D
         {
             foreach (Chain chain in _chains)
             {
-                chain.Mesh.Arrays.Dispose();
+                chain.Mesh.Dispose();
             }
         }
     }
@@ -195,7 +196,7 @@ public partial class PartBody : Node3D
         return ((t * chain.Spec.Offset).ToCore(), q.ToCore());
     }
 
-    private void DrawChain(Chain chain, float t)
+    private static void DrawChain(Chain chain, float t)
     {
         NVector3[] current = chain.Sim.Points;
         int count = current.Length;
@@ -236,7 +237,7 @@ public partial class PartBody : Node3D
     private sealed record Chain(PartChain Spec, Node3D Joint, VerletChain Sim, MeshInstance3D Skin, Node3D End, NVector3[] Previous, ChainMesh Mesh);
 
     /// <summary>What drawing one chain reuses every frame: its profile and taper (fixed), the builder, path and arrays.</summary>
-    private sealed class ChainMesh
+    private sealed class ChainMesh : IDisposable
     {
         public readonly NVector3[] Points;
         public readonly NVector2[] Scales;
@@ -259,5 +260,7 @@ public partial class PartBody : Node3D
                 ? Profile.Rect(spec.Width, spec.Thickness, spec.Thickness * RibbonBevelShare)
                 : Profile.Circle(spec.Width * 0.5f, TubeSides);
         }
+
+        public void Dispose() => Arrays.Dispose();
     }
 }

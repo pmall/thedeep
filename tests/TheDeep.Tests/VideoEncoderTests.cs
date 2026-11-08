@@ -14,19 +14,19 @@ public class VideoEncoderTests
     private const int Height = 48;
 
     [Fact]
-    public void Finds_a_working_codec()
+    public void FindsAWorkingCodec()
     {
         Assert.NotNull(VideoEncoder.DetectCodec());
     }
 
     [Fact]
-    public async Task Encodes_frames_into_a_playable_file()
+    public async Task EncodesFramesIntoAPlayableFile()
     {
         string path = Path.Combine(Path.GetTempPath(), $"thedeep-test-{Guid.NewGuid():N}.mp4");
         try
         {
             var pool = new CountingPool();
-            VideoEncoder encoder = VideoEncoder.Start(Command(path), pool);
+            using VideoEncoder encoder = VideoEncoder.Start(Command(path), pool);
             for (int i = 0; i < 10; i++)
             {
                 encoder.Submit(Frame((byte)(i * 20)), 2);
@@ -47,12 +47,12 @@ public class VideoEncoderTests
     }
 
     [Fact]
-    public async Task Missed_frames_are_filled_by_repeats()
+    public async Task MissedFramesAreFilledByRepeats()
     {
         string path = Path.Combine(Path.GetTempPath(), $"thedeep-test-{Guid.NewGuid():N}.mp4");
         try
         {
-            VideoEncoder encoder = VideoEncoder.Start(Command(path));
+            using VideoEncoder encoder = VideoEncoder.Start(Command(path));
             encoder.CoverMissedFrames(3);
             encoder.Submit(Frame(0), 1);
             var (exitCode, errors) = await encoder.FinishAsync(TimeSpan.FromSeconds(20));
@@ -68,13 +68,13 @@ public class VideoEncoderTests
     }
 
     [Fact]
-    public async Task Frames_after_finishing_are_ignored_and_given_back()
+    public async Task FramesAfterFinishingAreIgnoredAndGivenBack()
     {
         string path = Path.Combine(Path.GetTempPath(), $"thedeep-test-{Guid.NewGuid():N}.mp4");
         try
         {
             var pool = new CountingPool();
-            VideoEncoder encoder = VideoEncoder.Start(Command(path), pool);
+            using VideoEncoder encoder = VideoEncoder.Start(Command(path), pool);
             encoder.Submit(Frame(0), 1);
             await encoder.FinishAsync(TimeSpan.FromSeconds(20));
             encoder.Submit(Frame(0), 1);

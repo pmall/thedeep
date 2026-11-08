@@ -47,7 +47,7 @@ public class MapSolverTests
         MapReport r = MapSolver.Solve(g);
 
         Assert.False(r.SoftlockFree);
-        (SolverState state, var path) = r.Softlocks.First();
+        (SolverState state, var path) = r.Softlocks[0];
         Assert.Equal("Pit", state.Room);
         Assert.Equal(new[] { "Narthex", "DrownedHall", "Pit" }, path.Select(p => p.Room));
     }

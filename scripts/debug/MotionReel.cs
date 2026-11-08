@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using Godot;
 
@@ -317,7 +318,7 @@ public static class MotionReel
                 Camera: new Vector3(28.5f, 1.4f, 7f)),
             // Lingering in front of the Votary: its wind-up, the blow, the pilgrim thrown back and shimmering.
             new(new Vector3(27.4f, 0f, 0f), 1, 150,
-                new Press[0],
+                Array.Empty<Press>(),
                 new Shot[]
                 {
                     new(10, "linger"), new(30, "wind-up"), new(45, "wind-up"), new(55, "blow"), new(60, "blow"), new(66, "thrown"),

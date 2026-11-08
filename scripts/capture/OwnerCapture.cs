@@ -256,8 +256,8 @@ public partial class OwnerCapture : CanvasLayer
 
     private async Task FinishRecording(Recording recording, string reason)
     {
-        var (exitCode, errors) = await recording.Encoder.FinishAsync(FinishTimeout).ConfigureAwait(false);
-        VideoEncoder encoder = recording.Encoder;
+        using VideoEncoder encoder = recording.Encoder;
+        var (exitCode, errors) = await encoder.FinishAsync(FinishTimeout).ConfigureAwait(false);
         string mp4 = Path.Combine(recording.Folder, recording.Name + ".mp4");
         double seconds = (double)encoder.FramesWritten / recording.Clock.Fps;
 

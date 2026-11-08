@@ -42,11 +42,11 @@ public partial class EncounterCheck : Node
         ProcessPhysicsPriority = -100;
     }
 
-    private BossSeal Seal => World.Room.All<BossSeal>().First();
+    private BossSeal Seal => World.Room.First<BossSeal>() ?? throw new InvalidOperationException("no BossSeal in the room");
     private Machine Precentor => World.Room.All<Machine>().First(m => m.Species.Id == "precentor");
-    private LawBreak Law => World.Room.All<LawBreak>().First();
+    private LawBreak Law => World.Room.First<LawBreak>() ?? throw new InvalidOperationException("no LawBreak in the room");
     private IEnumerable<Machine> Choristers => World.Room.All<Machine>().Where(m => m.Species.Id == "chorister");
-    private Lift Cage => World.Room.All<Lift>().First();
+    private Lift Cage => World.Room.First<Lift>() ?? throw new InvalidOperationException("no Lift in the room");
     private Machine Archivist => World.Room.All<Machine>().First(m => m.Species.Id == "archivist");
     private bool _ordered;
     private float X => Player.GlobalPosition.X;
@@ -55,7 +55,7 @@ public partial class EncounterCheck : Node
     private int _jumpHeld;
     private bool _rose;
 
-    private void Hold(StringName action, bool held)
+    private static void Hold(StringName action, bool held)
     {
         if (held)
         {

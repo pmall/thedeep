@@ -49,13 +49,13 @@ public partial class KitMesh : PrimitiveMesh
 
         public void Dispose() => _native?.Dispose();
 
-        public Vector3[] Positions = System.Array.Empty<Vector3>();
-        public Vector3[] Normals = System.Array.Empty<Vector3>();
-        public float[] Tangents = System.Array.Empty<float>();
-        public Color[] Colors = System.Array.Empty<Color>();
-        public Vector2[] Uvs = System.Array.Empty<Vector2>();
-        public Vector2[] Patches = System.Array.Empty<Vector2>();
-        public int[] Indices = System.Array.Empty<int>();
+        public Vector3[] Positions { get; private set; } = System.Array.Empty<Vector3>();
+        public Vector3[] Normals { get; private set; } = System.Array.Empty<Vector3>();
+        public float[] Tangents { get; private set; } = System.Array.Empty<float>();
+        public Color[] Colors { get; private set; } = System.Array.Empty<Color>();
+        public Vector2[] Uvs { get; private set; } = System.Array.Empty<Vector2>();
+        public Vector2[] Patches { get; private set; } = System.Array.Empty<Vector2>();
+        public int[] Indices { get; private set; } = System.Array.Empty<int>();
 
         public void Fit(int vertices, int indices)
         {

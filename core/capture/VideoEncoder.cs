@@ -18,7 +18,7 @@ namespace TheDeep;
 /// next frame written is repeated in their place instead. The video then stutters but keeps real
 /// time, and memory stays bounded.
 /// </summary>
-public sealed class VideoEncoder
+public sealed class VideoEncoder : IDisposable
 {
     /// <summary>Frames waiting for the writer thread; about 50 MB at 1080p.</summary>
     private const int QueueCapacity = 6;
@@ -34,6 +34,7 @@ public sealed class VideoEncoder
     private long _framesWritten;
     private long _framesRepeatedForLag;
     private bool _closed;
+    private bool _disposed;
     private volatile bool _failed;
 
     private VideoEncoder(FfmpegCommand command, Process process, ArrayPool<byte>? pool)
@@ -199,6 +200,37 @@ public sealed class VideoEncoder
         {
             return (_process.ExitCode, _errors.ToString().Trim());
         }
+    }
+
+    /// <summary>
+    /// Releases ffmpeg's process and the queue, after <see cref="FinishAsync"/>. A recording not finished is abandoned:
+    /// ffmpeg is killed and its file left incomplete. The counters stay readable, and frames submitted later are given back.
+    /// </summary>
+    public void Dispose()
+    {
+        lock (_addLock)
+        {
+            if (_disposed)
+            {
+                return;
+            }
+
+            _disposed = true;
+            if (!_closed)
+            {
+                _closed = true;
+                _queue.CompleteAdding();
+            }
+        }
+
+        if (!_process.HasExited)
+        {
+            _process.Kill();
+        }
+
+        _writer.Join();
+        _queue.Dispose();
+        _process.Dispose();
     }
 
     private void WriteLoop()

@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Numerics;
@@ -79,7 +80,7 @@ public class ReachPlannerTests
     {
         var solids = new[] { B(-10f, -2f, 30f, 0f) };
         var planner = new ReachPlanner(Limits, solids);
-        var (_, ledges) = planner.Reach(new Vector2(5f, 20f), new Vector2(0f, -5f), new Box[0]);
+        var (_, ledges) = planner.Reach(new Vector2(5f, 20f), new Vector2(0f, -5f), Array.Empty<Box>());
         Assert.Single(ledges);
     }
 
@@ -200,7 +201,7 @@ public class ReachPlannerTests
     {
         Box tower = B(4f, 0f, 6f, 10f);
         var solids = new[] { B(-10f, -2f, 30f, 0f), tower, B(-10f, 20f, 30f, 21f) };
-        Assert.False(Grips(solids, new Box[0], new Vector2(0f, 0f), B(4.5f, 10.2f, 5.5f, 11f)));
+        Assert.False(Grips(solids, Array.Empty<Box>(), new Vector2(0f, 0f), B(4.5f, 10.2f, 5.5f, 11f)));
     }
 
     [Fact]

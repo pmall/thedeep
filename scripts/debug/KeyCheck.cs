@@ -49,7 +49,7 @@ public partial class KeyCheck : Node
         ProcessPhysicsPriority = -100;
     }
 
-    private LockedDoor? Door => World.Room.All<LockedDoor>().FirstOrDefault();
+    private LockedDoor? Door => World.Room.First<LockedDoor>();
 
     private void Load(string room) => World.Load(GD.Load<PackedScene>(World.RoomPath(room)));
 
@@ -81,7 +81,7 @@ public partial class KeyCheck : Node
                 Input.ActionPress(InputActions.MoveLeft);
             },
             () => Player.Items.Holds(Key) && Player.InControl && World.Room.All<ItemPickup>().Where(p => p.Item.Id == Key).All(p => p.Taken)
-                  && Session.Save.Items.Contains(Key) && Session.Save.Collected.Any(c => c.StartsWith($"{Checked.ItemRoom}/"))));
+                  && Session.Save.Items.Contains(Key) && Session.Save.Collected.Any(c => c.StartsWith($"{Checked.ItemRoom}/", StringComparison.Ordinal))));
         _steps.Add(new($"back in the {Checked.DoorRoom} holding it, coming near the door opens it", 3f,
             () =>
             {

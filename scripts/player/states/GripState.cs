@@ -181,7 +181,7 @@ public sealed class GripState : PlayerState
         return null;
     }
 
-    private PlayerState LetGo()
+    private FallState LetGo()
     {
         NVector2 up = Player.SurfaceUp;
         NVector2 along = GripMath.Tangent(up) * _speed;
@@ -191,7 +191,7 @@ public sealed class GripState : PlayerState
         return Player.States.Fall;
     }
 
-    private PlayerState Leap(NVector2 up)
+    private FallState Leap(NVector2 up)
     {
         Player.ConsumeJump();
         Player.StandUpright();

@@ -32,7 +32,7 @@ public partial class AmbushCheck : Node
         ProcessPhysicsPriority = -100;
     }
 
-    private Ambush? Trap => World.Room.All<Ambush>().FirstOrDefault();
+    private Ambush? Trap => World.Room.First<Ambush>();
 
     public override void _Ready()
     {
