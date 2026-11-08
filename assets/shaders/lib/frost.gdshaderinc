@@ -37,9 +37,12 @@ Frost frost_at(vec3 p, vec3 world_n, float face_up, float cavity, float edge, fl
 	fr.cover = clamp(max(cap, rime * 0.8) * amount, 0.0, 1.0);
 
 	// Crystals: a sparse grid of glints, only where rime lies.
+	// A crystal smaller than two pixels would blink as the camera creeps: it fades out instead
+	// (docs/art-direction.md#stable-image).
 	vec3 cell = floor(p * 55.0);
 	float glint = step(0.985, fract(sin(dot(cell, vec3(12.9898, 78.233, 37.719))) * 43758.5453));
-	fr.sparkle = glint * smoothstep(0.4, 0.8, fr.cover);
+	float cell_px = max(length(fwidth(p * 55.0)), 1e-5);
+	fr.sparkle = glint * smoothstep(0.4, 0.8, fr.cover) * (1.0 - smoothstep(0.25, 0.5, cell_px));
 	return fr;
 }
 

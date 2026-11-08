@@ -32,7 +32,7 @@ public sealed class MachineGait
     /// <summary>One tick that moved the machine <paramref name="travelled"/> meters (signed); returns its speed (m/s).</summary>
     public float Moved(float travelled, float dt)
     {
-        float speed = MathF.Abs(travelled) / dt;
+        float speed = dt > 0f ? MathF.Abs(travelled) / dt : 0f; // a frozen tick (time scale 0) moves nothing
         Walked += MathF.Abs(travelled);
         Stepping = Motion.Damp(Stepping, Math.Clamp(speed / StepSpeed, 0f, 1f), StepSharpness, dt);
         return speed;

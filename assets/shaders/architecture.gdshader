@@ -41,15 +41,17 @@ void fragment() {
 	float along = abs(n.x) > 0.6 ? p.z : p.x;
 	float up = abs(n.y) > 0.6 ? p.z : p.y;
 	float line = 0.0;
+	// How far a pixel spans along each, meters: the lines are filtered to it (lib/noise filtered_line).
+	vec2 px = vec2(fwidth(along), fwidth(up));
 	if (lines == 0) {
 		float course = floor(up / cell.x);
 		float fx = fract(along / cell.y + hash12(vec2(course, 3.1)));
 		float fy = fract(up / cell.x);
-		line = max(1.0 - smoothstep(0.0, 0.03, min(fy, 1.0 - fy)), 1.0 - smoothstep(0.0, 0.02, min(fx, 1.0 - fx)));
+		line = max(filtered_line(min(fy, 1.0 - fy), 0.03, px.y / cell.x), filtered_line(min(fx, 1.0 - fx), 0.02, px.x / cell.y));
 	} else if (lines == 1) {
 		vec2 f = fract(vec2(along / cell.y, up / cell.x));
 		vec2 d = min(f, 1.0 - f) * vec2(cell.y, cell.x);
-		line = 1.0 - smoothstep(0.0, 0.04, min(d.x, d.y));
+		line = max(filtered_line(d.x, 0.04, px.x), filtered_line(d.y, 0.04, px.y));
 	}
 	float tone = 0.85 + 0.3 * v_seed + 0.15 * (value_noise2(vec2(along, up) * 0.15) - 0.5);
 	vec3 albedo = palette_color(slot) * tone * (1.0 - 0.35 * line);

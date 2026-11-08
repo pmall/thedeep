@@ -62,10 +62,10 @@ vec3 surface_bump(Surface f, vec3 n, vec2 gradient) {
 // screen-space derivatives of one evaluation (the surface gradient, after Mikkelsen 2010), where finite differences
 // evaluated the whole pattern twice more per pixel. `pos` the view-space position (VERTEX), `n`, `t`, `b` view space.
 vec2 surface_slope(float h, vec3 pos, vec3 n, vec3 t, vec3 b) {
-	vec3 dpdx = dFdx(pos);
-	vec3 dpdy = dFdy(pos);
-	float dhdx = dFdx(h);
-	float dhdy = dFdy(h);
+	vec3 dpdx = dFdxFine(pos);
+	vec3 dpdy = dFdyFine(pos);
+	float dhdx = dFdxFine(h);
+	float dhdy = dFdyFine(h);
 	vec3 r1 = cross(dpdy, n);
 	vec3 r2 = cross(n, dpdx);
 	float det = dot(dpdx, r1);

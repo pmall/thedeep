@@ -390,6 +390,34 @@ public static class MotionReel
         }
     }
 
+    /// <summary>
+    /// The settle reels (docs/testing.md#settle-reel): the pilgrim runs, stops, and the gameplay camera settles over the
+    /// floor while every frame is compared with the one before (<see cref="FrameShimmer"/>). The flooded layer's Brink and
+    /// the frozen layer's Sanctum, each run stopping near its law break so its words show.
+    /// </summary>
+    public static readonly Settle[] Settles =
+    {
+        new("Brink", new Vector3(12f, 0f, 0f), 1, 60),
+        new("Sanctum", new Vector3(20f, 0f, 0f), -1, 60),
+    };
+
+    /// <summary>A room's settle reels.</summary>
+    public static IEnumerable<Settle> SettlesFor(string room)
+    {
+        foreach (Settle settle in Settles)
+        {
+            if (settle.Room == room)
+            {
+                yield return settle;
+            }
+        }
+    }
+
+    /// <param name="Room">The room.</param>
+    /// <param name="Start">Where the pilgrim respawns (room coordinates), facing and then running <paramref name="Facing"/>.</param>
+    /// <param name="RunTicks">Physics ticks it runs before letting go; the camera then settles.</param>
+    public sealed record Settle(string Room, Vector3 Start, int Facing, int RunTicks);
+
     /// <param name="Room">The room the reel's positions belong to.</param>
     /// <param name="Folder">Where its frames go in the run directory.</param>
     /// <param name="Sheet">The contact sheet's name (&lt;Sheet&gt;.png).</param>

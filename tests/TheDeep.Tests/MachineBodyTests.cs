@@ -118,6 +118,14 @@ public class MachineBodyTests
     }
 
     [Fact]
+    public void AFrozenTickMovesNothing()
+    {
+        var gait = new MachineGait();
+        Assert.Equal(0f, gait.Moved(0f, 0f));
+        Assert.Equal(0f, gait.Stepping);
+    }
+
+    [Fact]
     public void SteppingEasesInWhileWalkingAndOutWhenStanding()
     {
         var gait = new MachineGait();

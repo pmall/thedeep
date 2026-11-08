@@ -50,7 +50,8 @@ void fragment() {
 	// Fracture planes: Voronoi borders on a slant plane through the ice, thin and white.
 	vec2 q = vec2(dot(p, vec3(0.8, 0.3, 0.5)), dot(p, vec3(-0.2, 0.9, 0.35))) * fracture_scale;
 	vec2 cell = voronoi_border(q + v_seed * 3.0);
-	float fracture = (1.0 - smoothstep(0.0, 0.025, cell.x)) * smoothstep(0.4, 0.6, fbm2(q * 0.5, 2)) * fractures;
+	vec2 q_px = fwidth(q);
+	float fracture = filtered_line(cell.x, 0.025, max(q_px.x, q_px.y)) * smoothstep(0.4, 0.6, fbm2(q * 0.5, 2)) * fractures;
 	// Bubbles: small pale specks in loose trails.
 	vec3 bq = p * 9.0;
 	float bubble = step(0.93, hash13(floor(bq))) * (1.0 - smoothstep(0.15, 0.35, length(fract(bq) - 0.5)));

@@ -73,9 +73,18 @@ struct Rock {
 	float tone;   // albedo multiplier
 };
 
-// Courses of cut stone on a face: `along` runs with the courses, `across` over them. Returns the mortar joint (1 in it)
-// and the block's hash in .y, its tilt in tone in .z.
-vec3 masonry_at(float along, float across, float seed) {
+// Cut stone on a face (masonry_at).
+struct Masonry {
+	float joint;  // the mortar joint, 1 in it, filtered to the pixel (lib/noise filtered_line)
+	float groove; // the same joint for the height field (lib/noise bump_line)
+	float id;     // the block's hash
+	float tilt;   // the block's tilt in height
+	float inside; // how far inside the block the point lies (lib/noise border_fade): the per-block values are scaled by it
+};
+
+// Courses of cut stone on a face: `along` runs with the courses, `across` over them, `footprint` how far a pixel spans
+// along each (meters).
+Masonry masonry_at(float along, float across, vec2 footprint, float seed) {
 	float cy = across / course_height;
 	float course = floor(cy);
 	float fy = fract(cy);
@@ -86,14 +95,23 @@ vec3 masonry_at(float along, float across, float seed) {
 	float id = hash12(vec2(block, course + seed * 13.0));
 	// Mortar 3-5 cm, the blocks' arrises worn rounder here and there.
 	float wear = 0.025 + 0.03 * id;
-	float jy = 1.0 - smoothstep(0.0, wear, min(fy, 1.0 - fy) * course_height);
-	float jx = 1.0 - smoothstep(0.0, wear, min(fx, 1.0 - fx) * len);
-	return vec3(max(jx, jy), id, hash12(vec2(block * 1.3, course - seed)));
+	float dy = min(fy, 1.0 - fy) * course_height;
+	float dx = min(fx, 1.0 - fx) * len;
+	Masonry m;
+	m.joint = max(filtered_line(dx, wear, footprint.x), filtered_line(dy, wear, footprint.y));
+	m.groove = max(bump_line(dx, wear, footprint.x), bump_line(dy, wear, footprint.y));
+	m.id = id;
+	m.tilt = hash12(vec2(block * 1.3, course - seed));
+	m.inside = min(border_fade(dx, wear, footprint.x), border_fade(dy, wear, footprint.y));
+	return m;
 }
 
 Rock rock_at(vec3 p, vec3 t, vec3 b, float seed, float up) {
 	Rock r;
 	vec2 q = vec2(dot(p, t), dot(p, b));
+	// How far a pixel spans on the face, meters: every line below is filtered to it (lib/noise filtered_line).
+	vec2 q_px = fwidth(q);
+	float y_px = fwidth(p.y);
 	float warp = fbm3(p * 0.3 + seed * 11.0, 3);
 
 	// Strata: horizontal layers of uneven thickness, some proud of the wall, joined by grooves. Faults shift whole
@@ -105,26 +123,35 @@ Rock rock_at(vec3 p, vec3 t, vec3 b, float seed, float up) {
 	float layer = floor(s);
 	float within = fract(s);
 	float layer_hash = hash12(vec2(layer, 3.7));
-	float joint = 1.0 - smoothstep(0.0, 0.07, within) * smoothstep(1.0, 0.9, within);
+	float s_px = y_px * strata_frequency;
+	float joint = max(filtered_line(within, 0.07, s_px), filtered_line(1.0 - within, 0.1, s_px));
 	// Some layers are split once more, so the spacing never looks regular.
 	float split = 0.3 + 0.4 * fract(layer_hash * 7.13);
 	if (layer_hash < 0.45) {
-		joint = max(joint, (1.0 - smoothstep(0.0, 0.05, abs(within - split))) * 0.7);
+		joint = max(joint, filtered_line(abs(within - split), 0.05, s_px) * 0.7);
 	}
-	joint *= smoothstep(0.25, 0.6, value_noise2(vec2(q.x * 0.35, layer * 1.7 + seed)));
+	float groove = max(bump_line(within, 0.07, s_px), bump_line(1.0 - within, 0.1, s_px));
+	if (layer_hash < 0.45) {
+		groove = max(groove, bump_line(abs(within - split), 0.05, s_px) * 0.7);
+	}
+	float runs = smoothstep(0.25, 0.6, value_noise2(vec2(q.x * 0.35, layer * 1.7 + seed)));
+	joint *= runs;
+	groove *= runs;
 	r.tone = 1.0 + (layer_hash - 0.5) * 2.0 * strata_contrast + (warp - 0.5) * 0.35;
-	r.height = layer_hash * 0.035 - joint * 0.025;
+	// A layer stands proud of the next by its own amount, meeting it at the joint (lib/noise border_fade).
+	float in_layer = border_fade(within, 0.07, s_px) * border_fade(1.0 - within, 0.1, s_px);
+	r.height = layer_hash * 0.035 * in_layer - groove * 0.025;
 	r.cavity = joint * 0.5;
 
 	// Masonry: courses along a wall (or round an arch), flagstones on what faces up.
 	float built = biome_masonry * masonry_share;
 	if (built > 0.0) {
 		float across = up > 0.5 ? q.y : p.y;
-		vec3 m = masonry_at(q.x, across, seed);
-		float block_tone = 0.9 + 0.2 * m.y + (warp - 0.5) * 0.25;
+		Masonry m = masonry_at(q.x, across, vec2(q_px.x, up > 0.5 ? q_px.y : y_px), seed);
+		float block_tone = 0.9 + 0.2 * mix(0.5, m.id, m.inside) + (warp - 0.5) * 0.25;
 		r.tone = mix(r.tone, block_tone, built);
-		r.height = mix(r.height, m.z * 0.02 - m.x * 0.03, built);
-		r.cavity = mix(r.cavity, m.x * 0.7, built);
+		r.height = mix(r.height, m.tilt * 0.02 * m.inside - m.groove * 0.03, built);
+		r.cavity = mix(r.cavity, m.joint * 0.7, built);
 	}
 
 	// Long stains running down the faces: wide walls never read as one flat tone.
@@ -136,7 +163,8 @@ Rock rock_at(vec3 p, vec3 t, vec3 b, float seed, float up) {
 		vec2 fc = voronoi_border(fq);
 		float fissure = 1.0 - smoothstep(0.02, 0.07, fc.x);
 		float rim = (1.0 - smoothstep(0.07, 0.14, fc.x)) * (1.0 - fissure);
-		r.height += fc.y * 0.03 * fracture - fissure * 0.08 * fracture;
+		float tilt = fc.y * border_fade(fc.x, 0.07, max(q_px.x, q_px.y) * 1.1);
+		r.height += tilt * 0.03 * fracture - fissure * 0.08 * fracture;
 		r.cavity = max(r.cavity, fissure * fracture);
 		r.tone *= mix(1.0, (1.0 - 0.75 * fissure) * (1.0 + 0.25 * rim) * (0.9 + 0.2 * fc.y), fracture);
 	}
@@ -150,13 +178,15 @@ Rock rock_at(vec3 p, vec3 t, vec3 b, float seed, float up) {
 	// Cracks come and go, and taper: their width follows a noise along them.
 	float presence = smoothstep(1.0 - crack_amount, 1.0 - crack_amount + 0.12, fbm2(q * 0.35 + seed * 3.0, 2));
 	float width = crack_width * crack_scale * presence * (0.4 + 0.9 * value_noise2(q * 3.0 + 1.3));
-	float crack = 1.0 - smoothstep(0.0, max(width, 1e-4), cell.x);
-	crack *= step(0.001, presence);
-	// Each cell is a slab with its own slight tilt in tone.
-	r.tone *= 0.94 + 0.12 * cell.y;
+	float cell_px = max(q_px.x, q_px.y) * crack_scale;
+	float crack = filtered_line(cell.x, width, cell_px);
+	float crack_groove = bump_line(cell.x, width, cell_px);
+	// Each cell is a slab with its own slight tilt in tone, meeting its neighbor's at the border.
+	float slab = mix(0.5, cell.y, border_fade(cell.x, 0.02, cell_px));
+	r.tone *= 0.94 + 0.12 * slab;
 
 	float grain = fbm3(p * 7.0, 2);
-	r.height += grain * 0.012 + cell.y * 0.006 - crack * 0.025;
+	r.height += grain * 0.012 + slab * 0.006 - crack_groove * 0.025;
 	r.cavity = max(r.cavity, crack * 0.8);
 	r.tone *= 0.9 + 0.2 * grain;
 	return r;

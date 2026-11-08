@@ -42,7 +42,9 @@ void fragment() {
 	float light = 0.0;
 	if (hash12(id * 3.1 + v_seed * 5.0 + float(seed)) >= gaps) {
 		float d = glyph_distance(p, id, hash12(id * 1.7 + v_seed * 13.0 + float(seed)));
-		float aa = fwidth(d) * 0.75;
+		// Each stroke's edge is spread over its pixel's footprint, so it slides smoothly under a creeping camera
+		// (docs/art-direction.md#stable-image).
+		float aa = max(fwidth(d), 1e-5);
 		float core = 1.0 - smoothstep(stroke * 0.5 - aa, stroke * 0.5 + aa, d);
 		float halo = glow > 0.0 ? exp(-max(d - stroke * 0.5, 0.0) / glow * 3.0) * 0.35 : 0.0;
 		float phase = hash12(id + 0.5) * 6.2832;
@@ -51,6 +53,8 @@ void fragment() {
 	}
 
 	vec3 color = mix(srgb_to_linear(biome_accent.rgb), vec3(1.0), whiten);
-	ALBEDO = color * light * intensity;
+	// Added light is ALBEDO × ALPHA: the albedo carries only what the alpha can't, so an edge pixel half covered adds
+	// half the light (light × light would cut the edge hard, to the pixel).
 	ALPHA = clamp(light, 0.0, 1.0);
+	ALBEDO = color * max(light, 1.0) * intensity;
 }
