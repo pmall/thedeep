@@ -42,7 +42,12 @@ public sealed class PilgrimMotion
     private const float RunStance = 0.36f;
     private const float MaxStanceTravel = 0.95f;
     private const float WalkLift = 0.07f;
-    private const float RunLift = 0.3f;
+
+    // Running, the swinging foot kicks up behind toward the seat, then the knee drives it forward high; the pushing foot points
+    // as it leaves the ground (radians).
+    private const float RunLift = 0.46f;
+    private const float RunHeelKick = 0.16f;
+    private const float RunToeOff = 0.75f;
 
     /// <summary>Feet land this far ahead of the hips, so the body rides over them.</summary>
     private const float RunReach = 0.06f;
@@ -51,7 +56,7 @@ public sealed class PilgrimMotion
     // (and back when braking) and how much it sinks while it does, so a start, a stop and a turn carry weight.
     private const float StandBend = 0.025f;
     private const float RunCrouch = 0.07f;
-    private const float RunLean = -0.42f;
+    private const float RunLean = -0.36f;
     private const float AccelLean = -0.024f;
     private const float MaxAccelLean = 0.38f;
     private const float AccelSink = 0.1f;
@@ -69,11 +74,14 @@ public sealed class PilgrimMotion
     private const float HipRoll = 0.07f;
     private const float ChestRoll = 0.04f;
 
-    // Arms: the swing and the elbow's bend, standing to running, and how far (a share of the cycle) each arm trails its leg.
+    // Arms, pumped from the shoulder against the legs: the swing each way and the elbow's bend, standing to running (running,
+    // the bend at the back of the swing, and how much more it folds coming forward), and how far (a share of the cycle) each
+    // arm trails its leg.
     private const float IdleSwing = 0.05f;
-    private const float RunSwing = 0.85f;
+    private const float RunSwing = 1.2f;
     private const float IdleElbow = 0.2f;
-    private const float RunElbow = 1.15f;
+    private const float RunElbow = 1.0f;
+    private const float RunElbowFold = 0.45f;
     private const float ArmLag = 0.05f;
 
     /// <summary>Downward speed (m/s) at which a landing compresses fully.</summary>
@@ -89,7 +97,7 @@ public sealed class PilgrimMotion
     private const float GripCrouch = 0.15f;
     private const float GripLean = -0.6f;
     private const float GripStride = 0.7f;
-    private const float GripLift = 0.5f;
+    private const float GripLift = 0.33f;
 
     /// <summary>How long the ledge assist's vault lasts, seconds.</summary>
     private const float VaultLength = 0.34f;
@@ -430,10 +438,12 @@ public sealed class PilgrimMotion
         float flex = -StepFlex * g * step * (1f - cling);
         // The spine curves into the lean (the chest leans most); the neck takes it back and the head keeps out of the step's
         // flex, held up to look ahead, steadier than the chest it rides on.
-        pose[HumanoidBone.Hips] = lean * 0.3f + flex * 0.3f;
-        pose[HumanoidBone.Spine] = lean * 0.65f + flex * 0.7f;
+        // Running, the whole trunk tips forward from the hips; clinging, the spine curls over the metal from a steadier pelvis.
+        float pelvis = Lerp(0.75f, 0.3f, cling);
+        pose[HumanoidBone.Hips] = lean * pelvis + flex * 0.3f;
+        pose[HumanoidBone.Spine] = lean * Lerp(0.9f, 0.65f, cling) + flex * 0.7f;
         pose[HumanoidBone.Chest] = lean + flex + still * 0.014f * breathe;
-        pose[HumanoidBone.Neck] = lean * 0.45f + flex * 0.3f;
+        pose[HumanoidBone.Neck] = lean * 0.5f + flex * 0.3f;
         pose[HumanoidBone.Head] = lean * 0.12f + 0.15f * cling + still * 0.012f * MathF.Sin(MathF.Tau * 0.09f * _time);
 
         float turn = g * (1f - 0.6f * cling);
@@ -472,14 +482,14 @@ public sealed class PilgrimMotion
             // Planted: the foot slides back under the body exactly as fast as the body moves over it.
             float u = phase / stance;
             target = new Vector2(travel * (0.5f - u) + RunReach * g, 0f);
-            footAngle = -0.45f * g * SmoothStep(0.65f, 1f, u);
+            footAngle = -Lerp(RunToeOff, 0.45f, _gripWeight) * g * SmoothStep(0.65f, 1f, u);
         }
         else
         {
-            // Swinging: the heel kicks up behind, then the foot reaches forward and settles flat.
+            // Swinging: the heel kicks up behind, the knee drives the foot forward high, then it reaches ahead and settles flat.
             float q = (phase - stance) / (1f - stance);
-            target = new Vector2(-travel * 0.5f + travel * SmootherStep(q) + RunReach * g - 0.1f * g * MathF.Sin(MathF.PI * MathF.Min(q * 1.4f, 1f)),
-                lift * MathF.Sin(MathF.PI * MathF.Pow(q, 0.7f)));
+            target = new Vector2(-travel * 0.5f + travel * SmootherStep(q) + RunReach * g - Lerp(RunHeelKick, 0.1f, _gripWeight) * g * MathF.Sin(MathF.PI * MathF.Min(q * 1.4f, 1f)),
+                lift * MathF.Sin(MathF.PI * MathF.Pow(q, Lerp(0.9f, 0.7f, _gripWeight))));
             footAngle = -0.9f * g * MathF.Sin(MathF.PI * MathF.Pow(q, 0.6f)) * (1f - q) + 0.12f * g * SmoothStep(0.8f, 1f, q);
         }
 
@@ -497,7 +507,7 @@ public sealed class PilgrimMotion
     {
         float cos = MathF.Cos(MathF.Tau * legPhase);
         float shoulder = -swing * cos - 0.1f * g + (1f - g) * 0.03f + 0.01f * breathe + compression * 1.6f;
-        float elbow = Lerp(IdleElbow, RunElbow, g) + 0.4f * g * (0.5f - 0.5f * cos) + compression * 1.2f;
+        float elbow = Lerp(IdleElbow, RunElbow, g) + RunElbowFold * g * (0.5f - 0.5f * cos) + compression * 1.2f;
         pose[upper] = shoulder;
         pose[forearm] = shoulder + elbow;
         pose[hand] = shoulder + elbow + 0.12f;
