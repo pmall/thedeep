@@ -9,7 +9,8 @@ namespace TheDeep;
 /// <see cref="PilgrimMotion"/> (run cycle with planted feet, leaps, dash lunge, leaning, landing
 /// compression; clinging on Mag-grip, swimming, the dive's spin, the harpoon's reach, strikes, the recoil when hurt and the
 /// ledge vault), its coat, braid and lantern flowing behind, turning smoothly through a glance at the
-/// camera when the facing flips. Pivot is at the feet. <see cref="Player"/> calls <see cref="Animate"/>
+/// camera when the facing flips. A strike draws the blade out of the near forearm (the part on <see cref="BladeJoint"/>, slid out
+/// along its length) and its sweep leaves the <see cref="Slash"/>. Pivot is at the feet. <see cref="Player"/> calls <see cref="Animate"/>
 /// after each physics move, so physics interpolation keeps it smooth.
 /// </summary>
 public partial class PlayerVisual : Node3D
@@ -21,6 +22,12 @@ public partial class PlayerVisual : Node3D
 
     [Export] public StringName LanternChain { get; set; } = "Lantern";
 
+    /// <summary>The joint the blade part hangs from (down its -Y axis), on the near forearm.</summary>
+    [Export] public StringName BladeJoint { get; set; } = "Blade";
+
+    /// <summary>The slash the blade's sweep leaves, or none.</summary>
+    [Export] public SlashTrail? Slash { get; set; }
+
     /// <summary>How fast the body turns around when the facing flips, 1/s (higher is snappier).</summary>
     [Export] public float TurnSharpness { get; set; } = 20f;
 
@@ -28,6 +35,9 @@ public partial class PlayerVisual : Node3D
     [Export] public float CarrySharpness { get; set; } = 16f;
 
     private HumanoidRig? _rig;
+    private Node3D? _blade;
+    private Node3D? _shoulder;
+    private float _bladeLength;
     private PilgrimMotion? _motion;
     private int _facing = 1;
     private float _yaw;
@@ -46,6 +56,21 @@ public partial class PlayerVisual : Node3D
     public override void _Ready()
     {
         _rig = HumanoidRig.From(Body);
+        _shoulder = Body.Joint(nameof(HumanoidBone.UpperArmR));
+        _blade = Body.Joint(BladeJoint);
+        if (_blade is not null)
+        {
+            // The blade's length is its part's: whatever mesh the assembly hangs there.
+            foreach (Node child in _blade.GetChildren())
+            {
+                if (child is MeshInstance3D part && part.Mesh is not null)
+                {
+                    _bladeLength = Mathf.Max(_bladeLength, part.Mesh.GetAabb().Size.Y);
+                }
+            }
+
+            ShowBlade(0f);
+        }
         if (CarriedLight is not null && Body.ChainEnd(LanternChain) is { } lantern)
         {
             Vector3 offset = CarriedLight.Position;
@@ -147,6 +172,12 @@ public partial class PlayerVisual : Node3D
         _motion.Update(delta, velocity.Flat(), _facing, mode);
         Transform = _carry * new Transform3D(new Basis(Vector3.Up, _yaw + _motion.Spin), Vector3.Zero);
         _rig.Apply(_motion.Pose);
+        ShowBlade(_motion.Blade);
+        if (Slash is not null && _blade is not null && _shoulder is not null)
+        {
+            Slash.Track(_shoulder, _blade, _bladeLength, _motion.Edge * _motion.Blade, GlobalPosition, delta);
+        }
+
         Body.StepChains(delta, onFloor && !float.IsNaN(floorY) ? floorY + 0.02f : float.NaN);
 
         if (_motion.Footfall != 0 && Body.Joint(_motion.Footfall > 0 ? "FootR" : "FootL") is { } foot)
@@ -165,10 +196,25 @@ public partial class PlayerVisual : Node3D
         {
             _motion.Reset();
             _rig.Apply(_motion.Pose);
+            ShowBlade(0f);
             Body.ResetChains();
         }
 
+        Slash?.Clear();
+
         ResetPhysicsInterpolation();
+    }
+
+    /// <summary>The blade slid <paramref name="out"/> of the forearm (0 folded away, hidden; 1 all out), narrowing as it folds.</summary>
+    private void ShowBlade(float @out)
+    {
+        if (_blade is null)
+        {
+            return;
+        }
+
+        _blade.Visible = @out > 0.02f;
+        _blade.Scale = new Vector3(Mathf.Lerp(0.4f, 1f, @out), Mathf.Max(@out, 0.01f), 1f);
     }
 
     /// <summary>Facing +X is yaw 0; facing -X is -π, so a turn either way passes through facing the camera.</summary>

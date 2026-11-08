@@ -96,6 +96,34 @@ public sealed class HumanoidPose
         }
     }
 
+    /// <summary>Blends the hips (their angle, turn and offset) and the legs toward <paramref name="other"/>, leaving the rest.</summary>
+    public void BlendLowerToward(HumanoidPose other, float t)
+    {
+        if (t <= 0f)
+        {
+            return;
+        }
+
+        for (int i = 0; i < _angles.Length; i++)
+        {
+            if ((HumanoidBone)i is HumanoidBone.Hips or (>= HumanoidBone.ThighR and <= HumanoidBone.FootL))
+            {
+                Blend(other, i, t);
+            }
+        }
+
+        HipsOffset = Vector2.Lerp(HipsOffset, other.HipsOffset, t);
+    }
+
+    /// <summary>Sets <paramref name="bone"/> (its angle and turn) between <paramref name="a"/>'s and <paramref name="b"/>'s.</summary>
+    public void SetBetween(HumanoidBone bone, HumanoidPose a, HumanoidPose b, float t)
+    {
+        int i = (int)bone;
+        _angles[i] = a._angles[i] + (b._angles[i] - a._angles[i]) * t;
+        _yaw[i] = a._yaw[i] + (b._yaw[i] - a._yaw[i]) * t;
+        _roll[i] = a._roll[i] + (b._roll[i] - a._roll[i]) * t;
+    }
+
     private void Blend(HumanoidPose other, int i, float t)
     {
         _angles[i] += (other._angles[i] - _angles[i]) * t;

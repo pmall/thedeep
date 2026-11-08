@@ -51,7 +51,7 @@ A few moves, done well (`docs/roadmap.md#feel-fight`). No strike stops the pilgr
 - **Hits that land:** a landed blow holds the pilgrim and its target still for a few hundredths of a second (the **hit stop**), with sparks and a camera shake that grow with the strike.
 - **Power-ups** add to every blow's damage (strength) or to the pilgrim's health (defense), for good.
 
-Each strike's reach, width, damage, knockback, hit stop and bounce are `Strikes` in `player_tuning.tres`.
+Each strike's reach, width, damage, knockback, hit stop and bounce are `Strikes` in `player_tuning.tres`. How the strikes look (sword moves, the chain choreographed) is `docs/art-direction.md#strikes`.
 
 ## Unlockable abilities `#abilities`
 

@@ -8,7 +8,7 @@ namespace TheDeep;
 /// - the pilgrim's motion reel in the test room: idle, run start, a run cycle, stopping and turning, then
 ///   a jump, a dash off a ledge and a hard landing from the metal slab; then a short hop the ledge assist vaults onto the step;
 ///   then a jump and an air dash at its height;
-/// - the grip, harpoon and combat reels in the mechanics lab;
+/// - the grip, harpoon, combat and strikes reels in the mechanics lab;
 /// - the moments reel at the Narthex's shrine: resting, down on one knee;
 /// - the interactables used: the Narthex's locked door opening for its key, the Sacristy's power-up taken and its false wall
 ///   found, the Scriptorium's key taken, the Kiln's lever pulled and its gate rising;
@@ -297,7 +297,7 @@ public static class MotionReel
         }, Abilities: Ability.Harpoon),
         new("MechanicsLab", "combat", "Combat", 8f, new Segment[]
         {
-            // Swings at the Votary: the crescent, the hit flash and knockback, then it breaks.
+            // Swings at the Votary: the slash, the hit flash and knockback, then it breaks.
             new(new Vector3(27.4f, 0f, 0f), 1, 130,
                 new Press[]
                 {
@@ -325,6 +325,55 @@ public static class MotionReel
                     new(145, "calm"),
                 },
                 Camera: new Vector3(27f, 1.6f, 9f)),
+        }),
+        new("MechanicsLab", "strikes", "Strikes", 5f, new Segment[]
+        {
+            // The chain in the open, pressed in rhythm (each press kept through the last one's recovery): the first cut, the
+            // backhand, the finisher, then its hold and the release; dense through each strike (a frame shows about four ticks
+            // after its press: the input's tick and the grab's latency).
+            new(new Vector3(11f, 0f, 0f), 1, 110,
+                new Press[]
+                {
+                    new(10, InputActions.Attack, true), new(12, InputActions.Attack, false),
+                    new(22, InputActions.Attack, true), new(24, InputActions.Attack, false),
+                    new(42, InputActions.Attack, true), new(44, InputActions.Attack, false),
+                },
+                new Shot[]
+                {
+                    new(10, "idle"), new(15, "1 coil"), new(16, "1 coil"), new(17, "1 cut"), new(18, "1 cut"), new(19, "1 cut"),
+                    new(22, "1 follow"), new(25, "1 follow"), new(29, "1 hold"), new(33, "1 hold"), new(35, "2 coil"), new(36, "2 coil"),
+                    new(37, "2 cut"), new(38, "2 cut"), new(39, "2 cut"), new(42, "2 follow"), new(45, "2 follow"), new(49, "2 hold"),
+                    new(53, "2 hold"), new(55, "3 coil"), new(56, "3 coil"), new(57, "3 cut"), new(58, "3 cut"), new(59, "3 cut"),
+                    new(60, "3 cut"), new(62, "3 follow"), new(65, "3 follow"), new(69, "3 hold"), new(76, "3 hold"), new(84, "3 hold"),
+                    new(94, "release"), new(106, "idle"),
+                },
+                Camera: new Vector3(11.7f, 1.15f, 5.4f)),
+            // In the air holding down: the down strike, under the feet.
+            new(new Vector3(11f, 2.2f, 0f), 1, 60,
+                new Press[]
+                {
+                    new(1, InputActions.MoveDown, true), new(8, InputActions.Attack, true), new(10, InputActions.Attack, false),
+                    new(50, InputActions.MoveDown, false),
+                },
+                new Shot[]
+                {
+                    new(12, "down"), new(13, "down"), new(14, "down"), new(15, "down"), new(16, "down"), new(17, "down"),
+                    new(19, "down"), new(22, "down"), new(26, "down"), new(32, "down"), new(44, "land"),
+                },
+                Camera: new Vector3(11.3f, 1.7f, 6.4f)),
+            // A dash, then a strike during it: the dash strike's lunge.
+            new(new Vector3(5f, 0f, 0f), 1, 70,
+                new Press[]
+                {
+                    new(8, InputActions.Dash, true), new(10, InputActions.Dash, false),
+                    new(12, InputActions.Attack, true), new(14, InputActions.Attack, false),
+                },
+                new Shot[]
+                {
+                    new(14, "dash"), new(17, "dash strike"), new(18, "dash strike"), new(19, "dash strike"), new(20, "dash strike"), new(21, "dash strike"),
+                    new(23, "dash strike"), new(26, "dash strike"), new(30, "dash strike"), new(36, "dash strike"), new(48, "settle"), new(62, "settle"),
+                },
+                Camera: new Vector3(9f, 1.2f, 7.5f)),
         }),
     };
 

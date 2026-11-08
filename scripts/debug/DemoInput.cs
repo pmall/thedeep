@@ -29,13 +29,17 @@ public sealed class DemoInput
         Pulse(InputActions.Dash, period: 97, held: 2);
     }
 
-    /// <summary>Lets go of every action this script presses.</summary>
+    /// <summary>Lets go of every action this script or a look-dev reel (<see cref="MotionReel"/>) presses.</summary>
     public static void ReleaseAll()
     {
         Input.ActionRelease(InputActions.MoveLeft);
         Input.ActionRelease(InputActions.MoveRight);
+        Input.ActionRelease(InputActions.MoveUp);
+        Input.ActionRelease(InputActions.MoveDown);
         Input.ActionRelease(InputActions.Jump);
         Input.ActionRelease(InputActions.Dash);
+        Input.ActionRelease(InputActions.Attack);
+        Input.ActionRelease(InputActions.Harpoon);
     }
 
     private void Pulse(StringName action, int period, int held)

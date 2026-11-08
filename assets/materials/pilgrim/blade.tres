@@ -1,0 +1,13 @@
+[gd_resource type="ShaderMaterial" format=3]
+; The pilgrim's blade: pale polished steel, the brightest metal on the body (docs/art-direction.md#character).
+
+[ext_resource type="Shader" path="res://assets/shaders/android.gdshader" id="1_shader"]
+
+[resource]
+shader = ExtResource("1_shader")
+shader_parameter/base_color = Color(0.9, 0.91, 0.94, 1)
+shader_parameter/roughness = 0.16
+shader_parameter/metallic = 0.15
+shader_parameter/clearcoat = 0.6
+shader_parameter/clearcoat_roughness = 0.1
+shader_parameter/edge_light = 1.0

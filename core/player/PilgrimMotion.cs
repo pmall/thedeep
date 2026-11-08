@@ -26,9 +26,9 @@ namespace TheDeep;
 /// - throwing the Harpoon (<see cref="MotionMode.Throw"/>), the near arm cocked high behind the head, the body leaning back,
 ///   then whipped through to point along the line, past it and back; on the line, the near arm straight along it
 ///   (<see cref="Reach"/>), the body trailing behind;
-/// - over any of these, a strike (<see cref="Strike"/>: the near arm raised in the wind-up, swept through the blow, the body
-///   behind it; a down strike curls the legs up out of its way), a recoil when hurt (<see cref="Hurt"/>) and the ledge assist's
-///   vault (<see cref="Vault"/>: a hand planted on the top, the knees tucked up over the edge);
+/// - over any of these, a sword strike (<see cref="Strike"/>, choreographed by <see cref="StrikeMotion"/>: the whole body when
+///   standing or for a down strike, the trunk and arms over the run, the air or the dash), a recoil when hurt (<see cref="Hurt"/>)
+///   and the ledge assist's vault (<see cref="Vault"/>: a hand planted on the top, the knees tucked up over the edge);
 /// - over everything, a held moment (<see cref="Moment"/>): kneeling to rest, opening to take a relic, collapsing in death;
 /// - always, a lean into acceleration and a landing compression, both on soft springs, so moves flow into
 ///   each other. Feel numbers are constants here: they shape the animation only, never the movement.
@@ -120,6 +120,7 @@ public sealed class PilgrimMotion
     private const float RisePush = 0.3f;
 
     private readonly HumanoidDims _dims;
+    private readonly StrikeMotion _strikes;
     private readonly float _runSpeed;
     private readonly HumanoidPose _air = new();
     private readonly HumanoidPose _dash = new();
@@ -131,7 +132,6 @@ public sealed class PilgrimMotion
     private readonly HumanoidPose _throw = new();
     private readonly HumanoidPose _sink = new();
     private readonly HumanoidPose _rise = new();
-    private readonly HumanoidPose _strikePose = new();
     private readonly HumanoidPose _hurtPose = new();
     private readonly HumanoidPose _vaultPose = new();
     private readonly HumanoidPose _momentPose = new();
@@ -158,7 +158,6 @@ public sealed class PilgrimMotion
     private float _spin;
     private float _hurtTime = float.MaxValue;
     private float _vaultTime = float.MaxValue;
-    private StrikeMoment? _strike;
     private float _momentWeight;
     private PilgrimMoment _shown;
     private float _lastVelocityX;
@@ -170,6 +169,7 @@ public sealed class PilgrimMotion
     public PilgrimMotion(HumanoidDims dims, float runSpeed)
     {
         _dims = dims;
+        _strikes = new StrikeMotion(dims);
         _runSpeed = MathF.Max(runSpeed, 0.1f);
     }
 
@@ -199,10 +199,15 @@ public sealed class PilgrimMotion
     /// <paramref name="windUpEnd"/> and the blow by <paramref name="activeEnd"/> (shares of it). Called each tick it lasts;
     /// <see cref="EndStrike"/> when it is over.
     /// </summary>
-    public void Strike(float progress, float windUpEnd, float activeEnd, StrikeKind kind) =>
-        _strike = new StrikeMoment(Math.Clamp(progress, 0f, 1f), windUpEnd, MathF.Max(activeEnd, windUpEnd + 0.01f), kind);
+    public void Strike(float progress, float windUpEnd, float activeEnd, StrikeKind kind) => _strikes.Strike(progress, windUpEnd, activeEnd, kind);
 
-    public void EndStrike() => _strike = null;
+    public void EndStrike() => _strikes.End();
+
+    /// <summary>How far the blade is out of the near forearm, 0 (folded away) to 1 (<see cref="StrikeMotion.Blade"/>).</summary>
+    public float Blade => _strikes.Blade;
+
+    /// <summary>How strongly the blade's sweep leaves a trail now, 0 to 1 (<see cref="StrikeMotion.Edge"/>).</summary>
+    public float Edge => _strikes.Edge;
 
     /// <summary>A blow landed on the pilgrim: the body recoils, then recovers.</summary>
     public void Hurt() => _hurtTime = 0f;
@@ -239,7 +244,7 @@ public sealed class PilgrimMotion
         _spin = 0f;
         _hurtTime = float.MaxValue;
         _vaultTime = float.MaxValue;
-        _strike = null;
+        _strikes.Reset();
         Moment = PilgrimMoment.None;
         _momentWeight = 0f;
         _lastVelocityX = 0f;
@@ -332,6 +337,7 @@ public sealed class PilgrimMotion
             }
         }
 
+        _strikes.Update(dt, Pose); // before the pose is rebuilt: a strike that begins now starts from the pose last shown
         _hurtTime = _hurtTime < float.MaxValue ? _hurtTime + dt : _hurtTime;
         _vaultTime = _vaultTime < float.MaxValue ? _vaultTime + dt : _vaultTime;
 
@@ -375,19 +381,13 @@ public sealed class PilgrimMotion
             ThrowPose(_throw, mode == MotionMode.Throw ? _modeTime : float.MaxValue);
             Pose.BlendToward(_throw, _throwWeight);
         }
-        if (_strike is { } strike)
+        if (_strikes.Weight > 0f)
         {
-            bool down = strike.Kind == StrikeKind.Down;
-            StrikePose(_strikePose, strike);
-            float weight = SmoothStep(0f, 0.06f, strike.Progress) * (1f - SmoothStep(strike.ActiveEnd + (1f - strike.ActiveEnd) * 0.35f, 1f, strike.Progress));
-            if (down)
-            {
-                Pose.BlendToward(_strikePose, weight);
-            }
-            else
-            {
-                Pose.BlendUpperToward(_strikePose, weight);
-            }
+            // Standing, the legs step into the strike; running, in the air or in a dash they keep to the move under it. A down
+            // strike draws them up while in the air, and lets the ground take them back as it lands.
+            float legs = _strikes.Kind == StrikeKind.Down ? _airWeight : (1f - g) * (1f - _airWeight) * (1f - _dashWeight);
+            Pose.BlendUpperToward(_strikes.Pose, _strikes.Weight);
+            Pose.BlendLowerToward(_strikes.Pose, _strikes.Weight * legs);
         }
 
         if (_vaultTime < VaultLength)
@@ -872,71 +872,6 @@ public sealed class PilgrimMotion
         pose[HumanoidBone.FootL] = trail - 1.2f;
     }
 
-    private static void StrikePose(HumanoidPose pose, StrikeMoment strike)
-    {
-        // Each kind keyed at three moments: ready (where the arm starts), wound up, struck. Angles: the near (sword) arm, its
-        // elbow, the far arm, the torso.
-        (float arm, float elbow, float off, float torso) ready = (0.4f, 0.4f, 0.2f, -0.1f);
-        (float arm, float elbow, float off, float torso) wound;
-        (float arm, float elbow, float off, float torso) struck;
-        switch (strike.Kind)
-        {
-            case StrikeKind.Second: // a backhand from low behind up through the front
-                wound = (-0.9f, -0.5f, 0.9f, 0.05f);
-                struck = (2.5f, 0.1f, -0.7f, -0.3f);
-                break;
-            case StrikeKind.Finisher: // the heaviest: high and cocked, all the body brought down behind it
-                wound = (3.0f, 1.0f, 1.0f, 0.3f);
-                struck = (0.1f, 0.05f, -1.1f, -0.6f);
-                break;
-            case StrikeKind.Down: // stabbed straight down between the feet
-                wound = (2.4f, 0.6f, 1.2f, 0.1f);
-                struck = (-0.05f, 0f, 1.5f, -0.35f);
-                break;
-            case StrikeKind.Dash: // thrust straight ahead, the body behind it
-                wound = (0.6f, 1.2f, -0.6f, -0.4f);
-                struck = (1.6f, 0f, -1.4f, -0.7f);
-                break;
-            default: // the first swing: from over the shoulder down through the front
-                wound = (2.8f, 0.8f, 0.7f, 0.15f);
-                struck = (0.25f, 0.05f, -0.9f, -0.4f);
-                break;
-        }
-
-        float p = strike.Progress;
-        (float arm, float elbow, float off, float torso) k;
-        if (p < strike.WindUpEnd)
-        {
-            k = Mix(ready, wound, SmoothStep(0f, strike.WindUpEnd, p));
-        }
-        else
-        {
-            float t = Math.Clamp((p - strike.WindUpEnd) / (strike.ActiveEnd - strike.WindUpEnd), 0f, 1f);
-            k = Mix(wound, struck, 1f - (1f - t) * (1f - t) * (1f - t)); // the blow fast at first, settling into the struck pose
-        }
-
-        pose.HipsOffset = new Vector2(0f, strike.Kind == StrikeKind.Down ? 0.05f : -0.05f);
-        pose[HumanoidBone.Hips] = k.torso * 0.4f;
-        pose[HumanoidBone.Spine] = k.torso * 0.75f;
-        pose[HumanoidBone.Chest] = k.torso;
-        pose[HumanoidBone.Neck] = k.torso * 0.5f;
-        pose[HumanoidBone.Head] = strike.Kind == StrikeKind.Down ? -0.45f : k.torso * 0.2f;
-        pose[HumanoidBone.UpperArmR] = k.arm;
-        pose[HumanoidBone.ForearmR] = k.arm + k.elbow;
-        pose[HumanoidBone.HandR] = k.arm + k.elbow + 0.05f;
-        pose[HumanoidBone.UpperArmL] = k.off;
-        pose[HumanoidBone.ForearmL] = k.off + 0.45f;
-        pose[HumanoidBone.HandL] = k.off + 0.55f;
-
-        // The legs: only a down strike's are used (tucked up out of the blade's way).
-        pose[HumanoidBone.ThighR] = 1.2f;
-        pose[HumanoidBone.ShinR] = -0.15f;
-        pose[HumanoidBone.FootR] = -0.5f;
-        pose[HumanoidBone.ThighL] = 0.85f;
-        pose[HumanoidBone.ShinL] = -0.45f;
-        pose[HumanoidBone.FootL] = -0.8f;
-    }
-
     private static void VaultPose(HumanoidPose pose)
     {
         // The near hand planted on the top just ahead, the arm straight under the leaning body; the knees tucked up over the
@@ -1040,9 +975,6 @@ public sealed class PilgrimMotion
         pose[HumanoidBone.HandL] = farForearm + 0.1f;
     }
 
-    private static (float, float, float, float) Mix((float, float, float, float) a, (float, float, float, float) b, float t) =>
-        (Lerp(a.Item1, b.Item1, t), Lerp(a.Item2, b.Item2, t), Lerp(a.Item3, b.Item3, t), Lerp(a.Item4, b.Item4, t));
-
     private static float Wrap(float angle) => angle - MathF.Tau * MathF.Floor((angle + MathF.PI) / MathF.Tau);
 
     private static float Lerp(float a, float b, float t) => a + (b - a) * t;
@@ -1060,8 +992,6 @@ public sealed class PilgrimMotion
         t = Math.Clamp(t, 0f, 1f);
         return t * t * t * (t * (t * 6f - 15f) + 10f);
     }
-
-    private readonly record struct StrikeMoment(float Progress, float WindUpEnd, float ActiveEnd, StrikeKind Kind);
 
     /// <summary>A damped spring toward a moving target (semi-implicit Euler).</summary>
     private struct Spring

@@ -222,45 +222,129 @@ public class PilgrimMotionTests
         Assert.InRange(motion.Pose[HumanoidBone.ForearmR], along - 0.05f, along + 0.05f);
     }
 
+    // The tuning's strike timing as shares of the whole strike: the wind-up over by WindUp, the hit window by Active.
+    private const float WindUp = 0.143f;
+    private const float Active = 0.5f;
+
     [Fact]
-    public void AStrikeRaisesTheArmInTheWindUpSweepsItThroughTheBlowAndLetsGo()
+    public void AStrikeCoilsTheBladeBehindCutsThroughTheFrontHoldsThenLetsGo()
     {
         var motion = new PilgrimMotion(Dims, RunSpeed);
         Run(motion, 30, Vector2.Zero, MotionMode.Ground);
-        float rest = motion.Pose[HumanoidBone.UpperArmR];
+        float rest = motion.Pose[HumanoidBone.ForearmR];
 
-        motion.Strike(0.25f, 0.25f, 0.5f, StrikeKind.Swing);
-        motion.Update(Dt, Vector2.Zero, 1, MotionMode.Ground);
-        Assert.True(motion.Pose[HumanoidBone.UpperArmR] > 2.4f, "wound up over the shoulder");
+        Strike(motion, WindUp, StrikeKind.Swing);
+        Assert.True(motion.Pose[HumanoidBone.ForearmR] > 3.6f, "the blade cocked back over the shoulder");
+        Assert.True(motion.Pose.Turn(HumanoidBone.Chest).Yaw < -0.4f, "the chest turned open, the near shoulder back");
 
-        motion.Strike(0.5f, 0.25f, 0.5f, StrikeKind.Swing);
-        motion.Update(Dt, Vector2.Zero, 1, MotionMode.Ground);
-        Assert.True(motion.Pose[HumanoidBone.UpperArmR] < 0.6f, "swept down through the front");
-        Assert.True(motion.Pose[HumanoidBone.Chest] < -0.25f, "the body behind the blow");
+        Strike(motion, Active, StrikeKind.Swing);
+        Assert.True(motion.Pose[HumanoidBone.ForearmR] < 1f, "swept down through the front");
+        Assert.True(motion.Pose[HumanoidBone.Chest] < -0.3f, "the body behind the blow");
+        Assert.True(motion.Pose.Turn(HumanoidBone.Chest).Yaw > 0.4f, "the near shoulder driven through");
 
         motion.EndStrike();
         motion.Update(Dt, Vector2.Zero, 1, MotionMode.Ground);
-        Assert.InRange(motion.Pose[HumanoidBone.UpperArmR], rest - 0.05f, rest + 0.05f);
+        Assert.True(motion.Pose[HumanoidBone.ForearmR] < 1.2f, "the end pose held a moment");
+        Run(motion, 40, Vector2.Zero, MotionMode.Ground);
+        Assert.InRange(motion.Pose[HumanoidBone.ForearmR], rest - 0.05f, rest + 0.05f);
     }
 
     [Fact]
-    public void AForwardStrikeLeavesTheLegsToTheGaitAndADownStrikeTucksThem()
+    public void TheHipsLeadTheCutAndTheArmComesLast()
     {
+        var motion = new PilgrimMotion(Dims, RunSpeed);
+        Run(motion, 30, Vector2.Zero, MotionMode.Ground);
+        Strike(motion, WindUp, StrikeKind.Swing);
+        float hipsFrom = motion.Pose.Turn(HumanoidBone.Hips).Yaw, armFrom = motion.Pose[HumanoidBone.ForearmR];
+        Strike(motion, Active, StrikeKind.Swing);
+        float hipsTo = motion.Pose.Turn(HumanoidBone.Hips).Yaw, armTo = motion.Pose[HumanoidBone.ForearmR];
+
+        var early = new PilgrimMotion(Dims, RunSpeed);
+        Run(early, 30, Vector2.Zero, MotionMode.Ground);
+        Strike(early, WindUp + (Active - WindUp) * 0.2f, StrikeKind.Swing);
+        float hips = (early.Pose.Turn(HumanoidBone.Hips).Yaw - hipsFrom) / (hipsTo - hipsFrom);
+        float arm = (early.Pose[HumanoidBone.ForearmR] - armFrom) / (armTo - armFrom);
+        Assert.True(hips > arm + 0.15f, $"the hips ahead of the arm early in the cut ({hips:0.00} against {arm:0.00})");
+    }
+
+    [Fact]
+    public void EachHitOfTheChainStartsWhereTheLastEnded()
+    {
+        var motion = new PilgrimMotion(Dims, RunSpeed);
+        Run(motion, 30, Vector2.Zero, MotionMode.Ground);
+        foreach (StrikeKind kind in new[] { StrikeKind.Swing, StrikeKind.Second, StrikeKind.Finisher })
+        {
+            float before = motion.Pose[HumanoidBone.ForearmR];
+            Strike(motion, 0f, kind);
+            Assert.InRange(motion.Pose[HumanoidBone.ForearmR], before - 0.05f, before + 0.05f);
+            for (float p = 0.05f; p <= 1f; p += 0.05f)
+            {
+                Strike(motion, p, kind);
+            }
+
+            motion.EndStrike();
+            Run(motion, 3, Vector2.Zero, MotionMode.Ground); // the cooldown between two strikes of a chain
+        }
+
+        Assert.True(motion.Pose[HumanoidBone.Chest] < -0.5f, "the finisher held low, the whole body in it");
+    }
+
+    [Fact]
+    public void StandingTheLegsStepIntoTheStrikeRunningTheyKeepTheGaitAndADownStrikeDrawsThemUp()
+    {
+        var standing = new PilgrimMotion(Dims, RunSpeed);
+        Run(standing, 30, Vector2.Zero, MotionMode.Ground);
+        float idle = Ankle(standing.Pose, HumanoidBone.ThighR, HumanoidBone.ShinR).X;
+        Strike(standing, Active, StrikeKind.Swing);
+        Assert.True(Ankle(standing.Pose, HumanoidBone.ThighR, HumanoidBone.ShinR).X > idle + 0.15f, "the near foot stepped ahead");
+
         var swing = new PilgrimMotion(Dims, RunSpeed);
         var still = new PilgrimMotion(Dims, RunSpeed);
-        Run(swing, 30, Vector2.Zero, MotionMode.Ground);
-        Run(still, 30, Vector2.Zero, MotionMode.Ground);
-        swing.Strike(0.4f, 0.25f, 0.5f, StrikeKind.Swing);
-        swing.Update(Dt, Vector2.Zero, 1, MotionMode.Ground);
-        still.Update(Dt, Vector2.Zero, 1, MotionMode.Ground);
-        Assert.Equal(still.Pose[HumanoidBone.ThighR], swing.Pose[HumanoidBone.ThighR], 3);
+        Run(swing, 60, new Vector2(RunSpeed, 0f), MotionMode.Ground);
+        Run(still, 60, new Vector2(RunSpeed, 0f), MotionMode.Ground);
+        swing.Strike(0.4f, WindUp, Active, StrikeKind.Swing);
+        swing.Update(Dt, new Vector2(RunSpeed, 0f), 1, MotionMode.Ground);
+        still.Update(Dt, new Vector2(RunSpeed, 0f), 1, MotionMode.Ground);
+        Assert.Equal(still.Pose[HumanoidBone.ThighR], swing.Pose[HumanoidBone.ThighR], 1);
 
         var down = new PilgrimMotion(Dims, RunSpeed);
         Run(down, 20, new Vector2(0f, -3f), MotionMode.Air);
-        down.Strike(0.5f, 0.25f, 0.5f, StrikeKind.Down);
+        down.Strike(0.5f, WindUp, Active, StrikeKind.Down);
         down.Update(Dt, new Vector2(0f, -3f), 1, MotionMode.Air);
-        Assert.True(down.Pose[HumanoidBone.ThighR] > 0.9f, "the legs tucked up");
-        Assert.InRange(down.Pose[HumanoidBone.UpperArmR], -0.4f, 0.4f);
+        Assert.True(down.Pose[HumanoidBone.ThighR] > 1.4f, "the knees drawn up");
+        Assert.InRange(down.Pose[HumanoidBone.ForearmR], -1f, 0.3f); // swept down under the body
+        for (int i = 0; i < 30; i++)
+        {
+            down.Strike(0.5f + i * 0.015f, WindUp, Active, StrikeKind.Down);
+            down.Update(Dt, Vector2.Zero, 1, MotionMode.Ground);
+        }
+
+        Assert.InRange(Ankle(down.Pose, HumanoidBone.ThighR, HumanoidBone.ShinR).Y, Dims.AnkleHeight - 0.03f, Dims.AnkleHeight + 0.03f); // landed
+    }
+
+    [Fact]
+    public void TheBladeSpringsOutForAStrikeAndFoldsAwayAfterItsTrailOnlyThroughTheCut()
+    {
+        var motion = new PilgrimMotion(Dims, RunSpeed);
+        Run(motion, 10, Vector2.Zero, MotionMode.Ground);
+        Assert.Equal(0f, motion.Blade);
+        Strike(motion, 0.05f, StrikeKind.Swing);
+        Assert.Equal(0f, motion.Edge);
+        Strike(motion, WindUp, StrikeKind.Swing);
+        Assert.True(motion.Blade > 0.8f, "out by the coil");
+        Strike(motion, WindUp + 0.1f, StrikeKind.Swing);
+        Assert.True(motion.Edge > 0.9f, "the cut leaves a trail");
+        Strike(motion, Active, StrikeKind.Swing);
+        Assert.Equal(0f, motion.Edge); // none laid as it settles back into the hold
+        motion.EndStrike();
+        Run(motion, 60, Vector2.Zero, MotionMode.Ground);
+        Assert.Equal(0f, motion.Blade);
+    }
+
+    private static void Strike(PilgrimMotion motion, float progress, StrikeKind kind)
+    {
+        motion.Strike(progress, WindUp, Active, kind);
+        motion.Update(Dt, Vector2.Zero, 1, MotionMode.Ground);
     }
 
     [Fact]

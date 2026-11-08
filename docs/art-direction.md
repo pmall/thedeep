@@ -70,7 +70,7 @@ Images: [`perfect.jpg`](references/perfect.jpg) (**north star**), [`dread-white-
   - A color-rule check in captures: saturated emissive only on gameplay elements.
   - A glossy pale ceramic-metal material with bevels and rim light; rock stays clearly different from metal.
   - Light shafts with visible particles in about 20% of rooms; vignette plus foreground silhouettes darken the edges.
-  - White slash arc and spark VFX for the basic attack.
+  - White slash and spark VFX for the strikes: the slash follows the blade's own arc (`docs/art-direction.md#strikes`).
 
 ### Character: *NieR: Automata* `#character`
 
@@ -79,6 +79,11 @@ Images: [`nier-tank-catwalk.jpg`](references/nier-tank-catwalk.jpg), [`nier-amus
 - **Silhouette:** a slender, elegant humanoid android, human proportions, small next to the world. Instantly readable at gameplay size.
 - **Colors:** mostly black, with white/silver highlights (hair, trims) and very little else. It stays readable against the pale Dread world through value contrast (dark on light). One small glowing element can carry the purple accent.
 - **Motion:** graceful and fast, acrobatic, with flowing secondary motion (skirt or coat tails, hair, ribbons, cables) trailing behind moves. Never upright and locked (owner feedback, 2026-11-08: the walk and run were too rigid, "like it has some stick up the ass"): the body moves loose over the legs, every part answering the stride and the changes of speed. How far each part goes is set in `PilgrimMotion` (decided 2026-11-08, owner's delegation).
+- **Strikes are sword moves** `#strikes` (owner feedback, 2026-11-08: "the combat animation could be more developed too. Like a sword move. One hit must look cool, but a 3 hit combo should be more choreographed. Dynamism!"). Decided 2026-11-08 under the owner's delegation, for the owner to overturn: in the *NieR: Automata* spirit, a short pale blade springs out of the near forearm for a strike and folds away after (no new item, no story change; a part of the pilgrim's assembly, swappable like any other, `docs/art-direction.md#swappable`), and each strike leaves a white slash along the blade's real arc that fades within about a tenth of a second.
+  - **One hit:** a short coil (the anticipation), a fast committed cut, a follow-through, then its end pose held a moment before it lets go. The whole body drives it: the hips turn first, the chest after them, the arm last and the hand whipping behind; standing, the near foot steps into it.
+  - **The chain is choreographed:** each hit starts from where the last ended, and the rhythm builds. A forehand cut from over the shoulder down through the front; a backhand dropped low behind and swept back up through the front, the body rising with it, ending high; then the finisher, arched back on a raised knee, the blade cocked far behind the head, brought over the top down into a deep lunge, the biggest arc, the most weight and the longest hold.
+  - **The same style for the rest:** the down strike draws the knees up to the chest and sweeps the blade from ahead down under them; the dash strike draws the blade from the hip low along the dash up through the front.
+  - The arms cut in the side plane while the body turns under them, so every slash draws its arc on the screen. The poses and their timing are in `StrikeMotion`; the slash is `SlashTrail` over the core's `BladeTrail`. The gameplay timing (`docs/gameplay.md#fight`) is unchanged: the animation fits inside it.
 - **Fits the theme:** NieR's androids are human-built machines, as is ours ([theme.md](theme.md)), so it should look foreign among the native machines.
 - **Concrete targets:**
   - The pilgrim follows this: humanoid, dark with white highlights, flowing secondary motion, built from the part system.

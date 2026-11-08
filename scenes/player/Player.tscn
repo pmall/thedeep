@@ -14,6 +14,7 @@
 [ext_resource type="Material" path="res://assets/materials/pilgrim/dash_trail.tres" id="12_trail_material"]
 [ext_resource type="Script" path="res://scripts/combat/PlayerAttack.cs" id="13_attack"]
 [ext_resource type="Material" path="res://assets/materials/pilgrim/slash.tres" id="15_slash"]
+[ext_resource type="Script" path="res://scripts/player/SlashTrail.cs" id="16_slash_trail"]
 
 [sub_resource type="CapsuleShape3D" id="CapsuleShape3D_body"]
 radius = 0.35
@@ -34,11 +35,12 @@ Collision = NodePath("Collision")
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.8, 0)
 shape = SubResource("CapsuleShape3D_body")
 
-; The pilgrim's body: parts from resources/parts/pilgrim.tres, animated by PlayerVisual.
-[node name="Visual" type="Node3D" parent="." node_paths=PackedStringArray("Body", "CarriedLight")]
+; The pilgrim's body: parts from resources/parts/pilgrim.tres, animated by PlayerVisual (its blade too, and the slash it leaves).
+[node name="Visual" type="Node3D" parent="." node_paths=PackedStringArray("Body", "CarriedLight", "Slash")]
 script = ExtResource("3_visual")
 Body = NodePath("Body")
 CarriedLight = NodePath("CarriedLight")
+Slash = NodePath("Slash")
 
 [node name="Body" type="Node3D" parent="Visual"]
 script = ExtResource("4_body")
@@ -53,6 +55,11 @@ light_energy = 0.6
 light_specular = 0.3
 omni_range = 3.5
 omni_attenuation = 1.4
+
+; Drawn in the world, just in front of the body (SlashTrail).
+[node name="Slash" type="MeshInstance3D" parent="Visual"]
+material_override = ExtResource("15_slash")
+script = ExtResource("16_slash_trail")
 
 ; The body's center: where the dash trail is drawn from.
 [node name="TrailAnchor" type="Marker3D" parent="."]
@@ -87,15 +94,7 @@ Count = 4
 material_override = ExtResource("12_trail_material")
 script = ExtResource("8_trail")
 
-; The swing (attack): times it, draws the crescent, reports the area it hits (the machine director resolves hits).
-[node name="Attack" type="Node3D" parent="." node_paths=PackedStringArray("Player", "Slash")]
+; The strikes (attack): times them, has the body show them, reports the area each hits (the machine director resolves hits).
+[node name="Attack" type="Node3D" parent="." node_paths=PackedStringArray("Player")]
 script = ExtResource("13_attack")
 Player = NodePath("..")
-Slash = NodePath("Slash")
-
-; centered on the chest, a little toward the camera so it draws over the body; its mesh is a SlashMesh made on ready
-; (a procedural mesh sub-resource here would be built by the headless import, where C# scripts do not run)
-[node name="Slash" type="MeshInstance3D" parent="Attack"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.45, 0.95, 0.35)
-material_override = ExtResource("15_slash")
-cast_shadow = 0
