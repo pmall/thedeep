@@ -43,13 +43,6 @@ public partial class SideCamera : Camera3D
     private Vector2 _focus;
     private bool _framingShot;
     private float _followFov;
-    private CameraAttributes? _followAttributes;
-
-    /// <summary>
-    /// The follow attributes refocused for the current shot. One copy, reused: a fresh duplicate per shot
-    /// leaves resources only C# wrappers hold, and finalizing those at quit crashes Godot .NET 4.7.2.
-    /// </summary>
-    private CameraAttributesPractical? _shotAttributes;
     private float _lookAhead;
     private float _lookAheadTarget;
     private float _trauma;
@@ -119,7 +112,7 @@ public partial class SideCamera : Camera3D
 
     /// <summary>
     /// Stops following and holds a fixed shot from <paramref name="position"/> (looking down -Z),
-    /// ignoring the room bounds. Depth of field is refocused on the play plane at that distance.
+    /// ignoring the room bounds.
     /// <paramref name="fov"/> of 0 keeps the follow camera's field of view.
     /// </summary>
     public void FrameShot(Vector3 position, float fov)
@@ -128,17 +121,10 @@ public partial class SideCamera : Camera3D
         {
             _framingShot = true;
             _followFov = Fov;
-            _followAttributes = Attributes;
         }
 
         GlobalPosition = position;
         Fov = fov > 0f ? fov : _followFov;
-        if (_followAttributes is CameraAttributesPractical practical)
-        {
-            _shotAttributes ??= (CameraAttributesPractical)practical.Duplicate();
-            RefocusOnPlayPlane(_shotAttributes, practical, position.Z - Distance);
-            Attributes = _shotAttributes;
-        }
     }
 
     /// <summary>Goes back to following the target after <see cref="FrameShot"/>.</summary>
@@ -151,15 +137,7 @@ public partial class SideCamera : Camera3D
 
         _framingShot = false;
         Fov = _followFov;
-        Attributes = _followAttributes;
         SnapToTarget();
-    }
-
-    /// <summary>Sets <paramref name="attributes"/> to the blur bands of <paramref name="source"/> moved by <paramref name="shift"/> meters, so the play plane stays sharp.</summary>
-    private static void RefocusOnPlayPlane(CameraAttributesPractical attributes, CameraAttributesPractical source, float shift)
-    {
-        attributes.DofBlurFarDistance = Mathf.Max(source.DofBlurFarDistance + shift, 1f);
-        attributes.DofBlurNearDistance = Mathf.Max(source.DofBlurNearDistance + shift, 0.1f);
     }
 
     private void ApplyFocus()

@@ -18,9 +18,6 @@ public partial class Main : Node3D
     private const string LookDevArgument = "--lookdev";
     private const string SizeArgument = "--size";
 
-    /// <summary>`--still`: with `--lookdev`, only the room's settle reels (tools/still.sh).</summary>
-    private const string StillArgument = "--still";
-
     /// <summary>`--perf &lt;file&gt;`: file name of the look-dev frame times (default perf.json).</summary>
     private const string PerfArgument = "--perf";
 
@@ -355,7 +352,6 @@ public partial class Main : Node3D
                 Overlays = new CanvasLayer[] { Hud, Capture, Health, Session.Banner, Hint },
                 OutputDir = outputDir,
                 PerfFile = ArgumentValue(args, PerfArgument) ?? "perf.json",
-                StillOnly = Array.IndexOf(args, StillArgument) >= 0,
             };
             if (ArgumentValue(args, SizeArgument) is { } size && size.Split('x') is [var w, var h]
                 && int.TryParse(w, NumberStyles.Integer, CultureInfo.InvariantCulture, out int width) && int.TryParse(h, NumberStyles.Integer, CultureInfo.InvariantCulture, out int height))

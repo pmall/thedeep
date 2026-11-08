@@ -29,7 +29,6 @@
 [ext_resource type="PackedScene" path="res://scenes/fx/Drips.tscn" id="30_drips"]
 [ext_resource type="Script" path="res://scripts/rooms/WaterBody.cs" id="31_water"]
 [ext_resource type="Material" path="res://assets/materials/water.tres" id="32_water"]
-[ext_resource type="Material" path="res://assets/materials/underwater.tres" id="33_underwater"]
 [ext_resource type="PackedScene" path="res://scenes/stage/RoomStage.tscn" id="36_stage"]
 [ext_resource type="Script" path="res://scripts/rooms/dressing/Colonnade.cs" id="37_colonnade"]
 [ext_resource type="Script" path="res://scripts/rooms/dressing/RackRow.cs" id="38_rackrow"]
@@ -240,7 +239,6 @@ script = ExtResource("31_water")
 Size = Vector2(92, 18)
 Depth = 2.5
 SurfaceMaterial = ExtResource("32_water")
-UnderwaterMaterial = ExtResource("33_underwater")
 
 ; Ambient particles (scenes/fx): dust in the air (lit by the shafts), silt over the back floor, drips.
 [node name="Particles" type="Node3D" parent="."]

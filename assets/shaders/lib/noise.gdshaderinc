@@ -109,28 +109,3 @@ vec2 voronoi_border(vec2 p) {
 	}
 	return vec2(border, hash12(cell + nearest_cell));
 }
-
-// A line drawn by a shader (a mortar joint, a crack, a seam), filtered to the pixel so it never shimmers when the camera
-// creeps (docs/art-direction.md#stable-image). `d` is the distance from the line's center, `width` how far its profile
-// (1 at the center, 0 at `width`) reaches, and `footprint` how far one pixel spans, all three in the units of the
-// coordinate the line is drawn in (`footprint` is fwidth of that coordinate). A line narrower than a pixel and a half
-// falls between the pixels' samples, so a creeping camera makes it flicker and break into dashes; it is widened to a
-// pixel and a half and faded by as much, so a thin far line reads as a faint one, as a mipmap would show it.
-float filtered_line(float d, float width, float footprint) {
-	float w = max(max(width, 1.5 * footprint), 1e-6);
-	return (1.0 - smoothstep(0.0, w, d)) * (width / w);
-}
-
-// The same line for a height field: its bump is lit from the slope between neighboring pixels, which a line under three
-// pixels wide flips from pixel to pixel as the camera creeps, so it is widened to three pixels (and faded by as much).
-float bump_line(float d, float width, float footprint) {
-	return filtered_line(d, width, 2.0 * footprint);
-}
-
-// How far into its cell a point lies, for a value that jumps from cell to cell (a block's tilt, a slab's tone): 0 on
-// the border, 1 from `width` (or two pixels, `footprint` as in filtered_line) inside. A per-cell value scaled by it meets
-// its neighbor's at the border instead of stepping there: a step in a height field is a slope too steep for the pixels,
-// whose bump lights a one-pixel line of dots that flickers as the camera creeps (docs/art-direction.md#stable-image).
-float border_fade(float d, float width, float footprint) {
-	return smoothstep(0.0, max(max(width, 2.0 * footprint), 1e-6), d);
-}

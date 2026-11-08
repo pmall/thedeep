@@ -15,7 +15,6 @@
 [ext_resource type="PackedScene" path="res://scenes/fx/Embers.tscn" id="9_embers"]
 [ext_resource type="Script" path="res://scripts/rooms/WaterBody.cs" id="10_water_body"]
 [ext_resource type="Material" path="res://assets/materials/water.tres" id="11_water"]
-[ext_resource type="Material" path="res://assets/materials/underwater.tres" id="12_underwater"]
 [ext_resource type="Material" path="res://assets/materials/water_section.tres" id="13_water_section"]
 [ext_resource type="Script" path="res://scripts/kit/BlockMesh.cs" id="14_blockmesh"]
 [ext_resource type="Material" path="res://assets/materials/stone_mid.tres" id="15_stone_mid"]
@@ -265,7 +264,6 @@ Size = Vector2(10, 12.1)
 Depth = 2.5
 Swim = true
 SurfaceMaterial = ExtResource("11_water")
-UnderwaterMaterial = ExtResource("12_underwater")
 SectionMaterial = ExtResource("13_water_section")
 
 [node name="Kit" type="Node3D" parent="."]

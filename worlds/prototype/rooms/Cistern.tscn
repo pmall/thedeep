@@ -19,7 +19,6 @@
 [ext_resource type="Script" path="res://scripts/kit/BlockMesh.cs" id="11_blockmesh"]
 [ext_resource type="Script" path="res://scripts/rooms/WaterBody.cs" id="12_water_body"]
 [ext_resource type="Material" path="res://assets/materials/water.tres" id="13_water"]
-[ext_resource type="Material" path="res://assets/materials/underwater.tres" id="14_underwater"]
 [ext_resource type="Material" path="res://assets/materials/stone_mid.tres" id="15_stone_mid"]
 [ext_resource type="Material" path="res://assets/materials/cable.tres" id="16_cable"]
 [ext_resource type="Script" path="res://scripts/rooms/dressing/Colonnade.cs" id="17_colonnade"]
@@ -392,7 +391,6 @@ script = ExtResource("12_water_body")
 Size = Vector2(50, 18)
 Depth = 3
 SurfaceMaterial = ExtResource("13_water")
-UnderwaterMaterial = ExtResource("14_underwater")
 
 [node name="Columns" type="Node3D" parent="Kit"]
 

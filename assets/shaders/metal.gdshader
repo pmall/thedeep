@@ -158,7 +158,7 @@ void fragment() {
 	vec3 world_n = view_to_world(n, INV_VIEW_MATRIX);
 	Frost fr = frost_at(p, world_n, view_to_world(f.normal, INV_VIEW_MATRIX).y, max(pn.seam, pn.crease * 0.6), f.edge, frost_share);
 	albedo = mix(albedo, frost_color(pn.crease), fr.cover);
-	rough = mix(mix(rough, 0.6, fr.cover), 0.06, fr.sparkle);
+	rough = mix(rough, 0.6, fr.cover);
 	metal = mix(metal, 0.0, fr.cover);
 	coat_amount *= 1.0 - fr.cover;
 

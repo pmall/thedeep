@@ -11,7 +11,6 @@
 [ext_resource type="Script" path="res://scripts/rooms/RoomExit.cs" id="3_exit"]
 [ext_resource type="Script" path="res://scripts/rooms/WaterBody.cs" id="4_water_body"]
 [ext_resource type="Material" path="res://assets/materials/water.tres" id="5_water"]
-[ext_resource type="Material" path="res://assets/materials/underwater_clear.tres" id="6_underwater"]
 [ext_resource type="Material" path="res://assets/materials/water_section.tres" id="7_water_section"]
 [ext_resource type="Script" path="res://scripts/machines/Machine.cs" id="8_machine"]
 [ext_resource type="Resource" path="res://resources/machines/chorister.tres" id="9_chorister"]
@@ -195,7 +194,6 @@ Size = Vector2(46, 22.1)
 Depth = 20.5
 Swim = true
 SurfaceMaterial = ExtResource("5_water")
-UnderwaterMaterial = ExtResource("6_underwater")
 SectionMaterial = ExtResource("7_water_section")
 
 [node name="Machines" type="Node3D" parent="."]

@@ -4,7 +4,7 @@ namespace TheDeep;
 
 /// <summary>
 /// A body of water: its surface at the node's height, <see cref="Size"/> wide (X) and deep into the scene
-/// (Z), with underwater haze <see cref="Depth"/> meters down. Builds the surface mesh and the haze volume,
+/// (Z), <see cref="Depth"/> meters deep. Builds the surface mesh,
 /// and pushes its level and area into the water globals so nearby materials draw caustics. One water body
 /// per room for now (the globals hold one). Colors come from the biome. With <see cref="Swim"/>, the pilgrim swims in it:
 /// its play-plane region (<see cref="Size"/>.X wide, from the surface down <see cref="Depth"/>) becomes an area on the water
@@ -15,16 +15,13 @@ public partial class WaterBody : Node3D
     /// <summary>Where the water level sits when no water body is loaded: far below anything.</summary>
     private const float NoWaterLevel = -1e4f;
 
-    /// <summary>A swimmable body's haze stops this far behind the play plane (world Z), behind the blocks' back faces.</summary>
-    private const float HazeFront = -2.5f;
-
     /// <summary>The section shader's per-instance surface height.</summary>
     private static readonly StringName SurfaceParameter = "surface_y";
 
     /// <summary>Surface size: X across the room, Y into the scene (world Z).</summary>
     [Export] public Vector2 Size { get; set; } = new(10f, 10f);
 
-    /// <summary>How far below the surface the underwater haze reaches, meters.</summary>
+    /// <summary>How far below the surface the water reaches, meters.</summary>
     [Export] public float Depth { get; set; } = 4f;
 
     /// <summary>Whether the pilgrim swims in it (its region on the play plane is water); otherwise it is scenery.</summary>
@@ -40,7 +37,6 @@ public partial class WaterBody : Node3D
     [Export] public float SectionFront { get; set; } = 2.05f;
 
     [Export] public Material SurfaceMaterial { get; set; } = null!;
-    [Export] public Material UnderwaterMaterial { get; set; } = null!;
 
     /// <summary>The look of a swimmable body's front (<c>water_section.tres</c>); none for scenery water.</summary>
     [Export] public Material? SectionMaterial { get; set; }
@@ -108,25 +104,6 @@ public partial class WaterBody : Node3D
             MaterialOverride = SurfaceMaterial,
             CastShadow = GeometryInstance3D.ShadowCastingSetting.Off,
         });
-        // The haze fills the water behind the play plane; a swimmable body keeps it off the play plane and in front of it,
-        // so what is swum through stays readable (its section tints it instead).
-        float back = GlobalPosition.Z - 0.5f * Size.Y, front = GlobalPosition.Z + 0.5f * Size.Y;
-        if (Swim)
-        {
-            front = Mathf.Min(front, HazeFront);
-        }
-
-        if (front > back)
-        {
-            AddChild(new FogVolume
-            {
-                Size = new Vector3(Size.X, Depth, front - back),
-                Shape = RenderingServer.FogVolumeShape.Box,
-                Material = UnderwaterMaterial,
-                Position = new Vector3(0f, -0.5f * Depth, 0.5f * (back + front) - GlobalPosition.Z),
-            });
-        }
-
         if (!Globals)
         {
             return;

@@ -15,7 +15,6 @@
 [ext_resource type="Script" path="res://scripts/props/BossSeal.cs" id="7_bossseal"]
 [ext_resource type="Script" path="res://scripts/rooms/WaterBody.cs" id="8_water_body"]
 [ext_resource type="Material" path="res://assets/materials/water.tres" id="9_water"]
-[ext_resource type="Material" path="res://assets/materials/underwater.tres" id="10_underwater"]
 [ext_resource type="Script" path="res://scripts/kit/BlockMesh.cs" id="11_blockmesh"]
 [ext_resource type="Material" path="res://assets/materials/glyphs.tres" id="12_glyphs"]
 [ext_resource type="Script" path="res://scripts/kit/ColumnMesh.cs" id="13_column"]
@@ -275,7 +274,6 @@ script = ExtResource("8_water_body")
 Size = Vector2(46, 12)
 Depth = 3
 SurfaceMaterial = ExtResource("9_water")
-UnderwaterMaterial = ExtResource("10_underwater")
 
 [node name="Kit" type="Node3D" parent="."]
 

@@ -1,0 +1,35 @@
+{
+  "size": "1600x900",
+  "tolerance": 4,
+  "slack": 2,
+  "blink_threshold": 12,
+  "sweep_step_px": 0.0625,
+  "settle_frames": 143,
+  "creep_frames": 83,
+  "pops": 981840,
+  "blinks": 18809,
+  "live": {
+    "frames": 89,
+    "mean_change": 0.905,
+    "pops": 18809,
+    "worst_frame": 580
+  },
+  "settle": {
+    "frames": 143,
+    "mean_change": 1.477,
+    "pops": 313552,
+    "worst_frame": 8810
+  },
+  "still": {
+    "frames": 16,
+    "mean_change": 0.049,
+    "pops": 3095,
+    "worst_frame": 255
+  },
+  "sweep": {
+    "frames": 96,
+    "mean_change": 0.364,
+    "pops": 665193,
+    "worst_frame": 10451
+  }
+}

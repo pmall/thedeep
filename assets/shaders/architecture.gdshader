@@ -1,7 +1,6 @@
 // The architecture far behind a room (BackdropArchitecture): cheap, because it covers much of the screen and sits hazed
-// and out of focus, where the play plane's rock and metal shaders (bump, cracks, rivets, frost noise) cost the most
-// and show the least. A palette color with a little tone per piece, lines drawn from the world (courses of stone or
-// panel seams), a cap of rime on what faces up in a frosted layer, and the haze by distance (lib/haze).
+// and out of focus, where the play plane's rock and metal shaders (bump, rivets, frost noise) cost the most
+// and show the least. A palette color with a little tone per piece, a cap of rime on what faces up in a frosted layer, and the haze by distance (lib/haze).
 shader_type spatial;
 render_mode cull_back;
 
@@ -13,10 +12,6 @@ global uniform float biome_frost;
 global uniform vec4 biome_frost_color;
 
 uniform int slot : hint_enum("Rock", "Metal", "Backdrop", "Backdrop accent", "Foreground") = 2;
-/// The lines: 0 courses of stone, 1 panel seams, 2 none (ice).
-uniform int lines : hint_enum("Courses", "Panels", "None") = 0;
-/// Height of a course or a panel, meters, and the length of a block or a panel along it.
-uniform vec2 cell = vec2(1.1, 2.2);
 uniform float roughness : hint_range(0.0, 1.0) = 0.85;
 uniform float metallic : hint_range(0.0, 1.0) = 0.0;
 /// Albedo multiplier.
@@ -40,21 +35,8 @@ void fragment() {
 	// Along the face: X on faces toward the camera, Z on faces sideways.
 	float along = abs(n.x) > 0.6 ? p.z : p.x;
 	float up = abs(n.y) > 0.6 ? p.z : p.y;
-	float line = 0.0;
-	// How far a pixel spans along each, meters: the lines are filtered to it (lib/noise filtered_line).
-	vec2 px = vec2(fwidth(along), fwidth(up));
-	if (lines == 0) {
-		float course = floor(up / cell.x);
-		float fx = fract(along / cell.y + hash12(vec2(course, 3.1)));
-		float fy = fract(up / cell.x);
-		line = max(filtered_line(min(fy, 1.0 - fy), 0.03, px.y / cell.x), filtered_line(min(fx, 1.0 - fx), 0.02, px.x / cell.y));
-	} else if (lines == 1) {
-		vec2 f = fract(vec2(along / cell.y, up / cell.x));
-		vec2 d = min(f, 1.0 - f) * vec2(cell.y, cell.x);
-		line = max(filtered_line(d.x, 0.04, px.x), filtered_line(d.y, 0.04, px.y));
-	}
 	float tone = 0.85 + 0.3 * v_seed + 0.15 * (value_noise2(vec2(along, up) * 0.15) - 0.5);
-	vec3 albedo = palette_color(slot) * tone * (1.0 - 0.35 * line);
+	vec3 albedo = palette_color(slot) * tone;
 	// Rime on what faces up, when the layer is frosted.
 	float frost = biome_frost * smoothstep(0.5, 0.85, n.y);
 	albedo = mix(albedo, srgb_to_linear(biome_frost_color.rgb) * 0.8, frost);

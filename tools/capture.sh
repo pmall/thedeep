@@ -3,8 +3,7 @@
 # the mechanics lab; with --world, every room of that world) to PNG at 1080p, measures frame times over a scripted run in each, and compares with the previous
 # run (before/after sheet). A run's folder holds <Room>-<Spot>.png, the reels' contact sheets (Motion, Combat, Strikes, Grip, Swim,
 # Harpoon, Bore, Machines, Moments; the interactables used: Door, Taking, Pickup, Lever .png), perf.json (the first room) and
-# perf-<Room>.json (frame, GPU and render CPU times, garbage collections, the slowest frames), the settle reels' settle-<Room>.json, .png
-# and -heat.png (how much the image crawls while the camera settles, docs/testing.md#settle-reel), run.txt, the Godot logs, and
+# perf-<Room>.json (frame, GPU and render CPU times, garbage collections, the slowest frames), run.txt, the Godot logs, and
 # compare/ (one image per spot, sheet.png with all).
 #
 #   tools/capture.sh [label]                 new run in lookdev/<date>_<time>[-label]/, compared with the latest run
@@ -126,7 +125,7 @@ for room in "${ROOMS[@]}"; do
         tail -20 "$log"
         fail "look-dev run did not report LOOKDEV OK"
     }
-    grep -E '^(frame|gpu|cpu|settle) |budget' "$log"
+    grep -E '^(frame|gpu|cpu) |budget' "$log"
 done
 if [ -d "$out/motion" ]; then python3 -I tools/motion_sheet.py "$out" motion Motion 8x7; fi
 if [ -d "$out/machines" ]; then python3 -I tools/motion_sheet.py "$out" machines Machines 6x6 1440x810; fi

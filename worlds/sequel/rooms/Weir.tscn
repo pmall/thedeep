@@ -11,7 +11,6 @@
 [ext_resource type="PackedScene" path="res://scenes/props/Lever.tscn" id="6_lever"]
 [ext_resource type="Script" path="res://scripts/rooms/WaterBody.cs" id="7_water_body"]
 [ext_resource type="Material" path="res://assets/materials/water.tres" id="8_water"]
-[ext_resource type="Material" path="res://assets/materials/underwater.tres" id="9_underwater"]
 [ext_resource type="Material" path="res://assets/materials/water_section.tres" id="10_water_section"]
 [ext_resource type="Script" path="res://scripts/rooms/PhotoSpot.cs" id="11_spot"]
 [ext_resource type="Script" path="res://scripts/rooms/Room.cs" id="12_room"]
@@ -115,7 +114,6 @@ Size = Vector2(7, 22.1)
 Depth = 3.5
 Swim = true
 SurfaceMaterial = ExtResource("8_water")
-UnderwaterMaterial = ExtResource("9_underwater")
 SectionMaterial = ExtResource("10_water_section")
 
 [node name="Shafts" type="Node3D" parent="."]

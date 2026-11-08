@@ -1,12 +1,10 @@
 [gd_resource type="ShaderMaterial" format=3]
 
-; A back wall's masonry behind a dressed wall (WallDressing): stone_mid's value in courses on the cheap architecture shader,
+; A back wall's masonry behind a dressed wall (WallDressing): stone_mid's value on the cheap architecture shader,
 ; since the wall covers much of the screen and its dressing hides most of it.
 [ext_resource type="Shader" path="res://assets/shaders/architecture.gdshader" id="1_shader"]
 
 [resource]
 shader = ExtResource("1_shader")
 shader_parameter/slot = 0
-shader_parameter/lines = 0
-shader_parameter/cell = Vector2(0.6, 1.4)
 shader_parameter/shade = 0.6

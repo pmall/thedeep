@@ -11,7 +11,6 @@
 [ext_resource type="Script" path="res://scripts/rooms/RoomExit.cs" id="3_exit"]
 [ext_resource type="Script" path="res://scripts/rooms/WaterBody.cs" id="5_water_body"]
 [ext_resource type="Material" path="res://assets/materials/water.tres" id="6_water"]
-[ext_resource type="Material" path="res://assets/materials/underwater.tres" id="7_underwater"]
 [ext_resource type="Material" path="res://assets/materials/water_section.tres" id="8_water_section"]
 [ext_resource type="PackedScene" path="res://scenes/props/Shrine.tscn" id="9_shrine"]
 [ext_resource type="Script" path="res://scripts/props/HeatZone.cs" id="10_heatzone"]
@@ -269,7 +268,6 @@ Depth = 20.5
 Swim = true
 Globals = false
 SurfaceMaterial = ExtResource("6_water")
-UnderwaterMaterial = ExtResource("7_underwater")
 SectionMaterial = ExtResource("8_water_section")
 
 [node name="Props" type="Node3D" parent="."]

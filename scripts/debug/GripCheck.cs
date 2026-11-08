@@ -72,7 +72,6 @@ public partial class GripCheck : Node
             Depth = TankSurface,
             Position = new Vector3(27f, TankSurface, 0f),
             SurfaceMaterial = GD.Load<Material>("res://assets/materials/water.tres"),
-            UnderwaterMaterial = GD.Load<Material>("res://assets/materials/underwater.tres"),
         });
 
         NVector2 left = new(-1f, 0f), right = new(1f, 0f), down = new(0f, -1f);

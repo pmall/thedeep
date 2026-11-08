@@ -22,7 +22,6 @@
 [ext_resource type="Script" path="res://scripts/kit/BlockMesh.cs" id="12_blockmesh"]
 [ext_resource type="Script" path="res://scripts/rooms/WaterBody.cs" id="13_water_body"]
 [ext_resource type="Material" path="res://assets/materials/water.tres" id="14_water"]
-[ext_resource type="Material" path="res://assets/materials/underwater.tres" id="15_underwater"]
 [ext_resource type="Material" path="res://assets/materials/cable.tres" id="16_cable"]
 [ext_resource type="Script" path="res://scripts/rooms/dressing/Colonnade.cs" id="17_colonnade"]
 [ext_resource type="Material" path="res://assets/materials/backdrop_rust.tres" id="18_backdrop_rust"]
@@ -457,7 +456,6 @@ script = ExtResource("13_water_body")
 Size = Vector2(54, 20)
 Depth = 5
 SurfaceMaterial = ExtResource("14_water")
-UnderwaterMaterial = ExtResource("15_underwater")
 
 ; the flooded gate: the well in the floor, swum (the great well's level; its globals are the scenery's)
 [node name="Gate" type="Node3D" parent="."]
@@ -468,7 +466,6 @@ Depth = 8
 Swim = true
 Globals = false
 SurfaceMaterial = ExtResource("14_water")
-UnderwaterMaterial = ExtResource("15_underwater")
 SectionMaterial = ExtResource("40_water_section")
 
 ; the flooded gate's back, behind the water

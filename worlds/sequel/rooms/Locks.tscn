@@ -9,7 +9,6 @@
 [ext_resource type="Script" path="res://scripts/rooms/RoomExit.cs" id="3_exit"]
 [ext_resource type="Script" path="res://scripts/rooms/WaterBody.cs" id="4_water_body"]
 [ext_resource type="Material" path="res://assets/materials/water.tres" id="5_water"]
-[ext_resource type="Material" path="res://assets/materials/underwater.tres" id="6_underwater"]
 [ext_resource type="Material" path="res://assets/materials/water_section.tres" id="7_water_section"]
 [ext_resource type="PackedScene" path="res://scenes/props/Shrine.tscn" id="8_shrine"]
 [ext_resource type="Script" path="res://scripts/machines/Machine.cs" id="9_machine"]
@@ -119,7 +118,6 @@ Size = Vector2(8, 22.1)
 Depth = 3.5
 Swim = true
 SurfaceMaterial = ExtResource("5_water")
-UnderwaterMaterial = ExtResource("6_underwater")
 SectionMaterial = ExtResource("7_water_section")
 
 [node name="Props" type="Node3D" parent="."]

@@ -10,7 +10,6 @@
 [ext_resource type="Script" path="res://scripts/rooms/RoomExit.cs" id="3_exit"]
 [ext_resource type="Script" path="res://scripts/rooms/WaterBody.cs" id="4_water_body"]
 [ext_resource type="Material" path="res://assets/materials/water.tres" id="5_water"]
-[ext_resource type="Material" path="res://assets/materials/underwater.tres" id="6_underwater"]
 [ext_resource type="Material" path="res://assets/materials/water_section.tres" id="7_water_section"]
 [ext_resource type="Script" path="res://scripts/kit/BlockMesh.cs" id="8_blockmesh"]
 [ext_resource type="Material" path="res://assets/materials/stone_mid.tres" id="9_stone_mid"]
@@ -133,7 +132,6 @@ Size = Vector2(6, 12.1)
 Depth = 16
 Swim = true
 SurfaceMaterial = ExtResource("5_water")
-UnderwaterMaterial = ExtResource("6_underwater")
 SectionMaterial = ExtResource("7_water_section")
 
 [node name="Kit" type="Node3D" parent="."]

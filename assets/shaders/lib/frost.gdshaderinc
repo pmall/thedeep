@@ -7,8 +7,7 @@ global uniform float biome_frost;
 global uniform vec4 biome_frost_color;
 
 struct Frost {
-	float cover;   // 0 bare, 1 under rime
-	float sparkle; // 1 on a glinting ice crystal
+	float cover; // 0 bare, 1 under rime
 };
 
 // `p` world position, `world_n` the bumped world normal, `face_up` the face's own world normal Y,
@@ -16,7 +15,6 @@ struct Frost {
 Frost frost_at(vec3 p, vec3 world_n, float face_up, float cavity, float edge, float share) {
 	Frost fr;
 	fr.cover = 0.0;
-	fr.sparkle = 0.0;
 	float amount = biome_frost * share;
 	if (amount <= 0.0) {
 		return fr;
@@ -35,14 +33,6 @@ Frost frost_at(vec3 p, vec3 world_n, float face_up, float cavity, float edge, fl
 	// Side faces take less than the faces the rime falls on.
 	rime *= mix(0.7, 1.0, smoothstep(-0.2, 0.5, face_up));
 	fr.cover = clamp(max(cap, rime * 0.8) * amount, 0.0, 1.0);
-
-	// Crystals: a sparse grid of glints, only where rime lies.
-	// A crystal smaller than two pixels would blink as the camera creeps: it fades out instead
-	// (docs/art-direction.md#stable-image).
-	vec3 cell = floor(p * 55.0);
-	float glint = step(0.985, fract(sin(dot(cell, vec3(12.9898, 78.233, 37.719))) * 43758.5453));
-	float cell_px = max(length(fwidth(p * 55.0)), 1e-5);
-	fr.sparkle = glint * smoothstep(0.4, 0.8, fr.cover) * (1.0 - smoothstep(0.25, 0.5, cell_px));
 	return fr;
 }
 

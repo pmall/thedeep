@@ -1,0 +1,15 @@
+Godot Engine v4.7.2.stable.mono.official.ed1daf0bf - https://godotengine.org
+Vulkan 1.4.329 - Forward+ - Using Device #0: NVIDIA - NVIDIA GeForce RTX 3060
+
+settle Choir: creeps 83 frames; pops 1234825 (settle 375307, still 8224, sweep 851294; worst frame 13187); blinks 4037 (worst frame 179)
+LOOKDEV OK: 0 spots () in stills/2026-11-08_20-05-53
+WARNING: 6 RIDs of type "Compute" were leaked.
+   at: _free_rids (servers/rendering/rendering_device.cpp:8686)
+WARNING: 1 RID of type "UniformBuffer" was leaked.
+   at: _free_rids (servers/rendering/rendering_device.cpp:8684)
+WARNING: 6 RIDs of type "Shader" were leaked.
+   at: _free_rids (servers/rendering/rendering_device.cpp:8686)
+WARNING: 3 RIDs of type "Sampler" were leaked.
+   at: _free_rids (servers/rendering/rendering_device.cpp:8686)
+WARNING: 1 RID of type "Texture" was leaked.
+   at: finalize (servers/rendering/rendering_device.cpp:8898)

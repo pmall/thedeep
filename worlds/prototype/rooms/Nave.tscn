@@ -18,7 +18,6 @@
 [ext_resource type="Script" path="res://scripts/kit/BlockMesh.cs" id="10_blockmesh"]
 [ext_resource type="Script" path="res://scripts/rooms/WaterBody.cs" id="11_water_body"]
 [ext_resource type="Material" path="res://assets/materials/water.tres" id="12_water"]
-[ext_resource type="Material" path="res://assets/materials/underwater.tres" id="13_underwater"]
 [ext_resource type="Material" path="res://assets/materials/stone_mid.tres" id="14_stone_mid"]
 [ext_resource type="Material" path="res://assets/materials/cable.tres" id="15_cable"]
 [ext_resource type="Script" path="res://scripts/rooms/dressing/Colonnade.cs" id="16_colonnade"]
@@ -406,7 +405,6 @@ script = ExtResource("11_water_body")
 Size = Vector2(96, 18)
 Depth = 2.5
 SurfaceMaterial = ExtResource("12_water")
-UnderwaterMaterial = ExtResource("13_underwater")
 
 [node name="Arcade" type="Node3D" parent="Kit"]
 

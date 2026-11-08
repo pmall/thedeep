@@ -73,9 +73,6 @@ public partial class BiomeProfile : Resource
     /// <summary>Color of the room's light shafts (spot lights seen in the volumetric fog); energy stays per shaft.</summary>
     [Export] public Color ShaftColor { get; set; } = Colors.White;
 
-    /// <summary>How brightly the key light lights the volumetric fog (its haze everywhere), against the shafts.</summary>
-    [Export] public float KeyFogEnergy { get; set; } = 0.5f;
-
     [ExportGroup("Fog")]
     [Export] public Color FogColor { get; set; } = new(0.5f, 0.5f, 0.6f);
     [Export] public float FogDensity { get; set; } = 1f;
@@ -86,20 +83,6 @@ public partial class BiomeProfile : Resource
 
     /// <summary>The far distance's color: backdrop skylines sink into it (they do their own haze).</summary>
     [Export] public Color HazeColor { get; set; } = new(0.5f, 0.5f, 0.6f);
-
-    /// <summary>Density of the volumetric fog: the haze that light shafts and lamps are seen in.</summary>
-    [Export] public float VolumetricDensity { get; set; } = 0.02f;
-
-    /// <summary>Color the volumetric fog scatters light with.</summary>
-    [Export] public Color VolumetricAlbedo { get; set; } = Colors.White;
-
-    /// <summary>Light the volumetric fog gives off by itself, so unlit haze is never black.</summary>
-    [Export] public Color VolumetricEmission { get; set; } = Colors.Black;
-
-    [Export] public float VolumetricEmissionEnergy { get; set; } = 1f;
-
-    /// <summary>Forward scattering: above 0, shafts glow brighter when the camera looks into the light.</summary>
-    [Export] public float VolumetricAnisotropy { get; set; } = 0.2f;
 
     [ExportGroup("Grading")]
     [Export] public float Exposure { get; set; } = 1f;
@@ -190,11 +173,6 @@ public partial class BiomeProfile : Resource
         environment.FogDensity = FogDensity;
         environment.FogDepthBegin = FogDepthBegin;
         environment.FogDepthEnd = FogDepthEnd;
-        environment.VolumetricFogDensity = VolumetricDensity;
-        environment.VolumetricFogAlbedo = VolumetricAlbedo;
-        environment.VolumetricFogEmission = VolumetricEmission;
-        environment.VolumetricFogEmissionEnergy = VolumetricEmissionEnergy;
-        environment.VolumetricFogAnisotropy = VolumetricAnisotropy;
         environment.TonemapExposure = Exposure;
         environment.AdjustmentEnabled = true;
         environment.AdjustmentBrightness = Brightness;
@@ -205,7 +183,6 @@ public partial class BiomeProfile : Resource
 
         keyLight.LightColor = KeyColor;
         keyLight.LightEnergy = KeyEnergy;
-        keyLight.LightVolumetricFogEnergy = KeyFogEnergy;
         foreach (Light3D lamp in lamps)
         {
             lamp.LightColor = LampColor;

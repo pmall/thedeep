@@ -102,7 +102,6 @@ for m in [
     'backdrop_cathedral',
     'backdrop_halls',
     'water',
-    'underwater',
     'ice',
     'ice_mid',
     'water_section',
@@ -719,7 +718,6 @@ class Room:
         if not globals:
             props['Globals'] = False
         props['SurfaceMaterial'] = self.ext('water')
-        props['UnderwaterMaterial'] = self.ext('underwater')
         if swim:
             props['SectionMaterial'] = self.ext('water_section')
         return self.node(name, type='Node3D', comment=comment, props=props)

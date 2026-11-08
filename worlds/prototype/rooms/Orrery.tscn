@@ -10,7 +10,6 @@
 [ext_resource type="Script" path="res://scripts/rooms/RoomExit.cs" id="3_exit"]
 [ext_resource type="Script" path="res://scripts/rooms/WaterBody.cs" id="4_water_body"]
 [ext_resource type="Material" path="res://assets/materials/water.tres" id="5_water"]
-[ext_resource type="Material" path="res://assets/materials/underwater.tres" id="6_underwater"]
 [ext_resource type="Material" path="res://assets/materials/water_section.tres" id="7_water_section"]
 [ext_resource type="PackedScene" path="res://scenes/props/HarpoonAnchor.tscn" id="8_anchor"]
 [ext_resource type="Script" path="res://scripts/kit/BlockMesh.cs" id="9_blockmesh"]
@@ -205,7 +204,6 @@ Size = Vector2(3, 12.1)
 Depth = 3
 Swim = true
 SurfaceMaterial = ExtResource("5_water")
-UnderwaterMaterial = ExtResource("6_underwater")
 SectionMaterial = ExtResource("7_water_section")
 
 [node name="Anchors" type="Node3D" parent="."]

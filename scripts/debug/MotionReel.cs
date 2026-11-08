@@ -390,40 +390,6 @@ public static class MotionReel
         }
     }
 
-    /// <summary>
-    /// The settle reels (docs/testing.md#settle-reel): the pilgrim runs, stops, and the gameplay camera settles while
-    /// every frame is compared with the one before (<see cref="FrameShimmer"/>). Two rooms of each layer but the core: the flooded
-    /// Narthex and Brink, the frozen Choir and Sanctum, the volcanic Kiln and Ashfall, the core's Effigy; the
-    /// Brink, Sanctum and Effigy runs stop near their law break so its words show.
-    /// </summary>
-    public static readonly Settle[] Settles =
-    {
-        new("Narthex", new Vector3(4f, 0f, 0f), 1, 60),
-        new("Brink", new Vector3(12f, 0f, 0f), 1, 60),
-        new("Choir", new Vector3(4f, 0f, 0f), 1, 60),
-        new("Sanctum", new Vector3(20f, 0f, 0f), -1, 60),
-        new("Kiln", new Vector3(46f, 0f, 0f), -1, 60),
-        new("Ashfall", new Vector3(4f, 0f, 0f), 1, 60),
-        new("Effigy", new Vector3(8f, 0f, 0f), 1, 60),
-    };
-
-    /// <summary>A room's settle reels.</summary>
-    public static IEnumerable<Settle> SettlesFor(string room)
-    {
-        foreach (Settle settle in Settles)
-        {
-            if (settle.Room == room)
-            {
-                yield return settle;
-            }
-        }
-    }
-
-    /// <param name="Room">The room.</param>
-    /// <param name="Start">Where the pilgrim respawns (room coordinates), facing and then running <paramref name="Facing"/>.</param>
-    /// <param name="RunTicks">Physics ticks it runs before letting go; the camera then settles.</param>
-    public sealed record Settle(string Room, Vector3 Start, int Facing, int RunTicks);
-
     /// <param name="Room">The room the reel's positions belong to.</param>
     /// <param name="Folder">Where its frames go in the run directory.</param>
     /// <param name="Sheet">The contact sheet's name (&lt;Sheet&gt;.png).</param>

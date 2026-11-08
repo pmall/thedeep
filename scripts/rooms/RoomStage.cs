@@ -22,9 +22,6 @@ public partial class RoomStage : Node3D
     [Export] public WorldEnvironment Environment { get; set; } = null!;
     [Export] public DirectionalLight3D KeyLight { get; set; } = null!;
 
-    /// <summary>Cancels the volumetric fog in front of the play plane (fog_clear.tres).</summary>
-    [Export] public Material ClearFrontMaterial { get; set; } = null!;
-
     /// <summary>The farthest skyline (a backdrop_silhouette material); null for none.</summary>
     [ExportGroup("Backdrop")]
     [Export] public Material? FarSkyline { get; set; }
@@ -79,15 +76,6 @@ public partial class RoomStage : Node3D
         (_min, _max) = (min, max);
         Vector2 size = max - min;
         float centerX = (min.X + max.X) * 0.5f;
-
-        AddChild(new FogVolume
-        {
-            Name = "ClearFront",
-            Position = new Vector3(centerX, (min.Y + max.Y) * 0.5f, 14f),
-            Size = new Vector3(size.X + 32f, size.Y + 24f, 24f),
-            Shape = RenderingServer.FogVolumeShape.Box,
-            Material = ClearFrontMaterial,
-        });
 
         _farSkyline = AddSkyline("FarSkyline", FarSkyline, FarSkylineDepth, min.Y - 6f, size, centerX, 90f);
         _nearSkyline = AddSkyline("NearSkyline", NearSkyline, NearSkylineDepth, min.Y - 4f, size, centerX, 60f);
@@ -209,7 +197,6 @@ public partial class RoomStage : Node3D
             {
                 Name = "Underglow",
                 ShadowEnabled = false,
-                LightVolumetricFogEnergy = 0.25f,
                 SkyMode = DirectionalLight3D.SkyModeEnum.LightOnly,
             };
             AddChild(_underglow);

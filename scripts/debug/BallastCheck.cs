@@ -52,7 +52,6 @@ public partial class BallastCheck : Node
             Depth = Surface - Bottom,
             Position = new Vector3(Middle, Surface, 0f),
             SurfaceMaterial = GD.Load<Material>("res://assets/materials/water.tres"),
-            UnderwaterMaterial = GD.Load<Material>("res://assets/materials/underwater.tres"),
         });
 
         Hints.Said += kind => _hinted.Add(kind);
