@@ -3,10 +3,14 @@
 [ext_resource type="Shader" path="res://assets/shaders/rock.gdshader" id="1_shader"]
 [ext_resource type="Texture2D" uid="uid://6hejw2e4jach" path="res://assets/textures/surfaces/strata_normal.png" id="2_normal"]
 [ext_resource type="Texture2D" uid="uid://4q4ph45vstq4" path="res://assets/textures/surfaces/strata_surface.png" id="3_surface"]
+[ext_resource type="Texture2D" uid="uid://nbsorywnpvq5" path="res://assets/textures/surfaces/masonry_normal.png" id="4_masonry_normal"]
+[ext_resource type="Texture2D" uid="uid://cyd8ptbp7r31i" path="res://assets/textures/surfaces/masonry_surface.png" id="5_masonry_surface"]
 
 [resource]
 shader = ExtResource("1_shader")
 shader_parameter/strata_normal = ExtResource("2_normal")
 shader_parameter/strata_surface = ExtResource("3_surface")
+shader_parameter/masonry_normal = ExtResource("4_masonry_normal")
+shader_parameter/masonry_surface = ExtResource("5_masonry_surface")
 shader_parameter/slot = 2
 shader_parameter/detail = false

@@ -146,7 +146,7 @@ public sealed record StrataSurface : ISurfacePattern
         double roughness = 0.4 + coarse;
         double lumps = TileNoise.Fractal(u * LumpCells, v * LumpCells, LumpCells, LumpCells, 3, Seed + 10) - 0.5;
         double grain = TileNoise.Fractal(u * GrainCells, v * GrainCells * 2.0, GrainCells, GrainCells * 2, GrainOctaves, Seed + 11) - 0.5;
-        double pit = PitAt(u, v, PitShare * coarse);
+        double pit = TileNoise.Pit(u, v, PitCells, PitShare * coarse, Seed + 17);
 
         double height = relief + (lamina * LaminaMeters) + (((lumps * LumpMeters) + (grain * GrainMeters)) * roughness)
             - (joint * JointDepthMeters) - (pit * PitMeters);
@@ -170,27 +170,5 @@ public sealed record StrataSurface : ISurfacePattern
         double shows = TileNoise.SmoothStep(0.25, 0.55, TileNoise.Value(u * JointCells, joint, JointCells, 2 * Beds, Seed + 5));
         double width = halfWidthMeters * (0.6 + (0.8 * TileNoise.Value(u * JointCells * 4, joint, JointCells * 4, Beds, Seed + 6)));
         return TileNoise.Line(distanceMeters, width) * shows;
-    }
-
-    /// <summary>A small pit's depth profile (1 at its bottom): at most one per cell, in <paramref name="share"/> of the cells.</summary>
-    private double PitAt(double u, double v, double share)
-    {
-        double x = u * PitCells;
-        double y = v * PitCells;
-        int cx = (int)Math.Floor(x);
-        int cy = (int)Math.Floor(y);
-        int wx = TileNoise.Wrap(cx, PitCells);
-        int wy = TileNoise.Wrap(cy, PitCells);
-        if (TileNoise.Hash(wx, wy, Seed + 17) >= share)
-        {
-            return 0.0;
-        }
-
-        // The pit sits somewhere inside its cell, with its own size, so the pits never line up.
-        double px = cx + 0.3 + (0.4 * TileNoise.Hash(wx, wy, Seed + 18));
-        double py = cy + 0.3 + (0.4 * TileNoise.Hash(wx, wy, Seed + 19));
-        double radius = 0.1 + (0.25 * TileNoise.Hash(wx, wy, Seed + 20));
-        double distance = Math.Sqrt(((x - px) * (x - px)) + ((y - py) * (y - py)));
-        return TileNoise.Line(distance, radius);
     }
 }

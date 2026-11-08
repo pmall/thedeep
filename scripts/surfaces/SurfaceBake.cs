@@ -23,8 +23,8 @@ public partial class SurfaceBake : Node
         {
             var clock = Stopwatch.StartNew();
             SurfaceMaps maps = SurfaceBaker.Bake(set.Pattern, set.Size);
-            ok &= Save(maps.Normal, maps.Size, $"{Folder}/{set.Name}_normal.png");
-            ok &= Save(maps.Surface, maps.Size, $"{Folder}/{set.Name}_surface.png");
+            ok &= Save(maps.Normal, maps.Size, Image.Format.Rgb8, $"{Folder}/{set.Name}_normal.png");
+            ok &= Save(maps.Surface, maps.Size, Image.Format.Rgba8, $"{Folder}/{set.Name}_surface.png");
             GD.Print($"[bake] {set.Name}: {maps.Size}x{maps.Size}, {clock.ElapsedMilliseconds} ms");
         }
 
@@ -36,9 +36,9 @@ public partial class SurfaceBake : Node
         GetTree().Quit(ok ? 0 : 1);
     }
 
-    private static bool Save(byte[] rgb, int size, string path)
+    private static bool Save(byte[] data, int size, Image.Format format, string path)
     {
-        Error error = Image.CreateFromData(size, size, false, Image.Format.Rgb8, rgb).SavePng(path);
+        Error error = Image.CreateFromData(size, size, false, format, data).SavePng(path);
         if (error != Error.Ok)
         {
             GD.PushError($"BAKE: could not write {path} ({error})");

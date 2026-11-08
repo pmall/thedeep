@@ -71,6 +71,31 @@ public static class TileNoise
     /// <summary>1 at the center of a line and 0 from <paramref name="width"/> away, rounded at both ends (a groove's profile).</summary>
     public static double Line(double distance, double width) => 1.0 - SmoothStep(0.0, width, Math.Abs(distance));
 
+    /// <summary>
+    /// Small pits in a tile, <paramref name="cells"/> cells a side (<paramref name="u"/> and <paramref name="v"/> in tiles): at most
+    /// one per cell, in <paramref name="share"/> of the cells, each somewhere inside its cell with its own size so they never line
+    /// up. The pit's depth profile, 1 at its bottom.
+    /// </summary>
+    public static double Pit(double u, double v, int cells, double share, int seed)
+    {
+        double x = u * cells;
+        double y = v * cells;
+        int cx = (int)Math.Floor(x);
+        int cy = (int)Math.Floor(y);
+        int wx = Wrap(cx, cells);
+        int wy = Wrap(cy, cells);
+        if (Hash(wx, wy, seed) >= share)
+        {
+            return 0.0;
+        }
+
+        double px = cx + 0.3 + (0.4 * Hash(wx, wy, seed + 1));
+        double py = cy + 0.3 + (0.4 * Hash(wx, wy, seed + 2));
+        double radius = 0.1 + (0.25 * Hash(wx, wy, seed + 3));
+        double distance = Math.Sqrt(((x - px) * (x - px)) + ((y - py) * (y - py)));
+        return Line(distance, radius);
+    }
+
     public static double SmoothStep(double edge0, double edge1, double x)
     {
         double t = Math.Clamp((x - edge0) / (edge1 - edge0), 0.0, 1.0);
@@ -79,5 +104,5 @@ public static class TileNoise
 
     private static double Quintic(double t) => t * t * t * ((t * ((t * 6.0) - 15.0)) + 10.0);
 
-    private static double Lerp(double a, double b, double t) => a + ((b - a) * t);
+    public static double Lerp(double a, double b, double t) => a + ((b - a) * t);
 }

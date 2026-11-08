@@ -1,11 +1,13 @@
-// Rock: layered strata, silt settled on ledges, chipped edges, grime near the
+// Rock: layered strata or courses of cut stone, silt settled on ledges, chipped edges, grime near the
 // ground. With `wetness` it becomes wet stone (darker, glossy, puddles on top faces). Matte and warm
-// so it never reads as metal (mag-grip). The beds and their fine detail are the baked strata set
+// so it never reads as metal (mag-grip). The beds and the blocks with their fine detail are baked sets
 // (SurfaceMaps has the sampling contract), laid in world meters on each face so they run on across
-// neighbouring pieces; faults cut the face into columns a few meters wide, each showing its own part
-// of the tile, so the tile never repeats along a wall. The shader adds only what is broad: the beds'
-// bend, stains, silt, grime, wetness, rime, masonry tone, worn edges, puddles. The surface frame
-// (lib/surface) adds edge wear and grime by height.
+// neighbouring pieces; faults cut the strata into columns a few meters wide, each showing its own part
+// of the tile, and each course of masonry is a course of the tile picked at random and slid along, so
+// neither tile repeats along a wall. Where the biome built (biome_masonry), whole blocks stand over the
+// rock, more of them the more it built, and where they are missing the rock shows, recessed. The
+// shader adds only what is broad: the beds' bend, each block's tone, stains, silt, grime, wetness,
+// rime, worn edges, puddles. The surface frame (lib/surface) adds edge wear and grime by height.
 shader_type spatial;
 
 #include "res://assets/shaders/lib/noise.gdshaderinc"
@@ -32,11 +34,13 @@ uniform float strata_warp : hint_range(0.0, 2.0) = 0.4;
 uniform float strata_contrast : hint_range(0.0, 0.5) = 0.2;
 
 group_uniforms masonry;
-/// Height of a course of cut stone, meters, and the blocks' length along it.
-uniform float course_height : hint_range(0.2, 2.0) = 0.7;
-uniform float block_length : hint_range(0.3, 4.0) = 1.5;
+/// The baked masonry set (assets/textures/surfaces/, SurfaceMaps): every rock material sets both.
+uniform sampler2D masonry_normal : hint_normal, repeat_enable, filter_linear_mipmap_anisotropic;
+uniform sampler2D masonry_surface : hint_default_black, repeat_enable, filter_linear_mipmap_anisotropic;
 /// Share of the biome's masonry this material takes (0 keeps it natural rock everywhere).
 uniform float masonry_share : hint_range(0.0, 1.0) = 1.0;
+/// Tone difference between blocks.
+uniform float block_contrast : hint_range(0.0, 0.3) = 0.08;
 
 // Cracked rock (the Drill breaks it): a web of deep fissures over the whole face, so it reads apart from sound rock.
 uniform float fracture : hint_range(0.0, 1.0) = 0.0;
@@ -84,20 +88,65 @@ const float FAULT_JAG = 0.012;
 const float FAULT_BLOCK = 3.0;
 const float FAULT_THROW = 0.05;
 
+// The baked masonry set's tile (MasonrySurface.TileMeters), its courses, and the cells its alpha tells apart (SurfaceMaps).
+const float MASONRY_TILE = 4.0;
+const float MASONRY_COURSES = 7.0;
+const float MASONRY_CELLS = 15.0;
+// Where the masonry stands when the biome built only part of it: a block stands where a broad field (its cells MASONRY_REACH
+// meters across) and the block's own hash, weighted by MASONRY_RAGGED, fall under the share built.
+const float MASONRY_REACH = 9.0;
+const float MASONRY_RAGGED = 0.1;
+
 struct Rock {
 	float height; // meters, relative (the procedural fissures only; the beds' relief is in `slope`)
 	float cavity; // 1 deep in a fissure
 	float tone;   // albedo multiplier
 	float rough;  // dry roughness
 	vec2 slope;   // the baked normal's red and green, -1..1 (along and up the face)
+	float built;  // 1 on a block of masonry, 0 on natural rock
 };
 
-// The hash of the block of cut stone at a point of a face: `along` runs with the courses, `across` over them.
-float masonry_id(float along, float across, float seed) {
-	float course = floor(across / course_height);
-	float len = block_length * (0.75 + 0.5 * hash12(vec2(course, seed + 1.7)));
-	float block = floor(along / len + hash12(vec2(course, 9.1)));
-	return hash12(vec2(block, course + seed * 13.0));
+// Cut stone on a face: `q` the position along and up the face (meters), `built` the share of blocks standing.
+struct Masonry {
+	float stands; // 1 where a block stands
+	float tone;
+	float cavity;
+	float rough;
+	vec2 slope;
+};
+
+Masonry masonry_at(vec2 q, float built) {
+	// The world's course, shown as a course of the tile picked by its hash and slid along by another.
+	float course_height = MASONRY_TILE / MASONRY_COURSES;
+	float course = floor(q.y / course_height);
+	float within = q.y / course_height - course;
+	float picked = floor(hash12(vec2(course, 41.7)) * MASONRY_COURSES);
+	float slide = hash12(vec2(course, 13.1)) * MASONRY_TILE;
+	float along = q.x + slide;
+	vec2 uv = vec2(along, -(picked + within) * course_height) / MASONRY_TILE;
+	// The mip from the unbroken position, so a course's edge is not a seam of blurred texels.
+	vec2 dx = dFdx(q) * vec2(1.0, -1.0) / MASONRY_TILE;
+	vec2 dy = dFdy(q) * vec2(1.0, -1.0) / MASONRY_TILE;
+	vec4 surface = textureGrad(masonry_surface, uv, dx, dy);
+
+	// The block: its cell in the tile's course, which repeat of the tile, which course. Every course of the tile has a joint
+	// at its edge, so a block is never split between two repeats.
+	float cell = floor(surface.a * 255.0 / 16.0 + 0.5) - 1.0;
+	float repeat_ = floor(along / MASONRY_TILE);
+	float id = hash12(vec2(repeat_ * (MASONRY_CELLS + 1.0) + cell, course + 0.37));
+	// Whether it stands: the broad field taken at the block (near enough: its repeat and its place in it), and its own hash.
+	vec2 at = vec2(repeat_ * MASONRY_TILE + cell * 0.8 - slide, course * course_height) / MASONRY_REACH;
+	float field = value_noise2(at + 17.0) * (1.0 - MASONRY_RAGGED) + hash12(vec2(id * 97.0, 5.3)) * MASONRY_RAGGED;
+
+	Masonry m;
+	m.stands = built >= 1.0 ? 1.0 : step(field, built);
+	// The block's own tone, on the stone only: the mortar keeps the set's.
+	float stone = 1.0 - surface.g;
+	m.tone = surface.r * 2.0 * (1.0 + (id - 0.5) * 2.0 * block_contrast * stone);
+	m.cavity = surface.g;
+	m.rough = surface.b;
+	m.slope = detail ? textureGrad(masonry_normal, uv, dx, dy).rg * 2.0 - 1.0 : vec2(0.0);
+	return m;
 }
 
 // Where a fault edge between columns lies (in column widths), `k` the edge's index.
@@ -151,19 +200,23 @@ Rock rock_at(vec3 p, vec3 t, vec3 b, float seed, float up) {
 	r.cavity = max(surface.g, fault_joint * 0.8) * (detail ? 1.0 : 0.5);
 	r.rough = surface.b;
 	r.height = 0.0;
+	r.built = 0.0;
 
-	// Masonry: courses along a wall (or round an arch), flagstones on what faces up. Cut stone is smoother.
+	// Masonry: courses along a wall, flagstones on what faces up, over the strata where a block stands; where one is missing,
+	// the rock behind shows, in its shadow.
 	float built = biome_masonry * masonry_share;
 	if (built > 0.0) {
-		float across = up > 0.5 ? q.y : p.y;
-		float block_tone = 0.9 + 0.2 * masonry_id(q.x, across, seed) + (warp - 0.5) * 0.25;
-		r.tone = mix(r.tone, block_tone * (1.0 + (surface.r * 2.0 - 1.0) * 0.4), built);
-		r.cavity *= 1.0 - 0.7 * built;
-		r.slope *= 1.0 - 0.6 * built;
+		Masonry m = masonry_at(q, built);
+		float block_tone = 1.0 + (m.tone - 1.0) * (detail ? 1.0 : 0.6) + (warp - 0.5) * 0.25;
+		r.tone = mix(r.tone * 0.9, block_tone, m.stands);
+		r.cavity = mix(r.cavity, m.cavity * (detail ? 1.0 : 0.5), m.stands);
+		r.rough = mix(r.rough, m.rough, m.stands);
+		r.slope = mix(r.slope, m.slope, m.stands);
+		r.built = m.stands;
 	}
 
-	// Long stains running down the faces: wide walls never read as one flat tone.
-	float stain = smoothstep(0.45, 0.8, value_noise2(vec2(q.x * 0.6 + seed * 3.0, p.y * 0.06)));
+	// Long stains running down the faces: wide walls never read as one flat tone. In world space, so they run on across pieces.
+	float stain = smoothstep(0.45, 0.8, value_noise2(vec2(q.x * 0.6, p.y * 0.06)));
 	r.tone *= 1.0 - 0.14 * stain * (1.0 - up);
 	if (fracture > 0.0) {
 		// Big warped cells split by wide dark fissures, a pale broken rim along each.
@@ -217,7 +270,8 @@ void fragment() {
 	}
 	vec3 world_n = view_to_world(n, INV_VIEW_MATRIX);
 
-	vec3 base = palette_color(slot) * (0.92 + 0.16 * seed);
+	// Each piece its own tone, except on masonry, whose courses run on across pieces.
+	vec3 base = palette_color(slot) * mix(0.92 + 0.16 * seed, 1.0, r.built);
 	vec3 albedo = base * r.tone;
 	albedo = mix(albedo, base * 1.25, chipped * 0.6);
 

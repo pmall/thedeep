@@ -25,7 +25,7 @@ public static class SurfaceBaker
         });
 
         byte[] normal = new byte[size * size * 3];
-        byte[] surface = new byte[size * size * 3];
+        byte[] surface = new byte[size * size * 4];
         for (int row = 0; row < size; row++)
         {
             int above = TileNoise.Wrap(row - 1, size);
@@ -44,9 +44,11 @@ public static class SurfaceBaker
                 normal[i + 2] = Unit((1.0 / length * 0.5) + 0.5);
 
                 SurfacePoint p = points[(row * size) + column];
-                surface[i] = Unit(p.Tone / SurfaceMaps.ToneScale);
-                surface[i + 1] = Unit(p.Cavity);
-                surface[i + 2] = Unit(p.Roughness);
+                int j = ((row * size) + column) * 4;
+                surface[j] = Unit(p.Tone / SurfaceMaps.ToneScale);
+                surface[j + 1] = Unit(p.Cavity);
+                surface[j + 2] = Unit(p.Roughness);
+                surface[j + 3] = (byte)((Math.Clamp(p.Cell, 0, SurfaceMaps.Cells - 1) + 1) * 16);
             }
         }
 
