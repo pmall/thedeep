@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 using Godot;
 using NVector2 = System.Numerics.Vector2;
@@ -421,18 +422,18 @@ public partial class RoomValidator : Node
         var text = new System.Text.StringBuilder($"DRAFT OK: {draft.Summary(report)}");
         if (table is not null)
         {
-            text.Append($"; room table: {table.Rows.Count} rows, held to the network");
+            text.Append(CultureInfo.InvariantCulture, $"; room table: {table.Rows.Count} rows, held to the network");
         }
 
         if (Report)
         {
-            text.Append($"\ndrawing: {WriteDrawing(draft, table)}");
+            text.Append(CultureInfo.InvariantCulture, $"\ndrawing: {WriteDrawing(draft, table)}");
             if (table is not null)
             {
                 text.Append("\nroom table (kinds):");
                 foreach (RoomRow row in table.Rows)
                 {
-                    text.Append($"\n  {row.Room} ({row.Layer}): {string.Join(", ", row.Kinds).ToLowerInvariant()}");
+                    text.Append(CultureInfo.InvariantCulture, $"\n  {row.Room} ({row.Layer}): {string.Join(", ", row.Kinds).ToLowerInvariant()}");
                 }
             }
 
@@ -440,12 +441,12 @@ public partial class RoomValidator : Node
             foreach (MapEdge e in draft.Graph.Edges)
             {
                 string needs = e.Requires.ToString();
-                text.Append($"\n  {e.From} → {e.To}{(needs == "" ? "" : $"  needs {needs}")}");
+                text.Append(CultureInfo.InvariantCulture, $"\n  {e.From} → {e.To}{(needs == "" ? "" : $"  needs {needs}")}");
             }
 
             foreach (Ability[] order in report.Orders)
             {
-                text.Append($"\n  draft order: {string.Join(" → ", order)}");
+                text.Append(CultureInfo.InvariantCulture, $"\n  draft order: {string.Join(" → ", order)}");
             }
         }
 

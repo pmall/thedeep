@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Numerics;
@@ -69,7 +70,7 @@ public class WorldCheckTests
         WorldCheck world = TwoRooms(eastY: 12f);
         world.Check("Hall", MapTargets.None, report: false);
         Assert.Contains("Hall: exit East needs nothing, but the base moveset reaches it from no way into the room", world.Problems);
-        Assert.Contains(world.Problems, p => p.StartsWith("map inside the rooms: no goal is reached"));
+        Assert.Contains(world.Problems, p => p.StartsWith("map inside the rooms: no goal is reached", StringComparison.Ordinal));
     }
 
     [Fact]
@@ -78,7 +79,7 @@ public class WorldCheckTests
         // Mag-grip on a way the base moveset walks through: the requirement is a lie.
         WorldCheck world = TwoRooms(eastNeeds: "MagGrip");
         world.Check("Hall", MapTargets.None, report: false);
-        Assert.Contains(world.Problems, p => p.StartsWith("Hall: exit East needs MagGrip, but the base moveset reaches it"));
+        Assert.Contains(world.Problems, p => p.StartsWith("Hall: exit East needs MagGrip, but the base moveset reaches it", StringComparison.Ordinal));
         Assert.Contains(world.Problems, p => p.Contains("Mag-grip reaches it from no way into the room") || p.Contains("can't be reached"));
     }
 
@@ -91,7 +92,7 @@ public class WorldCheckTests
         world.AddExit(new MapEdge("Hall", "East", "Sanctum", "West", Requirement.None), new Vector2(0f, 1.5f), new Vector2(0f, 1.5f));
         world.Graph.AddGoal("Sanctum");
         world.Check("Hall", MapTargets.None, report: false);
-        Assert.Contains(world.Problems, p => p.StartsWith("map layout:"));
+        Assert.Contains(world.Problems, p => p.StartsWith("map layout:", StringComparison.Ordinal));
     }
 
     [Fact]
@@ -100,7 +101,7 @@ public class WorldCheckTests
         WorldCheck world = TwoRooms();
         world.Check("Hall", MapTargets.None, report: false);
         List<string> lines = world.ReachReport("Hall", with: null, clumsy: false).ToList();
-        Assert.Contains(lines, l => l.StartsWith("REACH Hall waking at (0, 0) [None]: exits East"));
+        Assert.Contains(lines, l => l.StartsWith("REACH Hall waking at (0, 0) [None]: exits East", StringComparison.Ordinal));
         Assert.Equal("REACH Atrium: not a room in the game", Assert.Single(world.ReachReport("Atrium", null, false)));
     }
 }

@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using Godot;
 
 namespace TheDeep;
@@ -132,7 +133,7 @@ public partial class BallastCheck : Node
     private void Fail(Step step)
     {
         _problems.Add($"step {_index + 1} \"{step.What}\" failed in {step.Seconds} s (at {Player.GlobalPosition}, velocity {Player.Velocity}, " +
-                      $"state {Player.CurrentState.Name}, sunk {Player.Sunk}, water {Player.WaterSurface?.ToString() ?? "none"}, float line {Line})");
+                      $"state {Player.CurrentState.Name}, sunk {Player.Sunk}, water {Player.WaterSurface?.ToString(CultureInfo.InvariantCulture) ?? "none"}, float line {Line})");
         Finish();
     }
 

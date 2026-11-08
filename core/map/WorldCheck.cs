@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 using System.Numerics;
 using System.Text;
@@ -138,12 +139,12 @@ public sealed class WorldCheck
             return text.ToString();
         }
 
-        text.Append($"MAP OK: {Graph.Rooms.Count} rooms, {Graph.Edges.Count} exits, {Graph.Relics.Count} relics, {Graph.Items.Count} item{(Graph.Items.Count == 1 ? "" : "s")}, ")
-            .Append($"{solved.ReachableStates} states, no softlock, ")
+        text.Append(CultureInfo.InvariantCulture, $"MAP OK: {Graph.Rooms.Count} rooms, {Graph.Edges.Count} exits, {Graph.Relics.Count} relics, {Graph.Items.Count} item{(Graph.Items.Count == 1 ? "" : "s")}, ")
+            .Append(CultureInfo.InvariantCulture, $"{solved.ReachableStates} states, no softlock, ")
             .Append(solved.AbilityCount == 0 ? "no abilities on the map" : $"{solved.Orders.Count} of {solved.PossibleOrders} ability orders");
         foreach ((Ability ability, SortedSet<int> at) in solved.Positions)
         {
-            text.Append($"; {ability} at {string.Join("/", at.Select(i => i + 1))}");
+            text.Append(CultureInfo.InvariantCulture, $"; {ability} at {string.Join("/", at.Select(i => i + 1))}");
         }
 
         text.Append('\n').Append(inside);
@@ -153,23 +154,23 @@ public sealed class WorldCheck
             foreach (MapEdge e in Graph.Edges)
             {
                 string needs = e.Requires.ToString();
-                text.Append($"\n  {e.From}:{e.FromExit} → {e.To}:{e.ToExit}{(needs == "" ? "" : $"  needs {needs}")}");
+                text.Append(CultureInfo.InvariantCulture, $"\n  {e.From}:{e.FromExit} → {e.To}:{e.ToExit}{(needs == "" ? "" : $"  needs {needs}")}");
             }
 
             foreach (MapRelic item in Graph.Relics)
             {
-                text.Append($"\n  relic {item.Ability} in {item.Room} ({item.Name})");
+                text.Append(CultureInfo.InvariantCulture, $"\n  relic {item.Ability} in {item.Room} ({item.Name})");
             }
 
             foreach (MapItem item in Graph.Items)
             {
-                text.Append($"\n  item {item.Item} in {item.Room} ({item.Name})");
+                text.Append(CultureInfo.InvariantCulture, $"\n  item {item.Item} in {item.Room} ({item.Name})");
             }
 
             AppendPlacements(text, layout);
             foreach (Ability[] order in solved.Orders)
             {
-                text.Append($"\n  order: {string.Join(" → ", order)}");
+                text.Append(CultureInfo.InvariantCulture, $"\n  order: {string.Join(" → ", order)}");
             }
         }
 
@@ -180,7 +181,7 @@ public sealed class WorldCheck
     {
         foreach ((string room, Vector2 offset) in layout.Offsets.OrderBy(o => o.Key, StringComparer.Ordinal))
         {
-            text.Append($"\n  {room} at ({offset.X:0.##}, {offset.Y:0.##})");
+            text.Append(CultureInfo.InvariantCulture, $"\n  {room} at ({offset.X:0.##}, {offset.Y:0.##})");
         }
     }
 

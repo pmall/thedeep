@@ -1,3 +1,4 @@
+using System.Globalization;
 using System.Text;
 using Godot;
 
@@ -92,7 +93,7 @@ public partial class DebugHud : CanvasLayer
         Vector3 v = Player.Velocity;
         _text.Clear();
         _text.Append("state  ").Append(Player.CurrentState.Name).Append('\n');
-        _text.Append("vel    ").Append(v.X.ToString("+0.0;-0.0")).Append(", ").Append(v.Y.ToString("+0.0;-0.0")).Append('\n');
+        _text.Append("vel    ").Append(v.X.ToString("+0.0;-0.0", CultureInfo.InvariantCulture)).Append(", ").Append(v.Y.ToString("+0.0;-0.0", CultureInfo.InvariantCulture)).Append('\n');
         _text.Append("floor  ").Append(Player.IsOnFloor() ? "yes" : "no").Append('\n');
         _text.Append("dash   ").Append(Player.DashCooldownRemaining > 0f ? $"cooldown {Player.DashCooldownRemaining:0.00}s" : "ready")
              .Append(", air dashes ").Append(Player.AirDashesLeft).Append('\n');

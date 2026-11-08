@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 
 namespace TheDeep;
@@ -67,7 +68,7 @@ public sealed class MapDraft
         for (int n = 0; n < lines.Length; n++)
         {
             string trimmed = lines[n].Trim();
-            if (trimmed.StartsWith("```"))
+            if (trimmed.StartsWith("```", StringComparison.Ordinal))
             {
                 bool opensMap = !inside && trimmed[3..].Trim() == "map";
                 lines[n] = "";
@@ -200,7 +201,7 @@ public sealed class MapDraft
                 break;
             case "powerup":
                 Expect(args, 2);
-                if (!Enum.TryParse(args[1], ignoreCase: true, out PowerStat stat) || !Enum.IsDefined(stat) || int.TryParse(args[1], out _))
+                if (!Enum.TryParse(args[1], ignoreCase: true, out PowerStat stat) || !Enum.IsDefined(stat) || int.TryParse(args[1], NumberStyles.Integer, CultureInfo.InvariantCulture, out _))
                 {
                     throw new FormatException($"powerup {args[0]} {args[1]}: the stat is strength or defense");
                 }
@@ -242,7 +243,7 @@ public sealed class MapDraft
 
     private void Target(string[] args)
     {
-        int Count(string word) => int.TryParse(word, out int n) && n >= 0 ? n : throw new FormatException($"{word} is not a count");
+        int Count(string word) => int.TryParse(word, NumberStyles.Integer, CultureInfo.InvariantCulture, out int n) && n >= 0 ? n : throw new FormatException($"{word} is not a count");
         Targets = args switch
         {
             ["orders", var n] => Targets with { Orders = Count(n) },
@@ -399,13 +400,13 @@ public sealed class MapDraft
     public string Summary(MapReport report)
     {
         var text = new System.Text.StringBuilder();
-        text.Append($"{Graph.Rooms.Count} rooms (")
+        text.Append(CultureInfo.InvariantCulture, $"{Graph.Rooms.Count} rooms (")
             .Append(string.Join(", ", LayerOrder.Select(l => $"{l} {Layers.Count(r => r.Value == l)}")))
-            .Append($"), {Graph.Edges.Count} ways, {Bosses.Count} bosses, {Milestones.Count} milestones, ")
-            .Append($"{report.ReachableStates} states, {report.Orders.Count} of {report.PossibleOrders} ability orders");
+            .Append(CultureInfo.InvariantCulture, $"), {Graph.Edges.Count} ways, {Bosses.Count} bosses, {Milestones.Count} milestones, ")
+            .Append(CultureInfo.InvariantCulture, $"{report.ReachableStates} states, {report.Orders.Count} of {report.PossibleOrders} ability orders");
         foreach ((Ability ability, SortedSet<int> at) in report.Positions)
         {
-            text.Append($"; {ability} at {string.Join("/", at.Select(i => i + 1))}");
+            text.Append(CultureInfo.InvariantCulture, $"; {ability} at {string.Join("/", at.Select(i => i + 1))}");
         }
 
         return text.ToString();

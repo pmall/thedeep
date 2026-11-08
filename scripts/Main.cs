@@ -1,4 +1,5 @@
 using System;
+using System.Globalization;
 using System.Linq;
 using Godot;
 
@@ -374,7 +375,7 @@ public partial class Main : Node3D
                 PerfFile = ArgumentValue(args, PerfArgument) ?? "perf.json",
             };
             if (ArgumentValue(args, SizeArgument) is { } size && size.Split('x') is [var w, var h]
-                && int.TryParse(w, out int width) && int.TryParse(h, out int height))
+                && int.TryParse(w, NumberStyles.Integer, CultureInfo.InvariantCulture, out int width) && int.TryParse(h, NumberStyles.Integer, CultureInfo.InvariantCulture, out int height))
             {
                 driver.RenderSize = new Vector2I(width, height);
             }
@@ -475,7 +476,7 @@ public partial class Main : Node3D
         }
 
         string[] parts = text.Split('/');
-        if (parts.Length == 2 && int.TryParse(parts[0], out int k) && int.TryParse(parts[1], out int n) && n >= 1 && k >= 1 && k <= n)
+        if (parts.Length == 2 && int.TryParse(parts[0], NumberStyles.Integer, CultureInfo.InvariantCulture, out int k) && int.TryParse(parts[1], NumberStyles.Integer, CultureInfo.InvariantCulture, out int n) && n >= 1 && k >= 1 && k <= n)
         {
             return (k, n);
         }

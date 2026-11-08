@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 
 namespace TheDeep;
@@ -145,7 +146,7 @@ public sealed class RoomTable
         var kinds = new List<RoomKind>();
         foreach (string word in List(Cell(2)))
         {
-            if (!Enum.TryParse(word, ignoreCase: true, out RoomKind kind) || !Enum.IsDefined(kind) || int.TryParse(word, out _))
+            if (!Enum.TryParse(word, ignoreCase: true, out RoomKind kind) || !Enum.IsDefined(kind) || int.TryParse(word, NumberStyles.Integer, CultureInfo.InvariantCulture, out _))
             {
                 throw new FormatException($"unknown kind {word} (the kinds: {string.Join(", ", Enum.GetNames<RoomKind>().Select(k => k.ToLowerInvariant()))})");
             }

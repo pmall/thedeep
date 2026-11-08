@@ -67,17 +67,17 @@ public static class MapDrawing
         height += legendLines * 18;
 
         var svg = new StringBuilder();
-        svg.Append($"<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"{N(width)}\" height=\"{N(height)}\" viewBox=\"0 0 {N(width)} {N(height)}\" font-family=\"sans-serif\">\n");
+        svg.Append(CultureInfo.InvariantCulture, $"<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"{N(width)}\" height=\"{N(height)}\" viewBox=\"0 0 {N(width)} {N(height)}\" font-family=\"sans-serif\">\n");
         svg.Append("<defs><marker id=\"arrow\" viewBox=\"0 0 10 10\" refX=\"10\" refY=\"5\" markerWidth=\"9\" markerHeight=\"9\" orient=\"auto-start-reverse\">"
                    + "<path d=\"M0,0 L10,5 L0,10 z\" fill=\"#333\"/></marker></defs>\n");
-        svg.Append($"<rect width=\"100%\" height=\"100%\" fill=\"#fbfaf7\"/>\n");
-        svg.Append($"<text x=\"20\" y=\"36\" font-size=\"22\" font-weight=\"bold\" fill=\"#222\">{X(title)}</text>\n");
-        svg.Append($"<text x=\"20\" y=\"56\" font-size=\"12\" fill=\"#555\">{graph.Rooms.Count} rooms, {graph.Edges.Count} ways. Arrow: one way; dashed: hidden; label: what the way needs.</text>\n");
+        svg.Append(CultureInfo.InvariantCulture, $"<rect width=\"100%\" height=\"100%\" fill=\"#fbfaf7\"/>\n");
+        svg.Append(CultureInfo.InvariantCulture, $"<text x=\"20\" y=\"36\" font-size=\"22\" font-weight=\"bold\" fill=\"#222\">{X(title)}</text>\n");
+        svg.Append(CultureInfo.InvariantCulture, $"<text x=\"20\" y=\"56\" font-size=\"12\" fill=\"#555\">{graph.Rooms.Count} rooms, {graph.Edges.Count} ways. Arrow: one way; dashed: hidden; label: what the way needs.</text>\n");
         for (int i = 0; i < bands.Count; i++)
         {
             (string layer, double by, double bh) = bands[i];
-            svg.Append($"<rect x=\"0\" y=\"{N(by)}\" width=\"{N(width)}\" height=\"{N(bh)}\" fill=\"{(i % 2 == 0 ? "#efece4" : "#f6f4ee")}\"/>\n");
-            svg.Append($"<text x=\"16\" y=\"{N(by + 24)}\" font-size=\"15\" font-weight=\"bold\" fill=\"#6a5f4a\">{X(layer)}</text>\n");
+            svg.Append(CultureInfo.InvariantCulture, $"<rect x=\"0\" y=\"{N(by)}\" width=\"{N(width)}\" height=\"{N(bh)}\" fill=\"{(i % 2 == 0 ? "#efece4" : "#f6f4ee")}\"/>\n");
+            svg.Append(CultureInfo.InvariantCulture, $"<text x=\"16\" y=\"{N(by + 24)}\" font-size=\"15\" font-weight=\"bold\" fill=\"#6a5f4a\">{X(layer)}</text>\n");
         }
 
         foreach ((MapEdge[] edges, int[] indices, bool both, double offset) in Lines(graph))
@@ -91,11 +91,11 @@ public static class MapDrawing
             string d = Path(a, b, offset, out double lx, out double ly);
             bool hidden = network.IsHidden(e.From, e.To);
             string label = Abbreviate(e.Requires.ToString(), abbreviations);
-            svg.Append($"<g class=\"way\" data-from=\"{X(e.From)}\" data-to=\"{X(e.To)}\" data-edges=\"{string.Join(",", indices)}\">");
-            svg.Append($"<path d=\"{d}\" fill=\"none\" stroke=\"{(hidden ? "#8a5a9c" : "#444")}\" stroke-width=\"1.6\"{(hidden ? " stroke-dasharray=\"6 4\"" : "")}{(both ? "" : " marker-end=\"url(#arrow)\"")}/>");
+            svg.Append(CultureInfo.InvariantCulture, $"<g class=\"way\" data-from=\"{X(e.From)}\" data-to=\"{X(e.To)}\" data-edges=\"{string.Join(",", indices)}\">");
+            svg.Append(CultureInfo.InvariantCulture, $"<path d=\"{d}\" fill=\"none\" stroke=\"{(hidden ? "#8a5a9c" : "#444")}\" stroke-width=\"1.6\"{(hidden ? " stroke-dasharray=\"6 4\"" : "")}{(both ? "" : " marker-end=\"url(#arrow)\"")}/>");
             if (label != "")
             {
-                svg.Append($"<text x=\"{N(lx)}\" y=\"{N(ly + 4)}\" font-size=\"11\" text-anchor=\"middle\" fill=\"#8a2a10\" stroke=\"#fbfaf7\" stroke-width=\"4\" paint-order=\"stroke\">{X(label)}</text>");
+                svg.Append(CultureInfo.InvariantCulture, $"<text x=\"{N(lx)}\" y=\"{N(ly + 4)}\" font-size=\"11\" text-anchor=\"middle\" fill=\"#8a2a10\" stroke=\"#fbfaf7\" stroke-width=\"4\" paint-order=\"stroke\">{X(label)}</text>");
             }
 
             svg.Append("</g>\n");
@@ -112,22 +112,22 @@ public static class MapDrawing
                 .Concat(graph.ItemsIn(room).Select(x => $"item {x.Item}"))
                 .Concat(network.Bosses.Where(x => x.Room == room).Select(x => $"boss {x.Name}"))
                 .Concat(network.PowerUps.Where(x => x.Room == room).Select(x => $"power-up {x.Stat.ToString().ToLowerInvariant()}"));
-            svg.Append($"<g class=\"room\" data-room=\"{X(room)}\">");
-            svg.Append($"<rect x=\"{N(rx)}\" y=\"{N(ry)}\" width=\"{BoxW}\" height=\"{BoxH}\" rx=\"6\" fill=\"#ffffff\" stroke=\"{(marked ? "#8a2a10" : "#333")}\" stroke-width=\"{(marked ? 3 : 1.4)}\"{(secret ? " stroke-dasharray=\"5 3\"" : "")}/>");
-            svg.Append($"<text x=\"{N(rx + 8)}\" y=\"{N(ry + 19)}\" font-size=\"14\" font-weight=\"bold\" fill=\"#1a1a1a\">{X(Fit(room, 22))}</text>");
-            svg.Append($"<text x=\"{N(rx + 8)}\" y=\"{N(ry + 37)}\" font-size=\"11\" fill=\"#2b5d8a\">{X(Fit(string.Join(" · ", kinds).ToLowerInvariant(), 32))}</text>");
-            svg.Append($"<text x=\"{N(rx + 8)}\" y=\"{N(ry + 53)}\" font-size=\"10.5\" fill=\"#555\">{X(Fit(string.Join(" · ", holds), 32))}</text>");
+            svg.Append(CultureInfo.InvariantCulture, $"<g class=\"room\" data-room=\"{X(room)}\">");
+            svg.Append(CultureInfo.InvariantCulture, $"<rect x=\"{N(rx)}\" y=\"{N(ry)}\" width=\"{BoxW}\" height=\"{BoxH}\" rx=\"6\" fill=\"#ffffff\" stroke=\"{(marked ? "#8a2a10" : "#333")}\" stroke-width=\"{(marked ? 3 : 1.4)}\"{(secret ? " stroke-dasharray=\"5 3\"" : "")}/>");
+            svg.Append(CultureInfo.InvariantCulture, $"<text x=\"{N(rx + 8)}\" y=\"{N(ry + 19)}\" font-size=\"14\" font-weight=\"bold\" fill=\"#1a1a1a\">{X(Fit(room, 22))}</text>");
+            svg.Append(CultureInfo.InvariantCulture, $"<text x=\"{N(rx + 8)}\" y=\"{N(ry + 37)}\" font-size=\"11\" fill=\"#2b5d8a\">{X(Fit(string.Join(" · ", kinds).ToLowerInvariant(), 32))}</text>");
+            svg.Append(CultureInfo.InvariantCulture, $"<text x=\"{N(rx + 8)}\" y=\"{N(ry + 53)}\" font-size=\"10.5\" fill=\"#555\">{X(Fit(string.Join(" · ", holds), 32))}</text>");
             svg.Append("</g>\n");
         }
 
         if (abbreviations.Count > 0)
         {
             double ly = y + 10;
-            svg.Append($"<text x=\"20\" y=\"{N(ly)}\" font-size=\"12\" font-weight=\"bold\" fill=\"#222\">Abbreviations</text>\n");
+            svg.Append(CultureInfo.InvariantCulture, $"<text x=\"20\" y=\"{N(ly)}\" font-size=\"12\" font-weight=\"bold\" fill=\"#222\">Abbreviations</text>\n");
             var entries = abbreviations.OrderBy(p => p.Value, StringComparer.Ordinal).ToList();
             for (int i = 0; i < entries.Count; i++)
             {
-                svg.Append($"<text x=\"{N(20 + (i % 4) * 260)}\" y=\"{N(ly + 18 * (1 + i / 4))}\" font-size=\"12\" fill=\"#333\">{X($"{entries[i].Value} = {entries[i].Key}")}</text>\n");
+                svg.Append(CultureInfo.InvariantCulture, $"<text x=\"{N(20 + (i % 4) * 260)}\" y=\"{N(ly + 18 * (1 + i / 4))}\" font-size=\"12\" fill=\"#333\">{X($"{entries[i].Value} = {entries[i].Key}")}</text>\n");
             }
         }
 

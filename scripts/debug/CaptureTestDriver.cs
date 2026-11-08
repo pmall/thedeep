@@ -1,3 +1,4 @@
+using System;
 using Godot;
 
 namespace TheDeep;
@@ -105,11 +106,11 @@ public partial class CaptureTestDriver : Node
 
     private void OnSaved(string path)
     {
-        if (path.EndsWith(".png"))
+        if (path.EndsWith(".png", StringComparison.Ordinal))
         {
             _screenshot = path;
         }
-        else if (path.EndsWith(".mp4"))
+        else if (path.EndsWith(".mp4", StringComparison.Ordinal))
         {
             _video = path;
         }

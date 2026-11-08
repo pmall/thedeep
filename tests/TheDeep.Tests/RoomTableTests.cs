@@ -80,7 +80,7 @@ public class RoomTableTests
     public void ATableDisagreeingWithItsNetworkSaysWhere(string row, string instead, string problem)
     {
         var problems = RoomTable.Parse(Table.Replace(row, instead)).Check(MapDraft.Parse(Network));
-        Assert.Contains(problems, p => p.StartsWith(problem));
+        Assert.Contains(problems, p => p.StartsWith(problem, StringComparison.Ordinal));
     }
 
     [Fact]

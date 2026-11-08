@@ -102,7 +102,7 @@ public partial class SpeciesValidator : Node
     private List<MachineSpecies> Load()
     {
         var species = new List<MachineSpecies>();
-        foreach (string file in DirAccess.GetFilesAt(MachineSpecies.Folder).Where(f => f.EndsWith(".tres")).Order())
+        foreach (string file in DirAccess.GetFilesAt(MachineSpecies.Folder).Where(f => f.EndsWith(".tres", StringComparison.Ordinal)).Order())
         {
             string path = $"{MachineSpecies.Folder}/{file}";
             if (ResourceLoader.Load(path) is not MachineSpecies s)

@@ -2,6 +2,7 @@ using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Diagnostics.Tracing;
+using System.Globalization;
 using System.Linq;
 
 namespace TheDeep;
@@ -29,33 +30,33 @@ public sealed class AllocationSampler : EventListener
     {
         // On Linux /proc/thread-self links to "<pid>/task/<tid>"; the events carry the OS thread id.
         string? link = new System.IO.DirectoryInfo("/proc/thread-self").LinkTarget;
-        _thread = link is not null && long.TryParse(link[(link.LastIndexOf('/') + 1)..], out long id) ? id : -1;
+        _thread = link is not null && long.TryParse(link[(link.LastIndexOf('/') + 1)..], NumberStyles.Integer, CultureInfo.InvariantCulture, out long id) ? id : -1;
     }
 
-    protected override void OnEventSourceCreated(EventSource source)
+    protected override void OnEventSourceCreated(EventSource eventSource)
     {
-        if (source.Name == "Microsoft-Windows-DotNETRuntime")
+        if (eventSource.Name == "Microsoft-Windows-DotNETRuntime")
         {
-            EnableEvents(source, EventLevel.Verbose, GcKeyword);
+            EnableEvents(eventSource, EventLevel.Verbose, GcKeyword);
         }
     }
 
-    protected override void OnEventWritten(EventWrittenEventArgs e)
+    protected override void OnEventWritten(EventWrittenEventArgs eventData)
     {
-        if (!Active || e.EventId != AllocationTickId || e.Payload is null || e.PayloadNames is null || (_thread >= 0 && e.OSThreadId != _thread))
+        if (!Active || eventData.EventId != AllocationTickId || eventData.Payload is null || eventData.PayloadNames is null || (_thread >= 0 && eventData.OSThreadId != _thread))
         {
             return;
         }
 
-        int type = e.PayloadNames.IndexOf("TypeName");
-        int amount = e.PayloadNames.IndexOf("AllocationAmount64");
+        int type = eventData.PayloadNames.IndexOf("TypeName");
+        int amount = eventData.PayloadNames.IndexOf("AllocationAmount64");
         if (type < 0 || amount < 0)
         {
             return;
         }
 
-        string name = e.Payload[type] as string ?? "?";
-        long bytes = Convert.ToInt64(e.Payload[amount]);
+        string name = eventData.Payload[type] as string ?? "?";
+        long bytes = Convert.ToInt64(eventData.Payload[amount], CultureInfo.InvariantCulture);
         _bytes.AddOrUpdate(name, bytes, (_, total) => total + bytes);
     }
 
