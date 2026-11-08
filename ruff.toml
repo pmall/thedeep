@@ -1,0 +1,10 @@
+# Ruff, the Python tools' formatter and linter (docs/testing.md#check); its version is pinned in tools/check.sh.
+line-length = 120
+target-version = "py314"
+
+[format]
+quote-style = "single"
+
+[lint]
+# The default rules (pyflakes, pycodestyle's errors), plus import order, modern syntax and likely bugs.
+extend-select = ["I", "UP", "B"]

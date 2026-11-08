@@ -1,0 +1,93 @@
+# The layout and style the formatters read (docs/toolchain.md#format-tools): dotnet format for C#, shfmt for the shell
+# tools, and every editor. The C# rules match the code as it was written; a rule at `warning` is enforced by the
+# build (EnforceCodeStyleInBuild, Directory.Build.props) and fixed by `dotnet format` where it can be.
+root = true
+
+[*]
+charset = utf-8
+end_of_line = lf
+insert_final_newline = true
+trim_trailing_whitespace = true
+indent_style = space
+indent_size = 4
+
+# Godot writes these itself; they keep its layout (tabs in project.godot, its own spacing).
+[*.{tscn,tres,godot,import,uid}]
+indent_style = unset
+indent_size = unset
+trim_trailing_whitespace = unset
+
+# The world tables are tab-separated.
+[*.tsv]
+indent_style = tab
+
+[*.{json,yml,yaml}]
+indent_size = 2
+
+[*.{csproj,props,targets,sln}]
+indent_size = 2
+
+[*.sln]
+indent_style = tab
+end_of_line = unset
+charset = unset
+
+[*.sh]
+# shfmt: indent 4, binary operators may start a line, indent switch cases.
+binary_next_line = true
+switch_case_indent = true
+
+[*.cs]
+# Layout: Allman braces, usings outside the file-scoped namespace, System first.
+csharp_new_line_before_open_brace = all
+csharp_new_line_before_else = true
+csharp_new_line_before_catch = true
+csharp_new_line_before_finally = true
+csharp_indent_case_contents = true
+csharp_indent_case_contents_when_block = false
+csharp_indent_switch_labels = true
+dotnet_sort_system_directives_first = true
+dotnet_separate_import_directive_groups = false
+csharp_using_directive_placement = outside_namespace
+csharp_style_namespace_declarations = file_scoped
+csharp_prefer_braces = true
+
+# What the build enforces (the `option:severity` form is only read by editors, so each rule is named here): the layout
+# above (IDE0055), usings outside (IDE0065), the file-scoped namespace (IDE0161), braces (IDE0011), the names (IDE1006).
+dotnet_diagnostic.IDE0055.severity = warning
+dotnet_diagnostic.IDE0065.severity = warning
+dotnet_diagnostic.IDE0161.severity = warning
+dotnet_diagnostic.IDE0011.severity = warning
+dotnet_diagnostic.IDE1006.severity = warning
+
+# Names: types and members PascalCase; private instance fields _camelCase; constants and static readonly fields
+# PascalCase; local constants are named like locals.
+dotnet_naming_rule.private_fields.symbols = private_fields
+dotnet_naming_rule.private_fields.style = underscore_camel
+dotnet_naming_rule.private_fields.severity = warning
+dotnet_naming_symbols.private_fields.applicable_kinds = field
+dotnet_naming_symbols.private_fields.applicable_accessibilities = private, protected, private_protected
+dotnet_naming_symbols.private_fields.required_modifiers =
+dotnet_naming_style.underscore_camel.capitalization = camel_case
+dotnet_naming_style.underscore_camel.required_prefix = _
+
+dotnet_naming_rule.constants.symbols = constants
+dotnet_naming_rule.constants.style = pascal
+dotnet_naming_rule.constants.severity = warning
+dotnet_naming_symbols.constants.applicable_kinds = field
+dotnet_naming_symbols.constants.required_modifiers = const
+
+dotnet_naming_rule.static_readonly.symbols = static_readonly
+dotnet_naming_rule.static_readonly.style = pascal
+dotnet_naming_rule.static_readonly.severity = warning
+dotnet_naming_symbols.static_readonly.applicable_kinds = field
+dotnet_naming_symbols.static_readonly.applicable_accessibilities = *
+dotnet_naming_symbols.static_readonly.required_modifiers = static, readonly
+
+dotnet_naming_rule.types_and_members.symbols = types_and_members
+dotnet_naming_rule.types_and_members.style = pascal
+dotnet_naming_rule.types_and_members.severity = warning
+dotnet_naming_symbols.types_and_members.applicable_kinds = namespace, class, struct, interface, enum, delegate, event, method, property
+dotnet_naming_symbols.types_and_members.applicable_accessibilities = *
+
+dotnet_naming_style.pascal.capitalization = pascal_case

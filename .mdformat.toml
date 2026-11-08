@@ -1,0 +1,7 @@
+# mdformat, the Markdown formatter (docs/toolchain.md#format-tools).
+# Prose lines are kept as written, never reflowed; ordered lists keep their consecutive numbers (by default every item
+# would become "1."). Tables are not padded, so editing one cell does not rewrite the whole table: mdformat-tables
+# only reads that from the command line (--compact-tables, in tools/check.sh).
+wrap = "keep"
+number = true
+end_of_line = "lf"
