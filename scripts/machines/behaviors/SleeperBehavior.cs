@@ -23,7 +23,12 @@ public partial class SleeperBehavior : MachineBehavior
     public override MachineBrain CreateBrain(MachineSpecies species, int seed) =>
         new SleeperBrain(new StrikeAction { WindUp = WindUp, Blow = Blow, Recover = Recover, Cooldown = Cooldown })
         {
-            HearingRange = HearingRange, WakeThreshold = WakeThreshold, TrackRange = TrackRange, Speed = Speed,
-            Reach = Reach, WakeTime = WakeTime, Patience = Patience,
+            HearingRange = HearingRange,
+            WakeThreshold = WakeThreshold,
+            TrackRange = TrackRange,
+            Speed = Speed,
+            Reach = Reach,
+            WakeTime = WakeTime,
+            Patience = Patience,
         };
 }

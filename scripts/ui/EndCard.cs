@@ -41,8 +41,10 @@ public partial class EndCard : CanvasLayer
     {
         var label = new Label
         {
-            HorizontalAlignment = HorizontalAlignment.Center, MouseFilter = Control.MouseFilterEnum.Ignore,
-            AutowrapMode = TextServer.AutowrapMode.WordSmart, Modulate = Colors.White with { A = 0f },
+            HorizontalAlignment = HorizontalAlignment.Center,
+            MouseFilter = Control.MouseFilterEnum.Ignore,
+            AutowrapMode = TextServer.AutowrapMode.WordSmart,
+            Modulate = Colors.White with { A = 0f },
         };
         label.AddThemeFontSizeOverride("font_size", size);
         label.AddThemeColorOverride("font_color", color);

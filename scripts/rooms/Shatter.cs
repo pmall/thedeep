@@ -38,8 +38,13 @@ public partial class Shatter : Node3D
             var at = new Vector3(rng.RandfRange(-0.45f, 0.45f) * Size.X, rng.RandfRange(-0.45f, 0.45f) * Size.Y, rng.RandfRange(0f, 0.45f) * Size.Z);
             Vector3 outward = new Vector3(at.X, at.Y, at.Z * 0.6f + 0.6f).Normalized();
             Vector3 velocity = push * rng.RandfRange(3f, 7f) + outward * rng.RandfRange(1f, 3.5f) + Vector3.Up * rng.RandfRange(1f, 4f);
-            var chunk = new MeshInstance3D { Mesh = meshes[i % meshes.Length], MaterialOverride = Material, Position = at,
-                CastShadow = GeometryInstance3D.ShadowCastingSetting.Off };
+            var chunk = new MeshInstance3D
+            {
+                Mesh = meshes[i % meshes.Length],
+                MaterialOverride = Material,
+                Position = at,
+                CastShadow = GeometryInstance3D.ShadowCastingSetting.Off
+            };
             float scale = rng.RandfRange(0.7f, 1.4f);
             chunk.Scale = Vector3.One * scale;
             AddChild(chunk);

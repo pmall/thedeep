@@ -7,7 +7,7 @@ Every piece a world is built from (`docs/principles.md#bricks`). The prototype's
 ## Stage: the look of a place `#bricks-stage`
 
 | Brick | Status | Item |
-|---|---|---|
+| -- | -- | -- |
 | `BiomeProfile` (flooded, frozen, volcanic, core; brine, the sequel world's variant of frozen) | working | `docs/roadmap.md#stage-bricks` |
 | Material library (`assets/materials/`, `assets/shaders/`) | working | `docs/roadmap.md#stage-bricks` |
 | `RoomStage` | working | `docs/roadmap.md#stage-bricks` |
@@ -25,7 +25,7 @@ Every piece a world is built from (`docs/principles.md#bricks`). The prototype's
 ## Level: what the pilgrim plays on `#bricks-level`
 
 | Brick | Status | Item |
-|---|---|---|
+| -- | -- | -- |
 | `Block` (rock, metal, cracked) | ready | — |
 | `RoomExit` | ready | — |
 | `HarpoonAnchor` (its state shown: `AnchorLook`) | ready | — |
@@ -43,7 +43,7 @@ Every piece a world is built from (`docs/principles.md#bricks`). The prototype's
 ## The pilgrim `#bricks-pilgrim`
 
 | Brick | Status | Item |
-|---|---|---|
+| -- | -- | -- |
 | Body and look (`resources/parts/pilgrim.tres`) | working (`docs/art-direction.md#art-open`) | `docs/roadmap.md#pilgrim` |
 | Animation (`PilgrimMotion`: ground, Mag-grip's cling, air, the ground and air dash, the Drill's bore, swim, Ballast's sink and rise, dive, the harpoon's throw and reach, strikes, hurt, the ledge vault; rest, relic and death moments) | working (every move posed; contrast to come, secondary motion in stage D) | `docs/roadmap.md#pilgrim` |
 | Base moveset (`docs/gameplay.md#moveset`) | ready (rules), feel pass to come | `docs/roadmap.md#feel-fight` |
@@ -55,7 +55,7 @@ Every piece a world is built from (`docs/principles.md#bricks`). The prototype's
 ## Encounters `#bricks-encounters`
 
 | Brick | Status | Item |
-|---|---|---|
+| -- | -- | -- |
 | `Machine` + `MachineSpecies` | ready (framework) | — |
 | Brains (`core/machines/brains/`) | working placeholders | `docs/roadmap.md#stage-polish` (the bestiary) |
 | Species (`resources/machines/`, 10 placeholders) | working placeholders | `docs/roadmap.md#stage-polish` |
@@ -65,7 +65,7 @@ Every piece a world is built from (`docs/principles.md#bricks`). The prototype's
 ## Story and text `#bricks-text`
 
 | Brick | Status | Item |
-|---|---|---|
+| -- | -- | -- |
 | Line book (`LineBook`: the game's own, `resources/lines.tres`, which each world's extends) | ready | — |
 | `Banner`, `HintLine` | working | `docs/roadmap.md#game-systems` |
 | `Proclamation` | working | `docs/roadmap.md#game-systems` |
@@ -76,7 +76,7 @@ Every piece a world is built from (`docs/principles.md#bricks`). The prototype's
 ## Items and progress `#bricks-items`
 
 | Brick | Status | Item |
-|---|---|---|
+| -- | -- | -- |
 | `AbilityRelic` | working | `docs/roadmap.md#pilgrim` (the moment) |
 | `PowerUp` (strength or defense, for good: `Prowess`), played by `PowerUps` | ready | — |
 | Items: `ItemDefinition`, `ItemPickup` (keys, codes), held by `Inventory`, played by `Keyring` | ready (a key: the Sacristy's; a code: the Pyre's litany, its script the makers' glyphs, in green) | — |
@@ -84,7 +84,7 @@ Every piece a world is built from (`docs/principles.md#bricks`). The prototype's
 ## Systems `#bricks-systems`
 
 | Brick | Status | Item |
-|---|---|---|
+| -- | -- | -- |
 | World (`WorldDefinition`: its network and room table) | ready | `docs/roadmap.md#sequel-test` |
 | `Session`, `Shrine`, save | working | `docs/roadmap.md#game-systems` (items in the save) |
 | Room travel (`RoomTravel`) | ready | — |
@@ -96,7 +96,7 @@ Every piece a world is built from (`docs/principles.md#bricks`). The prototype's
 ## Proof `#bricks-proof`
 
 | Brick | Status |
-|---|---|
+| -- | -- |
 | Map solver (`MapSolver`) | ready |
 | Reach planner (`ReachPlanner`) | ready |
 | Room, travel, species and lab checks (`docs/testing.md#check`) | ready |

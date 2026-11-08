@@ -5,6 +5,7 @@
 Joint and part offsets and every mesh dimension are multiplied; `old=new` pairs swap text (a material path). The header
 replaces the source's leading comment. The generated .tres is the source of truth from then on.
 """
+
 import re
 import sys
 
@@ -19,17 +20,44 @@ def scale_parts(src_path, dst_path, s, header, swaps):
     for line in open(src_path).read().split('\n'):
         k = line.split(' = ')[0] if ' = ' in line else ''
         if k in ('Offset', 'Position') and 'Vector3(' in line:
-            line = re.sub(r'(Vector3)\(([^)]*)\)', lambda m: f"{m.group(1)}({', '.join(fmt(float(n) * s) for n in m.group(2).split(','))})", line)
-        elif k in ('Length', 'Width', 'Thickness', 'Bevel', 'RadiusX', 'RadiusZ', 'Height', 'Radius', 'HubRadius', 'HubHeight', 'Chord',
-                   'Strut', 'Knuckle', 'KnuckleDepth', 'EndKnuckle', 'Piston', 'PistonSide', 'CableWidth', 'CableSide',
-                   'WidthTop', 'WidthBottom', 'DepthTop', 'DepthBottom', 'Shift'):
+            line = re.sub(
+                r'(Vector3)\(([^)]*)\)',
+                lambda m: f'{m.group(1)}({", ".join(fmt(float(n) * s) for n in m.group(2).split(","))})',
+                line,
+            )
+        elif k in (
+            'Length',
+            'Width',
+            'Thickness',
+            'Bevel',
+            'RadiusX',
+            'RadiusZ',
+            'Height',
+            'Radius',
+            'HubRadius',
+            'HubHeight',
+            'Chord',
+            'Strut',
+            'Knuckle',
+            'KnuckleDepth',
+            'EndKnuckle',
+            'Piston',
+            'PistonSide',
+            'CableWidth',
+            'CableSide',
+            'WidthTop',
+            'WidthBottom',
+            'DepthTop',
+            'DepthBottom',
+            'Shift',
+        ):
             try:
-                line = f"{k} = {fmt(float(line.split(' = ')[1]) * s)}"
+                line = f'{k} = {fmt(float(line.split(" = ")[1]) * s)}'
             except ValueError:
                 pass
         elif k == 'Stations':
             nums = [float(x) for x in re.search(r'\(([^)]*)\)', line).group(1).split(',')]
-            line = f"Stations = PackedVector4Array({', '.join(fmt(n if i % 4 == 0 else n * s) for i, n in enumerate(nums))})"
+            line = f'Stations = PackedVector4Array({", ".join(fmt(n if i % 4 == 0 else n * s) for i, n in enumerate(nums))})'
         out.append(line)
     i = 1
     while i < len(out) and out[i].startswith(';'):

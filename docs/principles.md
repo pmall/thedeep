@@ -9,6 +9,7 @@ The game is built twice: first a **prototype** that is our playground, then the 
 Everything the game is made of is a **brick**: a reusable piece that a world places, configures and connects. A material, a backdrop, a water body, a block, a lift, a gate, a key door, a machine species, a dialogue box, a shrine, an ambush arena. The catalog of bricks and their status is [bricks.md](bricks.md).
 
 A brick:
+
 - **does one thing** and is configured through exported data (`[Export]` knobs, a `.tres`), never by editing its code for one room;
 - **knows nothing about any specific world.** No room names, species ids, boss names or file paths of one world in code. Code reads them from content (a room scene, a world's data). A check or demo may name prototype rooms; a brick may not;
 - **is placed by content**, in a room scene or a world's data file, not wired by hand in code;
@@ -24,12 +25,13 @@ When you need something new for one room, ask first whether it is a brick that o
 We will not leave Godot. But code that could leave it is better code: easier to test, to reason about and to reuse. So the game is split in three layers, and dependencies point one way only:
 
 | Layer | What lives there | May use |
-|---|---|---|
+| -- | -- | -- |
 | **Core** (pure C#) | the rules and the state: movement math, abilities, combat, health, items and inventory, power-ups, the session's rules, the map graph and solver, the reach planner, machine brains and the behavior vocabulary, mesh geometry, layouts, save data, dialogue flow | .NET and `System.Numerics` only. **No Godot.** |
 | **Adapters** (Godot nodes) | thin nodes that connect the core to the engine: read input and physics, call the core, apply its answer to nodes, meshes, materials, sound | the core and Godot |
 | **Content** | scenes, resources, data files: rooms, species, biomes, lines, worlds | the adapters' exported types |
 
 Rules:
+
 - **Decide in the core, show in the adapter.** If a piece of code answers a question about the game (may the pilgrim grip here? what does this machine want? does this key open this door? is this map softlock-free?), it belongs in the core. An adapter only translates.
 - **Adapters stay thin.** A Godot node that grows its own rules (timers, state machines, formulas) is a smell: move the rules into a core class the node owns, and test them there.
 - **The core never calls the engine.** Time comes in as a `dt` argument, randomness as a seeded generator passed in, the world as plain data (boxes, rays already cast, positions). No static singletons, no hidden global state.

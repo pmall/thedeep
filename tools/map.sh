@@ -11,7 +11,10 @@ export DOTNET_ROOT="${DOTNET_ROOT:-$HOME/.dotnet}"
 export PATH="$DOTNET_ROOT:$HOME/.local/bin:$PATH"
 GODOT="${GODOT:-godot}"
 
-dotnet build TheDeep.sln -v q -nologo >/dev/null || { echo "build failed: run tools/check.sh"; exit 1; }
+dotnet build TheDeep.sln -v q -nologo >/dev/null || {
+    echo "build failed: run tools/check.sh"
+    exit 1
+}
 from=(--room MechanicsLab)
 if [ $# -eq 2 ]; then from=(--world "$1" --room "$2"); fi
 "$GODOT" --headless --path . --fixed-fps 60 --quit-after 600 -- "${from[@]}" --validate-rooms --map-report 2>&1 \

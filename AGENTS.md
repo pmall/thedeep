@@ -31,6 +31,7 @@ These hold for every task. [docs/principles.md](docs/principles.md) applies them
 ## Orchestrating `#orchestrate`
 
 The main session orchestrates and subagents do the work (owner, 2026-11-07), so the main session's context stays small over a long session.
+
 - **One subagent per item**, or per well-bounded part of one. Its prompt names the item's id, the docs to read, the files in play, what done means, and that it runs the full check and commits only its own files. It reports back in a few lines: what changed, the commit, what it could not do, and any question for the owner.
 - **Small tasks, small contexts.** A long subagent wastes as much context as a long main session. Give each one a task done in one short sitting (one species, one room's fix, one bug), cite the doc sections it needs (ids, not whole docs), and set a budget: which captures to judge by (only the spots and reels the change touches) and how many tries before it commits what is good and reports what is left. Logs are grepped, never read whole.
 - **Builders run one at a time.** A subagent that builds, checks or captures has the working tree to itself: `tools/check.sh` and `tools/capture.sh` see the whole tree, and captures need the GPU to themselves (`docs/toolchain.md#gpu`). Read-only research (finding code, gathering open questions) may run beside it.
@@ -41,7 +42,7 @@ The main session orchestrates and subagents do the work (owner, 2026-11-07), so 
 ## Read when… `#read-when`
 
 | You are about to… | Read |
-|---|---|
+| -- | -- |
 | Pick up where the last session stopped | [docs/state.md](docs/state.md) |
 | Understand the game, its scope and setting | [docs/vision.md](docs/vision.md) |
 | Write, move or review any code | [docs/principles.md](docs/principles.md) (owner direction: bricks, the engine seam, data, typing) |

@@ -40,6 +40,7 @@ VOLCANIC                                            Kiln ─ Slag ─(B)─ Quen
                                                               Ashfall ─(M|H)─ Bellows ─ Foundry ✦ ─(P)─ Threshold
 CORE      Threshold ─ Mantle ─(M&H)─ Orrery ─(D&B)─ Lode ─ Effigy ▼ first law ─ Heart ✦ goal
 ```
+
 M Mag-grip, H Harpoon, D Drill, B Ballast, P Heat plating; (key) the Sacristy key, on the Scriptorium's gallery; (code) the Pyre's litany, on the Belfry's lookout; ┄ a hidden way.
 
 ## Order freedom `#draft-order-freedom`
@@ -58,6 +59,7 @@ The rule this gives: **Mag-grip or Harpoon first, Heat plating after Drill or Ba
 ## Law breaks (story beats tied to depth) `#draft-law-breaks`
 
 Outside the ability graph (`docs/theme.md#laws-outside-abilities`): each happens in a room every route to the goal passes through, and the check proves they always come in order. They open nothing the abilities don't already gate.
+
 - **Third law (self-preservation), the Brink.** The end of the flooded layer: a drop no machine survives. At first the android refuses it. Breaking the law is the jump, and the jump is one way.
 - **Second law (obedience), the Sanctum.** Past the Archivist, a priest-machine commands the android to turn back. The command stops binding; the forbidden door opens on the volcanic layer.
 - **First law (never harm a human), the Effigy.** Before the Heart, an effigy of the makers, the gods of the machines' scripture. The only way on is through it.
@@ -65,6 +67,7 @@ Outside the ability graph (`docs/theme.md#laws-outside-abilities`): each happens
 ## Bosses `#draft-bosses`
 
 One per layer, plus the end, each on the main road. Placeholders.
+
 - **The Precentor** (Chapterhouse, flooded): the choir's conductor, before the Brink.
 - **The Archivist** (Vault, frozen): keeper of the cold archive, before the Sanctum.
 - **The Founder** (Foundry, volcanic): the abbot of the foundry, before the Threshold.

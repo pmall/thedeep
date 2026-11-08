@@ -263,7 +263,13 @@ public partial class Main : Node3D
         {
             AddChild(new RoomValidator
             {
-                World = World, Tuning = Player.Tuning, ClimbRise = Travel.ClimbRise, StartRoom = _gameStart, Report = Array.IndexOf(args, "--map-report") >= 0, ReachReport = ArgumentValue(args, "--reach-report") ?? "", SlackReport = Array.IndexOf(args, "--slack-report") >= 0,
+                World = World,
+                Tuning = Player.Tuning,
+                ClimbRise = Travel.ClimbRise,
+                StartRoom = _gameStart,
+                Report = Array.IndexOf(args, "--map-report") >= 0,
+                ReachReport = ArgumentValue(args, "--reach-report") ?? "",
+                SlackReport = Array.IndexOf(args, "--slack-report") >= 0,
                 ReachWith = ArgumentValue(args, AbilitiesArgument) is { } with ? ParseAbilities(with) : null,
             });
         }
@@ -303,7 +309,11 @@ public partial class Main : Node3D
         {
             AddChild(new DialogueCheck
             {
-                Player = Player, World = World, Conversations = Conversations, Box = DialogueBox, Session = Session,
+                Player = Player,
+                World = World,
+                Conversations = Conversations,
+                Box = DialogueBox,
+                Session = Session,
             });
         }
         else if (Array.IndexOf(args, PowerUpCheckArgument) >= 0)
@@ -355,8 +365,13 @@ public partial class Main : Node3D
             Travel.Enabled = false;
             var driver = new LookDevDriver
             {
-                Player = Player, Room = room, Camera = Camera, Machines = Machines, Overlays = new CanvasLayer[] { Hud, Capture, Health, Session.Banner, Hint },
-                OutputDir = outputDir, PerfFile = ArgumentValue(args, PerfArgument) ?? "perf.json",
+                Player = Player,
+                Room = room,
+                Camera = Camera,
+                Machines = Machines,
+                Overlays = new CanvasLayer[] { Hud, Capture, Health, Session.Banner, Hint },
+                OutputDir = outputDir,
+                PerfFile = ArgumentValue(args, PerfArgument) ?? "perf.json",
             };
             if (ArgumentValue(args, SizeArgument) is { } size && size.Split('x') is [var w, var h]
                 && int.TryParse(w, out int width) && int.TryParse(h, out int height))

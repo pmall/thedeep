@@ -35,7 +35,7 @@ tools/                 the check, look-dev captures, the map report, authoring h
 The type to open first for each system; its docblock leads on.
 
 | System | Start at |
-|---|---|
+| -- | -- |
 | Boot, command-line arguments | `Main` |
 | The pilgrim | `Player` (over the core's `PilgrimControl` and `MoveRules`), its states in `scripts/player/states/`, its look `PlayerVisual` |
 | A world, its rooms and travel | `WorldDefinition`, `World`, `Room`, `RoomExit` (over the core's `Threshold`), `RoomTravel`, `RoomStage` |

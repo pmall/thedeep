@@ -5,18 +5,23 @@ The plan we follow from session to session: the owner's direction, the stages an
 ## Direction (decided by the owner) `#direction`
 
 - **Four stages** `#four-stages` (owner, 2026-11-01). Each stage is finished before the next one starts:
+
   - **A. The prototype** *(current)*: every brick of the game ready, beautiful and modular, proven in the 40-room prototype world. The prototype is our **playground**, and it stays one after this stage (`docs/roadmap.md#stage-prototype`).
   - **B. The plan on paper**: the real game's map as a network of rooms, with a table describing every room. Reviewed and approved by the owner before anything is built (`docs/roadmap.md#stage-plan`).
   - **C. The real game**: built from the plan, beside the prototype, from the prototype's bricks (`docs/roadmap.md#stage-real-game`).
   - **D. Polish**: what makes it rich: many machine species, the real bosses, secrets and traps in every room, narrative, story, dialogue, voices, cutscenes, audio, authored final assets (`docs/roadmap.md#stage-polish`).
 
   Why: the owner is now ambitious for the game. The prototype's world (40 rooms, 5 abilities, the solver) proved the structure. Before growing it, every reusable piece must exist and be good, so that the big world becomes a puzzle assembled from finished pieces. *"If we make a sequel, we make a new map, I have all the tools modularized at my disposal, boom, we implement it."*
+
 - **Programming principles** (owner, 2026-11-01): [principles.md](principles.md), which every code change follows.
+
 - **Procedural first, Blender for the pilgrim** (owner, 2026-11-01 and 2026-11-02): `docs/art-direction.md#procedural-first`.
+
 - **A visual signature** (owner, 2026-11-01): `docs/art-direction.md#signature`.
+
 - **Three long-term objectives shape the architecture**: [long-term.md](long-term.md).
 
----
+______________________________________________________________________
 
 ## Stage A: the prototype *(current)* `#stage-prototype`
 
@@ -56,6 +61,7 @@ Built from the approved plan, beside the prototype (its own world folder; the pr
 ## Stage D: polish `#stage-polish`
 
 Only once the real game plays from start to end:
+
 - **The pilgrim's secondary motion** (coat, braid, cables; moved here from `docs/roadmap.md#pilgrim`, decided 2026-11-07, owner's delegation).
 - **The bestiary**: species grown toward 150–200 behaviorally distinct machines ([long-term.md](long-term.md)), the real bosses, NPCs.
 - **Every room made rich**: its secrets, its swarms, its secret passages, its enigma, the paths toward the end.
@@ -66,6 +72,7 @@ Only once the real game plays from start to end:
 ### Audio `#audio`
 
 Deferred by the owner. Ask before planning it. Two parts:
+
 - **Ambience** (room tones, machinery, water). Keep hooks cheap: rooms and biome profiles can later reference ambience.
 - **High-quality voiced dialogue** (owner wish). Generated voices, via an ElevenLabs MCP server or local TTS models, to be decided then. Machine voices can be processed (filters, vocoder-like effects) per species or layer. This is why every line is data with a stable id: voice files are generated per line id in a batch and re-generated when text changes.
 

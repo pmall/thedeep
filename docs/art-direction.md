@@ -20,6 +20,7 @@ Owner, 2026-11-01. The game gets a **visual signature**: one global pass over th
 **Where it stands** `#signature-state`: the pass is `PaintPass` (start reading there); a layer's `BiomeProfile` names its `PaintStyle` (`resources/paint/`). Three variants are built: **Gouache** (restrained), **Poster** (broader strokes, few flat values) and **Scripture** (the paper's grain is the machines' script, the strokes lean toward a machine's hand; at 1080p its glyphs read as a fine grain of script marks in flat midtones close up, and fade into texture in wide shots). Each biome may take its own style (owner, 2026-11-02). **The pick** (decided 2026-11-07, owner's delegation): Poster for the frozen layer (the owner's own lean) and its brine variant, Gouache for the flooded and volcanic layers and the core; Scripture stays available, unused. Next: each biome's style tuned to its rooms, and the pass's cost won back. F9 cycles them in play, then shows the frame unpainted; `--paint NAME` and `tools/capture.sh --paint NAME` render one. While the paint is on, it replaces the camera's depth of field: the brush simplifies the far, and the blur would smear its strokes. Its cost to win back: about 0.9 ms of GPU time on average (Scriptorium 5.7 against 4.8 ms, Narthex 5.4 against 4.5 with `--paint none`). Bursts of 10–20 frames at 20–30 ms GPU (in the brush's Kuwahara step, `THEDEEP_PAINT_TIMING=1 tools/capture.sh`, read in the perf file's `slowest_gpu` and `paint_steps_avg_ms`) show in about half the capture recordings on the Linux desktop, where Godot's window goes through Xwayland, and none when it runs as a native Wayland window; the pass's work is fixed and nothing else uses the GPU. They are the Linux desktop's problem, not the game's, and are not chased (owner, 2026-11-07); the game keeps Godot's default display driver, since forcing Wayland broke `godot --path .`. The single slow frames at fixed frames in some rooms (Kiln #280, the Sacristy's four) follow garbage-collection stalls and come without the paint too.
 
 What gouache means here:
+
 - **Flat, matte, opaque color** laid in areas, with soft brush edges, not photographic gradients. Detail simplified where the eye doesn't need it (the backdrop, the haze), kept where it does (the play plane, the pilgrim).
 - **Strokes that follow form**: brushwork oriented along edges and surfaces (an anisotropic Kuwahara-type filter, or strokes driven by the scene's normals and depth), not a uniform blur.
 - **Pigment and paper**: a fine grain and granulation in flat areas, a slightly darker rim where colors meet, as paint pools at a stroke's edge. Anchored to the world or to surfaces where it can be, so it doesn't slide over a moving image like a dirty screen.
@@ -27,6 +28,7 @@ What gouache means here:
 - **Ours alone**: something tied to the game's world, such as a grain that, up close, is made of the machines' glyphs and data, or strokes that tighten and turn mechanical as the pilgrim breaks its laws. Variants should try at least one idea no off-the-shelf filter gives.
 
 Constraints:
+
 - **Readability first**: the pilgrim, hazards, interactables and metal versus rock must read at least as well as without the pass. Gameplay edges are never smeared away.
 - **Graceful**: restraint. Painted, not noisy. It must stay calm in motion: no shimmer, crawling or flicker as the camera moves (judge it from video, not only stills).
 - **Inside the frame budget** (`docs/principles.md#performance`): the rooms already sit near 9.6 ms p99, so GPU time must be won back or the pass made cheap (a lower-resolution pass, a compute effect).
@@ -46,6 +48,7 @@ Constraints:
 ## Reference board `#references`
 
 The owner's screenshots are in `docs/references/` (Godot ignores the `docs/` folder). **They are about colors and graphical style only. Don't copy their props, venues or layouts.** The owner's split:
+
 - **Ambiance (world, light, color): *Metroid Dread*,** especially its white areas with a touch of purple.
 - **Character (the android): *NieR: Automata*.**
 - Earlier references, now secondary: *Ori*, *Hollow Knight: Silksong*, *Castlevania: Belmont's Curse*.
@@ -53,7 +56,9 @@ The owner's screenshots are in `docs/references/` (Godot ignores the `docs/` fol
 To view the `.avif` file, convert it first: `ffmpeg -i in.avif out.png` in the scratchpad.
 
 ### Ambiance: *Metroid Dread* `#ambiance`
+
 Images: [`perfect.jpg`](references/perfect.jpg) (**north star**), [`dread-white-lab.jpeg`](references/dread-white-lab.jpeg), [`dread-station-melee.avif`](references/dread-station-melee.avif).
+
 - **Colors:** pale blue-white and cool grey base, lavender-grey mist, with saturated magenta-purple as the only strong decor color (`perfect.jpg`). Black for structure and the void below the play plane. Small warm accents on the player pop against it.
 - **Color means gameplay:** the world is almost monochrome, so saturated emissive colors (like Dread's red hazard pads and door locks) are reserved for hazards, interactables, doors and pickups.
 - **Lighting:** cool key light, one strong light shaft visible in drifting particles, rim light on glossy pale surfaces, a gentle bloom on emissives.
@@ -68,7 +73,9 @@ Images: [`perfect.jpg`](references/perfect.jpg) (**north star**), [`dread-white-
   - White slash arc and spark VFX for the basic attack.
 
 ### Character: *NieR: Automata* `#character`
+
 Images: [`nier-tank-catwalk.jpg`](references/nier-tank-catwalk.jpg), [`nier-amusement-park.jpeg`](references/nier-amusement-park.jpeg), [`nier-factory-furnace.png`](references/nier-factory-furnace.png) (all show 2B or 9S in the 2D side-scrolling sections).
+
 - **Silhouette:** a slender, elegant humanoid android, human proportions, small next to the world. Instantly readable at gameplay size.
 - **Colors:** mostly black, with white/silver highlights (hair, trims) and very little else. It stays readable against the pale Dread world through value contrast (dark on light). One small glowing element can carry the purple accent.
 - **Motion:** graceful and fast, acrobatic, with flowing secondary motion (skirt or coat tails, hair, ribbons, cables) trailing behind moves.
@@ -78,11 +85,13 @@ Images: [`nier-tank-catwalk.jpg`](references/nier-tank-catwalk.jpg), [`nier-amus
   - In every capture, the android is the highest-contrast element on the play plane.
 
 ### Summary: the game's look in one line `#look-in-one-line`
+
 A pale, misty *Dread* world in white, grey and a touch of purple, where color means gameplay, crossed by a dark, elegant *NieR* android.
 
 ## Open issues `#art-open`
 
 What the visual work still owes (`docs/roadmap.md#stage-bricks`, `docs/roadmap.md#pilgrim`):
+
 - Flooded back walls (decided 2026-11-07, owner's delegation): the Narthex and the Sacristy have a dressed back wall at 9 m, as the Cell's, with a warm lamp raking it; it reads at the edges and in the wide shots, but where a shaft's beam crosses the room the lit haze in front still veils it to a pale plane (the Narthex's shrine, the Sacristy's dais). The open halls keep the haze's architecture. Each wall costs about 0.5 ms of GPU on average.
 - Frozen: the Underice's water is clearer (decided 2026-11-07, owner's delegation; `water_section_clear.tres`, that cave only): its section sank the play plane, twenty meters and more under the surface, almost wholly into the deep color, which is why its lamps never reached the camera. Its walls, ice and floor now read; the pilgrim is still dark against them (see the pilgrim's line below).
 - The pilgrim: its suit and coat carry a faint cool edge along the silhouette that needs no light (`edge_light` in the android shader), one setting for every room, so the black body keeps its outline against dark racks and the Underice without looking lamp-lit; whether it is enough in the darkest rooms waits on the owner's playtest. The cap of the hair is still one smooth dome over its ragged locks: its crown (strands or a parting) waits for the Blender MCP (`docs/roadmap.md#beyond-procedural`) (decided 2026-11-07, owner's delegation).

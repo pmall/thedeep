@@ -25,6 +25,10 @@ public partial class PrayerBehavior : MachineBehavior
         new PrayerBrain(species.Id, Period * (0.9f + 0.2f * Jitter(seed, 1)), Jitter(seed, 2),
             new StrikeAction { WindUp = WindUp, Blow = Blow, Recover = Recover, Cooldown = Cooldown })
         {
-            Reach = Reach, Band = Band, ChestHeight = ChestHeight, Congregation = Congregation, Calm = Calm,
+            Reach = Reach,
+            Band = Band,
+            ChestHeight = ChestHeight,
+            Congregation = Congregation,
+            Calm = Calm,
         };
 }

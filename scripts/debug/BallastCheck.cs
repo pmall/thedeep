@@ -45,7 +45,11 @@ public partial class BallastCheck : Node
     {
         World.Room.AddChild(new WaterBody
         {
-            Name = "Tank", Swim = true, Size = new Vector2(4f, 4f), Depth = Surface - Bottom, Position = new Vector3(Middle, Surface, 0f),
+            Name = "Tank",
+            Swim = true,
+            Size = new Vector2(4f, 4f),
+            Depth = Surface - Bottom,
+            Position = new Vector3(Middle, Surface, 0f),
             SurfaceMaterial = GD.Load<Material>("res://assets/materials/water.tres"),
             UnderwaterMaterial = GD.Load<Material>("res://assets/materials/underwater.tres"),
         });

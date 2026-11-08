@@ -44,6 +44,7 @@ Owner direction (2026-11-06): room transitions as in the classics (Hollow Knight
 ## Fight `#fight`
 
 A few moves, done well (`docs/roadmap.md#feel-fight`). No strike stops the pilgrim: momentum carries through. Presses during a recovery are kept.
+
 - **The chain:** presses in rhythm give a swing, a second swing, then a **finisher** (wider, one more damage, it throws the machine far); a pause starts the chain over.
 - **Down strike:** in the air, holding down: a strike under the feet. What it hits **bounces** the pilgrim up, the air dash refilled, so it can strike again.
 - **Dash strike:** attacking during a dash lunges along it: longer, one more damage.
@@ -57,7 +58,7 @@ Each strike's reach, width, damage, knockback, hit stop and bounce are `Strikes`
 These gate the map. Every ability is one simple state or rule: no systemic or emergent mechanics. They can be collected in many orders, and a solver proves it (`docs/long-term.md#any-order`).
 
 | Ability | What it does | What it gates |
-|---|---|---|
+| -- | -- | -- |
 | **Mag-grip** `#mag-grip` | Walk on **metal** walls and ceilings; rock can't be gripped, and water lets go of it | Vertical shafts and ceilings made of metal |
 | **Harpoon** `#harpoon` | Fire at a mooring ring in sight (hold up or down to aim) and zip to it; a ring in sight that the camera doesn't frame is shown by a chevron at the screen's edge (owner, 2026-11-02: targets off screen were invisible) | Gaps with rings |
 | **Drill** `#drill` | A dash bores through **cracked rock**; down + dash dives through cracked floors. Broken rock stays broken | Cracked rock walls and floors |
@@ -71,7 +72,7 @@ Rules for rooms: only the physics layer makes metal (`docs/art-direction.md#visu
 Bindings are the input map in `project.godot` (names in `InputActions`). Debug builds show them on screen, gameplay and debug apart and small (owner, 2026-11-01; `ControlsManual`).
 
 | Action | Keyboard | Gamepad |
-|---|---|---|
+| -- | -- | -- |
 | `move_left` / `move_right` | A / D, ← / → | Left stick, d-pad |
 | `move_up` / `move_down` (in water with Ballast: rise / sink) | W / S, ↑ / ↓ | Left stick, d-pad |
 | `jump` | Space, Z | A |

@@ -66,7 +66,11 @@ public partial class GripCheck : Node
 
         World.Room.AddChild(new WaterBody
         {
-            Name = "Tank", Swim = true, Size = new Vector2(2f, 4f), Depth = TankSurface, Position = new Vector3(27f, TankSurface, 0f),
+            Name = "Tank",
+            Swim = true,
+            Size = new Vector2(2f, 4f),
+            Depth = TankSurface,
+            Position = new Vector3(27f, TankSurface, 0f),
             SurfaceMaterial = GD.Load<Material>("res://assets/materials/water.tres"),
             UnderwaterMaterial = GD.Load<Material>("res://assets/materials/underwater.tres"),
         });

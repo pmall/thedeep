@@ -53,7 +53,16 @@ public partial class SleeveMesh : KitMesh
     protected override void Build(MeshBuilder builder) =>
         LimbShapes.Sleeve(builder, Axis.ToCore(), Length, new LimbSleeve
         {
-            From = From, To = To, Bands = Bands, WidthTop = WidthTop, WidthBottom = WidthBottom,
-            DepthTop = DepthTop, DepthBottom = DepthBottom, Flare = Flare, Overlap = Overlap, Shift = Shift, Sides = Sides,
+            From = From,
+            To = To,
+            Bands = Bands,
+            WidthTop = WidthTop,
+            WidthBottom = WidthBottom,
+            DepthTop = DepthTop,
+            DepthBottom = DepthBottom,
+            Flare = Flare,
+            Overlap = Overlap,
+            Shift = Shift,
+            Sides = Sides,
         });
 }

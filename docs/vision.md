@@ -5,6 +5,7 @@
 **The Deep** (working title) is a gameplay-first, side-scrolling **metroidvania** with a 2.5D look: the world is real 3D, the camera is fixed to the side, and play happens on a single 2D plane (Z = 0). Visual references: `docs/art-direction.md#references`.
 
 **One word for the whole game: graceful** `#graceful` (owner). Use it as the tiebreaker for every choice:
+
 - **Movement:** hyper-dynamic and fluid (owner, 2026-10-31): moves chain into each other without hard stops; momentum carries through jumps, dashes and landings. Graceful is not floaty: controls stay tight and precise.
 - **Animation:** fluid and acrobatic, with flowing secondary motion (cloth, hair, cables).
 - **Visuals:** restraint. Clean shapes, a calm palette, one accent color, uncluttered screens.
@@ -12,6 +13,7 @@
 - **Pacing:** calm, deliberate moments between bursts of action, like *Inside*.
 
 Design principles:
+
 - **A finished, playable game.** No novel signature systems. Classic metroidvania structure done well.
 - **A small, fixed set of abilities** (five, [gameplay.md](gameplay.md)); the map is built around them.
 - **The order of work** is the owner's four stages (`docs/roadmap.md#four-stages`).

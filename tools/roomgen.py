@@ -86,9 +86,31 @@ EXT = {
     'spinner': ('Script', 'res://scripts/rooms/dressing/Spinner.cs'),
     'rotor': ('Script', 'res://scripts/parts/RotorMesh.cs'),
 }
-for m in ['rock', 'wet_stone', 'metal', 'rust', 'glyphs', 'cable', 'stone_mid', 'metal_mid', 'rust_mid',
-          'backdrop_stone', 'backdrop_rust', 'foreground', 'backdrop_cathedral', 'backdrop_halls', 'water', 'underwater',
-          'ice', 'ice_mid', 'water_section', 'cracked', 'magma', 'basalt', 'heat_haze']:
+for m in [
+    'rock',
+    'wet_stone',
+    'metal',
+    'rust',
+    'glyphs',
+    'cable',
+    'stone_mid',
+    'metal_mid',
+    'rust_mid',
+    'backdrop_stone',
+    'backdrop_rust',
+    'foreground',
+    'backdrop_cathedral',
+    'backdrop_halls',
+    'water',
+    'underwater',
+    'ice',
+    'ice_mid',
+    'water_section',
+    'cracked',
+    'magma',
+    'basalt',
+    'heat_haze',
+]:
     EXT[m] = ('Material', f'res://assets/materials/{m}.tres')
 
 IDENTITY = (1, 0, 0, 0, 1, 0, 0, 0, 1)
@@ -114,12 +136,14 @@ def vec(*v):
 
 def rot_y(deg):
     import math
+
     c, s = math.cos(math.radians(deg)), math.sin(math.radians(deg))
     return (round(c, 4), 0, round(s, 4), 0, 1, 0, round(-s, 4), 0, round(c, 4))
 
 
 def rot_z(deg):
     import math
+
     c, s = math.cos(math.radians(deg)), math.sin(math.radians(deg))
     return (round(c, 4), round(-s, 4), 0, round(s, 4), round(c, 4), 0, 0, 0, 1)
 
@@ -134,11 +158,18 @@ class Raw(str):
 
 class Room:
     def __init__(self, name, bounds, spawn, doc='', biome='flooded', in_game=True, world='prototype'):
-        self.name, self.bounds, self.spawn, self.doc, self.biome, self.in_game = name, bounds, spawn, doc, biome, in_game
-        self.world = world      # the room goes in worlds/<world>/rooms/, beside the rooms its exits lead to
+        self.name, self.bounds, self.spawn, self.doc, self.biome, self.in_game = (
+            name,
+            bounds,
+            spawn,
+            doc,
+            biome,
+            in_game,
+        )
+        self.world = world  # the room goes in worlds/<world>/rooms/, beside the rooms its exits lead to
         self.ext_ids = {}
-        self.subs = []          # (id, type, props)
-        self.nodes = []         # (comment, header, props)
+        self.subs = []  # (id, type, props)
+        self.nodes = []  # (comment, header, props)
         self.groups = set()
         self.shafts, self.lamps, self.glyph_lights = [], [], []
         self.stage_props = {}
@@ -169,7 +200,7 @@ class Room:
             g = '/'.join(parts[:i])
             if g not in self.groups:
                 self.groups.add(g)
-                parent = '.' if i == 1 else '/'.join(parts[:i - 1])
+                parent = '.' if i == 1 else '/'.join(parts[: i - 1])
                 self.nodes.append(('', f'[node name="{parts[i - 1]}" type="Node3D" parent="{parent}"]', {}))
         name = parts[-1]
         parent = '.' if len(parts) == 1 else '/'.join(parts[:-1])
@@ -195,7 +226,9 @@ class Room:
         """Choices on the shared RoomStage (Seed, DustDensity, PillarDensity, FrameBelow, FrameAbove…)."""
         self.stage_props.update(props)
 
-    def block(self, path, lo, hi, surface='rock', look=None, depth=4, collision_only=False, comment='', z=0, cracked=False):
+    def block(
+        self, path, lo, hi, surface='rock', look=None, depth=4, collision_only=False, comment='', z=0, cracked=False
+    ):
         """A gameplay block from corner `lo` to `hi` (X, Y). surface: rock or metal; look: a material override; cracked: the Drill breaks it."""
         if '/' not in path:
             path = 'Geometry/' + path
@@ -213,8 +246,16 @@ class Room:
 
     def spinner(self, path, pos, speed=0.2, axis=(0, 0, 1), phase=0.0, basis=IDENTITY, comment=''):
         """A node that turns its children (Spinner, visual only): old machinery, still turning."""
-        return self.node(path, type='Node3D', comment=comment, transform=Raw(transform(pos, basis)), script=self.ext('spinner'),
-                         Axis=Raw(vec(*axis)), Speed=float(speed), Phase=float(phase))
+        return self.node(
+            path,
+            type='Node3D',
+            comment=comment,
+            transform=Raw(transform(pos, basis)),
+            script=self.ext('spinner'),
+            Axis=Raw(vec(*axis)),
+            Speed=float(speed),
+            Phase=float(phase),
+        )
 
     def mesh(self, path, mesh, material, pos, basis=IDENTITY, cast=True, comment=''):
         props = {'transform': Raw(transform(pos, basis)), 'mesh': mesh, 'material_override': self.ext(material)}
@@ -230,7 +271,13 @@ class Room:
     def relic(self, name, pos, ability='MagGrip', comment=''):
         """An ability relic standing on the floor at `pos` (Ability: MagGrip, Harpoon, Drill, Ballast, HeatPlating)."""
         values = {'MagGrip': 1, 'Harpoon': 2, 'Drill': 4, 'Ballast': 8, 'HeatPlating': 16}
-        lines = {'MagGrip': 'mag_grip', 'Harpoon': 'harpoon', 'Drill': 'drill', 'Ballast': 'ballast', 'HeatPlating': 'heat_plating'}
+        lines = {
+            'MagGrip': 'mag_grip',
+            'Harpoon': 'harpoon',
+            'Drill': 'drill',
+            'Ballast': 'ballast',
+            'HeatPlating': 'heat_plating',
+        }
         props = {'transform': Raw(transform((pos[0], pos[1], 0))), 'Ability': values[ability]}
         if ability != 'MagGrip':  # the scene's defaults are Mag-grip's lines
             props['NameLine'] = Raw(f'&"ability.{lines[ability]}.name"')
@@ -239,7 +286,9 @@ class Room:
 
     def anchor(self, name, pos, comment=''):
         """A harpoon anchor: its origin is where the pilgrim's center is pulled to (keep a body's height of air below it)."""
-        return self.node('Anchors/' + name, instance='anchor', comment=comment, transform=Raw(transform((pos[0], pos[1], 0))))
+        return self.node(
+            'Anchors/' + name, instance='anchor', comment=comment, transform=Raw(transform((pos[0], pos[1], 0)))
+        )
 
     def item_resource(self, item):
         """An item of the world (worlds/<world>/items/<item>.tres, e.g. 'sacristy_key') as an ExtResource."""
@@ -249,14 +298,26 @@ class Room:
 
     def pickup(self, name, pos, item, comment=''):
         """An item lying on the floor at `pos` (ItemPickup); `item` names the world's item file (sacristy_key)."""
-        return self.node('Props/' + name, instance='pickup', comment=comment, transform=Raw(transform((pos[0], pos[1], 0))),
-                         Item=self.item_resource(item))
+        return self.node(
+            'Props/' + name,
+            instance='pickup',
+            comment=comment,
+            transform=Raw(transform((pos[0], pos[1], 0))),
+            Item=self.item_resource(item),
+        )
 
     def false_wall(self, name, lo, hi, look='rock', depth=4, comment=''):
         """A hidden passage's mask (FalseWall) from corner `lo` to `hi`, wearing `look` (the material its neighbouring blocks wear)."""
         cx, cy = (lo[0] + hi[0]) / 2, (lo[1] + hi[1]) / 2
-        return self.node('Props/' + name, type='Node3D', comment=comment, transform=Raw(transform((cx, cy, 0))),
-                         script=self.ext('falsewall'), Size=Raw(vec(hi[0] - lo[0], hi[1] - lo[1], depth)), Material=self.ext(look))
+        return self.node(
+            'Props/' + name,
+            type='Node3D',
+            comment=comment,
+            transform=Raw(transform((cx, cy, 0))),
+            script=self.ext('falsewall'),
+            Size=Raw(vec(hi[0] - lo[0], hi[1] - lo[1], depth)),
+            Material=self.ext(look),
+        )
 
     def power_up(self, name, pos, stat='Defense', amount=1, comment=''):
         """A power-up (PowerUp) standing on the floor at `pos`: `stat` Strength or Defense, adding `amount`."""
@@ -267,23 +328,49 @@ class Room:
 
     def door(self, name, pos, item, comment=''):
         """A locked door (LockedDoor) closing on the floor at `pos`, opened by `item`; point an exit's `door` at `name`."""
-        return self.node('Props/' + name, instance='door', comment=comment, transform=Raw(transform((pos[0], pos[1], 0))),
-                         Item=self.item_resource(item))
+        return self.node(
+            'Props/' + name,
+            instance='door',
+            comment=comment,
+            transform=Raw(transform((pos[0], pos[1], 0))),
+            Item=self.item_resource(item),
+        )
 
     def lever(self, name, pos, item, comment=''):
         """A lever (Lever) standing on the floor at `pos`, setting the mechanism `item`; its gate is a `door` for the same item."""
-        return self.node('Props/' + name, instance='lever', comment=comment, transform=Raw(transform((pos[0], pos[1], 0))),
-                         Item=self.item_resource(item))
+        return self.node(
+            'Props/' + name,
+            instance='lever',
+            comment=comment,
+            transform=Raw(transform((pos[0], pos[1], 0))),
+            Item=self.item_resource(item),
+        )
 
     def conversation(self, speaker, lines, range=2.5, once=False, comment=''):
         """A Conversation under `speaker` (a node path, e.g. 'Machines/Lamplighter'): `lines` (line ids) in turn, heard once if `once`."""
-        props = {'Lines': Raw('Array[StringName]([' + ', '.join(f'&"{l}"' for l in lines) + '])'), 'Range': float(range)}
+        props = {
+            'Lines': Raw('Array[StringName]([' + ', '.join(f'&"{l}"' for l in lines) + '])'),
+            'Range': float(range),
+        }
         if once:
             props['Once'] = True
         return self.node(speaker + '/Conversation', instance='conversation', comment=comment, **props)
 
-    def exit(self, name, pos, size, target='', target_exit='', requires='', one_way=False, arrival_side=0, arrival_only=False,
-             comment='', door='', hidden=False):
+    def exit(
+        self,
+        name,
+        pos,
+        size,
+        target='',
+        target_exit='',
+        requires='',
+        one_way=False,
+        arrival_side=0,
+        arrival_only=False,
+        comment='',
+        door='',
+        hidden=False,
+    ):
         """An exit marker; `arrival_only` for the far end of a one-way drop from another room (no target, no trigger); `door`: the
         name of the locked door (under Props) that bars it."""
         props = {'transform': Raw(transform((pos[0], pos[1], 0))), 'script': self.ext('exit')}
@@ -303,7 +390,9 @@ class Room:
         if hidden:
             props['Hidden'] = True
         props['Size'] = Raw(vec(*size))
-        return self.node('Exits/' + name, type='Marker3D', comment=comment, node_paths=['Door'] if door else None, **props)
+        return self.node(
+            'Exits/' + name, type='Marker3D', comment=comment, node_paths=['Door'] if door else None, **props
+        )
 
     def goal(self, name, pos, size=None, title='', hint='', comment='', ending=False):
         """Where the journey ends, for the map solver (a MapGoal marker); with a size, an area showing the banner lines;
@@ -319,78 +408,157 @@ class Room:
 
     def portcullis(self, name, pos, comment=''):
         """A gate that drops across a way (its origin on the floor where it closes; open, it hangs 5.5 m higher)."""
-        return self.node('Props/' + name, instance='portcullis', comment=comment, transform=Raw(transform((pos[0], pos[1], 0))))
+        return self.node(
+            'Props/' + name, instance='portcullis', comment=comment, transform=Raw(transform((pos[0], pos[1], 0)))
+        )
 
     def boss_seal(self, name, boss, gates, arena_min, arena_max, name_line, fallen_line, fallen_hint, comment=''):
         """A boss's arena: `boss` is the machine's node name under Machines, `gates` portcullis names under Props."""
-        props = {'script': self.ext('bossseal'), 'Boss': Raw(f'NodePath("../Machines/{boss}")'),
-                 'Gates': Raw('[' + ', '.join(f'NodePath("../Props/{g}")' for g in gates) + ']'),
-                 'ArenaMin': Raw(vec(*arena_min)), 'ArenaMax': Raw(vec(*arena_max)),
-                 'NameLine': Raw(f'&"{name_line}"'), 'FallenLine': Raw(f'&"{fallen_line}"'), 'FallenHintLine': Raw(f'&"{fallen_hint}"')}
+        props = {
+            'script': self.ext('bossseal'),
+            'Boss': Raw(f'NodePath("../Machines/{boss}")'),
+            'Gates': Raw('[' + ', '.join(f'NodePath("../Props/{g}")' for g in gates) + ']'),
+            'ArenaMin': Raw(vec(*arena_min)),
+            'ArenaMax': Raw(vec(*arena_max)),
+            'NameLine': Raw(f'&"{name_line}"'),
+            'FallenLine': Raw(f'&"{fallen_line}"'),
+            'FallenHintLine': Raw(f'&"{fallen_hint}"'),
+        }
         return self.node(name, type='Node3D', comment=comment, node_paths=['Boss', 'Gates'], **props)
 
     def law(self, name, pos, toward, law_line, broken_line, broken_hint, comment=''):
         """A law holding the pilgrim back at a lip (LawBreak); its light joins the glyph lights."""
         self.glyph_lights.append(f'Props/{name}/Light')
-        return self.node('Props/' + name, instance='law', comment=comment, transform=Raw(transform((pos[0], pos[1], 0))),
-                         Toward=toward, LawLine=Raw(f'&"{law_line}"'), BrokenLine=Raw(f'&"{broken_line}"'),
-                         BrokenHintLine=Raw(f'&"{broken_hint}"'))
+        return self.node(
+            'Props/' + name,
+            instance='law',
+            comment=comment,
+            transform=Raw(transform((pos[0], pos[1], 0))),
+            Toward=toward,
+            LawLine=Raw(f'&"{law_line}"'),
+            BrokenLine=Raw(f'&"{broken_line}"'),
+            BrokenHintLine=Raw(f'&"{broken_hint}"'),
+        )
 
     def lift(self, name, pos, rise, comment='', **props):
         """A counterweighted lift (Lift): `pos` is the top of the cage floor at its lower stop; its lantern joins the lamps."""
         self.lamps.append(f'Props/{name}/Cage/Lamp')
-        return self.node('Props/' + name, instance='lift', comment=comment, transform=Raw(transform((pos[0], pos[1], 0))),
-                         Rise=float(rise), **props)
+        return self.node(
+            'Props/' + name,
+            instance='lift',
+            comment=comment,
+            transform=Raw(transform((pos[0], pos[1], 0))),
+            Rise=float(rise),
+            **props,
+        )
 
     def plate(self, name, pos, title, text, comment=''):
         """A scripture plate on a lectern, read at `pos` (on the floor); its light joins the glyph lights."""
         self.glyph_lights.append(f'Props/{name}/Light')
-        return self.node('Props/' + name, instance='plate', comment=comment, transform=Raw(transform((pos[0], pos[1], 0))),
-                         TitleLine=Raw(f'&"{title}"'), TextLine=Raw(f'&"{text}"'))
+        return self.node(
+            'Props/' + name,
+            instance='plate',
+            comment=comment,
+            transform=Raw(transform((pos[0], pos[1], 0))),
+            TitleLine=Raw(f'&"{title}"'),
+            TextLine=Raw(f'&"{text}"'),
+        )
 
     def proclamation(self, name, pos, size, speaker, text, comment=''):
         """A line spoken to the pilgrim when its feet enter the area (`size` centered on `pos`), once per visit."""
-        return self.node('Props/' + name, type='Marker3D', comment=comment, transform=Raw(transform((pos[0], pos[1], 0))),
-                         script=self.ext('proclamation'), Size=Raw(vec(*size)), SpeakerLine=Raw(f'&"{speaker}"'),
-                         TextLine=Raw(f'&"{text}"'))
+        return self.node(
+            'Props/' + name,
+            type='Marker3D',
+            comment=comment,
+            transform=Raw(transform((pos[0], pos[1], 0))),
+            script=self.ext('proclamation'),
+            Size=Raw(vec(*size)),
+            SpeakerLine=Raw(f'&"{speaker}"'),
+            TextLine=Raw(f'&"{text}"'),
+        )
 
     def heat(self, name, pos, size, density=1.2, glow=2.5, comment=''):
         """A HeatZone: `size` (width, height) rising from `pos` (the middle of its foot); burns without Heat plating."""
-        return self.node('Heat/' + name, type='Node3D', comment=comment, transform=Raw(transform((pos[0], pos[1], 0))),
-                         script=self.ext('heatzone'), Size=Raw(vec(*size)), HazeMaterial=self.ext('heat_haze'),
-                         Embers=self.ext('embers'), EmberDensity=float(density), GlowEnergy=float(glow))
+        return self.node(
+            'Heat/' + name,
+            type='Node3D',
+            comment=comment,
+            transform=Raw(transform((pos[0], pos[1], 0))),
+            script=self.ext('heatzone'),
+            Size=Raw(vec(*size)),
+            HazeMaterial=self.ext('heat_haze'),
+            Embers=self.ext('embers'),
+            EmberDensity=float(density),
+            GlowEnergy=float(glow),
+        )
 
     def machine(self, name, species, pos, facing=1, comment='', **props):
-        p = {'transform': Raw(transform((pos[0], pos[1], 0))), 'script': self.ext('machine'),
-             'Species': self.ext(species), 'StartFacing': facing}
+        p = {
+            'transform': Raw(transform((pos[0], pos[1], 0))),
+            'script': self.ext('machine'),
+            'Species': self.ext(species),
+            'StartFacing': facing,
+        }
         p.update(props)
         return self.node('Machines/' + name, type='CharacterBody3D', comment=comment, **p)
 
     def shaft(self, name, pos, basis=SHAFT_DIAGONAL, energy=6.0, fog=12.0, angle=10.0, range=80.0, comment=''):
         self.shafts.append('Shafts/' + name)
-        return self.node('Shafts/' + name, type='SpotLight3D', comment=comment, transform=Raw(transform(pos, basis)),
-                         light_energy=float(energy), light_volumetric_fog_energy=float(fog), shadow_enabled=True,
-                         spot_range=float(range), spot_attenuation=0.25, spot_angle=float(angle), spot_angle_attenuation=2.0)
+        return self.node(
+            'Shafts/' + name,
+            type='SpotLight3D',
+            comment=comment,
+            transform=Raw(transform(pos, basis)),
+            light_energy=float(energy),
+            light_volumetric_fog_energy=float(fog),
+            shadow_enabled=True,
+            spot_range=float(range),
+            spot_attenuation=0.25,
+            spot_angle=float(angle),
+            spot_angle_attenuation=2.0,
+        )
 
     def lamp(self, path, pos, energy=2.5, range=10.0, shadow=True, comment=''):
         self.lamps.append(path)
-        return self.node(path, type='OmniLight3D', comment=comment, transform=Raw(transform(pos)),
-                         light_energy=float(energy), omni_range=float(range), shadow_enabled=shadow)
+        return self.node(
+            path,
+            type='OmniLight3D',
+            comment=comment,
+            transform=Raw(transform(pos)),
+            light_energy=float(energy),
+            omni_range=float(range),
+            shadow_enabled=shadow,
+        )
 
     def glyphs(self, path, pos, size, light=0.5, light_range=2.5, comment=''):
         """Faith glyphs on a quad at `pos` (on a block's front face: Z = its depth / 2 + 0.01) with their own soft light."""
         quad = self.sub('QuadMesh', size=Raw(vec(*size)))
-        self.node(path, type='MeshInstance3D', comment=comment, transform=Raw(transform(pos)), mesh=quad,
-                  material_override=self.ext('glyphs'), cast_shadow=0)
+        self.node(
+            path,
+            type='MeshInstance3D',
+            comment=comment,
+            transform=Raw(transform(pos)),
+            mesh=quad,
+            material_override=self.ext('glyphs'),
+            cast_shadow=0,
+        )
         light_path = path + 'Light'
         self.glyph_lights.append(light_path)
-        self.node(light_path, type='OmniLight3D', transform=Raw(transform((pos[0], pos[1], pos[2] + 0.7))),
-                  light_energy=float(light), light_volumetric_fog_energy=0.0, omni_range=float(light_range))
+        self.node(
+            light_path,
+            type='OmniLight3D',
+            transform=Raw(transform((pos[0], pos[1], pos[2] + 0.7))),
+            light_energy=float(light),
+            light_volumetric_fog_energy=0.0,
+            omni_range=float(light_range),
+        )
 
     def shrine(self, name, pos, comment=''):
         """A pilgrim shrine (save point) standing on the floor at `pos`; its light joins the glyph lights."""
         self.glyph_lights.append(f'Props/{name}/Light')
-        return self.node('Props/' + name, instance='shrine', comment=comment, transform=Raw(transform((pos[0], pos[1], 0))))
+        return self.node(
+            'Props/' + name, instance='shrine', comment=comment, transform=Raw(transform((pos[0], pos[1], 0)))
+        )
 
     def particles(self, path, effect, pos, extents, density=None, comment='', **props):
         p = {'transform': Raw(transform(pos)), 'Extents': Raw(vec(*extents))}
@@ -402,7 +570,12 @@ class Room:
     def water(self, pos, size, depth=2.5, comment='', swim=False, globals=True, name='Water'):
         """A WaterBody: surface at `pos`, `size` (X across, Z into the scene); `swim`: the pilgrim swims in it (with its
         section, the cut seen from the side); `globals`: it drives the caustics (one per room)."""
-        props = {'transform': Raw(transform(pos)), 'script': self.ext('water_body'), 'Size': Raw(vec(*size)), 'Depth': float(depth)}
+        props = {
+            'transform': Raw(transform(pos)),
+            'script': self.ext('water_body'),
+            'Size': Raw(vec(*size)),
+            'Depth': float(depth),
+        }
         if swim:
             props['Swim'] = True
         if not globals:
@@ -414,7 +587,11 @@ class Room:
         return self.node(name, type='Node3D', comment=comment, **props)
 
     def photo(self, name, cam, player, facing=1, fov=None, comment='', hud=False):
-        props = {'transform': Raw(transform(cam)), 'script': self.ext('spot'), 'PlayerPosition': Raw(vec(player[0], player[1], 0))}
+        props = {
+            'transform': Raw(transform(cam)),
+            'script': self.ext('spot'),
+            'PlayerPosition': Raw(vec(player[0], player[1], 0)),
+        }
         if facing != 1:
             props['PlayerFacing'] = facing
         if fov:
@@ -438,10 +615,18 @@ class Room:
         return out
 
     def text(self):
-        root_paths = ['SpawnPoint', 'Stage'] + (['Lamps'] if self.lamps else []) + (['Shafts'] if self.shafts else []) \
+        root_paths = (
+            ['SpawnPoint', 'Stage']
+            + (['Lamps'] if self.lamps else [])
+            + (['Shafts'] if self.shafts else [])
             + (['GlyphLights'] if self.glyph_lights else [])
-        root = {'script': self.ext('room'), 'SpawnPoint': Raw('NodePath("SpawnPoint")'), 'Stage': Raw('NodePath("Stage")'),
-                'Biome': self.ext(self.biome)}
+        )
+        root = {
+            'script': self.ext('room'),
+            'SpawnPoint': Raw('NodePath("SpawnPoint")'),
+            'Stage': Raw('NodePath("Stage")'),
+            'Biome': self.ext(self.biome),
+        }
         if self.lamps:
             root['Lamps'] = Raw('[' + ', '.join(f'NodePath("{p}")' for p in self.lamps) + ']')
         if self.shafts:
@@ -475,7 +660,9 @@ class Room:
         lines.append('[node name="SpawnPoint" type="Marker3D" parent="."]')
         lines.append(f'transform = {transform((self.spawn[0], self.spawn[1], 0))}')
         lines.append('')
-        lines.append('; The shared atmosphere stack (environment, key light, clear front air, skylines, far pillars, frame, dust).')
+        lines.append(
+            '; The shared atmosphere stack (environment, key light, clear front air, skylines, far pillars, frame, dust).'
+        )
         lines.append(f'[node name="Stage" parent="." instance={self.ext("stage")}]')
         lines += self._props(self.stage_props)
         lines.append('')

@@ -19,14 +19,20 @@ def _quote(s):
 def add(lines, path=PATH):
     text = open(path).read()
     head, res = text.split('\n[resource]\n')
-    for (line_id, speaker, words, notes) in lines:
+    for line_id, speaker, words, notes in lines:
         sub = line_id.replace('.', '_')
-        block = (f'[sub_resource type="Resource" id="{sub}"]\nscript = ExtResource("2_line")\nId = &"{line_id}"\n'
-                 f'Speaker = {_quote(speaker)}\nText = {_quote(words)}\nNotes = {_quote(notes)}\n')
-        existing = re.search(r'\[sub_resource type="Resource" id="[^"]+"\]\nscript = ExtResource\("2_line"\)\nId = &"'
-                             + re.escape(line_id) + r'"\n(?:[A-Za-z]+ = .*\n)*', head)
+        block = (
+            f'[sub_resource type="Resource" id="{sub}"]\nscript = ExtResource("2_line")\nId = &"{line_id}"\n'
+            f'Speaker = {_quote(speaker)}\nText = {_quote(words)}\nNotes = {_quote(notes)}\n'
+        )
+        existing = re.search(
+            r'\[sub_resource type="Resource" id="[^"]+"\]\nscript = ExtResource\("2_line"\)\nId = &"'
+            + re.escape(line_id)
+            + r'"\n(?:[A-Za-z]+ = .*\n)*',
+            head,
+        )
         if existing:
-            head = head[:existing.start()] + block + head[existing.end():]
+            head = head[: existing.start()] + block + head[existing.end() :]
             continue
         head = head.rstrip('\n') + '\n\n' + block
         res = res.replace(']\n', f', SubResource("{sub}")]\n', 1) if 'Lines = [' in res else res

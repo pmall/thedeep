@@ -19,7 +19,11 @@ public sealed record MoveLimits(
     /// </summary>
     public MoveLimits Clumsy() => this with
     {
-        JumpHeight = JumpHeight * 0.82f, DashDistance = DashDistance * 0.65f, RunSpeed = RunSpeed * 0.8f, EdgeMargin = 0.3f, LedgeAssist = 0f,
+        JumpHeight = JumpHeight * 0.82f,
+        DashDistance = DashDistance * 0.65f,
+        RunSpeed = RunSpeed * 0.8f,
+        EdgeMargin = 0.3f,
+        LedgeAssist = 0f,
     };
 
     public float Gravity => JumpMath.Gravity(JumpHeight, JumpTimeToApex);

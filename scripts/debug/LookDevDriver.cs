@@ -324,7 +324,9 @@ public partial class LookDevDriver : Node
             ["physics"] = Summary(_physics),
             ["gc"] = new Dictionary<string, int>
             {
-                ["gen0"] = _frames.Sum(f => f.Gc0), ["gen1"] = _frames.Sum(f => f.Gc1), ["gen2"] = _frames.Sum(f => f.Gc2),
+                ["gen0"] = _frames.Sum(f => f.Gc0),
+                ["gen1"] = _frames.Sum(f => f.Gc1),
+                ["gen2"] = _frames.Sum(f => f.Gc2),
             },
             // Managed bytes allocated on the main thread (game logic and physics) per frame of the run.
             ["alloc_kb_per_frame"] = Math.Round(_allocated / 1024.0 / Math.Max(1, _frame.Count), 2),

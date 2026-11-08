@@ -6,7 +6,7 @@ The objectives share one idea: the game should contain something a solo develope
 
 Context: [vision.md](vision.md) (the game, its setting) and [gameplay.md](gameplay.md) (the moveset and the five abilities).
 
----
+______________________________________________________________________
 
 ## No two machines alike `#machines-distinct`
 
@@ -47,7 +47,7 @@ Roughly a third of species should be non-hostile. The world should feel inhabite
 
 Start with about 10 species covering clearly different behaviors, and get them right and fun. Then grow by layer. Quality and distinctness come before count. 60 truly distinct species beat 200 lookalikes.
 
----
+______________________________________________________________________
 
 ## Any order, proven on every build `#any-order`
 
@@ -77,7 +77,7 @@ Note on full freedom: making all 120 orders possible means every ability must be
 - The order-freedom count is printed. Falling below the target fails the build.
 - The geometry sanity check fails the build on any mismatch.
 
----
+______________________________________________________________________
 
 ## Any world from the bricks `#any-world`
 
@@ -100,7 +100,7 @@ The game is built twice: a **prototype** (40 rooms, our playground) and then the
 - Items (keys, codes) in the requirement language of exits, so the solver sees every gate.
 - The brick catalog ([bricks.md](bricks.md)) kept current: what each brick is and whether it is ready.
 
----
+______________________________________________________________________
 
 ## Where they stand `#where-they-stand`
 

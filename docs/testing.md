@@ -9,7 +9,7 @@ Run it after every change and before every commit. In order, stopping at the fir
 The headless checks, one driver each in `scripts/debug/`; the driver's docblock says what it proves and what it prints:
 
 | Check | Driver |
-|---|---|
+| -- | -- |
 | The main scene boots idle for 300 frames, then the scripted smoke run | `SmokeDriver` |
 | Every room of the world, then the map: layout, solver, geometry, inside, room for error, the network and its room table; then its line book: every line the code and its content name | `RoomValidator` (proof in the core's `WorldCheck`; the table: `RoomTable`; the lines: `LineCheck`) |
 | Every machine species, alone in the arena | `SpeciesValidator` |
@@ -26,7 +26,7 @@ The headless checks, one driver each in `scripts/debug/`; the driver's docblock 
 ## Commands `#commands`
 
 | What | Command |
-|---|---|
+| -- | -- |
 | Check (build, import, headless checks, tests) | `tools/check.sh` |
 | Build only | `dotnet build TheDeep.sln` |
 | Unit tests only | `dotnet test tests/TheDeep.Tests/TheDeep.Tests.csproj` |

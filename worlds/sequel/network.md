@@ -19,6 +19,7 @@ target rooms 5 8
              ↑(M)  ↓ drop          ↓ back onto the ledge
 Strongroom ─(key)─ Quay ─ Locks ─ Chantry[M]
 ```
+
 M Mag-grip, H Harpoon; (key) the Strongroom key, on the Hold's ledge; (gate) the sluice gate the Weir's lever raises.
 
 Its rooms, what each is for and what happens there: [rooms.tsv](rooms.tsv).

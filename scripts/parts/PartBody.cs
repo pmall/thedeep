@@ -166,7 +166,9 @@ public partial class PartBody : Node3D
             // Drawn in world space every frame: top level, and not interpolated by the engine.
             var skin = new MeshInstance3D
             {
-                Mesh = new ArrayMesh(), MaterialOverride = spec.Material, TopLevel = true,
+                Mesh = new ArrayMesh(),
+                MaterialOverride = spec.Material,
+                TopLevel = true,
                 PhysicsInterpolationMode = PhysicsInterpolationModeEnum.Off,
             };
             AddChild(skin);

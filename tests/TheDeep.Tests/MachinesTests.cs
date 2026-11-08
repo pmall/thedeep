@@ -369,7 +369,8 @@ public class MachinesTests
 
     private static ConductorBrain NewConductor() =>
         new(new StrikeAction { WindUp = 0.7f, Blow = 0.14f, Recover = 1.1f, Cooldown = 0.5f },
-            new StrikeAction { WindUp = 0.4f, Blow = 0.14f, Recover = 1.3f, Cooldown = 0.5f }) { Reach = 2.8f, ChestHeight = 1.6f };
+            new StrikeAction { WindUp = 0.4f, Blow = 0.14f, Recover = 1.3f, Cooldown = 0.5f })
+        { Reach = 2.8f, ChestHeight = 1.6f };
 
     private static Perception With(Vector2 position, int facing, PlayerTrace player) =>
         Perception.Alone(0f, position, facing) with { Player = player };

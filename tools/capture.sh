@@ -26,7 +26,10 @@ ROOT="lookdev"
 SIZE="1920x1080"
 FAIL_PATTERN='ERROR|SCRIPT ERROR|Unhandled exception|System\.[A-Za-z.]*Exception|Failed to load|Parse Error'
 
-fail() { printf '\033[31mCAPTURE FAILED: %s\033[0m\n' "$1"; exit 1; }
+fail() {
+    printf '\033[31mCAPTURE FAILED: %s\033[0m\n' "$1"
+    exit 1
+}
 
 compare() {
     local before="$1" after="$2"
@@ -43,13 +46,31 @@ fi
 label="" against="" biome_args=() paint_args=() world_args=() only=""
 while [ $# -gt 0 ]; do
     case "$1" in
-        --against) against="${2%/}"; shift 2 ;;
-        --biome) biome_args=(--biome "$2"); shift 2 ;;
-        --rooms) only="$2"; shift 2 ;;
-        --paint) paint_args=(--paint "$2"); shift 2 ;;
-        --world) world_args=(--world "$2"); shift 2 ;;
+        --against)
+            against="${2%/}"
+            shift 2
+            ;;
+        --biome)
+            biome_args=(--biome "$2")
+            shift 2
+            ;;
+        --rooms)
+            only="$2"
+            shift 2
+            ;;
+        --paint)
+            paint_args=(--paint "$2")
+            shift 2
+            ;;
+        --world)
+            world_args=(--world "$2")
+            shift 2
+            ;;
         -*) fail "unknown option $1" ;;
-        *) label="$1"; shift ;;
+        *)
+            label="$1"
+            shift
+            ;;
     esac
 done
 
@@ -70,10 +91,16 @@ touch "$ROOT/.gdignore" # Godot must not import the captures
 } >"$out/run.txt"
 
 # godot runs the last built assembly, so build first.
-dotnet build TheDeep.sln -v q -nologo >"$out/build.log" 2>&1 || { tail -20 "$out/build.log"; fail "dotnet build"; }
+dotnet build TheDeep.sln -v q -nologo >"$out/build.log" 2>&1 || {
+    tail -20 "$out/build.log"
+    fail "dotnet build"
+}
 # Running the game does not import: shaders changed since the last import (or their includes) are compiled here.
 tools/glsl_includes.sh
-"$GODOT" --headless --import >"$out/import.log" 2>&1 || { tail -20 "$out/import.log"; fail "godot --import"; }
+"$GODOT" --headless --import >"$out/import.log" 2>&1 || {
+    tail -20 "$out/import.log"
+    fail "godot --import"
+}
 
 # The rooms rendered: the drowned hall first (perf.json, compared run to run), then the slice rooms, the arena and the lab.
 ROOMS=(DrownedHall Narthex Belfry Nave Cistern Reliquary Descent Sluice Undercroft Ossuary Scriptorium Chapterhouse Brink Rimefall Choir Coldstacks Counterweight Calving Bore Mere Sounding Underice Vault Sanctum Kiln Slag Chimney Quench Basalt Crucible Ashfall Pyre Bellows Foundry Threshold Mantle Orrery Lode Effigy Heart MachineArena MechanicsLab)
@@ -91,12 +118,18 @@ for room in "${ROOMS[@]}"; do
     fi
     printf '\033[1mrendering %s: photo spots, reels and frame times into %s\033[0m\n' "$name" "$out"
     "$GODOT" --path . --disable-vsync --fixed-fps 60 --resolution 960x540 -- --lookdev "$out" --size "$SIZE" --perf "$perf" \
-        "${world_args[@]}" "${room_args[@]}" "${biome_args[@]}" "${paint_args[@]}" >"$log" 2>&1 || { tail -20 "$log"; fail "look-dev run exited non-zero (log: $log)"; }
+        "${world_args[@]}" "${room_args[@]}" "${biome_args[@]}" "${paint_args[@]}" >"$log" 2>&1 || {
+        tail -20 "$log"
+        fail "look-dev run exited non-zero (log: $log)"
+    }
     if grep -E "$FAIL_PATTERN" "$log" >/dev/null; then
         grep -n -E -A3 "$FAIL_PATTERN" "$log" | head -40
         fail "look-dev run printed errors (log: $log)"
     fi
-    grep -q 'LOOKDEV OK' "$log" || { tail -20 "$log"; fail "look-dev run did not report LOOKDEV OK"; }
+    grep -q 'LOOKDEV OK' "$log" || {
+        tail -20 "$log"
+        fail "look-dev run did not report LOOKDEV OK"
+    }
     grep -E '^(frame|gpu|cpu) |budget' "$log"
 done
 if [ -d "$out/motion" ]; then python3 -I tools/motion_sheet.py "$out" motion Motion 8x7; fi

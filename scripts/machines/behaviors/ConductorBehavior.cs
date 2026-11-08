@@ -31,7 +31,13 @@ public partial class ConductorBehavior : MachineBehavior
             new StrikeAction { WindUp = WindUp, Blow = Blow, Recover = Recover, Cooldown = Cooldown },
             new StrikeAction { WindUp = QuickWindUp, Blow = Blow, Recover = QuickRecover, Cooldown = Cooldown })
         {
-            SightRange = SightRange, Reach = Reach, Band = Band, ChestHeight = ChestHeight, Speed = Speed, Lunge = Lunge, Flurry = Flurry,
+            SightRange = SightRange,
+            Reach = Reach,
+            Band = Band,
+            ChestHeight = ChestHeight,
+            Speed = Speed,
+            Lunge = Lunge,
+            Flurry = Flurry,
             BeatPeriod = BeatPeriod * (0.95f + 0.1f * Jitter(seed, 1)),
         };
 }

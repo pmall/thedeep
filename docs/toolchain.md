@@ -3,7 +3,7 @@
 ## Versions `#versions`
 
 | Tool | Version | Location |
-|---|---|---|
+| -- | -- | -- |
 | Godot Engine .NET | **4.7.2.stable.mono** (official, `ed1daf0bf`) | `~/.local/opt/godot/Godot_v4.7.2-stable_mono_linux_x86_64/` |
 | `godot` command | wrapper script | `~/.local/bin/godot`: sets `DOTNET_ROOT=~/.dotnet` if unset, then execs the binary above |
 | .NET SDK | **10.0.402** (plus .NET 8.0 runtime, used by the tests) | `~/.dotnet` (installed with `dotnet-install.sh`, no sudo) |
@@ -19,10 +19,10 @@ The owner's machine runs Ubuntu 26.04 with an NVIDIA RTX 3060 (Vulkan, Forward+)
 Each is the standard tool of its language, pinned to an exact version so every machine formats and lints alike (`AGENTS.md#checks`); the check runs them (`docs/testing.md#check`), and nothing is installed system-wide but uv: the project's toolchain stays .NET plus uv and Python (owner, 2026-11-08: no Node in a C# project).
 
 | Files | Formatter | Linter, checker | Version, pinned in | Installed by |
-|---|---|---|---|---|
+| -- | -- | -- | -- | -- |
 | C# | `dotnet format`, by `.editorconfig` | the compiler with the SDK's analyzers, code style included (`Directory.Build.props`) | the .NET SDK's | the SDK |
-| Markdown | mdformat with its tables plugin, by `.mdformat.toml` | | mdformat **0.7.22**, mdformat-tables **1.0.0** (its newest needs mdformat 0.7), `tools/check.sh` | `uvx`, which downloads each pinned version once into uv's cache |
-| JSON (`.claude/settings.json`) | Python's `json.tool`, two-space indent | | the system `python3` | |
+| Markdown | mdformat with its tables plugin, by `.mdformat.toml` |  | mdformat **0.7.22**, mdformat-tables **1.0.0** (its newest needs mdformat 0.7), `tools/check.sh` | `uvx`, which downloads each pinned version once into uv's cache |
+| JSON (`.claude/settings.json`) | Python's `json.tool`, two-space indent |  | the system `python3` |  |
 | Python (`tools/*.py`) | Ruff, by `ruff.toml` | Ruff; mypy, strict | Ruff **0.17.4**, mypy **2.4.1** (with Pillow **12.1.1** for its types), `tools/check.sh` | `uvx` |
 | Shell (`tools/*.sh`) | shfmt **3.14.1** (`shfmt-py` 4.2.0), by `.editorconfig` | ShellCheck **0.11.0** (`shellcheck-py` 0.11.0.1) | `tools/check.sh` | `uvx` |
 
@@ -31,6 +31,7 @@ To upgrade one, change its pin, run the fast check (it reformats), and commit th
 ## What needs the GPU `#gpu`
 
 The coding agent itself runs in the cloud; only the project's tools run on the machine.
+
 - **No GPU needed:** editing code and data, `dotnet build`, the unit tests, and the whole of `tools/check.sh` (every Godot step runs `--headless`), `tools/map.sh`. A laptop with the toolchain above (Godot .NET, the .NET SDK, ffmpeg) does all of it; the check is CPU-heavy (`docs/testing.md#check-fast`; longer on a laptop).
 - **GPU needed:** `tools/capture.sh` (photo spots, motion reels, frame times) and the owner's F12/F10 captures render in a real window with Vulkan. Visual work is judged from these captures, and frame times only mean something on the RTX 3060, so visual items (the signature, stage bricks, the pilgrim's look) are done on the desktop. Running them while a game uses the same GPU spoils the frame times.
 - So code-only items can go on a laptop, or on the desktop while it is busy with a game; visual items need the desktop's GPU to itself while capturing.
@@ -47,6 +48,7 @@ The coding agent itself runs in the cloud; only the project's tools run on the m
 ## Upgrading Godot `#upgrading-godot`
 
 `Godot.NET.Sdk` in `TheDeep.csproj` must stay at **exactly** the engine version. To upgrade:
+
 1. Download the new **.NET** build from the official GitHub releases and verify it against `SHA512-SUMS.txt`.
 2. Unzip it into `~/.local/opt/godot/`.
 3. Point the wrapper at the new binary.

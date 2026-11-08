@@ -23,8 +23,17 @@ public partial class SwoopBehavior : MachineBehavior
 
     public override MachineBrain CreateBrain(MachineSpecies species, int seed) => new SwoopBrain
     {
-        SightRange = SightRange, Altitude = Altitude, Offset = Offset, DriftSpeed = DriftSpeed,
-        Interval = Interval * (0.95f + 0.1f * Jitter(seed, 1)), WindUp = WindUp, QuickWindUp = QuickWindUp, DiveSpeed = DiveSpeed,
-        Overshoot = Overshoot, DiveTime = DiveTime, Hang = Hang, Flurry = Flurry,
+        SightRange = SightRange,
+        Altitude = Altitude,
+        Offset = Offset,
+        DriftSpeed = DriftSpeed,
+        Interval = Interval * (0.95f + 0.1f * Jitter(seed, 1)),
+        WindUp = WindUp,
+        QuickWindUp = QuickWindUp,
+        DiveSpeed = DiveSpeed,
+        Overshoot = Overshoot,
+        DiveTime = DiveTime,
+        Hang = Hang,
+        Flurry = Flurry,
     };
 }

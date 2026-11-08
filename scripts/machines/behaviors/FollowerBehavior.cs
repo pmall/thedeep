@@ -14,6 +14,10 @@ public partial class FollowerBehavior : MachineBehavior
 
     public override MachineBrain CreateBrain(MachineSpecies species, int seed) => new FollowerBrain
     {
-        SightRange = SightRange, Distance = Distance * (0.9f + 0.2f * Jitter(seed, 1)), Height = Height, Shy = Shy, Speed = Speed,
+        SightRange = SightRange,
+        Distance = Distance * (0.9f + 0.2f * Jitter(seed, 1)),
+        Height = Height,
+        Shy = Shy,
+        Speed = Speed,
     };
 }

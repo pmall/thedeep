@@ -55,7 +55,15 @@ public partial class LimbMesh : KitMesh
     protected override void Build(MeshBuilder builder) =>
         LimbShapes.Frame(builder, Axis.ToCore(), Length, new LimbFrame
         {
-            Strut = Strut, StrutTaper = StrutTaper, Knuckle = Knuckle, KnuckleDepth = KnuckleDepth, EndKnuckle = EndKnuckle,
-            Piston = Piston, PistonSide = PistonSide, Cables = Cables, CableWidth = CableWidth, CableSide = CableSide,
+            Strut = Strut,
+            StrutTaper = StrutTaper,
+            Knuckle = Knuckle,
+            KnuckleDepth = KnuckleDepth,
+            EndKnuckle = EndKnuckle,
+            Piston = Piston,
+            PistonSide = PistonSide,
+            Cables = Cables,
+            CableWidth = CableWidth,
+            CableSide = CableSide,
         });
 }

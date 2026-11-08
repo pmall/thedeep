@@ -3,6 +3,7 @@
 names an id that exists in that file. Run from the project root; tools/check.sh runs it first.
     tools/docrefs.py
 An id is a backticked `#id` at the end of a heading, a list item or a table row of a tracked Markdown file."""
+
 import pathlib
 import re
 import subprocess
@@ -14,7 +15,9 @@ BINARY = {'.png', '.jpg', '.jpeg', '.avif', '.import', '.uid', '.pyc'}
 
 
 def tracked(*patterns):
-    out = subprocess.run(['git', 'ls-files', '-co', '--exclude-standard', *patterns], capture_output=True, text=True, check=True)
+    out = subprocess.run(
+        ['git', 'ls-files', '-co', '--exclude-standard', *patterns], capture_output=True, text=True, check=True
+    )
     return [pathlib.Path(p) for p in out.stdout.split() if pathlib.Path(p).is_file()]
 
 

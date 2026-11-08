@@ -16,7 +16,12 @@ public partial class HoarderBehavior : MachineBehavior
 
     public override MachineBrain CreateBrain(MachineSpecies species, int seed) => new HoarderBrain(seed)
     {
-        HomeRange = HomeRange, WalkSpeed = WalkSpeed, FleeSpeed = FleeSpeed, Wary = Wary, Safe = Safe,
-        MinWork = MinWork, MaxWork = MaxWork,
+        HomeRange = HomeRange,
+        WalkSpeed = WalkSpeed,
+        FleeSpeed = FleeSpeed,
+        Wary = Wary,
+        Safe = Safe,
+        MinWork = MinWork,
+        MaxWork = MaxWork,
     };
 }

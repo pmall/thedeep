@@ -22,9 +22,15 @@ FAIL_PATTERN='ERROR|SCRIPT ERROR|Unhandled exception|System\.[A-Za-z.]*Exception
 
 START=$SECONDS
 STEP_START=$SECONDS
-step() { printf '\n\033[1m== %s\033[0m\n' "$1"; STEP_START=$SECONDS; }
+step() {
+    printf '\n\033[1m== %s\033[0m\n' "$1"
+    STEP_START=$SECONDS
+}
 took() { printf '(%ss)\n' "$((SECONDS - STEP_START))"; }
-fail() { printf '\033[31mCHECK FAILED: %s\033[0m\n' "$1"; exit 1; }
+fail() {
+    printf '\033[31mCHECK FAILED: %s\033[0m\n' "$1"
+    exit 1
+}
 
 # Fails if a Godot log contains an error line; prints the offending lines.
 scan_log() {
@@ -46,7 +52,10 @@ took
 
 step "3/4 headless import"
 tools/glsl_includes.sh
-"$GODOT" --headless --import >"$LOG_DIR/import.log" 2>&1 || { tail -20 "$LOG_DIR/import.log"; fail "godot --import exited non-zero"; }
+"$GODOT" --headless --import >"$LOG_DIR/import.log" 2>&1 || {
+    tail -20 "$LOG_DIR/import.log"
+    fail "godot --import exited non-zero"
+}
 scan_log "$LOG_DIR/import.log" "import"
 echo "ok"
 took

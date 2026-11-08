@@ -49,7 +49,7 @@ Span = 8
 Rise = 5
 ```
 
-Don't put a C# `PrimitiveMesh` sub-resource in `scenes/Main.tscn`: the headless import opens the main scene before the C# scripts are ready, and each one logs "_create_mesh_array must return at least a vertex array" (the check fails on it). Use a built-in mesh there (the Harpoon's head is a `CylinderMesh` cone), or put the piece in a scene that is instanced at run time.
+Don't put a C# `PrimitiveMesh` sub-resource in `scenes/Main.tscn`: the headless import opens the main scene before the C# scripts are ready, and each one logs "\_create_mesh_array must return at least a vertex array" (the check fails on it). Use a built-in mesh there (the Harpoon's head is a `CylinderMesh` cone), or put the piece in a scene that is instanced at run time.
 
 Every exported property's setter calls `RequestUpdate()`, so the mesh rebuilds when it changes. Front faces are **clockwise** in Godot (`MeshBuilder` takes care of it).
 
@@ -60,6 +60,7 @@ It is on project-wide. Move physics bodies, and the visuals under them, in `_Phy
 ## Regenerating the C# project `#regenerating-csproj`
 
 `godot --headless --build-solutions --quit` does **not** create a missing `.csproj` in 4.7.2: Godot only generates it when the editor saves a *new* C# script. If it ever has to be regenerated, run a throwaway `extends SceneTree` script with `godot --headless --editor --script x.gd` that `ResourceSaver.save()`s a new `CSharpScript` to a path that doesn't exist yet. Afterwards, re-add the project's edits:
+
 - `<Nullable>enable</Nullable>`
 - `<TreatWarningsAsErrors>true</TreatWarningsAsErrors>`
 - `<RootNamespace>TheDeep</RootNamespace>`
