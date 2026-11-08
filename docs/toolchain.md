@@ -20,7 +20,7 @@ Each is the standard tool of its language, pinned to an exact version so every m
 
 | Files | Formatter | Linter, checker | Version, pinned in | Installed by |
 | -- | -- | -- | -- | -- |
-| C# | `dotnet format`, by `.editorconfig` | the compiler with the SDK's analyzers, code style included (`Directory.Build.props`) | the .NET SDK's | the SDK |
+| C# | `dotnet format`, by `.editorconfig` | the compiler with the SDK's `Recommended` analyzers and the code style of `.editorconfig`, on the game, the core and the tests (`Directory.Build.props`); the few rules turned off are in `.editorconfig`, each with its reason | the .NET SDK's | the SDK |
 | Markdown | mdformat with its tables plugin, by `.mdformat.toml` |  | mdformat **0.7.22**, mdformat-tables **1.0.0** (its newest needs mdformat 0.7), `tools/check.sh` | `uvx`, which downloads each pinned version once into uv's cache |
 | JSON (`.claude/settings.json`) | Python's `json.tool`, two-space indent |  | the system `python3` |  |
 | Python (`tools/*.py`) | Ruff, by `ruff.toml` | Ruff; mypy, strict | Ruff **0.17.4**, mypy **2.4.1** (with Pillow **12.1.1** for its types), `tools/check.sh` | `uvx` |

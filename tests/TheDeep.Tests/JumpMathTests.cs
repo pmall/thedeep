@@ -8,7 +8,7 @@ public class JumpMathTests
     [InlineData(3.2f, 0.38f)]
     [InlineData(1f, 0.25f)]
     [InlineData(6f, 0.6f)]
-    public void Derived_gravity_and_speed_reach_the_requested_apex(float height, float timeToApex)
+    public void DerivedGravityAndSpeedReachTheRequestedApex(float height, float timeToApex)
     {
         float g = JumpMath.Gravity(height, timeToApex);
         float v0 = JumpMath.TakeOffSpeed(height, timeToApex);
@@ -18,7 +18,7 @@ public class JumpMathTests
     }
 
     [Fact]
-    public void Simulated_jump_at_60hz_peaks_near_the_requested_height()
+    public void SimulatedJumpAt60hzPeaksNearTheRequestedHeight()
     {
         const float dt = 1f / 60f;
         float g = JumpMath.Gravity(3.2f, 0.38f);

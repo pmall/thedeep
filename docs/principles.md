@@ -44,6 +44,7 @@ Rules:
 - **Numbers live in resources**: movement and combat in `player_tuning.tres`, a species' stats in its `.tres`, a mechanism's knobs as its exports. Never a magic number in a rule.
 - **Text lives in line books**: stable id, speaker, text, delivery notes. The game's own lines (its screens' words, the abilities, the power-ups, the species' creeds) are written once, in `resources/lines.tres`; a world's book (the prototype's is `worlds/prototype/lines.tres`) holds only its content's lines and extends the game's. Never a string shown to the player in code or in a scene.
 - **Requirements live with the geometry**: a way's requirement is a marker in the room scene. Items (keys, codes) are part of that same requirement language, so the solver sees them.
+- **Data is written and read in the invariant culture** `#invariant-culture`: a number or a comparison in a save file, a world table, a log or report a tool reads, or a command-line argument never depends on the machine's locale (one that writes 1,5 would break them). The analyzers flag the calls that would (`docs/toolchain.md#format-tools`); what the player reads comes from the line books.
 - **New content is data.** Adding a room, a species, a biome, a key door or a dialogue should mean new content files. New code is for a truly new behavior.
 - Names that cross systems (action names, physics layers, shader globals) are constants in one class each (`InputActions`, `PhysicsLayers`, `ShaderGlobals`).
 
@@ -59,7 +60,7 @@ C# is typed: use the type system to model the game, never to be silenced. **If y
 - **Closed sets are enums or sealed hierarchies**, matched exhaustively. Open sets (room names, item ids, line ids) are identifiers. Prefer small typed ids (`readonly record struct RoomId(string Value)`) where one is easily confused with another, so a line id can't be passed where a room name is expected.
 - **No casts to escape the compiler.** `as T`, `(T)obj` and `GetNode<T>` on a guess are for the engine seam only (finding a node by type in a tree). In the core, if you need a cast, the types are wrong.
 - **Prefer immutable values**: `record`, `readonly struct`, `init` properties. Mutable state lives in few, named places (the session, a state machine, an adapter's node).
-- **Warnings are errors, and stay so.** No `#pragma warning disable`, no `SuppressMessage` to pass a build.
+- **Warnings are errors, and stay so.** No `#pragma warning disable`, no `SuppressMessage` to pass a build. An analyzer rule wrong for this project is turned off for the whole project in `.editorconfig`, with its reason beside it.
 - **Name units when a number has one**: `Seconds`, `Meters`, `PerSecond` in names or docs (`DashDuration`, `HarpoonRange` in meters), never a bare `float t` crossing a boundary.
 
 ## Proven, not hoped `#proven`

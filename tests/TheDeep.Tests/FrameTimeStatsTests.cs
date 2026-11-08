@@ -5,7 +5,7 @@ namespace TheDeep.Tests;
 public class FrameTimeStatsTests
 {
     [Fact]
-    public void Empty_stats_are_zero()
+    public void EmptyStatsAreZero()
     {
         var stats = new FrameTimeStats();
         Assert.Equal(0, stats.Count);
@@ -13,7 +13,7 @@ public class FrameTimeStatsTests
     }
 
     [Fact]
-    public void Tracks_average_worst_and_percentiles()
+    public void TracksAverageWorstAndPercentiles()
     {
         var stats = new FrameTimeStats();
         for (int i = 1; i <= 100; i++)

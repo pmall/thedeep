@@ -5,13 +5,13 @@ namespace TheDeep.Tests;
 public class CountdownTests
 {
     [Fact]
-    public void Starts_inactive()
+    public void StartsInactive()
     {
         Assert.False(new Countdown().Active);
     }
 
     [Fact]
-    public void Stays_active_until_duration_elapses()
+    public void StaysActiveUntilDurationElapses()
     {
         var timer = new Countdown();
         timer.Start(0.1f);
@@ -23,7 +23,7 @@ public class CountdownTests
     }
 
     [Fact]
-    public void Clear_deactivates_immediately()
+    public void ClearDeactivatesImmediately()
     {
         var timer = new Countdown();
         timer.Start(1f);
@@ -32,7 +32,7 @@ public class CountdownTests
     }
 
     [Fact]
-    public void Coyote_window_covers_the_expected_number_of_ticks()
+    public void CoyoteWindowCoversTheExpectedNumberOfTicks()
     {
         // 0.1 s at 60 Hz: refilled on the last grounded tick, then usable for the next 5 airborne ticks
         // (6 when float rounding leaves a sliver of time on the last one).

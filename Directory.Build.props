@@ -1,7 +1,10 @@
 <Project>
   <!-- Shared by the game, the core and the tests (docs/testing.md#check): the code style rules of .editorconfig are
-       enforced by the build, so a style warning fails it like any other (TreatWarningsAsErrors, in each project). -->
+       enforced by the build, and the SDK's Recommended set of analyzers runs on all three (the rules turned off, each
+       with its reason, are in .editorconfig), so a style or analyzer warning fails it like any other
+       (TreatWarningsAsErrors, in each project). -->
   <PropertyGroup>
     <EnforceCodeStyleInBuild>true</EnforceCodeStyleInBuild>
+    <AnalysisMode>Recommended</AnalysisMode>
   </PropertyGroup>
 </Project>

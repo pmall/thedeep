@@ -6,7 +6,7 @@ namespace TheDeep.Tests;
 public class AbilitySetTests
 {
     [Fact]
-    public void Starts_with_nothing_unlocked()
+    public void StartsWithNothingUnlocked()
     {
         var set = new AbilitySet();
         foreach (Ability ability in AbilitySet.All)
@@ -16,7 +16,7 @@ public class AbilitySetTests
     }
 
     [Fact]
-    public void Unlock_lock_and_toggle_affect_only_that_ability()
+    public void UnlockLockAndToggleAffectOnlyThatAbility()
     {
         var set = new AbilitySet();
         set.Unlock(Ability.Drill);
@@ -31,7 +31,7 @@ public class AbilitySetTests
     }
 
     [Fact]
-    public void Changed_fires_only_on_real_changes()
+    public void ChangedFiresOnlyOnRealChanges()
     {
         var set = new AbilitySet();
         var events = new List<(Ability, bool)>();
@@ -46,7 +46,7 @@ public class AbilitySetTests
     }
 
     [Fact]
-    public void None_is_never_had()
+    public void NoneIsNeverHad()
     {
         var set = new AbilitySet();
         set.Unlock(Ability.None);
@@ -55,7 +55,7 @@ public class AbilitySetTests
     }
 
     [Fact]
-    public void All_lists_every_ability_once()
+    public void AllListsEveryAbilityOnce()
     {
         Ability combined = Ability.None;
         foreach (Ability ability in AbilitySet.All)

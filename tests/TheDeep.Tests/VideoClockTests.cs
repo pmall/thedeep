@@ -5,7 +5,7 @@ namespace TheDeep.Tests;
 public class VideoClockTests
 {
     [Fact]
-    public void First_frame_is_due_at_start()
+    public void FirstFrameIsDueAtStart()
     {
         var clock = new VideoClock(60, 60);
         Assert.Equal(1, clock.Advance(0.0));
@@ -13,7 +13,7 @@ public class VideoClockTests
     }
 
     [Fact]
-    public void Fast_game_frames_skip_until_the_next_video_frame()
+    public void FastGameFramesSkipUntilTheNextVideoFrame()
     {
         var clock = new VideoClock(60, 60);
         int total = 0;
@@ -27,7 +27,7 @@ public class VideoClockTests
     }
 
     [Fact]
-    public void Slow_game_frames_repeat_to_keep_real_time()
+    public void SlowGameFramesRepeatToKeepRealTime()
     {
         var clock = new VideoClock(60, 60);
         clock.Advance(0.0);
@@ -36,7 +36,7 @@ public class VideoClockTests
     }
 
     [Fact]
-    public void Long_stalls_are_cut_down_to_the_burst_limit()
+    public void LongStallsAreCutDownToTheBurstLimit()
     {
         var clock = new VideoClock(60, 10);
         clock.Advance(0.0);

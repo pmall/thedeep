@@ -5,7 +5,7 @@ namespace TheDeep.Tests;
 public class CaptureReportTests
 {
     [Fact]
-    public void Aligns_values_after_the_longest_key()
+    public void AlignsValuesAfterTheLongestKey()
     {
         string text = new CaptureReport("title")
             .Add("room", "TestRoom")
@@ -16,7 +16,7 @@ public class CaptureReportTests
     }
 
     [Fact]
-    public void Title_alone_when_empty()
+    public void TitleAloneWhenEmpty()
     {
         Assert.Equal("title\n", new CaptureReport("title").ToString());
     }

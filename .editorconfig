@@ -91,3 +91,15 @@ dotnet_naming_symbols.types_and_members.applicable_kinds = namespace, class, str
 dotnet_naming_symbols.types_and_members.applicable_accessibilities = *
 
 dotnet_naming_style.pascal.capitalization = pascal_case
+
+# The SDK's Recommended analyzers (AnalysisMode, Directory.Build.props) run on all three projects; a rule is turned off
+# only where it is wrong for this project, each with its reason (docs/toolchain.md#format-tools).
+# Two naming rules guard a library's public API for callers in other .NET languages; this game is one C# program that
+# nothing else links against, and state machines name their hooks Enter and Exit (a VB keyword).
+dotnet_diagnostic.CA1716.severity = none
+dotnet_diagnostic.CA1720.severity = none
+
+[tests/**.cs]
+# A test's expected values are written in place, as literal arrays: hoisting each into a static field (CA1861) saves
+# nothing in code that runs once and hides what the assertion compares.
+dotnet_diagnostic.CA1861.severity = none
