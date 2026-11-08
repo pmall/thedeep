@@ -6,9 +6,9 @@ namespace TheDeep;
 /// Sedimentary rock, as a tileable pattern (<see cref="ISurfacePattern"/>) for the rock material: beds of uneven thickness, each
 /// proud of the next by its own amount and with its own tone, joined by grooved joints that come and go along their length;
 /// their lips ragged; some beds split once more by a finer joint, the fine ones laminated; lumps, a grain stretched along the beds
-/// and small pits, all coarser in some beds than others. A fault crosses the tile: the beds dip toward it and drop across it, with
-/// a joint along it where the drop is large. The knobs are its properties (meters unless named otherwise); the defaults are the
-/// rock of every biome.
+/// and small pits, all coarser in some beds than others. No fault crosses the tile: one would come back every tile as a seam, so
+/// the faults are the material's, at world scale (<c>assets/shaders/rock.gdshader</c>). The knobs are its properties (meters
+/// unless named otherwise); the defaults are the rock of every biome.
 /// </summary>
 public sealed record StrataSurface : ISurfacePattern
 {
@@ -21,22 +21,6 @@ public sealed record StrataSurface : ISurfacePattern
 
     /// <summary>How far the beds wave up and down, at most.</summary>
     public double WarpMeters { get; init; } = 0.25;
-
-    /// <summary>
-    /// Where the fault crosses the tile, along it, wandering by up to <see cref="FaultWanderMeters"/>. The beds dip toward it and
-    /// drop across it by up to <see cref="FaultThrowMeters"/>, by an amount that changes up the tile (where it is nought, the fault
-    /// vanishes).
-    /// </summary>
-    public double FaultAlongMeters { get; init; } = 1.3;
-
-    public double FaultWanderMeters { get; init; } = 0.3;
-
-    public double FaultThrowMeters { get; init; } = 0.22;
-
-    /// <summary>How dark and deep the fault's joint is where its throw is greatest, as a share of a bed joint, and its half width.</summary>
-    public double FaultJoint { get; init; } = 0.45;
-
-    public double FaultJointMeters { get; init; } = 0.02;
 
     /// <summary>Half widths of a joint's groove: into the bed above it and into the bed below it (the lower lip is the wider).</summary>
     public double JointAboveMeters { get; init; } = 0.045;
@@ -107,13 +91,10 @@ public sealed record StrataSurface : ISurfacePattern
         double u = TileNoise.Wrap(alongMeters, tile) / tile;
         double v = TileNoise.Wrap(upMeters, tile) / tile;
 
-        // The beds wave as they run, dip toward the fault and drop across it; their lips are ragged.
-        double fault = FaultAt(v);
-        double fromFault = TileNoise.Wrap((u * tile) - fault, tile) / tile;
-        double drop = FaultDrop(v);
+        // The beds wave as they run; their lips are ragged.
         double warp = TileNoise.Fractal(u * 2.0, v * 2.0, 2, 2, 3, Seed + 1) - 0.5;
         double ragged = TileNoise.Fractal(u * RaggedCells, v * RaggedCells, RaggedCells, RaggedCells, 3, Seed + 2) - 0.5;
-        double bedUp = TileNoise.Wrap(upMeters + (drop * (fromFault - 0.5)) + (warp * 2.0 * WarpMeters) + (ragged * 2.0 * RaggedMeters), tile);
+        double bedUp = TileNoise.Wrap(upMeters + (warp * 2.0 * WarpMeters) + (ragged * 2.0 * RaggedMeters), tile);
 
         // The bed the point is in: between its lower joint and the next one up (the last bed wraps round to the first).
         int bed = Beds - 1;
@@ -151,10 +132,6 @@ public sealed record StrataSurface : ISurfacePattern
             joint = Math.Max(joint, TileNoise.Line(bedUp - split, SplitMeters) * Split * shows);
         }
 
-        double acrossFault = Math.Min(fromFault, 1.0 - fromFault) * tile;
-        double faultShows = TileNoise.SmoothStep(0.2, 0.8, Math.Abs(drop) / FaultThrowMeters);
-        joint = Math.Max(joint, TileNoise.Line(acrossFault + (ragged * RaggedMeters), FaultJointMeters) * FaultJoint * faultShows);
-
         // The bed stands proud, meeting its neighbors at the joints (the coarse beds weathered rounder), its middle bulging.
         double edge = 1.0 + coarse;
         double inBed = TileNoise.SmoothStep(0.0, JointAboveMeters * edge, fromFloor) * TileNoise.SmoothStep(0.0, JointBelowMeters * edge, toCeiling);
@@ -180,7 +157,7 @@ public sealed record StrataSurface : ISurfacePattern
         return new SurfacePoint(height, tone, cavity, Math.Clamp(rough, 0.0, 1.0));
     }
 
-    /// <summary>Where the bed <paramref name="k"/>'s lower joint lies up the tile (meters), before the warp and the fault.</summary>
+    /// <summary>Where the bed <paramref name="k"/>'s lower joint lies up the tile (meters), before the warp.</summary>
     private double BedFloor(int k)
     {
         double mean = TileMeters / Beds;
@@ -194,12 +171,6 @@ public sealed record StrataSurface : ISurfacePattern
         double width = halfWidthMeters * (0.6 + (0.8 * TileNoise.Value(u * JointCells * 4, joint, JointCells * 4, Beds, Seed + 6)));
         return TileNoise.Line(distanceMeters, width) * shows;
     }
-
-    /// <summary>Where the fault crosses the tile at the height <paramref name="v"/> (a share of the tile), meters along it.</summary>
-    private double FaultAt(double v) => FaultAlongMeters + ((TileNoise.Fractal(v * 2.0, 0.0, 2, 1, 2, Seed + 13) - 0.5) * 2.0 * FaultWanderMeters);
-
-    /// <summary>How far the beds drop across the fault at the height <paramref name="v"/>, meters (negative: they rise).</summary>
-    private double FaultDrop(double v) => (TileNoise.Value(v * 3.0, 0.0, 3, 1, Seed + 14) - 0.5) * 2.0 * FaultThrowMeters;
 
     /// <summary>A small pit's depth profile (1 at its bottom): at most one per cell, in <paramref name="share"/> of the cells.</summary>
     private double PitAt(double u, double v, double share)

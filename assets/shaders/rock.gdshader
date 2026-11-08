@@ -1,7 +1,11 @@
 // Rock: layered strata, silt settled on ledges, chipped edges, grime near the
 // ground. With `wetness` it becomes wet stone (darker, glossy, puddles on top faces). Matte and warm
-// so it never reads as metal (mag-grip). Pattern in world space: strata run on across
-// neighbouring pieces; the surface frame (lib/surface) only adds edge wear and grime by height.
+// so it never reads as metal (mag-grip). The beds and their fine detail are the baked strata set
+// (SurfaceMaps has the sampling contract), laid in world meters on each face so they run on across
+// neighbouring pieces; faults cut the face into columns a few meters wide, each showing its own part
+// of the tile, so the tile never repeats along a wall. The shader adds only what is broad: the beds'
+// bend, stains, silt, grime, wetness, rime, masonry tone, worn edges, puddles. The surface frame
+// (lib/surface) adds edge wear and grime by height.
 shader_type spatial;
 
 #include "res://assets/shaders/lib/noise.gdshaderinc"
@@ -17,11 +21,14 @@ uniform int slot : hint_enum("Rock", "Metal", "Backdrop", "Backdrop accent", "Fo
 global uniform float biome_masonry;
 
 group_uniforms strata;
-/// Layers per meter of height.
-uniform float strata_frequency : hint_range(0.1, 4.0) = 1.3;
-/// How much the layers wave (meters).
-uniform float strata_warp : hint_range(0.0, 2.0) = 0.7;
-/// Tone difference between layers.
+/// The baked strata set (assets/textures/surfaces/, SurfaceMaps): every rock material sets both.
+uniform sampler2D strata_normal : hint_normal, repeat_enable, filter_linear_mipmap_anisotropic;
+uniform sampler2D strata_surface : hint_default_black, repeat_enable, filter_linear_mipmap_anisotropic;
+/// Beds per meter of height: the set is scaled to it (at its own scale it has STRATA_BEDS).
+uniform float strata_frequency : hint_range(0.1, 4.0) = 1.5;
+/// How far the beds bend up and down over a few meters, meters.
+uniform float strata_warp : hint_range(0.0, 2.0) = 0.4;
+/// Tone difference between beds (the set's own is 0.2).
 uniform float strata_contrast : hint_range(0.0, 0.5) = 0.2;
 
 group_uniforms masonry;
@@ -48,10 +55,11 @@ uniform float wear_width : hint_range(0.0, 0.3) = 0.07;
 uniform float edge_wear : hint_range(0.0, 1.0) = 0.5;
 
 group_uniforms surface;
+/// Dry roughness: the set's own varies around this.
 uniform float roughness : hint_range(0.0, 1.0) = 0.9;
 /// 0 = dry rock, 1 = wet stone.
 uniform float wetness : hint_range(0.0, 1.0) = 0.0;
-/// Turns detail off for distant, blurred pieces (backdrop): only tone and strata remain.
+/// Turns detail off for pieces behind the play plane: the strata's tone only, softened, with no relief, silt or worn edges.
 uniform bool detail = true;
 /// Albedo multiplier. Below 1 pushes a piece back behind the play plane (midground), so the play
 /// plane stays the brightest, most readable layer.
@@ -60,10 +68,28 @@ uniform float shade : hint_range(0.0, 1.0) = 1.0;
 uniform float frost_share : hint_range(0.0, 1.0) = 1.0;
 group_uniforms;
 
+// The baked set's tile (StrataSurface.TileMeters) and its beds per meter (StrataSurface.Beds over it).
+const float STRATA_TILE = 4.0;
+const float STRATA_BEDS = 1.5;
+// Faults: the columns' mean width, in tiles (under one, so a column seldom shows the same part of the tile twice), how far
+// their edges stray from even spacing (a share of that width), how far every edge leans (a set of faults runs one way), how
+// far that lean changes over a few meters and how far an edge jags (tiles). Columns come in blocks of FAULT_BLOCK: inside a
+// block the beds run on, dropping a little at each fault (up to FAULT_THROW tiles); between blocks they break, each block
+// with its own beds, a little thicker or thinner.
+const float FAULT_PITCH = 0.85;
+const float FAULT_JITTER = 0.18;
+const float FAULT_SHEAR = 0.35;
+const float FAULT_LEAN = 0.25;
+const float FAULT_JAG = 0.012;
+const float FAULT_BLOCK = 3.0;
+const float FAULT_THROW = 0.05;
+
 struct Rock {
-	float height; // meters, relative
+	float height; // meters, relative (the procedural fissures only; the beds' relief is in `slope`)
 	float cavity; // 1 deep in a fissure
 	float tone;   // albedo multiplier
+	float rough;  // dry roughness
+	vec2 slope;   // the baked normal's red and green, -1..1 (along and up the face)
 };
 
 // The hash of the block of cut stone at a point of a face: `along` runs with the courses, `across` over them.
@@ -74,27 +100,66 @@ float masonry_id(float along, float across, float seed) {
 	return hash12(vec2(block, course + seed * 13.0));
 }
 
+// Where a fault edge between columns lies (in column widths), `k` the edge's index.
+float fault_edge(float k) {
+	return k + (hash12(vec2(k, 7.3)) - 0.5) * 2.0 * FAULT_JITTER;
+}
+
 Rock rock_at(vec3 p, vec3 t, vec3 b, float seed, float up) {
 	Rock r;
 	vec2 q = vec2(dot(p, t), dot(p, b));
-	float warp = fbm3(p * 0.3 + seed * 11.0, 3);
+	float warp = fbm3(p * 0.3 + 11.0, 3);
 
-	// Strata: horizontal layers of uneven thickness. Faults shift whole runs of layers every few meters, so a wide face
-	// reads as rock rather than as long parallel bands.
-	float fault = floor(q.x / (3.5 + 2.0 * hash12(vec2(floor(q.x / 5.0), seed))));
-	float throw_ = (hash12(vec2(fault, seed + 4.0)) - 0.5) * 0.9;
-	float s = (p.y + throw_) * strata_frequency + (warp - 0.5) * strata_warp * 2.0 * strata_frequency;
-	float layer_hash = hash12(vec2(floor(s), 3.7));
-	r.tone = 1.0 + (layer_hash - 0.5) * 2.0 * strata_contrast + (warp - 0.5) * 0.35;
+	// The face in tiles of the set, the beds bent over a few meters.
+	float scale = strata_frequency / STRATA_BEDS;
+	vec2 m = vec2(q.x, q.y + (warp - 0.5) * 2.0 * strata_warp) * scale / STRATA_TILE;
+
+	// Faults: columns of uneven width, their edges leaning and jagged; each column takes its own part of the tile along the
+	// face, so no part shows twice side by side.
+	float lean = (value_noise2(vec2(m.x * 0.25, m.y * 0.35)) - 0.5) * 2.0 * FAULT_LEAN;
+	float jag = (value_noise2(vec2(m.x * 2.0, m.y * 6.0)) - 0.5) * 2.0 * FAULT_JAG;
+	float x = (m.x + m.y * FAULT_SHEAR + lean + jag) / FAULT_PITCH;
+	float cell = floor(x);
+	float edge = fault_edge(cell);
+	float column = x < edge ? cell - 1.0 : cell;
+	float left = x < edge ? fault_edge(cell - 1.0) : edge;
+	float right = x < edge ? edge : fault_edge(cell + 1.0);
+	bool near_left = x - left < right - x;
+	float to_fault = min(x - left, right - x) * FAULT_PITCH * STRATA_TILE / scale; // meters
+	float block = floor(column / FAULT_BLOCK);
+	// The nearest fault breaks the beds if it bounds a block.
+	bool breaks = mod(near_left ? column : column + 1.0, FAULT_BLOCK) == 0.0;
+	float thickness = 0.85 + 0.3 * hash12(vec2(block, 3.3));
+	vec2 shift = vec2(hash12(vec2(column, 1.9)), hash12(vec2(block, 5.1)) + (hash12(vec2(column, 6.7)) - 0.5) * 2.0 * FAULT_THROW);
+
+	// One sample of each map; the mip comes from the unbroken position, so a fault is not a seam of blurred texels.
+	vec2 dx = dFdx(m) * vec2(1.0, -thickness);
+	vec2 dy = dFdy(m) * vec2(1.0, -thickness);
+	vec2 uv = vec2(m.x, -m.y * thickness) + shift;
+	vec3 surface = textureGrad(strata_surface, uv, dx, dy).rgb;
+	r.slope = detail ? textureGrad(strata_normal, uv, dx, dy).rg * 2.0 - 1.0 : vec2(0.0);
+
+	// A fault shows a dark joint a few centimeters wide: always where the beds break, coming and going where they run on.
+	// None on what faces up, where it would read as paving.
+	float opens = breaks ? 1.0 : 0.6 * smoothstep(0.45, 0.75, value_noise2(vec2(column * 3.7, m.y * 3.0)));
+	float fault_joint = (1.0 - smoothstep(0.015, 0.06, to_fault)) * opens * (1.0 - up);
+
+	// Tone: the set's beds, at this material's contrast, over a broad drift. What faces up is a bedding plane, the beds faint.
+	float contrast = strata_contrast / 0.2 * (detail ? 1.0 : 0.6) * (1.0 - 0.5 * up);
+	r.slope *= 1.0 - 0.5 * up;
+	r.tone = 1.0 + (surface.r * 2.0 - 1.0) * contrast + (warp - 0.5) * 0.35;
+	r.cavity = max(surface.g, fault_joint * 0.8) * (detail ? 1.0 : 0.5);
+	r.rough = surface.b;
 	r.height = 0.0;
-	r.cavity = 0.0;
 
-	// Masonry: courses along a wall (or round an arch), flagstones on what faces up.
+	// Masonry: courses along a wall (or round an arch), flagstones on what faces up. Cut stone is smoother.
 	float built = biome_masonry * masonry_share;
 	if (built > 0.0) {
 		float across = up > 0.5 ? q.y : p.y;
 		float block_tone = 0.9 + 0.2 * masonry_id(q.x, across, seed) + (warp - 0.5) * 0.25;
-		r.tone = mix(r.tone, block_tone, built);
+		r.tone = mix(r.tone, block_tone * (1.0 + (surface.r * 2.0 - 1.0) * 0.4), built);
+		r.cavity *= 1.0 - 0.7 * built;
+		r.slope *= 1.0 - 0.6 * built;
 	}
 
 	// Long stains running down the faces: wide walls never read as one flat tone.
@@ -134,8 +199,13 @@ void fragment() {
 		float chip_noise = value_noise3(p * 3.1 + seed * 5.0);
 		float width = wear_width * (0.4 + 1.2 * chip_noise);
 		chipped = (1.0 - smoothstep(0.0, width * 1.6, f.edge)) * edge_wear;
-		// Bump from the height field's screen-space slope (one evaluation, lib/surface).
-		n = surface_bump(f, n, surface_slope(r.height, VERTEX, f.normal, f.tangent, f.bitangent));
+		// The beds' relief from the baked normal (tangent space: red along the face, green up it).
+		vec3 ts = vec3(r.slope, sqrt(max(0.0, 1.0 - dot(r.slope, r.slope))));
+		n = normalize(f.tangent * ts.x + f.bitangent * ts.y + n * ts.z);
+		// The fissures of cracked rock, wide enough to bump from their screen-space slope (lib/surface).
+		if (fracture > 0.0) {
+			n = surface_bump(f, n, surface_slope(r.height, VERTEX, f.normal, f.tangent, f.bitangent));
+		}
 	}
 	vec3 face_world_n = view_to_world(f.normal, INV_VIEW_MATRIX);
 	bool side = abs(face_world_n.y) < 0.5;
@@ -164,7 +234,7 @@ void fragment() {
 	// Wet stone: darker and glossy, with mirror-like puddles on top faces.
 	float wet = wetness * (side ? 0.8 : 0.6 + 0.4 * puddle);
 	albedo *= 1.0 - 0.45 * wet;
-	float rough = mix(roughness, side ? 0.32 : 0.28, wet);
+	float rough = mix(clamp(r.rough + roughness - 0.9, 0.0, 1.0), side ? 0.32 : 0.28, wet);
 	rough = mix(rough, 0.04, puddle * wetness);
 
 	// Rime over it all: matte and pale.
