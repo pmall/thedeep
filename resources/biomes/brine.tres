@@ -6,7 +6,6 @@
 [ext_resource type="Script" path="res://scripts/biome/BiomeProfile.cs" id="1_biome"]
 [ext_resource type="Material" path="res://assets/materials/backdrop_crags.tres" id="2_far"]
 [ext_resource type="Material" path="res://assets/materials/backdrop_cathedral.tres" id="3_near"]
-[ext_resource type="Resource" path="res://resources/paint/poster.tres" id="9_paint"]
 
 [resource]
 script = ExtResource("1_biome")
@@ -60,4 +59,3 @@ NearSkyline = ExtResource("3_near")
 Masonry = 0.7
 UnderglowColor = Color(0.5, 0.82, 0.74, 1)
 UnderglowEnergy = 0.45
-Paint = ExtResource("9_paint")

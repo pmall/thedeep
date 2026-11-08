@@ -17,7 +17,7 @@ uniform float energy : hint_range(0.0, 4.0) = 1.8;
 
 void fragment() {
 	// Under MSAA a pixel is shaded at its center even where only a sample of it is covered, so the varyings run a little
-	// past the band's edges: clamped, or pow() of a negative UV.y is NaN, a black pixel once the paint reads the frame.
+	// past the band's edges: clamped, or pow() of a negative UV.y is NaN, a black pixel in the frame.
 	float y = clamp(UV.y, 0.0, 1.0);
 	float life = clamp(COLOR.a, 0.0, 1.0);
 	float core = smoothstep(0.72, 0.9, y) * (1.0 - smoothstep(0.96, 1.0, y) * 0.6);

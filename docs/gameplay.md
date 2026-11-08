@@ -86,6 +86,5 @@ Bindings are the input map in `project.godot` (names in `InputActions`). Debug b
 | `debug_respawn` | R | Back |
 | `debug_toggle_{mag_grip,harpoon,drill,ballast,heat_plating}` | F1–F5 | — |
 | `debug_cycle_biome` | F6 | — |
-| `debug_cycle_paint` (the biome's paint, each variant, none: `docs/art-direction.md#signature`) | F9 | — |
 | `debug_toggle_hud` (state readout and the debug keys) | F7 | — |
 | `debug_toggle_manual` (hides the gameplay controls) | F8 | — |

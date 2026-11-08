@@ -1,10 +1,10 @@
 #!/usr/bin/env bash
 # The still check (docs/testing.md#still-check): the settle reels alone (docs/testing.md#settle-reel), in every room
-# MotionReel.Settles names, at the owner's window size, painted as in play. Fails if any pixel pops while the camera
+# MotionReel.Settles names, at the owner's window size. Fails if any pixel pops while the camera
 # settles, rests or creeps, or blinks while the world runs (docs/art-direction.md#stable-image). Needs the GPU to itself
 # (docs/toolchain.md#gpu); opens a small window, about 15 s a room.
 #
-#   tools/still.sh [--rooms "A B"] [--size WxH] [-- GODOT_ARGS]   e.g. -- --paint none to measure the raw render
+#   tools/still.sh [--rooms "A B"] [--size WxH] [-- GODOT_ARGS]
 #
 # Writes stills/<date>_<time>/ (git-ignored): settle-<Room>.json, .png and -heat.png, and each room's Godot log.
 set -euo pipefail

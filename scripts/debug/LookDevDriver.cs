@@ -49,9 +49,6 @@ public partial class LookDevDriver : Node
     private readonly List<(double Frame, double Gpu, double Cpu, double Process, double Physics, int Gc0, int Gc1, int Gc2)> _frames = new();
     private int _gc0, _gc1, _gc2;
 
-    /// <summary>Per measured frame, when THEDEEP_PAINT_TIMING=1: the paint pass's GPU ms per step (PaintPass.StepNames).</summary>
-    private readonly List<double[]> _paintSteps = new();
-    private readonly bool _paintTiming = PaintPass.Timed = System.Environment.GetEnvironmentVariable("THEDEEP_PAINT_TIMING") == "1";
     private IEnumerator<int>? _script;
     private FrameGrabber? _grabber;
     private DemoInput? _demo;
@@ -138,10 +135,6 @@ public partial class LookDevDriver : Node
                 RenderingServer.ViewportGetMeasuredRenderTimeCpu(viewport) + RenderingServer.GetFrameSetupTimeCpu(),
                 Performance.GetMonitor(Performance.Monitor.TimeProcess) * 1000.0, Performance.GetMonitor(Performance.Monitor.TimePhysicsProcess) * 1000.0,
                 gc0 - _gc0, gc1 - _gc1, gc2 - _gc2));
-            if (_paintTiming)
-            {
-                _paintSteps.Add((double[])PaintPass.StepMs.Clone());
-            }
         }
 
         (_gc0, _gc1, _gc2) = (GC.CollectionCount(0), GC.CollectionCount(1), GC.CollectionCount(2));
@@ -595,15 +588,10 @@ public partial class LookDevDriver : Node
                 .Select(i => string.Create(CultureInfo.InvariantCulture,
                     $"#{i} frame {_frames[i].Frame:0.0} gpu {_frames[i].Gpu:0.0} cpu {_frames[i].Cpu:0.0} process {_frames[i].Process:0.0} physics {_frames[i].Physics:0.0} gc {_frames[i].Gc0}/{_frames[i].Gc1}/{_frames[i].Gc2}"))
                 .ToArray(),
-            // The slowest frames by GPU time; with THEDEEP_PAINT_TIMING=1, the paint steps' ms (they lag the frame by one or two).
+            // The slowest frames by GPU time.
             ["slowest_gpu"] = Enumerable.Range(0, _frames.Count).OrderByDescending(i => _frames[i].Gpu).Take(12).OrderBy(i => i)
-                .Select(i => string.Create(CultureInfo.InvariantCulture, $"#{i} gpu {_frames[i].Gpu:0.0}")
-                    + (_paintTiming ? " paint " + string.Join(" ", Enumerable.Range(Math.Max(0, i - 1), Math.Min(3, _paintSteps.Count - Math.Max(0, i - 1)))
-                        .Select(j => "[" + string.Join(" ", _paintSteps[j].Select(ms => ms.ToString("0.0", CultureInfo.InvariantCulture))) + "]")) : ""))
+                .Select(i => string.Create(CultureInfo.InvariantCulture, $"#{i} gpu {_frames[i].Gpu:0.0}"))
                 .ToArray(),
-            ["paint_steps_avg_ms"] = _paintTiming && _paintSteps.Count > 0
-                ? Enumerable.Range(0, PaintPass.StepNames.Length).ToDictionary(s => PaintPass.StepNames[s], s => Math.Round(_paintSteps.Average(f => f[s]), 3))
-                : new Dictionary<string, double>(),
             ["frames"] = _frame.Count,
             ["gpu_name"] = RenderingServer.GetVideoAdapterName(),
             ["godot"] = (string)Engine.GetVersionInfo()["string"],

@@ -47,7 +47,7 @@ The type to open first for each system; its docblock leads on.
 | Hidden passages | `FalseWall`, `Secrets` |
 | Machines | `Machine`, `MachineSpecies`, `MachineDirector`; brains in `core/machines/brains/` |
 | The map and its proof | `MapGraph`, `MapSolver`, `ReachPlanner`, `MapDraft`, `WorldCheck`; fed by `RoomValidator` |
-| Looks | `BiomeProfile`, the painted signature `PaintPass` (its compute shaders in `assets/shaders/paint/`), the kit (`KitMesh`, `KitShapes`), the part system (`PartAssembly`, `PartBody`), `assets/shaders/` |
+| Looks | `BiomeProfile`, the kit (`KitMesh`, `KitShapes`), the part system (`PartAssembly`, `PartBody`), `assets/shaders/` |
 | Text | `LineBook` |
 | Captures | `OwnerCapture`, `LookDevDriver` |
 | Checks | `scripts/debug/` (one driver per check, `docs/testing.md#check`) |

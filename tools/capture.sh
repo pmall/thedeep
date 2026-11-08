@@ -12,7 +12,6 @@
 #   tools/capture.sh [label] --biome NAME    render with resources/biomes/NAME.tres instead of each room's own
 #   tools/capture.sh [label] --rooms "A B"   render only these rooms (quick looks while building a room)
 #   tools/capture.sh [label] --world NAME    render worlds/NAME's rooms instead (all of them, or --rooms of them): --world sequel
-#   tools/capture.sh [label] --paint NAME    paint with resources/paint/NAME.tres instead of each biome's style (none: unpainted)
 #   tools/capture.sh --compare BEFORE AFTER  only build the sheet for two existing runs
 #
 # Opens a small window: about 8 minutes for every room, under a minute for one with --rooms (rendering needs a GPU). See docs/testing.md#lookdev.
@@ -45,7 +44,7 @@ if [ "${1:-}" = "--compare" ]; then
     exit 0
 fi
 
-label="" against="" biome_args=() paint_args=() world_args=() only=""
+label="" against="" biome_args=() world_args=() only=""
 while [ $# -gt 0 ]; do
     case "$1" in
         --against)
@@ -58,10 +57,6 @@ while [ $# -gt 0 ]; do
             ;;
         --rooms)
             only="$2"
-            shift 2
-            ;;
-        --paint)
-            paint_args=(--paint "$2")
             shift 2
             ;;
         --world)
@@ -88,7 +83,6 @@ touch "$ROOT/.gdignore" # Godot must not import the captures
     echo "label   ${label:-none}"
     echo "world   ${world_args[1]:-prototype}"
     echo "biome   ${biome_args[1]:-room default}"
-    echo "paint   ${paint_args[1]:-biome default}"
     echo "commit  $(git rev-parse --short HEAD 2>/dev/null || echo unknown)$(git diff --quiet HEAD 2>/dev/null || echo ' + uncommitted changes')"
 } >"$out/run.txt"
 
@@ -120,7 +114,7 @@ for room in "${ROOMS[@]}"; do
     fi
     printf '\033[1mrendering %s: photo spots, reels and frame times into %s\033[0m\n' "$name" "$out"
     "$GODOT" --path . --disable-vsync --fixed-fps 60 --resolution 960x540 -- --lookdev "$out" --size "$SIZE" --perf "$perf" \
-        "${world_args[@]}" "${room_args[@]}" "${biome_args[@]}" "${paint_args[@]}" >"$log" 2>&1 || {
+        "${world_args[@]}" "${room_args[@]}" "${biome_args[@]}" >"$log" 2>&1 || {
         tail -20 "$log"
         fail "look-dev run exited non-zero (log: $log)"
     }

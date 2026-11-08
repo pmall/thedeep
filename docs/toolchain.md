@@ -33,7 +33,7 @@ To upgrade one, change its pin (and the date `uvx` resolves dependencies at, bes
 The coding agent itself runs in the cloud; only the project's tools run on the machine.
 
 - **No GPU needed:** editing code and data, `dotnet build`, the unit tests, and the whole of `tools/check.sh` (every Godot step runs `--headless`), `tools/map.sh`. A laptop with the toolchain above (Godot .NET, the .NET SDK, ffmpeg) does all of it; the check is CPU-heavy (`docs/testing.md#check-fast`; longer on a laptop).
-- **GPU needed:** `tools/capture.sh` (photo spots, motion reels, frame times) and the owner's F12/F10 captures render in a real window with Vulkan. Visual work is judged from these captures, and frame times only mean something on the RTX 3060, so visual items (the signature, stage bricks, the pilgrim's look) are done on the desktop. Running them while a game uses the same GPU spoils the frame times.
+- **GPU needed:** `tools/capture.sh` (photo spots, motion reels, frame times) and the owner's F12/F10 captures render in a real window with Vulkan. Visual work is judged from these captures, and frame times only mean something on the RTX 3060, so visual items (stage bricks, the pilgrim's look) are done on the desktop. Running them while a game uses the same GPU spoils the frame times.
 - So code-only items can go on a laptop, or on the desktop while it is busy with a game; visual items need the desktop's GPU to itself while capturing.
 
 ## .NET environment `#dotnet-env`

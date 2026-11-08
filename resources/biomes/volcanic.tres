@@ -5,7 +5,6 @@
 [ext_resource type="Script" path="res://scripts/biome/BiomeProfile.cs" id="1_biome"]
 [ext_resource type="Material" path="res://assets/materials/backdrop_foundry_far.tres" id="2_far"]
 [ext_resource type="Material" path="res://assets/materials/backdrop_foundry.tres" id="3_near"]
-[ext_resource type="Resource" path="res://resources/paint/gouache.tres" id="9_paint"]
 
 [resource]
 script = ExtResource("1_biome")
@@ -57,4 +56,3 @@ NearSkyline = ExtResource("3_near")
 Masonry = 0.0
 UnderglowColor = Color(1, 0.48, 0.2, 1)
 UnderglowEnergy = 0.7
-Paint = ExtResource("9_paint")

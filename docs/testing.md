@@ -43,11 +43,10 @@ The headless checks, one driver each in `scripts/debug/`; the driver's docblock 
 | Start in a room, with the abilities and items a route there needs | `godot --path . -- --room <Name>` (`--abilities all`, `none` or `MagGrip,Drill` says otherwise; `--items SacristyKey` adds items) |
 | Another world | `godot --path . -- --world <name>` (`worlds/<name>/world.tres`; every check takes it too): `--world sequel --new` plays the sequel world |
 | Start with another biome | `godot --path . -- --biome volcanic` |
-| One screenshot of a room's start, then quit (to captures/, as F12) | `godot --path . -- --room Undercroft --shot` (with `--paint NAME` to compare styles) |
-| Paint with another style, or not at all (`docs/art-direction.md#signature`) | `godot --path . -- --paint poster` (`none` for the raw render) |
+| One screenshot of a room's start, then quit (to captures/, as F12) | `godot --path . -- --room Undercroft --shot` |
 | Print the map (built rooms and the network: ways, placements, orders) | `tools/map.sh` |
 | Where the geometry check's planner stops in a room | `godot --headless --path . -- --room MechanicsLab --validate-rooms --reach-report <Room>` (`--abilities …`, `--slack-report` for the clumsy pilgrim) |
-| Look-dev captures and frame times | `tools/capture.sh [label]` (`docs/testing.md#lookdev`; `--paint NAME` for another paint style, `--world sequel` for another world's rooms) |
+| Look-dev captures and frame times | `tools/capture.sh [label]` (`docs/testing.md#lookdev`; `--world sequel` for another world's rooms) |
 | UI screens to PNGs (windowed) | `godot --path . --disable-vsync -- --room Undercroft --ui-shot <dir>` |
 | Windowed capture check (needs a GPU; after touching capture code) | `godot --path . -- --capture-test` (add `--disable-vsync` before `--` for the raw cost) |
 
@@ -67,7 +66,7 @@ Each run opens a small window (it needs the GPU to itself, `docs/toolchain.md#gp
 
 **The settle reels** `#settle-reel` measure how still the image is, so flicker is counted, not guessed (`docs/art-direction.md#stable-image`): in the rooms `MotionReel.Settles` names (two of each layer, the core one), the pilgrim runs, lets go, and the gameplay camera eases to a stop. Then every frame is compared with the one before (`FrameShimmer` says what a pop and a blink are): with the world running and the camera at rest (blinks), and with the world frozen while the camera replays its path to rest, holds still, and creeps a sixteenth of a pixel a frame (pops). The goal is zero of each. A run prints a `settle` line per room and writes `settle-<Room>.json` (per phase: frames, mean luma change, pops, the worst frame's), `settle-<Room>.png` (the settled frame) and `settle-<Room>-heat.png` (that frame darkened, every pixel that popped red, every one that blinked cyan). The capture runs them with each room; the still check runs them alone (`docs/testing.md#still-check`).
 
-**The still check** `#still-check`, `tools/still.sh`: the settle reels alone, in every room they name, at the owner's window size (1600x900), painted as in play; it fails if any pixel pops or blinks (`docs/art-direction.md#stable-image`). It needs the GPU (`docs/toolchain.md#gpu`), about 15 s a room. `--rooms "A B"` measures only those; `-- --paint none` passes arguments to the game, to measure a cause in isolation.
+**The still check** `#still-check`, `tools/still.sh`: the settle reels alone, in every room they name, at the owner's window size (1600x900); it fails if any pixel pops or blinks (`docs/art-direction.md#stable-image`). It needs the GPU (`docs/toolchain.md#gpu`), about 15 s a room. `--rooms "A B"` measures only those; `-- ARGS` passes arguments to the game, to measure a cause in isolation.
 
 Reading `perf*.json` against the budget (`docs/principles.md#performance`): a slow frame with a garbage collection and a normal GPU time is garbage; one with a long GPU time is the GPU (a room reloaded after a fall builds its shaders anew, a frame or two of 40–70 ms under the veil).
 
@@ -90,7 +89,7 @@ When the owner says "look at the last screenshot/video": `ls -t captures | head`
 What the owner does to test a build. Remind them of this when handing over:
 
 1. `godot --path .` resumes from the last shrine rested at; `-- --new` starts over; the hand-over's command (`AGENTS.md#session`) goes straight to the new content.
-2. Controls are on screen in debug builds, for the keyboard or the pad in hand (`docs/gameplay.md#controls`). F1–F5 toggle the abilities, F6 cycles the biome, F9 cycles the paint, F7 shows the debug readout. The room's name and the pilgrim's position in it sit top right, so remarks and screenshots say where they were made.
+2. Controls are on screen in debug builds, for the keyboard or the pad in hand (`docs/gameplay.md#controls`). F1–F5 toggle the abilities, F6 cycles the biome, F7 shows the debug readout. The room's name and the pilgrim's position in it sit top right, so remarks and screenshots say where they were made.
 3. To watch the machines: `godot --path . -- --room MachineArena`.
 4. To report something: F12 (or a video with F10), then "look at the last screenshot".
 5. Feedback is given in plain words ("floaty jump", "camera lags"); the agent turns it into tuning. The owner may also edit `resources/player_tuning.tres` and relaunch, with no rebuild.

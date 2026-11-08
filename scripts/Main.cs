@@ -27,9 +27,6 @@ public partial class Main : Node3D
     /// <summary>`--biome &lt;name&gt;`: start with resources/biomes/&lt;name&gt;.tres instead of the room's own.</summary>
     private const string BiomeArgument = "--biome";
 
-    /// <summary>`--paint &lt;name&gt;`: paint every room with resources/paint/&lt;name&gt;.tres instead of its biome's style; `none` for the raw render.</summary>
-    private const string PaintArgument = "--paint";
-
     /// <summary>`--shot`: plays normally, takes one F12 screenshot after <see cref="ShotDelay"/> (the camera settled), then quits.</summary>
     private const string ShotArgument = "--shot";
 
@@ -120,8 +117,6 @@ public partial class Main : Node3D
     [Export] public HintLine Hint { get; set; } = null!;
     [Export] public AnchorPointer Pointer { get; set; } = null!;
 
-    /// <summary>The rooms' painted pass (the shared resources/stage/paint_pass.tres), held here so `--paint` lasts the whole run.</summary>
-    [Export] public PaintPass Paint { get; set; } = null!;
     [Export] public MapScreen MapScreen { get; set; } = null!;
     [Export] public GateHints Hints { get; set; } = null!;
     [Export] public Keyring Keyring { get; set; } = null!;
@@ -238,22 +233,6 @@ public partial class Main : Node3D
             else
             {
                 GD.PushError($"no biome profile named {biomeName} in {BiomeProfile.Folder}");
-            }
-        }
-
-        if (ArgumentValue(args, PaintArgument) is { } paintName)
-        {
-            if (paintName == "none")
-            {
-                Paint.Enabled = false;
-            }
-            else if (PaintStyle.Load(paintName) is { } style)
-            {
-                Paint.Override = style;
-            }
-            else
-            {
-                GD.PushError($"no paint style named {paintName} in {PaintStyle.Folder}");
             }
         }
 

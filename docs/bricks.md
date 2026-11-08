@@ -20,7 +20,6 @@ Every piece a world is built from (`docs/principles.md#bricks`). The prototype's
 | `AmbientParticles` | working | `docs/roadmap.md#stage-bricks` |
 | `WaterBody` (scenery) | working | `docs/roadmap.md#stage-bricks` |
 | Screen grade (`screen_grade.gdshader`) | working | `docs/roadmap.md#stage-bricks` |
-| The signature: `PaintPass`, `PaintStyle` (`docs/art-direction.md#signature`) | working (each biome's style picked and tuned, its cost cut to 0.3–0.4 ms over the unpainted frame, decided 2026-11-08, owner's delegation; waits on the owner's eye) | `docs/roadmap.md#stage-bricks` (first) |
 
 ## Level: what the pilgrim plays on `#bricks-level`
 
