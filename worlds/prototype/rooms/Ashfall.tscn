@@ -9,7 +9,6 @@
 [ext_resource type="Material" path="res://assets/materials/rust.tres" id="3_rust"]
 [ext_resource type="Script" path="res://scripts/rooms/RoomExit.cs" id="4_exit"]
 [ext_resource type="Script" path="res://scripts/props/HeatZone.cs" id="5_heatzone"]
-[ext_resource type="Material" path="res://assets/materials/heat_haze.tres" id="6_heat_haze"]
 [ext_resource type="PackedScene" path="res://scenes/fx/Embers.tscn" id="7_embers"]
 [ext_resource type="Script" path="res://scripts/machines/Machine.cs" id="8_machine"]
 [ext_resource type="Resource" path="res://resources/machines/gleaner.tres" id="9_gleaner"]
@@ -231,7 +230,6 @@ Item = ExtResource("23_pyre_litany")
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 53.5, -18, 0)
 script = ExtResource("5_heatzone")
 Size = Vector2(3, 6)
-HazeMaterial = ExtResource("6_heat_haze")
 Embers = ExtResource("7_embers")
 EmberDensity = 1.8
 GlowEnergy = 3.5

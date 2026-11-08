@@ -8,7 +8,6 @@
 [ext_resource type="Script" path="res://scripts/debug/DebugCheats.cs" id="5_cheats"]
 [ext_resource type="PackedScene" path="res://scenes/camera/SideCamera.tscn" id="6_camera"]
 [ext_resource type="PackedScene" path="res://scenes/ui/OwnerCapture.tscn" id="7_capture"]
-[ext_resource type="PackedScene" path="res://scenes/camera/ScreenGrade.tscn" id="10_grade"]
 [ext_resource type="Script" path="res://scripts/machines/MachineDirector.cs" id="11_machines"]
 [ext_resource type="Script" path="res://scripts/player/BurstPool.cs" id="12_pool"]
 [ext_resource type="PackedScene" path="res://scenes/fx/Sparks.tscn" id="13_sparks"]
@@ -179,8 +178,6 @@ Hint = NodePath("../HintLine")
 [node name="SideCamera" parent="." node_paths=PackedStringArray("Target", "World") instance=ExtResource("6_camera")]
 Target = NodePath("../Player")
 World = NodePath("../World")
-
-[node name="ScreenGrade" parent="." instance=ExtResource("10_grade")]
 
 [node name="ScreenFade" type="CanvasLayer" parent="."]
 script = ExtResource("15_fade")

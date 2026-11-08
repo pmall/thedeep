@@ -109,7 +109,6 @@ for m in [
     'cracked',
     'magma',
     'basalt',
-    'heat_haze',
 ]:
     EXT[m] = ('Material', f'res://assets/materials/{m}.tres')
 
@@ -588,7 +587,6 @@ class Room:
             transform=Raw(transform((pos[0], pos[1], 0))),
             script=self.ext('heatzone'),
             Size=Raw(vec(*size)),
-            HazeMaterial=self.ext('heat_haze'),
             Embers=self.ext('embers'),
             EmberDensity=float(density),
             GlowEnergy=float(glow),

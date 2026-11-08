@@ -7,8 +7,8 @@ namespace TheDeep;
 /// tall, rising from the node's origin. Without Heat plating, touching it burns (<see cref="Player.Scorch"/>: health taken
 /// unless in the grace period, and the pilgrim set back on the last ground it stood on clear of heat, its
 /// <see cref="Player.Footing"/>); ground within <see cref="FootingMargin"/> of it is no footing. With Heat plating it is
-/// harmless (`docs/gameplay.md#heat`). A <see cref="Lethal"/> zone is molten slag itself: touching it is death, plated or not. It looks like heat: a
-/// shimmering haze (<see cref="HazeMaterial"/>), embers rising (<see cref="Embers"/>), a glow at its foot. Not a <see cref="Block"/>:
+/// harmless (`docs/gameplay.md#heat`). A <see cref="Lethal"/> zone is molten slag itself: touching it is death, plated or not. It looks like heat:
+/// embers rising (<see cref="Embers"/>), a glow at its foot. Not a <see cref="Block"/>:
 /// the map's geometry check reads its <see cref="Region"/> as space no planner may enter without Heat plating (a lethal one: ever).
 /// </summary>
 public partial class HeatZone : Node3D
@@ -24,7 +24,6 @@ public partial class HeatZone : Node3D
     /// <summary>Molten slag itself, not the air over it: it swallows the pilgrim, Heat plating or not (a river of slag's bed).</summary>
     [Export] public bool Lethal { get; set; }
 
-    [Export] public Material? HazeMaterial { get; set; }
     [Export] public PackedScene? Embers { get; set; }
 
     /// <summary>Embers per square meter of the zone's face.</summary>
@@ -32,9 +31,6 @@ public partial class HeatZone : Node3D
 
     /// <summary>The light at the zone's foot (its color is the room's lamp color).</summary>
     [Export] public float GlowEnergy { get; set; } = 2.5f;
-
-    /// <summary>The haze shader's per-instance column height.</summary>
-    private static readonly StringName HeightParameter = "height";
 
     /// <summary>The pilgrim, set by the session when the room loads.</summary>
     public Player? Player { get; set; }
@@ -52,19 +48,6 @@ public partial class HeatZone : Node3D
 
     public override void _Ready()
     {
-        if (HazeMaterial is not null)
-        {
-            var haze = new MeshInstance3D
-            {
-                Mesh = new QuadMesh { Size = Size + new Vector2(0.6f, 0f) },
-                MaterialOverride = HazeMaterial,
-                CastShadow = GeometryInstance3D.ShadowCastingSetting.Off,
-                Position = new Vector3(0f, 0.5f * Size.Y, 0.4f),
-            };
-            haze.SetInstanceShaderParameter(HeightParameter, Size.Y);
-            AddChild(haze);
-        }
-
         if (Embers?.Instantiate() is AmbientParticles embers)
         {
             embers.Extents = new Vector3(0.5f * Size.X, 0.25f * Size.Y, 0.6f);

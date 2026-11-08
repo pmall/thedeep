@@ -48,7 +48,7 @@ Images: [`perfect.jpg`](references/perfect.jpg) (**north star**), [`dread-white-
   - The Flooded `BiomeProfile` reproduces the `perfect.jpg` palette: pale base, lavender fog, magenta accent. Side-by-side capture against `perfect.jpg` to judge it.
   - A color-rule check in captures: saturated emissive only on gameplay elements.
   - A glossy pale ceramic-metal material with bevels and rim light; rock stays clearly different from metal.
-  - Light shafts with visible particles in about 20% of rooms; vignette plus foreground silhouettes darken the edges.
+  - Light shafts with visible particles in about 20% of rooms; foreground silhouettes darken the edges.
   - White slash and spark VFX for the strikes: the slash follows the blade's own arc (`docs/art-direction.md#strikes`).
 
 ### Character: *NieR: Automata* `#character`

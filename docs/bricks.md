@@ -19,7 +19,6 @@ Every piece a world is built from (`docs/principles.md#bricks`). The prototype's
 | Light shafts, lamps, glyph lights (`Room`) | working | `docs/roadmap.md#stage-bricks` |
 | `AmbientParticles` | working | `docs/roadmap.md#stage-bricks` |
 | `WaterBody` (scenery) | working | `docs/roadmap.md#stage-bricks` |
-| Screen grade (`screen_grade.gdshader`) | working | `docs/roadmap.md#stage-bricks` |
 
 ## Level: what the pilgrim plays on `#bricks-level`
 

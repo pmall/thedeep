@@ -128,13 +128,6 @@ public partial class BiomeProfile : Resource
     /// <summary>Caustic light strength (0 none).</summary>
     [Export] public float CausticStrength { get; set; } = 0.5f;
 
-    /// <summary>How much the screen's edges darken (0 none, 1 full), so the bright stage sits in a dark frame.</summary>
-    [ExportGroup("Post")]
-    [Export] public float Vignette { get; set; } = 0.5f;
-
-    /// <summary>What the edges darken toward (multiplied in); a tint, not black, keeps the frame in the palette.</summary>
-    [Export] public Color VignetteColor { get; set; } = new(0.2f, 0.2f, 0.25f);
-
     /// <summary>Tint of ambient particles (dust, silt, drips, bubbles; later embers or ice).</summary>
     [ExportGroup("Particles")]
     [Export] public Color ParticleTint { get; set; } = Colors.White;
@@ -189,8 +182,6 @@ public partial class BiomeProfile : Resource
         RenderingServer.GlobalShaderParameterSet(ShaderGlobals.BiomeWaterDeep, WaterDeep);
         RenderingServer.GlobalShaderParameterSet(ShaderGlobals.BiomeCaustic, CausticColor);
         RenderingServer.GlobalShaderParameterSet(ShaderGlobals.BiomeCausticStrength, CausticStrength);
-        RenderingServer.GlobalShaderParameterSet(ShaderGlobals.PostVignette, Vignette);
-        RenderingServer.GlobalShaderParameterSet(ShaderGlobals.PostVignetteColor, VignetteColor);
 
         environment.BackgroundColor = Background;
         environment.AmbientLightColor = AmbientColor;

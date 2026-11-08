@@ -15,7 +15,6 @@
 [ext_resource type="Resource" path="res://resources/machines/founder.tres" id="8_founder"]
 [ext_resource type="Script" path="res://scripts/props/BossSeal.cs" id="9_bossseal"]
 [ext_resource type="Script" path="res://scripts/props/HeatZone.cs" id="10_heatzone"]
-[ext_resource type="Material" path="res://assets/materials/heat_haze.tres" id="11_heat_haze"]
 [ext_resource type="PackedScene" path="res://scenes/fx/Embers.tscn" id="12_embers"]
 [ext_resource type="Script" path="res://scripts/kit/BlockMesh.cs" id="13_blockmesh"]
 [ext_resource type="Material" path="res://assets/materials/stone_mid.tres" id="14_stone_mid"]
@@ -227,7 +226,6 @@ FallenHintLine = &"boss.founder.fallen.hint"
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 55, -10, 0)
 script = ExtResource("10_heatzone")
 Size = Vector2(8, 11)
-HazeMaterial = ExtResource("11_heat_haze")
 Embers = ExtResource("12_embers")
 EmberDensity = 1.4
 GlowEnergy = 3.5

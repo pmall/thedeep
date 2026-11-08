@@ -31,7 +31,6 @@
 [ext_resource type="Script" path="res://scripts/rooms/PhotoSpot.cs" id="21_spot"]
 [ext_resource type="Script" path="res://scripts/rooms/Room.cs" id="22_room"]
 [ext_resource type="Script" path="res://scripts/props/HeatZone.cs" id="40_heatzone"]
-[ext_resource type="Material" path="res://assets/materials/heat_haze.tres" id="41_heat_haze"]
 [ext_resource type="PackedScene" path="res://scenes/fx/Embers.tscn" id="42_embers"]
 [ext_resource type="Material" path="res://assets/materials/magma.tres" id="43_magma"]
 [ext_resource type="Resource" path="res://resources/biomes/frozen.tres" id="23_frozen"]
@@ -375,7 +374,6 @@ Size = Vector2(3, 1)
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 11.5, -16, 0)
 script = ExtResource("40_heatzone")
 Size = Vector2(3, 15.5)
-HazeMaterial = ExtResource("41_heat_haze")
 Embers = ExtResource("42_embers")
 EmberDensity = 1.0
 GlowEnergy = 2.0

@@ -10,7 +10,6 @@
 [ext_resource type="Material" path="res://assets/materials/rust.tres" id="3_rust"]
 [ext_resource type="Script" path="res://scripts/rooms/RoomExit.cs" id="4_exit"]
 [ext_resource type="Script" path="res://scripts/props/HeatZone.cs" id="5_heatzone"]
-[ext_resource type="Material" path="res://assets/materials/heat_haze.tres" id="6_heat_haze"]
 [ext_resource type="PackedScene" path="res://scenes/fx/Embers.tscn" id="7_embers"]
 [ext_resource type="PackedScene" path="res://scenes/props/ScripturePlate.tscn" id="8_plate"]
 [ext_resource type="PackedScene" path="res://scenes/props/Shrine.tscn" id="9_shrine"]
@@ -144,7 +143,6 @@ Size = Vector2(1, 4)
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 15, 1.5, 0)
 script = ExtResource("5_heatzone")
 Size = Vector2(5, 5)
-HazeMaterial = ExtResource("6_heat_haze")
 Embers = ExtResource("7_embers")
 EmberDensity = 2.4
 GlowEnergy = 4
