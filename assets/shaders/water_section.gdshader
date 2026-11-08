@@ -2,6 +2,7 @@
 // What lies behind it (the pilgrim, walls, the pool's floor) shows through, bent by a slow waver and sunk into
 // the biome's deep-water color with depth below the surface; a bright meniscus marks the surface line, with a
 // band of caustic light under it. Colors are the biome's (lib/water.gdshaderinc), so it follows every layer.
+// stable-image: allow screen-read: until the water is redrawn without the screen (docs/roadmap.md#art-restore).
 shader_type spatial;
 render_mode blend_mix, depth_draw_never, cull_back, unshaded, fog_disabled;
 

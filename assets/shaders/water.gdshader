@@ -2,6 +2,7 @@
 // and the scene above it reflected by a short screen-space march (Godot's SSR skips transparent
 // surfaces). Specular highlights come from the room's lights. The colors are the biome's
 // (lib/water.gdshaderinc), so the same water follows every layer.
+// stable-image: allow screen-read: until the water is redrawn without the screen (docs/roadmap.md#art-restore).
 shader_type spatial;
 render_mode blend_mix, depth_draw_always, cull_back, fog_disabled, specular_schlick_ggx;
 

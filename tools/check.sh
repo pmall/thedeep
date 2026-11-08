@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # The checks (docs/testing.md#check). Fails if any step fails; each step prints how long it took.
-#   tools/check.sh --fast   formats every file (applies the formatters), lints, type-checks the Python tools and builds:
-#                           seconds, no Godot. Ends every turn that changed files.
+#   tools/check.sh --fast   checks the doc citations and the stable-image guard, formats every file (applies the
+#                           formatters), lints, type-checks the Python tools and builds: seconds, no Godot. Ends every turn that changed files.
 #   tools/check.sh          the full check: verifies that every file is formatted and lint-clean without changing one,
 #                           builds, imports headless, then runs every headless check and the unit tests at once.
 # The headless checks run in parallel, one Godot each (their logs in .godot/check/); each prints its OK line when it
@@ -96,8 +96,9 @@ build() {
 }
 build_errors() { grep -E ': (error|warning) ' "$LOG_DIR/build.log" | sed -E 's/ \[[^]]*\]$//' | sort -u | head -40; }
 
-step "1 doc section ids and citations"
+step "1 doc section ids and citations, the stable-image guard"
 python3 tools/docrefs.py || fail "doc citations"
+python3 tools/stable_image.py || fail "stable-image guard"
 took
 
 if [ "$FAST" = 1 ]; then
