@@ -2,21 +2,36 @@
 
 A 2.5D side-scrolling **metroidvania** (Godot .NET, C#) about an android pilgrim descending toward a planet's core ([docs/vision.md](docs/vision.md)). The coding agent builds everything by editing text files; the owner only plays and gives feedback. **Never ask the owner to use the Godot editor.**
 
+**This file is the only agent instruction file** `#agents-file`. Claude Code reads `AGENTS.md` natively, but only when there is no `CLAUDE.md`, `.claude/CLAUDE.md` or `CLAUDE.local.md` in the project or a folder above it, and any of those silently replaces it. Create none of them; if one appears above the project, tell the owner. Topic detail lives in `docs/`, pointed to from here.
+
 ## Every session `#session`
 
-1. Read this file and [docs/roadmap.md](docs/roadmap.md) (direction, status, the current stage's items).
+1. Read this file and [docs/state.md](docs/state.md) (where things stand), then [docs/roadmap.md](docs/roadmap.md) for the current stage's items.
 2. Read the docs below that match the task. Don't read them all up front.
 3. Work on the current stage's first unfinished item, or what the owner asks for. For any visual change, capture before and after and look at the images (`docs/art-direction.md#judge-images`).
-4. `tools/check.sh` passes (`docs/testing.md#check`), then commit. Never report work as done while it fails. Keep `godot --path .` working: it is the owner's launch command.
-5. Update `docs/roadmap.md#status`, and `docs/bricks.md` when a brick changes status: replace what changed, never append a session log.
+4. Every turn that changed files ends with the fast check; the work is finished only by the definition of done (`AGENTS.md#done`). Keep `godot --path .` working: it is the owner's launch command.
+5. Update [docs/state.md](docs/state.md), and `docs/bricks.md` when a brick changes status: replace what changed, never append a session log.
 6. Hand over with **one command that reaches the new content with the abilities it needs**, and what to try there (`docs/testing.md#playtest`). Never hand over a command that drops the owner somewhere they can't move.
 
 When the owner changes direction, rewrite the docs it touches so none of them contradicts it. Don't stack the new rule on top of the old one.
 
+## Working principles `#working-principles`
+
+These hold for every task. [docs/principles.md](docs/principles.md) applies them to this game and its stack; it never restates them.
+
+- **Definition of done** `#done`. Work is finished when the full check passes, you have used the result yourself the way the owner will (played it headless or in the window, looked at its captures), the docs say how things now are, and the work is committed and pushed. A passing check doesn't prove the game works, so look. If you lack the means to verify (a capture, a check, a debug command), build them rather than skip the verification. Never make a check pass by disabling a rule or skipping a check without writing down why.
+- **Automated checks** `#checks`. A formatter, a linter, the compiler and the tests, each the standard tool of its language; the formatter covers every file the project keeps, docs included, so a file's layout never depends on who last wrote it. Two commands (`docs/testing.md#check`): the **fast check** formats, lints and builds, and ends every turn that changed files, so problems are caught while they're small; the **full check** runs everything (the headless checks, the unit tests) and is what the definition of done means. Formatting is the formatter's job, never fixed by hand.
+- **Capabilities first, interfaces second** `#capabilities-first`. What the game can do (its rules, its state, its map, its planner) is written once as plain code that knows nothing of how it's reached; the engine, the checks and the tools are thin layers on top. Below the rules, one layer wraps each data source (save files, a world's data), and only it knows how and where data is stored. Capabilities take everything as arguments (time, randomness, the world as data). This is what lets the game be tested without the engine, a second world be built with no code change, and a tool reuse a rule. The test: could a small script use the rules directly? Applied here as `docs/principles.md#engine-detail`.
+- **Truthful types** `#truthful-types`. Types say exactly what the game allows: nullable only when really absent, a union only when the value really takes several shapes; expected failures are in the types, unexpected ones are raised. Never weaken a type to quiet the compiler: having to fight it means the model is wrong. In a dynamic language (the Python tools) this holds for its annotations and their checker. Applied here as `docs/principles.md#types-truth`.
+- **Every fact lives in one place**, so a change touches as few places as possible (`AGENTS.md#doc-rules`).
+- **Knowledge lives in the repo**, not in an agent's memory, so every agent and every machine sees the same truth (`AGENTS.md#no-memory`). When the docs and the code disagree, the code wins and you fix the docs.
+- **Git** `#git`. The agent manages git and the remote (`git@github.com:pmall/thedeep.git`). It commits each coherent, passing unit of work with a message that says why, and pushes. It never commits secrets and never rewrites pushed history.
+- **Working with the owner** `#owner`. Product decisions are the owner's; the owner has delegated taste, tuning, look and scope within the roadmap to the agent (`AGENTS.md#orchestrate`). Technical decisions and the quality of the work are the agent's. When a technical choice touches the owner (cost, an account, a step only they can take), say so plainly. When a request conflicts with these principles, say so and propose a better way.
+
 ## Orchestrating `#orchestrate`
 
 The main session orchestrates and subagents do the work (owner, 2026-11-07), so the main session's context stays small over a long session.
-- **One subagent per item**, or per well-bounded part of one. Its prompt names the item's id, the docs to read, the files in play, what done means, and that it runs `tools/check.sh` and commits only its own files. It reports back in a few lines: what changed, the commit, what it could not do, and any question for the owner.
+- **One subagent per item**, or per well-bounded part of one. Its prompt names the item's id, the docs to read, the files in play, what done means, and that it runs the full check and commits only its own files. It reports back in a few lines: what changed, the commit, what it could not do, and any question for the owner.
 - **Small tasks, small contexts.** A long subagent wastes as much context as a long main session. Give each one a task done in one short sitting (one species, one room's fix, one bug), cite the doc sections it needs (ids, not whole docs), and set a budget: which captures to judge by (only the spots and reels the change touches) and how many tries before it commits what is good and reports what is left. Logs are grepped, never read whole.
 - **Builders run one at a time.** A subagent that builds, checks or captures has the working tree to itself: `tools/check.sh` and `tools/capture.sh` see the whole tree, and captures need the GPU to themselves (`docs/toolchain.md#gpu`). Read-only research (finding code, gathering open questions) may run beside it.
 - **The main session reads reports**, and the docs it needs to decide. It doesn't read code or logs, and looks at a capture only to judge a visual change itself.
@@ -27,6 +42,7 @@ The main session orchestrates and subagents do the work (owner, 2026-11-07), so 
 
 | You are about to… | Read |
 |---|---|
+| Pick up where the last session stopped | [docs/state.md](docs/state.md) |
 | Understand the game, its scope and setting | [docs/vision.md](docs/vision.md) |
 | Write, move or review any code | [docs/principles.md](docs/principles.md) (owner direction: bricks, the engine seam, data, typing) |
 | Add or change a reusable piece; know what can be placed in a room | [docs/bricks.md](docs/bricks.md) (the catalog and each brick's status) |
