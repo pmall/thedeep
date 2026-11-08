@@ -1,0 +1,17 @@
+using System.Collections.Generic;
+
+namespace TheDeep;
+
+/// <summary>
+/// A texture set the materials sample (<c>docs/art-direction.md#stable-image</c>): a pattern baked at <paramref name="Size"/>
+/// texels a side into <c>assets/textures/surfaces/&lt;Name&gt;_normal.png</c> and <c>&lt;Name&gt;_surface.png</c> (the layout and how
+/// to sample them: <see cref="SurfaceMaps"/>). <see cref="All"/> is every set the bake writes.
+/// </summary>
+public sealed record SurfaceSet(string Name, ISurfacePattern Pattern, int Size)
+{
+    /// <summary>Every baked set. About 256 texels a meter: some 2.8 a pixel at the gameplay camera, so close-ups stay sharp.</summary>
+    public static IReadOnlyList<SurfaceSet> All { get; } = new[]
+    {
+        new SurfaceSet("strata", new StrataSurface(), 1024),
+    };
+}

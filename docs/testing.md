@@ -31,6 +31,7 @@ A check that prints its passing line and then crashes or reports a leak while Go
 | Another world | `godot --path . -- --world <name>` (`worlds/<name>/world.tres`; every check takes it too): `--world sequel --new` plays the sequel world |
 | Start with another biome | `godot --path . -- --biome volcanic` |
 | One screenshot of a room's start, then quit (to captures/, as F12) | `godot --path . -- --room Undercroft --shot` |
+| Re-bake the materials' texture sets after changing a pattern (`SurfaceBake`), then import them | `godot --headless --path . -- --bake-surfaces && godot --headless --import` |
 | Print the map (built rooms and the network: ways, placements, orders) and draw it | `tools/map.sh` |
 | Where the geometry check's planner stops in a room | `godot --headless --path . -- --room MechanicsLab --validate-rooms --reach-report <Room>` (`--abilities …`, `--slack-report` for the clumsy pilgrim) |
 | Look-dev captures and frame times | `tools/capture.sh [label]` (`docs/testing.md#lookdev`; `--world sequel` for another world's rooms) |

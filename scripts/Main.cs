@@ -125,6 +125,9 @@ public partial class Main : Node3D
     /// <summary>`--ui-shot &lt;dir&gt;`: renders a gate hint and the map screen to PNGs (see UiShot; windowed).</summary>
     private const string UiShotArgument = "--ui-shot";
 
+    /// <summary>`--bake-surfaces`: bakes the materials' texture sets to PNGs and quits (see SurfaceBake; headless is fine).</summary>
+    private const string BakeSurfacesArgument = "--bake-surfaces";
+
     /// <summary>`--new`: start a new game, ignoring (and not touching) the save until the first rest.</summary>
     private const string NewGameArgument = "--new";
 
@@ -132,7 +135,7 @@ public partial class Main : Node3D
     private static readonly string[] DriverArguments =
     {
         SmokeArgument, CaptureTestArgument, LookDevArgument, ValidateRoomsArgument, ValidateTravelArgument, ValidateSpeciesArgument,
-        UiShotArgument, PlaythroughCheckArgument, GripCheckArgument, CombatCheckArgument, HarpoonCheckArgument, EncounterCheckArgument, DrillCheckArgument, BallastCheckArgument, HeatCheckArgument, KeyCheckArgument, CodeCheckArgument, PowerUpCheckArgument, DialogueCheckArgument, AmbushCheckArgument, SecretCheckArgument, FightCheckArgument,
+        UiShotArgument, PlaythroughCheckArgument, GripCheckArgument, CombatCheckArgument, HarpoonCheckArgument, EncounterCheckArgument, DrillCheckArgument, BallastCheckArgument, HeatCheckArgument, KeyCheckArgument, CodeCheckArgument, PowerUpCheckArgument, DialogueCheckArgument, AmbushCheckArgument, SecretCheckArgument, FightCheckArgument, BakeSurfacesArgument,
     };
 
     private SaveData? _resume;
@@ -331,6 +334,10 @@ public partial class Main : Node3D
         else if (ArgumentValue(args, UiShotArgument) is { } shotDir)
         {
             AddChild(new UiShot { World = World, Player = Player, Travel = Travel, Hint = Hint, Map = MapScreen, EndCard = Session.EndCard, Manual = Hud.Manual, DebugKeys = Hud.DebugKeys, Dialogue = DialogueBox, OutputDir = shotDir });
+        }
+        else if (Array.IndexOf(args, BakeSurfacesArgument) >= 0)
+        {
+            AddChild(new SurfaceBake());
         }
         else if (Array.IndexOf(args, SmokeArgument) >= 0)
         {

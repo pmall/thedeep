@@ -25,7 +25,7 @@ scripts/               the adapters: Godot nodes and resources, one folder per s
 scenes/                shared scenes: the main scene, the player, the room stage, props, the kit block, camera, fx, UI
 worlds/<name>/         one world's content: world.tres (its WorldDefinition), its network, its line book, rooms/
 resources/             the live tuning, biomes, part assemblies, machine species, the game's own line book (lines.tres)
-assets/                shaders (shared code in shaders/lib/), materials, particle materials
+assets/                shaders (shared code in shaders/lib/), materials, particle materials, baked textures (textures/)
 tests/TheDeep.Tests/   xUnit over the core
 tools/                 the check, look-dev captures, the map report, authoring helpers
 ```
@@ -47,7 +47,7 @@ The type to open first for each system; its docblock leads on.
 | Hidden passages | `FalseWall`, `Secrets` |
 | Machines | `Machine`, `MachineSpecies`, `MachineDirector`; brains in `core/machines/brains/` |
 | The map and its proof | `MapGraph`, `MapSolver`, `ReachPlanner`, `MapDraft`, `WorldCheck`; fed by `RoomValidator` |
-| Looks | `BiomeProfile`, the kit (`KitMesh`, `KitShapes`), the part system (`PartAssembly`, `PartBody`), `assets/shaders/` |
+| Looks | `BiomeProfile`, the kit (`KitMesh`, `KitShapes`), the part system (`PartAssembly`, `PartBody`), `assets/shaders/`, the baked surfaces (`SurfaceSet`, `SurfaceBake`) |
 | Text | `LineBook` |
 | Captures | `OwnerCapture`, `LookDevDriver` |
 | Checks | `scripts/debug/` (one driver per check, `docs/testing.md#check`) |
