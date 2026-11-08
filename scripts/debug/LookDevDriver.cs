@@ -17,7 +17,8 @@ namespace TheDeep;
 /// 1. every <see cref="PhotoSpot"/> of the room to &lt;dir&gt;/&lt;Room&gt;-&lt;Spot&gt;.png;
 /// 2. the room's reels (<see cref="MotionReel"/>): scripted moves shot close, a frame per shot to
 ///    &lt;dir&gt;/&lt;reel folder&gt;/ (tools/motion_sheet.py makes them a contact sheet);
-/// 3. a scripted run with the gameplay camera, measuring frame times into &lt;dir&gt;/&lt;PerfFile&gt;.
+/// 3. the room's settle reels (<see cref="SettleRun"/>);
+/// 4. a scripted run with the gameplay camera, measuring frame times into &lt;dir&gt;/&lt;PerfFile&gt;.
 /// The room's machines are reset before every shot and segment, so they act the same from run to run.
 /// Meant to run with `--fixed-fps 60 --disable-vsync`, so game time is identical from run to run
 /// and frame times show the real cost. Prints "LOOKDEV OK" and quits, or quits with code 1.
@@ -75,6 +76,9 @@ public partial class LookDevDriver : Node
     /// <summary>File name of the frame times in <see cref="OutputDir"/>.</summary>
     public string PerfFile { get; set; } = "perf.json";
     public Vector2I RenderSize { get; set; } = new(1920, 1080);
+
+    /// <summary>Only the room's settle reels (`--still`, tools/still.sh): no photo spot, reel or frame times.</summary>
+    public bool StillOnly { get; set; }
 
     public LookDevDriver()
     {
@@ -166,6 +170,20 @@ public partial class LookDevDriver : Node
         if (format.Width != RenderSize.X || format.Height != RenderSize.Y)
         {
             Finish($"rendering at {format.Width}x{format.Height} instead of {RenderSize.X}x{RenderSize.Y}");
+            yield break;
+        }
+
+        if (StillOnly)
+        {
+            foreach (MotionReel.Settle settle in MotionReel.SettlesFor(Room.Name))
+            {
+                foreach (int step in SettleRun(settle, format))
+                {
+                    yield return step;
+                }
+            }
+
+            Finish(null);
             yield break;
         }
 
@@ -304,16 +322,22 @@ public partial class LookDevDriver : Node
     }
 
     /// <summary>
-    /// A settle reel (docs/testing.md#settle-reel). The pilgrim runs, lets go, and the gameplay camera eases to a stop:
-    /// how many frames it creeps by under a pixel is counted. Then the world is frozen (time scale 0: no animation, no
-    /// particle, no shader time) and the camera is held still, then swept a sixteenth of a pixel a frame, right then up,
-    /// every frame compared with the one before (<see cref="FrameShimmer"/>). Writes settle-&lt;Room&gt;.json,
-    /// settle-&lt;Room&gt;.png (the settled frame) and settle-&lt;Room&gt;-heat.png (each pixel's largest change in the
-    /// sweep, ×4: where the image pops), and prints a `settle` line.
+    /// A settle reel (docs/testing.md#settle-reel). The pilgrim runs, lets go, and the gameplay camera eases to a stop; its
+    /// path is recorded, and the frames it creeps by under a pixel are counted. Then, every frame compared with the one
+    /// before (<see cref="FrameShimmer"/>):
+    /// 1. live: the world runs and the camera rests where it stopped; a pixel that jumps and comes back blinks;
+    /// 2. settle: the world frozen (time scale 0: no animation, no particle, no shader time), the camera replays its path
+    ///    to rest, so only the camera moves, exactly as it moved in play;
+    /// 3. still: the camera held at rest;
+    /// 4. sweep: the camera stepped a sixteenth of a pixel a frame, right then up.
+    /// In 2–4 a pixel that changes more than the camera's step allows pops. Writes settle-&lt;Room&gt;.json (each phase:
+    /// frames, mean luma change, pops or blinks, the worst frame's), settle-&lt;Room&gt;.png (the settled frame) and
+    /// settle-&lt;Room&gt;-heat.png (that frame darkened, every pixel that popped red, every one that blinked cyan), and
+    /// prints a `settle` line.
     /// </summary>
     private IEnumerable<int> SettleRun(MotionReel.Settle settle, FrameFormat format)
     {
-        const int MaxSettle = 900, StillFrames = 16, SweepFrames = 48, FreezeFrames = 12;
+        const int MaxSettle = 900, LiveFrames = 90, StillFrames = 16, SweepFrames = 48, FreezeFrames = 30;
         DemoInput.ReleaseAll();
         Player.Respawn(Room.ToGlobal(settle.Start), settle.Facing);
         Machines.ResetMachines();
@@ -333,100 +357,196 @@ public partial class LookDevDriver : Node
 
         Input.ActionRelease(run);
         int creeping = 0, still = 0, settled = 0;
-        Vector3 last = Camera.GlobalPosition;
+        var path = new List<Vector3> { Camera.GlobalPosition };
         for (; settled < MaxSettle && still < 30; settled++)
         {
             yield return 0;
-            double shift = Camera.GlobalPosition.DistanceTo(last) * pixelsPerMeter;
-            last = Camera.GlobalPosition;
+            double shift = Camera.GlobalPosition.DistanceTo(path[^1]) * pixelsPerMeter;
+            path.Add(Camera.GlobalPosition);
             creeping += FrameShimmer.Creeps(shift) ? 1 : 0;
             still = shift < FrameShimmer.StillShift ? still + 1 : 0;
         }
 
+        var meter = new SettleMeter(format.Width, format.Height);
+
+        // 1. Live: the world runs, the camera rests.
+        for (int i = 0; i <= LiveFrames; i++)
+        {
+            yield return 0;
+            _grabber!.Request(bytes => meter.Add(bytes, meter.Live, 0.0));
+        }
+
         // Frozen: from here only the camera moves.
         Engine.TimeScale = 0.0;
-        Vector3 rest = Camera.GlobalPosition;
-        Camera.FrameShot(rest, 0f);
+        Vector3 rest = path[^1];
+        Camera.FrameShot(path[0], 0f);
         for (int i = 0; i < FreezeFrames; i++)
         {
             yield return 0;
         }
 
-        int pixels = format.Width * format.Height;
-        var stillPhase = new FrameShimmer.Phase();
-        var sweepPhase = new FrameShimmer.Phase();
-        byte[] heat = new byte[pixels];
-        byte[]? previous = null;
-        int pending = 0;
-        float step = (float)(FrameShimmer.SweepStep / pixelsPerMeter);
-        for (int frame = 0; frame <= StillFrames + 2 * SweepFrames; frame++)
+        // 2. Settle: the recorded path replayed. A request returns the frame drawn from the camera set before the yield.
+        meter.Restart();
+        for (int i = 0; i < path.Count; i++)
         {
-            int sweep = frame - StillFrames;
-            Vector3 at = sweep <= 0 ? rest
-                : sweep <= SweepFrames ? rest + new Vector3(sweep * step, 0f, 0f)
-                : rest + new Vector3(SweepFrames * step, (sweep - SweepFrames) * step, 0f);
-            Camera.FrameShot(at, 0f);
+            Camera.FrameShot(path[i], 0f);
+            double step = i == 0 ? 0.0 : path[i].DistanceTo(path[i - 1]) * pixelsPerMeter;
             yield return 0;
-
-            // A request returns the last finished frame: the one drawn from the camera set a frame ago.
-            FrameShimmer.Phase? phase = frame == 0 ? null : sweep <= 0 ? stillPhase : sweepPhase;
-            pending++;
-            // Frames arrive in the order asked for, one at a time.
-            _grabber!.Request(bytes =>
-            {
-                if (previous is not null && phase is not null)
-                {
-                    phase.Add(FrameShimmer.Compare(previous, bytes, pixels, phase == sweepPhase ? heat : Span<byte>.Empty));
-                }
-
-                if (previous is not null)
-                {
-                    FrameGrabber.Buffers.Return(previous);
-                }
-
-                previous = bytes;
-                pending--;
-            });
+            _grabber!.Request(bytes => meter.Add(bytes, meter.Settle, step));
         }
 
-        while (pending > 0)
+        // 3. Still, then 4. the sweep.
+        float sweepMeters = (float)(FrameShimmer.SweepStep / pixelsPerMeter);
+        for (int frame = 0; frame < StillFrames + 2 * SweepFrames; frame++)
+        {
+            int sweep = frame - StillFrames + 1;
+            Vector3 at = sweep <= 0 ? rest
+                : sweep <= SweepFrames ? rest + new Vector3(sweep * sweepMeters, 0f, 0f)
+                : rest + new Vector3(SweepFrames * sweepMeters, (sweep - SweepFrames) * sweepMeters, 0f);
+            Camera.FrameShot(at, 0f);
+            yield return 0;
+            FrameShimmer.Phase phase = sweep <= 0 ? meter.Still : meter.Sweep;
+            double step = sweep <= 0 ? 0.0 : FrameShimmer.SweepStep;
+            _grabber!.Request(bytes => meter.Add(bytes, phase, step));
+        }
+
+        while (_grabber!.InFlight > 0)
         {
             yield return 0;
         }
 
         Engine.TimeScale = 1.0;
         string name = $"settle-{Room.Name}";
-        FramePng.Save(previous!, format, Path.Combine(OutputDir, name + ".png"));
-        for (int i = 0; i < pixels; i++)
-        {
-            heat[i] = (byte)Math.Min(255, heat[i] * 4);
-        }
-
-        using (Image heatImage = Image.CreateFromData(format.Width, format.Height, false, Image.Format.L8, heat))
-        {
-            heatImage.SavePng(Path.Combine(OutputDir, name + "-heat.png"));
-        }
-
+        meter.Save(format, Path.Combine(OutputDir, name + ".png"), Path.Combine(OutputDir, name + "-heat.png"));
         static Dictionary<string, double> Of(FrameShimmer.Phase phase) => new()
         {
             ["frames"] = phase.Frames,
             ["mean_change"] = Math.Round(phase.MeanDifference, 3),
-            ["pop_percent"] = Math.Round(phase.FlickerShare * 100.0, 4),
+            ["pops"] = phase.Pops,
+            ["worst_frame"] = phase.WorstFrame,
         };
+        long pops = meter.Settle.Pops + meter.Still.Pops + meter.Sweep.Pops;
         File.WriteAllText(Path.Combine(OutputDir, name + ".json"), JsonSerializer.Serialize(new Dictionary<string, object>
         {
             ["size"] = $"{format.Width}x{format.Height}",
-            ["pop_threshold"] = FrameShimmer.FlickerThreshold,
+            ["tolerance"] = FrameShimmer.Tolerance,
+            ["slack"] = FrameShimmer.Slack,
+            ["blink_threshold"] = FrameShimmer.BlinkThreshold,
             ["sweep_step_px"] = FrameShimmer.SweepStep,
             ["settle_frames"] = settled,
             ["creep_frames"] = creeping,
-            ["still"] = Of(stillPhase),
-            ["sweep"] = Of(sweepPhase),
+            ["pops"] = pops,
+            ["blinks"] = meter.Live.Pops,
+            ["live"] = Of(meter.Live),
+            ["settle"] = Of(meter.Settle),
+            ["still"] = Of(meter.Still),
+            ["sweep"] = Of(meter.Sweep),
         }, PerfJson));
         GD.Print(string.Create(CultureInfo.InvariantCulture,
-            $"settle {Room.Name}: creeps {creeping} frames; sweep pops {sweepPhase.FlickerShare * 100.0:0.0000}%, change {sweepPhase.MeanDifference:0.000}; still pops {stillPhase.FlickerShare * 100.0:0.0000}%, change {stillPhase.MeanDifference:0.000}"));
+            $"settle {Room.Name}: creeps {creeping} frames; pops {pops} (settle {meter.Settle.Pops}, still {meter.Still.Pops}, sweep {meter.Sweep.Pops}; worst frame {Math.Max(meter.Settle.WorstFrame, Math.Max(meter.Still.WorstFrame, meter.Sweep.WorstFrame))}); blinks {meter.Live.Pops} (worst frame {meter.Live.WorstFrame})"));
         DemoInput.ReleaseAll();
         Camera.ResumeFollow();
+    }
+
+    /// <summary>
+    /// The frames of a settle reel as they arrive (in the order asked for): each turned to luma and compared with the one
+    /// before (<see cref="FrameShimmer"/>), the pops and blinks kept per pixel for the heat map, the last frame kept.
+    /// </summary>
+    private sealed class SettleMeter
+    {
+        public readonly FrameShimmer.Phase Live = new();
+        public readonly FrameShimmer.Phase Settle = new();
+        public readonly FrameShimmer.Phase Still = new();
+        public readonly FrameShimmer.Phase Sweep = new();
+
+        private readonly int _width;
+        private readonly int _height;
+        private readonly byte[] _pops;
+        private readonly byte[] _blinks;
+        private byte[] _older;
+        private byte[] _previous;
+        private byte[] _current;
+        private int _frames;
+        private double _lastStep;
+        private byte[]? _last;
+
+        public SettleMeter(int width, int height)
+        {
+            _width = width;
+            _height = height;
+            int pixels = width * height;
+            _pops = new byte[pixels];
+            _blinks = new byte[pixels];
+            _older = new byte[pixels];
+            _previous = new byte[pixels];
+            _current = new byte[pixels];
+        }
+
+        /// <summary>Forgets the frames before: the next one starts a new sequence (the camera jumped).</summary>
+        public void Restart()
+        {
+            _frames = 0;
+            _lastStep = 0.0;
+        }
+
+        /// <summary>
+        /// Takes a frame (returned to <see cref="FrameGrabber.Buffers"/> later) whose camera moved <paramref name="step"/>
+        /// screen pixels since the last; <see cref="Live"/> counts blinks, any other phase pops. As a request may return a
+        /// frame drawn a frame late, the camera step allowed is the larger of this one and the last.
+        /// </summary>
+        public void Add(byte[] rgba, FrameShimmer.Phase phase, double step)
+        {
+            int pixels = _width * _height;
+            FrameShimmer.Luma(rgba, _current.AsSpan(0, pixels));
+            if (phase == Live && _frames >= 2)
+            {
+                phase.Add(FrameShimmer.Blinks(_older, _previous, _current, pixels, _blinks));
+            }
+            else if (phase != Live && _frames >= 1)
+            {
+                phase.Add(FrameShimmer.Compare(_previous, _current, _width, _height, Math.Max(step, _lastStep), _pops));
+            }
+
+            (_older, _previous, _current) = (_previous, _current, _older);
+            _frames++;
+            _lastStep = step;
+            if (_last is not null)
+            {
+                FrameGrabber.Buffers.Return(_last);
+            }
+
+            _last = rgba;
+        }
+
+        /// <summary>Saves the last frame to <paramref name="framePath"/> and the heat map over it to <paramref name="heatPath"/>.</summary>
+        public void Save(FrameFormat format, string framePath, string heatPath)
+        {
+            if (_last is not { } last)
+            {
+                return;
+            }
+
+            int pixels = _width * _height;
+            byte[] heat = new byte[pixels * 3];
+            for (int i = 0; i < pixels; i++)
+            {
+                byte shade = (byte)(_previous[i] * 0.3);
+                (byte r, byte g, byte b) = _pops[i] > 0 ? ((byte)255, (byte)40, (byte)40)
+                    : _blinks[i] > 0 ? ((byte)40, (byte)220, (byte)255)
+                    : (shade, shade, shade);
+                heat[i * 3] = r;
+                heat[i * 3 + 1] = g;
+                heat[i * 3 + 2] = b;
+            }
+
+            using (Image heatImage = Image.CreateFromData(_width, _height, false, Image.Format.Rgb8, heat))
+            {
+                heatImage.SavePng(heatPath);
+            }
+
+            _last = null;
+            FramePng.Save(last, format, framePath);
+        }
     }
 
     private void Save(byte[] bytes, FrameFormat format, string path)
