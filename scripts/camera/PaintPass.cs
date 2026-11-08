@@ -7,11 +7,11 @@ namespace TheDeep;
 
 /// <summary>
 /// The game's painted signature (docs/art-direction.md#signature): one pass over every rendered frame, after the
-/// transparent geometry and before glow and tone mapping, that makes the frame look laid in gouache. It runs five compute
+/// transparent geometry and before glow and tone mapping, that makes the frame look laid in gouache. It runs six compute
 /// shaders (assets/shaders/paint/, each header says its step): the frame at half resolution, the direction of its edges,
-/// that direction smoothed, an anisotropic Kuwahara brush, then the composite back at full resolution with the hand's
-/// wobble, pooling, value bands, the layer's pigments, paper grain and the machines' script. The paper is a
-/// texture drawn once (paint_paper.glsl).
+/// that direction smoothed, an anisotropic Kuwahara brush, the strokes laid over it (still at half resolution), then the
+/// composite back at full resolution with the hand's wobble, pooling, value bands, the layer's pigments, paper grain and
+/// the machines' script. The paper is a texture drawn once (paint_paper.glsl).
 ///
 /// One instance is shared (resources/stage/paint_pass.tres, in the rooms' compositor): the room's biome gives it its
 /// style and pigments (<see cref="Use"/>); <see cref="Override"/> replaces the biome's style (`--paint`, F9) and
@@ -24,6 +24,7 @@ public partial class PaintPass : CompositorEffect
     [Export] public RDShaderFile Tensor { get; set; } = null!;
     [Export] public RDShaderFile TensorBlur { get; set; } = null!;
     [Export] public RDShaderFile Kuwahara { get; set; } = null!;
+    [Export] public RDShaderFile Strokes { get; set; } = null!;
     [Export] public RDShaderFile Composite { get; set; } = null!;
 
     /// <summary>Makes the paper texture, once.</summary>
@@ -42,7 +43,7 @@ public partial class PaintPass : CompositorEffect
     public const int PigmentCount = 6;
 
     /// <summary>The steps in the order they run, as <see cref="StepMs"/> names them.</summary>
-    public static readonly string[] StepNames = { "prepare", "tensor", "blur_x", "blur_y", "kuwahara", "composite" };
+    public static readonly string[] StepNames = { "prepare", "tensor", "blur_x", "blur_y", "kuwahara", "strokes", "composite" };
 
     /// <summary>
     /// Debug only (THEDEEP_PAINT_TIMING=1, read by the perf recording): each step is bracketed by device timestamps,
@@ -51,9 +52,9 @@ public partial class PaintPass : CompositorEffect
     public static bool Timed { get; set; }
 
     /// <summary>GPU ms of each step (<see cref="StepNames"/>) in the latest frame whose timestamps came back (a frame or two behind); zero while none did.</summary>
-    public static double[] StepMs { get; } = new double[6];
+    public static double[] StepMs { get; } = new double[7];
 
-    private static readonly string[] Stamps = { "paint:start", "paint:prepare", "paint:tensor", "paint:blur_x", "paint:blur_y", "paint:kuwahara", "paint:composite" };
+    private static readonly string[] Stamps = { "paint:start", "paint:prepare", "paint:tensor", "paint:blur_x", "paint:blur_y", "paint:kuwahara", "paint:strokes", "paint:composite" };
 
     private static readonly StringName RenderBuffers = "render_buffers";
     private static readonly StringName ColorName = "color";
@@ -63,6 +64,7 @@ public partial class PaintPass : CompositorEffect
     private static readonly StringName TensorName = "tensor";
     private static readonly StringName TensorTempName = "tensor_temp";
     private static readonly StringName PaintedName = "painted";
+    private static readonly StringName StrokedName = "stroked";
 
     /// <summary>Floats in the Params block: eleven vec4 and the pigments.</summary>
     private const int ParamFloats = 4 * (11 + PigmentCount);
@@ -85,6 +87,7 @@ public partial class PaintPass : CompositorEffect
     private Stage _tensor;
     private Stage _tensorBlur;
     private Stage _kuwahara;
+    private Stage _strokes;
     private Stage _composite;
 
     /// <summary>The textures the cached uniform sets were built for; any change rebuilds them.</summary>
@@ -96,6 +99,7 @@ public partial class PaintPass : CompositorEffect
     private Rid _blurXSet;
     private Rid _blurYSet;
     private Rid _kuwaharaSet;
+    private Rid _strokesSet;
     private Rid _compositeSet;
 
     /// <summary>One compute shader and its pipeline.</summary>
@@ -152,13 +156,14 @@ public partial class PaintPass : CompositorEffect
         Rid tensor = Texture(buffers, TensorName, half);
         Rid tensorTemp = Texture(buffers, TensorTempName, half);
         Rid painted = Texture(buffers, PaintedName, half);
+        Rid stroked = Texture(buffers, StrokedName, half);
         // The resolved buffers (AccessResolvedColor, AccessResolvedDepth): with MSAA, the layer views are not storage.
         Rid color = buffers.GetTexture(RenderBuffers, ColorName);
         Rid depth = buffers.GetTexture(RenderBuffers, DepthName);
 
         if (color != _forColor || depth != _forDepth || halfTexture != _forHalf || !rd.UniformSetIsValid(_compositeSet))
         {
-            BuildSets(rd, color, depth, halfTexture, tensor, tensorTemp, painted);
+            BuildSets(rd, color, depth, halfTexture, tensor, tensorTemp, painted, stroked);
         }
 
         WriteParams(rd, renderData.GetRenderSceneData(), style, size, half);
@@ -185,8 +190,10 @@ public partial class PaintPass : CompositorEffect
         Stamp(rd, 4);
         Dispatch(rd, _kuwahara, _kuwaharaSet, halfX, halfY);
         Stamp(rd, 5);
-        Dispatch(rd, _composite, _compositeSet, fullX, fullY);
+        Dispatch(rd, _strokes, _strokesSet, halfX, halfY);
         Stamp(rd, 6);
+        Dispatch(rd, _composite, _compositeSet, fullX, fullY);
+        Stamp(rd, 7);
     }
 
     private static void Stamp(RenderingDevice rd, int i)
@@ -224,12 +231,12 @@ public partial class PaintPass : CompositorEffect
     {
         if (what == NotificationPredelete && _rd is { } rd)
         {
-            foreach (Rid set in new[] { _prepareSet, _tensorSet, _blurXSet, _blurYSet, _kuwaharaSet, _compositeSet })
+            foreach (Rid set in new[] { _prepareSet, _tensorSet, _blurXSet, _blurYSet, _kuwaharaSet, _strokesSet, _compositeSet })
             {
                 Free(rd, set);
             }
 
-            foreach (Stage stage in new[] { _prepare, _tensor, _tensorBlur, _kuwahara, _composite })
+            foreach (Stage stage in new[] { _prepare, _tensor, _tensorBlur, _kuwahara, _strokes, _composite })
             {
                 Free(rd, stage.Pipeline);
                 Free(rd, stage.Shader);
@@ -266,6 +273,7 @@ public partial class PaintPass : CompositorEffect
         _tensor = Compile(rd, Tensor);
         _tensorBlur = Compile(rd, TensorBlur);
         _kuwahara = Compile(rd, Kuwahara);
+        _strokes = Compile(rd, Strokes);
         _composite = Compile(rd, Composite);
         Stage paper = Compile(rd, Paper);
         _ubo = rd.UniformBufferCreate(ParamFloats * sizeof(float), MemoryMarshal.AsBytes(_params.AsSpan()));
@@ -295,7 +303,7 @@ public partial class PaintPass : CompositorEffect
         Free(rd, paper.Shader);
 
         return _paper.IsValid && _prepare.Pipeline.IsValid && _tensor.Pipeline.IsValid && _tensorBlur.Pipeline.IsValid
-            && _kuwahara.Pipeline.IsValid && _composite.Pipeline.IsValid;
+            && _kuwahara.Pipeline.IsValid && _strokes.Pipeline.IsValid && _composite.Pipeline.IsValid;
     }
 
     /// <summary>The paper texture (paint_paper.glsl), drawn once.</summary>
@@ -348,9 +356,9 @@ public partial class PaintPass : CompositorEffect
     }
 
     /// <summary>Builds every pass's uniform set for these textures (only when the buffers change: it allocates).</summary>
-    private void BuildSets(RenderingDevice rd, Rid color, Rid depth, Rid half, Rid tensor, Rid tensorTemp, Rid painted)
+    private void BuildSets(RenderingDevice rd, Rid color, Rid depth, Rid half, Rid tensor, Rid tensorTemp, Rid painted, Rid stroked)
     {
-        foreach (Rid set in new[] { _prepareSet, _tensorSet, _blurXSet, _blurYSet, _kuwaharaSet, _compositeSet })
+        foreach (Rid set in new[] { _prepareSet, _tensorSet, _blurXSet, _blurYSet, _kuwaharaSet, _strokesSet, _compositeSet })
         {
             if (set.IsValid && rd.UniformSetIsValid(set))
             {
@@ -363,8 +371,10 @@ public partial class PaintPass : CompositorEffect
         _blurXSet = Set(rd, _tensorBlur, Sampled(1, _nearest, tensorTemp), Image(2, tensor));
         _blurYSet = Set(rd, _tensorBlur, Sampled(1, _nearest, tensor), Image(2, tensorTemp));
         _kuwaharaSet = Set(rd, _kuwahara, Sampled(1, _nearest, half), Sampled(2, _nearest, tensorTemp), Image(3, painted));
+        _strokesSet = Set(rd, _strokes, Sampled(1, _linear, painted), Sampled(2, _linear, tensorTemp), Sampled(3, _repeat, _paper),
+            Image(4, stroked));
         _compositeSet = Set(rd, _composite, Image(1, color), Sampled(2, _nearest, depth), Sampled(3, _nearest, half),
-            Sampled(4, _linear, painted), Sampled(5, _linear, tensorTemp), Sampled(6, _repeat, _paper));
+            Sampled(4, _linear, stroked), Sampled(5, _linear, tensorTemp), Sampled(6, _repeat, _paper));
         _forColor = color;
         _forDepth = depth;
         _forHalf = half;

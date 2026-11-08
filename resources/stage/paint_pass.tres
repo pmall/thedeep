@@ -9,6 +9,7 @@
 [ext_resource type="RDShaderFile" path="res://assets/shaders/paint/paint_kuwahara.glsl" id="5_kuwahara"]
 [ext_resource type="RDShaderFile" path="res://assets/shaders/paint/paint_composite.glsl" id="6_composite"]
 [ext_resource type="RDShaderFile" path="res://assets/shaders/paint/paint_paper.glsl" id="7_paper"]
+[ext_resource type="RDShaderFile" path="res://assets/shaders/paint/paint_strokes.glsl" id="8_strokes"]
 
 [resource]
 script = ExtResource("1_pass")
@@ -19,5 +20,6 @@ Prepare = ExtResource("2_prepare")
 Tensor = ExtResource("3_tensor")
 TensorBlur = ExtResource("4_blur")
 Kuwahara = ExtResource("5_kuwahara")
+Strokes = ExtResource("8_strokes")
 Composite = ExtResource("6_composite")
 Paper = ExtResource("7_paper")

@@ -52,6 +52,19 @@ vec3 world_at(vec2 uv, float z) {
 	return p.cam_origin.xyz + dir * z;
 }
 
+// How far into the haze view depth z is (0 on the play plane, 1 deep in the backdrop): the brush and the strokes grow
+// with it, and edges soften.
+float far_share(float z) {
+	float plane = p.cam_right.w;
+	return smoothstep(plane + 2.0, plane + 45.0, z);
+}
+
+// The world-anchored plane the paper and the strokes are laid on (meters), so they move with the surfaces, not over the
+// image; a little of the depth shifts it, so the backdrop's layers don't share one sheet.
+vec2 world_anchor(vec3 world) {
+	return vec2(world.x + world.z * 0.6, world.y - world.z * 0.35);
+}
+
 // Meters covered by one full-res pixel at view depth z.
 float pixel_meters(float z) {
 	return 2.0 * z * p.lens.z / p.size.y;

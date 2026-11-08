@@ -41,8 +41,7 @@ void main() {
 	float z = center.a;
 
 	// The brush grows from the play plane into the haze.
-	float plane = p.cam_right.w;
-	float far_t = smoothstep(plane + 2.0, plane + 45.0, z);
+	float far_t = far_share(z);
 	float radius = clamp(mix(p.brush.x, p.brush.y, far_t), 0.5, 16.0);
 	if (isnan(radius)) {
 		radius = 0.5;
@@ -92,11 +91,13 @@ void main() {
 	float sin_zero = sin(ZERO_CROSSING);
 	float eta = (zeta + cos(ZERO_CROSSING)) / (sin_zero * sin_zero);
 
+	// Per sector: the weighted sum of colors and of weights, and the weighted sum of squared colors over all channels
+	// (only the variance's sum over channels is used, so one float holds it: fewer registers, a faster brush).
 	vec4 m[N];
-	vec3 s[N];
+	float s[N];
 	for (int k = 0; k < N; k++) {
 		m[k] = vec4(0.0);
-		s[k] = vec3(0.0);
+		s[k] = 0.0;
 	}
 
 	for (int y = -max_y; y <= max_y; y++) {
@@ -108,6 +109,7 @@ void main() {
 			}
 
 			vec3 c = textureLod(half_tex, center_uv + offset * inv_size, 0.0).rgb;
+			float cc = dot(c, c);
 			float w[N];
 			float sum = 0.0;
 
@@ -130,7 +132,7 @@ void main() {
 			for (int k = 0; k < N; k++) {
 				float wk = w[k] * gauss;
 				m[k] += vec4(c * wk, wk);
-				s[k] += c * c * wk;
+				s[k] += cc * wk;
 			}
 		}
 	}
@@ -141,8 +143,7 @@ void main() {
 			continue;
 		}
 		vec3 mean = m[k].rgb / m[k].w;
-		vec3 variance = abs(s[k] / m[k].w - mean * mean);
-		float sigma2 = variance.r + variance.g + variance.b;
+		float sigma2 = abs(s[k] / m[k].w - dot(mean, mean));
 		float w = 1.0 / (1.0 + pow(HARDNESS * 1000.0 * sigma2, 0.5 * q));
 		result += vec4(mean * w, w);
 	}
