@@ -2,7 +2,7 @@
 
 The prototype world's network file (`Network` in [world.tres](world.tres)): 42 rooms over three layers and the core, 5 abilities, a key, a code, a lever, a secret, an ambush, 2 power-ups, 4 bosses, 3 law breaks, all built. It is a **planning graph**: the `map` blocks below are parsed by `MapDraft` (its docblock has the format) and checked on every build, by the unit tests and against the built rooms (`docs/testing.md#check`); everything outside them is design notes. Its room table is [rooms.tsv](rooms.tsv) (`RoomTable` has the format), held to this network on every build; the real game's map will be its own network and table (`docs/roadmap.md#stage-plan`). Room names, boss names and story beats are placeholders unless [theme.md](../../docs/theme.md) says otherwise.
 
-**The markers are the truth** `#draft-markers`: a built room's exits, sealed exits and relics must match its ways and relics here. When a room is built or changed, update its part of the draft in the same commit. Keep its row in [rooms.tsv](rooms.tsv) in step too. Print both with `tools/map.sh`.
+**The markers are the truth** <a id="draft-markers"></a>: a built room's exits, sealed exits and relics must match its ways and relics here. When a room is built or changed, update its part of the draft in the same commit. Keep its row in [rooms.tsv](rooms.tsv) in step too. Print both with `tools/map.sh`.
 
 ```map
 start Narthex
@@ -15,7 +15,7 @@ milestone Sanctum SecondLaw
 milestone Effigy FirstLaw
 ```
 
-## The shape at a glance `#draft-shape`
+## The shape at a glance <a id="draft-shape"></a>
 
 The main road and its branches, layer by layer (simplified; the `map` blocks are the truth). `(X)` a way needing X, `[X]` a relic, `✦` a boss, `▼` a law break, `→` one way.
 
@@ -43,7 +43,7 @@ CORE      Threshold ─ Mantle ─(M&H)─ Orrery ─(D&B)─ Lode ─ Effigy �
 
 M Mag-grip, H Harpoon, D Drill, B Ballast, P Heat plating; (key) the Sacristy key, on the Scriptorium's gallery; (code) the Pyre's litany, on the Belfry's lookout; ┄ a hidden way.
 
-## Order freedom `#draft-order-freedom`
+## Order freedom <a id="draft-order-freedom"></a>
 
 - **The first ability is Mag-grip or Harpoon.** Both lie in the flooded layer, reached with the base moveset: Mag-grip west of the Cistern (the Reliquary), Harpoon east of it, through the Sluice and the Undercroft (the Ossuary). Taking one road skips the other.
 - **Either one opens the way down**: the Undercroft's high doorway to the Chapterhouse is reached by climbing its metal wall or by harpooning its two rings. So the frozen layer can be entered with either.
@@ -56,7 +56,7 @@ The rule this gives: **Mag-grip or Harpoon first, Heat plating after Drill or Ba
 
 **Sequence breaks by design:** Harpoon before Mag-grip (the Sluice road skips the Reliquary); the Belfry by grip or harpoon; the Calving cliff by grip or harpoon; the Vault by drill or by ballast; the Crucible by ballast or by drill; Heat plating before the second frozen ability.
 
-## Law breaks (story beats tied to depth) `#draft-law-breaks`
+## Law breaks (story beats tied to depth) <a id="draft-law-breaks"></a>
 
 Outside the ability graph (`docs/theme.md#laws-outside-abilities`): each happens in a room every route to the goal passes through, and the check proves they always come in order. They open nothing the abilities don't already gate.
 
@@ -64,7 +64,7 @@ Outside the ability graph (`docs/theme.md#laws-outside-abilities`): each happens
 - **Second law (obedience), the Sanctum.** Past the Archivist, a priest-machine commands the android to turn back. The command stops binding; the forbidden door opens on the volcanic layer.
 - **First law (never harm a human), the Effigy.** Before the Heart, an effigy of the makers, the gods of the machines' scripture. The only way on is through it.
 
-## Bosses `#draft-bosses`
+## Bosses <a id="draft-bosses"></a>
 
 One per layer, plus the end, each on the main road. Placeholders.
 
@@ -73,7 +73,7 @@ One per layer, plus the end, each on the main road. Placeholders.
 - **The Founder** (Foundry, volcanic): the abbot of the foundry, before the Threshold.
 - **Nirvanary** (Heart, core): what waits at the center.
 
-## Flooded — the drowned cathedral (15 rooms) `#draft-flooded`
+## Flooded — the drowned cathedral (15 rooms) <a id="draft-flooded"></a>
 
 The first slice plus the crypts under it and the road down. Pale white, a touch of purple, water everywhere.
 
@@ -130,7 +130,7 @@ way Chapterhouse <-> Brink
 way Brink -> Rimefall                            # the jump: one way
 ```
 
-## Frozen — the cold archive (11 rooms) `#draft-frozen`
+## Frozen — the cold archive (11 rooms) <a id="draft-frozen"></a>
 
 Server halls frozen in rime, machines asleep in the cold, a black lake under ice. Two branches from the Coldstacks: the Drill west, the Ballast east.
 
@@ -168,7 +168,7 @@ way Vault <-> Sanctum
 way Sanctum <-> Kiln                             # the forbidden door
 ```
 
-## Volcanic — the foundry (10 rooms) `#draft-volcanic`
+## Volcanic — the foundry (10 rooms) <a id="draft-volcanic"></a>
 
 Basalt, slag rivers, the machines' birthplace: they are cast here in molds of their own image. Warming toward amber.
 
@@ -207,7 +207,7 @@ way Chimney <-> Coldstacks : HeatPlating
 way Foundry <-> Threshold : HeatPlating
 ```
 
-## Core — what the machines call paradise (6 rooms) `#draft-core`
+## Core — what the machines call paradise (6 rooms) <a id="draft-core"></a>
 
 Ancient core machinery, red and ember. Every ability is needed here, in combination.
 

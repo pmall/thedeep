@@ -2,9 +2,9 @@
 
 Every piece a world is built from (`docs/principles.md#bricks`). The prototype's job is to get each one **ready**; the real game is then assembled from them (`docs/roadmap.md#four-stages`). This file is the world builder's view: what you can place, and how far along it is. What a brick is and how to configure it is in its type's docblock; a brick that doesn't exist yet is described by the roadmap item that builds it.
 
-**Status** `#brick-status`: **ready**: works, checked, at the visual bar, reusable as is. **working**: works and is checked, but its look, feel or generality still needs its prototype pass. **missing**: not built yet. **Item** is the roadmap item that makes it ready. Keep this file current when a brick is added or changes status.
+**Status** <a id="brick-status"></a>: **ready**: works, checked, at the visual bar, reusable as is. **working**: works and is checked, but its look, feel or generality still needs its prototype pass. **missing**: not built yet. **Item** is the roadmap item that makes it ready. Keep this file current when a brick is added or changes status.
 
-## Stage: the look of a place `#bricks-stage`
+## Stage: the look of a place <a id="bricks-stage"></a>
 
 | Brick | Status | Item |
 | -- | -- | -- |
@@ -20,7 +20,7 @@ Every piece a world is built from (`docs/principles.md#bricks`). The prototype's
 | `AmbientParticles` | working | `docs/roadmap.md#stage-bricks` |
 | `WaterBody` (scenery) | working | `docs/roadmap.md#stage-bricks` |
 
-## Level: what the pilgrim plays on `#bricks-level`
+## Level: what the pilgrim plays on <a id="bricks-level"></a>
 
 | Brick | Status | Item |
 | -- | -- | -- |
@@ -38,7 +38,7 @@ Every piece a world is built from (`docs/principles.md#bricks`). The prototype's
 | Hidden passage: `FalseWall` (found by walking in, played by `Secrets`) over a `RoomExit.Hidden` way | ready | — |
 | `Lever` (a switch: sets a mechanism, an item of kind Mechanism) and its gate (a `LockedDoor` for it) | ready | — |
 
-## The pilgrim `#bricks-pilgrim`
+## The pilgrim <a id="bricks-pilgrim"></a>
 
 | Brick | Status | Item |
 | -- | -- | -- |
@@ -50,7 +50,7 @@ Every piece a world is built from (`docs/principles.md#bricks`). The prototype's
 | Effects (`PlayerEffects`) | working | `docs/roadmap.md#pilgrim` |
 | Health and grace | working | `docs/roadmap.md#feel-fight` |
 
-## Encounters `#bricks-encounters`
+## Encounters <a id="bricks-encounters"></a>
 
 | Brick | Status | Item |
 | -- | -- | -- |
@@ -60,7 +60,7 @@ Every piece a world is built from (`docs/principles.md#bricks`). The prototype's
 | `BossSeal` | working | — |
 | `Ambush` (a wave that stands up behind falling gates; with `BossSeal`, over the core's `ArenaFight`, played by `Arenas`) | working | — |
 
-## Story and text `#bricks-text`
+## Story and text <a id="bricks-text"></a>
 
 | Brick | Status | Item |
 | -- | -- | -- |
@@ -71,7 +71,7 @@ Every piece a world is built from (`docs/principles.md#bricks`). The prototype's
 | `LawBreak` | working | — |
 | Dialogue: `Conversation` (lines in turn, on whoever speaks), `DialogueBox`, played by `Conversations` (over `DialogueFlow`) | working (look) | `docs/roadmap.md#stage-bricks` |
 
-## Items and progress `#bricks-items`
+## Items and progress <a id="bricks-items"></a>
 
 | Brick | Status | Item |
 | -- | -- | -- |
@@ -79,7 +79,7 @@ Every piece a world is built from (`docs/principles.md#bricks`). The prototype's
 | `PowerUp` (strength or defense, for good: `Prowess`), played by `PowerUps` | ready | — |
 | Items: `ItemDefinition`, `ItemPickup` (keys, codes), held by `Inventory`, played by `Keyring` | ready (a key: the Sacristy's; a code: the Pyre's litany, its script the makers' glyphs, in green) | — |
 
-## Systems `#bricks-systems`
+## Systems <a id="bricks-systems"></a>
 
 | Brick | Status | Item |
 | -- | -- | -- |
@@ -91,7 +91,7 @@ Every piece a world is built from (`docs/principles.md#bricks`). The prototype's
 | End card (`EndCard`) | working placeholder | — |
 | Camera (`SideCamera`) | working | `docs/roadmap.md#feel-fight` |
 
-## Proof `#bricks-proof`
+## Proof <a id="bricks-proof"></a>
 
 | Brick | Status |
 | -- | -- |

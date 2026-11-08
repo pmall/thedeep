@@ -2,14 +2,16 @@
 """Doc section ids (AGENTS.md#doc-rules): every id is unique, and every `<file>.md#<id>` citation, in docs or code,
 names an id that exists in that file. Run from the project root; tools/check.sh runs it first.
     tools/docrefs.py
-An id is a backticked `#id` at the end of a heading, a list item or a table row of a tracked Markdown file."""
+An id is an empty anchor `<a id="id"></a>` at the end of a heading, a list item or a table row of a tracked Markdown
+file, invisible once rendered; the old backticked form is reported so it never comes back."""
 
 import pathlib
 import re
 import subprocess
 import sys
 
-TAG = re.compile(r'`#([a-z0-9-]+)`')
+TAG = re.compile(r'<a id="([a-z0-9-]+)"></a>')
+OLD_TAG = re.compile(r'`#([a-z0-9-]+)`')
 CITE = re.compile(r'([A-Za-z0-9_./-]+\.md)#([a-z0-9-]+)')
 BINARY = {'.png', '.jpg', '.jpeg', '.avif', '.import', '.uid', '.pyc'}
 
@@ -30,6 +32,8 @@ problems: list[str] = []
 ids: dict[str, tuple[pathlib.Path, int]] = {}
 for doc in tracked('*.md'):
     for n, line in enumerate(doc.read_text().splitlines(), 1):
+        for m in OLD_TAG.finditer(line):
+            problems.append(f'{doc}:{n}: id {m.group(0)} is backticked; write it as <a id="{m.group(1)}"></a>')
         if not defines_ids(line):
             continue
         for m in TAG.finditer(line):

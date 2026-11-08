@@ -4,7 +4,7 @@ Owner direction, 2026-11-01. Read this before writing or moving any code. These 
 
 The game is built twice: first a **prototype** that is our playground, then the **real game** assembled from the prototype's pieces on a much bigger map (`docs/roadmap.md#four-stages`). Each rule below exists so that the second build is assembly, not rewriting. The test to keep in mind: *if we made a sequel tomorrow, with a new map, new rooms and a new biome, could we build it from what is here without changing the code?*
 
-## Bricks, not rooms `#bricks`
+## Bricks, not rooms <a id="bricks"></a>
 
 Everything the game is made of is a **brick**: a reusable piece that a world places, configures and connects. A material, a backdrop, a water body, a block, a lift, a gate, a key door, a machine species, a dialogue box, a shrine, an ambush arena. The catalog of bricks and their status is [bricks.md](bricks.md).
 
@@ -20,7 +20,7 @@ A room is content: a scene that places bricks. A **world** is content: its rooms
 
 When you need something new for one room, ask first whether it is a brick that other rooms (or another world) would use. If yes, build it as a brick. If it truly belongs to one room only, it is still built from bricks plus data, never as special code in a shared system.
 
-## The engine is a detail `#engine-detail`
+## The engine is a detail <a id="engine-detail"></a>
 
 We will not leave Godot. But code that could leave it is better code: easier to test, to reason about and to reuse. So the game is split in three layers, and dependencies point one way only:
 
@@ -39,16 +39,16 @@ Rules:
 - **The compiler enforces the boundary.** The core lives in its own project (`core/TheDeep.Core.csproj`) with no Godot reference, so a Godot type in core code does not compile. The game and the tests reference it. Godot `[Export]` properties may use the core's enums: they are plain C# enums.
 - **Godot's strengths are still used.** Scenes, resources, physics, rendering, shaders and the importer are the engine's job and stay there. Don't rebuild them in C#. The aim is clean dependencies, not a second engine.
 
-## Data first `#data-first`
+## Data first <a id="data-first"></a>
 
 - **Numbers live in resources**: movement and combat in `player_tuning.tres`, a species' stats in its `.tres`, a mechanism's knobs as its exports. Never a magic number in a rule.
 - **Text lives in line books**: stable id, speaker, text, delivery notes. The game's own lines (its screens' words, the abilities, the power-ups, the species' creeds) are written once, in `resources/lines.tres`; a world's book (the prototype's is `worlds/prototype/lines.tres`) holds only its content's lines and extends the game's. Never a string shown to the player in code or in a scene.
 - **Requirements live with the geometry**: a way's requirement is a marker in the room scene. Items (keys, codes) are part of that same requirement language, so the solver sees them.
-- **Data is written and read in the invariant culture** `#invariant-culture`: a number or a comparison in a save file, a world table, a log or report a tool reads, or a command-line argument never depends on the machine's locale (one that writes 1,5 would break them). The analyzers flag the calls that would (`docs/toolchain.md#format-tools`); what the player reads comes from the line books.
+- **Data is written and read in the invariant culture** <a id="invariant-culture"></a>: a number or a comparison in a save file, a world table, a log or report a tool reads, or a command-line argument never depends on the machine's locale (one that writes 1,5 would break them). The analyzers flag the calls that would (`docs/toolchain.md#format-tools`); what the player reads comes from the line books.
 - **New content is data.** Adding a room, a species, a biome, a key door or a dialogue should mean new content files. New code is for a truly new behavior.
 - Names that cross systems (action names, physics layers, shader globals) are constants in one class each (`InputActions`, `PhysicsLayers`, `ShaderGlobals`).
 
-## Types tell the truth `#types-truth`
+## Types tell the truth <a id="types-truth"></a>
 
 C# is typed: use the type system to model the game, never to be silenced. **If you find yourself fighting the compiler, the model is wrong.** Stop and change the model, not the annotation.
 
@@ -63,19 +63,19 @@ C# is typed: use the type system to model the game, never to be silenced. **If y
 - **Warnings are errors, and stay so.** No `#pragma warning disable`, no `SuppressMessage` to pass a build. An analyzer rule wrong for this project is turned off for the whole project in `.editorconfig`, with its reason beside it.
 - **Name units when a number has one**: `Seconds`, `Meters`, `PerSecond` in names or docs (`DashDuration`, `HarpoonRange` in meters), never a bare `float t` crossing a boundary.
 
-## Proven, not hoped `#proven`
+## Proven, not hoped <a id="proven"></a>
 
 - Pure logic is unit tested (xUnit, `tests/TheDeep.Tests`). A new rule in the core comes with its tests.
 - Every brick has a headless check that exercises it through the real inputs where it matters (`docs/testing.md#check`).
 - The world is proven on every build: the map solver (no softlock, ability orders), the reach planner from inside each room, with room for error. Anything that gates a way (an ability, a key, a code, a switch) must be visible to the solver.
 
-## Performance is a rule, not a pass `#performance`
+## Performance is a rule, not a pass <a id="performance"></a>
 
 - **The frame budget:** 1080p at 60 fps on the owner's RTX 3060, **≤ 10 ms per frame p99**, measured by `tools/capture.sh` (`docs/testing.md#lookdev`).
 - **Per-frame code allocates nothing** (`_Process`, `_PhysicsProcess` and what they call). A garbage collection is a dropped frame, and engine objects (arrays and dictionaries from the engine, query parameters, node wrappers) are finalizable, so they survive into gen1 and make every collection slow. Keep buffers and reuse them, ask the room for its nodes (`Room.All<T>()`) instead of walking the tree, cast rays through `PlaneRay` and `ShapeProbe`; no LINQ, no new collections, no `GetChildren()` per tick. A look-dev run should see a handful of collections, not one every few frames.
 - `unsafe` only where a copy out of the engine's native buffers would otherwise allocate every frame (`FrameGrabber`, `NativeMeshArrays`). Don't spread it.
 
-## Small and readable `#small-readable`
+## Small and readable <a id="small-readable"></a>
 
 - One class per file, named like the file. Small classes with one responsibility. Split a file that grows past a few hundred lines into parts with clear names.
 - Standard C# naming: PascalCase types, methods and properties; `_camelCase` private fields. Namespace `TheDeep` (player states: `TheDeep.States`).

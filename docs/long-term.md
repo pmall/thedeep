@@ -8,13 +8,13 @@ Context: [vision.md](vision.md) (the game, its setting) and [gameplay.md](gamepl
 
 ______________________________________________________________________
 
-## No two machines alike `#machines-distinct`
+## No two machines alike <a id="machines-distinct"></a>
 
 ### Goal
 
 The Deep is inhabited by **150–200 distinct machine species** by release (a solo-made game typically has 15–30). Each species is a small pilgrim with its own visible behavior and its own version of the faith. The deeper the layer, the older and stranger the machines.
 
-### What counts as a distinct species `#distinct-species`
+### What counts as a distinct species <a id="distinct-species"></a>
 
 A species is distinct only if **a player watching it for ten seconds can tell its behavior apart** from every other species. A new color, size or mesh on an existing behavior is a *variant*, not a species. Variants are welcome but do not count toward the goal. This rule exists to prevent fake variety.
 
@@ -49,7 +49,7 @@ Start with about 10 species covering clearly different behaviors, and get them r
 
 ______________________________________________________________________
 
-## Any order, proven on every build `#any-order`
+## Any order, proven on every build <a id="any-order"></a>
 
 ### Goal
 
@@ -57,8 +57,8 @@ The player can collect the five unlockable abilities in many different orders, a
 
 ### What exactly is guaranteed
 
-- **No softlock, ever (hard requirement)** `#no-softlock`. From every state the player can reach (room plus set of abilities owned), the ending must still be reachable. One-way drops, collapsing paths and locked doors are all taken into account.
-- **Order freedom (measured, with a target)** `#order-freedom`. The solver counts how many of the 120 possible ability orders are actually achievable and reports it. The default target is **at least 24 orders**, with every ability obtainable in at least two different positions in the sequence.
+- **No softlock, ever (hard requirement)** <a id="no-softlock"></a>. From every state the player can reach (room plus set of abilities owned), the ending must still be reachable. One-way drops, collapsing paths and locked doors are all taken into account.
+- **Order freedom (measured, with a target)** <a id="order-freedom"></a>. The solver counts how many of the 120 possible ability orders are actually achievable and reports it. The default target is **at least 24 orders**, with every ability obtainable in at least two different positions in the sequence.
 
 Note on full freedom: making all 120 orders possible means every ability must be reachable from the start with the base moveset alone. Gates would then only lock optional areas and the final descent. That's a valid design, but a less classic one. The target above can be raised to 120 later if the map is designed for it.
 
@@ -79,7 +79,7 @@ Note on full freedom: making all 120 orders possible means every ability must be
 
 ______________________________________________________________________
 
-## Any world from the bricks `#any-world`
+## Any world from the bricks <a id="any-world"></a>
 
 Added with the owner's direction of 2026-11-01 (`docs/roadmap.md#four-stages`, [principles.md](principles.md)).
 
@@ -102,7 +102,7 @@ The game is built twice: a **prototype** (40 rooms, our playground) and then the
 
 ______________________________________________________________________
 
-## Where they stand `#where-they-stand`
+## Where they stand <a id="where-they-stand"></a>
 
 - **Any order is built:** the extractor, the solver, the geometry check and the draft map run in `tools/check.sh`, and every room is held to them as it is built.
 - **No two machines alike has its foundation:** the part library, species as data, the behavior vocabulary v0 and the machine checks. Species are grown in polish (`docs/roadmap.md#stage-polish`); until then, the existing species are placeholders.

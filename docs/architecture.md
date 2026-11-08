@@ -2,14 +2,14 @@
 
 Where the code lives. What each piece does is in its own docblock or header comment, never here (`AGENTS.md#doc-rules`). The rules the code follows are [principles.md](principles.md).
 
-## Tech stack `#tech-stack`
+## Tech stack <a id="tech-stack"></a>
 
 - Godot 4 **.NET edition**, C#. Forward+ renderer, Jolt physics, physics interpolation on.
 - A 3D world seen by a locked side camera: a narrow-FOV perspective camera (not orthographic), so the depth layers move at different speeds.
 - Play happens on the Z = 0 plane: the pilgrim and every gameplay body stay on it, and all gameplay physics is on X/Y.
 - Versions and install paths: [toolchain.md](toolchain.md). Working with Godot files as text: [godot-csharp.md](godot-csharp.md).
 
-## Layout `#layout`
+## Layout <a id="layout"></a>
 
 The three layers (core, adapters, content) are `docs/principles.md#engine-detail`. On disk:
 
@@ -30,7 +30,7 @@ tests/TheDeep.Tests/   xUnit over the core
 tools/                 the check, look-dev captures, the map report, authoring helpers
 ```
 
-## Where systems start `#entry-points`
+## Where systems start <a id="entry-points"></a>
 
 The type to open first for each system; its docblock leads on.
 

@@ -1,17 +1,17 @@
 # Testing
 
-## The checks: `tools/check.sh --fast` and `tools/check.sh` `#check`
+## The checks: `tools/check.sh --fast` and `tools/check.sh` <a id="check"></a>
 
 Two commands (`AGENTS.md#checks`); the script's header says what each one runs, and both stop at the first failing step.
 
-- **The fast check** `#fast-check`, `tools/check.sh --fast`: about 10 s on the desktop, no Godot. It formats the whole tree (it applies every formatter of `docs/toolchain.md#format-tools`), lints with the safe fixes applied, type-checks the Python tools (`AGENTS.md#truthful-types`) and builds. It ends every turn that changed files (`AGENTS.md#session`), and what it reformats belongs to that change.
-- **The full check** `#full-check`, `tools/check.sh`: what the definition of done means (`AGENTS.md#done`). It changes no file. In order: the doc citations (`tools/docrefs.py`, `AGENTS.md#doc-rules`); every file formatted and lint-clean, verified; the build (warnings are errors, and the build itself holds the C# to the layout and style rules of `.editorconfig` and to the analyzers, `docs/toolchain.md#format-tools`); the headless import (every shader compiled); then every headless check and the unit tests (`tests/TheDeep.Tests`, xUnit over the core; `VideoEncoderTests` run the real `ffmpeg`) all at once, one Godot per check, each reporting its result and its time. When formatting or lint fails, run the fast check, look at what it changed and finish the change by hand only where a linter asks for it.
+- **The fast check** <a id="fast-check"></a>, `tools/check.sh --fast`: about 10 s on the desktop, no Godot. It formats the whole tree (it applies every formatter of `docs/toolchain.md#format-tools`), lints with the safe fixes applied, type-checks the Python tools (`AGENTS.md#truthful-types`) and builds. It ends every turn that changed files (`AGENTS.md#session`), and what it reformats belongs to that change.
+- **The full check** <a id="full-check"></a>, `tools/check.sh`: what the definition of done means (`AGENTS.md#done`). It changes no file. In order: the doc citations (`tools/docrefs.py`, `AGENTS.md#doc-rules`); every file formatted and lint-clean, verified; the build (warnings are errors, and the build itself holds the C# to the layout and style rules of `.editorconfig` and to the analyzers, `docs/toolchain.md#format-tools`); the headless import (every shader compiled); then every headless check and the unit tests (`tests/TheDeep.Tests`, xUnit over the core; `VideoEncoderTests` run the real `ffmpeg`) all at once, one Godot per check, each reporting its result and its time. When formatting or lint fails, run the fast check, look at what it changed and finish the change by hand only where a linter asks for it.
 
 Logs go to `.godot/check/`. A check that prints its passing line and then crashes or reports a leak while Godot quits is the .NET finalizers racing the engine's shutdown, a rare flake under the check's load that was never reproduced on demand; the game guards against it by freeing its nodes and finalizing their C# wrappers before the engine tears down (`Main._ExitTree`). If one still happens, rerun once and keep its log for the cause: a failure that comes back is real.
 
-**Files no formatter covers** `#unformatted`, each for its reason: Godot's own files (`.tscn`, `.tres`, `project.godot`, `.import`, `.uid`), which the engine writes and rewrites in its own layout, so a formatter would fight it; the shaders (`.gdshader`, `.gdshaderinc`, `.glsl`, `.glslinc`), for which no formatter is standard (Godot has none for its shading language), held instead by the headless import, which compiles each one; the world tables (`.tsv`), data whose only layout is a tab between fields; the build files (`.csproj`, `.sln`, `Directory.Build.props`), a few lines written by the SDK and Godot.
+**Files no formatter covers** <a id="unformatted"></a>, each for its reason: Godot's own files (`.tscn`, `.tres`, `project.godot`, `.import`, `.uid`), which the engine writes and rewrites in its own layout, so a formatter would fight it; the shaders (`.gdshader`, `.gdshaderinc`, `.glsl`, `.glslinc`), for which no formatter is standard (Godot has none for its shading language), held instead by the headless import, which compiles each one; the world tables (`.tsv`), data whose only layout is a tab between fields; the build files (`.csproj`, `.sln`, `Directory.Build.props`), a few lines written by the SDK and Godot.
 
-**It stays fast** `#check-fast` (owner, 2026-11-02), without checking less: about 45 s on the desktop (it was three minutes). Each step prints its time; when it grows, cut the slowest. The longest are the room check (`WorldCheck`), the travel check (`TravelValidator`) and the playthrough (`PlaythroughCheck`).
+**It stays fast** <a id="check-fast"></a> (owner, 2026-11-02), without checking less: about 45 s on the desktop (it was three minutes). Each step prints its time; when it grows, cut the slowest. The longest are the room check (`WorldCheck`), the travel check (`TravelValidator`) and the playthrough (`PlaythroughCheck`).
 
 The headless checks, one driver each in `scripts/debug/`; the driver's docblock says what it proves and what it prints:
 
@@ -30,7 +30,7 @@ The headless checks, one driver each in `scripts/debug/`; the driver's docblock 
 
 `godot --path .` runs the last *built* assembly; it does not compile. The check builds, so after a passing check the owner's launch command is up to date.
 
-## Commands `#commands`
+## Commands <a id="commands"></a>
 
 | What | Command |
 | -- | -- |
@@ -52,7 +52,7 @@ The headless checks, one driver each in `scripts/debug/`; the driver's docblock 
 
 The full list of arguments is in `Main`; each tool's options are in its header.
 
-## Seeing the game `#lookdev`
+## Seeing the game <a id="lookdev"></a>
 
 Headless runs render nothing. For any visual change, render before and after and look (`docs/art-direction.md#judge-images`):
 
@@ -74,13 +74,13 @@ For a raw frame sequence, Movie Maker works; `--disable-vsync` matters, or the c
 godot --path . --disable-vsync --fixed-fps 60 --quit-after 240 --write-movie /path/to/out/f.png -- --smoke
 ```
 
-## Owner captures (F12 / F10) `#owner-captures`
+## Owner captures (F12 / F10) <a id="owner-captures"></a>
 
 In every build: **F12** (or the pad's Share) saves a screenshot, **F10** starts and stops a video, both in `captures/` (git-ignored) with a `.txt` of the game state beside them (`OwnerCapture`).
 
 When the owner says "look at the last screenshot/video": `ls -t captures | head`, read the `.txt` to reproduce (room, position, abilities), and look at the PNG, or pull frames from the MP4 with `ffmpeg -i X.mp4 -vf fps=2 out/f%03d.png`.
 
-## Owner playtest `#playtest`
+## Owner playtest <a id="playtest"></a>
 
 What the owner does to test a build. Remind them of this when handing over:
 

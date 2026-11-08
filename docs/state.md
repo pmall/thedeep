@@ -1,4 +1,4 @@
-# State — The Deep `#status`
+# State — The Deep <a id="status"></a>
 
 Where things stand, so any session picks up where the last one stopped (`AGENTS.md#session`). Rewritten as things change, never appended to; the history is in `git log`. The direction and the stages are in [roadmap.md](roadmap.md).
 

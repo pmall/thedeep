@@ -10,7 +10,7 @@ target positions 1
 target rooms 5 8
 ```
 
-## The shape `#sequel-shape`
+## The shape <a id="sequel-shape"></a>
 
 `(X)` a way needing X, `[X]` a relic, `→` one way.
 

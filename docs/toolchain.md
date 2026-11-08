@@ -1,6 +1,6 @@
 # Toolchain
 
-## Versions `#versions`
+## Versions <a id="versions"></a>
 
 | Tool | Version | Location |
 | -- | -- | -- |
@@ -14,7 +14,7 @@
 
 The owner's machine runs Ubuntu 26.04 with an NVIDIA RTX 3060 (Vulkan, Forward+).
 
-## Formatters, linters and checkers `#format-tools`
+## Formatters, linters and checkers <a id="format-tools"></a>
 
 Each is the standard tool of its language, pinned to an exact version so every machine formats and lints alike (`AGENTS.md#checks`); the check runs them (`docs/testing.md#check`), and nothing is installed system-wide but uv: the project's toolchain stays .NET plus uv and Python (owner, 2026-11-08: no Node in a C# project).
 
@@ -28,7 +28,7 @@ Each is the standard tool of its language, pinned to an exact version so every m
 
 To upgrade one, change its pin (and the date `uvx` resolves dependencies at, beside the pins), run the fast check (it reformats), and commit the reformat on its own.
 
-## What needs the GPU `#gpu`
+## What needs the GPU <a id="gpu"></a>
 
 The coding agent itself runs in the cloud; only the project's tools run on the machine.
 
@@ -36,7 +36,7 @@ The coding agent itself runs in the cloud; only the project's tools run on the m
 - **GPU needed:** `tools/capture.sh` (photo spots, motion reels, frame times) and the owner's F12/F10 captures render in a real window with Vulkan. Visual work is judged from these captures, and frame times only mean something on the RTX 3060, so visual items (stage bricks, the pilgrim's look) are done on the desktop. Running them while a game uses the same GPU spoils the frame times.
 - So code-only items can go on a laptop, or on the desktop while it is busy with a game; visual items need the desktop's GPU to itself while capturing.
 
-## .NET environment `#dotnet-env`
+## .NET environment <a id="dotnet-env"></a>
 
 - The shell profile does **not** put .NET on `PATH`.
   - `tools/check.sh` sets `DOTNET_ROOT` and `PATH` itself.
@@ -45,7 +45,7 @@ The coding agent itself runs in the cloud; only the project's tools run on the m
 - Without `DOTNET_ROOT`, Godot looks in `/usr/share/dotnet`, fails to load .NET, and a windowed run can appear to hang.
 - Every shell command runs in a fresh shell, so environment variables don't carry over between commands.
 
-## Upgrading Godot `#upgrading-godot`
+## Upgrading Godot <a id="upgrading-godot"></a>
 
 `Godot.NET.Sdk` in `TheDeep.csproj` must stay at **exactly** the engine version. To upgrade:
 

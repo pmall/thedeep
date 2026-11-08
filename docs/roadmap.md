@@ -2,9 +2,9 @@
 
 The plan we follow from session to session: the owner's direction, the stages and their items. Keep it short. Where things stand now is [state.md](state.md).
 
-## Direction (decided by the owner) `#direction`
+## Direction (decided by the owner) <a id="direction"></a>
 
-- **Four stages** `#four-stages` (owner, 2026-11-01). Each stage is finished before the next one starts:
+- **Four stages** <a id="four-stages"></a> (owner, 2026-11-01). Each stage is finished before the next one starts:
 
   - **A. The prototype** *(current)*: every brick of the game ready, beautiful and modular, proven in the 40-room prototype world. The prototype is our **playground**, and it stays one after this stage (`docs/roadmap.md#stage-prototype`).
   - **B. The plan on paper**: the real game's map as a network of rooms, with a table describing every room. Reviewed and approved by the owner before anything is built (`docs/roadmap.md#stage-plan`).
@@ -21,42 +21,42 @@ The plan we follow from session to session: the owner's direction, the stages an
 
 ______________________________________________________________________
 
-## Stage A: the prototype *(current)* `#stage-prototype`
+## Stage A: the prototype *(current)* <a id="stage-prototype"></a>
 
 **The goal:** every brick in [bricks.md](bricks.md) is **ready**: beautiful, modular, checked, and used in the prototype world. The prototype's 40 rooms are where bricks are proven, not content to polish: a room gets the attention its bricks need, no more. Bosses, machines and law breaks stay working placeholders (their richness is stage D), but the systems behind them must be ready.
 
 The items, in order. Each one ends with its bricks marked in [bricks.md](bricks.md).
 
-- [x] **The seams** `#seams` (done 2026-11-01): the core in its own project, the engine's nodes thin adapters over it, no `!` outside exports, a world as data (`docs/architecture.md#layout`).
-- [ ] **The stage bricks** `#stage-bricks` (the visuals, already under way). Every stage brick of each biome brought to the bar of [art-direction.md](art-direction.md) and past it: materials, backgrounds and architecture, water, heat, ice, light, particles, the block kit's look. Left from the visual work: `docs/art-direction.md#art-open`. Done when: every biome reads at a glance and looks "very cool" to the owner in their captures, within the frame budget.
-- [ ] **The owner's review of 2026-11-08** `#review-1108`, in this order (decided 2026-11-08, owner's delegation; the owner's words are in `git log` of this line):
-  - [x] **A still image** `#image-stability` (done 2026-11-08, confirmed by the owner): everything that flickered was deleted; the rule is `docs/art-direction.md#stable-image`.
-  - [ ] **The art restored without flicker** `#art-restore` (the owner's first priority, 2026-11-08). The deletion left the rooms plain; their look comes back under `docs/art-direction.md#stable-image`, one subagent per step (`AGENTS.md#one-deliverable`):
+- [x] **The seams** <a id="seams"></a> (done 2026-11-01): the core in its own project, the engine's nodes thin adapters over it, no `!` outside exports, a world as data (`docs/architecture.md#layout`).
+- [ ] **The stage bricks** <a id="stage-bricks"></a> (the visuals, already under way). Every stage brick of each biome brought to the bar of [art-direction.md](art-direction.md) and past it: materials, backgrounds and architecture, water, heat, ice, light, particles, the block kit's look. Left from the visual work: `docs/art-direction.md#art-open`. Done when: every biome reads at a glance and looks "very cool" to the owner in their captures, within the frame budget.
+- [ ] **The owner's review of 2026-11-08** <a id="review-1108"></a>, in this order (decided 2026-11-08, owner's delegation; the owner's words are in `git log` of this line):
+  - [x] **A still image** <a id="image-stability"></a> (done 2026-11-08, confirmed by the owner): everything that flickered was deleted; the rule is `docs/art-direction.md#stable-image`.
+  - [ ] **The art restored without flicker** <a id="art-restore"></a> (the owner's first priority, 2026-11-08). The deletion left the rooms plain; their look comes back under `docs/art-direction.md#stable-image`, one subagent per step (`AGENTS.md#one-deliverable`):
     - [ ] **A guard**: the fast check fails on a shader reading the screen texture or on a per-frame random term, so the deleted causes can't come back.
     - [ ] **Baked surfaces**: a tool bakes the procedural patterns (rock strata and joints, cracks, masonry, ice fractures and bubbles, frost) into tileable albedo, normal and roughness textures with mipmaps; the materials sample them instead of computing lines per pixel.
     - [ ] **The frozen layer first** (the owner's favorite): brought back to its look before the deletion (captures at commit `0cf4b04` are the reference), judged by the owner.
     - [ ] **The atmosphere**: depth and height fog in the Environment instead of volumetric fog, underwater tint and haze as a fog or a material, light shafts as soft meshes, glints as small mipmapped textures; a gentle vignette may return (it depends only on screen position).
     - [ ] **The flooded layer and the core**, the same way, the flooded one made less bland. The volcanic layer is rebuilt this way in `docs/roadmap.md#volcanic-rethink`.
   - [ ] **The pilgrim, restarted** (`docs/roadmap.md#pilgrim`): the current character and its procedural animation are thrown away; the bar is raised tenfold (owner, 2026-11-08). The halo around the character goes. First the environment for top-quality animation, then the character. The bar is *Ori*'s animation (a 3D-rendered character, not sprites) with *NieR: Automata*'s dynamism (owner, 2026-11-08). The method: a modeled, rigged character in Blender (the owner installs the Blender MCP), animation built from real motion capture (free libraries and Mixamo first; the owner accepts, to be revisited) then keyed by hand, blended in the game with feet held to the ground.
-  - [ ] **Rooms that agree at their seams** `#seam-coherence`: whatever crosses an exit continues on the other side: an elevator's shaft and car exist in both rooms, water never ends at a seam (water always has a bottom: a hole in a roof never leads under water that has none), a hole in a floor lands under the matching opening above. Written as a rule in `docs/gameplay.md`, held by a check over both worlds, then every vertical exit of the prototype fixed to it.
-  - [ ] **The volcanic layer, rethought** `#volcanic-rethink`: lava is a real body with depth you can read (never a thin skin you might cross), touching it has one clear rule, heat reads as something the player understands (not bands), the Slag's collision bugs are gone, and the layer looks finished. Designed on paper first (its rules in `docs/gameplay.md`, its look in `docs/art-direction.md`), then built.
-  - [ ] **Readable law breaks and gates** `#law-readable`: in the prototype, a law break says what to do and the player does it on purpose (not by mashing); the Pyre's litany door says what it needs and where to look. The real law breaks (stage D) are scenes where the pilgrim breaks the law under the player's control, the player being its conscience (owner, 2026-11-08).
+  - [ ] **Rooms that agree at their seams** <a id="seam-coherence"></a>: whatever crosses an exit continues on the other side: an elevator's shaft and car exist in both rooms, water never ends at a seam (water always has a bottom: a hole in a roof never leads under water that has none), a hole in a floor lands under the matching opening above. Written as a rule in `docs/gameplay.md`, held by a check over both worlds, then every vertical exit of the prototype fixed to it.
+  - [ ] **The volcanic layer, rethought** <a id="volcanic-rethink"></a>: lava is a real body with depth you can read (never a thin skin you might cross), touching it has one clear rule, heat reads as something the player understands (not bands), the Slag's collision bugs are gone, and the layer looks finished. Designed on paper first (its rules in `docs/gameplay.md`, its look in `docs/art-direction.md`), then built.
+  - [ ] **Readable law breaks and gates** <a id="law-readable"></a>: in the prototype, a law break says what to do and the player does it on purpose (not by mashing); the Pyre's litany door says what it needs and where to look. The real law breaks (stage D) are scenes where the pilgrim breaks the law under the player's control, the player being its conscience (owner, 2026-11-08).
   - [ ] **The flooded layer less bland** (`docs/art-direction.md#art-open`); the frozen layer is the owner's favorite and the reference for the others.
-- [ ] **The pilgrim** `#pilgrim`: the character fully made: its look in the *NieR: Automata* spirit (the hair, the coat, contrast against dark backdrops), a rig and animation for every move and every ability (run, jump, land, dash, air dash, ledge assist, grip and its corners, harpoon throw and zip, bore and dive, swim, sink and rise, hurt, death, rest, taking a relic), effects; its secondary motion is stage D's (`docs/roadmap.md#stage-polish`). Very dynamic animation: anticipation, follow-through, weight. Procedural first, pushed as far as it goes; only then, where it can't reach the bar (likely the head, the hair, the body's finest forms), Blender finishes it (`docs/roadmap.md#beyond-procedural`). Done when: every state reads at a glance in motion, in the look-dev reels and in the owner's play.
-- [ ] **Feel and fight** `#feel-fight`: hyper-dynamic, fluid play: moves chain and carry momentum, smooth Mag-grip corners, harpoon, dive and swim flowing into each other; the camera eased; a small fight moveset (chained swings, an air attack, a dash strike or similar: a few moves, done well) with hits that land (hit stop, sparks, knockback) and health that reads. Numbers stay in `player_tuning.tres` (`docs/principles.md#data-first`).
-- [x] **The game systems** `#game-systems` (done 2026-11-02, looks to come with `docs/roadmap.md#stage-bricks`): the bricks the real game's rooms will need, one working example of each in the prototype:
+- [ ] **The pilgrim** <a id="pilgrim"></a>: the character fully made: its look in the *NieR: Automata* spirit (the hair, the coat, contrast against dark backdrops), a rig and animation for every move and every ability (run, jump, land, dash, air dash, ledge assist, grip and its corners, harpoon throw and zip, bore and dive, swim, sink and rise, hurt, death, rest, taking a relic), effects; its secondary motion is stage D's (`docs/roadmap.md#stage-polish`). Very dynamic animation: anticipation, follow-through, weight. Procedural first, pushed as far as it goes; only then, where it can't reach the bar (likely the head, the hair, the body's finest forms), Blender finishes it (`docs/roadmap.md#beyond-procedural`). Done when: every state reads at a glance in motion, in the look-dev reels and in the owner's play.
+- [ ] **Feel and fight** <a id="feel-fight"></a>: hyper-dynamic, fluid play: moves chain and carry momentum, smooth Mag-grip corners, harpoon, dive and swim flowing into each other; the camera eased; a small fight moveset (chained swings, an air attack, a dash strike or similar: a few moves, done well) with hits that land (hit stop, sparks, knockback) and health that reads. Numbers stay in `player_tuning.tres` (`docs/principles.md#data-first`).
+- [x] **The game systems** <a id="game-systems"></a> (done 2026-11-02, looks to come with `docs/roadmap.md#stage-bricks`): the bricks the real game's rooms will need, one working example of each in the prototype:
   - **Dialogue box**: a speaker and lines in turn, advanced by the player; lines from the line book. Graceful and small (the owner plays on a gamepad and wants on-screen UI small).
   - **Power-ups**: one kind of loot, a permanent bonus to strength or defense. Nothing more.
   - **Inventory**: keys and codes, held and shown small; **locked doors** that one opens. Items join the requirement language of exits, so the solver proves the world with them (no key behind its own door, no softlock).
   - **Room kinds** the plan will use: a **hidden passage** (the secret room's way in), an **ambush** (an arena that seals while a wave of machines stands: the trap room), a **switch and mechanism** (an enigma's piece).
   - Items, power-ups and opened doors in the save; keys and doors in the gate hints and the map screen.
-- [ ] **The sequel test and sign-off** `#sequel-test`:
+- [ ] **The sequel test and sign-off** <a id="sequel-test"></a>:
   - **The sequel test:** a small second world (a handful of rooms, a new arrangement, one biome variant) built from content alone, **with no code change**. Whatever it forces into the code was a missing brick: fix it as a brick. It stays as a fixture the check loads.
   - The owner plays the prototype from `godot --path . -- --new` to the end, with no debug keys, always knowing what a gate needs, and is happy with it.
-- [x] **The stricter C# analyzers** `#analyzers` (decided 2026-11-08, owner's delegation; done 2026-11-08): the checks run the SDK's `Recommended` set on all three projects (`docs/toolchain.md#format-tools`); data is held to the invariant culture (`docs/principles.md#invariant-culture`).
+- [x] **The stricter C# analyzers** <a id="analyzers"></a> (decided 2026-11-08, owner's delegation; done 2026-11-08): the checks run the SDK's `Recommended` set on all three projects (`docs/toolchain.md#format-tools`); data is held to the invariant culture (`docs/principles.md#invariant-culture`).
 - **Done when:** every brick in [bricks.md](bricks.md) is ready, the sequel test passes, and the owner signs the prototype off.
 
-## Stage B: the plan on paper `#stage-plan`
+## Stage B: the plan on paper <a id="stage-plan"></a>
 
 The real game's map, designed before a single room is built. Two files per world, read by the code and checked on every build, plus a drawing for review:
 
@@ -67,11 +67,11 @@ The real game's map, designed before a single room is built. Two files per world
 - **Size and abilities**: the real game's size and length (the prototype was planned for about 2 hours, *Inside*-dense) and its abilities (the same five or more; the bricks don't assume a count) are the agent's proposal in this plan (decided 2026-11-07, owner's delegation).
 - **Done when:** the owner approves the plan as a whole. Nothing is built before that.
 
-## Stage C: the real game `#stage-real-game`
+## Stage C: the real game <a id="stage-real-game"></a>
 
 Built from the approved plan, beside the prototype (its own world folder; the prototype stays the playground and keeps being checked). Rooms are assembled from the bricks; a room that needs something new means a new brick, built and proven in the prototype first. Each built room is held to the plan by the same checks as the prototype's draft (the markers are the truth; plan and rooms agree).
 
-## Stage D: polish `#stage-polish`
+## Stage D: polish <a id="stage-polish"></a>
 
 Only once the real game plays from start to end:
 
@@ -82,13 +82,13 @@ Only once the real game plays from start to end:
 - **Audio and voices** (`docs/roadmap.md#audio`).
 - **Release:** main menu, pause, settings (graphics quality tiers, audio, controls remapping), save slots, a bestiary screen, controller polish, accessibility options, exported Linux and Windows builds. *Release work goes here (decided 2026-11-07, owner's delegation).*
 
-### Audio `#audio`
+### Audio <a id="audio"></a>
 
 Deferred by the owner. Ask before planning it. Two parts:
 
 - **Ambience** (room tones, machinery, water). Keep hooks cheap: rooms and biome profiles can later reference ambience.
 - **High-quality voiced dialogue** (owner wish). Generated voices, via an ElevenLabs MCP server or local TTS models, to be decided then. Machine voices can be processed (filters, vocoder-like effects) per species or layer. This is why every line is data with a stable id: voice files are generated per line id in a batch and re-generated when text changes.
 
-### Beyond procedural art `#beyond-procedural`
+### Beyond procedural art <a id="beyond-procedural"></a>
 
 For the pilgrim (`docs/art-direction.md#procedural-first`), once its procedural version has gone as far as it can in `docs/roadmap.md#pilgrim`: the owner provides a **Blender MCP** so the agent can model the parts code does worst (the head, the hair, the body's finest forms), painted by the game's own shaders so they match everything else. Thanks to the swap rule (`docs/art-direction.md#swappable`) this means replacing materials, kit meshes and part meshes, not rebuilding rooms or machines.
