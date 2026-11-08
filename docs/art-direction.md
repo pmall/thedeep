@@ -78,7 +78,7 @@ Images: [`nier-tank-catwalk.jpg`](references/nier-tank-catwalk.jpg), [`nier-amus
 
 - **Silhouette:** a slender, elegant humanoid android, human proportions, small next to the world. Instantly readable at gameplay size.
 - **Colors:** mostly black, with white/silver highlights (hair, trims) and very little else. It stays readable against the pale Dread world through value contrast (dark on light). One small glowing element can carry the purple accent.
-- **Motion:** graceful and fast, acrobatic, with flowing secondary motion (skirt or coat tails, hair, ribbons, cables) trailing behind moves.
+- **Motion:** graceful and fast, acrobatic, with flowing secondary motion (skirt or coat tails, hair, ribbons, cables) trailing behind moves. Never upright and locked (owner feedback, 2026-11-08: the walk and run were too rigid, "like it has some stick up the ass"): the body moves loose over the legs, every part answering the stride and the changes of speed. How far each part goes is set in `PilgrimMotion` (decided 2026-11-08, owner's delegation).
 - **Fits the theme:** NieR's androids are human-built machines, as is ours ([theme.md](theme.md)), so it should look foreign among the native machines.
 - **Concrete targets:**
   - The pilgrim follows this: humanoid, dark with white highlights, flowing secondary motion, built from the part system.

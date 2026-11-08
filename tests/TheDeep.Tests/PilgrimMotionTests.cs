@@ -11,7 +11,7 @@ public class PilgrimMotionTests
     private const float RunSpeed = 7f;
 
     /// <summary>The pilgrim's rig sizes (resources/parts/pilgrim.tres).</summary>
-    private static readonly HumanoidDims Dims = new(0.9f, new Vector2(0f, -0.05f), 0.4f, 0.39f, 0.43f, 0.26f, 0.24f);
+    private static readonly HumanoidDims Dims = new(0.9f, new Vector2(0f, -0.05f), 0.085f, 0.4f, 0.39f, 0.43f, 0.26f, 0.24f);
 
     [Fact]
     public void StandingStillKeepsBothAnklesOnTheGround()
@@ -104,6 +104,38 @@ public class PilgrimMotionTests
         Assert.True(lowest < standing - 0.12f, $"hips only dropped {standing - lowest}");
         Run(motion, 120, Vector2.Zero, MotionMode.Ground);
         Assert.InRange(motion.Pose.HipsOffset.Y, standing - 0.01f, standing + 0.01f);
+    }
+
+    [Fact]
+    public void TheRunningBodyBobsAndTurnsAgainstItselfWhileTheHeadStaysSteady()
+    {
+        var motion = new PilgrimMotion(Dims, RunSpeed);
+        Run(motion, 90, new Vector2(RunSpeed, 0f), MotionMode.Ground);
+        float lowHips = float.MaxValue, highHips = float.MinValue, minChest = float.MaxValue, maxChest = float.MinValue;
+        float minHead = float.MaxValue, maxHead = float.MinValue, maxHipYaw = 0f;
+        for (int i = 0; i < 60; i++)
+        {
+            motion.Update(Dt, new Vector2(RunSpeed, 0f), 1, MotionMode.Ground);
+            HumanoidPose pose = motion.Pose;
+            lowHips = MathF.Min(lowHips, pose.HipsOffset.Y);
+            highHips = MathF.Max(highHips, pose.HipsOffset.Y);
+            minChest = MathF.Min(minChest, pose[HumanoidBone.Chest]);
+            maxChest = MathF.Max(maxChest, pose[HumanoidBone.Chest]);
+            minHead = MathF.Min(minHead, pose[HumanoidBone.Head]);
+            maxHead = MathF.Max(maxHead, pose[HumanoidBone.Head]);
+            float hipYaw = pose.Turn(HumanoidBone.Hips).Yaw, chestYaw = pose.Turn(HumanoidBone.Chest).Yaw;
+            maxHipYaw = MathF.Max(maxHipYaw, MathF.Abs(hipYaw));
+            Assert.True(hipYaw * chestYaw <= 0f, $"the chest turns with the hips ({hipYaw}, {chestYaw})");
+            Assert.True(pose[HumanoidBone.Chest] < -0.2f, $"the chest leans forward ({pose[HumanoidBone.Chest]})");
+        }
+
+        Assert.True(highHips - lowHips > 0.04f, $"the hips only bob {highHips - lowHips}");
+        Assert.True(maxHipYaw > 0.15f, $"the hips only turn {maxHipYaw}");
+        Assert.True(maxHead - minHead < 0.5f * (maxChest - minChest), "the head is as unsteady as the chest");
+
+        Run(motion, 120, Vector2.Zero, MotionMode.Ground);
+        Assert.InRange(motion.Pose.Turn(HumanoidBone.Hips).Yaw, -0.01f, 0.01f);
+        Assert.InRange(motion.Pose.Turn(HumanoidBone.Chest).Yaw, -0.01f, 0.01f);
     }
 
     [Fact]
@@ -446,8 +478,7 @@ public class PilgrimMotionTests
 
     private static Vector2 Ankle(HumanoidPose pose, HumanoidBone thigh, HumanoidBone shin)
     {
-        var hips = new Vector2(pose.HipsOffset.X, Dims.HipsHeight + pose.HipsOffset.Y);
-        Vector2 hip = hips + PlanarIk.Rotate(Dims.HipJoint, pose[HumanoidBone.Hips]);
+        Vector2 hip = pose.HipJoint(Dims, thigh == HumanoidBone.ThighR ? 1 : -1);
         Vector2 knee = PlanarIk.End(hip, pose[thigh], Dims.Thigh);
         return PlanarIk.End(knee, pose[shin], Dims.Shin);
     }

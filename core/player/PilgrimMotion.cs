@@ -7,7 +7,9 @@ namespace TheDeep;
 /// The pilgrim's procedural animation, Godot-free. Each physics tick, <see cref="Update"/> turns the body's
 /// motion into a <see cref="HumanoidPose"/>:
 /// - on the ground, a run cycle with planted feet (each stride matches the speed, so feet never slide),
-///   solved by IK and blended with a calm, breathing stance as the body slows;
+///   solved by IK and blended with a calm, breathing stance as the body slows; the body loose over it: leaning forward with
+///   speed, the hips bobbing and flexing the spine with each step, turning and dropping with the stride while the chest
+///   turns against them, the arms trailing their swing, the head steadier than the chest;
 /// - in the air, a leap while rising that opens into a reach for the ground while falling;
 /// - on a Mag-grip surface (<see cref="MotionMode.Grip"/>), the same planted-feet cycle crouched low and clinging: a shorter,
 ///   flatter stride on wider feet, the body leaned over the metal, the arms held low toward it; a kick of the landing spring
@@ -45,19 +47,34 @@ public sealed class PilgrimMotion
     /// <summary>Feet land this far ahead of the hips, so the body rides over them.</summary>
     private const float RunReach = 0.06f;
 
-    // Body: how low the run carries the hips, how much they bob, how far the body leans.
+    // Body: how low the run carries the hips and how far it leans the body forward; how far the body leans into acceleration
+    // (and back when braking) and how much it sinks while it does, so a start, a stop and a turn carry weight.
     private const float StandBend = 0.025f;
     private const float RunCrouch = 0.07f;
-    private const float RunBob = 0.035f;
-    private const float RunLean = -0.2f;
-    private const float AccelLean = -0.018f;
-    private const float MaxAccelLean = 0.32f;
+    private const float RunLean = -0.42f;
+    private const float AccelLean = -0.024f;
+    private const float MaxAccelLean = 0.38f;
+    private const float AccelSink = 0.1f;
 
-    // Arms.
+    // Each step, meters and radians. The hips bob: walking they ride highest over the planted foot, running lowest as it takes
+    // the weight and highest in the flight. The spine flexes forward as a foot takes the weight and opens at the push-off.
+    private const float WalkBob = 0.015f;
+    private const float RunBob = 0.055f;
+    private const float StepFlex = 0.1f;
+
+    // The stride's turn out of the side plane at run speed: the hips turn with the leg reaching forward and drop on the side of
+    // the swinging leg; the chest turns and rolls against them, so the shoulders go with the arms; the head stays level.
+    private const float HipYaw = 0.24f;
+    private const float ChestYaw = 0.32f;
+    private const float HipRoll = 0.07f;
+    private const float ChestRoll = 0.04f;
+
+    // Arms: the swing and the elbow's bend, standing to running, and how far (a share of the cycle) each arm trails its leg.
     private const float IdleSwing = 0.05f;
-    private const float RunSwing = 0.8f;
+    private const float RunSwing = 0.85f;
     private const float IdleElbow = 0.2f;
     private const float RunElbow = 1.15f;
+    private const float ArmLag = 0.05f;
 
     /// <summary>Downward speed (m/s) at which a landing compresses fully.</summary>
     private const float HardLanding = 20f;
@@ -70,7 +87,7 @@ public sealed class PilgrimMotion
 
     // Mag-grip: how much lower the body clings, how much further it leans over the surface, and its stride against the run's.
     private const float GripCrouch = 0.15f;
-    private const float GripLean = -0.4f;
+    private const float GripLean = -0.6f;
     private const float GripStride = 0.7f;
     private const float GripLift = 0.5f;
 
@@ -139,7 +156,7 @@ public sealed class PilgrimMotion
     private float _lastVelocityX;
     private bool _inAir;
     private bool _leadRight = true;
-    private Spring _lean = new(3.2f, 0.5f);
+    private Spring _lean = new(3.2f, 0.42f);
     private Spring _compression = new(2.2f, 0.55f);
 
     public PilgrimMotion(HumanoidDims dims, float runSpeed)
@@ -396,30 +413,46 @@ public sealed class PilgrimMotion
         float still = 1f - g;
         float compression = Compression;
         float cling = _gripWeight;
+        float run = SmoothStep(0f, 0.25f, g);
 
-        float bob = RunBob * g * (0.5f + 0.5f * MathF.Cos(MathF.Tau * 2f * (_phase - stance * 0.5f)));
-        float hipsY = -StandBend - RunCrouch * g - GripCrouch * cling - bob - compression + still * 0.004f * breathe;
+        // +1 as each foot takes the weight (mid-stance), -1 in the flight between steps.
+        float step = MathF.Cos(MathF.Tau * 2f * (_phase - stance * 0.5f));
+        // +1 as the near leg reaches forward, -1 as it trails; and +1 while the near foot bears the weight, -1 the far one.
+        float stride = MathF.Cos(MathF.Tau * (_phase - (stance - 0.5f) * 0.5f));
+        float support = MathF.Cos(MathF.Tau * (_phase - stance * 0.5f));
+
+        float bob = g * (0.5f + 0.5f * step) * Lerp(-WalkBob, RunBob, SmoothStep(0.35f, 0.75f, g)) * (1f - 0.5f * cling);
+        float sink = AccelSink * MathF.Abs(_lean.Value);
+        float hipsY = -StandBend - RunCrouch * g - GripCrouch * cling - bob - sink - compression + still * 0.004f * breathe;
         pose.HipsOffset = new Vector2(0.02f * g, hipsY);
 
-        float torso = RunLean * g * (1f - cling) + GripLean * cling + _lean.Value - compression * 1.4f;
-        float stepRock = MathF.Cos(MathF.Tau * 2f * (_phase - stance * 0.5f));
-        pose[HumanoidBone.Hips] = torso * 0.35f;
-        pose[HumanoidBone.Spine] = torso * 0.7f;
-        pose[HumanoidBone.Chest] = torso + still * 0.014f * breathe - 0.025f * g * stepRock;
-        pose[HumanoidBone.Neck] = torso * 0.55f;
-        pose[HumanoidBone.Head] = torso * 0.2f + 0.15f * cling + still * 0.012f * MathF.Sin(MathF.Tau * 0.09f * _time);
+        float lean = RunLean * g * (1f - cling) + GripLean * cling + _lean.Value - compression * 1.4f;
+        float flex = -StepFlex * g * step * (1f - cling);
+        // The spine curves into the lean (the chest leans most); the neck takes it back and the head keeps out of the step's
+        // flex, held up to look ahead, steadier than the chest it rides on.
+        pose[HumanoidBone.Hips] = lean * 0.3f + flex * 0.3f;
+        pose[HumanoidBone.Spine] = lean * 0.65f + flex * 0.7f;
+        pose[HumanoidBone.Chest] = lean + flex + still * 0.014f * breathe;
+        pose[HumanoidBone.Neck] = lean * 0.45f + flex * 0.3f;
+        pose[HumanoidBone.Head] = lean * 0.12f + 0.15f * cling + still * 0.012f * MathF.Sin(MathF.Tau * 0.09f * _time);
+
+        float turn = g * (1f - 0.6f * cling);
+        pose.SetTurn(HumanoidBone.Hips, HipYaw * turn * stride, -HipRoll * turn * support);
+        pose.SetTurn(HumanoidBone.Spine, 0.2f * HipYaw * turn * stride, -0.3f * HipRoll * turn * support);
+        pose.SetTurn(HumanoidBone.Chest, -ChestYaw * turn * stride, ChestRoll * turn * support);
+        pose.SetTurn(HumanoidBone.Neck, -0.35f * ChestYaw * turn * stride, 0.3f * ChestRoll * turn * support);
+        pose.SetTurn(HumanoidBone.Head, 0f, 0f);
 
         float travel = MathF.Min(stance * cycle, MaxStanceTravel);
         float lift = Lerp(WalkLift, RunLift, g) * Lerp(1f, GripLift, cling);
-        float run = SmoothStep(0f, 0.25f, g);
-        Vector2 hips = new Vector2(pose.HipsOffset.X, _dims.HipsHeight + hipsY);
-        Leg(pose, HumanoidBone.ThighR, HumanoidBone.ShinR, HumanoidBone.FootR, hips, _phase, new Vector2(0.06f + 0.14f * cling, 0f), travel, lift, stance, g, run);
-        Leg(pose, HumanoidBone.ThighL, HumanoidBone.ShinL, HumanoidBone.FootL, hips, Fraction(_phase + 0.5f), new Vector2(-0.1f - 0.12f * cling, 0f), travel, lift, stance, g, run);
+        Leg(pose, HumanoidBone.ThighR, HumanoidBone.ShinR, HumanoidBone.FootR, 1, _phase, new Vector2(0.06f + 0.14f * cling, 0f), travel, lift, stance, g, run);
+        Leg(pose, HumanoidBone.ThighL, HumanoidBone.ShinL, HumanoidBone.FootL, -1, Fraction(_phase + 0.5f), new Vector2(-0.1f - 0.12f * cling, 0f), travel, lift, stance, g, run);
 
-        // Each arm swings against the leg on its side, the elbow folding more as it comes forward.
+        // Each arm swings against the leg on its side, trailing it a little, the elbow folding more as it comes forward.
         float swing = Lerp(IdleSwing, RunSwing, g);
-        Arm(pose, HumanoidBone.UpperArmR, HumanoidBone.ForearmR, HumanoidBone.HandR, _phase, swing, g, still * breathe, compression);
-        Arm(pose, HumanoidBone.UpperArmL, HumanoidBone.ForearmL, HumanoidBone.HandL, Fraction(_phase + 0.5f), swing, g, still * breathe, compression);
+        float lag = ArmLag * g;
+        Arm(pose, HumanoidBone.UpperArmR, HumanoidBone.ForearmR, HumanoidBone.HandR, Fraction(_phase - lag), swing, g, still * breathe, compression);
+        Arm(pose, HumanoidBone.UpperArmL, HumanoidBone.ForearmL, HumanoidBone.HandL, Fraction(_phase + 0.5f - lag), swing, g, still * breathe, compression);
 
         // Clinging, the arms swing less and hang low toward the metal, the near one ahead, the far one behind, elbows bent.
         if (cling > 0f)
@@ -429,7 +462,7 @@ public sealed class PilgrimMotion
         }
     }
 
-    private void Leg(HumanoidPose pose, HumanoidBone thigh, HumanoidBone shin, HumanoidBone foot, Vector2 hips, float phase,
+    private void Leg(HumanoidPose pose, HumanoidBone thigh, HumanoidBone shin, HumanoidBone foot, int side, float phase,
         Vector2 idleFoot, float travel, float lift, float stance, float g, float run)
     {
         Vector2 target;
@@ -452,7 +485,7 @@ public sealed class PilgrimMotion
 
         target = Vector2.Lerp(idleFoot, target, run);
         footAngle *= run;
-        Vector2 hipJoint = hips + PlanarIk.Rotate(_dims.HipJoint, pose[HumanoidBone.Hips]);
+        Vector2 hipJoint = pose.HipJoint(_dims, side);
         (float upper, float lower) = PlanarIk.TwoBone(hipJoint, target + new Vector2(0f, _dims.AnkleHeight), _dims.Thigh, _dims.Shin, 1f);
         pose[thigh] = upper;
         pose[shin] = lower;
