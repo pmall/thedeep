@@ -1,40 +1,40 @@
 # Bricks — the catalog
 
-Every piece a world is built from (`docs/principles.md#bricks`). The prototype's job is to get each one **ready**; the real game is then assembled from them (`docs/roadmap.md#four-stages`). This file is the world builder's view: what you can place, and how far along it is. What a brick is and how to configure it is in its type's docblock; a brick that doesn't exist yet is described by the roadmap item that builds it.
+Every piece a world is built from (`docs/principles.md#bricks`). This file is the world builder's view: what you can place, and how far along it is. What a brick is and how to configure it is in its type's docblock; a brick that doesn't exist yet is described by the roadmap item that builds it.
 
-**Status** <a id="brick-status"></a>: **ready**: works, checked, at the visual bar, reusable as is. **working**: works and is checked, but its look, feel or generality still needs its prototype pass. **missing**: not built yet. **Item** is the roadmap item that makes it ready. Keep this file current when a brick is added or changes status.
+**Status** <a id="brick-status"></a>: **ready**: works, checked, at the visual bar, reusable as is. **working**: works and is checked, but its look, feel or generality still needs its pass. **missing**: not built yet. **Item**: the open roadmap item that makes it ready. Keep this file current when a brick is added or changes status.
 
 ## Stage: the look of a place <a id="bricks-stage"></a>
 
-| Brick | Status | Item |
-| -- | -- | -- |
-| `BiomeProfile` (flooded, frozen, volcanic, core; brine, the sequel world's variant of frozen) | working | `docs/roadmap.md#stage-bricks` |
-| Material library (`assets/materials/`, `assets/shaders/`) | working | `docs/roadmap.md#stage-bricks` |
-| `RoomStage` | working | `docs/roadmap.md#stage-bricks` |
-| Skylines (`backdrop_silhouette.gdshader`) | working | `docs/roadmap.md#stage-bricks` |
-| `BackdropArchitecture` | working | `docs/roadmap.md#stage-bricks` |
-| `WallDressing` | working | `docs/roadmap.md#stage-bricks` |
-| `Colonnade`, `RackRow`, `Spinner` | working | `docs/roadmap.md#stage-bricks` |
-| Kit meshes (`scripts/kit/`) | working | `docs/roadmap.md#stage-bricks` |
-| Light shafts, lamps, glyph lights (`Room`) | working | `docs/roadmap.md#stage-bricks` |
-| `AmbientParticles` | working | `docs/roadmap.md#stage-bricks` |
-| `WaterBody` (scenery) | working | `docs/roadmap.md#stage-bricks` |
+All working; the art pass makes them ready (`docs/roadmap.md#art-restore`).
+
+- `BiomeProfile` (flooded, frozen, volcanic, core; brine, the sequel world's variant of frozen)
+- Material library (`assets/materials/`, `assets/shaders/`)
+- `RoomStage`
+- Skylines (`backdrop_silhouette.gdshader`)
+- `BackdropArchitecture`
+- `WallDressing`
+- `Colonnade`, `RackRow`, `Spinner`
+- Kit meshes (`scripts/kit/`)
+- Light shafts, lamps, glyph lights (`Room`)
+- `AmbientParticles`
+- `WaterBody` (scenery)
 
 ## Level: what the pilgrim plays on <a id="bricks-level"></a>
 
 | Brick | Status | Item |
 | -- | -- | -- |
 | `Block` (rock, metal, cracked) | ready | — |
-| `RoomExit` | ready | — |
+| `RoomExit` | ready (seams: `docs/roadmap.md#seam-coherence`) | — |
 | `HarpoonAnchor` (its state shown: `AnchorLook`) | ready | — |
-| `AnchorPointer` (the edge chevron toward a ring in sight off screen) | working (look) | `docs/roadmap.md#stage-bricks` |
+| `AnchorPointer` (the edge chevron toward a ring in sight off screen) | working (look) | `docs/roadmap.md#bricks-ready` |
 | `WaterBody` (swim) | ready | — |
-| `HeatZone` | working (look) | `docs/roadmap.md#stage-bricks` |
+| `HeatZone` | working | `docs/roadmap.md#volcanic-rethink` |
 | `Lift` | ready | — |
-| `Portcullis` | working | — |
+| `Portcullis` | working | `docs/roadmap.md#bricks-ready` |
 | `MapGoal` | ready | — |
 | `PhotoSpot` | ready | — |
-| `LockedDoor` (a key's lock or a code's seal, on an exit; `DoorLock`, one per kind) | ready (the gate's bars are the `Portcullis`'s) | — |
+| `LockedDoor` (a key's lock or a code's seal, on an exit; `DoorLock`, one per kind) | ready | — |
 | Hidden passage: `FalseWall` (found by walking in, played by `Secrets`) over a `RoomExit.Hidden` way | ready | — |
 | `Lever` (a switch: sets a mechanism, an item of kind Mechanism) and its gate (a `LockedDoor` for it) | ready | — |
 
@@ -42,11 +42,10 @@ Every piece a world is built from (`docs/principles.md#bricks`). The prototype's
 
 | Brick | Status | Item |
 | -- | -- | -- |
-| Body and look (`resources/parts/pilgrim.tres`) | working (`docs/art-direction.md#art-open`) | `docs/roadmap.md#pilgrim` |
-| Animation (`PilgrimMotion`: ground, Mag-grip's cling, air, the ground and air dash, the Drill's bore, swim, Ballast's sink and rise, dive, the harpoon's throw and reach, strikes, hurt, the ledge vault; rest, relic and death moments) | working (every move posed; contrast to come, secondary motion in stage D) | `docs/roadmap.md#pilgrim` |
-| Base moveset (`docs/gameplay.md#moveset`) | ready (rules), feel pass to come | `docs/roadmap.md#feel-fight` |
-| Abilities (`docs/gameplay.md#abilities`) | ready (rules), animation to come | `docs/roadmap.md#pilgrim`, `docs/roadmap.md#feel-fight` |
-| Fight moves (`PlayerAttack` over the core's `Combo`: a chain to a finisher, a down strike, a dash strike, the hit stop; shown as sword moves by `StrikeMotion`, the blade's slash by `SlashTrail`) | working (feel to tune with the owner) | `docs/roadmap.md#feel-fight` |
+| Body, look and animation | missing (the current ones are replaced from zero) | `docs/roadmap.md#pilgrim` |
+| Base moveset (`docs/gameplay.md#moveset`) | ready (rules), feel to tune | `docs/roadmap.md#feel-fight` |
+| Abilities (`docs/gameplay.md#abilities`) | ready (rules), feel to tune | `docs/roadmap.md#feel-fight` |
+| Fight moves (`PlayerAttack` over the core's `Combo`) | working (feel) | `docs/roadmap.md#feel-fight` |
 | Effects (`PlayerEffects`) | working | `docs/roadmap.md#pilgrim` |
 | Health and grace | working | `docs/roadmap.md#feel-fight` |
 
@@ -57,19 +56,19 @@ Every piece a world is built from (`docs/principles.md#bricks`). The prototype's
 | `Machine` + `MachineSpecies` | ready (framework) | — |
 | Brains (`core/machines/brains/`) | working placeholders | `docs/roadmap.md#stage-polish` (the bestiary) |
 | Species (`resources/machines/`, 10 placeholders) | working placeholders | `docs/roadmap.md#stage-polish` |
-| `BossSeal` | working | — |
-| `Ambush` (a wave that stands up behind falling gates; with `BossSeal`, over the core's `ArenaFight`, played by `Arenas`) | working | — |
+| `BossSeal` | working | `docs/roadmap.md#bricks-ready` |
+| `Ambush` (with `BossSeal`, over the core's `ArenaFight`, played by `Arenas`) | working | `docs/roadmap.md#bricks-ready` |
 
 ## Story and text <a id="bricks-text"></a>
 
 | Brick | Status | Item |
 | -- | -- | -- |
 | Line book (`LineBook`: the game's own, `resources/lines.tres`, which each world's extends) | ready | — |
-| `Banner`, `HintLine` | working | `docs/roadmap.md#game-systems` |
-| `Proclamation` | working | `docs/roadmap.md#game-systems` |
-| `ScripturePlate` | working | `docs/roadmap.md#game-systems` |
-| `LawBreak` | working | — |
-| Dialogue: `Conversation` (lines in turn, on whoever speaks), `DialogueBox`, played by `Conversations` (over `DialogueFlow`) | working (look) | `docs/roadmap.md#stage-bricks` |
+| `Banner`, `HintLine` | working | `docs/roadmap.md#bricks-ready` |
+| `Proclamation` | working | `docs/roadmap.md#law-readable` |
+| `ScripturePlate` | working | `docs/roadmap.md#bricks-ready` |
+| `LawBreak` | working | `docs/roadmap.md#law-readable` |
+| Dialogue: `Conversation`, `DialogueBox`, played by `Conversations` (over `DialogueFlow`) | working (look) | `docs/roadmap.md#bricks-ready` |
 
 ## Items and progress <a id="bricks-items"></a>
 
@@ -77,27 +76,20 @@ Every piece a world is built from (`docs/principles.md#bricks`). The prototype's
 | -- | -- | -- |
 | `AbilityRelic` | working | `docs/roadmap.md#pilgrim` (the moment) |
 | `PowerUp` (strength or defense, for good: `Prowess`), played by `PowerUps` | ready | — |
-| Items: `ItemDefinition`, `ItemPickup` (keys, codes), held by `Inventory`, played by `Keyring` | ready (a key: the Sacristy's; a code: the Pyre's litany, its script the makers' glyphs, in green) | — |
+| Items: `ItemDefinition`, `ItemPickup` (keys, codes), held by `Inventory`, played by `Keyring` | ready | — |
 
 ## Systems <a id="bricks-systems"></a>
 
 | Brick | Status | Item |
 | -- | -- | -- |
-| World (`WorldDefinition`: its network and room table) | ready | `docs/roadmap.md#sequel-test` |
-| `Session`, `Shrine`, save | working | `docs/roadmap.md#game-systems` (items in the save) |
+| World (`WorldDefinition`: its network and room table) | ready | — |
+| `Session`, `Shrine`, save | working | `docs/roadmap.md#bricks-ready` |
 | Room travel (`RoomTravel`) | ready | — |
-| Map screen (`MapScreen`) | working | `docs/roadmap.md#game-systems` |
+| Map screen (`MapScreen`) | working | `docs/roadmap.md#bricks-ready` |
 | Gate hints (`GateHints`; a locked door's line is the `Keyring`'s) | ready | — |
-| End card (`EndCard`) | working placeholder | — |
+| End card (`EndCard`) | working placeholder | `docs/roadmap.md#stage-polish` |
 | Camera (`SideCamera`) | working | `docs/roadmap.md#feel-fight` |
 
 ## Proof <a id="bricks-proof"></a>
 
-| Brick | Status |
-| -- | -- |
-| Map solver (`MapSolver`) | ready |
-| Reach planner (`ReachPlanner`) | ready |
-| Room, travel, species and lab checks (`docs/testing.md#check`) | ready |
-| Required exports (`RequiredExports`) | ready |
-| Line check (`LineCheck`: every line the code and a world's content name is in its book) | ready |
-| Network and room table check (`MapDraft`, `RoomTable`: a world's `rooms.tsv` held to its network, kinds in `RoomKind`), and its drawing (`MapDrawing`, written by `tools/map.sh`) | ready |
+All ready: the map solver (`MapSolver`), the reach planner (`ReachPlanner`), the room, travel, species and lab checks (`docs/testing.md#check`), required exports (`RequiredExports`), the line check (`LineCheck`), the network and room table check (`MapDraft`, `RoomTable`, kinds in `RoomKind`) and its drawing (`MapDrawing`, written by `tools/map.sh`).

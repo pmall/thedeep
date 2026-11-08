@@ -1,6 +1,6 @@
 # Theme — "The Deep"
 
-Owner-written. The game's theme. Narrative is still not implemented; use the theme to guide names, placeholder text and the look of the protagonist. Setting and scope live in `docs/vision.md#setting`, the long-term objectives in [long-term.md](long-term.md).
+The game's theme: the three laws are decided (owner), the rest is a working direction. Narrative is stage D's (`docs/roadmap.md#stage-polish`); until then the theme guides names and placeholder text. The setting is `docs/vision.md#setting`.
 
 ## Decided <a id="laws"></a>
 

@@ -4,7 +4,7 @@ using Godot;
 namespace TheDeep;
 
 /// <summary>
-/// A trap room's arena (a room kind, docs/roadmap.md#game-systems): its machines (<see cref="Wave"/>) are not there until the pilgrim
+/// A trap room's arena (a room kind, docs/vision.md#game-systems): its machines (<see cref="Wave"/>) are not there until the pilgrim
 /// steps inside the arena; then the gates fall behind and ahead and the wave stands up at its places; when the last of it breaks,
 /// the gates rise and stay up (the core's <see cref="ArenaFight"/>). Cleared, it is cleared for good (<see cref="Arenas"/> remembers
 /// it and calls <see cref="Settle"/>); dying in it reloads the room, the trap set again. The gates are not part of the map: the ways

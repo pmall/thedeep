@@ -1,6 +1,6 @@
 # Programming principles
 
-Owner direction, 2026-11-01. Read this before writing or moving any code. These rules come before convenience. When a rule here and existing code disagree, the code is what's out of date: follow the rule for new code, and fix the old code when you touch it, or as a listed roadmap item.
+Owner direction. Read this before writing or moving any code. These rules come before convenience. When a rule here and existing code disagree, the code is what's out of date: follow the rule for new code, and fix the old code when you touch it, or as a listed roadmap item.
 
 The game is built twice: first a **prototype** that is our playground, then the **real game** assembled from the prototype's pieces on a much bigger map (`docs/roadmap.md#four-stages`). Each rule below exists so that the second build is assembly, not rewriting. The test to keep in mind: *if we made a sequel tomorrow, with a new map, new rooms and a new biome, could we build it from what is here without changing the code?*
 
@@ -34,7 +34,8 @@ Rules:
 
 - **Decide in the core, show in the adapter.** If a piece of code answers a question about the game (may the pilgrim grip here? what does this machine want? does this key open this door? is this map softlock-free?), it belongs in the core. An adapter only translates.
 - **Adapters stay thin.** A Godot node that grows its own rules (timers, state machines, formulas) is a smell: move the rules into a core class the node owns, and test them there.
-- **The core never calls the engine.** Time comes in as a `dt` argument, randomness as a seeded generator passed in, the world as plain data (boxes, rays already cast, positions). No static singletons, no hidden global state.
+- **The core never calls the engine.** Time comes in as a `dt` argument, randomness as a seeded generator passed in, the world as plain data (boxes, rays already cast, positions). No static singletons, no hidden global state. The test: could a small script use the rules directly?
+- **One layer wraps each data source** (save files, a world's data); only it knows how and where the data is stored.
 - **Vectors at the seam.** The core uses `System.Numerics`; adapters convert to and from Godot types, only through `Numerics`, never spread through gameplay code.
 - **The compiler enforces the boundary.** The core lives in its own project (`core/TheDeep.Core.csproj`) with no Godot reference, so a Godot type in core code does not compile. The game and the tests reference it. Godot `[Export]` properties may use the core's enums: they are plain C# enums.
 - **Godot's strengths are still used.** Scenes, resources, physics, rendering, shaders and the importer are the engine's job and stay there. Don't rebuild them in C#. The aim is clean dependencies, not a second engine.
@@ -52,6 +53,7 @@ Rules:
 
 C# is typed: use the type system to model the game, never to be silenced. **If you find yourself fighting the compiler, the model is wrong.** Stop and change the model, not the annotation.
 
+- **Expected failures are in the types**, unexpected ones are raised.
 - **Nullable means "may really be absent."** A value is `T?` only when the game allows it to be missing (a room with no water, a pilgrim with no anchor in sight). Then handle the absence where it matters. A value that is always there is never `T?`.
 - **No null-forgiving operator (`!`) to make the compiler quiet.** The one sanctioned form is an `[Export]` reference that the scene must set, declared `= null!;` (the engine injects it). Everywhere else, `x!` means the type is lying: restructure. For example, a planner that holds optional ability limits as `_grip?` and then writes `_grip!` everywhere it plans a grip should instead receive non-null limits for the abilities it simulates, or split its grip planning into a part that only exists when gripping is possible.
 - **Optional exports are `T?` and checked.** An export a scene may leave empty is nullable and the code says what happens without it. An export a scene must set is non-null, and a room or brick check fails when it is missing.
@@ -61,6 +63,7 @@ C# is typed: use the type system to model the game, never to be silenced. **If y
 - **No casts to escape the compiler.** `as T`, `(T)obj` and `GetNode<T>` on a guess are for the engine seam only (finding a node by type in a tree). In the core, if you need a cast, the types are wrong.
 - **Prefer immutable values**: `record`, `readonly struct`, `init` properties. Mutable state lives in few, named places (the session, a state machine, an adapter's node).
 - **Warnings are errors, and stay so.** No `#pragma warning disable`, no `SuppressMessage` to pass a build. An analyzer rule wrong for this project is turned off for the whole project in `.editorconfig`, with its reason beside it.
+- **The Python tools** hold their annotations to the same truth, checked by mypy in strict mode.
 - **Name units when a number has one**: `Seconds`, `Meters`, `PerSecond` in names or docs (`DashDuration`, `HarpoonRange` in meters), never a bare `float t` crossing a boundary.
 
 ## Proven, not hoped <a id="proven"></a>

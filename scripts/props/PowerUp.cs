@@ -4,7 +4,7 @@ using Godot;
 namespace TheDeep;
 
 /// <summary>
-/// A power-up (docs/roadmap.md#game-systems): a crystal floating in the cradle of a low pedestal that adds <see cref="Amount"/> to one
+/// A power-up (docs/vision.md#game-systems): a crystal floating in the cradle of a low pedestal that adds <see cref="Amount"/> to one
 /// of the pilgrim's stats for good (<see cref="Stat"/>: strength, more damage per blow; defense, more health). Each stat has its own
 /// look as well as its color (<see cref="PowerStats"/>), so they never read alike: strength a crown of blades
 /// (<see cref="StrengthLook"/>), defense a cut stone held in two warding rings (<see cref="DefenseLook"/>). Walking up to it takes it

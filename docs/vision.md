@@ -6,25 +6,28 @@
 
 **One word for the whole game: graceful** <a id="graceful"></a> (owner). Use it as the tiebreaker for every choice:
 
-- **Movement:** hyper-dynamic and fluid (owner, 2026-10-31): moves chain into each other without hard stops; momentum carries through jumps, dashes and landings. Graceful is not floaty: controls stay tight and precise.
+- **Movement:** hyper-dynamic and fluid: moves chain into each other without hard stops; momentum carries through jumps, dashes and landings. Graceful is not floaty: controls stay tight and precise.
 - **Animation:** fluid and acrobatic, with flowing secondary motion (cloth, hair, cables).
 - **Visuals:** restraint. Clean shapes, a calm palette, one accent color, uncluttered screens.
 - **Camera and UI:** eased, never jerky. Thin, minimal interface, smooth transitions.
 - **Pacing:** calm, deliberate moments between bursts of action, like *Inside*.
 
-Design principles:
+Design principles (owner):
 
 - **A finished, playable game.** No novel signature systems. Classic metroidvania structure done well.
-- **A small, fixed set of abilities** (five, [gameplay.md](gameplay.md)); the map is built around them.
-- **The order of work** is the owner's four stages (`docs/roadmap.md#four-stages`).
-- **Built from bricks** ([principles.md](principles.md)): everything the game is made of is a reusable piece, so a bigger world (or a sequel) is assembled, not rewritten.
+- **A small, fixed set of abilities** (five, `docs/gameplay.md#abilities`); the map is built around them.
+- **Built from bricks** (`docs/principles.md#bricks`), in the owner's four stages (`docs/roadmap.md#four-stages`).
 
 ## Scope <a id="scope"></a>
 
-- **The prototype** (built): three depth layers plus the core, five unlockable abilities, 42 rooms, 4 bosses and 3 law breaks ([map-draft.md](../worlds/prototype/map-draft.md)). It was planned as about 2 hours of play, *Inside*-dense. It is now the playground where every brick is proven.
-- **The real game** (owner, 2026-11-01: "I start to be ambitious"): bigger than the prototype, with many paths, loops and secret rooms, every room with a purpose (a secret, an ambush, an enigma, lore). Its size and length are decided with its network of rooms (`docs/roadmap.md#stage-plan`). Dense still beats wide: no filler.
-- **Prototype systems kept deliberately small:** one kind of power-up (a permanent bonus to strength or defense), a small inventory of keys and codes that open doors, dialogue boxes. Nothing more.
-- The long-term objectives ([long-term.md](long-term.md)) add depth without making the game harder to play.
+- **The prototype**: three depth layers plus the core, the five abilities, bosses and law breaks ([map-draft.md](../worlds/prototype/map-draft.md)). The playground where every brick is proven.
+- **The real game** (owner): bigger than the prototype, with many paths, loops and secret rooms, every room with a purpose (a secret, an ambush, an enigma, lore). Its size and length are decided with its network of rooms (`docs/roadmap.md#stage-plan`). Dense still beats wide: no filler.
+- **Game systems kept deliberately small** <a id="game-systems"></a> (owner):
+  - one kind of power-up, a permanent bonus to strength or defense;
+  - a small inventory of keys and codes that open doors, part of the requirement language of exits so the solver proves the world with them (no key behind its own door);
+  - a dialogue box: a speaker and lines in turn, small on screen (the owner plays on a gamepad);
+  - the room kinds the plan uses: a hidden passage (a secret room's way in), an ambush (an arena that seals while a wave of machines stands), a switch and its mechanism (an enigma's piece).
+- The long-term objectives (`docs/long-term.md`) add depth without making the game harder to play.
 
 ## Setting <a id="setting"></a>
 
@@ -34,4 +37,4 @@ A planet in the *Nirvanary* universe. Machines across many worlds seek "Nirvanar
 
 **The game is a descent:** deeper means older, stranger, hotter.
 
-Narrative is polish (`docs/roadmap.md#stage-polish`): until then, placeholder text only; the prototype builds the dialogue box, not the dialogue. Given the *Inside* reference, expect storytelling to come mostly through environments and machine behavior rather than text. Keep rooms and machines able to carry that later. The owner also wants **high-quality voiced dialogue** someday, with generated voices. Hence all text is data (`docs/principles.md#data-first`, `docs/roadmap.md#audio`).
+Narrative is polish (`docs/roadmap.md#stage-polish`): until then, placeholder text only. Given the *Inside* reference, expect storytelling to come mostly through environments and machine behavior rather than text, so keep rooms and machines able to carry it. The owner wants **high-quality voiced dialogue** someday, with generated voices: hence all text is data (`docs/principles.md#data-first`, `docs/roadmap.md#audio`).

@@ -6,20 +6,20 @@ What the player does and what the world asks of them: design intent and the rule
 
 - **Run.**
 - **Jump** with variable height (release early for a short hop), coyote time and a jump buffer.
-- **Ledge assist** (owner, 2026-11-01: jumps felt too exact, against the hyper-dynamic goal): an airborne pilgrim pressing into a wall whose top is a little above its feet is lifted onto it, keeping its way and speed. The map's planner lifts the same way (`LedgeAssist`), so no gate is passed by it unproven.
+- **Ledge assist** (owner: jumps must never feel exact): an airborne pilgrim pressing into a wall whose top is a little above its feet is lifted onto it, keeping its way and speed. The map's planner lifts the same way (`LedgeAssist`), so no gate is passed by it unproven.
 - **Dash** on the ground and in the air (one air dash per airtime, refilled on landing). A ground dash can be cancelled into a jump.
 
 ## Room metrics <a id="room-metrics"></a>
 
 For building rooms. A full jump rises 3.2 m, so a step the pilgrim must climb is at most **2.5 m**, and a ladder of ledges rises 2.5 m per ledge (never 3). A gap crossed at one height is at most **7 m** (the exact pilgrim crosses about 10 m with a running jump and the air dash).
 
-These leave room for error, because jumps must never be exact (owner, 2026-11-01): the room check walks every room again with a much clumsier pilgrim (`MoveLimits.Clumsy`) and fails on any way it misses. The ledge assist is extra forgiveness on top, never a reason for a higher step: with it a ledge up to about 3.6 m is reached, so a wall that gates an ability (Mag-grip's, the Harpoon's) stays well above that. A room that moves the tuning (a higher jump) moves these too.
+These leave room for error, because jumps must never be exact (owner): the room check walks every room again with a much clumsier pilgrim (`MoveLimits.Clumsy`) and fails on any way it misses. The ledge assist is extra forgiveness on top, never a reason for a higher step: with it a ledge up to about 3.6 m is reached, so a wall that gates an ability (Mag-grip's, the Harpoon's) stays well above that. A room that moves the tuning (a higher jump) moves these too.
 
 ## The pilgrimage <a id="pilgrimage"></a>
 
 - **Attack:** the fight moveset (`docs/gameplay.md#fight`). A machine hit flashes, reels and is pushed back; broken, it is gone until the room is entered again.
 - **Health:** a few hits, shown top left as thin diamonds. A blow throws the pilgrim back and takes control away a moment, then nothing hurts for a short grace.
-- **Heat** <a id="heat"></a> (owner feedback, 2026-11-07: the volcanic layer's heat hurt erratically, and a pilgrim fallen into a slag channel bounced in small hops, out of control): without Heat plating, touching heat (a vent's column, the air over slag) burns, as spikes and acid do in Hollow Knight. One health (none in the grace), the pilgrim recoils, and under a quick veil it stands again on the last ground it stood on clear of heat, in control. So heat is never crossed without the plating, and nobody is ever stuck in it, thrown across it, or hurt by it faster than the grace allows. With the plating heat is harmless; slag itself kills, plated or not.
+- **Heat** <a id="heat"></a> (until `docs/roadmap.md#volcanic-rethink` redesigns it): without Heat plating, touching heat (a vent's column, the air over slag) burns, as spikes and acid do in Hollow Knight. One health (none in the grace), the pilgrim recoils, and under a quick veil it stands again on the last ground it stood on clear of heat, in control. So heat is never crossed without the plating, and nobody is ever stuck in it, thrown across it, or hurt by it faster than the grace allows. With the plating heat is harmless; slag itself kills, plated or not.
 - **Death:** the pilgrim wakes at the last shrine it rested at, whole, the room renewed (its machines back).
 - **Shrines:** resting heals and saves the game there.
 - **Ability relics:** walking into one takes it: the ability unlocks, a banner names it and says how to use it, the game saves. A taken relic stays taken.
@@ -33,7 +33,7 @@ These leave room for error, because jumps must never be exact (owner, 2026-11-01
 
 ## Leaving a room <a id="leaving-a-room"></a>
 
-Owner direction (2026-11-06): room transitions as in the classics (Hollow Knight, Super Metroid), and never a fall out of the world.
+Room transitions as in the classics (Hollow Knight, Super Metroid), and never a fall out of the world (owner).
 
 - **Each exit has a trigger covering its whole opening**, from the room's edge outward: a doorway's from floor to lintel, a hatch's from wall to wall. Touching it leaves the room, whatever the pilgrim is doing: walking, jumping, dashing, gripping, swinging. Standing in a doorway, or dropping into one from a flue above, is still being in the room; dipping into a hatch's hole is leaving.
 - **Arriving**, the pilgrim appears clear of the matching exit's trigger with its speed kept, never moving back out: through a doorway standing on its marker, up through a floor with a hop that clears the hole (carried onto the floor beside it), down through a roof falling. Going straight back out goes back.
@@ -60,7 +60,7 @@ These gate the map. Every ability is one simple state or rule: no systemic or em
 | Ability | What it does | What it gates |
 | -- | -- | -- |
 | **Mag-grip** <a id="mag-grip"></a> | Walk on **metal** walls and ceilings; rock can't be gripped, and water lets go of it | Vertical shafts and ceilings made of metal |
-| **Harpoon** <a id="harpoon"></a> | Fire at a mooring ring in sight (hold up or down to aim) and zip to it; a ring in sight that the camera doesn't frame is shown by a chevron at the screen's edge (owner, 2026-11-02: targets off screen were invisible) | Gaps with rings |
+| **Harpoon** <a id="harpoon"></a> | Fire at a mooring ring in sight (hold up or down to aim) and zip to it; a ring in sight that the camera doesn't frame is shown by a chevron at the screen's edge | Gaps with rings |
 | **Drill** <a id="drill"></a> | A dash bores through **cracked rock**; down + dash dives through cracked floors. Broken rock stays broken | Cracked rock walls and floors |
 | **Ballast** <a id="ballast"></a> | Without it the pilgrim floats; with it, in water, hold down to sink and walk the bottom, up or jump to rise | Exits under water, under walls that reach into it |
 | **Heat plating** <a id="heat-plating"></a> | Passive: heat (vents, the air over slag) no longer burns (`docs/gameplay.md#heat`). Slag itself kills, plated or not | Vents and molten mouths |
@@ -69,7 +69,7 @@ Rules for rooms: only the physics layer makes metal (`docs/art-direction.md#visu
 
 ## Controls <a id="controls"></a>
 
-Bindings are the input map in `project.godot` (names in `InputActions`). Debug builds show them on screen, gameplay and debug apart and small (owner, 2026-11-01; `ControlsManual`).
+Bindings are the input map in `project.godot` (names in `InputActions`). Debug builds show them on screen, gameplay and debug apart and small (owner; `ControlsManual`).
 
 | Action | Keyboard | Gamepad |
 | -- | -- | -- |

@@ -1,68 +1,69 @@
 # The Deep — agent guide
 
-A 2.5D side-scrolling **metroidvania** (Godot .NET, C#) about an android pilgrim descending toward a planet's core ([docs/vision.md](docs/vision.md)). The coding agent builds everything by editing text files; the owner only plays and gives feedback. **Never ask the owner to use the Godot editor.**
+A 2.5D side-scrolling **metroidvania** (Godot .NET, C#) about an android pilgrim descending toward a planet's core. The coding agent is the developer: it builds everything by editing text files and makes every technical and organizational choice. The owner plays, gives feedback and sets the direction. **Never ask the owner to use the Godot editor.**
 
-**This file is the only agent instruction file** <a id="agents-file"></a>. Claude Code reads `AGENTS.md` natively, but only when there is no `CLAUDE.md`, `.claude/CLAUDE.md` or `CLAUDE.local.md` in the project or a folder above it, and any of those silently replaces it. Create none of them; if one appears above the project, tell the owner. Topic detail lives in `docs/`, pointed to from here.
+## The goal <a id="goal"></a>
+
+Make the game of [docs/vision.md](docs/vision.md), following the owner's plan: a prototype made of reusable bricks, then the real game's bigger map laid down on paper, then that game built from the bricks, then the details (`docs/roadmap.md#four-stages`). The work is the roadmap's current item. The docs exist only so the agent can do it.
+
+Every task, rule and doc line answers to this goal. Before adding one, ask whether the next agent needs it to do the roadmap's work; if not, leave it out.
+
+**This file is the only agent instruction file** <a id="agents-file"></a>. Claude Code reads `AGENTS.md` only when no `CLAUDE.md`, `.claude/CLAUDE.md` or `CLAUDE.local.md` exists in the project or above it. Create none; if one appears above the project, tell the owner.
 
 ## Every session <a id="session"></a>
 
-1. Read this file and [docs/state.md](docs/state.md) (where things stand), then [docs/roadmap.md](docs/roadmap.md) for the current stage's items.
-2. Read the docs below that match the task. Don't read them all up front.
-3. Work on the current stage's first unfinished item, or what the owner asks for. For any visual change, capture before and after and look at the images (`docs/art-direction.md#judge-images`).
-4. Every turn that changed files ends with the fast check, and the full check runs when the work is finished (`AGENTS.md#checks`). Keep `godot --path .` working: it is the owner's launch command.
-5. Update [docs/state.md](docs/state.md), and `docs/bricks.md` when a brick changes status: replace what changed, never append a session log.
-6. Hand over with **one command that reaches the new content with the abilities it needs**, and what to try there (`docs/testing.md#playtest`). Never hand over a command that drops the owner somewhere they can't move.
-
-When the owner changes direction, rewrite the docs it touches so none of them contradicts it. Don't stack the new rule on top of the old one.
-
-## Working principles <a id="working-principles"></a>
-
-These hold for every task. [docs/principles.md](docs/principles.md) applies them to this game and its stack; it never restates them.
-
-- **Automated checks** <a id="checks"></a>. A formatter, a linter, the compiler and the tests, each the standard tool of its language; the formatter covers every file the project keeps, docs included, so a file's layout never depends on who last wrote it. Two commands (`docs/testing.md#check`): the **fast check** formats, lints and builds, and ends every turn that changed files, so problems are caught while they're small; the **full check** runs everything (the headless checks, the unit tests). Formatting is the formatter's job, never fixed by hand. Never make a check pass by disabling a rule or skipping a check without writing down why.
-- **Capabilities first, interfaces second** <a id="capabilities-first"></a>. What the game can do (its rules, its state, its map, its planner) is written once as plain code that knows nothing of how it's reached; the engine, the checks and the tools are thin layers on top. Below the rules, one layer wraps each data source (save files, a world's data), and only it knows how and where data is stored. Capabilities take everything as arguments (time, randomness, the world as data). This is what lets the game be tested without the engine, a second world be built with no code change, and a tool reuse a rule. The test: could a small script use the rules directly? Applied here as `docs/principles.md#engine-detail`.
-- **Truthful types** <a id="truthful-types"></a>. Types say exactly what the game allows: nullable only when really absent, a union only when the value really takes several shapes; expected failures are in the types, unexpected ones are raised. Never weaken a type to quiet the compiler: having to fight it means the model is wrong. In a dynamic language (the Python tools) this holds for its annotations and their checker. Applied here as `docs/principles.md#types-truth`.
-- **Every fact lives in one place**, so a change touches as few places as possible (`AGENTS.md#doc-rules`).
-- **Knowledge lives in the repo**, not in an agent's memory, so every agent and every machine sees the same truth (`AGENTS.md#no-memory`). When the docs and the code disagree, the code wins and you fix the docs.
-- **Git** <a id="git"></a>. The agent manages git and the remote (`git@github.com:pmall/thedeep.git`). It commits each coherent, passing unit of work with a message that says why, and pushes. It never commits secrets and never rewrites pushed history.
-- **Working with the owner** <a id="owner"></a>. Product decisions are the owner's; the owner has delegated taste, tuning, look and scope within the roadmap to the agent (`AGENTS.md#orchestrate`). Technical decisions and the quality of the work are the agent's. When a technical choice touches the owner (cost, an account, a step only they can take), say so plainly. When a request conflicts with these principles, say so and propose a better way.
+1. Read this file and [docs/state.md](docs/state.md), then the current item in [docs/roadmap.md](docs/roadmap.md).
+2. Read only the doc sections the task needs (`AGENTS.md#read-when`).
+3. For any visual change, capture before and after and look at the images (`docs/art-direction.md#judge-images`).
+4. Run the checks (`AGENTS.md#checks`). Keep `godot --path .` working: it is the owner's launch command.
+5. Update the state, the roadmap and `docs/bricks.md` as `AGENTS.md#doc-rules` says.
+6. Hand over with **one command that reaches the new content with the abilities it needs**, and what to try there (`docs/testing.md#playtest`). Never one that drops the owner somewhere they can't move.
 
 ## Orchestrating <a id="orchestrate"></a>
 
-The main session orchestrates and subagents do the work (owner, 2026-11-07), so the main session's context stays small over a long session.
+The main session plans and subagents build (owner), so the main session's context stays small across a long session.
 
-- **One subagent per item**, or per well-bounded part of one. Its prompt names the item's id, the docs to read, the files in play, what done means, and that it runs the full check and commits only its own files. It reports back in a few lines: what changed, the commit, what it could not do, and any question for the owner.
-- **Small tasks, small contexts.** A long subagent wastes as much context as a long main session. Give each one a task done in one short sitting (one species, one room's fix, one bug), cite the doc sections it needs (ids, not whole docs), and set a budget: which captures to judge by (only the spots and reels the change touches) and how many tries before it commits what is good and reports what is left. Logs are grepped, never read whole.
-- **One deliverable per subagent** <a id="one-deliverable"></a> (owner, 2026-11-08). Measuring a problem, finding its causes and fixing each cause are separate subagents, run in turn, each started from the previous one's few-line report. A brief that needs numbered phases is several briefs. The main session holds the sequence; no subagent holds a whole item.
-- **Interrupted, never resumed** <a id="fresh-handover"></a> (owner, 2026-11-08). A subagent cut off (a usage limit, a crash) is not resumed: its whole context would be reloaded cold. A fresh subagent takes over from the working tree, with a short brief of what is left. So a subagent commits each passing step as it goes, and a cut-off loses little.
-- **Builders run one at a time.** A subagent that builds, checks or captures has the working tree to itself: `tools/check.sh` and `tools/capture.sh` see the whole tree, and captures need the GPU to themselves (`docs/toolchain.md#gpu`). Read-only research (finding code, gathering open questions) may run beside it.
-- **The main session reads reports**, and the docs it needs to decide. It doesn't read code or logs, and looks at a capture only to judge a visual change itself.
-- **Decide, then ask only what blocks** (owner, 2026-11-07). The agent makes every choice it can: taste, tuning, look, scope within the roadmap. It records each one where it belongs, marked as decided under the owner's delegation so the owner can overturn it, and builds on it. It asks only what it genuinely can't continue without: the owner's play, feel and sign-off, or something only the owner can provide (an account, a tool). When nothing is left but that, stop and hand over those questions, each answerable on its own, with where to look.
-- **Converge.** Work toward the current stage's done bar and stop there; don't polish past it. A nitpick goes on its stage's list, not into the session.
+- **The main session splits the current item into small tasks itself** and gives each to a fresh subagent: one deliverable each, done in one short sitting. Measuring a problem, finding its cause and fixing one cause are three tasks. Handing a whole item to one subagent is not orchestrating (owner).
+- **A brief** names the task, the doc sections it needs (by id), the files in play, what done means, the captures to judge by and how many tries before it commits what is good and reports the rest. The subagent runs the full check, commits only its own files as each step passes, and reports in a few lines: what changed, the commit, what is left, any question for the owner.
+- **A subagent cut off** (a usage limit, a crash) is never resumed, which would reload its whole context: a fresh one takes over from the working tree with a short brief of what is left.
+- **Builders run one at a time.** Checks and captures see the whole tree, and captures need the GPU to themselves (`docs/toolchain.md#gpu`). Read-only research may run beside a builder.
+- **The main session reads reports** and the docs it needs to decide, not code or logs. It looks at a capture only to judge a visual change.
+- **Decide, ask only what blocks.** The agent decides taste, tuning, look and scope within the roadmap, and builds on it. It asks the owner only for what nobody else can give: play, feel, sign-off, an account or a tool. When nothing else is left, it stops and hands over those questions, each answerable on its own, with where to look.
+- **Converge.** Work to the current item's done bar and stop there.
+
+## Working principles <a id="working-principles"></a>
+
+- **Checks** <a id="checks"></a>. The **fast check** (`tools/check.sh --fast`: formats, lints, builds) ends every turn that changed files; the **full check** (`tools/check.sh`) runs when the work is finished (`docs/testing.md#check`). Formatting is the formatter's job, never done by hand. Never make a check pass by disabling a rule or skipping a check without writing down why.
+- **Code** follows [docs/principles.md](docs/principles.md): the rules in a pure core, the engine as a thin layer, worlds as data, types that tell the truth.
+- **Git** <a id="git"></a>. The agent commits each coherent, passing unit of work with a message that says why, and pushes (`git@github.com:pmall/thedeep.git`). It never commits secrets and never rewrites pushed history.
+- **The owner's direction** is marked "(owner)" where it lives. The agent doesn't overturn it; when a request conflicts with it or with these principles, it says so and proposes a better way. Everything else is the agent's to change. When a technical choice touches the owner (cost, an account, a step only they can take), say so plainly.
 
 ## Read when… <a id="read-when"></a>
 
 | You are about to… | Read |
 | -- | -- |
-| Pick up where the last session stopped | [docs/state.md](docs/state.md) |
-| Understand the game, its scope and setting | [docs/vision.md](docs/vision.md) |
-| Write, move or review any code | [docs/principles.md](docs/principles.md) (owner direction: bricks, the engine seam, data, typing) |
-| Add or change a reusable piece; know what can be placed in a room | [docs/bricks.md](docs/bricks.md) (the catalog and each brick's status) |
-| Write names or placeholder text, design the protagonist, or touch story beats | [docs/theme.md](docs/theme.md) (owner-written) |
-| Do any visual work (materials, lighting, meshes, VFX, characters) | [docs/art-direction.md](docs/art-direction.md) |
-| Touch movement, abilities, tuning or controls | [docs/gameplay.md](docs/gameplay.md) |
-| Find where code lives, add a folder or a system | [docs/architecture.md](docs/architecture.md) |
+| Pick up where the last session stopped | [docs/state.md](docs/state.md), then [docs/roadmap.md](docs/roadmap.md) |
+| Understand the game, its scope and setting | [docs/vision.md](docs/vision.md); its theme, for names, placeholder text and story beats: [docs/theme.md](docs/theme.md) |
+| Write, move or review any code | [docs/principles.md](docs/principles.md); where code lives: [docs/architecture.md](docs/architecture.md) |
 | Create or edit `.tscn` / `.tres` / C# Godot scripts or shaders | [docs/godot-csharp.md](docs/godot-csharp.md) |
+| Add or change a reusable piece; know what can be placed in a room | [docs/bricks.md](docs/bricks.md) |
+| Do any visual work | [docs/art-direction.md](docs/art-direction.md) |
+| Touch movement, abilities, tuning, controls or the rules rooms are built to | [docs/gameplay.md](docs/gameplay.md) |
+| Work on machines or the map's guarantees (any order, no softlock) | [docs/long-term.md](docs/long-term.md) |
 | Run, test, capture screenshots, or hand over to the owner | [docs/testing.md](docs/testing.md) |
-| Deal with versions, paths, .NET environment or upgrades | [docs/toolchain.md](docs/toolchain.md) |
-| Work on machines, rooms, connections or the map | [docs/long-term.md](docs/long-term.md) (owner-written) |
-| Build or change a room, an exit or a relic in the prototype | [worlds/prototype/map-draft.md](worlds/prototype/map-draft.md) (the prototype world's network; keep it in step with built rooms) |
-| Change the sequel world (the check's second world) | [worlds/sequel/network.md](worlds/sequel/network.md) (its network; keep it in step with its rooms) |
+| Deal with versions, paths, the .NET environment, the GPU or upgrades | [docs/toolchain.md](docs/toolchain.md) |
+| Build or change a room, an exit or a relic in the prototype | [worlds/prototype/map-draft.md](worlds/prototype/map-draft.md) (keep it in step with built rooms) |
+| Change the sequel world (the check's second world) | [worlds/sequel/network.md](worlds/sequel/network.md) (keep it in step with its rooms) |
 
 ## Writing docs <a id="doc-rules"></a>
 
-- **Every instruction lives in this repository** <a id="no-memory"></a>. The owner works on several machines, so nothing may depend on one machine: never use the agent's own memory (it is off in `.claude/settings.json`) or any file outside the project. What is worth remembering goes into the doc it belongs to, in the same commit.
+Docs drift when every session adds notes and none removes them. These rules keep them a tool for the next task.
+
+- **A doc says how things are and what to do**, for the agent: the owner's direction, rules with their reason in a few words, design intent, the plan, workflows and pitfalls. Never what was done or when, how a rule came about, the owner's words quoted, or past reasoning: that is `git log`.
+- **Status lives in two places**: [docs/state.md](docs/state.md), one screen (the current item and step, what waits on the owner), and the roadmap's open items. A finished item is deleted from the roadmap; what exists is the code, and `docs/bricks.md` says how ready each brick is. Topic docs hold no status.
+- **Owner feedback** becomes a rule where it belongs, or a roadmap item, in the agent's words. Once handled, it is gone.
+- **A change of plan or direction deletes what it replaces** in the same commit: every doc it touches is rewritten so none contradicts it. Never stack the new rule on the old.
 - **Every fact lives in one place.** Other places cite it; they never restate it. Before adding a sentence, look for where it already lives.
-- **Code is described only in its docblocks** (`///` on C# types and members, the header comment of a shader, a script or a tool). Docs hold what code can't say: the owner's direction, rules and the reasons behind them, design intent, status, workflows. A doc may name a type as the place to start reading, never describe what it does or how.
-- **Sections are cited by id, never by number or title.** A heading (or a list item or table row others cite) ends with a stable id written as an empty anchor, `<a id="…"></a>`, invisible once rendered, as every heading in [docs/principles.md](docs/principles.md) does. Cite it as `docs/principles.md#types-truth`, from docs and code alike (paths from the project root). Ids are unique across the project, keep their meaning when a heading is reworded or moved, and are never reused. Don't number sections or list items others refer to.
-- **No history.** What was done, when and in which session is in `git log`. Docs say how things are; an owner decision keeps its date.
+- **Code is described only in its docblocks** (`///` on C# types and members, the header comment of a shader, a script or a tool). A doc may name a type as the place to start reading, never describe what it does.
+- **Sections are cited by id** <a id="doc-ids"></a>, so a section can be reworded or moved without touching what cites it. A heading, list item or table row others cite ends with an empty anchor, `<a id="…"></a>`, cited as `docs/principles.md#types-truth` from docs and code alike (paths from the project root). Ids are unique across the project and never reused; `tools/docrefs.py`, in the full check, holds every citation to an id that exists.
+- **Every instruction lives in this repository** <a id="no-memory"></a>, so every machine and every agent sees the same truth: never the agent's own memory (off in `.claude/settings.json`) or a file outside the project. When a doc's description and the code disagree, the code wins and the doc is fixed; a rule of `docs/principles.md` wins over code that breaks it.

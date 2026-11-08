@@ -16,7 +16,7 @@ The owner's machine runs Ubuntu 26.04 with an NVIDIA RTX 3060 (Vulkan, Forward+)
 
 ## Formatters, linters and checkers <a id="format-tools"></a>
 
-Each is the standard tool of its language, pinned to an exact version so every machine formats and lints alike (`AGENTS.md#checks`); the check runs them (`docs/testing.md#check`), and nothing is installed system-wide but uv: the project's toolchain stays .NET plus uv and Python (owner, 2026-11-08: no Node in a C# project).
+Each is the standard tool of its language, pinned to an exact version so every machine formats and lints alike (`AGENTS.md#checks`); the check runs them (`docs/testing.md#check`), and nothing is installed system-wide but uv: the project's toolchain stays .NET plus uv and Python (owner: no Node).
 
 | Files | Formatter | Linter, checker | Version, pinned in | Installed by |
 | -- | -- | -- | -- | -- |
@@ -29,8 +29,6 @@ Each is the standard tool of its language, pinned to an exact version so every m
 To upgrade one, change its pin (and the date `uvx` resolves dependencies at, beside the pins), run the fast check (it reformats), and commit the reformat on its own.
 
 ## What needs the GPU <a id="gpu"></a>
-
-The coding agent itself runs in the cloud; only the project's tools run on the machine.
 
 - **No GPU needed:** editing code and data, `dotnet build`, the unit tests, and the whole of `tools/check.sh` (every Godot step runs `--headless`), `tools/map.sh`. A laptop with the toolchain above (Godot .NET, the .NET SDK, ffmpeg) does all of it; the check is CPU-heavy (`docs/testing.md#check-fast`; longer on a laptop).
 - **GPU needed:** `tools/capture.sh` (photo spots, motion reels, frame times) and the owner's F12/F10 captures render in a real window with Vulkan. Visual work is judged from these captures, and frame times only mean something on the RTX 3060, so visual items (stage bricks, the pilgrim's look) are done on the desktop. Running them while a game uses the same GPU spoils the frame times.

@@ -1,6 +1,6 @@
 namespace TheDeep;
 
-/// <summary>What a power-up strengthens (docs/roadmap.md#game-systems: one kind of loot, a bonus to strength or defense).</summary>
+/// <summary>What a power-up strengthens (docs/vision.md#game-systems: one kind of loot, a bonus to strength or defense).</summary>
 public enum PowerStat
 {
     /// <summary>Each point is one more damage per blow.</summary>
