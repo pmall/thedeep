@@ -31,5 +31,4 @@ public static class ShaderGlobals
     public static readonly StringName WaterArea = "water_area";
     public static readonly StringName PostVignette = "post_vignette";
     public static readonly StringName PostVignetteColor = "post_vignette_color";
-    public static readonly StringName PostGrain = "post_grain";
 }

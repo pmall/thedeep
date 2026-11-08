@@ -266,12 +266,9 @@ post_vignette_color={
 "type": "color",
 "value": Color(0, 0, 0, 1)
 }
-post_grain={
-"type": "float",
-"value": 0.0
-}
 
 [rendering]
 
 renderer/rendering_method="forward_plus"
-anti_aliasing/quality/msaa_3d=0
+anti_aliasing/quality/msaa_3d=2
+anti_aliasing/quality/use_taa=true

@@ -135,9 +135,6 @@ public partial class BiomeProfile : Resource
     /// <summary>What the edges darken toward (multiplied in); a tint, not black, keeps the frame in the palette.</summary>
     [Export] public Color VignetteColor { get; set; } = new(0.2f, 0.2f, 0.25f);
 
-    /// <summary>Film grain strength (0 none; around 0.03 is subtle).</summary>
-    [Export] public float Grain { get; set; } = 0.03f;
-
     /// <summary>Tint of ambient particles (dust, silt, drips, bubbles; later embers or ice).</summary>
     [ExportGroup("Particles")]
     [Export] public Color ParticleTint { get; set; } = Colors.White;
@@ -194,7 +191,6 @@ public partial class BiomeProfile : Resource
         RenderingServer.GlobalShaderParameterSet(ShaderGlobals.BiomeCausticStrength, CausticStrength);
         RenderingServer.GlobalShaderParameterSet(ShaderGlobals.PostVignette, Vignette);
         RenderingServer.GlobalShaderParameterSet(ShaderGlobals.PostVignetteColor, VignetteColor);
-        RenderingServer.GlobalShaderParameterSet(ShaderGlobals.PostGrain, Grain);
 
         environment.BackgroundColor = Background;
         environment.AmbientLightColor = AmbientColor;

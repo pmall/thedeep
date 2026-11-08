@@ -1,5 +1,5 @@
 [gd_scene format=3]
-; The finishing pass over the 3D view (vignette, grain), under every UI layer. Its strengths come from the
+; The finishing pass over the 3D view (a vignette), under every UI layer. Its strength comes from the
 ; room's BiomeProfile (Post group).
 
 [ext_resource type="Material" path="res://assets/materials/screen_grade.tres" id="1_material"]

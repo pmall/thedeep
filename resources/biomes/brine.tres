@@ -51,7 +51,6 @@ CausticColor = Color(0.78, 1, 0.9, 1)
 CausticStrength = 1.1
 Vignette = 0.8
 VignetteColor = Color(0.08, 0.18, 0.16, 1)
-Grain = 0.035
 ParticleTint = Color(0.88, 1, 0.95, 1)
 Architecture = 0
 FarSkyline = ExtResource("2_far")
