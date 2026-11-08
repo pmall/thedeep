@@ -8,16 +8,17 @@ replaces the source's leading comment. The generated .tres is the source of trut
 
 import re
 import sys
+from pathlib import Path
 
 
-def fmt(v):
+def fmt(v: float) -> str:
     r = round(v, 4)
     return str(int(r)) if r == int(r) else repr(r)
 
 
-def scale_parts(src_path, dst_path, s, header, swaps):
-    out = []
-    for line in open(src_path).read().split('\n'):
+def scale_parts(src_path: str, dst_path: str, s: float, header: list[str], swaps: list[tuple[str, str]]) -> None:
+    out: list[str] = []
+    for line in Path(src_path).read_text().split('\n'):
         k = line.split(' = ')[0] if ' = ' in line else ''
         if k in ('Offset', 'Position') and 'Vector3(' in line:
             line = re.sub(
@@ -56,7 +57,10 @@ def scale_parts(src_path, dst_path, s, header, swaps):
             except ValueError:
                 pass
         elif k == 'Stations':
-            nums = [float(x) for x in re.search(r'\(([^)]*)\)', line).group(1).split(',')]
+            numbers = re.search(r'\(([^)]*)\)', line)
+            if numbers is None:
+                raise ValueError(f'Stations without numbers: {line}')
+            nums = [float(x) for x in numbers.group(1).split(',')]
             line = f'Stations = PackedVector4Array({", ".join(fmt(n if i % 4 == 0 else n * s) for i, n in enumerate(nums))})'
         out.append(line)
     i = 1
@@ -65,9 +69,11 @@ def scale_parts(src_path, dst_path, s, header, swaps):
     text = '\n'.join([out[0]] + [f'; {h}' for h in header] + out[i:])
     for a, b in swaps:
         text = text.replace(a, b)
-    open(dst_path, 'w').write(text)
+    Path(dst_path).write_text(text)
 
 
 if __name__ == '__main__':
     src, dst, scale, header = sys.argv[1:5]
-    scale_parts(src, dst, float(scale), header.split('\n'), [tuple(p.split('=', 1)) for p in sys.argv[5:]])
+    scale_parts(
+        src, dst, float(scale), header.split('\n'), [(a, b) for a, b in (p.split('=', 1) for p in sys.argv[5:])]
+    )

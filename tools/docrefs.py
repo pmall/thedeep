@@ -14,20 +14,20 @@ CITE = re.compile(r'([A-Za-z0-9_./-]+\.md)#([a-z0-9-]+)')
 BINARY = {'.png', '.jpg', '.jpeg', '.avif', '.import', '.uid', '.pyc'}
 
 
-def tracked(*patterns):
+def tracked(*patterns: str) -> list[pathlib.Path]:
     out = subprocess.run(
         ['git', 'ls-files', '-co', '--exclude-standard', *patterns], capture_output=True, text=True, check=True
     )
     return [pathlib.Path(p) for p in out.stdout.split() if pathlib.Path(p).is_file()]
 
 
-def defines_ids(line):
+def defines_ids(line: str) -> bool:
     s = line.lstrip()
     return s.startswith(('#', '- ', '* ', '| ', '**')) or s[:1].isdigit()
 
 
-problems = []
-ids = {}
+problems: list[str] = []
+ids: dict[str, tuple[pathlib.Path, int]] = {}
 for doc in tracked('*.md'):
     for n, line in enumerate(doc.read_text().splitlines(), 1):
         if not defines_ids(line):

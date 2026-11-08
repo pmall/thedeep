@@ -26,7 +26,7 @@ Each is the standard tool of its language, pinned to an exact version so every m
 | Python (`tools/*.py`) | Ruff, by `ruff.toml` | Ruff; mypy, strict | Ruff **0.17.4**, mypy **2.4.1** (with Pillow **12.1.1** for its types), `tools/check.sh` | `uvx` |
 | Shell (`tools/*.sh`) | shfmt **3.14.1** (`shfmt-py` 4.2.0), by `.editorconfig` | ShellCheck **0.11.0** (`shellcheck-py` 0.11.0.1) | `tools/check.sh` | `uvx` |
 
-To upgrade one, change its pin, run the fast check (it reformats), and commit the reformat on its own.
+To upgrade one, change its pin (and the date `uvx` resolves dependencies at, beside the pins), run the fast check (it reformats), and commit the reformat on its own.
 
 ## What needs the GPU `#gpu`
 

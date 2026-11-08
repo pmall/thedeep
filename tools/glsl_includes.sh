@@ -7,7 +7,7 @@ cd "$(dirname "$0")/.."
 
 find assets -name '*.glsl' | while read -r shader; do
     base="$(basename "$shader")"
-    imported="$(ls .godot/imported/"$base"-*.res 2>/dev/null | head -1 || true)"
+    imported="$(find .godot/imported -maxdepth 1 -name "$base-*.res" 2>/dev/null | head -1 || true)"
     [ -n "$imported" ] || continue
     dir="$(dirname "$shader")"
     { grep -oE '^#include "[^"]+"' "$shader" || true; } | sed -E 's/#include "(.*)"/\1/' | while read -r inc; do

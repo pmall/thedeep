@@ -1,0 +1,7 @@
+<Project>
+  <!-- Shared by the game, the core and the tests (docs/testing.md#check): the code style rules of .editorconfig are
+       enforced by the build, so a style warning fails it like any other (TreatWarningsAsErrors, in each project). -->
+  <PropertyGroup>
+    <EnforceCodeStyleInBuild>true</EnforceCodeStyleInBuild>
+  </PropertyGroup>
+</Project>

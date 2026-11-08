@@ -8,16 +8,17 @@ Each line is (id, speaker, text, notes). The sub-resource id is the line id with
 """
 
 import re
+from pathlib import Path
 
 PATH = 'worlds/prototype/lines.tres'
 
 
-def _quote(s):
+def _quote(s: str) -> str:
     return '"' + s.replace('\\', '\\\\').replace('"', '\\"') + '"'
 
 
-def add(lines, path=PATH):
-    text = open(path).read()
+def add(lines: list[tuple[str, str, str, str]], path: str = PATH) -> None:
+    text = Path(path).read_text()
     head, res = text.split('\n[resource]\n')
     for line_id, speaker, words, notes in lines:
         sub = line_id.replace('.', '_')
@@ -36,4 +37,4 @@ def add(lines, path=PATH):
             continue
         head = head.rstrip('\n') + '\n\n' + block
         res = res.replace(']\n', f', SubResource("{sub}")]\n', 1) if 'Lines = [' in res else res
-    open(path, 'w').write(head.rstrip('\n') + '\n\n[resource]\n' + res)
+    Path(path).write_text(head.rstrip('\n') + '\n\n[resource]\n' + res)

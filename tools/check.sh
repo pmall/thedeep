@@ -1,17 +1,42 @@
 #!/usr/bin/env bash
-# The check step: doc citations, build, headless import, then every headless check and the unit tests at once. Fails if any fails.
-# Run after every change and before every commit:  tools/check.sh
-# Each step prints how long it took. The headless checks run in parallel, one Godot each (their logs in .godot/check/); each
-# prints its OK line when it passes, or its problems when it doesn't.
+# The checks (docs/testing.md#check). Fails if any step fails; each step prints how long it took.
+#   tools/check.sh --fast   formats every file (applies the formatters), lints, type-checks the Python tools and builds:
+#                           seconds, no Godot. Ends every turn that changed files.
+#   tools/check.sh          the full check: verifies that every file is formatted and lint-clean without changing one,
+#                           builds, imports headless, then runs every headless check and the unit tests at once.
+# The headless checks run in parallel, one Godot each (their logs in .godot/check/); each prints its OK line when it
+# passes, or its problems when it doesn't. C# layout and code style are verified by the build itself (the .editorconfig
+# rules, enforced through Directory.Build.props), so the full check never runs dotnet format.
 set -euo pipefail
 
 cd "$(dirname "$0")/.."
+
+FAST=0
+case "${1:-}" in
+    --fast) FAST=1 ;;
+    "") ;;
+    *)
+        echo "usage: tools/check.sh [--fast]" >&2
+        exit 2
+        ;;
+esac
 
 export DOTNET_ROOT="${DOTNET_ROOT:-$HOME/.dotnet}"
 export PATH="$DOTNET_ROOT:$HOME/.local/bin:$PATH"
 export DOTNET_CLI_TELEMETRY_OPTOUT=1 DOTNET_NOLOGO=1
 GODOT="${GODOT:-godot}"
 TESTS=tests/TheDeep.Tests/TheDeep.Tests.csproj
+
+# The formatters and linters, at exact versions (docs/toolchain.md#format-tools). uvx resolves their dependencies as
+# they were on UV_EXCLUDE_NEWER, so every machine runs the same code; move the date when upgrading a pin.
+export UV_EXCLUDE_NEWER=2026-11-08
+RUFF=(uvx ruff@0.17.4)
+MYPY=(uvx --with pillow==12.1.1 mypy@2.4.1)
+MDFORMAT=(uvx --from mdformat==0.7.22 --with mdformat-tables==1.0.0 mdformat --compact-tables)
+SHFMT=(uvx --from shfmt-py==4.2.0 shfmt)
+SHELLCHECK=(uvx --from shellcheck-py==0.11.0.1 shellcheck)
+# The C# style rules dotnet format can fix but its whitespace pass leaves: braces, the file-scoped namespace, usings.
+STYLE_FIXES=(IDE0011 IDE0161 IDE0065)
 
 LOG_DIR=".godot/check"
 mkdir -p "$LOG_DIR"
@@ -41,16 +66,101 @@ scan_log() {
     fi
 }
 
-step "1/4 doc section ids and citations"
+# The project's files of one kind, tracked or new (not ignored), one per line.
+files() { git ls-files -co --exclude-standard "$@" | while read -r f; do [ -f "$f" ] && echo "$f"; done; }
+mapfile -t MD_FILES < <(files '*.md')
+mapfile -t JSON_FILES < <(files '*.json')
+mapfile -t PY_FILES < <(files '*.py')
+mapfile -t SH_FILES < <(files '*.sh')
+
+# JSON is laid out by Python's json.tool (two-space indent): with "write", files are rewritten; without, it lists those
+# that differ.
+json_layout() {
+    local f out bad=0
+    for f in "${JSON_FILES[@]}"; do
+        out="$(python3 -m json.tool --indent 2 "$f")" || return 1
+        if [ "$out" != "$(cat "$f")" ]; then
+            if [ "${1:-}" = write ]; then printf '%s\n' "$out" >"$f"; else
+                echo "$f is not laid out by json.tool"
+                bad=1
+            fi
+        fi
+    done
+    return "$bad"
+}
+
+# Builds the game and the tests; prints the compiler's output only when it fails.
+build() {
+    dotnet build TheDeep.sln -v q -nologo >"$LOG_DIR/build.log" 2>&1 \
+        && { [ ! -f "$TESTS" ] || dotnet build "$TESTS" -v q -nologo >>"$LOG_DIR/build.log" 2>&1; }
+}
+build_errors() { grep -E ': (error|warning) ' "$LOG_DIR/build.log" | sed -E 's/ \[[^]]*\]$//' | sort -u | head -40; }
+
+step "1 doc section ids and citations"
 python3 tools/docrefs.py || fail "doc citations"
 took
 
-step "2/4 build (warnings are errors)"
-dotnet build TheDeep.sln -v q -nologo || fail "dotnet build"
-if [ -f "$TESTS" ]; then dotnet build "$TESTS" -v q -nologo || fail "dotnet build of the tests"; fi
+if [ "$FAST" = 1 ]; then
+    step "2 format every file (dotnet format, mdformat, json.tool, Ruff, shfmt)"
+    # C# layout, the game's and the core's files and the tests', at once (each run its own files).
+    dotnet format whitespace TheDeep.sln >"$LOG_DIR/format-game.log" 2>&1 &
+    game=$!
+    dotnet format whitespace "$TESTS" --include tests/ >"$LOG_DIR/format-tests.log" 2>&1 &
+    tests=$!
+    "${MDFORMAT[@]}" "${MD_FILES[@]}" || fail "mdformat"
+    json_layout write || fail "json.tool"
+    "${RUFF[@]}" format --quiet "${PY_FILES[@]}" || fail "ruff format"
+    "${SHFMT[@]}" -w "${SH_FILES[@]}" || fail "shfmt"
+    wait "$game" || fail "dotnet format of the game ($LOG_DIR/format-game.log)"
+    wait "$tests" || fail "dotnet format of the tests ($LOG_DIR/format-tests.log)"
+    took
+
+    step "3 lint and type-check (Ruff with its safe fixes, mypy, ShellCheck)"
+    "${RUFF[@]}" check --fix --quiet "${PY_FILES[@]}" || fail "ruff check"
+    "${MYPY[@]}" --strict "${PY_FILES[@]}" || fail "mypy"
+    "${SHELLCHECK[@]}" "${SH_FILES[@]}" || fail "shellcheck"
+    took
+
+    step "4 build (warnings are errors, code style included)"
+    if ! build; then
+        if grep -qE "$(IFS='|' && echo "${STYLE_FIXES[*]}")" "$LOG_DIR/build.log"; then
+            echo "fixing code style (${STYLE_FIXES[*]}) with dotnet format style"
+            dotnet format style TheDeep.sln --diagnostics "${STYLE_FIXES[@]}" >/dev/null 2>&1 || true
+            dotnet format style "$TESTS" --include tests/ --diagnostics "${STYLE_FIXES[@]}" >/dev/null 2>&1 || true
+        fi
+        build || {
+            build_errors
+            fail "dotnet build (full log: $LOG_DIR/build.log)"
+        }
+    fi
+    echo "ok"
+    took
+    printf '\n\033[32mFAST CHECK PASSED\033[0m in %ss\n' "$((SECONDS - START))"
+    exit 0
+fi
+
+step "2 formatting and lint, verified (mdformat, json.tool, Ruff, mypy, shfmt, ShellCheck)"
+lint_failed=()
+"${MDFORMAT[@]}" --check "${MD_FILES[@]}" || lint_failed+=(mdformat)
+json_layout || lint_failed+=(json.tool)
+"${RUFF[@]}" format --check --quiet "${PY_FILES[@]}" || lint_failed+=("ruff format")
+"${RUFF[@]}" check --quiet "${PY_FILES[@]}" || lint_failed+=("ruff check")
+"${MYPY[@]}" --strict "${PY_FILES[@]}" || lint_failed+=(mypy)
+"${SHFMT[@]}" -d "${SH_FILES[@]}" || lint_failed+=(shfmt)
+"${SHELLCHECK[@]}" "${SH_FILES[@]}" || lint_failed+=(shellcheck)
+[ ${#lint_failed[@]} -eq 0 ] || fail "${lint_failed[*]} (tools/check.sh --fast formats and applies the safe fixes)"
+echo "ok"
 took
 
-step "3/4 headless import"
+step "3 build (warnings are errors, C# layout and code style included)"
+build || {
+    build_errors
+    fail "dotnet build (full log: $LOG_DIR/build.log; tools/check.sh --fast formats the C#)"
+}
+echo "ok"
+took
+
+step "4 headless import"
 tools/glsl_includes.sh
 "$GODOT" --headless --import >"$LOG_DIR/import.log" 2>&1 || {
     tail -20 "$LOG_DIR/import.log"
@@ -60,7 +170,7 @@ scan_log "$LOG_DIR/import.log" "import"
 echo "ok"
 took
 
-step "4/4 headless checks and unit tests, in parallel"
+step "5 headless checks and unit tests, in parallel"
 trap 'kill $(jobs -p) 2>/dev/null' INT TERM
 
 # The checks: name | what its passing line starts with | what its problem lines start with | frames before Godot quits | arguments.
@@ -130,7 +240,7 @@ for entry in "${CHECKS[@]}"; do
     launch "$name" "$frames" "$args"
 done
 
-# The unit tests (xUnit over the core) beside them; built in step 2.
+# The unit tests (xUnit over the core) beside them; built in step 3.
 if [ -f "$TESTS" ]; then
     (
         t0=$SECONDS code=0

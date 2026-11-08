@@ -109,7 +109,7 @@ public sealed class ReachPlanner
 
     /// <summary>Each thread's list of the solids near a moving body (walks of one planner run on several threads at once).</summary>
     [ThreadStatic]
-    private static List<int>? t_near;
+    private static List<int>? _near;
     private readonly List<Ledge> _ledges;
     /// <summary>The Harpoon's numbers and the room's anchors, or null for a planner without it (or a room without anchors).</summary>
     private readonly Harpoon? _harpoon;
@@ -902,7 +902,7 @@ public sealed class ReachPlanner
         hitSolid = -1;
         Box body = BodyAt(p);
         float moved = delta;
-        List<int> near = t_near ??= new List<int>();
+        List<int> near = _near ??= new List<int>();
         const float margin = 0.01f; // past the skin either side: every solid the tests below could stop at
         _grid.Near(horizontal
             ? new Box(MathF.Min(body.MinX, body.MinX + delta) - margin, body.MinY - margin, MathF.Max(body.MaxX, body.MaxX + delta) + margin, body.MaxY + margin)

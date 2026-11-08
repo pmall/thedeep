@@ -11,6 +11,7 @@ perf.json files are printed side by side. Needs python3-pil.
 import json
 import sys
 from pathlib import Path
+from typing import Any
 
 from PIL import Image, ImageChops, ImageDraw, ImageFont
 
@@ -23,7 +24,7 @@ CHANGED = (236, 120, 110)
 CHANGE_THRESHOLD = 12  # per-channel difference (0-255) that counts a pixel as changed
 
 
-def font(size):
+def font(size: int) -> ImageFont.FreeTypeFont | ImageFont.ImageFont:
     for path in (
         '/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf',
         '/usr/share/fonts/truetype/noto/NotoSans-Regular.ttf',
@@ -33,7 +34,7 @@ def font(size):
     return ImageFont.load_default(size=size)
 
 
-def changed_fraction(a, b):
+def changed_fraction(a: Image.Image, b: Image.Image) -> float:
     """Share of pixels whose largest channel difference exceeds the threshold."""
     if a.size != b.size:
         return 1.0
@@ -44,15 +45,17 @@ def changed_fraction(a, b):
     return sum(histogram[CHANGE_THRESHOLD + 1 :]) / (a.size[0] * a.size[1])
 
 
-def panel(image):
+def panel(image: Image.Image | None) -> Image.Image:
     if image is None:
         missing = Image.new('RGB', PANEL, BACKGROUND)
         ImageDraw.Draw(missing).text((PANEL[0] // 2, PANEL[1] // 2), 'missing', fill=DIM, font=font(28), anchor='mm')
         return missing
-    return image.convert('RGB').resize(PANEL, Image.LANCZOS)
+    return image.convert('RGB').resize(PANEL, Image.Resampling.LANCZOS)
 
 
-def pair_image(spot, before, after, before_name, after_name):
+def pair_image(
+    spot: str, before: Image.Image | None, after: Image.Image | None, before_name: str, after_name: str
+) -> tuple[Image.Image, str]:
     changed = changed_fraction(before, after) if before is not None and after is not None else None
     out = Image.new('RGB', (PANEL[0] * 2, PANEL[1] + HEADER), BACKGROUND)
     out.paste(panel(before), (0, HEADER))
@@ -77,17 +80,18 @@ def pair_image(spot, before, after, before_name, after_name):
     return out, verdict
 
 
-def load(directory, name):
+def load(directory: Path, name: str) -> Image.Image | None:
     path = directory / name
     return Image.open(path) if path.exists() else None
 
 
-def perf(directory):
+def perf(directory: Path) -> dict[str, Any] | None:
+    """A run's frame times (perf.json, written by LookDevDriver), or None for a run without them."""
     path = directory / 'perf.json'
     return json.loads(path.read_text()) if path.exists() else None
 
 
-def main():
+def main() -> None:
     if len(sys.argv) != 4:
         sys.exit(__doc__)
     before_dir, after_dir, out_dir = (Path(arg) for arg in sys.argv[1:])
@@ -97,7 +101,7 @@ def main():
     if not names:
         sys.exit('no spot images in either run')
 
-    pairs = []
+    pairs: list[Image.Image] = []
     for name in names:
         spot = name.removesuffix('.png')
         image, verdict = pair_image(

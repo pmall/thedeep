@@ -42,6 +42,7 @@ The items, in order. Each one ends with its bricks marked in [bricks.md](bricks.
 - [ ] **The sequel test and sign-off** `#sequel-test`:
   - **The sequel test:** a small second world (a handful of rooms, a new arrangement, one biome variant) built from content alone, **with no code change**. Whatever it forces into the code was a missing brick: fix it as a brick. It stays as a fixture the check loads.
   - The owner plays the prototype from `godot --path . -- --new` to the end, with no debug keys, always knowing what a gate needs, and is happy with it.
+- [ ] **The stricter C# analyzers** `#analyzers` (decided 2026-11-08, owner's delegation): the checks run the SDK's default analyzers; its `Recommended` set (`AnalysisMode`, in `Directory.Build.props`) finds about 120 warnings today, most of them number formatting and comparison that depend on the machine's culture (CA1305, CA1310: a real risk where the locale writes 1,5) and public fields (CA1051). Turn it on, fix what it finds, and write down why beside any rule turned off.
 - **Done when:** every brick in [bricks.md](bricks.md) is ready, the sequel test passes, and the owner signs the prototype off.
 
 ## Stage B: the plan on paper `#stage-plan`

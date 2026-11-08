@@ -144,7 +144,7 @@ if [ -d "$out/door" ]; then python3 -I tools/motion_sheet.py "$out" door Door 4x
 if [ -d "$out/taking" ]; then python3 -I tools/motion_sheet.py "$out" taking Taking 6x3 800x800; fi
 if [ -d "$out/pickup" ]; then python3 -I tools/motion_sheet.py "$out" pickup Pickup 4x2 800x800; fi
 if [ -d "$out/lever" ]; then python3 -I tools/motion_sheet.py "$out" lever Lever 3x3 1800x1000; fi
-ls "$out"/*.png | sed 's/^/  /'
+find "$out" -maxdepth 1 -name '*.png' | sort | sed 's/^/  /'
 
 if [ -n "$previous" ] && [ -d "$previous" ]; then
     compare "$previous" "$out"

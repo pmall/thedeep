@@ -3,6 +3,7 @@
 Where things stand, so any session picks up where the last one stopped (`AGENTS.md#session`). Rewritten as things change, never appended to; the history is in `git log`. The direction and the stages are in [roadmap.md](roadmap.md).
 
 - **Working principles**: the groundwork principles are applied (owner, 2026-11-08; `AGENTS.md#working-principles`). `AGENTS.md` is the only agent instruction file (`AGENTS.md#agents-file`).
+- **The checks**: two commands, the fast check (formats every kind of file, lints, type-checks the Python tools, builds) and the full check (`docs/testing.md#check`), with each formatter and linter pinned (`docs/toolchain.md#format-tools`); the stricter C# analyzers wait as `docs/roadmap.md#analyzers`.
 - **The prototype world is built and proven**: 42 rooms over the flooded, frozen and volcanic layers and the core, 5 abilities, a key, a lever, a secret and an ambush, 4 placeholder bosses, 3 law breaks, the end card ([map-draft.md](../worlds/prototype/map-draft.md)). The checks walk it from inside every room with a clumsy pilgrim and play it from a new game to the end (`docs/testing.md#check`).
 - **The plan's room table and its check** are built (`docs/roadmap.md#stage-plan`), both worlds' tables filled from their rooms, and the network is drawn for the owner (`tools/map.sh`).
 - **Last owner playtest** (2026-11-01): "in good direction"; Mag-grip liked.

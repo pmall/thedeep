@@ -19,7 +19,7 @@ BACKGROUND = (12, 14, 16)
 TEXT = (230, 236, 240)
 
 
-def font(size):
+def font(size: int) -> ImageFont.FreeTypeFont | ImageFont.ImageFont:
     for path in (
         '/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf',
         '/usr/share/fonts/truetype/noto/NotoSans-Regular.ttf',
@@ -29,12 +29,12 @@ def font(size):
     return ImageFont.load_default(size=size)
 
 
-def pair(text):
+def pair(text: str) -> tuple[int, int]:
     a, b = text.split('x')
     return int(a), int(b)
 
 
-def main():
+def main() -> None:
     run = Path(sys.argv[1])
     folder = sys.argv[2] if len(sys.argv) > 2 else 'motion'
     name = sys.argv[3] if len(sys.argv) > 3 else 'Motion'
@@ -55,7 +55,7 @@ def main():
             (cx - crop_size[0] // 2, cy - crop_size[1] // 2, cx + crop_size[0] // 2, cy + crop_size[1] // 2)
         )
         x, y = (i % columns) * cell[0], (i // columns) * cell[1]
-        sheet.paste(crop.resize(cell, Image.LANCZOS), (x, y))
+        sheet.paste(crop.resize(cell, Image.Resampling.LANCZOS), (x, y))
         draw.text((x + 6, y + 4), path.stem.replace('-', ' '), fill=TEXT, font=label_font)
     out = run / f'{name}.png'
     sheet.save(out)
