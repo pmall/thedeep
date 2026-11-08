@@ -10,3 +10,5 @@ shader_parameter/metallic = 0.15
 shader_parameter/clearcoat = 0.7
 shader_parameter/clearcoat_roughness = 0.12
 shader_parameter/rim = 0.15
+shader_parameter/edge_light = 1.6
+shader_parameter/edge_far_power = 1.6

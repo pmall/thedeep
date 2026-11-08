@@ -9,5 +9,6 @@ shader_parameter/roughness = 0.62
 shader_parameter/metallic = 0
 shader_parameter/rim = 0.5
 shader_parameter/rim_tint = 0.4
-shader_parameter/edge_light = 1.6
+shader_parameter/edge_light = 2.0
+shader_parameter/edge_far_power = 1.6
 shader_parameter/grain = 260

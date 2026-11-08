@@ -22,6 +22,12 @@ uniform float edge_light : hint_range(0.0, 2.0) = 0.0;
 uniform vec3 edge_color : source_color = vec3(0.72, 0.78, 0.9);
 /// How tight the edge hugs the silhouette (higher, thinner).
 uniform float edge_power : hint_range(1.0, 8.0) = 3.0;
+/// How tight it hugs once a pixel covers `edge_far_pixel` meters (a wide shot): looser, so the edge never thins under a
+/// pixel and the small figure keeps a faint outline instead of melting into a dark backdrop.
+uniform float edge_far_power : hint_range(1.0, 8.0) = 3.0;
+/// Meters per pixel on the body where the edge has loosened to `edge_far_power`; it starts loosening at a third of this
+/// (just past the play camera's), so at play size the edge is `edge_power`'s.
+uniform float edge_far_pixel : hint_range(0.005, 0.2) = 0.04;
 /// Stretched highlights along the part (U): hair, brushed metal.
 uniform float anisotropy : hint_range(0.0, 1.0) = 0.0;
 /// Fine roughness grain in 1/m (fabric weave); 0 for none.
@@ -123,6 +129,9 @@ void fragment() {
 	EMISSION = glow_color * glow * glow_energy + vec3(0.95, 0.92, 1.0) * hurt * 0.8;
 	if (edge_light > 0.0) {
 		float facing = clamp(dot(normalize(NORMAL), normalize(VIEW)), 0.0, 1.0);
-		EMISSION += edge_color * edge_light * pow(1.0 - facing, edge_power) * (1.0 - trim);
+		// The size of a pixel at this depth, in meters: how small the figure is on screen.
+		float pixel = -VERTEX.z * 2.0 / (PROJECTION_MATRIX[1][1] * VIEWPORT_SIZE.y);
+		float tight = mix(edge_power, edge_far_power, smoothstep(edge_far_pixel / 3.0, edge_far_pixel, pixel));
+		EMISSION += edge_color * edge_light * pow(1.0 - facing, tight) * (1.0 - trim);
 	}
 }

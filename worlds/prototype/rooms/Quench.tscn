@@ -326,6 +326,12 @@ transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 14, 32, 22)
 script = ExtResource("17_spot")
 PlayerPosition = Vector3(10, 37.5, 0)
 
+; the pilgrim at play size on the west ledge, against the dark coolant hall (its outline, docs/art-direction.md#character)
+[node name="Ledge" type="Marker3D" parent="PhotoSpots"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 7, 26.5, 22)
+script = ExtResource("17_spot")
+PlayerPosition = Vector3(4, 25, 0)
+
 ; the coolant, the tanks under it
 [node name="Surface" type="Marker3D" parent="PhotoSpots"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 22, 22, 24)
