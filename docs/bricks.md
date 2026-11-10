@@ -10,7 +10,7 @@ All working; the art pass makes them ready (`docs/roadmap.md#art-restore`).
 
 - `BiomeProfile` (flooded, frozen, volcanic, core; brine, the sequel world's variant of frozen)
 - Material library (`assets/materials/`, `assets/shaders/`)
-- Baked surface sets (`SurfaceSet`, in `assets/textures/surfaces/`): strata, masonry, ice, cracks, the metal's panels and coating
+- Baked surface sets (`SurfaceSet`, in `assets/textures/surfaces/`): strata, masonry, ice, cracks, the metal's panels and coating, the machines' glyph bands
 - `RoomStage`
 - Skylines (`backdrop_silhouette.gdshader`)
 - `BackdropArchitecture`

@@ -57,7 +57,7 @@ public class SurfaceBakeTests
         Assert.Equal(first.Surface, second.Surface);
     }
 
-    public static TheoryData<string> Patterns => new() { "strata", "masonry", "ice", "cracks", "panels", "coating" };
+    public static TheoryData<string> Patterns => new() { "strata", "masonry", "ice", "cracks", "panels", "coating", "glyphs" };
 
     /// <summary>Half a tile on, the bake is the same image rolled by half: its edges meet as its middle does, so it has no seam.</summary>
     [Theory]
@@ -175,6 +175,7 @@ public class SurfaceBakeTests
         "cracks" => new CracksSurface(),
         "panels" => new PanelSurface(),
         "coating" => new CoatingSurface(),
+        "glyphs" => new GlyphBandSurface(),
         _ => new IceSurface(),
     };
 
@@ -277,6 +278,40 @@ public class SurfaceBakeTests
         }
 
         Assert.InRange(wet, 8, 160);
+    }
+
+    /// <summary>
+    /// The material folds any glyph cell of a band next to any other (<c>machine.gdshader</c>): along a cell's sides every cell is
+    /// the same bare face and rims, so cells meet without a seam; and the strokes, the only cells, cover some of the band.
+    /// </summary>
+    [Fact]
+    public void AnyGlyphCellSitsBesideAnyOther()
+    {
+        var glyphs = new GlyphBandSurface();
+        Assert.Equal(glyphs.TileMeters, glyphs.Rows * glyphs.BandMeters, 9);
+        int strokes = 0;
+        for (int row = 0; row < glyphs.Rows; row++)
+        {
+            for (int i = 0; i < 40; i++)
+            {
+                double up = (row * glyphs.BandMeters) + (i / 40.0 * glyphs.BandMeters);
+                SurfacePoint side = glyphs.At(0.002, i / 40.0 * glyphs.BandMeters);
+                for (int column = 0; column < glyphs.Columns; column++)
+                {
+                    AssertSame(side, glyphs.At((column * glyphs.CellMeters) + 0.002, up));
+                    AssertSame(side, glyphs.At(((column + 1) * glyphs.CellMeters) - 0.002, up));
+                }
+            }
+        }
+
+        for (int i = 0; i < 4000; i++)
+        {
+            SurfacePoint here = glyphs.At(i * 0.0731 % glyphs.TileMeters, i * 0.1937 % glyphs.TileMeters);
+            AssertSame(here, glyphs.At((i * 0.0731 % glyphs.TileMeters) + glyphs.TileMeters, (i * 0.1937 % glyphs.TileMeters) - glyphs.TileMeters));
+            strokes += here.Cell;
+        }
+
+        Assert.InRange(strokes, 200, 1200);
     }
 
     private static void AssertSame(SurfacePoint expected, SurfacePoint actual)

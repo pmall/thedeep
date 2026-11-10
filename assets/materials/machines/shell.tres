@@ -1,10 +1,14 @@
 [gd_resource type="ShaderMaterial" format=3]
 
 [ext_resource type="Shader" path="res://assets/shaders/machine.gdshader" id="1_shader"]
+[ext_resource type="Texture2D" uid="uid://dtskp5h7tj8qy" path="res://assets/textures/surfaces/panels_normal.png" id="2_panels_normal"]
+[ext_resource type="Texture2D" uid="uid://cbdkgpfpxgqev" path="res://assets/textures/surfaces/panels_surface.png" id="3_panels_surface"]
 
 ; Pale ceramic plating in the biome's metal color, with panel lines and a silt trim: the shell of most machines.
 [resource]
 shader = ExtResource("1_shader")
+shader_parameter/panels_normal = ExtResource("2_panels_normal")
+shader_parameter/panels_surface = ExtResource("3_panels_surface")
 shader_parameter/slot = 1
 shader_parameter/tone = 0.5
 shader_parameter/roughness = 0.3

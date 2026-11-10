@@ -11,5 +11,5 @@ shader_parameter/roughness = 0.6
 shader_parameter/metallic = 0.4
 shader_parameter/clearcoat = 0.0
 shader_parameter/pattern = 1
-shader_parameter/cleat_spacing = 0.045
+shader_parameter/cleat_spacing = 0.09
 shader_parameter/wear_response = 0.4
