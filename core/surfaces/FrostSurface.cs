@@ -5,7 +5,7 @@ namespace TheDeep;
 /// <summary>
 /// The coat of rime in a frozen layer, as a tileable pattern (<see cref="ISurfacePattern"/>) that every material that frosts
 /// lays over its own surface (<c>assets/shaders/lib/frost.gdshaderinc</c>): a soft, mottled coat, paler and darker in blotches
-/// a few tens of centimeters across, broken by small soft oval gaps where it is thin; frosted crusts standing a little proud
+/// a few tens of centimeters across, broken by small soft gaps where it is thin, each a bent, uneven oval; frosted crusts standing a little proud
 /// of it; patches of hoarfrost whose fronds feather out in streaks; and tiny crystals, each a smooth facet tilted its own way,
 /// that catch the light at their own angle.
 /// <para>
@@ -30,20 +30,26 @@ public sealed record FrostSurface : ISurfacePattern
 
     /// <summary>The gaps: cells per tile side (one gap per cell at most), the share of cells with one where the coat is thin,
     /// their half length at least and at most and their half width (shares of a cell), and how dark the coat is at their rim.</summary>
-    public int GapCells { get; init; } = 16;
+    public int GapCells { get; init; } = 12;
 
-    public double GapShare { get; init; } = 0.7;
+    public double GapShare { get; init; } = 0.6;
 
     public double GapMinLength { get; init; } = 0.3;
 
-    public double GapMaxLength { get; init; } = 0.55;
+    public double GapMaxLength { get; init; } = 0.6;
 
-    public double GapWidth { get; init; } = 0.3;
+    public double GapWidth { get; init; } = 0.26;
 
-    public double GapRimTone { get; init; } = 0.75;
+    public double GapRimTone { get; init; } = 0.8;
 
     /// <summary>How much thinner the coat is at a gap's middle.</summary>
-    public double GapDepth { get; init; } = 0.7;
+    public double GapDepth { get; init; } = 0.75;
+
+    /// <summary>How far the gaps' outlines are pushed about (a share of a cell), by a noise of <see cref="GapWarpCells"/> per
+    /// tile, so they bend and swell unevenly instead of reading as a field of regular ovals.</summary>
+    public double GapWarp { get; init; } = 0.45;
+
+    public int GapWarpCells { get; init; } = 10;
 
     /// <summary>The crusts: their noise's first octave's cells per tile, the noise level where a crust starts and where it is
     /// full, how far it stands proud, and how pale it is.</summary>
@@ -132,12 +138,12 @@ public sealed record FrostSurface : ISurfacePattern
         return TileNoise.SmoothStep(0.52, 0.72, streak);
     }
 
-    /// <summary>How deep in a gap the point is (0 to 1): a soft oval, each at its own angle, from each cell around the point
-    /// that holds one; more of them where the coat is thin (<paramref name="mottle"/> low).</summary>
+    /// <summary>How deep in a gap the point is (0 to 1): a soft oval, each at its own angle, its outline bent by a noise, from
+    /// each cell around the point that holds one; more of them where the coat is thin (<paramref name="mottle"/> low).</summary>
     private double Gap(double u, double v, double mottle)
     {
-        double x = u * GapCells;
-        double y = v * GapCells;
+        double x = (u * GapCells) + ((TileNoise.Fractal(u * GapWarpCells, v * GapWarpCells, GapWarpCells, GapWarpCells, 2, Seed + 19) - 0.5) * 2.0 * GapWarp);
+        double y = (v * GapCells) + ((TileNoise.Fractal(u * GapWarpCells, v * GapWarpCells, GapWarpCells, GapWarpCells, 2, Seed + 20) - 0.5) * 2.0 * GapWarp);
         int cx = (int)Math.Floor(x);
         int cy = (int)Math.Floor(y);
         double share = GapShare * TileNoise.Lerp(0.4, 1.0, TileNoise.SmoothStep(0.7, 0.3, mottle));
@@ -157,7 +163,7 @@ public sealed record FrostSurface : ISurfacePattern
                 double my = cy + j + 0.2 + (0.6 * TileNoise.Hash(wx, wy, Seed + 9));
                 double angle = TileNoise.Hash(wx, wy, Seed + 10) * Math.PI;
                 double half = TileNoise.Lerp(GapMinLength, GapMaxLength, TileNoise.Hash(wx, wy, Seed + 11));
-                double width = GapWidth * (0.7 + (0.6 * TileNoise.Hash(wx, wy, Seed + 12)));
+                double width = GapWidth * (0.5 + (0.8 * TileNoise.Hash(wx, wy, Seed + 12)));
                 double dx = Math.Cos(angle);
                 double dy = Math.Sin(angle);
                 double s = (((x - mx) * dx) + ((y - my) * dy)) / half;

@@ -24,16 +24,16 @@ public sealed record IceSurface : ISurfacePattern
     /// <see cref="CrackCells"/> per tile), and how far a crack strays from straight.</summary>
     public int PlateCells { get; init; } = 5;
 
-    public double CrackShare { get; init; } = 0.58;
+    public double CrackShare { get; init; } = 0.75;
 
-    public int CrackCells { get; init; } = 7;
+    public int CrackCells { get; init; } = 3;
 
     public double CrackWarpMeters { get; init; } = 0.05;
 
     /// <summary>A crack's bright edge (half width); the wash on its lit side: how bright at the edge and how far it reaches.</summary>
     public double CrackMeters { get; init; } = 0.012;
 
-    public double Wash { get; init; } = 0.28;
+    public double Wash { get; init; } = 0.1;
 
     public double WashMeters { get; init; } = 0.06;
 
@@ -44,11 +44,11 @@ public sealed record IceSurface : ISurfacePattern
     /// cells per tile side of the patches they cluster in.</summary>
     public int FineCells { get; init; } = 14;
 
-    public double FineShare { get; init; } = 0.5;
+    public double FineShare { get; init; } = 0.35;
 
     public double FineMeters { get; init; } = 0.008;
 
-    public double Fine { get; init; } = 0.6;
+    public double Fine { get; init; } = 0.25;
 
     public int FinePatchCells { get; init; } = 4;
 
@@ -56,7 +56,7 @@ public sealed record IceSurface : ISurfacePattern
     /// and their radius at least and at most (a share of a cell).</summary>
     public int BubbleCells { get; init; } = 40;
 
-    public double BubbleShare { get; init; } = 0.4;
+    public double BubbleShare { get; init; } = 0.06;
 
     public double BubbleMinRadius { get; init; } = 0.14;
 
@@ -65,7 +65,7 @@ public sealed record IceSurface : ISurfacePattern
     /// <summary>Small bubbles, the same way, smaller and many more.</summary>
     public int SmallBubbleCells { get; init; } = 110;
 
-    public double SmallBubbleShare { get; init; } = 0.35;
+    public double SmallBubbleShare { get; init; } = 0.04;
 
     /// <summary>Where bubbles crowd: vertical trails (columns per tile) and horizontal bands (bands per tile).</summary>
     public int TrailCells { get; init; } = 9;
@@ -73,7 +73,7 @@ public sealed record IceSurface : ISurfacePattern
     public int BandCells { get; init; } = 5;
 
     /// <summary>The frozen-in veils: how white at most, and their noise's cells per tile along and up the face.</summary>
-    public double Veil { get; init; } = 0.15;
+    public double Veil { get; init; } = 0.08;
 
     public int VeilCellsAlong { get; init; } = 2;
 

@@ -20,12 +20,13 @@ const float FROST_TILE = 4.0;
 // in the coat's gaps and where it is thickest.
 const float FROST_FILM_FREQUENCY = 0.35;
 const float FROST_FILM_MIN = 0.35;
-const float FROST_FILM_MAX = 0.65;
-const float FROST_FILM_DARK = 0.22;
-const float FROST_FILM_PALE = 0.75;
+const float FROST_FILM_MAX = 0.6;
+const float FROST_FILM_DARK = 0.24;
+const float FROST_FILM_PALE = 0.62;
 
 struct Frost {
 	float cover; // 0 bare, 1 under rime
+	float solid; // the part of the cover that is solid rime, not the film
 	float tone;  // multiplies the rime's color
 	float rough; // the rime's roughness
 	vec3 bend;   // world-space tilt of the normal by the coat's relief, at full cover
@@ -47,6 +48,7 @@ void frost_sample(vec2 uv, vec2 dx, vec2 dy, vec3 a, vec3 b, float w, inout vec3
 Frost frost_at(vec3 p, vec3 face_n, vec3 world_n, float cavity, float edge, float share) {
 	Frost fr;
 	fr.cover = 0.0;
+	fr.solid = 0.0;
 	fr.tone = 1.0;
 	fr.rough = 0.66;
 	fr.bend = vec3(0.0);
@@ -91,6 +93,7 @@ Frost frost_at(vec3 p, vec3 face_n, vec3 world_n, float cavity, float edge, floa
 	// The coat shows solid where it is thicker than the place leaves bare, and as the film elsewhere.
 	float solid = smoothstep(0.0, 0.22, thick + take - 1.0) * smoothstep(0.0, 0.15, take);
 	fr.cover = max(solid, film * amount);
+	fr.solid = solid;
 	float film_tone = mix(FROST_FILM_DARK, FROST_FILM_PALE, smoothstep(0.1, 0.75, thick));
 	fr.tone = surface.r * 2.0 * mix(film_tone, 1.0, solid);
 	fr.rough = surface.b;

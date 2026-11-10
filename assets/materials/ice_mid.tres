@@ -9,5 +9,5 @@
 shader = ExtResource("1_shader")
 shader_parameter/ice_normal = ExtResource("2_normal")
 shader_parameter/ice_surface = ExtResource("3_surface")
-shader_parameter/inclusions = 0.5
+shader_parameter/inclusions = 0.4
 shader_parameter/shade = 0.6

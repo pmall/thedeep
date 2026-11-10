@@ -6,7 +6,8 @@
 [ext_resource type="Texture2D" uid="uid://c5007l1afd5cs" path="res://assets/textures/surfaces/coating_normal.png" id="4_coating_normal"]
 [ext_resource type="Texture2D" uid="uid://bgkpcowsa62j3" path="res://assets/textures/surfaces/coating_surface.png" id="5_coating_surface"]
 
-; Metal behind the play plane (racks, machinery): darker and duller than grippable metal.
+; Metal behind the play plane (racks, machinery): darker and duller than grippable metal; nobody grips it, so in the
+; cold it takes rime like stone (frost_share), which keeps it from reading as grippable metal.
 [resource]
 shader = ExtResource("1_shader")
 shader_parameter/panels_normal = ExtResource("2_panels_normal")
@@ -17,3 +18,4 @@ shader_parameter/shade = 0.5
 shader_parameter/corrosion = 0.4
 shader_parameter/clearcoat = 0.3
 shader_parameter/rim = 0.1
+shader_parameter/frost_share = 0.9

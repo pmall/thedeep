@@ -22,14 +22,16 @@ uniform sampler2D ice_surface : hint_default_black, repeat_enable, filter_linear
 /// How dark the heart of the ice is (0 clear and pale, 1 black water frozen).
 uniform float depth : hint_range(0.0, 1.0) = 0.6;
 /// How white the fractures, bubbles and veils inside show (0 none).
-uniform float inclusions : hint_range(0.0, 1.0) = 0.85;
+uniform float inclusions : hint_range(0.0, 1.0) = 0.7;
 /// Share of the ice that holds them: the rest is clear.
-uniform float inclusion_share : hint_range(0.0, 1.0) = 0.45;
+uniform float inclusion_share : hint_range(0.0, 1.0) = 1.0;
 /// Light scattered back out of the ice, so it never goes flat black in shadow.
 uniform float glow : hint_range(0.0, 1.0) = 0.12;
 /// Albedo multiplier (midground pieces below 1).
 uniform float shade : hint_range(0.0, 1.0) = 1.0;
 uniform float frost_share : hint_range(0.0, 1.0) = 0.5;
+/// How much of the rime's translucent film (lib/frost) lies on the ice, against other materials.
+uniform float film_share : hint_range(0.0, 1.0) = 0.5;
 
 // The baked set's tile (IceSurface.TileMeters); the mirrored layer's scale against it and where it starts (meters).
 const float ICE_TILE = 4.0;
@@ -84,12 +86,14 @@ void fragment() {
 	body = mix(body, rime * 0.75, clamp(graze * 0.8 + rind * 0.5, 0.0, 1.0));
 	// Cloudy depths, a meter and more across.
 	float cloud = fbm3(p * 0.45 + v_seed * 7.0, 2);
-	body = mix(body, rime * 0.5, smoothstep(0.55, 0.85, cloud) * 0.3);
+	body = mix(body, rime * 0.5, smoothstep(0.55, 0.85, cloud) * 0.15);
 
 	vec3 albedo = mix(body, rime, white * 0.85);
 	float rough = mix(inside.b, 0.25, white);
 
+	// Ice takes the solid rime and little of the film, so its dark body still shows through.
 	Frost fr = frost_at(p, view_to_world(f.normal, INV_VIEW_MATRIX), world_n, 0.0, f.edge, frost_share);
+	fr.cover = max(fr.solid, fr.cover * film_share);
 	albedo = mix(albedo, frost_color(0.0) * fr.tone, fr.cover);
 	rough = mix(rough, fr.rough, fr.cover);
 	n = frost_bump(n, fr, VIEW_MATRIX);
