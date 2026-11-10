@@ -226,6 +226,14 @@ biome_frost_color={
 "type": "color",
 "value": Color(0.88, 0.92, 0.98, 1)
 }
+frost_surface={
+"type": "sampler2D",
+"value": "res://assets/textures/surfaces/frost_surface.png"
+}
+frost_normal={
+"type": "sampler2D",
+"value": "res://assets/textures/surfaces/frost_normal.png"
+}
 biome_haze={
 "type": "color",
 "value": Color(0.3, 0.3, 0.38, 1)

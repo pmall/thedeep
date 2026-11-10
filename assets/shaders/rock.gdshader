@@ -309,9 +309,10 @@ void fragment() {
 	rough = mix(rough, 0.04, puddle * wetness);
 
 	// Rime over it all: matte and pale.
-	Frost fr = frost_at(p, world_n, face_world_n.y, r.cavity, detail ? f.edge : 1e3, frost_share);
-	albedo = mix(albedo, frost_color(r.cavity), fr.cover);
-	rough = mix(rough, 0.62, fr.cover);
+	Frost fr = frost_at(p, face_world_n, world_n, r.cavity, detail ? f.edge : 1e3, frost_share);
+	albedo = mix(albedo, frost_color(r.cavity) * fr.tone, fr.cover);
+	rough = mix(rough, fr.rough, fr.cover);
+	n = detail ? frost_bump(n, fr, VIEW_MATRIX) : n;
 
 	ALBEDO = albedo * shade;
 	EMISSION = ALBEDO * caustics_at(v_world_pos, view_to_world(f.normal, INV_VIEW_MATRIX), TIME);

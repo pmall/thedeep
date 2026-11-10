@@ -57,7 +57,7 @@ public class SurfaceBakeTests
         Assert.Equal(first.Surface, second.Surface);
     }
 
-    public static TheoryData<string> Patterns => new() { "strata", "masonry", "ice", "cracks", "panels", "coating", "glyphs" };
+    public static TheoryData<string> Patterns => new() { "strata", "masonry", "ice", "cracks", "panels", "coating", "glyphs", "frost" };
 
     /// <summary>Half a tile on, the bake is the same image rolled by half: its edges meet as its middle does, so it has no seam.</summary>
     [Theory]
@@ -176,6 +176,7 @@ public class SurfaceBakeTests
         "panels" => new PanelSurface(),
         "coating" => new CoatingSurface(),
         "glyphs" => new GlyphBandSurface(),
+        "frost" => new FrostSurface(),
         _ => new IceSurface(),
     };
 
@@ -312,6 +313,34 @@ public class SurfaceBakeTests
         }
 
         Assert.InRange(strokes, 200, 1200);
+    }
+
+    /// <summary>The material shows the coat where it is thicker than the place leaves bare (<c>lib/frost.gdshaderinc</c>): its
+    /// thickness must spread over the whole range, with gaps where it is thin, and smooth crystals stand on some of it.</summary>
+    [Fact]
+    public void FrostRepeatsEveryTileAndItsThicknessSpreads()
+    {
+        var frost = new FrostSurface();
+        double tile = frost.TileMeters;
+        int thin = 0;
+        int thick = 0;
+        int crystals = 0;
+        for (int i = 0; i < 4000; i++)
+        {
+            double along = i * 0.0731 % tile;
+            double up = i * 0.1937 % tile;
+            SurfacePoint here = frost.At(along, up);
+            AssertSame(here, frost.At(along + tile, up - (2.0 * tile)));
+            Assert.InRange(here.Tone, 0.5, SurfaceMaps.ToneScale);
+            Assert.InRange(here.Cavity, 0.0, 1.0);
+            thin += here.Cavity < 0.25 ? 1 : 0;
+            thick += here.Cavity > 0.75 ? 1 : 0;
+            crystals += here.Roughness < 0.3 ? 1 : 0;
+        }
+
+        Assert.InRange(thin, 200, 2000);
+        Assert.InRange(thick, 200, 2000);
+        Assert.InRange(crystals, 10, 400);
     }
 
     private static void AssertSame(SurfacePoint expected, SurfacePoint actual)

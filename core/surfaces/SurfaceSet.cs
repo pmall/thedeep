@@ -20,5 +20,6 @@ public sealed record SurfaceSet(string Name, ISurfacePattern Pattern, int Size)
         new SurfaceSet("panels", new PanelSurface(), 512),
         new SurfaceSet("coating", new CoatingSurface(), 1024),
         new SurfaceSet("glyphs", new GlyphBandSurface(), 512),
+        new SurfaceSet("frost", new FrostSurface(), 1024),
     };
 }

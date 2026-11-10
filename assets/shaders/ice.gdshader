@@ -74,7 +74,6 @@ void fragment() {
 	vec3 ts = vec3(slope, sqrt(max(0.0, 1.0 - dot(slope, slope))));
 	vec3 n = normalize(f.tangent * ts.x + f.bitangent * ts.y + f.normal * ts.z);
 	vec3 world_n = view_to_world(n, INV_VIEW_MATRIX);
-	float face_up = view_to_world(f.normal, INV_VIEW_MATRIX).y;
 
 	// Seen straight on, you look into the dark; at a grazing angle the skin reflects and scatters pale.
 	float facing = clamp(dot(f.normal, normalize(VIEW)), 0.0, 1.0);
@@ -90,9 +89,10 @@ void fragment() {
 	vec3 albedo = mix(body, rime, white * 0.85);
 	float rough = mix(inside.b, 0.25, white);
 
-	Frost fr = frost_at(p, world_n, face_up, 0.0, f.edge, frost_share);
-	albedo = mix(albedo, frost_color(0.0), fr.cover);
-	rough = mix(rough, 0.6, fr.cover);
+	Frost fr = frost_at(p, view_to_world(f.normal, INV_VIEW_MATRIX), world_n, 0.0, f.edge, frost_share);
+	albedo = mix(albedo, frost_color(0.0) * fr.tone, fr.cover);
+	rough = mix(rough, fr.rough, fr.cover);
+	n = frost_bump(n, fr, VIEW_MATRIX);
 
 	ALBEDO = albedo * shade;
 	EMISSION = rime * glow * (0.4 + graze + white) * shade * (1.0 - fr.cover);

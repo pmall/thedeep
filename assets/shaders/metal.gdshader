@@ -187,9 +187,10 @@ void fragment() {
 
 	// Rime gathers in the seams and on top faces; the panels between stay bare and glossy.
 	vec3 world_n = view_to_world(n, INV_VIEW_MATRIX);
-	Frost fr = frost_at(p, world_n, view_to_world(f.normal, INV_VIEW_MATRIX).y, max(seam, pn.crease * 0.6), f.edge, frost_share);
-	albedo = mix(albedo, frost_color(crease), fr.cover);
-	rough = mix(rough, 0.6, fr.cover);
+	Frost fr = frost_at(p, view_to_world(f.normal, INV_VIEW_MATRIX), world_n, max(seam, pn.crease * 0.6), f.edge, frost_share);
+	albedo = mix(albedo, frost_color(crease) * fr.tone, fr.cover);
+	rough = mix(rough, fr.rough, fr.cover);
+	n = frost_bump(n, fr, VIEW_MATRIX);
 	metal = mix(metal, 0.0, fr.cover);
 	coat_amount *= 1.0 - fr.cover;
 

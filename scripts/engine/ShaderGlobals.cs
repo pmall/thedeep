@@ -21,6 +21,11 @@ public static class ShaderGlobals
     public static readonly StringName BiomeFrost = "biome_frost";
     public static readonly StringName BiomeMasonry = "biome_masonry";
     public static readonly StringName BiomeFrostColor = "biome_frost_color";
+
+    /// <summary>The baked frost set (<see cref="FrostSurface"/>) every material that frosts samples; project.godot sets it once.</summary>
+    public static readonly StringName FrostSurfaceMap = "frost_surface";
+
+    public static readonly StringName FrostNormalMap = "frost_normal";
     public static readonly StringName BiomeHaze = "biome_haze";
     public static readonly StringName BiomeShaft = "biome_shaft";
     public static readonly StringName BiomeWater = "biome_water";
