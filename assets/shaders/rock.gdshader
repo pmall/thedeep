@@ -5,8 +5,9 @@
 // neighbouring pieces; faults cut the strata into columns a few meters wide, each showing its own part
 // of the tile, and each course of masonry is a course of the tile picked at random and slid along, so
 // neither tile repeats along a wall. Where the biome built (biome_masonry), whole blocks stand over the
-// rock, more of them the more it built, and where they are missing the rock shows, recessed. The
-// shader adds only what is broad: the beds' bend, each block's tone, stains, silt, grime, wetness,
+// rock, more of them the more it built, and where they are missing the rock shows, recessed. Cracked
+// rock lays a baked web of fissures over it all (CracksSurface), as baked in some regions and mirrored and
+// a little larger in others, so the web never shows twice along a wall. The shader adds only what is broad: the beds' bend, each block's tone, stains, silt, grime, wetness,
 // rime, worn edges, puddles. The surface frame (lib/surface) adds edge wear and grime by height.
 shader_type spatial;
 
@@ -42,8 +43,12 @@ uniform float masonry_share : hint_range(0.0, 1.0) = 1.0;
 /// Tone difference between blocks.
 uniform float block_contrast : hint_range(0.0, 0.3) = 0.08;
 
-// Cracked rock (the Drill breaks it): a web of deep fissures over the whole face, so it reads apart from sound rock.
+group_uniforms cracks;
+/// Cracked rock (the Drill breaks it): how strongly the baked web of deep fissures shows over the whole face, so it reads
+/// apart from sound rock. A material with it above 0 sets the cracks set (assets/textures/surfaces/, SurfaceMaps).
 uniform float fracture : hint_range(0.0, 1.0) = 0.0;
+uniform sampler2D cracks_normal : hint_normal, repeat_enable, filter_linear_mipmap_anisotropic;
+uniform sampler2D cracks_surface : hint_default_white, repeat_enable, filter_linear_mipmap_anisotropic;
 
 group_uniforms deposits;
 /// Silt or moss in crevices and on up-facing surfaces (biome_silt).
@@ -97,8 +102,17 @@ const float MASONRY_CELLS = 15.0;
 const float MASONRY_REACH = 9.0;
 const float MASONRY_RAGGED = 0.1;
 
+// The baked cracks set's tile (CracksSurface.TileMeters); the mirrored layer's scale against it and where it starts (meters);
+// the cells per meter of the regions each way round shows in.
+const float CRACKS_TILE = 4.0;
+const float CRACKS_MIRROR_SCALE = 1.13;
+const vec2 CRACKS_MIRROR_OFFSET = vec2(1.71, 0.53);
+const float CRACKS_REGION_FREQUENCY = 0.16;
+// A fault's joint: its half width, meters, and the fewest pixels its falloff spans at any distance.
+const float FAULT_JOINT = 0.07;
+const float FAULT_JOINT_PIXELS = 3.0;
+
 struct Rock {
-	float height; // meters, relative (the procedural fissures only; the beds' relief is in `slope`)
 	float cavity; // 1 deep in a fissure
 	float tone;   // albedo multiplier
 	float rough;  // dry roughness
@@ -154,7 +168,7 @@ float fault_edge(float k) {
 	return k + (hash12(vec2(k, 7.3)) - 0.5) * 2.0 * FAULT_JITTER;
 }
 
-Rock rock_at(vec3 p, vec3 t, vec3 b, float seed, float up) {
+Rock rock_at(vec3 p, vec3 t, vec3 b, float up) {
 	Rock r;
 	vec2 q = vec2(dot(p, t), dot(p, b));
 	float warp = fbm3(p * 0.3 + 11.0, 3);
@@ -189,9 +203,11 @@ Rock rock_at(vec3 p, vec3 t, vec3 b, float seed, float up) {
 	r.slope = detail ? textureGrad(strata_normal, uv, dx, dy).rg * 2.0 - 1.0 : vec2(0.0);
 
 	// A fault shows a dark joint a few centimeters wide: always where the beds break, coming and going where they run on.
-	// None on what faces up, where it would read as paving.
+	// None on what faces up, where it would read as paving. A soft groove with no hard core, widened (and faded to match)
+	// where it would span fewer than FAULT_JOINT_PIXELS, so it never thins to a shimmering line far off.
 	float opens = breaks ? 1.0 : 0.6 * smoothstep(0.45, 0.75, value_noise2(vec2(column * 3.7, m.y * 3.0)));
-	float fault_joint = (1.0 - smoothstep(0.015, 0.06, to_fault)) * opens * (1.0 - up);
+	float joint_width = max(FAULT_JOINT, FAULT_JOINT_PIXELS * fwidth(to_fault));
+	float fault_joint = (1.0 - smoothstep(0.0, joint_width, to_fault)) * FAULT_JOINT / joint_width * opens * (1.0 - up);
 
 	// Tone: the set's beds, at this material's contrast, over a broad drift. What faces up is a bedding plane, the beds faint.
 	float contrast = strata_contrast / 0.2 * (detail ? 1.0 : 0.6) * (1.0 - 0.5 * up);
@@ -199,7 +215,6 @@ Rock rock_at(vec3 p, vec3 t, vec3 b, float seed, float up) {
 	r.tone = 1.0 + (surface.r * 2.0 - 1.0) * contrast + (warp - 0.5) * 0.35;
 	r.cavity = max(surface.g, fault_joint * 0.8) * (detail ? 1.0 : 0.5);
 	r.rough = surface.b;
-	r.height = 0.0;
 	r.built = 0.0;
 
 	// Masonry: courses along a wall, flagstones on what faces up, over the strata where a block stands; where one is missing,
@@ -219,14 +234,19 @@ Rock rock_at(vec3 p, vec3 t, vec3 b, float seed, float up) {
 	float stain = smoothstep(0.45, 0.8, value_noise2(vec2(q.x * 0.6, p.y * 0.06)));
 	r.tone *= 1.0 - 0.14 * stain * (1.0 - up);
 	if (fracture > 0.0) {
-		// Big warped cells split by wide dark fissures, a pale broken rim along each.
-		vec2 fq = q * 1.1 + (vec2(fbm2(q * 0.7 + seed * 2.0, 2), fbm2(q * 0.7 + 3.1 + seed, 2)) - 0.5) * 0.9;
-		vec2 fc = voronoi_border(fq);
-		float fissure = 1.0 - smoothstep(0.02, 0.07, fc.x);
-		float rim = (1.0 - smoothstep(0.07, 0.14, fc.x)) * (1.0 - fissure);
-		r.height -= fissure * 0.08 * fracture;
-		r.cavity = max(r.cavity, fissure * fracture);
-		r.tone *= mix(1.0, (1.0 - 0.75 * fissure) * (1.0 + 0.25 * rim) * (0.9 + 0.2 * fc.y), fracture);
+		// The web of fissures over whatever the rock is: two ways round, each in its own broad regions.
+		vec2 uv = vec2(q.x, -q.y) / CRACKS_TILE;
+		vec2 mirrored = vec2(-q.x, -q.y) / (CRACKS_TILE * CRACKS_MIRROR_SCALE) + CRACKS_MIRROR_OFFSET / CRACKS_TILE;
+		float second = smoothstep(0.45, 0.55, value_noise2(q * CRACKS_REGION_FREQUENCY + 23.0));
+		vec3 crack = mix(texture(cracks_surface, uv).rgb, texture(cracks_surface, mirrored).rgb, second);
+		r.tone *= mix(1.0, crack.r * 2.0, fracture);
+		r.cavity = max(r.cavity, crack.g * fracture * (detail ? 1.0 : 0.5));
+		r.rough = mix(r.rough, crack.b, fracture);
+		if (detail) {
+			// The mirrored layer runs the other way along the face, so its slope along does too.
+			vec2 slope = mix(texture(cracks_normal, uv).rg * 2.0 - 1.0, (texture(cracks_normal, mirrored).rg * 2.0 - 1.0) * vec2(-1.0, 1.0), second);
+			r.slope = r.slope * (1.0 - 0.5 * fracture) + slope * fracture;
+		}
 	}
 	return r;
 }
@@ -244,7 +264,7 @@ void fragment() {
 
 	vec3 face_up_n = view_to_world(f.normal, INV_VIEW_MATRIX);
 	float up = abs(face_up_n.y);
-	Rock r = rock_at(p, t, b, seed, up);
+	Rock r = rock_at(p, t, b, up);
 	vec3 n = f.normal;
 	float chipped = 0.0;
 	if (detail) {
@@ -252,13 +272,10 @@ void fragment() {
 		float chip_noise = value_noise3(p * 3.1 + seed * 5.0);
 		float width = wear_width * (0.4 + 1.2 * chip_noise);
 		chipped = (1.0 - smoothstep(0.0, width * 1.6, f.edge)) * edge_wear;
-		// The beds' relief from the baked normal (tangent space: red along the face, green up it).
-		vec3 ts = vec3(r.slope, sqrt(max(0.0, 1.0 - dot(r.slope, r.slope))));
+		// The relief from the baked normals (tangent space: red along the face, green up it).
+		vec2 slope = r.slope / max(1.0, length(r.slope));
+		vec3 ts = vec3(slope, sqrt(max(0.0, 1.0 - dot(slope, slope))));
 		n = normalize(f.tangent * ts.x + f.bitangent * ts.y + n * ts.z);
-		// The fissures of cracked rock, wide enough to bump from their screen-space slope (lib/surface).
-		if (fracture > 0.0) {
-			n = surface_bump(f, n, surface_slope(r.height, VERTEX, f.normal, f.tangent, f.bitangent));
-		}
 	}
 	vec3 face_world_n = view_to_world(f.normal, INV_VIEW_MATRIX);
 	bool side = abs(face_world_n.y) < 0.5;

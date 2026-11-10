@@ -96,10 +96,71 @@ public static class TileNoise
         return Line(distance, radius);
     }
 
+    /// <summary>
+    /// The cell of a Voronoi diagram on a lattice of <paramref name="cells"/> a side that wraps (<paramref name="x"/> and
+    /// <paramref name="y"/> in lattice cells, one site per lattice cell) that holds the point, and the exact distance to that
+    /// cell's nearest border (after Inigo Quilez: the nearest site, then the borders with the sites around it).
+    /// </summary>
+    public static VoronoiCell Voronoi(double x, double y, int cells, int seed)
+    {
+        int cx = (int)Math.Floor(x);
+        int cy = (int)Math.Floor(y);
+        double best = double.MaxValue;
+        double nx = 0.0;
+        double ny = 0.0;
+        int bx = cx;
+        int by = cy;
+        for (int j = -1; j <= 1; j++)
+        {
+            for (int i = -1; i <= 1; i++)
+            {
+                (double rx, double ry) = ToSite(cx + i, cy + j, x, y, cells, seed);
+                double d = (rx * rx) + (ry * ry);
+                if (d < best)
+                {
+                    best = d;
+                    nx = rx;
+                    ny = ry;
+                    bx = cx + i;
+                    by = cy + j;
+                }
+            }
+        }
+
+        double border = double.MaxValue;
+        for (int j = -2; j <= 2; j++)
+        {
+            for (int i = -2; i <= 2; i++)
+            {
+                if (i == 0 && j == 0)
+                {
+                    continue;
+                }
+
+                (double rx, double ry) = ToSite(bx + i, by + j, x, y, cells, seed);
+                double ex = rx - nx;
+                double ey = ry - ny;
+                double length = Math.Sqrt((ex * ex) + (ey * ey));
+                double d = ((((nx + rx) * 0.5) * ex) + (((ny + ry) * 0.5) * ey)) / length;
+                border = Math.Min(border, d);
+            }
+        }
+
+        return new VoronoiCell(border, (Wrap(by, cells) * cells) + Wrap(bx, cells), nx, ny);
+    }
+
     public static double SmoothStep(double edge0, double edge1, double x)
     {
         double t = Math.Clamp((x - edge0) / (edge1 - edge0), 0.0, 1.0);
         return t * t * (3.0 - (2.0 * t));
+    }
+
+    /// <summary>From the point to the site of lattice cell (<paramref name="gx"/>, <paramref name="gy"/>).</summary>
+    private static (double X, double Y) ToSite(int gx, int gy, double x, double y, int cells, int seed)
+    {
+        int wx = Wrap(gx, cells);
+        int wy = Wrap(gy, cells);
+        return (gx + Hash(wx, wy, seed) - x, gy + Hash(wx, wy, seed + 1) - y);
     }
 
     private static double Quintic(double t) => t * t * t * ((t * ((t * 6.0) - 15.0)) + 10.0);

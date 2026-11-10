@@ -1,5 +1,5 @@
 [gd_resource type="ShaderMaterial" format=3]
-; Cracked rock: the Drill bores through it. Deep fissures web the whole face (rock.gdshader's `fracture`), so it reads
+; Cracked rock: the Drill bores through it. Deep fissures web the whole face (rock.gdshader's `fracture`, the baked cracks set), so it reads
 ; at a glance against sound rock.
 
 [ext_resource type="Shader" path="res://assets/shaders/rock.gdshader" id="1_shader"]
@@ -7,6 +7,8 @@
 [ext_resource type="Texture2D" uid="uid://4q4ph45vstq4" path="res://assets/textures/surfaces/strata_surface.png" id="3_surface"]
 [ext_resource type="Texture2D" uid="uid://nbsorywnpvq5" path="res://assets/textures/surfaces/masonry_normal.png" id="4_masonry_normal"]
 [ext_resource type="Texture2D" uid="uid://cyd8ptbp7r31i" path="res://assets/textures/surfaces/masonry_surface.png" id="5_masonry_surface"]
+[ext_resource type="Texture2D" uid="uid://x0wfgfqo4nte" path="res://assets/textures/surfaces/cracks_normal.png" id="6_cracks_normal"]
+[ext_resource type="Texture2D" uid="uid://b456ywc78ygp2" path="res://assets/textures/surfaces/cracks_surface.png" id="7_cracks_surface"]
 
 [resource]
 shader = ExtResource("1_shader")
@@ -15,3 +17,5 @@ shader_parameter/strata_surface = ExtResource("3_surface")
 shader_parameter/masonry_normal = ExtResource("4_masonry_normal")
 shader_parameter/masonry_surface = ExtResource("5_masonry_surface")
 shader_parameter/fracture = 1.0
+shader_parameter/cracks_normal = ExtResource("6_cracks_normal")
+shader_parameter/cracks_surface = ExtResource("7_cracks_surface")

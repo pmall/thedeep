@@ -57,7 +57,7 @@ public class SurfaceBakeTests
         Assert.Equal(first.Surface, second.Surface);
     }
 
-    public static TheoryData<string> Patterns => new() { "strata", "masonry", "ice" };
+    public static TheoryData<string> Patterns => new() { "strata", "masonry", "ice", "cracks" };
 
     /// <summary>Half a tile on, the bake is the same image rolled by half: its edges meet as its middle does, so it has no seam.</summary>
     [Theory]
@@ -172,6 +172,7 @@ public class SurfaceBakeTests
     {
         "strata" => new StrataSurface(),
         "masonry" => new MasonrySurface(),
+        "cracks" => new CracksSurface(),
         _ => new IceSurface(),
     };
 
@@ -197,6 +198,29 @@ public class SurfaceBakeTests
 
         // Fractures and bubbles show, but most of the ice is clear.
         Assert.InRange(white, 8, 200);
+    }
+
+    [Fact]
+    public void CracksRepeatEveryTileAndWebTheFace()
+    {
+        var cracks = new CracksSurface();
+        double tile = cracks.TileMeters;
+        int fissured = 0;
+        for (int i = 0; i < 400; i++)
+        {
+            double along = i * 0.0731 % tile;
+            double up = i * 0.1937 % tile;
+            SurfacePoint here = cracks.At(along, up);
+            SurfacePoint there = cracks.At(along - (2.0 * tile), up + tile);
+            Assert.Equal(here.HeightMeters, there.HeightMeters, 6);
+            Assert.Equal(here.Tone, there.Tone, 6);
+            Assert.Equal(here.Cavity, there.Cavity, 6);
+            Assert.InRange(here.Tone, 0.0, SurfaceMaps.ToneScale);
+            fissured += here.Cavity > 0.5 ? 1 : 0;
+        }
+
+        // The fissures web the face, but most of it is broken rock between them.
+        Assert.InRange(fissured, 12, 120);
     }
 
     [Fact]

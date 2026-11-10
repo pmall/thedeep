@@ -104,8 +104,8 @@ public sealed record IceSurface : ISurfacePattern
         double warp = CrackWarpMeters / tile * PlateCells;
         double wx = (TileNoise.Fractal(u * 8, v * 8, 8, 8, 3, Seed + 1) - 0.5) * 2.0 * warp;
         double wy = (TileNoise.Fractal(u * 8, v * 8, 8, 8, 3, Seed + 2) - 0.5) * 2.0 * warp;
-        Border plate = Nearest((u * PlateCells) + wx, (v * PlateCells) + wy, PlateCells, Seed + 3);
-        double meters = plate.Distance * tile / PlateCells;
+        VoronoiCell plate = TileNoise.Voronoi((u * PlateCells) + wx, (v * PlateCells) + wy, PlateCells, Seed + 3);
+        double meters = plate.Border * tile / PlateCells;
         bool lit = TileNoise.Hash(plate.Cell, 0, Seed + 5) < LitShare;
         double fade = Fade(u, v, CrackCells, CrackShare, Seed + 4);
         double wash = lit ? Wash * Math.Exp(-meters / WashMeters) * (0.4 + (0.6 * fade)) : 0.0;
@@ -115,9 +115,9 @@ public sealed record IceSurface : ISurfacePattern
         double patch = TileNoise.SmoothStep(0.5, 0.68, TileNoise.Fractal(u * FinePatchCells, v * FinePatchCells, FinePatchCells, FinePatchCells, 2, Seed + 6));
         if (patch > 0.0)
         {
-            Border fine = Nearest((u * FineCells) + (wx * 2.0), (v * FineCells) + (wy * 2.0), FineCells, Seed + 7);
+            VoronoiCell fine = TileNoise.Voronoi((u * FineCells) + (wx * 2.0), (v * FineCells) + (wy * 2.0), FineCells, Seed + 7);
             double fineFade = Fade(u, v, CrackCells * 3, FineShare, Seed + 8);
-            crack = Math.Max(crack, Fine * patch * fineFade * TileNoise.Line(fine.Distance * tile / FineCells, FineMeters));
+            crack = Math.Max(crack, Fine * patch * fineFade * TileNoise.Line(fine.Border * tile / FineCells, FineMeters));
         }
 
         // Bubbles in trails and bands.
@@ -174,70 +174,4 @@ public sealed record IceSurface : ISurfacePattern
         double threshold = 0.5 - ((share - 0.5) * 0.5);
         return TileNoise.SmoothStep(threshold - 0.04, threshold + 0.04, noise);
     }
-
-    /// <summary>
-    /// The nearest cell of a Voronoi diagram on a lattice of <paramref name="cells"/> a side that wraps (<paramref name="x"/> and
-    /// <paramref name="y"/> in lattice cells), and the distance to its nearest border (after Inigo Quilez: exact border distance
-    /// in two passes).
-    /// </summary>
-    private static Border Nearest(double x, double y, int cells, int seed)
-    {
-        int cx = (int)Math.Floor(x);
-        int cy = (int)Math.Floor(y);
-        double best = double.MaxValue;
-        double nx = 0.0;
-        double ny = 0.0;
-        int bx = cx;
-        int by = cy;
-        for (int j = -1; j <= 1; j++)
-        {
-            for (int i = -1; i <= 1; i++)
-            {
-                (double rx, double ry) = Offset(cx + i, cy + j, x, y, cells, seed);
-                double d = (rx * rx) + (ry * ry);
-                if (d < best)
-                {
-                    best = d;
-                    nx = rx;
-                    ny = ry;
-                    bx = cx + i;
-                    by = cy + j;
-                }
-            }
-        }
-
-        double border = double.MaxValue;
-        for (int j = -2; j <= 2; j++)
-        {
-            for (int i = -2; i <= 2; i++)
-            {
-                if (i == 0 && j == 0)
-                {
-                    continue;
-                }
-
-                (double rx, double ry) = Offset(bx + i, by + j, x, y, cells, seed);
-                double ex = rx - nx;
-                double ey = ry - ny;
-                double length = Math.Sqrt((ex * ex) + (ey * ey));
-                double d = ((((nx + rx) * 0.5) * ex) + (((ny + ry) * 0.5) * ey)) / length;
-                border = Math.Min(border, d);
-            }
-        }
-
-        return new Border(border, Id(bx, by, cells));
-    }
-
-    /// <summary>From the point to the feature point of lattice cell (<paramref name="gx"/>, <paramref name="gy"/>).</summary>
-    private static (double X, double Y) Offset(int gx, int gy, double x, double y, int cells, int seed)
-    {
-        int wx = TileNoise.Wrap(gx, cells);
-        int wy = TileNoise.Wrap(gy, cells);
-        return (gx + TileNoise.Hash(wx, wy, seed) - x, gy + TileNoise.Hash(wx, wy, seed + 1) - y);
-    }
-
-    private static int Id(int gx, int gy, int cells) => (TileNoise.Wrap(gy, cells) * cells) + TileNoise.Wrap(gx, cells);
-
-    /// <summary>A point's place in a Voronoi diagram: lattice cells to its cell's nearest border, and its cell.</summary>
-    private readonly record struct Border(double Distance, int Cell);
 }
