@@ -264,7 +264,7 @@ Seed = 5
 [node name="Clerestory" type="SpotLight3D" parent="Shafts"]
 transform = Transform3D(-0.7071, 0.6288, -0.3234, 0, 0.4573, 0.8893, 0.7071, 0.6288, -0.3234, 8, 40, -10)
 light_energy = 3.5
-light_volumetric_fog_energy = 10
+light_volumetric_fog_energy = 5
 shadow_enabled = true
 spot_range = 80
 spot_attenuation = 0.25
@@ -275,7 +275,7 @@ spot_angle_attenuation = 2
 [node name="Organ" type="SpotLight3D" parent="Shafts"]
 transform = Transform3D(-1, 0, 0, 0, 0.1414, 0.9899, 0, 0.9899, -0.1414, 52, 42, -6)
 light_energy = 3
-light_volumetric_fog_energy = 10
+light_volumetric_fog_energy = 5
 shadow_enabled = true
 spot_range = 80
 spot_attenuation = 0.25

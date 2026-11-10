@@ -227,7 +227,7 @@ Rise = 27.5
 [node name="Head" type="SpotLight3D" parent="Shafts"]
 transform = Transform3D(-1, 0, 0, 0, 0.1414, 0.9899, 0, 0.9899, -0.1414, 13, 52, -2)
 light_energy = 4.5
-light_volumetric_fog_energy = 12
+light_volumetric_fog_energy = 2
 shadow_enabled = true
 spot_range = 80
 spot_attenuation = 0.25
@@ -238,7 +238,7 @@ spot_angle_attenuation = 2
 [node name="High" type="SpotLight3D" parent="Shafts"]
 transform = Transform3D(-0.7071, 0.6288, -0.3234, 0, 0.4573, 0.8893, 0.7071, 0.6288, -0.3234, 0, 44, -12)
 light_energy = 2.6
-light_volumetric_fog_energy = 7
+light_volumetric_fog_energy = 2
 shadow_enabled = true
 spot_range = 80
 spot_attenuation = 0.25
