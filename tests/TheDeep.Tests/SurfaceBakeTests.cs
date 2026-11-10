@@ -46,17 +46,18 @@ public class SurfaceBakeTests
         }
     }
 
-    [Fact]
-    public void BakingTwiceWritesTheSameBytes()
+    [Theory]
+    [MemberData(nameof(Patterns))]
+    public void BakingTwiceWritesTheSameBytes(string name)
     {
-        var pattern = new StrataSurface { TileMeters = 1.0 };
+        ISurfacePattern pattern = Pattern(name);
         SurfaceMaps first = SurfaceBaker.Bake(pattern, 48);
         SurfaceMaps second = SurfaceBaker.Bake(pattern, 48);
         Assert.Equal(first.Normal, second.Normal);
         Assert.Equal(first.Surface, second.Surface);
     }
 
-    public static TheoryData<string> Patterns => new() { "strata", "masonry" };
+    public static TheoryData<string> Patterns => new() { "strata", "masonry", "ice" };
 
     /// <summary>Half a tile on, the bake is the same image rolled by half: its edges meet as its middle does, so it has no seam.</summary>
     [Theory]
@@ -167,7 +168,36 @@ public class SurfaceBakeTests
         }
     }
 
-    private static ISurfacePattern Pattern(string name) => name == "strata" ? new StrataSurface() : new MasonrySurface();
+    private static ISurfacePattern Pattern(string name) => name switch
+    {
+        "strata" => new StrataSurface(),
+        "masonry" => new MasonrySurface(),
+        _ => new IceSurface(),
+    };
+
+    [Fact]
+    public void IceRepeatsEveryTileAndItsInclusionsArePale()
+    {
+        var ice = new IceSurface();
+        double tile = ice.TileMeters;
+        int white = 0;
+        for (int i = 0; i < 400; i++)
+        {
+            double along = i * 0.0731 % tile;
+            double up = i * 0.1937 % tile;
+            SurfacePoint here = ice.At(along, up);
+            SurfacePoint there = ice.At(along + (3.0 * tile), up - tile);
+            Assert.Equal(here.HeightMeters, there.HeightMeters, 6);
+            Assert.Equal(here.Tone, there.Tone, 6);
+            Assert.Equal(here.Roughness, there.Roughness, 6);
+            Assert.InRange(here.Tone, 1.0, SurfaceMaps.ToneScale);
+            Assert.Equal(0.0, here.Cavity);
+            white += here.Tone > 1.3 ? 1 : 0;
+        }
+
+        // Fractures and bubbles show, but most of the ice is clear.
+        Assert.InRange(white, 8, 200);
+    }
 
     [Fact]
     public void AFlatPatternBakesAFlatNormal()
