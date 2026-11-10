@@ -800,11 +800,11 @@ transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 64, 14, 22)
 script = ExtResource("21_spot")
 PlayerPosition = Vector3(66, 9, 0)
 
-; the metal buttress, the two rings, the Calving ledge
+; the metal buttress, the two rings, the Calving ledge, the pilgrim on it (on the floor below, it would fall down the vent)
 [node name="Calving" type="Marker3D" parent="PhotoSpots"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 9, 11, 22)
 script = ExtResource("21_spot")
-PlayerPosition = Vector3(11, 0, 0)
+PlayerPosition = Vector3(5, 14, 0)
 PlayerFacing = -1
 
 ; down the well, the corridor, the ice plug over the Vault
