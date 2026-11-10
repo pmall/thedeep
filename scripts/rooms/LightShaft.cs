@@ -5,7 +5,7 @@ namespace TheDeep;
 
 /// <summary>
 /// The visible beam of one of a room's light shafts (<see cref="Room.Shafts"/>): a soft column of light from the spot light down to
-/// the solid it falls on, as wide as its cone, in the biome's shaft color (<see cref="ShaftBeam"/> builds it, its
+/// the solid it falls on, as wide as its cone, in the biome's shaft color, as bright as the light's light_volumetric_fog_energy says (<see cref="ShaftBeam"/> builds it, its
 /// <see cref="Material"/> draws it). Built once by the room's stage (<see cref="RoomStage.Build"/>) for every shaft that is a spot
 /// light, so a room only places its lights. Visual only.
 /// </summary>
@@ -18,6 +18,8 @@ public partial class LightShaft : MeshInstance3D
     private const float Deepest = -3.5f;
 
     private static readonly StringName PowerParameter = "power";
+
+    private static readonly StringName FocusParameter = "focus";
 
     public required SpotLight3D Light { get; init; }
 
@@ -64,6 +66,7 @@ public partial class LightShaft : MeshInstance3D
         Mesh = mesh;
         MaterialOverride = Material;
         CastShadow = ShadowCastingSetting.Off;
-        SetInstanceShaderParameter(PowerParameter, Light.LightEnergy);
+        SetInstanceShaderParameter(PowerParameter, Light.LightVolumetricFogEnergy);
+        SetInstanceShaderParameter(FocusParameter, Light.SpotAngleAttenuation);
     }
 }

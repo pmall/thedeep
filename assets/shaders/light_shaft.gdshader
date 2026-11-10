@@ -1,6 +1,6 @@
 // A light shaft's visible beam (LightShaft, on the strip ShaftBeam builds): light added over the scene, in the biome's shaft
 // color, as a soft column with no surface. Across, the chord of a cone of lit air (brightest on its axis, nothing at its rim)
-// inside a fainter halo, with a few broad, still bands of brighter air; along, it eases in below the light and fades with
+// gathered toward its axis as the light's own falloff says, inside a fainter halo, with a few broad, still bands of brighter air; along, it eases in below the light and fades with
 // distance, and over its last meters as it reaches the solid it falls on, so the strip's end never shows as a line. Only smooth
 // math on the mesh (docs/art-direction.md#stable-image): every band is a good part of a meter wide, the only motion a slow breath.
 // UV: X across (-1 to 1), Y along (0 at the light, 1 at its end); UV2: X the length in meters, Y how far past the cone the strip
@@ -12,12 +12,15 @@ render_mode blend_add, unshaded, depth_draw_never, cull_disabled, shadows_disabl
 
 global uniform vec4 biome_shaft;
 
-/// The light's own energy, set per shaft (LightShaft): a strong shaft shows a bright beam.
-instance uniform float power : hint_range(0.0, 16.0) = 4.0;
-/// Beam brightness per unit of the light's energy.
-uniform float strength : hint_range(0.0, 1.0) = 0.06;
+/// How strongly the light shows in the air, set per shaft from its light_volumetric_fog_energy (LightShaft): apart from how
+/// brightly it lights what it falls on, so a long shaft down a deep room can light the floor and still not draw a wide column.
+instance uniform float power : hint_range(0.0, 32.0) = 10.0;
+/// The light's angular falloff (its spot_angle_attenuation, set per shaft): over 1, the beam gathers toward its axis.
+instance uniform float focus : hint_range(0.1, 8.0) = 1.0;
+/// Beam brightness per unit of power.
+uniform float strength : hint_range(0.0, 1.0) = 0.03;
 /// Brightness of the halo around the cone, against its core.
-uniform float halo : hint_range(0.0, 1.0) = 0.3;
+uniform float halo : hint_range(0.0, 1.0) = 0.12;
 /// How fast the beam dims down its length (1 at the light, 1 / (1 + falloff) at its end).
 uniform float falloff : hint_range(0.0, 4.0) = 0.8;
 /// Meters below the light over which the beam eases in, and over which it fades out where it lands.
@@ -37,7 +40,7 @@ void fragment() {
 
 	// Across: the cone's chord (c = 1 at its rim), then a halo that dies out at the strip's edge.
 	float c = abs(x) * spread;
-	float core = pow(max(1.0 - c * c, 0.0), 1.5);
+	float core = pow(max(1.0 - c * c, 0.0), 1.5 * focus);
 	float rim = 1.0 - x * x;
 	float glow = exp(-1.6 * c * c) * rim * rim;
 	float across = core + halo * glow;
