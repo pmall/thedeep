@@ -17,7 +17,7 @@ public partial class Room : Node3D
     /// <summary>Lamps that take the biome's lamp color.</summary>
     [Export] public Light3D[] Lamps { get; set; } = System.Array.Empty<Light3D>();
 
-    /// <summary>Light shafts (spot lights seen in the volumetric fog) that take the biome's shaft color.</summary>
+    /// <summary>Light shafts that take the biome's shaft color; each spot light among them shows a beam (<see cref="LightShaft"/>).</summary>
     [Export] public Light3D[] Shafts { get; set; } = System.Array.Empty<Light3D>();
 
     /// <summary>Small lights at emissive decor (faith glyphs) that take the biome's glyph color.</summary>
@@ -76,6 +76,18 @@ public partial class Room : Node3D
         foreach (Block b in Blocks())
         {
             solids.Add(Box.Around(b.GlobalPosition.Flat(), new System.Numerics.Vector2(b.Size.X, b.Size.Y)));
+        }
+
+        return solids;
+    }
+
+    /// <summary>The room's gameplay blocks as boxes in space, with their depth (room positions).</summary>
+    public List<SolidBox> SolidBoxes()
+    {
+        var solids = new List<SolidBox>();
+        foreach (Block b in Blocks())
+        {
+            solids.Add(SolidBox.Around(b.GlobalPosition.ToCore(), b.Size.ToCore()));
         }
 
         return solids;

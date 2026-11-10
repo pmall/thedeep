@@ -17,7 +17,7 @@ All working; the art pass makes them ready (`docs/roadmap.md#art-restore`).
 - `WallDressing`
 - `Colonnade`, `RackRow`, `Spinner`
 - Kit meshes (`scripts/kit/`)
-- Light shafts, lamps, glyph lights (`Room`)
+- Light shafts (`Room.Shafts`; each spot light shows its beam, a soft mesh: `LightShaft`), lamps, glyph lights (`Room`)
 - `AmbientParticles`
 - `WaterBody` (scenery)
 

@@ -1,0 +1,7 @@
+[gd_resource type="ShaderMaterial" format=3]
+; The visible beam of every room's light shafts (assets/shaders/light_shaft.gdshader), on the strip LightShaft builds.
+
+[ext_resource type="Shader" path="res://assets/shaders/light_shaft.gdshader" id="1_shader"]
+
+[resource]
+shader = ExtResource("1_shader")

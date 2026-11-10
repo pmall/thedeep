@@ -13,6 +13,7 @@
 [ext_resource type="Material" path="res://assets/materials/backdrop_metal.tres" id="9_metal"]
 [ext_resource type="Material" path="res://assets/materials/architecture_accent.tres" id="10_accent"]
 [ext_resource type="Material" path="res://assets/materials/architecture_ice.tres" id="11_ice"]
+[ext_resource type="Material" path="res://assets/materials/light_shaft.tres" id="12_shaft"]
 
 [node name="RoomStage" type="Node3D" node_paths=PackedStringArray("Environment", "KeyLight")]
 script = ExtResource("1_stage")
@@ -26,6 +27,7 @@ ArchitectureAccent = ExtResource("10_accent")
 ArchitectureIce = ExtResource("11_ice")
 FrameMaterial = ExtResource("7_fore")
 Dust = ExtResource("8_dust")
+ShaftMaterial = ExtResource("12_shaft")
 
 [node name="WorldEnvironment" type="WorldEnvironment" parent="."]
 environment = ExtResource("2_env")

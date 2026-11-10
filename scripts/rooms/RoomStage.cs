@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using Godot;
 
 namespace TheDeep;
@@ -5,10 +6,11 @@ namespace TheDeep;
 /// <summary>
 /// The atmosphere stack every room repeats, as one shared piece (scenes/stage/RoomStage.tscn): the
 /// environment and key light, clear air in front of the play plane, the far backdrop (two skylines, the depth layer's
-/// own, and its architecture standing in the haze: <see cref="BackdropArchitecture"/>), the dark framing foreground above and below the play area, and dust in the air.
+/// own, and its architecture standing in the haze: <see cref="BackdropArchitecture"/>), the dark framing foreground above and below the play area, dust in the air,
+/// and the visible beam of each of the room's light shafts (<see cref="LightShaft"/>).
 /// Everything is sized from the room's camera bounds when the room is ready (<see cref="Build"/>), so a
 /// room only states its layout and the few choices exported here. Deterministic for a given <see cref="Seed"/>.
-/// Visual only: nothing here touches gameplay. Room-specific light (shafts, lamps), water and extra
+/// Visual only: nothing here touches gameplay. Room-specific lights (the shafts' spot lights, lamps), water and extra
 /// particles stay in the room.
 /// </summary>
 public partial class RoomStage : Node3D
@@ -69,6 +71,10 @@ public partial class RoomStage : Node3D
 
     [Export] public int Seed { get; set; } = 1;
 
+    /// <summary>The look of the light shafts' beams (light_shaft.tres).</summary>
+    [ExportGroup("Light")]
+    [Export] public Material ShaftMaterial { get; set; } = null!;
+
     /// <summary>Builds the stack for <paramref name="room"/>'s bounds. Called once by the room when it is ready.</summary>
     public void Build(Room room)
     {
@@ -122,6 +128,15 @@ public partial class RoomStage : Node3D
             dust.Extents = new Vector3(size.X * 0.5f, size.Y * 0.4f, 6.5f);
             dust.Density = DustDensity;
             AddChild(dust);
+        }
+
+        List<SolidBox> solids = room.SolidBoxes();
+        foreach (Light3D light in room.Shafts)
+        {
+            if (light is SpotLight3D spot)
+            {
+                AddChild(new LightShaft { Name = $"Beam{spot.Name}", Light = spot, Material = ShaftMaterial, Solids = solids, FloorY = min.Y });
+            }
         }
     }
 
