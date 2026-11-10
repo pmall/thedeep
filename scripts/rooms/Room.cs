@@ -32,6 +32,9 @@ public partial class Room : Node3D
     /// <summary>Upper-right corner (X, Y) of the area the camera is allowed to show, on the play plane.</summary>
     [Export] public Vector2 BoundsMax { get; set; } = new(10f, 10f);
 
+    /// <summary>How far in front of the play plane the camera last stood (<see cref="FollowCamera"/>); the depth fog is placed behind the plane from it.</summary>
+    private float _cameraDistance = SideCamera.DefaultDistance;
+
     public override void _Ready()
     {
         Stage.Build(this);
@@ -43,7 +46,17 @@ public partial class Room : Node3D
     {
         Biome = biome;
         Stage.Restyle(biome);
-        biome.Apply(Stage.Environment.Environment, BoundsMin.Y, Stage.KeyLight, Lamps, Shafts, GlyphLights);
+        biome.Apply(Stage.Environment.Environment, BoundsMin.Y, _cameraDistance, Stage.KeyLight, Lamps, Shafts, GlyphLights);
+    }
+
+    /// <summary>
+    /// Keeps the depth fog behind the play plane for a camera <paramref name="cameraDistance"/> meters in front of it
+    /// (<see cref="BiomeProfile.FogDepthBegin"/>); the camera calls it every frame.
+    /// </summary>
+    public void FollowCamera(float cameraDistance)
+    {
+        _cameraDistance = cameraDistance;
+        Biome.ApplyDepthFog(Stage.Environment.Environment, cameraDistance);
     }
 
     /// <summary>The room's look-dev camera spots (tools/capture.sh), in scene order.</summary>

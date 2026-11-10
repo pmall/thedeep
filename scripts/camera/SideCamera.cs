@@ -12,8 +12,11 @@ public partial class SideCamera : Camera3D
     [Export] public Player Target { get; set; } = null!;
     [Export] public World World { get; set; } = null!;
 
+    /// <summary>The gameplay camera's distance from the play plane, unless a scene sets <see cref="Distance"/>.</summary>
+    public const float DefaultDistance = 22f;
+
     /// <summary>Distance from the play plane (Z = 0) to the camera.</summary>
-    [Export] public float Distance { get; set; } = 22f;
+    [Export] public float Distance { get; set; } = DefaultDistance;
 
     /// <summary>Frames the player slightly below the center of the screen: the focus sits this far above its feet when upright.</summary>
     [Export] public float VerticalOffset { get; set; } = 1.5f;
@@ -70,6 +73,8 @@ public partial class SideCamera : Camera3D
 
     public override void _Process(double delta)
     {
+        // Every frame, framing shots too: the room may have changed, and a wide shot stands farther back.
+        World.Room.FollowCamera(GlobalPosition.Z);
         if (_framingShot)
         {
             return;

@@ -18,6 +18,7 @@ All working; the art pass makes them ready (`docs/roadmap.md#art-restore`).
 - `Colonnade`, `RackRow`, `Spinner`
 - Kit meshes (`scripts/kit/`)
 - Light shafts (`Room.Shafts`; each spot light shows its beam, a soft mesh: `LightShaft`), lamps, glyph lights (`Room`)
+- The vignette (`scenes/camera/Vignette.tscn`; its strength and color per `BiomeProfile`)
 - `AmbientParticles`
 - `WaterBody` (scenery)
 

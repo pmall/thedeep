@@ -258,6 +258,14 @@ water_area={
 "type": "vec4",
 "value": Vector4(0, 0, 0, 0)
 }
+vignette={
+"type": "float",
+"value": 0.0
+}
+vignette_color={
+"type": "color",
+"value": Color(1, 1, 1, 1)
+}
 
 [rendering]
 

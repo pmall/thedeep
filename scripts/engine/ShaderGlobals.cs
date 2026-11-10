@@ -4,7 +4,7 @@ namespace TheDeep;
 
 /// <summary>
 /// Global shader uniform names declared in project.godot ([shader_globals]). Use these instead of
-/// string literals. <see cref="BiomeProfile"/> sets the biome and post ones for the current room,
+/// string literals. <see cref="BiomeProfile"/> sets the biome and vignette ones for the current room,
 /// <see cref="WaterBody"/> the water ones.
 /// </summary>
 public static class ShaderGlobals
@@ -29,4 +29,6 @@ public static class ShaderGlobals
     public static readonly StringName BiomeCausticStrength = "biome_caustic_strength";
     public static readonly StringName WaterLevel = "water_level";
     public static readonly StringName WaterArea = "water_area";
+    public static readonly StringName Vignette = "vignette";
+    public static readonly StringName VignetteColor = "vignette_color";
 }

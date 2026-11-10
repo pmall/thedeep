@@ -81,12 +81,12 @@ public partial class BiomeProfile : Resource
     [Export] public float FogDensity { get; set; } = 1f;
 
     /// <summary>
-    /// Distance from the camera where depth fog starts and where it is full. The gameplay camera stands
-    /// <see cref="SideCamera.Distance"/> from the play plane: a start just short of it keeps the play plane clear and veils
-    /// all that stands behind it.
+    /// Depth behind the play plane (meters) where depth fog starts and where it is full, however far the camera stands
+    /// (<see cref="ApplyDepthFog"/>): the play plane stays clear and all that stands behind it sinks into the murk, in the
+    /// gameplay framing and in a wide shot alike. A start just short of 0 lets the fog touch the play plane's own faces.
     /// </summary>
-    [Export] public float FogDepthBegin { get; set; } = 24f;
-    [Export] public float FogDepthEnd { get; set; } = 75f;
+    [Export] public float FogDepthBegin { get; set; } = 2f;
+    [Export] public float FogDepthEnd { get; set; } = 53f;
 
     /// <summary>How depth fog grows from its start to its end: under 1 it thickens soon behind the start (murk right behind the play plane), over 1 late.</summary>
     [Export(PropertyHint.Range, "0.1,4")] public float FogDepthCurve { get; set; } = 1f;
@@ -127,6 +127,13 @@ public partial class BiomeProfile : Resource
     /// <summary>Caustic light strength (0 none).</summary>
     [Export] public float CausticStrength { get; set; } = 0.5f;
 
+    /// <summary>How much the screen's edges darken (0 none, 1 full), so the bright stage sits in a dark frame (vignette.gdshader).</summary>
+    [ExportGroup("Vignette")]
+    [Export(PropertyHint.Range, "0,1")] public float Vignette { get; set; }
+
+    /// <summary>What the edges darken toward (multiplied in); a tint, not black, keeps the frame in the palette.</summary>
+    [Export] public Color VignetteColor { get; set; } = new(0.2f, 0.2f, 0.25f);
+
     /// <summary>Tint of ambient particles (dust, silt, drips, bubbles; later embers or ice).</summary>
     [ExportGroup("Particles")]
     [Export] public Color ParticleTint { get; set; } = Colors.White;
@@ -157,11 +164,12 @@ public partial class BiomeProfile : Resource
     }
 
     /// <summary>
-    /// Re-themes a room whose camera bounds bottom out at <paramref name="floorY"/>: sets the palette globals, then the
+    /// Re-themes a room whose camera bounds bottom out at <paramref name="floorY"/>, seen from
+    /// <paramref name="cameraDistance"/> in front of the play plane: sets the palette and vignette globals, then the
     /// environment, key light, lamps, light shafts and glyph lights.
     /// Only colors, energies, fog and grading change; effects (SSAO, glow on/off…) stay as the room set them.
     /// </summary>
-    public void Apply(Environment environment, float floorY, DirectionalLight3D keyLight, Light3D[] lamps, Light3D[] shafts, Light3D[] glyphLights)
+    public void Apply(Environment environment, float floorY, float cameraDistance, DirectionalLight3D keyLight, Light3D[] lamps, Light3D[] shafts, Light3D[] glyphLights)
     {
         RenderingServer.GlobalShaderParameterSet(ShaderGlobals.BiomeRock, Rock);
         RenderingServer.GlobalShaderParameterSet(ShaderGlobals.BiomeMetal, Metal);
@@ -181,15 +189,16 @@ public partial class BiomeProfile : Resource
         RenderingServer.GlobalShaderParameterSet(ShaderGlobals.BiomeWaterDeep, WaterDeep);
         RenderingServer.GlobalShaderParameterSet(ShaderGlobals.BiomeCaustic, CausticColor);
         RenderingServer.GlobalShaderParameterSet(ShaderGlobals.BiomeCausticStrength, CausticStrength);
+        RenderingServer.GlobalShaderParameterSet(ShaderGlobals.Vignette, Vignette);
+        RenderingServer.GlobalShaderParameterSet(ShaderGlobals.VignetteColor, VignetteColor);
 
         environment.BackgroundColor = Background;
         environment.AmbientLightColor = AmbientColor;
         environment.AmbientLightEnergy = AmbientEnergy;
         environment.FogLightColor = FogColor;
         environment.FogDensity = FogDensity;
-        environment.FogDepthBegin = FogDepthBegin;
-        environment.FogDepthEnd = FogDepthEnd;
         environment.FogDepthCurve = FogDepthCurve;
+        ApplyDepthFog(environment, cameraDistance);
         environment.FogHeight = floorY + MistTop;
         environment.FogHeightDensity = MistDensity;
         environment.TonemapExposure = Exposure;
@@ -215,6 +224,25 @@ public partial class BiomeProfile : Resource
         foreach (Light3D glyphLight in glyphLights)
         {
             glyphLight.LightColor = GlyphLightColor;
+        }
+    }
+
+    /// <summary>
+    /// Places the depth fog behind the play plane for a camera <paramref name="cameraDistance"/> meters in front of it
+    /// (the Environment measures fog from the camera). Sets only what changed, so calling it every frame costs nothing.
+    /// </summary>
+    public void ApplyDepthFog(Environment environment, float cameraDistance)
+    {
+        float begin = cameraDistance + FogDepthBegin;
+        float end = cameraDistance + FogDepthEnd;
+        if (environment.FogDepthBegin != begin)
+        {
+            environment.FogDepthBegin = begin;
+        }
+
+        if (environment.FogDepthEnd != end)
+        {
+            environment.FogDepthEnd = end;
         }
     }
 

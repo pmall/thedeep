@@ -22,7 +22,7 @@ Read this before any visual work. Every room is built to this direction. How a m
 - **No flicker, ever** <a id="stable-image"></a> (owner). Held by construction; the second and third by a guard in the fast check (`tools/stable_image.py`):
   - Anti-aliasing stays on: 4x MSAA and TAA.
   - Nothing random per pixel per frame (no grain, no dither).
-  - No pass over the finished image that decides per pixel (posterize, outlines, painterly filters), and no shader reads the screen. Color grading stays in the Environment.
+  - No pass over the finished image that decides per pixel (posterize, outlines, painterly filters), and no shader reads the screen. Color grading stays in the Environment. The vignette is allowed: a fixed multiply whose factor depends only on screen position (`vignette.gdshader`).
   - Fine surface detail comes from textures with mipmaps (procedural patterns are baked to textures), never computed per pixel in a material. Procedural math in a shader only draws shapes several pixels wide at the gameplay camera's distance.
   - Text in the world is a distance-field font with mipmaps.
 - **Machines are built from shared parts** <a id="shared-parts"></a>: one part system, the foundation of the bestiary (`docs/long-term.md#machines-distinct`).
