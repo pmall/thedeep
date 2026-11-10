@@ -22,7 +22,6 @@ A room gets the attention its bricks need, no more. Bosses, machines and law bre
 The open items, in order:
 
 1. **The art pass** <a id="art-restore"></a> (owner: first priority). The effects that flickered are deleted, and the look comes back on the bare render under `docs/art-direction.md#stable-image`:
-   - [ ] **Baked surfaces**: a tool bakes the procedural patterns (rock strata and joints, cracks, masonry, ice fractures and bubbles, frost) into tileable albedo, normal and roughness textures with mipmaps, and the materials sample them instead of computing lines per pixel.
    - [ ] **The frozen layer** (the owner's favorite, the reference for the others): back to its look before the deletion (the captures at commit `0cf4b04`), judged by the owner.
    - [ ] **The atmosphere**: depth and height fog in the Environment instead of volumetric fog, underwater tint and haze as a fog or a material, the water's surface and its section drawn without reading the screen (their waivers of the guard go), light shafts as soft meshes, glints as small mipmapped textures. A gentle vignette may return (it depends only on screen position).
    - [ ] **The flooded layer and the core**, the same way, the flooded one made less bland. The volcanic layer's look comes with `docs/roadmap.md#volcanic-rethink`.
