@@ -70,16 +70,32 @@ public partial class BiomeProfile : Resource
     /// <summary>Color of the room's lamps; their energy and range stay per lamp.</summary>
     [Export] public Color LampColor { get; set; } = Colors.White;
 
-    /// <summary>Color of the room's light shafts (spot lights seen in the volumetric fog); energy stays per shaft.</summary>
+    /// <summary>Color of the room's light shafts; energy stays per shaft.</summary>
     [Export] public Color ShaftColor { get; set; } = Colors.White;
 
+    /// <summary>The murk's color: what depth fog and mist veil things in (the Environment's fog light color).</summary>
     [ExportGroup("Fog")]
     [Export] public Color FogColor { get; set; } = new(0.5f, 0.5f, 0.6f);
+
+    /// <summary>The most depth fog, however far (1 hides what is far entirely).</summary>
     [Export] public float FogDensity { get; set; } = 1f;
 
-    /// <summary>Distance from the camera where depth fog starts and where it is full.</summary>
+    /// <summary>
+    /// Distance from the camera where depth fog starts and where it is full. The gameplay camera stands
+    /// <see cref="SideCamera.Distance"/> from the play plane: a start just short of it keeps the play plane clear and veils
+    /// all that stands behind it.
+    /// </summary>
     [Export] public float FogDepthBegin { get; set; } = 24f;
     [Export] public float FogDepthEnd { get; set; } = 75f;
+
+    /// <summary>How depth fog grows from its start to its end: under 1 it thickens soon behind the start (murk right behind the play plane), over 1 late.</summary>
+    [Export(PropertyHint.Range, "0.1,4")] public float FogDepthCurve { get; set; } = 1f;
+
+    /// <summary>Mist pooling low in a room: meters above the bottom of the room's camera bounds where it begins.</summary>
+    [Export] public float MistTop { get; set; }
+
+    /// <summary>How fast the mist thickens below <see cref="MistTop"/>, per meter (the Environment's height fog density); 0 for none.</summary>
+    [Export(PropertyHint.Range, "0,0.5")] public float MistDensity { get; set; }
 
     /// <summary>The far distance's color: backdrop skylines sink into it (they do their own haze).</summary>
     [Export] public Color HazeColor { get; set; } = new(0.5f, 0.5f, 0.6f);
@@ -141,11 +157,11 @@ public partial class BiomeProfile : Resource
     }
 
     /// <summary>
-    /// Re-themes a room: sets the palette globals, then the environment, key light, lamps, light shafts and
-    /// glyph lights.
-    /// Only colors, energies and grading change; effects (SSAO, glow on/off…) stay as the room set them.
+    /// Re-themes a room whose camera bounds bottom out at <paramref name="floorY"/>: sets the palette globals, then the
+    /// environment, key light, lamps, light shafts and glyph lights.
+    /// Only colors, energies, fog and grading change; effects (SSAO, glow on/off…) stay as the room set them.
     /// </summary>
-    public void Apply(Environment environment, DirectionalLight3D keyLight, Light3D[] lamps, Light3D[] shafts, Light3D[] glyphLights)
+    public void Apply(Environment environment, float floorY, DirectionalLight3D keyLight, Light3D[] lamps, Light3D[] shafts, Light3D[] glyphLights)
     {
         RenderingServer.GlobalShaderParameterSet(ShaderGlobals.BiomeRock, Rock);
         RenderingServer.GlobalShaderParameterSet(ShaderGlobals.BiomeMetal, Metal);
@@ -173,6 +189,9 @@ public partial class BiomeProfile : Resource
         environment.FogDensity = FogDensity;
         environment.FogDepthBegin = FogDepthBegin;
         environment.FogDepthEnd = FogDepthEnd;
+        environment.FogDepthCurve = FogDepthCurve;
+        environment.FogHeight = floorY + MistTop;
+        environment.FogHeightDensity = MistDensity;
         environment.TonemapExposure = Exposure;
         environment.AdjustmentEnabled = true;
         environment.AdjustmentBrightness = Brightness;

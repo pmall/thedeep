@@ -1,7 +1,7 @@
 // Aerial haze for architecture far behind the play plane (the backdrop's naves, stacks, foundries): the farther behind
 // the play plane, the more of the biome's haze color veils it: the lit color dimmed, the haze added as emission (writing
-// FOG instead turned every material using the shader black). The volumetric fog alone left the nearest rows almost
-// black. Needs lib/palette (srgb_to_linear). Call HAZE at the end of fragment(), after ALBEDO and EMISSION.
+// FOG instead turned every material using the shader black).
+// Needs lib/palette (srgb_to_linear). Call HAZE at the end of fragment(), after ALBEDO and EMISSION.
 
 global uniform vec4 biome_haze;
 
