@@ -45,12 +45,12 @@ Thickness = 0.045
 
 [sub_resource type="PrimitiveMesh" id="TabletBack"]
 script = ExtResource("9_block")
-Size = Vector3(0.36, 0.46, 0.05)
+Size = Vector3(0.36, 0.55, 0.05)
 Bevel = 0.015
 
 [sub_resource type="PrimitiveMesh" id="TabletFace"]
 script = ExtResource("9_block")
-Size = Vector3(0.28, 0.38, 0.02)
+Size = Vector3(0.28, 0.47, 0.02)
 Bevel = 0.004
 
 [node name="ItemPickup" type="Node3D" node_paths=PackedStringArray("Token", "KeyLook", "CodeLook", "Glows", "Rim", "Light")]

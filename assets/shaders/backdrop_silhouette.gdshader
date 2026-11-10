@@ -40,21 +40,38 @@ void vertex() {
 	v_local = VERTEX.xy;
 }
 
+// Every edge is spread over a pixel, and a feature narrower than `MIN_PX` pixels is drawn that wide and fainter, so a skyline
+// 70-90 m away holds still under a creeping camera (docs/art-direction.md#stable-image). `px` is the pixel's footprint in meters.
+const float MIN_PX = 2.0;
+
+// Coverage of `x < edge`, x and edge in meters.
+float below(float x, float edge, float px) {
+	return clamp((edge - x) / px + 0.5, 0.0, 1.0);
+}
+
+// Coverage of a band `half_width` either side of its center line, `d` meters off it.
+float band(float d, float half_width, float px) {
+	float drawn = max(half_width, MIN_PX * 0.5 * px);
+	return below(d, drawn, px) * min(half_width / drawn, 1.0);
+}
+
+// Coverage of `f < 0` for an edge that is not in meters (a slope, a sum of shapes), from f's own rate across the pixel.
+// Call it only where every pixel of the quad runs it (derivatives).
+float under(float f) {
+	return clamp(0.5 - f / max(fwidth(f), 1e-4), 0.0, 1.0);
+}
+
 // Inside a lancet (pointed) window of half width `hw`, standing on y = 0, springing at `spring`.
-float lancet(vec2 p, float hw, float spring) {
-	if (p.y < 0.0) {
-		return 0.0;
-	}
+float lancet(vec2 p, float hw, float spring, float px) {
 	float x = abs(p.x);
-	if (p.y < spring) {
-		return step(x, hw);
-	}
 	float r = hw * 1.6;
-	return step(length(vec2(x - (hw - r), p.y - spring)), r);
+	float jamb = below(x, hw, px) * step(p.y, spring);
+	float arch = below(length(vec2(x - (hw - r), p.y - spring)), r, px) * step(spring, p.y);
+	return max(jamb, arch) * below(-p.y, 0.0, px);
 }
 
 // 1 where solid, 0 in the sky; `opening` 1 in a window or slit.
-void cathedral(vec2 p, out float solid, out float opening, out float lit) {
+void cathedral(vec2 p, float px, out float solid, out float opening, out float lit) {
 	float s = float(seed);
 	float bay = floor(p.x / bay_width);
 	float fx = (fract(p.x / bay_width) - 0.5) * bay_width;
@@ -66,121 +83,129 @@ void cathedral(vec2 p, out float solid, out float opening, out float lit) {
 	float spire_h = hash12(vec2(bay, s + 7.0)) > 0.78 ? height * 0.55 : 0.0;
 	float spire = max(0.0, 1.0 - abs(fx) / 1.4) * spire_h;
 	roof += max(pinnacle, spire);
-	solid = step(p.y, roof);
+	solid = under(p.y - roof);
 
 	float hw = bay_width * 0.2;
 	float sill = h * 0.18;
 	float spring = h * 0.42;
 	vec2 w = vec2(fx, p.y - sill);
-	opening = lancet(w, hw, spring);
+	opening = lancet(w, hw, spring, px);
 	// Tracery: a mullion and a rose in the head.
 	float apex = spring + sqrt(max((hw * 1.6) * (hw * 1.6) - (hw * 0.6) * (hw * 0.6), 0.0));
-	opening *= step(0.1, abs(fx));
+	opening *= 1.0 - band(abs(fx), 0.1, px);
 	float rose = abs(length(vec2(fx, p.y - sill - spring - hw * 0.55)) - hw * 0.42);
-	opening *= step(0.08, rose);
-	opening *= step(p.y, sill + apex);
+	opening *= 1.0 - band(rose, 0.08, px);
+	opening *= below(p.y, sill + apex, px);
 	lit = step(1.0 - lit_share, hash12(vec2(bay * 1.3, s + 3.0)));
 }
 
-void halls(vec2 p, out float solid, out float opening, out float lit) {
+void halls(vec2 p, float px, out float solid, out float opening, out float lit) {
 	float s = float(seed);
 	float tower = floor(p.x / bay_width);
 	float fx = fract(p.x / bay_width) * bay_width;
 	float gap = 0.25 + 0.6 * hash12(vec2(tower, s + 1.0));
 	float h = height * (1.0 - height_variation * hash12(vec2(tower, s)));
-	solid = step(p.y, h) * step(gap, fx);
+	// The tower stands centered in its cell, half its gap either side, so both its sides fall inside the cell.
+	float across = abs(fx - bay_width * 0.5);
+	solid = below(p.y, h, px) * below(across, (bay_width - gap) * 0.5, px);
 	// A walkway band joins the towers low down.
-	solid = max(solid, step(abs(p.y - height * 0.22), 0.35));
+	solid = max(solid, band(abs(p.y - height * 0.22), 0.35, px));
 	// Long lit bands: rows of rack bays still running, a few per tower.
 	float row = floor(p.y / 1.6);
-	float band = step(abs(fract(p.y / 1.6) - 0.5), 0.06) * step(gap + 0.4, fx) * step(fx, bay_width - 0.4);
-	opening = band * step(0.82, hash12(vec2(row, tower * 7.0 + s))) * step(p.y, h - 1.0) * step(1.0, p.y);
+	float rack = band(abs(fract(p.y / 1.6) - 0.5) * 1.6, 0.1, px) * below(across, (bay_width - gap) * 0.5 - 0.4, px);
+	opening = rack * step(0.82, hash12(vec2(row, tower * 7.0 + s))) * below(p.y, h - 1.0, px) * below(1.0, p.y, px);
 	lit = 1.0;
 }
 
 // Smokestacks over sheds; `glow` 1 at a stack's mouth, `smoke` the plume's density above it.
-void foundry(vec2 p, out float solid, out float opening, out float lit, out float smoke) {
+void foundry(vec2 p, float px, out float solid, out float opening, out float lit, out float smoke) {
 	float s = float(seed);
 	float cell = floor(p.x / bay_width);
 	float fx = (fract(p.x / bay_width) - 0.5) * bay_width;
 	// Sheds: a sawtooth roof along the ground.
 	float shed_h = height * 0.32;
 	float tooth = fract(p.x / (bay_width * 0.5));
-	float shed = step(p.y, shed_h + tooth * height * 0.07);
+	float shed = under(p.y - shed_h - tooth * height * 0.07);
 	// One stack per cell, of uneven girth and height, a little off center.
 	float girth = bay_width * (0.07 + 0.08 * hash12(vec2(cell, s + 2.0)));
 	float off = (hash12(vec2(cell, s + 5.0)) - 0.5) * bay_width * 0.4;
 	float h = height * (1.0 - height_variation * hash12(vec2(cell, s)));
 	float x = abs(fx - off);
 	float taper = girth * (1.0 - 0.15 * p.y / max(h, 1.0));
-	float band = step(abs(fract(p.y / 4.0) - 0.5), 0.04) * 0.25; // the stacks' iron bands
-	float stack = step(x, taper + band) * step(p.y, h);
+	float iron = band(abs(fract(p.y / 4.0) - 0.5) * 4.0, 0.16, px) * 0.25; // the stacks' iron bands
+	float stack = below(x, taper + iron, px) * below(p.y, h, px);
 	solid = max(shed, stack);
 	// Windows along the sheds, and the furnace light at each mouth.
-	float win = step(abs(fract(p.x / 1.8) - 0.5), 0.18) * step(abs(p.y - shed_h * 0.55), shed_h * 0.12);
-	float mouth = step(x, taper) * smoothstep(h - 1.6, h, p.y) * step(p.y, h);
+	float win = band(abs(fract(p.x / 1.8) - 0.5) * 1.8, 0.32, px) * band(abs(p.y - shed_h * 0.55), shed_h * 0.12, px);
+	float mouth = below(x, taper, px) * smoothstep(h - 1.6, h, p.y) * below(p.y, h, px);
 	opening = max(win * (1.0 - stack), mouth);
 	lit = max(mouth, step(1.0 - lit_share, hash12(vec2(floor(p.x / 1.8), s + 3.0))));
 	// Smoke: a widening, drifting plume above the mouth.
 	float rise = max(p.y - h, 0.0);
 	float drift = rise * 0.25;
 	float width = taper + rise * 0.28;
-	float plume = (1.0 - smoothstep(width * 0.4, width, abs(fx - off - drift))) * step(h, p.y);
+	float plume = (1.0 - smoothstep(width * 0.4, width, abs(fx - off - drift))) * below(h, p.y, px);
 	plume *= (1.0 - smoothstep(0.0, height * 0.7, rise));
 	plume *= 0.35 + 0.65 * fbm2(vec2(p.x * 0.12 - TIME * 0.05, p.y * 0.08 - TIME * 0.12), 4);
 	smoke = plume * step(0.35, hash12(vec2(cell, s + 9.0)));
 }
 
-// Domes, rings on edge and masts: the machinery older than the foundry.
-void machinery(vec2 p, out float solid, out float opening, out float lit) {
+// Domes, rings on edge and masts: the machinery older than the foundry. Each cell's three shapes are all worked out and its kind
+// picks one, so the edges' derivatives run on every pixel.
+void machinery(vec2 p, float px, out float solid, out float opening, out float lit) {
 	float s = float(seed);
 	float cell = floor(p.x / bay_width);
 	float fx = (fract(p.x / bay_width) - 0.5) * bay_width;
 	float h = height * (1.0 - height_variation * hash12(vec2(cell, s)));
 	float kind = hash12(vec2(cell, s + 4.0));
-	solid = step(p.y, height * 0.22); // the base all of it stands on
-	opening = 0.0;
-	if (kind < 0.4) {
-		// A dome on a drum, a lit band round its drum.
-		float r = bay_width * 0.42;
-		float drum = h * 0.45;
-		solid = max(solid, step(abs(fx), r) * step(p.y, drum));
-		solid = max(solid, step(length(vec2(fx, max(p.y - drum, 0.0) * 1.2)), r) * step(drum, p.y));
-		opening = step(abs(fx), r * 0.9) * step(abs(p.y - drum * 0.8), 0.25);
-	} else if (kind < 0.75) {
-		// A ring standing on edge, spokes to its hub.
-		float r = bay_width * 0.48;
-		vec2 c = vec2(fx, p.y - (height * 0.22 + r));
-		float d = length(c);
-		float rim = step(abs(d - r * 0.92), r * 0.08);
-		float a = atan(c.y, c.x);
-		float spokes = step(abs(fract(a / 6.2831853 * 6.0 + hash12(vec2(cell, s))) - 0.5), 0.03) * step(d, r);
-		solid = max(solid, max(rim, max(spokes, step(d, r * 0.12))));
-		opening = step(d, r * 0.06);
-	} else {
-		// A mast with crossbars.
-		float bars = step(abs(fract(p.y / 3.0) - 0.5), 0.05) * step(abs(fx), 1.2) * step(p.y, h);
-		solid = max(solid, max(step(abs(fx), 0.35) * step(p.y, h * 1.2), bars));
-		opening = step(abs(fx), 0.3) * step(abs(p.y - h * 1.2 + 0.4), 0.4);
-	}
+	float base = below(p.y, height * 0.22, px); // the base all of it stands on
+
+	// A dome on a drum, a lit band round its drum.
+	float r_dome = bay_width * 0.42;
+	float drum = h * 0.45;
+	float dome = max(below(abs(fx), r_dome, px) * below(p.y, drum, px),
+			under(length(vec2(fx, max(p.y - drum, 0.0) * 1.2)) - r_dome) * step(drum, p.y));
+	float dome_band = below(abs(fx), r_dome * 0.9, px) * band(abs(p.y - drum * 0.8), 0.25, px);
+
+	// A ring standing on edge, six spokes of even width to its hub.
+	float r = bay_width * 0.48;
+	vec2 c = vec2(fx, p.y - (height * 0.22 + r));
+	float d = length(c);
+	float rim = band(abs(d - r * 0.92), r * 0.08, px);
+	float a = atan(c.y, c.x);
+	float off = (fract(a / 6.2831853 * 6.0 + hash12(vec2(cell, s))) - 0.5) * 6.2831853 / 6.0;
+	float spokes = band(d * abs(sin(off)), r * 0.035, px) * below(d, r, px);
+	float ring = max(rim, max(spokes, below(d, r * 0.12, px)));
+	float hub = below(d, r * 0.06, px);
+
+	// A mast with crossbars.
+	float bars = band(abs(fract(p.y / 3.0) - 0.5) * 3.0, 0.15, px) * below(abs(fx), 1.2, px) * below(p.y, h, px);
+	float mast = max(below(abs(fx), 0.35, px) * below(p.y, h * 1.2, px), bars);
+	float lamp = below(abs(fx), 0.3, px) * band(abs(p.y - h * 1.2 + 0.4), 0.4, px);
+
+	bool is_dome = kind < 0.4;
+	bool is_ring = !is_dome && kind < 0.75;
+	solid = max(base, is_dome ? dome : (is_ring ? ring : mast));
+	opening = is_dome ? dome_band : (is_ring ? hub : lamp);
 	lit = 1.0;
 }
 
 // Jagged frozen peaks, archive towers sunk in them.
-void crags(vec2 p, out float solid, out float opening, out float lit) {
+void crags(vec2 p, float px, out float solid, out float opening, out float lit) {
 	float s = float(seed);
 	float ridge = height * (0.55 + 0.25 * fbm2(vec2(p.x * 0.025, s), 3));
 	// Sharp facets: triangle waves of a few periods.
 	ridge += height * 0.18 * abs(fract(p.x / (bay_width * 1.7) + s * 0.13) - 0.5) * 2.0;
 	ridge += height * 0.08 * abs(fract(p.x / (bay_width * 0.6)) - 0.5) * 2.0;
-	solid = step(p.y, ridge);
+	solid = under(p.y - ridge);
 	// Towers standing out of the ice, slits lit here and there.
 	float tower = floor(p.x / bay_width);
 	float tx = fract(p.x / bay_width) * bay_width;
 	float th = ridge * (0.5 + 0.6 * hash12(vec2(tower, s + 1.0)));
-	float t = step(bay_width * 0.35, tx) * step(tx, bay_width * 0.55) * step(p.y, th) * step(0.5, hash12(vec2(tower, s + 2.0)));
+	float t = below(bay_width * 0.35, tx, px) * below(tx, bay_width * 0.55, px) * under(p.y - th)
+			* step(0.5, hash12(vec2(tower, s + 2.0)));
 	solid = max(solid, t);
-	float slit = step(abs(fract(p.y / 2.2) - 0.5), 0.07) * step(bay_width * 0.39, tx) * step(tx, bay_width * 0.51);
+	float slit = band(abs(fract(p.y / 2.2) - 0.5) * 2.2, 0.154, px) * below(bay_width * 0.39, tx, px) * below(tx, bay_width * 0.51, px);
 	opening = t * slit * step(0.7, hash12(vec2(floor(p.y / 2.2), tower + s)));
 	lit = 1.0;
 }
@@ -188,21 +213,22 @@ void crags(vec2 p, out float solid, out float opening, out float lit) {
 void fragment() {
 	// Meters on the quad, y = 0 at the origin: give the QuadMesh a center_offset so it stands on it.
 	vec2 p = v_local;
+	float px = max(max(length(dFdx(p)), length(dFdy(p))), 1e-4);
 
 	float solid;
 	float opening;
 	float lit;
 	float smoke = 0.0;
 	if (style == 1) {
-		halls(p, solid, opening, lit);
+		halls(p, px, solid, opening, lit);
 	} else if (style == 2) {
-		foundry(p, solid, opening, lit, smoke);
+		foundry(p, px, solid, opening, lit, smoke);
 	} else if (style == 3) {
-		machinery(p, solid, opening, lit);
+		machinery(p, px, solid, opening, lit);
 	} else if (style == 4) {
-		crags(p, solid, opening, lit);
+		crags(p, px, solid, opening, lit);
 	} else {
-		cathedral(p, solid, opening, lit);
+		cathedral(p, px, solid, opening, lit);
 	}
 
 	vec3 haze_color = srgb_to_linear(biome_haze.rgb);

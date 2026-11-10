@@ -377,6 +377,12 @@ transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 50, -12, 18)
 script = ExtResource("17_spot")
 PlayerPosition = Vector3(48, -18, 0)
 
+; the seal on the Pyre's door at play distance: its burning glyphs
+[node name="Seal" type="Marker3D" parent="PhotoSpots"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 54, -15, 22)
+script = ExtResource("17_spot")
+PlayerPosition = Vector3(50, -18, 0)
+
 ; the whole pit under the flue
 [node name="Wide" type="Marker3D" parent="PhotoSpots"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 29, -7, 66)
