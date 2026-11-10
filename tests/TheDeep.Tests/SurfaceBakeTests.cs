@@ -57,7 +57,7 @@ public class SurfaceBakeTests
         Assert.Equal(first.Surface, second.Surface);
     }
 
-    public static TheoryData<string> Patterns => new() { "strata", "masonry", "ice", "cracks" };
+    public static TheoryData<string> Patterns => new() { "strata", "masonry", "ice", "cracks", "panels", "coating" };
 
     /// <summary>Half a tile on, the bake is the same image rolled by half: its edges meet as its middle does, so it has no seam.</summary>
     [Theory]
@@ -173,6 +173,8 @@ public class SurfaceBakeTests
         "strata" => new StrataSurface(),
         "masonry" => new MasonrySurface(),
         "cracks" => new CracksSurface(),
+        "panels" => new PanelSurface(),
+        "coating" => new CoatingSurface(),
         _ => new IceSurface(),
     };
 
@@ -221,6 +223,69 @@ public class SurfaceBakeTests
 
         // The fissures web the face, but most of it is broken rock between them.
         Assert.InRange(fissured, 12, 120);
+    }
+
+    /// <summary>
+    /// The material folds panels of any size onto the tile's (<c>metal.gdshader</c>): a panel must be symmetric about its middle
+    /// lines, and plain near them, every point there the same as its middle line's, so a longer edge can repeat it.
+    /// </summary>
+    [Fact]
+    public void EveryPanelFoldsOntoItsCorner()
+    {
+        var panels = new PanelSurface();
+        double side = panels.PanelMeters;
+        for (int quadrant = 0; quadrant < 4; quadrant++)
+        {
+            double ox = quadrant % 2 * side;
+            double oy = quadrant / 2 * side;
+            for (int i = 0; i < 300; i++)
+            {
+                double x = i * 0.0731 % side;
+                double y = i * 0.1937 % side;
+                AssertSame(panels.At(ox + x, oy + y), panels.At(ox + side - x, oy + y));
+                AssertSame(panels.At(ox + x, oy + y), panels.At(ox + x, oy + side - y));
+                double near = panels.ReachMeters + ((i % 10) / 10.0 * panels.FlatMeters);
+                AssertSame(panels.At(ox + (side / 2.0), oy + y), panels.At(ox + near, oy + y));
+                AssertSame(panels.At(ox + x, oy + (side / 2.0)), panels.At(ox + x, oy + near));
+            }
+        }
+
+        // Rivets stand on some panels: their heads are the only cells.
+        int heads = 0;
+        for (int i = 0; i < 4000; i++)
+        {
+            heads += panels.At(i * 0.0731 % panels.TileMeters, i * 0.1937 % panels.TileMeters).Cell;
+        }
+
+        Assert.InRange(heads, 10, 400);
+    }
+
+    [Fact]
+    public void CoatingRepeatsEveryTileAndRunsStreakSomeOfIt()
+    {
+        var coating = new CoatingSurface();
+        double tile = coating.TileMeters;
+        int wet = 0;
+        for (int i = 0; i < 400; i++)
+        {
+            double along = i * 0.0731 % tile;
+            double up = i * 0.1937 % tile;
+            SurfacePoint here = coating.At(along, up);
+            AssertSame(here, coating.At(along - tile, up + (2.0 * tile)));
+            Assert.InRange(here.Tone, 0.5, 1.2);
+            wet += here.Cavity > 0.5 ? 1 : 0;
+        }
+
+        Assert.InRange(wet, 8, 160);
+    }
+
+    private static void AssertSame(SurfacePoint expected, SurfacePoint actual)
+    {
+        Assert.Equal(expected.HeightMeters, actual.HeightMeters, 6);
+        Assert.Equal(expected.Tone, actual.Tone, 6);
+        Assert.Equal(expected.Cavity, actual.Cavity, 6);
+        Assert.Equal(expected.Roughness, actual.Roughness, 6);
+        Assert.Equal(expected.Cell, actual.Cell);
     }
 
     [Fact]

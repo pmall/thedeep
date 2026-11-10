@@ -1,10 +1,18 @@
 [gd_resource type="ShaderMaterial" format=3]
 
 [ext_resource type="Shader" path="res://assets/shaders/metal.gdshader" id="1_shader"]
+[ext_resource type="Texture2D" uid="uid://dtskp5h7tj8qy" path="res://assets/textures/surfaces/panels_normal.png" id="2_panels_normal"]
+[ext_resource type="Texture2D" uid="uid://cbdkgpfpxgqev" path="res://assets/textures/surfaces/panels_surface.png" id="3_panels_surface"]
+[ext_resource type="Texture2D" uid="uid://c5007l1afd5cs" path="res://assets/textures/surfaces/coating_normal.png" id="4_coating_normal"]
+[ext_resource type="Texture2D" uid="uid://bgkpcowsa62j3" path="res://assets/textures/surfaces/coating_surface.png" id="5_coating_surface"]
 
 ; Rusted metal behind the play plane (pipes, wrecks).
 [resource]
 shader = ExtResource("1_shader")
+shader_parameter/panels_normal = ExtResource("2_panels_normal")
+shader_parameter/panels_surface = ExtResource("3_panels_surface")
+shader_parameter/coating_normal = ExtResource("4_coating_normal")
+shader_parameter/coating_surface = ExtResource("5_coating_surface")
 shader_parameter/shade = 0.7
 shader_parameter/corrosion = 0.95
 shader_parameter/streaks = 0.8
