@@ -2,8 +2,8 @@
 
 ; The Crucible, under the Quench and the Basalt (map offset (191.5, -214.5)): where the machines' plating was cast. A great
 ; crucible hangs tilted over the casting floor, pouring into moulds still brimming with molten metal (slag: jumped over).
-; Heat plating lies on a dais between them, and a shrine. West, the coolant falls from the Quench's drain into a basin, and
-; gantries climb back up to it (the way out, needing nothing); east, the hole from the Basalt drops onto the floor.
+; Heat plating lies on a dais between them, and a shrine. West, a standpipe of coolant hangs from the Quench's flooded drain
+; into a basin: sunk down it (Ballast), or floated up it from under its mouth (the way out, needing nothing); east, the hole from the Basalt drops onto the floor.
 
 [ext_resource type="Material" path="res://assets/materials/basalt.tres" id="1_basalt"]
 [ext_resource type="PackedScene" path="res://scenes/kit/Block.tscn" id="2_block"]
@@ -23,12 +23,21 @@
 [ext_resource type="Material" path="res://assets/materials/rust_mid.tres" id="18_rust_mid"]
 [ext_resource type="Script" path="res://scripts/kit/CableMesh.cs" id="19_cables"]
 [ext_resource type="Script" path="res://scripts/kit/PipeMesh.cs" id="20_pipe"]
-[ext_resource type="PackedScene" path="res://scenes/fx/Drips.tscn" id="21_drips"]
 [ext_resource type="Script" path="res://scripts/rooms/PhotoSpot.cs" id="22_spot"]
 [ext_resource type="Script" path="res://scripts/rooms/Room.cs" id="23_room"]
 [ext_resource type="Resource" path="res://resources/biomes/volcanic.tres" id="24_volcanic"]
 [ext_resource type="PackedScene" path="res://scenes/stage/RoomStage.tscn" id="25_stage"]
 [ext_resource type="Script" path="res://scripts/rooms/dressing/WallDressing.cs" id="26_wall"]
+[ext_resource type="PackedScene" path="res://scenes/kit/Hatch.tscn" id="90_hatch"]
+[ext_resource type="Resource" path="res://resources/seams/hatch.tres" id="91_seam_hatch"]
+[ext_resource type="Shader" path="res://assets/shaders/water_section.gdshader" id="92_section_shader"]
+
+; the standpipe's front: a thicker veil than the basin's, so the column reads as coolant
+[sub_resource type="ShaderMaterial" id="standpipe_section"]
+shader = ExtResource("92_section_shader")
+shader_parameter/veil = 0.5
+shader_parameter/veil_per_meter = 0.03
+shader_parameter/veil_max = 0.7
 
 [sub_resource type="PrimitiveMesh" id="blockmesh_1"]
 script = ExtResource("14_blockmesh")
@@ -105,13 +114,13 @@ FrameAbove = false
 
 ; the Quench's drain opens in the low west roof between them
 [node name="RoofWest" parent="Geometry" instance=ExtResource("2_block")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 4.75, 22.5, 0)
-Size = Vector3(15.5, 7, 4)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 5.75, 23.5, 0)
+Size = Vector3(9.5, 5, 4)
 Material = ExtResource("1_basalt")
 
 [node name="RoofMid" parent="Geometry" instance=ExtResource("2_block")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 19.75, 22.5, 0)
-Size = Vector3(8.5, 7, 4)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 20.75, 23.5, 0)
+Size = Vector3(6.5, 5, 4)
 Material = ExtResource("1_basalt")
 
 ; the high roof over the casting floor; the Basalt's hole opens in it
@@ -126,8 +135,8 @@ Size = Vector3(23, 3.5, 4)
 Material = ExtResource("1_basalt")
 
 [node name="WallWest" parent="Geometry" instance=ExtResource("2_block")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -1, 11.5, 0)
-Size = Vector3(4, 15, 4)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -1, 12.5, 0)
+Size = Vector3(4, 17, 4)
 Material = ExtResource("1_basalt")
 
 [node name="WallEast" parent="Geometry" instance=ExtResource("2_block")]
@@ -179,37 +188,52 @@ transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 56, 0.5, 0)
 Size = Vector3(16, 7, 4)
 Material = ExtResource("1_basalt")
 
-; gantries up to the drain
+; the standpipe's walls, hung from the hatch's slab; their mouth stops a body's height over the basin, so a floater swims under it
+[node name="PipeWest" parent="Geometry" instance=ExtResource("2_block")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 12, 13.25, 0)
+Size = Vector3(1, 15.5, 4)
+Material = ExtResource("3_rust")
+
+[node name="PipeEast" parent="Geometry" instance=ExtResource("2_block")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 16, 13.25, 0)
+Size = Vector3(1, 15.5, 4)
+Material = ExtResource("3_rust")
+
+; gantries either side of the standpipe
 [node name="Gantry0" parent="Geometry" instance=ExtResource("2_block")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 10, 6.25, 0)
-Size = Vector3(4, 0.5, 4)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 9.75, 6.25, 0)
+Size = Vector3(3.5, 0.5, 4)
 Material = ExtResource("3_rust")
 
 [node name="Gantry1" parent="Geometry" instance=ExtResource("2_block")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 18, 8.75, 0)
-Size = Vector3(4, 0.5, 4)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 18.25, 8.75, 0)
+Size = Vector3(3.5, 0.5, 4)
 Material = ExtResource("3_rust")
 
 [node name="Gantry2" parent="Geometry" instance=ExtResource("2_block")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 10, 11.25, 0)
-Size = Vector3(4, 0.5, 4)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 9.75, 11.25, 0)
+Size = Vector3(3.5, 0.5, 4)
 Material = ExtResource("3_rust")
 
 [node name="Gantry3" parent="Geometry" instance=ExtResource("2_block")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 17.75, 13.75, 0)
-Size = Vector3(4.5, 0.5, 4)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 18.25, 13.75, 0)
+Size = Vector3(3.5, 0.5, 4)
 Material = ExtResource("3_rust")
 
 [node name="Exits" type="Node3D" parent="."]
 
 ; up through the drain into the Quench's coolant
 [node name="Quench" type="Marker3D" parent="Exits"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 14, 19.25, 0)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 14, 22, 0)
 script = ExtResource("4_exit")
 Side = 3
 TargetRoom = "res://worlds/prototype/rooms/Quench.tscn"
 TargetExit = "Crucible"
-Size = Vector2(3, 3)
+
+[node name="Hatch" parent="Exits/Quench" instance=ExtResource("90_hatch")]
+Profile = ExtResource("91_seam_hatch")
+Material = ExtResource("1_basalt")
+Flooded = true
 
 ; where the Basalt's hole drops in (one way)
 [node name="Basalt" type="Marker3D" parent="Exits"]
@@ -254,6 +278,17 @@ Depth = 2.5
 Swim = true
 SurfaceMaterial = ExtResource("11_water")
 SectionMaterial = ExtResource("13_water_section")
+
+; the standpipe's coolant, from the Quench's drain down into the basin: one water with it, so a body under its mouth floats up it
+[node name="Standpipe" type="Node3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 14, 23, 0)
+script = ExtResource("10_water_body")
+Size = Vector2(3, 4.1)
+Depth = 21.5
+Swim = true
+Globals = false
+SurfaceMaterial = ExtResource("11_water")
+SectionMaterial = SubResource("standpipe_section")
 
 [node name="Kit" type="Node3D" parent="."]
 
@@ -328,12 +363,6 @@ transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 20.5, 4, -3.5)
 mesh = SubResource("pod_7")
 material_override = ExtResource("18_rust_mid")
 
-; the Quench's drain, an iron spout
-[node name="DrainSpout" type="MeshInstance3D" parent="Kit"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 14, 24, -2.5)
-mesh = SubResource("pipe_8")
-material_override = ExtResource("18_rust_mid")
-
 [node name="BasaltHole" type="MeshInstance3D" parent="Kit"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 39.5, 27.5, -2.5)
 mesh = SubResource("pipe_8")
@@ -375,12 +404,6 @@ spot_angle_attenuation = 2
 
 [node name="Particles" type="Node3D" parent="."]
 
-; coolant falling from the drain
-[node name="Drips" parent="Particles" instance=ExtResource("21_drips")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 14, 10.5, -0.5)
-Extents = Vector3(1.2, 8, 1)
-Density = 1
-
 ; embers over the moulds
 [node name="Embers" parent="Particles" instance=ExtResource("9_embers")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 34, 8, -2)
@@ -396,6 +419,12 @@ script = ExtResource("22_spot")
 PlayerPosition = Vector3(30, 5.5, 0)
 
 ; the basin, the gantries up to the drain
+; the standpipe under the flooded hatch from the Quench: the slab either side of its hole (the seam's frame) and its mouth over the basin
+[node name="Standpipe" type="Marker3D" parent="PhotoSpots"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 14, 17, 14)
+script = ExtResource("22_spot")
+PlayerPosition = Vector3(10, 11.5, 0)
+
 [node name="Gantries" type="Marker3D" parent="PhotoSpots"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 14, 11, 22)
 script = ExtResource("22_spot")
