@@ -24,6 +24,8 @@
 [ext_resource type="Script" path="res://scripts/rooms/PhotoSpot.cs" id="17_spot"]
 [ext_resource type="PackedScene" path="res://scenes/kit/Doorway.tscn" id="90_doorway"]
 [ext_resource type="Resource" path="res://resources/seams/doorway.tres" id="91_seam"]
+[ext_resource type="PackedScene" path="res://scenes/kit/Hatch.tscn" id="92_hatch"]
+[ext_resource type="Resource" path="res://resources/seams/hatch.tres" id="93_seam_hatch"]
 [ext_resource type="Script" path="res://scripts/rooms/Room.cs" id="18_room"]
 [ext_resource type="Resource" path="res://resources/biomes/volcanic.tres" id="19_volcanic"]
 [ext_resource type="PackedScene" path="res://scenes/stage/RoomStage.tscn" id="20_stage"]
@@ -147,7 +149,7 @@ Size = Vector3(4.5, 0.5, 4)
 Material = ExtResource("3_rust")
 
 [node name="Gantry7" parent="Geometry" instance=ExtResource("2_block")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 13.75, 19.75, 0)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 13.75, 18.75, 0)
 Size = Vector3(4.5, 0.5, 4)
 Material = ExtResource("3_rust")
 
@@ -179,12 +181,15 @@ Material = ExtResource("1_basalt")
 
 ; up through the hatch into the Ashfall
 [node name="Ashfall" type="Marker3D" parent="Exits"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 10, 22.5, 0)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 10, 22, 0)
 script = ExtResource("4_exit")
 Side = 3
 TargetRoom = "res://worlds/prototype/rooms/Ashfall.tscn"
 TargetExit = "Bellows"
-Size = Vector2(3, 1)
+
+[node name="Hatch" parent="Exits/Ashfall" instance=ExtResource("92_hatch")]
+Profile = ExtResource("93_seam_hatch")
+Material = ExtResource("1_basalt")
 
 ; the high door east, on to the Foundry
 [node name="Foundry" type="Marker3D" parent="Exits"]
@@ -312,6 +317,12 @@ Extents = Vector3(24, 10, 3)
 Density = 0.15
 
 [node name="PhotoSpots" type="Node3D" parent="."]
+
+; the hatch up to the Ashfall: the slab either side of its hole (the seam's frame)
+[node name="AshfallHatch" type="Marker3D" parent="PhotoSpots"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 10, 20, 12)
+script = ExtResource("17_spot")
+PlayerPosition = Vector3(14, 19, 0)
 
 ; the high doorway on to the Foundry: its sill, lintel and the wall around it (the seam's frame)
 [node name="FoundryDoor" type="Marker3D" parent="PhotoSpots"]

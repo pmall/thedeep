@@ -13,7 +13,6 @@ Quench:Crucible | Crucible:Quench	Water	to fix under seam-coherence (vertical)
 Slag:Quench | Quench:Slag	Solids	to fix under seam-coherence (vertical)
 
 # Vertical, batch 5: the volcanic layer and the core
-Ashfall:Bellows | Bellows:Ashfall	Solids	to fix under seam-coherence (vertical)
 Foundry:Threshold | Threshold:Foundry	Solids	to fix under seam-coherence (vertical)
 
 # Doorways, after the vertical exits: where each room puts the wall and lintel around a shared doorway

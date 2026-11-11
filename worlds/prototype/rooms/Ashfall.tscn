@@ -27,6 +27,8 @@
 [ext_resource type="Resource" path="res://worlds/prototype/items/pyre_litany.tres" id="23_pyre_litany"]
 [ext_resource type="PackedScene" path="res://scenes/kit/Doorway.tscn" id="90_doorway"]
 [ext_resource type="Resource" path="res://resources/seams/doorway.tres" id="91_seam"]
+[ext_resource type="PackedScene" path="res://scenes/kit/Hatch.tscn" id="92_hatch"]
+[ext_resource type="Resource" path="res://resources/seams/hatch.tres" id="93_seam_hatch"]
 
 [sub_resource type="PrimitiveMesh" id="blockmesh_1"]
 script = ExtResource("10_blockmesh")
@@ -70,7 +72,7 @@ Stage = NodePath("Stage")
 Biome = ExtResource("19_volcanic")
 Lamps = [NodePath("Lamps/Flue"), NodePath("Lamps/Grates")]
 Shafts = [NodePath("Shafts/Flue")]
-BoundsMin = Vector2(-1, -24)
+BoundsMin = Vector2(-1, -20)
 BoundsMax = Vector2(59, 9)
 
 [node name="SpawnPoint" type="Marker3D" parent="."]
@@ -150,15 +152,15 @@ transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 15, -16.25, 0)
 Size = Vector3(4, 0.5, 4)
 Material = ExtResource("1_basalt")
 
-; the ash floor; the hatch to the Bellows opens in it between them
+; the ash floor; it stops at the frame of the hatch to the Bellows between them (x 36.5 to 43.5, framed by the brick on Exits/Bellows)
 [node name="FloorWest" parent="Geometry" instance=ExtResource("2_block")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 17.75, -21, 0)
-Size = Vector3(41.5, 6, 4)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 16.75, -21, 0)
+Size = Vector3(39.5, 6, 4)
 Material = ExtResource("1_basalt")
 
 [node name="FloorEast" parent="Geometry" instance=ExtResource("2_block")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 48.75, -21, 0)
-Size = Vector3(14.5, 6, 4)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 49.75, -21, 0)
+Size = Vector3(12.5, 6, 4)
 Material = ExtResource("1_basalt")
 
 ; the floor under the Pyre doorway's sill (Pyre's Doorway frames X 56 to 61, Y -20 to -18 and -14 to -12)
@@ -215,13 +217,16 @@ Material = ExtResource("1_basalt")
 
 ; the hatch in the floor, down to the Bellows
 [node name="Bellows" type="Marker3D" parent="Exits"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 40, -18.5, 0)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 40, -19, 0)
 script = ExtResource("4_exit")
 Side = 2
 TargetRoom = "res://worlds/prototype/rooms/Bellows.tscn"
 TargetExit = "Ashfall"
 ArrivalSide = 1
-Size = Vector2(3, 1)
+
+[node name="Hatch" parent="Exits/Bellows" instance=ExtResource("92_hatch")]
+Profile = ExtResource("93_seam_hatch")
+Material = ExtResource("1_basalt")
 
 [node name="Props" type="Node3D" parent="."]
 
@@ -350,6 +355,12 @@ Extents = Vector3(28, 14, 4)
 Density = 0.25
 
 [node name="PhotoSpots" type="Node3D" parent="."]
+
+; the hatch down to the Bellows: the slab either side of its hole (the seam's frame)
+[node name="BellowsHatch" type="Marker3D" parent="PhotoSpots"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 40, -17, 12)
+script = ExtResource("17_spot")
+PlayerPosition = Vector3(34, -18, 0)
 
 ; the sealed doorway on to the Pyre: its sill, lintel and the wall around it (the seam's frame)
 [node name="PyreDoor" type="Marker3D" parent="PhotoSpots"]
