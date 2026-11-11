@@ -1,7 +1,7 @@
 [gd_scene format=3]
 
 ; The Crucible, under the Quench and the Basalt (map offset (191.5, -214.5)): where the machines' plating was cast. A great
-; crucible hangs tilted over the casting floor, pouring into molds that still glow (jumped, or walked through once plated).
+; crucible hangs tilted over the casting floor, pouring into moulds still brimming with molten metal (slag: jumped over).
 ; Heat plating lies on a dais between them, and a shrine. West, the coolant falls from the Quench's drain into a basin, and
 ; gantries climb back up to it (the way out, needing nothing); east, the hole from the Basalt drops onto the floor.
 
@@ -11,7 +11,7 @@
 [ext_resource type="Script" path="res://scripts/rooms/RoomExit.cs" id="4_exit"]
 [ext_resource type="PackedScene" path="res://scenes/props/AbilityRelic.tscn" id="5_relic"]
 [ext_resource type="PackedScene" path="res://scenes/props/Shrine.tscn" id="6_shrine"]
-[ext_resource type="Script" path="res://scripts/props/HeatColumn.cs" id="7_heatcolumn"]
+[ext_resource type="PackedScene" path="res://scenes/kit/SlagBody.tscn" id="7_slag"]
 [ext_resource type="PackedScene" path="res://scenes/fx/Embers.tscn" id="9_embers"]
 [ext_resource type="Script" path="res://scripts/rooms/WaterBody.cs" id="10_water_body"]
 [ext_resource type="Material" path="res://assets/materials/water.tres" id="11_water"]
@@ -39,11 +39,6 @@ Bevel = 0.3
 script = ExtResource("14_blockmesh")
 Size = Vector3(3, 26, 3)
 Bevel = 0.4
-
-[sub_resource type="PrimitiveMesh" id="blockmesh_3"]
-script = ExtResource("14_blockmesh")
-Size = Vector3(4, 0.4, 3.6)
-Bevel = 0.1
 
 [sub_resource type="PrimitiveMesh" id="pod_4"]
 script = ExtResource("17_pod")
@@ -157,7 +152,7 @@ transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 20.5, 0.5, 0)
 Size = Vector3(3, 7, 4)
 Material = ExtResource("1_basalt")
 
-; a mould, its metal still molten: jumped, or walked through once plated
+; a mould, the bed of its molten metal (a slag body between the casting floor and the dais)
 [node name="MoldWest" parent="Geometry" instance=ExtResource("2_block")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 24, -0.5, 0)
 Size = Vector3(4, 5, 4)
@@ -237,26 +232,18 @@ HintLine = &"ability.heat_plating.hint"
 [node name="Shrine" parent="Props" instance=ExtResource("6_shrine")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 54, 4, 0)
 
-[node name="Heat" type="Node3D" parent="."]
+[node name="Slag" type="Node3D" parent="."]
 
-; heat over the molten moulds
-[node name="MoldWest" type="Node3D" parent="Heat"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 24, 2, 0)
-script = ExtResource("7_heatcolumn")
-Strip = true
-Size = Vector2(4, 3.5)
-Embers = ExtResource("9_embers")
-EmberDensity = 1.6
-GlowEnergy = 3
+; the molten metal in the moulds, their walls the floors beside them
+[node name="MoldWest" parent="Slag" instance=ExtResource("7_slag")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 24, 3.25, 0)
+Size = Vector2(4, 4)
+Depth = 1.25
 
-[node name="MoldEast" type="Node3D" parent="Heat"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 46, 2, 0)
-script = ExtResource("7_heatcolumn")
-Strip = true
-Size = Vector2(4, 3.5)
-Embers = ExtResource("9_embers")
-EmberDensity = 1.6
-GlowEnergy = 3
+[node name="MoldEast" parent="Slag" instance=ExtResource("7_slag")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 46, 3.25, 0)
+Size = Vector2(4, 4)
+Depth = 1.25
 
 ; the basin of coolant under the drain
 [node name="Water" type="Node3D" parent="."]
@@ -300,17 +287,6 @@ material_override = ExtResource("15_stone_mid")
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 52, 11, -11)
 mesh = SubResource("blockmesh_2")
 material_override = ExtResource("15_stone_mid")
-
-; the molten metal in the moulds
-[node name="MoldWestMetal" type="MeshInstance3D" parent="Kit"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 24, 1.75, 0)
-mesh = SubResource("blockmesh_3")
-material_override = ExtResource("16_magma")
-
-[node name="MoldEastMetal" type="MeshInstance3D" parent="Kit"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 46, 1.75, 0)
-mesh = SubResource("blockmesh_3")
-material_override = ExtResource("16_magma")
 
 ; the great crucible, hanging tipped over the east mould
 [node name="Crucible" type="MeshInstance3D" parent="Kit"]
@@ -365,10 +341,10 @@ material_override = ExtResource("15_stone_mid")
 
 [node name="Lamps" type="Node3D" parent="."]
 
-; the moulds and the pour lighting the floor
+; the pour lighting the floor
 [node name="Crucible" type="OmniLight3D" parent="Lamps"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 40, 8, 2.5)
-light_energy = 3
+light_energy = 2
 omni_range = 24
 shadow_enabled = false
 
