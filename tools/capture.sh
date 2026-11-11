@@ -9,7 +9,7 @@
 #   tools/capture.sh [label]                 new run in lookdev/<date>_<time>[-label]/, compared with the latest run
 #   tools/capture.sh [label] --against DIR   compare with DIR instead
 #   tools/capture.sh [label] --biome NAME    render with resources/biomes/NAME.tres instead of each room's own
-#   tools/capture.sh [label] --rooms "A B"   render only these rooms (quick looks while building a room)
+#   tools/capture.sh [label] --rooms "A B"   render only these rooms, quoted as one argument (quick looks while building a room)
 #   tools/capture.sh [label] --world NAME    render worlds/NAME's rooms instead (all of them, or --rooms of them): --world sequel
 #   tools/capture.sh --compare BEFORE AFTER  only build the sheet for two existing runs
 #
@@ -43,9 +43,13 @@ if [ "${1:-}" = "--compare" ]; then
     exit 0
 fi
 
+USAGE='usage: tools/capture.sh [label] [--against DIR] [--biome NAME] [--rooms "A B"] [--world NAME] (several rooms in one quoted argument)'
 label="" against="" biome_args=() world_args=() only=""
 while [ $# -gt 0 ]; do
     case "$1" in
+        --against | --biome | --rooms | --world)
+            [ $# -ge 2 ] && [ -n "$2" ] && [ "${2#-}" = "$2" ] || fail "$1 needs a value; $USAGE"
+            ;;&
         --against)
             against="${2%/}"
             shift 2
@@ -62,8 +66,10 @@ while [ $# -gt 0 ]; do
             world_args=(--world "$2")
             shift 2
             ;;
-        -*) fail "unknown option $1" ;;
+        -*) fail "unknown option $1; $USAGE" ;;
         *)
+            # A second word is never a label: most often a room name left out of --rooms' quotes, silently dropped otherwise.
+            [ -z "$label" ] || fail "unexpected argument '$1' (label already '$label'); $USAGE"
             label="$1"
             shift
             ;;
