@@ -4,10 +4,7 @@
 seam	rule	reason
 
 # Vertical, batch 3: the frozen layer
-Brink:Down | Rimefall:Sky	Opening	to fix under seam-coherence (vertical)
-Brink:Down | Rimefall:Sky	Solids	to fix under seam-coherence (vertical)
 Coldstacks:Chimney | Chimney:Top	Solids	to fix under seam-coherence (vertical)
-Coldstacks:Vault | Vault:Coldstacks	Solids	to fix under seam-coherence (vertical)
 Mere:Underice | Underice:Mere	Solids	to fix under seam-coherence (vertical)
 
 # Vertical, batch 4: the volcanic layer

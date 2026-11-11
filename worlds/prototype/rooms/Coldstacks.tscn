@@ -140,7 +140,7 @@ Biome = ExtResource("23_frozen")
 Lamps = [NodePath("Lamps/Shrine"), NodePath("Lamps/Well"), NodePath("Lamps/Stacks")]
 Shafts = [NodePath("Shafts/Hatch"), NodePath("Shafts/High")]
 GlyphLights = [NodePath("Props/Shrine/Light"), NodePath("Glyphs/ShrineLight")]
-BoundsMin = Vector2(-1, -16)
+BoundsMin = Vector2(-1, -15)
 BoundsMax = Vector2(76, 31.5)
 
 [node name="SpawnPoint" type="Marker3D" parent="."]
@@ -210,19 +210,28 @@ Size = Vector3(2, 0.5, 4)
 
 ; the corridor under the east floor
 [node name="Corridor" parent="Geometry" instance=ExtResource("1_block")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 57, -13, 0)
-Size = Vector3(10, 6, 4)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 56.25, -12.5, 0)
+Size = Vector3(8.5, 5, 4)
 
-; the way down to the Vault, plugged with cracked ice (the Drill breaks it)
+; the way down to the Vault, plugged with cracked ice (the Drill breaks it): a short shaft over the Vault's hatch
 [node name="IcePlug" parent="Geometry" instance=ExtResource("1_block")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 64, -10.5, 0)
-Size = Vector3(4, 1, 4)
+Size = Vector3(3, 1, 4)
 Material = ExtResource("3_ice")
 Cracked = true
 
 [node name="CorridorEast" parent="Geometry" instance=ExtResource("1_block")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 69.25, -13, 0)
-Size = Vector3(6.5, 6, 4)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 70, -12.5, 0)
+Size = Vector3(5, 5, 4)
+
+; the shaft's walls, between the corridor floor and the hatch's slab
+[node name="ShaftWest" parent="Geometry" instance=ExtResource("1_block")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 61.5, -11.5, 0)
+Size = Vector3(2, 3, 4)
+
+[node name="ShaftEast" parent="Geometry" instance=ExtResource("1_block")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 66.5, -11.5, 0)
+Size = Vector3(2, 3, 4)
 
 ; the corridor under the Mere doorway's sill (Mere's Doorway frames Y -12 to -10 and -6 to -4, X 72.5 to 77.5)
 [node name="CorridorEastFoot" parent="Geometry" instance=ExtResource("1_block")]
@@ -371,7 +380,9 @@ TargetRoom = "res://worlds/prototype/rooms/Vault.tscn"
 TargetExit = "Coldstacks"
 Requires = "Drill"
 OneWay = true
-Size = Vector2(4, 1)
+
+[node name="Hatch" parent="Exits/Vault" instance=ExtResource("92_hatch")]
+Profile = ExtResource("93_seam_hatch")
 
 ; down the vent into the Chimney, to the volcanic layer (Heat plating passes the slag; coming up, ledges climb the vent)
 [node name="Chimney" type="Marker3D" parent="Exits"]
@@ -861,3 +872,9 @@ Fov = 40
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 65, 29, 12)
 script = ExtResource("21_spot")
 PlayerPosition = Vector3(68, 27.5, 0)
+
+; the ice plug in the corridor floor and the hatch under it, down into the Vault (the seam's frame)
+[node name="VaultHatch" type="Marker3D" parent="PhotoSpots"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 64, -10, 12)
+script = ExtResource("21_spot")
+PlayerPosition = Vector3(58, -10, 0)

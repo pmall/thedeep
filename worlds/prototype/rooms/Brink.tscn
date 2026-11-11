@@ -4,7 +4,7 @@
 ; deep descent. A last pilgrim shrine under a broken dome, then the floor ends over a chasm no machine survives.
 ; At the lip stands the third law (LawBreak): a veil of glyphs the pilgrim cannot walk through, the law's words
 ; over it. Pressing on toward the drop strains against it until it breaks; then the jump, one way down to the
-; frozen layer: the fall goes on into Rimefall's sky.
+; frozen layer: the fall ends at the chasm's foot, on rubble around the hatch down into Rimefall's dome.
 
 [ext_resource type="Material" path="res://assets/materials/wet_stone.tres" id="1_wet_stone"]
 [ext_resource type="PackedScene" path="res://scenes/kit/Block.tscn" id="2_block"]
@@ -30,6 +30,8 @@
 [ext_resource type="PackedScene" path="res://scenes/stage/RoomStage.tscn" id="23_stage"]
 [ext_resource type="PackedScene" path="res://scenes/kit/Doorway.tscn" id="90_doorway"]
 [ext_resource type="Resource" path="res://resources/seams/doorway.tres" id="91_seam"]
+[ext_resource type="PackedScene" path="res://scenes/kit/Hatch.tscn" id="92_hatch"]
+[ext_resource type="Resource" path="res://resources/seams/hatch.tres" id="93_seam_hatch"]
 
 [sub_resource type="QuadMesh" id="QuadMesh_1"]
 size = Vector2(6, 0.3)
@@ -122,7 +124,7 @@ Biome = ExtResource("22_flooded")
 Lamps = [NodePath("Lamps/Shrine"), NodePath("Lamps/Deep")]
 Shafts = [NodePath("Shafts/Rift"), NodePath("Shafts/Dome")]
 GlyphLights = [NodePath("Props/Shrine/Light"), NodePath("Props/ThirdLaw/Light"), NodePath("Glyphs/LipLight")]
-BoundsMin = Vector2(-1, -50)
+BoundsMin = Vector2(-1, -49)
 BoundsMax = Vector2(46, 24)
 
 [node name="SpawnPoint" type="Marker3D" parent="."]
@@ -151,13 +153,18 @@ Material = ExtResource("1_wet_stone")
 
 ; the near face of the chasm
 [node name="Cliff" parent="Geometry" instance=ExtResource("2_block")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 19, -29, 0)
-Size = Vector3(10, 46, 4)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 19, -26.5, 0)
+Size = Vector3(10, 41, 4)
 
 ; the far face
 [node name="FarWall" parent="Geometry" instance=ExtResource("2_block")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 46.5, -14, 0)
-Size = Vector3(5, 76, 4)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 46.5, -12.5, 0)
+Size = Vector3(5, 73, 4)
+
+; the chasm's foot, rubble east of the hatch under the lip (a pilgrim who jumps far walks back to it): the slab is Rimefall's dome
+[node name="Foot" parent="Geometry" instance=ExtResource("2_block")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 37, -48, 0)
+Size = Vector3(14, 2, 4)
 
 ; over the west doorway
 [node name="WallWest" parent="Geometry" instance=ExtResource("2_block")]
@@ -183,15 +190,17 @@ TargetExit = "East"
 Profile = ExtResource("91_seam")
 Material = ExtResource("1_wet_stone")
 
-; the jump: down into Rimefall's sky, the frozen layer (one way)
+; the jump: straight down the chasm from the lip, through the hatch at its foot, into Rimefall's dome, the frozen layer (one way)
 [node name="Down" type="Marker3D" parent="Exits"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 34, -48, 0)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 26.5, -48, 0)
 script = ExtResource("3_exit")
 Side = 2
 TargetRoom = "res://worlds/prototype/rooms/Rimefall.tscn"
 TargetExit = "Sky"
 OneWay = true
-Size = Vector2(20, 1)
+
+[node name="Hatch" parent="Exits/Down" instance=ExtResource("92_hatch")]
+Profile = ExtResource("93_seam_hatch")
 
 [node name="Props" type="Node3D" parent="."]
 
@@ -416,3 +425,9 @@ transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 22, -8, 62)
 script = ExtResource("20_spot")
 PlayerPosition = Vector3(12, 0, 0)
 Fov = 40
+
+; the hatch at the chasm's foot, down into Rimefall's dome: the slab and the hole (the seam's frame)
+[node name="DownHatch" type="Marker3D" parent="PhotoSpots"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 26.5, -44, 12)
+script = ExtResource("20_spot")
+PlayerPosition = Vector3(22, 0, 0)
