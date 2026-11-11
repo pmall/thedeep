@@ -30,6 +30,8 @@
 [ext_resource type="Script" path="res://scripts/props/Ambush.cs" id="23_ambush"]
 [ext_resource type="Script" path="res://scripts/machines/Machine.cs" id="24_machine"]
 [ext_resource type="Resource" path="res://resources/machines/votary.tres" id="25_votary"]
+[ext_resource type="PackedScene" path="res://scenes/kit/Doorway.tscn" id="90_doorway"]
+[ext_resource type="Resource" path="res://resources/seams/doorway.tres" id="91_seam"]
 
 [sub_resource type="PrimitiveMesh" id="blockmesh_1"]
 script = ExtResource("10_blockmesh")
@@ -82,14 +84,20 @@ FrameAbove = false
 [node name="Geometry" type="Node3D" parent="."]
 
 [node name="Floor" parent="Geometry" instance=ExtResource("2_block")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 13.5, -2, 0)
-Size = Vector3(33, 4, 4)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 16.5, -2, 0)
+Size = Vector3(27, 4, 4)
 Material = ExtResource("1_basalt")
 
-; over the door from the Ashfall
+; the floor under the west doorway's sill (West's Doorway frames X -2 to 3, Y -2 to 0 and 4 to 6)
+[node name="FloorFoot" parent="Geometry" instance=ExtResource("2_block")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -3, 0)
+Size = Vector3(6, 2, 4)
+Material = ExtResource("1_basalt")
+
+; the west wall over the doorway's head, beside the roof
 [node name="WallWestHigh" parent="Geometry" instance=ExtResource("2_block")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -1.5, 13, 0)
-Size = Vector3(3, 18, 4)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -1.5, 19, 0)
+Size = Vector3(3, 6, 4)
 Material = ExtResource("1_basalt")
 
 ; the flue rises between them
@@ -124,10 +132,10 @@ transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 17.5, 0.75, 0)
 Size = Vector3(1, 1.5, 4)
 Material = ExtResource("3_rust")
 
-; the doorway's head, deep enough to take the trap's gate when it rises
+; the doorway's head, from the lintel's top to the roof and flush with its face: deep enough to take the trap's gate when it rises
 [node name="GateHead" parent="Geometry" instance=ExtResource("2_block")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 1.75, 10, 0)
-Size = Vector3(1.5, 12, 4)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 11, 0)
+Size = Vector3(6, 10, 4)
 Material = ExtResource("1_basalt")
 
 [node name="Exits" type="Node3D" parent="."]
@@ -140,13 +148,16 @@ Side = 0
 TargetRoom = "res://worlds/prototype/rooms/Ashfall.tscn"
 TargetExit = "Pyre"
 Requires = "HeatPlating & PyreLitany"
-Size = Vector2(1, 4)
+
+[node name="Doorway" parent="Exits/West" instance=ExtResource("90_doorway")]
+Profile = ExtResource("91_seam")
+Material = ExtResource("1_basalt")
 
 [node name="Heat" type="Node3D" parent="."]
 
 ; heat rising from the grates inside the door to the roof, flush against the doorway's head: no way round
 [node name="Grates" parent="Heat" instance=ExtResource("6_heatcolumn")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 4, 0, 0)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 4.5, 0, 0)
 Size = Vector2(3, 16)
 
 [node name="Slag" type="Node3D" parent="."]
@@ -258,6 +269,13 @@ Extents = Vector3(12, 7, 3)
 Density = 0.2
 
 [node name="PhotoSpots" type="Node3D" parent="."]
+
+; the west doorway from the Ashfall: its sill, lintel and the wall around it (the seam's frame)
+[node name="WestDoor" type="Marker3D" parent="PhotoSpots"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 2, 3.5, 12)
+script = ExtResource("17_spot")
+PlayerPosition = Vector3(8, 0, 0)
+PlayerFacing = -1
 
 ; the pyre on its altar, the broken machines, the flue
 [node name="Pyre" type="Marker3D" parent="PhotoSpots"]

@@ -157,8 +157,14 @@ Size = Vector3(41.5, 6, 4)
 Material = ExtResource("1_basalt")
 
 [node name="FloorEast" parent="Geometry" instance=ExtResource("2_block")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 51.75, -21, 0)
-Size = Vector3(20.5, 6, 4)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 48.75, -21, 0)
+Size = Vector3(14.5, 6, 4)
+Material = ExtResource("1_basalt")
+
+; the floor under the Pyre doorway's sill (Pyre's Doorway frames X 56 to 61, Y -20 to -18 and -14 to -12)
+[node name="FloorEastFoot" parent="Geometry" instance=ExtResource("2_block")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 59, -22, 0)
+Size = Vector3(6, 4, 4)
 Material = ExtResource("1_basalt")
 
 ; a drift of ash
@@ -173,10 +179,10 @@ transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 53.5, -11.75, 0)
 Size = Vector3(5, 0.5, 4)
 Material = ExtResource("3_rust")
 
-; over the low door to the Pyre
+; over the low door to the Pyre, from its lintel's top and flush with its face: the seal's gate rises into it
 [node name="WallEastHigh" parent="Geometry" instance=ExtResource("2_block")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 59, -3.25, 0)
-Size = Vector3(6, 21.5, 4)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 59, -2.25, 0)
+Size = Vector3(6, 19.5, 4)
 Material = ExtResource("1_basalt")
 
 [node name="Exits" type="Node3D" parent="."]
@@ -202,7 +208,10 @@ TargetRoom = "res://worlds/prototype/rooms/Pyre.tscn"
 TargetExit = "West"
 Requires = "HeatPlating & PyreLitany"
 Door = NodePath("../../Props/PyreSeal")
-Size = Vector2(1, 4)
+
+[node name="Doorway" parent="Exits/Pyre" instance=ExtResource("90_doorway")]
+Profile = ExtResource("91_seam")
+Material = ExtResource("1_basalt")
 
 ; the hatch in the floor, down to the Bellows
 [node name="Bellows" type="Marker3D" parent="Exits"]
@@ -341,6 +350,12 @@ Extents = Vector3(28, 14, 4)
 Density = 0.25
 
 [node name="PhotoSpots" type="Node3D" parent="."]
+
+; the sealed doorway on to the Pyre: its sill, lintel and the wall around it (the seam's frame)
+[node name="PyreDoor" type="Marker3D" parent="PhotoSpots"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 56, -14.5, 12)
+script = ExtResource("17_spot")
+PlayerPosition = Vector3(50, -18, 0)
 
 ; the west doorway from the Slag: its sill, lintel and the wall around it (the seam's frame)
 [node name="WestDoor" type="Marker3D" parent="PhotoSpots"]
