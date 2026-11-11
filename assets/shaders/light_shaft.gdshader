@@ -1,7 +1,8 @@
 // A light shaft's visible beam (LightShaft, on the strip ShaftBeam builds): light added over the scene, in the biome's shaft
 // color, as a soft column with no surface. Across, the chord of a cone of lit air (brightest on its axis, nothing at its rim)
 // gathered toward its axis as the light's own falloff says, inside a fainter halo, with a few broad, still bands of brighter air; along, it eases in below the light and fades with
-// distance, and over its last meters as it reaches the solid it falls on, so the strip's end never shows as a line. Only smooth
+// distance, and over its last meters as it reaches the solid it falls on, so the strip's end never shows as a line; it
+// dies out just under a water surface. Only smooth
 // math on the mesh (docs/art-direction.md#stable-image): every band is a good part of a meter wide, the only motion a slow breath.
 // UV: X across (-1 to 1), Y along (0 at the light, 1 at its end); UV2: X the length in meters, Y how far past the cone the strip
 // reaches (the cone's rim at |X| = 1 / spread).
@@ -28,6 +29,8 @@ uniform float falloff : hint_range(0.0, 4.0) = 0.8;
 /// Meters below the light over which the beam eases in, and over which it fades out where it lands.
 uniform float ease_in : hint_range(0.0, 20.0) = 5.0;
 uniform float fade_out : hint_range(0.0, 10.0) = 3.0;
+/// Meters under a water surface over which the beam dies out: it is lit air, and stops at the water.
+uniform float water_fade : hint_range(0.1, 4.0) = 0.35;
 /// Depth of the bands across the beam (0 for a plain beam).
 uniform float bands : hint_range(0.0, 0.6) = 0.22;
 /// Depth and period (seconds) of the slow breath.
@@ -60,9 +63,15 @@ void fragment() {
 	float pulse = 1.0 + breath * sin(TIME * TAU / breath_period + node.x * 0.37 + node.y * 0.11);
 
 	float light = across * banded * along * pulse * power * strength;
-	// Under water the beam dims with depth and sinks into the murk (lib/water).
+	// The beam is lit air: it dies out just under a water surface, and what shows of it there sinks into the murk (lib/water).
+	vec3 world = (INV_VIEW_MATRIX * vec4(VERTEX, 1.0)).xyz;
+	// Over the water across the room, at any depth in front of its back: a beam tilted toward the camera meets the surface
+	// in front of the section, where the water is only cut away for the view.
+	float over_water = smoothstep(water_area.x - 0.5, water_area.x, world.x) * (1.0 - smoothstep(water_area.z, water_area.z + 0.5, world.x))
+			* smoothstep(water_area.y - 0.5, water_area.y, world.z);
+	float in_air = 1.0 - over_water * smoothstep(0.0, water_fade, water_level - world.y);
 	vec3 uw_color;
 	float uw_light;
-	float uw_murk = underwater_at((INV_VIEW_MATRIX * vec4(VERTEX, 1.0)).xyz, CAMERA_POSITION_WORLD, uw_color, uw_light);
-	ALBEDO = srgb_to_linear(biome_shaft.rgb) * light * uw_light * (1.0 - uw_murk);
+	float uw_murk = underwater_at(world, CAMERA_POSITION_WORLD, uw_color, uw_light);
+	ALBEDO = srgb_to_linear(biome_shaft.rgb) * light * in_air * uw_light * (1.0 - uw_murk);
 }
