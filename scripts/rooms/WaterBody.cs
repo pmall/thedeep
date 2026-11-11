@@ -5,7 +5,8 @@ namespace TheDeep;
 /// <summary>
 /// A body of water: its surface at the node's height, <see cref="Size"/> wide (X) and deep into the scene
 /// (Z), <see cref="Depth"/> meters deep. Builds the surface mesh (told its floor and sides, so it draws its depth) and
-/// the reflection probe it mirrors, and pushes its level and area into the water globals so nearby materials draw caustics. One water body
+/// the reflection probe it mirrors, and pushes its level, floor and area into the water globals so nearby materials draw caustics
+/// and sink into the water what lies in it (lib/water.gdshaderinc). One water body
 /// per room for now (the globals hold one). Colors come from the biome. With <see cref="Swim"/>, the pilgrim swims in it:
 /// its play-plane region (<see cref="Size"/>.X wide, from the surface down <see cref="Depth"/>) becomes an area on the water
 /// layer that the pilgrim finds itself in (<see cref="Player.WaterSurface"/>), and the map's geometry check swims it.
@@ -45,7 +46,7 @@ public partial class WaterBody : Node3D
     [Export] public bool Swim { get; set; }
 
     /// <summary>
-    /// Whether it pushes its level and area into the water globals (caustics, the haze's level). One water body per room does;
+    /// Whether it pushes its level, floor and area into the water globals (caustics, the murk). One water body per room does;
     /// a second one (a pool on the play plane beside scenery water at the same level) doesn't.
     /// </summary>
     [Export] public bool Globals { get; set; } = true;
@@ -136,6 +137,7 @@ public partial class WaterBody : Node3D
         }
 
         RenderingServer.GlobalShaderParameterSet(ShaderGlobals.WaterLevel, center.Y);
+        RenderingServer.GlobalShaderParameterSet(ShaderGlobals.WaterFloor, center.Y - Depth);
         RenderingServer.GlobalShaderParameterSet(ShaderGlobals.WaterArea, rect);
     }
 
@@ -173,5 +175,6 @@ public partial class WaterBody : Node3D
         }
 
         RenderingServer.GlobalShaderParameterSet(ShaderGlobals.WaterLevel, NoWaterLevel);
+        RenderingServer.GlobalShaderParameterSet(ShaderGlobals.WaterFloor, 2f * NoWaterLevel);
     }
 }

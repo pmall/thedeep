@@ -13,6 +13,7 @@ shader_type spatial;
 
 #include "res://assets/shaders/lib/noise.gdshaderinc"
 #include "res://assets/shaders/lib/palette.gdshaderinc"
+#include "res://assets/shaders/lib/water.gdshaderinc"
 #include "res://assets/shaders/lib/surface.gdshaderinc"
 #include "res://assets/shaders/lib/frost.gdshaderinc"
 
@@ -226,4 +227,7 @@ void fragment() {
 	RIM = rim;
 	RIM_TINT = 0.4;
 	EMISSION = glow_color * glow * glow_energy + vec3(0.95, 0.92, 1.0) * hurt * 0.9;
+	UNDERWATER
+	CLEARCOAT *= uw_keep;
+	RIM *= uw_keep;
 }

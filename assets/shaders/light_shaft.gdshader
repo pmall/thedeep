@@ -8,7 +8,9 @@
 shader_type spatial;
 render_mode blend_add, unshaded, depth_draw_never, cull_disabled, shadows_disabled, fog_disabled;
 
+#include "res://assets/shaders/lib/noise.gdshaderinc"
 #include "res://assets/shaders/lib/palette.gdshaderinc"
+#include "res://assets/shaders/lib/water.gdshaderinc"
 
 global uniform vec4 biome_shaft;
 
@@ -58,5 +60,9 @@ void fragment() {
 	float pulse = 1.0 + breath * sin(TIME * TAU / breath_period + node.x * 0.37 + node.y * 0.11);
 
 	float light = across * banded * along * pulse * power * strength;
-	ALBEDO = srgb_to_linear(biome_shaft.rgb) * light;
+	// Under water the beam dims with depth and sinks into the murk (lib/water).
+	vec3 uw_color;
+	float uw_light;
+	float uw_murk = underwater_at((INV_VIEW_MATRIX * vec4(VERTEX, 1.0)).xyz, CAMERA_POSITION_WORLD, uw_color, uw_light);
+	ALBEDO = srgb_to_linear(biome_shaft.rgb) * light * uw_light * (1.0 - uw_murk);
 }

@@ -323,4 +323,6 @@ void fragment() {
 	AO_LIGHT_AFFECT = 0.25;
 	NORMAL = n;
 	HAZE
+	UNDERWATER
+	SPECULAR *= uw_keep;
 }

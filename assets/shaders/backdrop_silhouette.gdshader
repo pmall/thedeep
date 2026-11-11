@@ -13,6 +13,7 @@ render_mode unshaded, blend_mix, depth_draw_never, cull_back, fog_disabled, shad
 
 #include "res://assets/shaders/lib/noise.gdshaderinc"
 #include "res://assets/shaders/lib/palette.gdshaderinc"
+#include "res://assets/shaders/lib/water.gdshaderinc"
 
 global uniform vec4 biome_haze;
 global uniform vec4 biome_shaft;
@@ -239,6 +240,10 @@ void fragment() {
 	vec3 color = mix(body, mix(body, light, 1.0 - m * 0.7), opening * lit);
 	// Smoke is the haze thickened: it veils what stands behind and fades into the sky.
 	color = mix(color, haze_color * 0.9, smoke * (1.0 - solid));
-	ALBEDO = color;
+	// Seen through a room's water, it sinks into it (lib/water).
+	vec3 uw_color;
+	float uw_light;
+	float uw_murk = underwater_at((INV_VIEW_MATRIX * vec4(VERTEX, 1.0)).xyz, CAMERA_POSITION_WORLD, uw_color, uw_light);
+	ALBEDO = mix(color * uw_light, uw_color, uw_murk);
 	ALPHA = max(solid, smoke * 0.7);
 }

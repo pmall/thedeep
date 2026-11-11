@@ -3,5 +3,4 @@
 [ext_resource type="Shader" path="res://assets/shaders/water_section.gdshader" id="1_shader"]
 
 [resource]
-render_priority = 1
 shader = ExtResource("1_shader")

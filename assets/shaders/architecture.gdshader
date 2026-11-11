@@ -8,6 +8,7 @@ render_mode cull_back;
 #include "res://assets/shaders/lib/noise.gdshaderinc"
 #include "res://assets/shaders/lib/palette.gdshaderinc"
 #include "res://assets/shaders/lib/haze.gdshaderinc"
+#include "res://assets/shaders/lib/water.gdshaderinc"
 #include "res://assets/shaders/lib/frost.gdshaderinc"
 
 uniform int slot : hint_enum("Rock", "Metal", "Backdrop", "Backdrop accent", "Foreground") = 2;
@@ -48,4 +49,6 @@ void fragment() {
 	RIM = rim;
 	RIM_TINT = 0.6;
 	HAZE
+	UNDERWATER
+	RIM *= uw_keep;
 }

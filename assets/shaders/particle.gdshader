@@ -7,7 +7,9 @@
 shader_type spatial;
 render_mode blend_mix, depth_draw_never, cull_disabled, specular_disabled, ambient_light_disabled;
 
+#include "res://assets/shaders/lib/noise.gdshaderinc"
 #include "res://assets/shaders/lib/palette.gdshaderinc"
+#include "res://assets/shaders/lib/water.gdshaderinc"
 
 global uniform vec4 biome_particle;
 
@@ -42,6 +44,13 @@ void fragment() {
 	ALBEDO = tint;
 	EMISSION = tint * glow;
 	ALPHA = clamp(a * opacity * COLOR.a, 0.0, 1.0);
+	// Under water they dim with depth and fade into the murk (lib/water).
+	vec3 uw_color;
+	float uw_light;
+	float uw_murk = underwater_at((INV_VIEW_MATRIX * vec4(VERTEX, 1.0)).xyz, CAMERA_POSITION_WORLD, uw_color, uw_light);
+	ALBEDO *= uw_light;
+	EMISSION *= uw_light;
+	ALPHA *= 1.0 - uw_murk;
 }
 
 void light() {

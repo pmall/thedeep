@@ -1,9 +1,10 @@
 // The front of a swimmable WaterBody, seen from the side: the cut through the water on the play plane's front, drawn
-// without reading the screen (docs/art-direction.md#stable-image). A premultiplied layer over what lies behind it (the
-// pilgrim, walls, the pool's floor): its opacity grows with depth below the surface, sinking them into the biome's
-// water color, so the play plane reads through it near the surface. A bright meniscus marks the surface line (kept a few
-// pixels wide and anti-aliased), with a band of broad, soft caustic light under it. Colors are the biome's
-// (lib/water.gdshaderinc), so it follows every layer.
+// without reading the screen (docs/art-direction.md#stable-image). What lies in the water sinks into it on its own
+// surface (lib/water.gdshaderinc, UNDERWATER), so this layer only marks the water: a bright meniscus on the surface line
+// (kept a few pixels wide and anti-aliased), a band of broad, soft caustic light under it, and a thin veil of the water's
+// color over what has no murk of its own (the pilgrim, which stays the highest-contrast figure). Premultiplied, sorted
+// with the other transparents by distance, so particles in front of it stay untouched. Colors are the biome's, so it
+// follows every layer.
 shader_type spatial;
 render_mode blend_premul_alpha, depth_draw_never, cull_back, unshaded, fog_disabled;
 
@@ -13,13 +14,14 @@ render_mode blend_premul_alpha, depth_draw_never, cull_back, unshaded, fog_disab
 
 /// The surface's height (world Y), set by the WaterBody.
 instance uniform float surface_y = 0.0;
-/// How fast the view through the water sinks into its color with depth (per meter), and the clearest it ever is.
-uniform float absorption : hint_range(0.0, 2.0) = 0.07;
-uniform float clarity : hint_range(0.0, 1.0) = 0.72;
+/// The veil over what lies behind: at the surface, and how much it thickens per meter of depth (up to `veil_max`).
+uniform float veil : hint_range(0.0, 1.0) = 0.06;
+uniform float veil_per_meter : hint_range(0.0, 0.2) = 0.01;
+uniform float veil_max : hint_range(0.0, 1.0) = 0.2;
 /// The surface line: its width (meters, never under `meniscus_pixels` on screen) and brightness.
 uniform float meniscus_width : hint_range(0.0, 0.2) = 0.06;
-uniform float meniscus_pixels : hint_range(1.0, 6.0) = 2.5;
-uniform float meniscus_strength : hint_range(0.0, 4.0) = 0.8;
+uniform float meniscus_pixels : hint_range(1.0, 6.0) = 3.0;
+uniform float meniscus_strength : hint_range(0.0, 4.0) = 1.4;
 /// Caustic light just under the surface: its brightness and cell size (meters).
 uniform float shimmer : hint_range(0.0, 2.0) = 0.06;
 uniform float caustic_size : hint_range(0.5, 6.0) = 1.4;
@@ -48,7 +50,7 @@ void fragment() {
 	vec3 deep = srgb_to_linear(biome_water_deep.rgb);
 	vec3 shallow = mix(deep, srgb_to_linear(biome_water.rgb), 0.5);
 	vec3 water = mix(shallow, mix(deep, shallow, 0.25), smoothstep(0.0, 10.0, depth));
-	float sunk = 1.0 - clarity * exp(-depth * absorption);
+	float sunk = min(veil + veil_per_meter * depth, veil_max);
 	vec3 color = water * sunk;
 
 	// A band of caustic light under the surface, fading within a couple of meters.

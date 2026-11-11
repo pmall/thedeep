@@ -11,10 +11,10 @@ shader_type spatial;
 #include "res://assets/shaders/lib/noise.gdshaderinc"
 #include "res://assets/shaders/lib/palette.gdshaderinc"
 #include "res://assets/shaders/lib/haze.gdshaderinc"
+#include "res://assets/shaders/lib/water.gdshaderinc"
 #include "res://assets/shaders/lib/surface.gdshaderinc"
 #include "res://assets/shaders/lib/frost.gdshaderinc"
 
-global uniform vec4 biome_water_deep;
 
 /// The baked ice set (assets/textures/surfaces/, SurfaceMaps): every ice material sets both.
 uniform sampler2D ice_normal : hint_normal, repeat_enable, filter_linear_mipmap_anisotropic;
@@ -109,4 +109,8 @@ void fragment() {
 	RIM_TINT = 0.8;
 	NORMAL = n;
 	HAZE
+	UNDERWATER
+	SPECULAR *= uw_keep;
+	CLEARCOAT *= uw_keep;
+	RIM *= uw_keep;
 }

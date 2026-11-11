@@ -208,4 +208,7 @@ void fragment() {
 	AO_LIGHT_AFFECT = 0.2;
 	NORMAL = n;
 	HAZE
+	UNDERWATER
+	CLEARCOAT *= uw_keep;
+	RIM *= uw_keep;
 }
