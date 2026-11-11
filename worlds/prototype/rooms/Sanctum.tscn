@@ -26,6 +26,8 @@
 [ext_resource type="PackedScene" path="res://scenes/stage/RoomStage.tscn" id="18_stage"]
 [ext_resource type="Script" path="res://scripts/rooms/dressing/WallDressing.cs" id="19_walldressing"]
 [ext_resource type="Material" path="res://assets/materials/wall_stone.tres" id="20_wall_stone"]
+[ext_resource type="PackedScene" path="res://scenes/kit/Doorway.tscn" id="90_doorway"]
+[ext_resource type="Resource" path="res://resources/seams/doorway.tres" id="91_seam"]
 
 [sub_resource type="PrimitiveMesh" id="blockmesh_1"]
 script = ExtResource("9_blockmesh")
@@ -98,12 +100,17 @@ FrameBelow = false
 [node name="Geometry" type="Node3D" parent="."]
 
 [node name="Floor" parent="Geometry" instance=ExtResource("1_block")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 22.5, -2, 0)
-Size = Vector3(51, 4, 4)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 19.5, -2, 0)
+Size = Vector3(45, 4, 4)
+
+; the floor under the east doorway's sill (East's Doorway frames Y -2 to 0 and 4 to 6, X 42 to 47)
+[node name="FloorEastFoot" parent="Geometry" instance=ExtResource("1_block")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 45, -3, 0)
+Size = Vector3(6, 2, 4)
 
 [node name="EastWall" parent="Geometry" instance=ExtResource("1_block")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 46.5, 14, 0)
-Size = Vector3(3, 20, 4)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 46.5, 15, 0)
+Size = Vector3(3, 18, 4)
 
 [node name="Roof" parent="Geometry" instance=ExtResource("1_block")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 22.5, 22.5, 0)
@@ -123,7 +130,9 @@ script = ExtResource("2_exit")
 Side = 1
 TargetRoom = "res://worlds/prototype/rooms/Vault.tscn"
 TargetExit = "West"
-Size = Vector2(1, 4)
+
+[node name="Doorway" parent="Exits/East" instance=ExtResource("90_doorway")]
+Profile = ExtResource("91_seam")
 
 ; the forbidden door, down to the Kiln
 [node name="Kiln" type="Marker3D" parent="Exits"]
@@ -325,6 +334,12 @@ Extents = Vector3(22, 9, 3)
 Density = 0.8
 
 [node name="PhotoSpots" type="Node3D" parent="."]
+
+; the east doorway into the Vault: its sill, lintel and the wall around it (the seam's frame)
+[node name="EastDoor" type="Marker3D" parent="PhotoSpots"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 42.5, 3.5, 12)
+script = ExtResource("15_spot")
+PlayerPosition = Vector3(41.5, 0, 0)
 
 ; the Hierarch on its dais before the forbidden door
 [node name="Door" type="Marker3D" parent="PhotoSpots"]

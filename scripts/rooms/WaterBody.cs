@@ -74,6 +74,12 @@ public partial class WaterBody : Node3D
     /// </summary>
     [Export] public Rect2 SectionArea { get; set; }
 
+    /// <summary>
+    /// A second part of the front that is water, as <see cref="SectionArea"/>: the passage of a doorway the water runs through
+    /// (docs/gameplay.md#seam-rule), beside a pool whose front would otherwise veil the wall over the doorway. Empty: none.
+    /// </summary>
+    [Export] public Rect2 SectionPassage { get; set; }
+
     [Export] public Material SurfaceMaterial { get; set; } = null!;
 
     /// <summary>
@@ -119,6 +125,21 @@ public partial class WaterBody : Node3D
     /// <summary>The water on the play plane (its top is the surface), for the map's geometry check.</summary>
     public Box PlayRegion => new(GlobalPosition.X - 0.5f * Size.X, SurfaceY - Depth, GlobalPosition.X + 0.5f * Size.X, SurfaceY);
 
+    /// <summary>Draws one part of the front, <paramref name="front"/> in the body's local X and Y.</summary>
+    private void AddSection(Rect2 front, Material material)
+    {
+        var section = new MeshInstance3D
+        {
+            Mesh = new QuadMesh { Size = front.Size },
+            MaterialOverride = material,
+            CastShadow = GeometryInstance3D.ShadowCastingSetting.Off,
+            Layers = WaterRenderLayer,
+            Position = new Vector3(front.GetCenter().X, front.GetCenter().Y, SectionFront - GlobalPosition.Z),
+        };
+        section.SetInstanceShaderParameter(SurfaceParameter, SurfaceY);
+        AddChild(section);
+    }
+
     public override void _Ready()
     {
         if (Swim)
@@ -132,17 +153,11 @@ public partial class WaterBody : Node3D
 
         if (SectionMaterial is not null)
         {
-            Rect2 front = SectionArea.HasArea() ? SectionArea : new Rect2(-0.5f * Size.X, -Depth, Size.X, Depth);
-            var section = new MeshInstance3D
+            AddSection(SectionArea.HasArea() ? SectionArea : new Rect2(-0.5f * Size.X, -Depth, Size.X, Depth), SectionMaterial);
+            if (SectionPassage.HasArea())
             {
-                Mesh = new QuadMesh { Size = front.Size },
-                MaterialOverride = SectionMaterial,
-                CastShadow = GeometryInstance3D.ShadowCastingSetting.Off,
-                Layers = WaterRenderLayer,
-                Position = new Vector3(front.GetCenter().X, front.GetCenter().Y, SectionFront - GlobalPosition.Z),
-            };
-            section.SetInstanceShaderParameter(SurfaceParameter, SurfaceY);
-            AddChild(section);
+                AddSection(SectionPassage, SectionMaterial);
+            }
         }
 
         Vector3 center = GlobalPosition;

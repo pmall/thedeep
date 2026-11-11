@@ -219,8 +219,13 @@ Material = ExtResource("3_ice")
 Cracked = true
 
 [node name="CorridorEast" parent="Geometry" instance=ExtResource("1_block")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 72.5, -13, 0)
-Size = Vector3(13, 6, 4)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 69.25, -13, 0)
+Size = Vector3(6.5, 6, 4)
+
+; the corridor under the Mere doorway's sill (Mere's Doorway frames Y -12 to -10 and -6 to -4, X 72.5 to 77.5)
+[node name="CorridorEastFoot" parent="Geometry" instance=ExtResource("1_block")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 75.75, -14, 0)
+Size = Vector3(6.5, 4, 4)
 
 ; the east floor, over the corridor (8 m across the well from the west floor, by the beam in the middle)
 [node name="Slab" parent="Geometry" instance=ExtResource("1_block")]
@@ -247,8 +252,8 @@ transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -1.5, 27.5, 0)
 Size = Vector3(3, 15, 4)
 
 [node name="WallEastLow" parent="Geometry" instance=ExtResource("1_block")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 77.5, -4, 0)
-Size = Vector3(3, 4, 4)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 75.75, -3, 0)
+Size = Vector3(6.5, 2, 4)
 
 [node name="WallEast" parent="Geometry" instance=ExtResource("1_block")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 77.5, 20.5, 0)
@@ -349,7 +354,9 @@ script = ExtResource("4_exit")
 Side = 1
 TargetRoom = "res://worlds/prototype/rooms/Mere.tscn"
 TargetExit = "West"
-Size = Vector2(1, 4)
+
+[node name="Doorway" parent="Exits/Mere" instance=ExtResource("90_doorway")]
+Profile = ExtResource("91_seam")
 
 ; under the ice plug, down into the Vault (one way: the drop lands in its pool)
 [node name="Vault" type="Marker3D" parent="Exits"]
@@ -793,6 +800,12 @@ material_override = ExtResource("19_foreground")
 cast_shadow = 0
 
 [node name="PhotoSpots" type="Node3D" parent="."]
+
+; the east doorway into the Mere, at the corridor's end: its sill, lintel and the wall around it (the seam's frame)
+[node name="MereDoor" type="Marker3D" parent="PhotoSpots"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 73, -6.5, 12)
+script = ExtResource("21_spot")
+PlayerPosition = Vector3(72, -10, 0)
 
 ; the east doorway into the Choir: its sill, lintel and the wall around it (the seam's frame)
 [node name="EastDoor" type="Marker3D" parent="PhotoSpots"]

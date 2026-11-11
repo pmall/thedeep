@@ -51,7 +51,7 @@ A way's two exits are framed by the same brick and `SeamProfile` (`docs/gameplay
 5. Delete the seam's lines from `seams.tsv`; run `godot --headless --path . -- --room MechanicsLab --validate-rooms 2>&1 | grep -E "ROOM CHECK|ROOMS OK"` (~15 s).
 6. Capture each side from a photo spot about 12 m out facing the opening (`Narthex/EastDoor`, `DrownedHall/WestDoor`, `Nave/Hatch`, `Cistern/FlueTop`): `tools/capture.sh <label> --rooms "A B"`; finish with `tools/check.sh`.
 
-The plain profiles don't cover a `LockedDoor` (its gate rises into the head: a deeper lintel), a `FalseWall`, water through an opening, a lift through a hatch, or an opening of another size (its own profile).
+Water through a doorway reaches the frame's outer face in both rooms; a pool beside the doorway keeps its front off the wall over it and draws the passage's front with `WaterBody.SectionPassage` (`Vault/Water`). The plain profiles don't cover a `LockedDoor` (its gate rises into the head: a deeper lintel), a `FalseWall`, water through a hatch, a lift through a hatch, or an opening of another size (its own profile).
 
 ## Seeing the game <a id="lookdev"></a>
 

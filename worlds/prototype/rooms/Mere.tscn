@@ -27,6 +27,8 @@
 [ext_resource type="Resource" path="res://resources/biomes/frozen.tres" id="20_frozen"]
 [ext_resource type="PackedScene" path="res://scenes/stage/RoomStage.tscn" id="21_stage"]
 [ext_resource type="Script" path="res://scripts/rooms/dressing/WallDressing.cs" id="22_walldressing"]
+[ext_resource type="PackedScene" path="res://scenes/kit/Doorway.tscn" id="90_doorway"]
+[ext_resource type="Resource" path="res://resources/seams/doorway.tres" id="91_seam"]
 
 [sub_resource type="PrimitiveMesh" id="blockmesh_1"]
 script = ExtResource("10_blockmesh")
@@ -104,24 +106,34 @@ FrameBelow = false
 [node name="Geometry" type="Node3D" parent="."]
 
 [node name="WestBank" parent="Geometry" instance=ExtResource("1_block")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 2.5, -10.5, 0)
-Size = Vector3(11, 21, 4)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 5.75, -10.5, 0)
+Size = Vector3(4.5, 21, 4)
+
+; the bank under the west doorway's sill (West's Doorway frames Y -2 to 0 and 4 to 6, X -1.5 to 3.5)
+[node name="WestBankFoot" parent="Geometry" instance=ExtResource("1_block")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.25, -11.5, 0)
+Size = Vector3(6.5, 19, 4)
 
 [node name="WestWall" parent="Geometry" instance=ExtResource("1_block")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -1.5, 8.5, 0)
-Size = Vector3(3, 9, 4)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -1.5, 9.5, 0)
+Size = Vector3(3, 7, 4)
 
 [node name="Roof" parent="Geometry" instance=ExtResource("1_block")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 33.5, 11.5, 0)
 Size = Vector3(67, 3, 4)
 
 [node name="EastShore" parent="Geometry" instance=ExtResource("1_block")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 60.5, -10.5, 0)
-Size = Vector3(13, 21, 4)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 57.25, -10.5, 0)
+Size = Vector3(6.5, 21, 4)
+
+; the shore under the east doorway's sill (East's Doorway frames Y -2 to 0 and 4 to 6, X 60.5 to 65.5)
+[node name="EastShoreFoot" parent="Geometry" instance=ExtResource("1_block")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 63.75, -11.5, 0)
+Size = Vector3(6.5, 19, 4)
 
 [node name="EastWall" parent="Geometry" instance=ExtResource("1_block")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 65.5, 7, 0)
-Size = Vector3(3, 6, 4)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 65.5, 8, 0)
+Size = Vector3(3, 4, 4)
 
 [node name="IceWest" parent="Geometry" instance=ExtResource("1_block")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 14, -0.5, 0)
@@ -165,7 +177,9 @@ script = ExtResource("3_exit")
 Side = 0
 TargetRoom = "res://worlds/prototype/rooms/Coldstacks.tscn"
 TargetExit = "Mere"
-Size = Vector2(1, 4)
+
+[node name="Doorway" parent="Exits/West" instance=ExtResource("90_doorway")]
+Profile = ExtResource("91_seam")
 
 ; the shore, east to the Sounding
 [node name="East" type="Marker3D" parent="Exits"]
@@ -174,7 +188,9 @@ script = ExtResource("3_exit")
 Side = 1
 TargetRoom = "res://worlds/prototype/rooms/Sounding.tscn"
 TargetExit = "West"
-Size = Vector2(1, 4)
+
+[node name="Doorway" parent="Exits/East" instance=ExtResource("90_doorway")]
+Profile = ExtResource("91_seam")
 
 ; the shaft in the lake bed: sunk to it (Ballast), down into the Underice
 [node name="Underice" type="Marker3D" parent="Exits"]
@@ -326,6 +342,19 @@ Extents = Vector3(22, 8, 2)
 Density = 0.6
 
 [node name="PhotoSpots" type="Node3D" parent="."]
+
+; the west doorway from the Coldstacks: its sill, lintel and the wall around it (the seam's frame)
+[node name="WestDoor" type="Marker3D" parent="PhotoSpots"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 3, 3.5, 12)
+script = ExtResource("18_spot")
+PlayerPosition = Vector3(4, 0, 0)
+PlayerFacing = -1
+
+; the east doorway into the Sounding: its sill, lintel and the wall around it (the seam's frame)
+[node name="EastDoor" type="Marker3D" parent="PhotoSpots"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 61, 3.5, 12)
+script = ExtResource("18_spot")
+PlayerPosition = Vector3(60, 0, 0)
 
 ; out on the ice: a lead of black water, a sleeper, the cut of the lake below
 [node name="Ice" type="Marker3D" parent="PhotoSpots"]

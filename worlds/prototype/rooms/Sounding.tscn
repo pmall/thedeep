@@ -33,6 +33,8 @@
 [ext_resource type="Resource" path="res://resources/biomes/frozen.tres" id="26_frozen"]
 [ext_resource type="PackedScene" path="res://scenes/stage/RoomStage.tscn" id="27_stage"]
 [ext_resource type="Script" path="res://scripts/rooms/dressing/WallDressing.cs" id="28_wall"]
+[ext_resource type="PackedScene" path="res://scenes/kit/Doorway.tscn" id="90_doorway"]
+[ext_resource type="Resource" path="res://resources/seams/doorway.tres" id="91_seam"]
 
 [sub_resource type="PrimitiveMesh" id="pod_1"]
 script = ExtResource("10_pod")
@@ -122,12 +124,17 @@ FrameBelow = false
 [node name="Geometry" type="Node3D" parent="."]
 
 [node name="Entrance" parent="Geometry" instance=ExtResource("1_block")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 5.5, -10, 0)
-Size = Vector3(17, 20, 4)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 8.75, -10, 0)
+Size = Vector3(10.5, 20, 4)
+
+; the floor under the west doorway's sill (West's Doorway frames Y -2 to 0 and 4 to 6, X -1.5 to 3.5)
+[node name="EntranceFoot" parent="Geometry" instance=ExtResource("1_block")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.25, -11, 0)
+Size = Vector3(6.5, 18, 4)
 
 [node name="WestWall" parent="Geometry" instance=ExtResource("1_block")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -1.5, 9.5, 0)
-Size = Vector3(3, 11, 4)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -1.5, 10.5, 0)
+Size = Vector3(3, 9, 4)
 
 [node name="Roof" parent="Geometry" instance=ExtResource("1_block")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 30.5, 13.5, 0)
@@ -170,7 +177,9 @@ script = ExtResource("2_exit")
 Side = 0
 TargetRoom = "res://worlds/prototype/rooms/Mere.tscn"
 TargetExit = "East"
-Size = Vector2(1, 4)
+
+[node name="Doorway" parent="Exits/West" instance=ExtResource("90_doorway")]
+Profile = ExtResource("91_seam")
 
 [node name="Props" type="Node3D" parent="."]
 
@@ -349,6 +358,13 @@ Extents = Vector3(9, 4, 2)
 Density = 0.7
 
 [node name="PhotoSpots" type="Node3D" parent="."]
+
+; the west doorway from the Mere: its sill, lintel and the wall around it (the seam's frame)
+[node name="WestDoor" type="Marker3D" parent="PhotoSpots"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 3, 3.5, 12)
+script = ExtResource("24_spot")
+PlayerPosition = Vector3(4, 0, 0)
+PlayerFacing = -1
 
 ; the door, the bell over the well
 [node name="Bell" type="Marker3D" parent="PhotoSpots"]
