@@ -31,9 +31,10 @@ global uniform float biome_caustic_strength;
 // The murk darkens rather than replaces: a surface keeps at least UNDERWATER_KEEP_MIN of its own light and the veil
 // covers at most the rest, so deep walls keep their blotches, joints and shadows under a dark veil instead of a flat color.
 // A surface beyond the box seen through the water (a backdrop behind the lake) takes the light at the mid-depth of the
-// water the view crosses. Its emission (a backdrop's haze, a glow) dims with that light and the murk, with no
+// water the view crosses. Its emission (a backdrop's haze, caustics) dims with that light and the murk, with no
 // UNDERWATER_KEEP_MIN floor (the floor keeps lit structure, which a flat haze has none of), so a pale haze doesn't shine
-// through the lake.
+// through the lake. A gameplay glow (a machine's eye, its glow pattern: docs/art-direction.md#look) is its own light, not
+// the room's: UNDERWATER_GLOW dims it only by the murk the view crosses, so it stays readable at any depth.
 // So the play plane reads clearly near the surface and sinks into murk deeper down, and walls and backdrops farther
 // behind it sink further.
 const float UNDERWATER_MURK = 0.025;
@@ -141,3 +142,9 @@ float underwater_at(vec3 p, vec3 eye, out vec3 murk_color, out float light) {
 	float uw_keep = max(uw_light * (1.0 - uw_murk), UNDERWATER_KEEP_MIN); \
 	ALBEDO *= uw_keep; \
 	EMISSION = EMISSION * uw_light * (1.0 - uw_murk) + uw_color * min(uw_murk, 1.0 - UNDERWATER_KEEP_MIN);
+
+// UNDERWATER for a surface that also gives a gameplay glow (`glow`, linear, kept out of EMISSION until here): the surface's
+// own emission sinks as in UNDERWATER; the glow is veiled by the murk alone and never loses the room's light.
+#define UNDERWATER_GLOW(glow) \
+	UNDERWATER \
+	EMISSION += (glow) * (1.0 - uw_murk);

@@ -226,8 +226,8 @@ void fragment() {
 	CLEARCOAT_ROUGHNESS = 0.2;
 	RIM = rim;
 	RIM_TINT = 0.4;
-	EMISSION = glow_color * glow * glow_energy + vec3(0.95, 0.92, 1.0) * hurt * 0.9;
-	UNDERWATER
+	EMISSION = vec3(0.0);
+	UNDERWATER_GLOW(glow_color * glow * glow_energy + vec3(0.95, 0.92, 1.0) * hurt * 0.9)
 	CLEARCOAT *= uw_keep;
 	RIM *= uw_keep;
 }
