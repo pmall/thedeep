@@ -28,6 +28,8 @@
 [ext_resource type="Script" path="res://scripts/rooms/dressing/WallDressing.cs" id="22_wall"]
 [ext_resource type="PackedScene" path="res://scenes/kit/Doorway.tscn" id="90_doorway"]
 [ext_resource type="Resource" path="res://resources/seams/doorway.tres" id="91_seam"]
+[ext_resource type="PackedScene" path="res://scenes/kit/Hatch.tscn" id="92_hatch"]
+[ext_resource type="Resource" path="res://resources/seams/hatch.tres" id="93_seam_hatch"]
 
 [sub_resource type="PrimitiveMesh" id="blockmesh_1"]
 script = ExtResource("9_blockmesh")
@@ -80,7 +82,7 @@ SpawnPoint = NodePath("SpawnPoint")
 Stage = NodePath("Stage")
 Biome = ExtResource("20_core")
 Lamps = [NodePath("Lamps/Centre"), NodePath("Lamps/Door"), NodePath("Lamps/Seam")]
-BoundsMin = Vector2(-1, -22)
+BoundsMin = Vector2(-1, -23)
 BoundsMax = Vector2(50, 24)
 
 [node name="SpawnPoint" type="Marker3D" parent="."]
@@ -123,15 +125,25 @@ transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 50, 0, 0)
 Size = Vector3(6, 48, 4)
 Material = ExtResource("1_basalt")
 
-; the bottom of the pit
+; the bottom of the pit: the hatch slab under the shaft the plug caps, its walls standing on the slab
 [node name="PitWest" parent="Geometry" instance=ExtResource("2_block")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 20, -21.25, 0)
-Size = Vector3(16, 5.5, 4)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 19, -21.25, 0)
+Size = Vector3(14, 5.5, 4)
+Material = ExtResource("1_basalt")
+
+[node name="ShaftWest" parent="Geometry" instance=ExtResource("2_block")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 27, -19.75, 0)
+Size = Vector3(2, 2.5, 4)
 Material = ExtResource("1_basalt")
 
 [node name="PitEast" parent="Geometry" instance=ExtResource("2_block")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 39, -21.25, 0)
-Size = Vector3(16, 5.5, 4)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 40, -21.25, 0)
+Size = Vector3(14, 5.5, 4)
+Material = ExtResource("1_basalt")
+
+[node name="ShaftEast" parent="Geometry" instance=ExtResource("2_block")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 32, -19.75, 0)
+Size = Vector3(2, 2.5, 4)
 Material = ExtResource("1_basalt")
 
 ; a plug of cracked glass over the flooded seam: bored through
@@ -198,21 +210,25 @@ Material = ExtResource("1_basalt")
 
 ; down the flooded seam under the plug, into the Lode
 [node name="Lode" type="Marker3D" parent="Exits"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 29.5, -21.5, 0)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 29.5, -22, 0)
 script = ExtResource("3_exit")
 Side = 2
 TargetRoom = "res://worlds/prototype/rooms/Lode.tscn"
 TargetExit = "Orrery"
 Requires = "Drill & Ballast"
 ArrivalSide = 1
-Size = Vector2(3, 1)
+
+[node name="Hatch" parent="Exits/Lode" instance=ExtResource("92_hatch")]
+Profile = ExtResource("93_seam_hatch")
+Material = ExtResource("1_basalt")
+Flooded = true
 
 ; the seam, flooded with molten glass gone cold
 [node name="Water" type="Node3D" parent="."]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 29.5, -19.5, -4)
 script = ExtResource("4_water_body")
 Size = Vector2(3, 12.1)
-Depth = 3
+Depth = 4
 Swim = true
 SurfaceMaterial = ExtResource("5_water")
 SectionMaterial = ExtResource("7_water_section")
@@ -345,9 +361,9 @@ transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 28, -10, 24)
 script = ExtResource("18_spot")
 PlayerPosition = Vector3(24, -11, 0)
 
-; the plug over the flooded seam
+; the plug over the flooded seam and the hatch slab under it (the seam's frame)
 [node name="Seam" type="Marker3D" parent="PhotoSpots"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 29, -16, 16)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 29.5, -19.5, 12)
 script = ExtResource("18_spot")
 PlayerPosition = Vector3(26, -18.5, 0)
 

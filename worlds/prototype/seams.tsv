@@ -16,7 +16,6 @@ Slag:Quench | Quench:Slag	Solids	to fix under seam-coherence (vertical)
 # Vertical, batch 5: the volcanic layer and the core
 Ashfall:Bellows | Bellows:Ashfall	Solids	to fix under seam-coherence (vertical)
 Foundry:Threshold | Threshold:Foundry	Solids	to fix under seam-coherence (vertical)
-Orrery:Lode | Lode:Orrery	Solids	to fix under seam-coherence (vertical)
 
 # Doorways, after the vertical exits: where each room puts the wall and lintel around a shared doorway
 Ashfall:Pyre | Pyre:West	Solids	to fix under seam-coherence (doorway)

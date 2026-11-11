@@ -25,6 +25,8 @@
 [ext_resource type="Script" path="res://scripts/rooms/dressing/WallDressing.cs" id="19_wall"]
 [ext_resource type="PackedScene" path="res://scenes/kit/Doorway.tscn" id="90_doorway"]
 [ext_resource type="Resource" path="res://resources/seams/doorway.tres" id="91_seam"]
+[ext_resource type="PackedScene" path="res://scenes/kit/Hatch.tscn" id="92_hatch"]
+[ext_resource type="Resource" path="res://resources/seams/hatch.tres" id="93_seam_hatch"]
 
 [sub_resource type="PrimitiveMesh" id="blockmesh_1"]
 script = ExtResource("8_blockmesh")
@@ -78,20 +80,20 @@ Size = Vector3(6, 2, 4)
 Material = ExtResource("1_basalt")
 
 [node name="WallWest" parent="Geometry" instance=ExtResource("2_block")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 2, 10, 0)
-Size = Vector3(10, 18, 4)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 1.75, 10, 0)
+Size = Vector3(9.5, 18, 4)
 Material = ExtResource("1_basalt")
 
 ; the east wall of the flooded crack; the low gap under it leads out
 [node name="CrackEast" parent="Geometry" instance=ExtResource("2_block")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 14, 10, 0)
-Size = Vector3(2, 12, 4)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 14.25, 10, 0)
+Size = Vector3(1.5, 12, 4)
 Material = ExtResource("1_basalt")
 
-; the seam from the Orrery opens in the roof between them
+; the seam from the Orrery opens in the roof between them, over the hatch slab (the crack as wide as its frame)
 [node name="RoofWest" parent="Geometry" instance=ExtResource("2_block")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 7.75, 17.5, 0)
-Size = Vector3(1.5, 3, 4)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 7.5, 17.5, 0)
+Size = Vector3(2, 3, 4)
 Material = ExtResource("1_basalt")
 
 [node name="RoofEast" parent="Geometry" instance=ExtResource("2_block")]
@@ -115,13 +117,17 @@ Material = ExtResource("1_basalt")
 
 ; up the flooded crack into the Orrery
 [node name="Orrery" type="Marker3D" parent="Exits"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 10, 15.5, 0)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 10, 15, 0)
 script = ExtResource("3_exit")
 Side = 3
 TargetRoom = "res://worlds/prototype/rooms/Orrery.tscn"
 TargetExit = "Lode"
 Requires = "Drill & Ballast"
-Size = Vector2(3, 1)
+
+[node name="Hatch" parent="Exits/Orrery" instance=ExtResource("92_hatch")]
+Profile = ExtResource("93_seam_hatch")
+Material = ExtResource("1_basalt")
+Flooded = true
 
 ; east, on to the Effigy
 [node name="Effigy" type="Marker3D" parent="Exits"]
@@ -139,7 +145,7 @@ Material = ExtResource("1_basalt")
 [node name="Water" type="Node3D" parent="."]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 10, 17, -4)
 script = ExtResource("4_water_body")
-Size = Vector2(6, 12.1)
+Size = Vector2(7, 12.1)
 Depth = 16
 Swim = true
 SurfaceMaterial = ExtResource("5_water")
@@ -243,6 +249,13 @@ script = ExtResource("15_spot")
 PlayerPosition = Vector3(46.5, 1, 0)
 
 ; the flooded crack, the low gap out of it
+; the hatch slab at the top of the flooded crack (the seam's frame)
+[node name="Hatch" type="Marker3D" parent="PhotoSpots"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 10, 12, 12)
+script = ExtResource("15_spot")
+PlayerPosition = Vector3(18, 1, 0)
+PlayerFacing = -1
+
 [node name="Crack" type="Marker3D" parent="PhotoSpots"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 11, 8, 20)
 script = ExtResource("15_spot")
