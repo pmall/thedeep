@@ -36,4 +36,22 @@ public sealed record SeamFrame(float Opening, float Approach)
             ? new[] { area with { MinX = near.MinX, MaxX = area.MinX }, area with { MinX = area.MaxX, MaxX = near.MaxX } }
             : new[] { near with { MaxY = area.MinY }, near with { MinY = area.MaxY } };
     }
+
+    /// <summary>
+    /// The part of the opening a flooded way's water runs through, from the exit's marker out to the frame's outer face (a hatch's slab
+    /// face, a doorway's far end), on the play plane: what the room's water must fill past what its own front shows, so the water
+    /// continues through the opening into the other room's (docs/gameplay.md#seam-rule). The room side of the marker is the room's water.
+    /// </summary>
+    public Box Passage(ExitSide side, Vector2 marker)
+    {
+        Box area = Exit(side, marker).Area;
+        float a = SeamCheck.Around;
+        return side switch
+        {
+            ExitSide.Down => area with { MaxY = marker.Y },
+            ExitSide.Up => area with { MinY = marker.Y },
+            ExitSide.West => area with { MinX = area.MinX - a, MaxX = marker.X },
+            _ => area with { MinX = marker.X, MaxX = area.MaxX + a },
+        };
+    }
 }

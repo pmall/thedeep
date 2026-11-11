@@ -29,6 +29,8 @@
 [ext_resource type="Script" path="res://scripts/rooms/dressing/WallDressing.cs" id="22_walldressing"]
 [ext_resource type="PackedScene" path="res://scenes/kit/Doorway.tscn" id="90_doorway"]
 [ext_resource type="Resource" path="res://resources/seams/doorway.tres" id="91_seam"]
+[ext_resource type="PackedScene" path="res://scenes/kit/Hatch.tscn" id="92_hatch"]
+[ext_resource type="Resource" path="res://resources/seams/hatch.tres" id="93_hatch_seam"]
 
 [sub_resource type="PrimitiveMesh" id="blockmesh_1"]
 script = ExtResource("10_blockmesh")
@@ -90,7 +92,7 @@ Stage = NodePath("Stage")
 Biome = ExtResource("20_frozen")
 Lamps = [NodePath("Lamps/Shaft"), NodePath("Lamps/Shore")]
 Shafts = [NodePath("Shafts/Crack"), NodePath("Shafts/Cavern")]
-BoundsMin = Vector2(-1, -21)
+BoundsMin = Vector2(-1, -19.5)
 BoundsMax = Vector2(64, 10)
 
 [node name="SpawnPoint" type="Marker3D" parent="."]
@@ -156,12 +158,12 @@ Size = Vector3(13, 5, 4)
 
 ; a ridge on the lake bed
 [node name="BedRise" parent="Geometry" instance=ExtResource("1_block")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 25.75, -19.75, 0)
-Size = Vector3(9.5, 6.5, 4)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 24.75, -19.75, 0)
+Size = Vector3(7.5, 6.5, 4)
 
 [node name="BedEast" parent="Geometry" instance=ExtResource("1_block")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 43.75, -20, 0)
-Size = Vector3(20.5, 6, 4)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 44.75, -20, 0)
+Size = Vector3(18.5, 6, 4)
 
 ; under the shaft (the way down is its trigger)
 [node name="ShaftFloor" parent="Geometry" instance=ExtResource("1_block")]
@@ -200,7 +202,10 @@ Side = 2
 TargetRoom = "res://worlds/prototype/rooms/Underice.tscn"
 TargetExit = "Mere"
 Requires = "Ballast"
-Size = Vector2(3, 1)
+
+[node name="Hatch" parent="Exits/Underice" instance=ExtResource("92_hatch")]
+Profile = ExtResource("93_hatch_seam")
+Flooded = true
 
 ; the lake: black water under the ice, swum on the play plane
 [node name="Water" type="Node3D" parent="."]
@@ -365,6 +370,12 @@ PlayerPosition = Vector3(17, 0, 0)
 ; the lake bed: the shaft down to the Underice
 [node name="Under" type="Marker3D" parent="PhotoSpots"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 30, -12, 22)
+script = ExtResource("18_spot")
+PlayerPosition = Vector3(17, 0, 0)
+
+; the hatch down to the Underice: the slab either side of the flooded hole (the seam's frame)
+[node name="Hatch" type="Marker3D" parent="PhotoSpots"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 32, -15, 12)
 script = ExtResource("18_spot")
 PlayerPosition = Vector3(17, 0, 0)
 

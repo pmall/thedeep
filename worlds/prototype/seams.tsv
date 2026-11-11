@@ -5,7 +5,6 @@ seam	rule	reason
 
 # Vertical, batch 3: the frozen layer
 Coldstacks:Chimney | Chimney:Top	Solids	to fix under seam-coherence (vertical)
-Mere:Underice | Underice:Mere	Solids	to fix under seam-coherence (vertical)
 
 # Vertical, batch 4: the volcanic layer
 Basalt:Crucible | Crucible:Basalt	Solids	to fix under seam-coherence (vertical)

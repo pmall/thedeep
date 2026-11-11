@@ -27,6 +27,8 @@
 [ext_resource type="Script" path="res://scripts/rooms/dressing/WallDressing.cs" id="20_wall"]
 [ext_resource type="PackedScene" path="res://scenes/kit/Doorway.tscn" id="90_doorway"]
 [ext_resource type="Resource" path="res://resources/seams/doorway.tres" id="91_seam"]
+[ext_resource type="PackedScene" path="res://scenes/kit/Hatch.tscn" id="92_hatch"]
+[ext_resource type="Resource" path="res://resources/seams/hatch.tres" id="93_hatch_seam"]
 
 [sub_resource type="PrimitiveMesh" id="blockmesh_1"]
 script = ExtResource("8_blockmesh")
@@ -112,19 +114,25 @@ transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 63.5, 12, 0)
 Size = Vector3(3, 24, 4)
 
 [node name="RoofWest" parent="Geometry" instance=ExtResource("1_block")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 17.75, 22, 0)
-Size = Vector3(41.5, 4, 4)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 16.75, 22.25, 0)
+Size = Vector3(39.5, 4.5, 4)
+Material = ExtResource("2_ice")
+
+; under the hatch's slab, either side of the hole
+[node name="RoofHoleWest" parent="Geometry" instance=ExtResource("1_block")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 37.5, 21.25, 0)
+Size = Vector3(2, 2.5, 4)
+Material = ExtResource("2_ice")
+
+[node name="RoofHoleEast" parent="Geometry" instance=ExtResource("1_block")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 42.5, 21.25, 0)
+Size = Vector3(2, 2.5, 4)
 Material = ExtResource("2_ice")
 
 [node name="RoofEast" parent="Geometry" instance=ExtResource("1_block")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 53.25, 22, 0)
-Size = Vector3(23.5, 4, 4)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 54.25, 22.25, 0)
+Size = Vector3(21.5, 4.5, 4)
 Material = ExtResource("2_ice")
-
-; over the shaft (the way up is its trigger)
-[node name="ShaftCap" parent="Geometry" instance=ExtResource("1_block")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 40, 25.75, 0)
-Size = Vector3(7, 2.5, 4)
 
 [node name="Heap" parent="Geometry" instance=ExtResource("1_block")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 48, 1.5, 0)
@@ -157,7 +165,11 @@ Side = 3
 TargetRoom = "res://worlds/prototype/rooms/Mere.tscn"
 TargetExit = "Underice"
 Requires = "Ballast"
-Size = Vector2(3, 1)
+
+[node name="Hatch" parent="Exits/Mere" instance=ExtResource("92_hatch")]
+Profile = ExtResource("93_hatch_seam")
+Material = ExtResource("2_ice")
+Flooded = true
 
 ; the low door west, into the Vault's pool
 [node name="Vault" type="Marker3D" parent="Exits"]
@@ -170,6 +182,7 @@ Requires = "Ballast"
 
 [node name="Doorway" parent="Exits/Vault" instance=ExtResource("90_doorway")]
 Profile = ExtResource("91_seam")
+Flooded = true
 
 ; the drowned cave: its surface is the lake's, far above the roof
 [node name="Water" type="Node3D" parent="."]
@@ -294,6 +307,12 @@ PlayerFacing = -1
 ; down the shaft from the lake bed, the heap under it
 [node name="Shaft" type="Marker3D" parent="PhotoSpots"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 42, 12, 22)
+script = ExtResource("16_spot")
+PlayerPosition = Vector3(40, 16, 0)
+
+; the hatch up to the Mere: the slab either side of the flooded hole (the seam's frame)
+[node name="Hatch" type="Marker3D" parent="PhotoSpots"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 40, 21, 12)
 script = ExtResource("16_spot")
 PlayerPosition = Vector3(40, 16, 0)
 

@@ -179,6 +179,7 @@ Requires = "Ballast"
 
 [node name="Doorway" parent="Exits/Underice" instance=ExtResource("90_doorway")]
 Profile = ExtResource("91_seam")
+Flooded = true
 
 ; the hatch in the roof, its slab hung 1 m under the roof: the far end of the Coldstacks' ice plug, broken by the Drill (arrival only)
 [node name="Coldstacks" type="Marker3D" parent="Exits"]
@@ -196,7 +197,6 @@ transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 52.25, 0, -6)
 script = ExtResource("3_water_body")
 Size = Vector2(14.5, 16.1)
 SectionArea = Rect2(-7.25, -16, 12, 16)
-SectionPassage = Rect2(4.75, -16, 2.5, 4)
 Depth = 16
 Swim = true
 SurfaceMaterial = ExtResource("4_water")

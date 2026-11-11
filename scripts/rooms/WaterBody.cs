@@ -10,7 +10,8 @@ namespace TheDeep;
 /// per room (the globals hold one). Colors come from the biome. With <see cref="Swim"/>, the pilgrim swims in it:
 /// its play-plane region (<see cref="Size"/>.X wide, from the surface down <see cref="Depth"/>) becomes an area on the water
 /// layer that the pilgrim finds itself in (<see cref="Player.WaterSurface"/>), and the map's geometry check swims it.
-/// With a <see cref="SectionMaterial"/>, its front on the play plane is drawn, so water seen from the side reads as water.
+/// With a <see cref="SectionMaterial"/>, its front on the play plane is drawn, so water seen from the side reads as water, and so is
+/// the passage of each flooded seam it runs through (<see cref="Flood"/>).
 /// </summary>
 public partial class WaterBody : Node3D
 {
@@ -74,12 +75,6 @@ public partial class WaterBody : Node3D
     /// </summary>
     [Export] public Rect2 SectionArea { get; set; }
 
-    /// <summary>
-    /// A second part of the front that is water, as <see cref="SectionArea"/>: the passage of a doorway the water runs through
-    /// (docs/gameplay.md#seam-rule), beside a pool whose front would otherwise veil the wall over the doorway. Empty: none.
-    /// </summary>
-    [Export] public Rect2 SectionPassage { get; set; }
-
     [Export] public Material SurfaceMaterial { get; set; } = null!;
 
     /// <summary>
@@ -89,6 +84,9 @@ public partial class WaterBody : Node3D
     [Export] public Material? SectionMaterial { get; set; }
 
     private static readonly System.Collections.Generic.List<WaterBody> Swimmable = new();
+
+    /// <summary>The fronts of the flooded passages this water runs through past its own front (<see cref="Flood"/>), body-local.</summary>
+    private readonly System.Collections.Generic.List<Rect2> _passages = new();
 
     /// <summary>
     /// The surface height of the swimmable water whose play-plane region holds (<paramref name="x"/>, <paramref name="y"/>),
@@ -125,6 +123,36 @@ public partial class WaterBody : Node3D
     /// <summary>The water on the play plane (its top is the surface), for the map's geometry check.</summary>
     public Box PlayRegion => new(GlobalPosition.X - 0.5f * Size.X, SurfaceY - Depth, GlobalPosition.X + 0.5f * Size.X, SurfaceY);
 
+    /// <summary>
+    /// Runs this water through a flooded seam's passage (<see cref="SeamEnd.Flooded"/>; <see cref="SeamFrame.Passage"/>, room
+    /// coordinates on the play plane): the pilgrim swims it, so the water must already fill it, and its front is drawn there too
+    /// when the body's own front stops short of it (a pool kept off the wall over a doorway), so the passage reads as water.
+    /// </summary>
+    public void Flood(Box passage)
+    {
+        Box region = PlayRegion;
+        if (!Swim || passage.MinX < region.MinX || passage.MaxX > region.MaxX || passage.MinY < region.MinY || passage.MaxY > region.MaxY)
+        {
+            throw new System.InvalidOperationException(
+                $"{GetPath()} doesn't fill the flooded passage {passage}: it must be swum and reach the frame's outer face (docs/gameplay.md#seam-rule)");
+        }
+
+        var front = new Rect2(passage.MinX - GlobalPosition.X, passage.MinY - SurfaceY, passage.MaxX - passage.MinX, passage.MaxY - passage.MinY);
+        if (SectionMaterial is null || DrawnFront.Encloses(front))
+        {
+            return;
+        }
+
+        _passages.Add(front);
+        if (IsNodeReady())
+        {
+            AddSection(front, SectionMaterial);
+        }
+    }
+
+    /// <summary>The part of the front drawn as water by the body itself, body-local.</summary>
+    private Rect2 DrawnFront => SectionArea.HasArea() ? SectionArea : new Rect2(-0.5f * Size.X, -Depth, Size.X, Depth);
+
     /// <summary>Draws one part of the front, <paramref name="front"/> in the body's local X and Y.</summary>
     private void AddSection(Rect2 front, Material material)
     {
@@ -153,10 +181,10 @@ public partial class WaterBody : Node3D
 
         if (SectionMaterial is not null)
         {
-            AddSection(SectionArea.HasArea() ? SectionArea : new Rect2(-0.5f * Size.X, -Depth, Size.X, Depth), SectionMaterial);
-            if (SectionPassage.HasArea())
+            AddSection(DrawnFront, SectionMaterial);
+            foreach (Rect2 passage in _passages)
             {
-                AddSection(SectionPassage, SectionMaterial);
+                AddSection(passage, SectionMaterial);
             }
         }
 

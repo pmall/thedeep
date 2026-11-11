@@ -71,4 +71,30 @@ public class SeamFrameTests
 
         Assert.Empty(check.Problems(1.6f));
     }
+
+    [Fact]
+    public void AFloodedWaysPassageRunsFromTheMarkerOutToTheFramesOuterFace()
+    {
+        Assert.Equal(new Box(8.5f, -2f, 11.5f, -1f), Hatch.Passage(ExitSide.Down, new Vector2(10f, -1f)));
+        Assert.Equal(new Box(18.5f, 29.5f, 21.5f, 30.5f), Hatch.Passage(ExitSide.Up, new Vector2(20f, 29.5f)));
+        Assert.Equal(new Box(57f, -16f, 59.5f, -12f), Door.Passage(ExitSide.East, new Vector2(57f, -16f)));
+        Assert.Equal(new Box(-1.5f, 0f, 1f, 4f), Door.Passage(ExitSide.West, new Vector2(1f, 0f)));
+    }
+
+    [Fact]
+    public void TwoRoomsFloodingAHatchFromOneDefinitionAgree()
+    {
+        // Each room's water fills its side of the hole out to the slab's far face: the hole is water in both, the slab solid in both.
+        Threshold down = Hatch.Exit(ExitSide.Down, new Vector2(60f, -1f)), up = Hatch.Exit(ExitSide.Up, new Vector2(20f, 29.5f));
+        var upper = Room(new Box(-1f, -2f, 86.5f, 24f), Hatch.Solids(ExitSide.Down, down.Marker), "Hatch", down);
+        var lower = Room(new Box(-1.5f, -2f, 41f, 30.5f), Hatch.Solids(ExitSide.Up, up.Marker), "Top", up);
+        upper.Waters.Add(("Lake", new Box(-3f, Hatch.Passage(ExitSide.Down, down.Marker).MinY, 90f, 10f)));
+        lower.Waters.Add(("Flood", new Box(-3f, -5f, 45f, Hatch.Passage(ExitSide.Up, up.Marker).MaxY)));
+        var check = new SeamCheck();
+        check.AddRoom("Mere", upper);
+        check.AddRoom("Underice", lower);
+        check.AddWay("Mere", "Hatch", "Underice", "Top");
+
+        Assert.Empty(check.Problems(1.6f));
+    }
 }
