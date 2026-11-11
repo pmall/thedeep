@@ -587,16 +587,6 @@ public partial class Player : CharacterBody3D
         return true;
     }
 
-    /// <summary>Swallowed (molten slag): all health gone at once, whatever the grace period or the plating, and death.</summary>
-    public void Perish()
-    {
-        if (Vitality.Kill())
-        {
-            Velocity = Vector3.Zero;
-            Died?.Invoke();
-        }
-    }
-
     /// <summary>
     /// Burned by slag, or by heat without Heat plating (`docs/gameplay.md#slag`): <paramref name="damage"/> health taken unless in the grace period, held where it is
     /// in its recoil, control gone, then <see cref="Scorched"/> (the session sets it back on its <see cref="Footing"/>) or

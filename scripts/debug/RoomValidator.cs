@@ -419,7 +419,7 @@ public partial class RoomValidator : Node
 
         var anchors = room.All<HarpoonAnchor>().Select(a => a.GlobalPosition.Flat()).ToList();
         var waters = room.All<WaterBody>().Where(w => w.Swim).Select(w => w.PlayRegion).ToList();
-        var heat = room.All<HeatColumn>().Where(z => !z.Lethal).Select(z => z.Region).ToList();
+        var heat = room.All<HeatColumn>().Select(z => z.Region).ToList();
         // Where walking takes a relic (its range from the feet) and reaches a goal (the feet inside its area), as trigger boxes.
         var relics = room.All<AbilityRelic>()
             .Select(r => (Box.Around(r.GlobalPosition.Flat() + new NVector2(0f, 0.1f), new NVector2(1.6f, 0.4f)), r.Ability)).ToList();
@@ -433,7 +433,7 @@ public partial class RoomValidator : Node
             room.All<Lift>().Select(l => l.Path).ToList(), sound, waters, heat, relics, goals, metal, room.SpawnPoint.GlobalPosition.Flat())
         {
             Items = items,
-            Slag = room.All<SlagBody>().Select(s => s.PlayRegion).Concat(room.All<HeatColumn>().Where(z => z.Lethal).Select(z => z.Region)).ToList(),
+            Slag = room.All<SlagBody>().Select(s => s.PlayRegion).ToList(),
         });
 
         foreach (RoomExit exit in exits.Where(e => e.TargetRoom != "" && ResourceLoader.Exists(e.TargetRoom)))

@@ -1,10 +1,10 @@
 [gd_scene format=3]
 
-; The Slag, east of the Kiln (map offset (170, -126)): the volcanic layer's hub, a cavern over a river of slag. Platforms
-; of basalt step across the river (falling in is the end: the slag swallows the pilgrim, even plated); heat rises from it
-; between them. A shrine on the middle platform, under the vent of the Chimney (ledges climb to it: the shortcut home to
-; the Coldstacks). West, the Kiln; east, the Ashfall. Two ways down: a pool of coolant west of the river whose bottom
-; opens on the Quench (Ballast), and a cracked plug in the eastern platform over the Basalt (the Drill's dive).
+; The Slag, east of the Kiln (map offset (170, -126)): the volcanic layer's hub, a cavern over a river of slag (SlagBody:
+; touching it burns and sets the pilgrim back, plated or not). Basalt pillars rise from the river's bed, each a jump over the
+; last; in the middle a stepped mound climbs to the vent of the Chimney (the shortcut home to the Coldstacks), the shrine at
+; its west foot. No heat here. West, the Kiln; east, the Ashfall. Two ways down: a pool of coolant walled off west of the
+; river whose bottom opens on the Quench (Ballast), and a cracked plug over the walled shaft to the Basalt (the Drill's dive).
 
 [ext_resource type="Material" path="res://assets/materials/basalt.tres" id="1_basalt"]
 [ext_resource type="PackedScene" path="res://scenes/kit/Block.tscn" id="2_block"]
@@ -13,10 +13,8 @@
 [ext_resource type="Material" path="res://assets/materials/water.tres" id="6_water"]
 [ext_resource type="Material" path="res://assets/materials/water_section.tres" id="8_water_section"]
 [ext_resource type="PackedScene" path="res://scenes/props/Shrine.tscn" id="9_shrine"]
-[ext_resource type="Script" path="res://scripts/props/HeatColumn.cs" id="10_heatcolumn"]
 [ext_resource type="PackedScene" path="res://scenes/fx/Embers.tscn" id="12_embers"]
 [ext_resource type="Script" path="res://scripts/kit/BlockMesh.cs" id="13_blockmesh"]
-[ext_resource type="Material" path="res://assets/materials/magma.tres" id="14_magma"]
 [ext_resource type="Material" path="res://assets/materials/stone_mid.tres" id="15_stone_mid"]
 [ext_resource type="Script" path="res://scripts/kit/PipeMesh.cs" id="16_pipe"]
 [ext_resource type="Material" path="res://assets/materials/rust_mid.tres" id="17_rust_mid"]
@@ -27,16 +25,7 @@
 [ext_resource type="Resource" path="res://resources/biomes/volcanic.tres" id="22_volcanic"]
 [ext_resource type="PackedScene" path="res://scenes/stage/RoomStage.tscn" id="23_stage"]
 [ext_resource type="Script" path="res://scripts/rooms/dressing/WallDressing.cs" id="24_wall"]
-
-[sub_resource type="PrimitiveMesh" id="blockmesh_1"]
-script = ExtResource("13_blockmesh")
-Size = Vector3(60, 1, 8)
-Bevel = 0.2
-
-[sub_resource type="PrimitiveMesh" id="blockmesh_2"]
-script = ExtResource("13_blockmesh")
-Size = Vector3(110, 1, 20)
-Bevel = 0.2
+[ext_resource type="PackedScene" path="res://scenes/kit/SlagBody.tscn" id="25_slag"]
 
 [sub_resource type="PrimitiveMesh" id="blockmesh_3"]
 script = ExtResource("13_blockmesh")
@@ -96,8 +85,8 @@ Size = Vector3(9, 8, 4)
 Material = ExtResource("1_basalt")
 
 [node name="WestWall" parent="Geometry" instance=ExtResource("2_block")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -1.5, 8.5, 0)
-Size = Vector3(3, 9, 4)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -1.5, 6.75, 0)
+Size = Vector3(3, 5.5, 4)
 Material = ExtResource("1_basalt")
 
 [node name="Roof" parent="Geometry" instance=ExtResource("2_block")]
@@ -111,26 +100,26 @@ transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 71.25, 11.25, 0)
 Size = Vector3(47.5, 3.5, 4)
 Material = ExtResource("1_basalt")
 
-; the steps up from the pool's lip to the west floor, 2.5 m each (a jump with room to spare)
+; the steps down from the west floor to the coolant pool's lip, 2 and 2.5 m
 [node name="StepWestUpper" parent="Geometry" instance=ExtResource("2_block")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 7.5, -5.25, 0)
-Size = Vector3(3, 7.5, 4)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 7.5, -5.5, 0)
+Size = Vector3(3, 7, 4)
 Material = ExtResource("1_basalt")
 
 [node name="StepWest" parent="Geometry" instance=ExtResource("2_block")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 10.5, -6.5, 0)
-Size = Vector3(3, 5, 4)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 10.5, -6.75, 0)
+Size = Vector3(3, 4.5, 4)
 Material = ExtResource("1_basalt")
 
-; the coolant pool's walls
+; the coolant pool's walls: its east wall is the slag's west bank, its top just over the coolant (jumped out of)
 [node name="PoolWest" parent="Geometry" instance=ExtResource("2_block")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 9, -19.5, 0)
 Size = Vector3(6, 21, 4)
 Material = ExtResource("1_basalt")
 
 [node name="PoolEast" parent="Geometry" instance=ExtResource("2_block")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 16, -19.5, 0)
-Size = Vector3(2, 21, 4)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 16.5, -18.25, 0)
+Size = Vector3(3, 23.5, 4)
 Material = ExtResource("1_basalt")
 
 [node name="PoolFloor" parent="Geometry" instance=ExtResource("2_block")]
@@ -138,74 +127,66 @@ transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 13.5, -31, 0)
 Size = Vector3(3, 2, 4)
 Material = ExtResource("1_basalt")
 
-[node name="PlatformOne" parent="Geometry" instance=ExtResource("2_block")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 20.5, -7.25, 0)
-Size = Vector3(7, 1.5, 4)
+; the slag's bed, under the whole river
+[node name="Bed" parent="Geometry" instance=ExtResource("2_block")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 38, -23.75, 0)
+Size = Vector3(40, 12.5, 4)
 Material = ExtResource("1_basalt")
 
-[node name="PlatformTwo" parent="Geometry" instance=ExtResource("2_block")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 32.5, -5.5, 0)
-Size = Vector3(9, 3, 4)
+; basalt pillars rising from the bed, each a walkway 1.5 to 2 m over the last
+[node name="PillarOne" parent="Geometry" instance=ExtResource("2_block")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 24.5, -11.25, 0)
+Size = Vector3(3, 12.5, 4)
 Material = ExtResource("1_basalt")
 
-; the middle platform: the shrine, the Chimney above
-[node name="PlatformThree" parent="Geometry" instance=ExtResource("2_block")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 46, -3.75, 0)
-Size = Vector3(12, 3.5, 4)
+[node name="PillarTwo" parent="Geometry" instance=ExtResource("2_block")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 32, -10.5, 0)
+Size = Vector3(3, 14, 4)
 Material = ExtResource("1_basalt")
 
-; ledges up to the Chimney
-[node name="LedgeA" parent="Geometry" instance=ExtResource("2_block")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 41.5, 0.25, 0)
-Size = Vector3(3, 0.5, 4)
+; the stepped mound under the Chimney's vent: the shrine at its west foot, three steps of 2.5 m up to the vent
+[node name="Mound" parent="Geometry" instance=ExtResource("2_block")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 46, -9.5, 0)
+Size = Vector3(17, 16, 4)
 Material = ExtResource("1_basalt")
 
-[node name="LedgeB" parent="Geometry" instance=ExtResource("2_block")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 47.5, 2.75, 0)
-Size = Vector3(3, 0.5, 4)
+[node name="MoundStepOne" parent="Geometry" instance=ExtResource("2_block")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 46, -0.25, 0)
+Size = Vector3(12, 2.5, 4)
 Material = ExtResource("1_basalt")
 
-[node name="LedgeC" parent="Geometry" instance=ExtResource("2_block")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 44.5, 5.25, 0)
-Size = Vector3(3, 0.5, 4)
+[node name="MoundStepTwo" parent="Geometry" instance=ExtResource("2_block")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 46, 2.25, 0)
+Size = Vector3(7, 2.5, 4)
 Material = ExtResource("1_basalt")
 
-[node name="PlatformFourWest" parent="Geometry" instance=ExtResource("2_block")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 58, -4.5, 0)
-Size = Vector3(4, 3, 4)
+[node name="MoundStepThree" parent="Geometry" instance=ExtResource("2_block")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 46, 4.75, 0)
+Size = Vector3(2, 2.5, 4)
 Material = ExtResource("1_basalt")
 
-; a cracked plug over the shaft down to the Basalt: the Drill dives through
+; the plug's shaft down to the Basalt, walled off from the slag: its west wall is the river's east bank
+[node name="ShaftWest" parent="Geometry" instance=ExtResource("2_block")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 59, -16, 0)
+Size = Vector3(2, 28, 4)
+Material = ExtResource("1_basalt")
+
+; a cracked plug over the shaft, 1.5 m under the east floor: the Drill dives through
 [node name="Plug" parent="Geometry" instance=ExtResource("2_block")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 61.5, -3.25, 0)
-Size = Vector3(3, 0.5, 4)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 60.5, -1.75, 0)
+Size = Vector3(5, 0.5, 4)
 Material = ExtResource("1_basalt")
 Cracked = true
 
-[node name="PlatformFourEast" parent="Geometry" instance=ExtResource("2_block")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 65.5, -4.25, 0)
-Size = Vector3(5, 3.5, 4)
-Material = ExtResource("1_basalt")
-
-; the plug's shaft, walled off from the river all the way down
-[node name="ShaftWest" parent="Geometry" instance=ExtResource("2_block")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 59, -18, 0)
-Size = Vector3(2, 24, 4)
-Material = ExtResource("1_basalt")
-
-[node name="ShaftEast" parent="Geometry" instance=ExtResource("2_block")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 64, -18, 0)
-Size = Vector3(2, 24, 4)
-Material = ExtResource("1_basalt")
-
+; the east floor, the shaft's east wall
 [node name="EastFloor" parent="Geometry" instance=ExtResource("2_block")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 83, -6, 0)
-Size = Vector3(24, 12, 4)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 79, -15, 0)
+Size = Vector3(32, 30, 4)
 Material = ExtResource("1_basalt")
 
 [node name="EastWall" parent="Geometry" instance=ExtResource("2_block")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 93.5, 8.5, 0)
-Size = Vector3(3, 9, 4)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 93.5, 6.75, 0)
+Size = Vector3(3, 5.5, 4)
 Material = ExtResource("1_basalt")
 
 [node name="Exits" type="Node3D" parent="."]
@@ -261,10 +242,10 @@ Size = Vector2(3, 1)
 
 ; the coolant pool, swum
 [node name="Coolant" type="Node3D" parent="."]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 13.5, -9.5, -4)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 13.5, -7, -4)
 script = ExtResource("5_water_body")
 Size = Vector2(3, 12.1)
-Depth = 20.5
+Depth = 23
 Swim = true
 Globals = false
 SurfaceMaterial = ExtResource("6_water")
@@ -274,78 +255,32 @@ SectionMaterial = ExtResource("8_water_section")
 
 ; the hub's shrine
 [node name="Shrine" parent="Props" instance=ExtResource("9_shrine")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 46, -2, 0)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 38.75, -1.5, 0)
 
-[node name="Heat" type="Node3D" parent="."]
+; the river of slag between the pool, the pillars, the mound and the shaft
+[node name="Slag" type="Node3D" parent="."]
 
-; heat over the river between the platforms (falling in is the end)
-[node name="RiverOne" type="Node3D" parent="Heat"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 26, -31, 0)
-script = ExtResource("10_heatcolumn")
-Strip = true
-Size = Vector2(4, 25)
-Embers = ExtResource("12_embers")
-EmberDensity = 0.8
-GlowEnergy = 3
+[node name="West" parent="Slag" instance=ExtResource("25_slag")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 20.5, -9.5, 0)
+Size = Vector2(5, 4)
+Depth = 8
 
-[node name="RiverTwo" type="Node3D" parent="Heat"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 38.5, -31, 0)
-script = ExtResource("10_heatcolumn")
-Strip = true
-Size = Vector2(3, 25.5)
-Embers = ExtResource("12_embers")
-EmberDensity = 0.8
-GlowEnergy = 3
+[node name="Second" parent="Slag" instance=ExtResource("25_slag")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 28.25, -9.5, 0)
+Size = Vector2(4.5, 4)
+Depth = 8
 
-[node name="RiverThree" type="Node3D" parent="Heat"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 54, -31, 0)
-script = ExtResource("10_heatcolumn")
-Strip = true
-Size = Vector2(4, 25)
-Embers = ExtResource("12_embers")
-EmberDensity = 0.8
-GlowEnergy = 3
+[node name="Third" parent="Slag" instance=ExtResource("25_slag")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 35.5, -9.5, 0)
+Size = Vector2(4, 4)
+Depth = 8
 
-[node name="RiverFour" type="Node3D" parent="Heat"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 69.5, -31, 0)
-script = ExtResource("10_heatcolumn")
-Strip = true
-Size = Vector2(3, 24)
-Embers = ExtResource("12_embers")
-EmberDensity = 0.8
-GlowEnergy = 3
-
-; the river itself, under the platforms: it swallows the pilgrim, plated or not (the plug's shaft walled off from it)
-[node name="RiverUnder" type="Node3D" parent="Heat"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 37.5, -31, 0)
-script = ExtResource("10_heatcolumn")
-Size = Vector2(41, 22)
-Lethal = true
-Embers = ExtResource("12_embers")
-EmberDensity = 0
-GlowEnergy = 2
-
-[node name="RiverUnderEast" type="Node3D" parent="Heat"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 68, -31, 0)
-script = ExtResource("10_heatcolumn")
-Size = Vector2(6, 22)
-Lethal = true
-Embers = ExtResource("12_embers")
-EmberDensity = 0
-GlowEnergy = 2
+[node name="East" parent="Slag" instance=ExtResource("25_slag")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 56.25, -9.5, 0)
+Size = Vector2(3.5, 4)
+Depth = 8
 
 [node name="Kit" type="Node3D" parent="."]
-
-; the river's surface, slag drifting east
-[node name="River" type="MeshInstance3D" parent="Kit"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 44, -9.5, -2)
-mesh = SubResource("blockmesh_1")
-material_override = ExtResource("14_magma")
-
-[node name="RiverBack" type="MeshInstance3D" parent="Kit"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 44, -10.25, -16)
-mesh = SubResource("blockmesh_2")
-material_override = ExtResource("14_magma")
 
 [node name="Back" type="MeshInstance3D" parent="Kit"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 46, -8, -22)
@@ -397,13 +332,13 @@ material_override = ExtResource("17_rust_mid")
 [node name="Glyphs" type="Node3D" parent="."]
 
 [node name="Shrine" type="MeshInstance3D" parent="Glyphs"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 46, -2.75, 2.01)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 38.75, -2.25, 2.01)
 mesh = SubResource("QuadMesh_7")
 material_override = ExtResource("19_glyphs")
 cast_shadow = 0
 
 [node name="ShrineLight" type="OmniLight3D" parent="Glyphs"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 46, -2.75, 2.71)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 38.75, -2.25, 2.71)
 light_energy = 0.5
 light_volumetric_fog_energy = 0
 omni_range = 2.5
@@ -424,13 +359,13 @@ spot_angle_attenuation = 2
 
 ; the river glowing up into the cavern
 [node name="River" type="OmniLight3D" parent="Lamps"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 44, -7, 3)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 36, -8, 3)
 light_energy = 2.5
 omni_range = 24
 shadow_enabled = false
 
 [node name="Shrine" type="OmniLight3D" parent="Lamps"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 46, 1.5, 1.2)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 38.75, 2.25, 1.2)
 light_energy = 0.9
 omni_range = 5
 shadow_enabled = false
@@ -445,19 +380,19 @@ Density = 0.15
 
 [node name="PhotoSpots" type="Node3D" parent="."]
 
-; the middle platform, the shrine, the river, the vent above
+; the shrine at the mound's foot, the river, the steps up to the vent
 [node name="Hub" type="Marker3D" parent="PhotoSpots"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 44, 0, 22)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 42, 0, 22)
 script = ExtResource("20_spot")
-PlayerPosition = Vector3(46, -2, 0)
+PlayerPosition = Vector3(38.75, -1.5, 0)
 
-; the door from the Kiln, the coolant pool, the first platforms
+; the door from the Kiln, the coolant pool, the first pillars
 [node name="West" type="Marker3D" parent="PhotoSpots"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 14, -3, 22)
 script = ExtResource("20_spot")
 PlayerPosition = Vector3(3, 0, 0)
 
-; the cracked plug, the far platforms, the way east
+; the cracked plug, the mound's east foot, the way east
 [node name="East" type="Marker3D" parent="PhotoSpots"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 70, -2, 22)
 script = ExtResource("20_spot")
@@ -468,5 +403,5 @@ PlayerFacing = -1
 [node name="Wide" type="Marker3D" parent="PhotoSpots"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 46, -10, 84)
 script = ExtResource("20_spot")
-PlayerPosition = Vector3(46, -2, 0)
+PlayerPosition = Vector3(38.75, -1.5, 0)
 Fov = 40

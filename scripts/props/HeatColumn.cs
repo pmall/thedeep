@@ -15,10 +15,9 @@ namespace TheDeep;
 /// grate as wide as the column between two posts at its edges (<see cref="Source"/>); a light in the room's lamp color.
 /// </para>
 /// <para>
-/// Two kinds are old stand-ins kept until `docs/roadmap.md#volcanic-rethink` converts their rooms: a <see cref="Strip"/> (heat
-/// lying over a floor, embers and a glow only, which the room check names but doesn't fail) and a <see cref="Lethal"/> one (molten
-/// slag before <see cref="SlagBody"/>: death, plated or not). Not a <see cref="Block"/>: the map's geometry check reads its
-/// <see cref="Region"/> as space no planner may enter without Heat plating (a lethal one: ever, as <see cref="RoomShape.Slag"/>).
+/// One kind is an old stand-in kept until `docs/roadmap.md#volcanic-rethink` converts its rooms: a <see cref="Strip"/> (heat lying
+/// over a floor, embers and a glow only, which the room check names but doesn't fail). Not a <see cref="Block"/>: the map's
+/// geometry check reads its <see cref="Region"/> as space no planner may enter without Heat plating.
 /// </para>
 /// </summary>
 public partial class HeatColumn : Node3D
@@ -30,9 +29,6 @@ public partial class HeatColumn : Node3D
 
     /// <summary>Ground closer than this to the column (meters, around it) is no footing to be set back on.</summary>
     [Export] public float FootingMargin { get; set; } = 0.75f;
-
-    /// <summary>Molten slag itself, the old stand-in: it swallows the pilgrim, Heat plating or not.</summary>
-    [Export] public bool Lethal { get; set; }
 
     /// <summary>An old strip of heat over a floor, not a column yet: drawn as embers and a glow only, to convert.</summary>
     [Export] public bool Strip { get; set; }
@@ -76,8 +72,8 @@ public partial class HeatColumn : Node3D
     /// <summary>The column on the play plane, for the map's geometry check.</summary>
     public Box Region => new(GlobalPosition.X - 0.5f * Size.X, GlobalPosition.Y, GlobalPosition.X + 0.5f * Size.X, GlobalPosition.Y + Size.Y);
 
-    /// <summary>A column proper: neither of the old stand-ins.</summary>
-    public bool IsColumn => !Strip && !Lethal;
+    /// <summary>A column proper: not the old strip.</summary>
+    public bool IsColumn => !Strip;
 
     public override void _Ready()
     {
@@ -188,7 +184,7 @@ public partial class HeatColumn : Node3D
 
     public override void _PhysicsProcess(double delta)
     {
-        if (Player is not { } player || (!Lethal && player.Abilities.Has(Ability.HeatPlating)) || !player.InControl)
+        if (Player is not { } player || player.Abilities.Has(Ability.HeatPlating) || !player.InControl)
         {
             return;
         }
@@ -202,12 +198,6 @@ public partial class HeatColumn : Node3D
         player.NearBurn();
         if (reach == BurnReach.Near)
         {
-            return;
-        }
-
-        if (Lethal)
-        {
-            player.Perish();
             return;
         }
 
