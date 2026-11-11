@@ -107,8 +107,7 @@ public partial class World : Node3D
     }
 
     /// <summary>The scene paths of every room of the world, in name order (the lab rooms too; see <see cref="Room.InGame"/>).</summary>
-    public IEnumerable<string> RoomScenes() =>
-        DirAccess.GetFilesAt(Definition.RoomsFolder).Where(f => f.EndsWith(".tscn", StringComparison.Ordinal)).Order().Select(f => $"{Definition.RoomsFolder}/{f}");
+    public IEnumerable<string> RoomScenes() => Definition.RoomScenes();
 
     /// <summary>A room's name from its scene path.</summary>
     public static string NameOf(string scenePath) => scenePath.GetFile().GetBaseName();

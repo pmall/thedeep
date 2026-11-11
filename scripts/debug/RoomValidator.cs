@@ -330,17 +330,18 @@ public partial class RoomValidator : Node
         }
     }
 
+    /// <summary>The world's network; one that doesn't parse is a problem, a world without one is checked as an empty network.</summary>
     private MapDraft? LoadDraft()
     {
-        string path = World.Definition.Network;
-        try
+        switch (World.Definition.LoadNetwork())
         {
-            return MapDraft.FromMarkdown(FileAccess.GetFileAsString(path));
-        }
-        catch (System.FormatException e)
-        {
-            _problems.Add($"map draft ({path}): {e.Message}");
-            return null;
+            case WorldData<MapDraft>.Loaded(var draft):
+                return draft;
+            case WorldData<MapDraft>.Malformed(var message):
+                _problems.Add($"map draft ({World.Definition.Network}): {message}");
+                return null;
+            default:
+                return new MapDraft();
         }
     }
 
@@ -359,20 +360,16 @@ public partial class RoomValidator : Node
     private RoomTable? LoadTable()
     {
         string path = World.Definition.RoomTable;
-        if (path == "" || !FileAccess.FileExists(path))
+        switch (World.Definition.LoadRoomTable())
         {
-            _problems.Add($"room table: the world names none, or {path} is missing (docs/roadmap.md#stage-plan)");
-            return null;
-        }
-
-        try
-        {
-            return RoomTable.Parse(FileAccess.GetFileAsString(path));
-        }
-        catch (System.FormatException e)
-        {
-            _problems.Add($"room table ({path}): {e.Message}");
-            return null;
+            case WorldData<RoomTable>.Loaded(var table):
+                return table;
+            case WorldData<RoomTable>.Malformed(var message):
+                _problems.Add($"room table ({path}): {message}");
+                return null;
+            default:
+                _problems.Add($"room table: the world names none, or {path} is missing (docs/roadmap.md#stage-plan)");
+                return null;
         }
     }
 

@@ -1,3 +1,6 @@
+using System;
+using System.Collections.Generic;
+using System.Linq;
 using Godot;
 
 namespace TheDeep;
@@ -31,10 +34,10 @@ public partial class WorldDefinition : Resource
     [Export] public PackedScene StartRoom { get; set; } = null!;
 
     /// <summary>The descent's layers, from the surface down: the names the network gives its rooms, and their biomes.</summary>
-    [Export] public WorldLayer[] Layers { get; set; } = System.Array.Empty<WorldLayer>();
+    [Export] public WorldLayer[] Layers { get; set; } = Array.Empty<WorldLayer>();
 
     /// <summary>The world's items (keys, codes), each laid in one room by an <see cref="ItemPickup"/>.</summary>
-    [Export] public ItemDefinition[] Items { get; set; } = System.Array.Empty<ItemDefinition>();
+    [Export] public ItemDefinition[] Items { get; set; } = Array.Empty<ItemDefinition>();
 
     /// <summary>The world's own lines, extending the game's own book (its <see cref="LineBook.Base"/>): with it, every line the world shows.</summary>
     [Export] public LineBook Lines { get; set; } = null!;
@@ -47,12 +50,40 @@ public partial class WorldDefinition : Resource
     /// <summary>The scene path of the room named <paramref name="name"/>.</summary>
     public string RoomPath(string name) => $"{RoomsFolder}/{name}.tscn";
 
+    /// <summary>The scene paths of every room of the world, in name order: the scenes of <see cref="RoomsFolder"/>.</summary>
+    public IEnumerable<string> RoomScenes() =>
+        DirAccess.GetFilesAt(RoomsFolder).Where(f => f.EndsWith(".tscn", StringComparison.Ordinal)).Order().Select(f => $"{RoomsFolder}/{f}");
+
+    /// <summary>Reads and parses the world's network (<see cref="Network"/>).</summary>
+    public WorldData<MapDraft> LoadNetwork() => Read(Network, MapDraft.FromMarkdown);
+
+    /// <summary>Reads and parses the world's room table (<see cref="RoomTable"/>).</summary>
+    public WorldData<RoomTable> LoadRoomTable() => Read(RoomTable, TheDeep.RoomTable.Parse);
+
+    /// <summary>The one place a world's data files are opened: <paramref name="path"/> read as text and given to <paramref name="parse"/>.</summary>
+    private static WorldData<T> Read<T>(string path, Func<string, T> parse)
+    {
+        if (path == "" || !FileAccess.FileExists(path))
+        {
+            return new WorldData<T>.Missing();
+        }
+
+        try
+        {
+            return new WorldData<T>.Loaded(parse(FileAccess.GetFileAsString(path)));
+        }
+        catch (FormatException e)
+        {
+            return new WorldData<T>.Malformed(e.Message);
+        }
+    }
+
     /// <summary>The layer named <paramref name="name"/> (as the network names it, any case), or null.</summary>
     public WorldLayer? Layer(string name)
     {
         foreach (WorldLayer layer in Layers)
         {
-            if (string.Equals(layer.Name, name, System.StringComparison.OrdinalIgnoreCase))
+            if (string.Equals(layer.Name, name, StringComparison.OrdinalIgnoreCase))
             {
                 return layer;
             }

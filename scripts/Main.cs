@@ -387,19 +387,23 @@ public partial class Main : Node3D
                 GD.PushError($"--abilities {list}: expected all, none, or ability names joined by commas ({string.Join(", ", AbilitySet.All)})");
             }
         }
-        else if (Array.IndexOf(args, RoomArgument) >= 0 && FileAccess.FileExists(World.Definition.Network))
+        else if (Array.IndexOf(args, RoomArgument) >= 0)
         {
-            try
+            switch (World.Definition.LoadNetwork())
             {
-                MapDraft draft = MapDraft.FromMarkdown(FileAccess.GetFileAsString(World.Definition.Network));
-                if (MapSolver.Arrival(draft.Graph, World.RoomName) is { } arrival)
-                {
-                    (grant, items) = (arrival.Owned, arrival.Held);
-                }
-            }
-            catch (FormatException e)
-            {
-                GD.PushError($"the world's network ({World.Definition.Network}): {e.Message}");
+                case WorldData<MapDraft>.Loaded(var draft):
+                    if (MapSolver.Arrival(draft.Graph, World.RoomName) is { } arrival)
+                    {
+                        (grant, items) = (arrival.Owned, arrival.Held);
+                    }
+
+                    break;
+                case WorldData<MapDraft>.Malformed(var message):
+                    GD.PushError($"the world's network ({World.Definition.Network}): {message}");
+                    break;
+                case WorldData<MapDraft>.Missing:
+                    // A world without a network grants nothing.
+                    break;
             }
         }
 
