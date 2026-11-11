@@ -26,6 +26,8 @@
 [ext_resource type="Resource" path="res://resources/biomes/core.tres" id="20_core"]
 [ext_resource type="PackedScene" path="res://scenes/stage/RoomStage.tscn" id="21_stage"]
 [ext_resource type="Script" path="res://scripts/rooms/dressing/WallDressing.cs" id="22_wall"]
+[ext_resource type="PackedScene" path="res://scenes/kit/Doorway.tscn" id="90_doorway"]
+[ext_resource type="Resource" path="res://resources/seams/doorway.tres" id="91_seam"]
 
 [sub_resource type="PrimitiveMesh" id="blockmesh_1"]
 script = ExtResource("9_blockmesh")
@@ -92,13 +94,19 @@ FrameAbove = false
 [node name="Geometry" type="Node3D" parent="."]
 
 [node name="Floor" parent="Geometry" instance=ExtResource("2_block")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 30, -1.5, 0)
-Size = Vector3(66, 3, 4)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 33, -1.5, 0)
+Size = Vector3(60, 3, 4)
+Material = ExtResource("1_basalt")
+
+; the floor under the west doorway's sill (West's Doorway frames X -2 to 3, Y -2 to 0 and 4 to 6)
+[node name="FloorWestFoot" parent="Geometry" instance=ExtResource("2_block")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -2.5, 0)
+Size = Vector3(6, 1, 4)
 Material = ExtResource("1_basalt")
 
 [node name="WallWestHigh" parent="Geometry" instance=ExtResource("2_block")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -1.5, 20.5, 0)
-Size = Vector3(3, 33, 4)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -1.5, 21.5, 0)
+Size = Vector3(3, 31, 4)
 Material = ExtResource("1_basalt")
 
 [node name="Roof" parent="Geometry" instance=ExtResource("2_block")]
@@ -120,7 +128,10 @@ script = ExtResource("3_exit")
 Side = 0
 TargetRoom = "res://worlds/prototype/rooms/Effigy.tscn"
 TargetExit = "East"
-Size = Vector2(1, 4)
+
+[node name="Doorway" parent="Exits/West" instance=ExtResource("90_doorway")]
+Profile = ExtResource("91_seam")
+Material = ExtResource("1_basalt")
 
 [node name="Props" type="Node3D" parent="."]
 
@@ -265,6 +276,13 @@ Extents = Vector3(24, 12, 4)
 Density = 0.12
 
 [node name="PhotoSpots" type="Node3D" parent="."]
+
+; the west doorway from the Effigy: its sill, lintel and the wall around it (the seam's frame)
+[node name="WestDoor" type="Marker3D" parent="PhotoSpots"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 2, 3.5, 12)
+script = ExtResource("18_spot")
+PlayerPosition = Vector3(4, 0, 0)
+PlayerFacing = -1
 
 ; the hall, Nirvanary drifting over it
 [node name="Hall" type="Marker3D" parent="PhotoSpots"]

@@ -26,6 +26,8 @@
 [ext_resource type="Resource" path="res://resources/biomes/core.tres" id="20_core"]
 [ext_resource type="PackedScene" path="res://scenes/stage/RoomStage.tscn" id="21_stage"]
 [ext_resource type="Script" path="res://scripts/rooms/dressing/WallDressing.cs" id="22_wall"]
+[ext_resource type="PackedScene" path="res://scenes/kit/Doorway.tscn" id="90_doorway"]
+[ext_resource type="Resource" path="res://resources/seams/doorway.tres" id="91_seam"]
 
 [sub_resource type="PrimitiveMesh" id="blockmesh_1"]
 script = ExtResource("9_blockmesh")
@@ -96,13 +98,19 @@ FrameAbove = false
 
 ; the upper floor inside the Mantle's door
 [node name="Upper" parent="Geometry" instance=ExtResource("2_block")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 4.5, -12, 0)
-Size = Vector3(15, 24, 4)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 7.5, -12, 0)
+Size = Vector3(9, 24, 4)
+Material = ExtResource("1_basalt")
+
+; the shelf under the west doorway's sill (West's Doorway frames X -2 to 3, Y -2 to 0 and 4 to 6)
+[node name="UpperWestFoot" parent="Geometry" instance=ExtResource("2_block")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -13, 0)
+Size = Vector3(6, 22, 4)
 Material = ExtResource("1_basalt")
 
 [node name="WallWestHigh" parent="Geometry" instance=ExtResource("2_block")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -1.5, 15.5, 0)
-Size = Vector3(3, 23, 4)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -1.5, 16.5, 0)
+Size = Vector3(3, 21, 4)
 Material = ExtResource("1_basalt")
 
 [node name="Roof" parent="Geometry" instance=ExtResource("2_block")]
@@ -183,7 +191,10 @@ script = ExtResource("3_exit")
 Side = 0
 TargetRoom = "res://worlds/prototype/rooms/Mantle.tscn"
 TargetExit = "Orrery"
-Size = Vector2(1, 4)
+
+[node name="Doorway" parent="Exits/West" instance=ExtResource("90_doorway")]
+Profile = ExtResource("91_seam")
+Material = ExtResource("1_basalt")
 
 ; down the flooded seam under the plug, into the Lode
 [node name="Lode" type="Marker3D" parent="Exits"]
@@ -314,6 +325,13 @@ Extents = Vector3(20, 20, 3)
 Density = 0.12
 
 [node name="PhotoSpots" type="Node3D" parent="."]
+
+; the west doorway from the Mantle's ledge: its sill, lintel and the wall around it (the seam's frame)
+[node name="WestDoor" type="Marker3D" parent="PhotoSpots"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 2, 3.5, 12)
+script = ExtResource("18_spot")
+PlayerPosition = Vector3(4, 0, 0)
+PlayerFacing = -1
 
 ; inside the Mantle's door: the pit, the rings turning
 [node name="Door" type="Marker3D" parent="PhotoSpots"]

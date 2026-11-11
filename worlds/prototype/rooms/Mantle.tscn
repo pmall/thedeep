@@ -24,6 +24,8 @@
 [ext_resource type="Resource" path="res://resources/biomes/core.tres" id="18_core"]
 [ext_resource type="PackedScene" path="res://scenes/stage/RoomStage.tscn" id="19_stage"]
 [ext_resource type="Script" path="res://scripts/rooms/dressing/WallDressing.cs" id="20_wall"]
+[ext_resource type="PackedScene" path="res://scenes/kit/Doorway.tscn" id="90_doorway"]
+[ext_resource type="Resource" path="res://resources/seams/doorway.tres" id="91_seam"]
 
 [sub_resource type="PrimitiveMesh" id="blockmesh_1"]
 script = ExtResource("7_blockmesh")
@@ -94,14 +96,20 @@ FrameAbove = false
 [node name="Geometry" type="Node3D" parent="."]
 
 [node name="Floor" parent="Geometry" instance=ExtResource("2_block")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 25, -1.5, 0)
-Size = Vector3(56, 3, 4)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 28, -1.5, 0)
+Size = Vector3(50, 3, 4)
+Material = ExtResource("1_basalt")
+
+; the floor under the west doorway's sill (West's Doorway frames X -2 to 3, Y -2 to 0 and 4 to 6)
+[node name="FloorWestFoot" parent="Geometry" instance=ExtResource("2_block")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -2.5, 0)
+Size = Vector3(6, 1, 4)
 Material = ExtResource("1_basalt")
 
 ; over the door from the Threshold
 [node name="WallWestHigh" parent="Geometry" instance=ExtResource("2_block")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -1.5, 18.5, 0)
-Size = Vector3(3, 29, 4)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -1.5, 19.5, 0)
+Size = Vector3(3, 27, 4)
 Material = ExtResource("1_basalt")
 
 [node name="Roof" parent="Geometry" instance=ExtResource("2_block")]
@@ -111,13 +119,13 @@ Material = ExtResource("1_basalt")
 
 ; under the high door on to the Orrery
 [node name="WallEastLow" parent="Geometry" instance=ExtResource("2_block")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 51.5, 10, 0)
-Size = Vector3(3, 20, 4)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 51.5, 9, 0)
+Size = Vector3(3, 18, 4)
 Material = ExtResource("1_basalt")
 
 [node name="WallEastHigh" parent="Geometry" instance=ExtResource("2_block")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 51.5, 27, 0)
-Size = Vector3(3, 6, 4)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 51.5, 28, 0)
+Size = Vector3(3, 4, 4)
 Material = ExtResource("1_basalt")
 
 ; a bronze piston, long seized over the way: Mag-grip takes its underside and climbs it
@@ -128,8 +136,8 @@ Surface = 1
 
 ; the high door's ledge
 [node name="DoorLedge" parent="Geometry" instance=ExtResource("2_block")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 45, 19.75, 0)
-Size = Vector3(10, 0.5, 4)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 43.5, 19.75, 0)
+Size = Vector3(7, 0.5, 4)
 Material = ExtResource("1_basalt")
 
 [node name="Exits" type="Node3D" parent="."]
@@ -141,7 +149,10 @@ script = ExtResource("3_exit")
 Side = 0
 TargetRoom = "res://worlds/prototype/rooms/Threshold.tscn"
 TargetExit = "Mantle"
-Size = Vector2(1, 4)
+
+[node name="Doorway" parent="Exits/West" instance=ExtResource("90_doorway")]
+Profile = ExtResource("91_seam")
+Material = ExtResource("1_basalt")
 
 ; the high door east, on to the Orrery: Mag-grip, then the Harpoon
 [node name="Orrery" type="Marker3D" parent="Exits"]
@@ -151,7 +162,10 @@ Side = 1
 TargetRoom = "res://worlds/prototype/rooms/Orrery.tscn"
 TargetExit = "West"
 Requires = "MagGrip & Harpoon"
-Size = Vector2(1, 4)
+
+[node name="Doorway" parent="Exits/Orrery" instance=ExtResource("90_doorway")]
+Profile = ExtResource("91_seam")
+Material = ExtResource("1_basalt")
 
 [node name="Anchors" type="Node3D" parent="."]
 
@@ -287,6 +301,19 @@ Extents = Vector3(24, 5, 3)
 Density = 0.08
 
 [node name="PhotoSpots" type="Node3D" parent="."]
+
+; the east doorway into the Orrery, off the ledge: its sill, lintel and the wall around it (the seam's frame)
+[node name="OrreryDoor" type="Marker3D" parent="PhotoSpots"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 47.5, 23.5, 12)
+script = ExtResource("16_spot")
+PlayerPosition = Vector3(46.5, 20, 0)
+
+; the west doorway from the Threshold: its sill, lintel and the wall around it (the seam's frame)
+[node name="WestDoor" type="Marker3D" parent="PhotoSpots"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 2, 3.5, 12)
+script = ExtResource("16_spot")
+PlayerPosition = Vector3(4, 0, 0)
+PlayerFacing = -1
 
 ; the piston, the wheels turning behind
 [node name="Hall" type="Marker3D" parent="PhotoSpots"]

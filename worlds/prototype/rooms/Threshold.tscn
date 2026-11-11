@@ -25,6 +25,8 @@
 [ext_resource type="Resource" path="res://resources/biomes/core.tres" id="19_core"]
 [ext_resource type="PackedScene" path="res://scenes/stage/RoomStage.tscn" id="20_stage"]
 [ext_resource type="Script" path="res://scripts/rooms/dressing/WallDressing.cs" id="21_wall"]
+[ext_resource type="PackedScene" path="res://scenes/kit/Doorway.tscn" id="90_doorway"]
+[ext_resource type="Resource" path="res://resources/seams/doorway.tres" id="91_seam"]
 
 [sub_resource type="PrimitiveMesh" id="blockmesh_1"]
 script = ExtResource("9_blockmesh")
@@ -79,8 +81,14 @@ FrameAbove = false
 [node name="Geometry" type="Node3D" parent="."]
 
 [node name="Floor" parent="Geometry" instance=ExtResource("2_block")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 25, -1.5, 0)
-Size = Vector3(56, 3, 4)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 22, -1.5, 0)
+Size = Vector3(50, 3, 4)
+Material = ExtResource("1_basalt")
+
+; the floor under the east doorway's sill (Mantle's Doorway frames X 47 to 52, Y -2 to 0 and 4 to 6)
+[node name="FloorEastFoot" parent="Geometry" instance=ExtResource("2_block")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 50, -2.5, 0)
+Size = Vector3(6, 1, 4)
 Material = ExtResource("1_basalt")
 
 [node name="WallWest" parent="Geometry" instance=ExtResource("2_block")]
@@ -101,8 +109,8 @@ Material = ExtResource("1_basalt")
 
 ; over the door on to the Mantle
 [node name="WallEast" parent="Geometry" instance=ExtResource("2_block")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 51.5, 9.5, 0)
-Size = Vector3(3, 11, 4)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 51.5, 10.5, 0)
+Size = Vector3(3, 9, 4)
 Material = ExtResource("1_basalt")
 
 ; ledges up the column of heat to the vents
@@ -156,7 +164,10 @@ script = ExtResource("4_exit")
 Side = 1
 TargetRoom = "res://worlds/prototype/rooms/Mantle.tscn"
 TargetExit = "West"
-Size = Vector2(1, 4)
+
+[node name="Doorway" parent="Exits/Mantle" instance=ExtResource("90_doorway")]
+Profile = ExtResource("91_seam")
+Material = ExtResource("1_basalt")
 
 [node name="Heat" type="Node3D" parent="."]
 
@@ -272,6 +283,12 @@ Extents = Vector3(20, 7, 3)
 Density = 0.15
 
 [node name="PhotoSpots" type="Node3D" parent="."]
+
+; the east doorway into the Mantle: its sill, lintel and the wall around it (the seam's frame)
+[node name="EastDoor" type="Marker3D" parent="PhotoSpots"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 47.5, 3.5, 12)
+script = ExtResource("17_spot")
+PlayerPosition = Vector3(46.5, 0, 0)
 
 ; the column of heat, its ledges, the vents above, the pilgrim on the floor beside it (inside it, unplated, it would be scorched)
 [node name="Column" type="Marker3D" parent="PhotoSpots"]

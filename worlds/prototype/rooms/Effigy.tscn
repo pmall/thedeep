@@ -20,6 +20,8 @@
 [ext_resource type="Resource" path="res://resources/biomes/core.tres" id="14_core"]
 [ext_resource type="PackedScene" path="res://scenes/stage/RoomStage.tscn" id="15_stage"]
 [ext_resource type="Script" path="res://scripts/rooms/dressing/WallDressing.cs" id="16_wall"]
+[ext_resource type="PackedScene" path="res://scenes/kit/Doorway.tscn" id="90_doorway"]
+[ext_resource type="Resource" path="res://resources/seams/doorway.tres" id="91_seam"]
 
 [sub_resource type="PrimitiveMesh" id="blockmesh_1"]
 script = ExtResource("7_blockmesh")
@@ -86,12 +88,24 @@ FrameAbove = false
 
 [node name="Floor" parent="Geometry" instance=ExtResource("2_block")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 22, -1.5, 0)
-Size = Vector3(50, 3, 4)
+Size = Vector3(38, 3, 4)
+Material = ExtResource("1_basalt")
+
+; the floor under the east doorway's sill (East's Doorway frames X 41 to 46, Y -2 to 0 and 4 to 6)
+[node name="FloorEastFoot" parent="Geometry" instance=ExtResource("2_block")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 44, -2.5, 0)
+Size = Vector3(6, 1, 4)
+Material = ExtResource("1_basalt")
+
+; the floor under the west doorway's sill (West's Doorway frames X -2 to 3, Y -2 to 0 and 4 to 6)
+[node name="FloorWestFoot" parent="Geometry" instance=ExtResource("2_block")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -2.5, 0)
+Size = Vector3(6, 1, 4)
 Material = ExtResource("1_basalt")
 
 [node name="WallWestHigh" parent="Geometry" instance=ExtResource("2_block")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -1.5, 15.5, 0)
-Size = Vector3(3, 23, 4)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -1.5, 16.5, 0)
+Size = Vector3(3, 21, 4)
 Material = ExtResource("1_basalt")
 
 [node name="Roof" parent="Geometry" instance=ExtResource("2_block")]
@@ -101,8 +115,8 @@ Material = ExtResource("1_basalt")
 
 ; over the door on to the Heart
 [node name="WallEastHigh" parent="Geometry" instance=ExtResource("2_block")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 45.5, 14, 0)
-Size = Vector3(3, 20, 4)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 45.5, 15, 0)
+Size = Vector3(3, 18, 4)
 Material = ExtResource("1_basalt")
 
 [node name="Exits" type="Node3D" parent="."]
@@ -114,7 +128,10 @@ script = ExtResource("3_exit")
 Side = 0
 TargetRoom = "res://worlds/prototype/rooms/Lode.tscn"
 TargetExit = "Effigy"
-Size = Vector2(1, 4)
+
+[node name="Doorway" parent="Exits/West" instance=ExtResource("90_doorway")]
+Profile = ExtResource("91_seam")
+Material = ExtResource("1_basalt")
 
 ; east, through the effigy, on to the Heart
 [node name="East" type="Marker3D" parent="Exits"]
@@ -123,7 +140,10 @@ script = ExtResource("3_exit")
 Side = 1
 TargetRoom = "res://worlds/prototype/rooms/Heart.tscn"
 TargetExit = "West"
-Size = Vector2(1, 4)
+
+[node name="Doorway" parent="Exits/East" instance=ExtResource("90_doorway")]
+Profile = ExtResource("91_seam")
+Material = ExtResource("1_basalt")
 
 [node name="Props" type="Node3D" parent="."]
 
@@ -238,6 +258,19 @@ Extents = Vector3(20, 10, 3)
 Density = 0.15
 
 [node name="PhotoSpots" type="Node3D" parent="."]
+
+; the east doorway into the Heart: its sill, lintel and the wall around it (the seam's frame)
+[node name="EastDoor" type="Marker3D" parent="PhotoSpots"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 41.5, 3.5, 12)
+script = ExtResource("12_spot")
+PlayerPosition = Vector3(40.5, 0, 0)
+
+; the west doorway from the Lode: its sill, lintel and the wall around it (the seam's frame)
+[node name="WestDoor" type="Marker3D" parent="PhotoSpots"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 2, 3.5, 12)
+script = ExtResource("12_spot")
+PlayerPosition = Vector3(4, 0, 0)
+PlayerFacing = -1
 
 ; the effigy astride the way, the law at its feet
 [node name="Effigy" type="Marker3D" parent="PhotoSpots"]
