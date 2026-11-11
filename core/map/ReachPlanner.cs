@@ -26,7 +26,10 @@ public sealed record MoveLimits(
         LedgeAssist = 0f,
     };
 
+    /// <summary>The gravity of a rising jump, m/s² (positive down): what makes it peak at the jump height after the time to
+    /// apex.</summary>
     public float Gravity => JumpMath.Gravity(JumpHeight, JumpTimeToApex);
+    /// <summary>The upward speed a jump starts with, m/s.</summary>
     public float TakeOff => JumpMath.TakeOffSpeed(JumpHeight, JumpTimeToApex);
 }
 
@@ -142,6 +145,11 @@ public sealed class ReachPlanner
     /// <summary>The grid of feet positions under water, with Ballast.</summary>
     private const float Cell = 0.25f;
 
+    /// <summary>A planner for one room: the base moveset's <paramref name="limits"/> over the room's <paramref name="solids"/>.
+    /// Each ability is simulated only when both its limits and what it works on are given: the Harpoon with
+    /// <paramref name="anchors"/>, swimming with <paramref name="waters"/> (and sinking, with <paramref name="ballast"/>),
+    /// Mag-grip with <paramref name="metal"/> solids. Lift platforms count as solids, and <paramref name="hazards"/> are space
+    /// the body never enters.</summary>
     public ReachPlanner(MoveLimits limits, IEnumerable<Box> solids, HarpoonLimits? harpoon = null, IEnumerable<Vector2>? anchors = null,
         IEnumerable<LiftPath>? lifts = null, WaterLimits? water = null, IEnumerable<Box>? waters = null, bool ballast = false,
         IEnumerable<Box>? hazards = null, GripLimits? grip = null, IEnumerable<Box>? metal = null)
@@ -182,6 +190,7 @@ public sealed class ReachPlanner
         }
     }
 
+    /// <summary>Every floor the pilgrim can stand on in the room, and every water's float line.</summary>
     public IReadOnlyList<Ledge> Ledges => _ledges;
 
     /// <summary>

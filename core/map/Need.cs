@@ -5,8 +5,11 @@ namespace TheDeep;
 /// </summary>
 public readonly record struct Need(Ability Abilities, ItemSet Items)
 {
+    /// <summary>No ability and no item: the base moveset is enough.</summary>
     public static readonly Need Nothing = new(Ability.None, ItemSet.Empty);
 
+    /// <summary>Whether a pilgrim owning <paramref name="owned"/> and holding <paramref name="held"/> has all this
+    /// needs.</summary>
     public bool IsMetBy(Ability owned, ItemSet held) => (owned & Abilities) == Abilities && Items.IsSubsetOf(held);
 
     /// <summary>Whether meeting <paramref name="other"/> always meets this one too (this one needs no more).</summary>

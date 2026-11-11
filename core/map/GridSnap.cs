@@ -13,6 +13,8 @@ public static class GridSnap
 
     private const float Tolerance = 1e-3f;
 
+    /// <summary>Whether <paramref name="value"/> lies on a grid line <paramref name="step"/> meters apart, to within a
+    /// millimeter.</summary>
     public static bool OnGrid(float value, float step)
     {
         float cells = value / step;

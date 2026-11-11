@@ -26,16 +26,24 @@ public sealed class MapGraph
     private readonly SortedSet<string> _rooms = new(System.StringComparer.Ordinal);
     private readonly SortedSet<string> _goals = new(System.StringComparer.Ordinal);
 
+    /// <summary>The room where the pilgrim starts; empty until set.</summary>
     public string Start { get; set; } = "";
 
+    /// <summary>Every room's name, sorted: those added and those an edge, a relic, an item or a goal names.</summary>
     public IReadOnlyCollection<string> Rooms => _rooms;
+    /// <summary>Every way out of a room, one per exit, in the order added.</summary>
     public IReadOnlyList<MapEdge> Edges => _edges;
+    /// <summary>Every ability relic lying in a room, in the order added.</summary>
     public IReadOnlyList<MapRelic> Relics => _relics;
+    /// <summary>Every item (a key, a code) lying in a room, in the order added.</summary>
     public IReadOnlyList<MapItem> Items => _items;
+    /// <summary>The rooms where the journey ends, sorted.</summary>
     public IReadOnlyCollection<string> Goals => _goals;
 
+    /// <summary>Adds a room by name; adding it again changes nothing.</summary>
     public void AddRoom(string room) => _rooms.Add(room);
 
+    /// <summary>Adds a way out of a room, and both its rooms if they are new.</summary>
     public void AddEdge(MapEdge edge)
     {
         _rooms.Add(edge.From);
@@ -43,28 +51,34 @@ public sealed class MapGraph
         _edges.Add(edge);
     }
 
+    /// <summary>Lays an ability relic in its room, adding the room if it is new.</summary>
     public void AddRelic(MapRelic relic)
     {
         _rooms.Add(relic.Room);
         _relics.Add(relic);
     }
 
+    /// <summary>Lays an item in its room, adding the room if it is new.</summary>
     public void AddItem(MapItem item)
     {
         _rooms.Add(item.Room);
         _items.Add(item);
     }
 
+    /// <summary>Makes <paramref name="room"/> a place where the journey ends, adding the room if it is new.</summary>
     public void AddGoal(string room)
     {
         _rooms.Add(room);
         _goals.Add(room);
     }
 
+    /// <summary>The ways out of <paramref name="room"/>.</summary>
     public IEnumerable<MapEdge> From(string room) => _edges.Where(e => e.From == room);
 
+    /// <summary>The ability relics lying in <paramref name="room"/>.</summary>
     public IEnumerable<MapRelic> RelicsIn(string room) => _relics.Where(i => i.Room == room);
 
+    /// <summary>The items lying in <paramref name="room"/>.</summary>
     public IEnumerable<MapItem> ItemsIn(string room) => _items.Where(i => i.Room == room);
 
     /// <summary>

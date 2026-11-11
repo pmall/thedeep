@@ -75,8 +75,10 @@ public sealed class RoomTable
 
     private readonly List<RoomRow> _rows = new();
 
+    /// <summary>The table's rows, one per room, in the file's order.</summary>
     public IReadOnlyList<RoomRow> Rows => _rows;
 
+    /// <summary>The row of <paramref name="room"/>, or null when the table has none.</summary>
     public RoomRow? Row(string room) => _rows.FirstOrDefault(r => r.Room == room);
 
     /// <summary>Parses a table; errors name the file's line.</summary>

@@ -49,6 +49,8 @@ public sealed class Requirement
         return new Requirement(Minimize(options));
     }
 
+    /// <summary>Parses <paramref name="text"/> without throwing: false with what is wrong and where in
+    /// <paramref name="error"/>, and <see cref="None"/> as the requirement.</summary>
     public static bool TryParse(string text, out Requirement requirement, out string error)
     {
         try
@@ -88,11 +90,14 @@ public sealed class Requirement
         private readonly string _text;
         private int _at;
 
+        /// <summary>A parser at the start of <paramref name="text"/>; null reads as empty.</summary>
         public Parser(string text)
         {
             _text = text ?? "";
         }
 
+        /// <summary>The whole text as alternatives, not yet minimal; empty text needs nothing. Throws
+        /// <see cref="FormatException"/> on anything left unread.</summary>
         public List<Need> ParseAll()
         {
             SkipSpaces();

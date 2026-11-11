@@ -16,6 +16,8 @@ public sealed class SolidGrid
     private readonly float _minX, _minY;
     private readonly int _columns, _rows;
 
+    /// <summary>Sorts <paramref name="solids"/> into the cells each one overlaps; queries answer with indices into this
+    /// list.</summary>
     public SolidGrid(IReadOnlyList<Box> solids)
     {
         float minX = 0f, minY = 0f, maxX = 0f, maxY = 0f;

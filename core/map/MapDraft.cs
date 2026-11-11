@@ -34,6 +34,7 @@ public sealed class MapDraft
     /// <summary>What the map is held to (its <c>target</c> statements).</summary>
     public MapTargets Targets { get; private set; } = MapTargets.None;
 
+    /// <summary>The drafted world as the solver sees it: its rooms, ways, relics, items, start and goals.</summary>
     public MapGraph Graph { get; } = new();
 
     /// <summary>Each room's depth layer.</summary>
@@ -85,6 +86,9 @@ public sealed class MapDraft
         return Parse(string.Join('\n', lines));
     }
 
+    /// <summary>Reads a draft from its statements, one per line; throws <see cref="FormatException"/> naming the line when one
+    /// is wrong, or when the draft has no start room, uses a room it never declares or hides a way that does not
+    /// exist.</summary>
     public static MapDraft Parse(string text)
     {
         var draft = new MapDraft();

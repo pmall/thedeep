@@ -46,6 +46,7 @@ public sealed class WorldCheck
     private readonly Dictionary<string, Ability> _matters = new();
     private readonly Dictionary<string, List<Box>> _triggers = new();
 
+    /// <summary>A check that simulates the pilgrim's moves with <paramref name="limits"/>.</summary>
     public WorldCheck(PlannerLimits limits) => _limits = limits;
 
     /// <summary>The built map: rooms, exits (one edge each, for leaving through it), relics and goals.</summary>
@@ -54,6 +55,7 @@ public sealed class WorldCheck
     /// <summary>The built rooms' sealed exits (to rooms not built yet) and their requirements.</summary>
     public IReadOnlyList<(string Room, Requirement Requires)> Sealed => _sealed;
 
+    /// <summary>Everything found wrong so far, one line each; empty when the world passes.</summary>
     public IReadOnlyList<string> Problems => _problems;
 
     /// <summary>A room in the game, with its camera bounds and its shape.</summary>
@@ -80,8 +82,10 @@ public sealed class WorldCheck
         }
     }
 
+    /// <summary>An exit of the built room <paramref name="room"/> leading to a room not built yet, and what it needs.</summary>
     public void AddSealed(string room, Requirement requires) => _sealed.Add((room, requires));
 
+    /// <summary>Adds <paramref name="what"/> to what is wrong with the world: a problem found outside this check.</summary>
     public void Problem(string what) => _problems.Add(what);
 
     /// <summary>

@@ -7,5 +7,6 @@ namespace TheDeep;
 /// </summary>
 public sealed record MapTargets(int Orders = 0, int Positions = 0, int MinRooms = 0, int MaxRooms = int.MaxValue)
 {
+    /// <summary>No target: any number of orders, positions and rooms passes.</summary>
     public static MapTargets None { get; } = new();
 }

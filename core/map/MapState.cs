@@ -33,6 +33,7 @@ public sealed class MapState
     /// <summary>Every room the map knows.</summary>
     public IReadOnlyCollection<MapRoom> Rooms => _rooms.Values;
 
+    /// <summary>The room the pilgrim is in: the last one entered, or the one a save restored; empty before any.</summary>
     public string Current { get; private set; } = "";
 
     /// <summary>Whether the map knows <paramref name="room"/>.</summary>
@@ -78,6 +79,7 @@ public sealed class MapState
     /// <summary>Records a visited room's ways out (from its exit markers), replacing what was known of them.</summary>
     public void SetWays(string room, IEnumerable<MapWay> ways) => _ways[room] = new List<MapWay>(ways);
 
+    /// <summary>The ways out recorded for <paramref name="room"/>; none for a room not visited.</summary>
     public IReadOnlyList<MapWay> WaysOf(string room) => _ways.TryGetValue(room, out List<MapWay>? ways) ? ways : System.Array.Empty<MapWay>();
 
     /// <summary>The pilgrim went through this exit (leaving or arriving): the way is taken.</summary>
