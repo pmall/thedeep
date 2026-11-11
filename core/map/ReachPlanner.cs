@@ -45,8 +45,10 @@ public sealed record GripLimits(float LeapAwaySpeed, float LeapUpFactor, float R
 /// <summary>An axis-aligned solid on the play plane.</summary>
 public readonly record struct Box(float MinX, float MinY, float MaxX, float MaxY)
 {
+    /// <summary>Whether the two boxes share some area; boxes that only touch along an edge do not.</summary>
     public bool Overlaps(Box o) => MinX < o.MaxX && o.MinX < MaxX && MinY < o.MaxY && o.MinY < MaxY;
 
+    /// <summary>The box of the given <paramref name="size"/> (meters) centered on <paramref name="center"/>.</summary>
     public static Box Around(Vector2 center, Vector2 size) =>
         new(center.X - size.X * 0.5f, center.Y - size.Y * 0.5f, center.X + size.X * 0.5f, center.Y + size.Y * 0.5f);
 }

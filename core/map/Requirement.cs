@@ -27,8 +27,10 @@ public sealed class Requirement
     /// <summary>Every item some alternative needs.</summary>
     public ItemSet Items => ItemSet.Of(Options.SelectMany(o => o.Items.Ids));
 
+    /// <summary>Whether one of the options is met by these abilities alone, holding no item.</summary>
     public bool IsMetBy(Ability owned) => IsMetBy(owned, ItemSet.Empty);
 
+    /// <summary>Whether one of the options is met by these abilities and these items.</summary>
     public bool IsMetBy(Ability owned, ItemSet held) => Options.Any(option => option.IsMetBy(owned, held));
 
     /// <summary>

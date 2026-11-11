@@ -6,7 +6,9 @@ namespace TheDeep;
 /// <summary>A room as the map knows it: where its origin sits on the map and the area it covers (its camera bounds).</summary>
 public sealed record MapRoom(string Name, Vector2 Offset, Vector2 BoundsMin, Vector2 BoundsMax)
 {
+    /// <summary>The minimum corner of the area the room covers, on the map (meters).</summary>
     public Vector2 MapMin => Offset + BoundsMin;
+    /// <summary>The maximum corner of the area the room covers, on the map (meters).</summary>
     public Vector2 MapMax => Offset + BoundsMax;
 }
 
@@ -28,12 +30,15 @@ public sealed class MapState
     private readonly Dictionary<string, List<MapWay>> _ways = new();
     private readonly HashSet<string> _taken = new();
 
+    /// <summary>Every room the map knows.</summary>
     public IReadOnlyCollection<MapRoom> Rooms => _rooms.Values;
 
     public string Current { get; private set; } = "";
 
+    /// <summary>Whether the map knows <paramref name="room"/>.</summary>
     public bool Knows(string room) => _rooms.ContainsKey(room);
 
+    /// <summary>The room as the map knows it, or null when it does not know it.</summary>
     public MapRoom? Find(string room) => _rooms.TryGetValue(room, out MapRoom? found) ? found : null;
 
     /// <summary>
@@ -78,8 +83,10 @@ public sealed class MapState
     /// <summary>The pilgrim went through this exit (leaving or arriving): the way is taken.</summary>
     public void Take(string room, string exit) => _taken.Add(WayId(room, exit));
 
+    /// <summary>Whether the pilgrim went through this exit of the room.</summary>
     public bool Taken(string room, string exit) => _taken.Contains(WayId(room, exit));
 
+    /// <summary>The id a taken way is kept under: its room and its exit.</summary>
     public static string WayId(string room, string exit) => $"{room}/{exit}";
 
     /// <summary>Restores a saved map.</summary>

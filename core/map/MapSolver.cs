@@ -7,6 +7,7 @@ namespace TheDeep;
 /// <summary>A place in the game as the solver sees it: a room, and the abilities owned and items held on arriving there.</summary>
 public readonly record struct SolverState(string Room, Ability Owned, ItemSet Held)
 {
+    /// <summary>The place, arrived at holding no item.</summary>
     public SolverState(string room, Ability owned) : this(room, owned, ItemSet.Empty)
     {
     }
@@ -20,6 +21,7 @@ public readonly record struct SolverState(string Room, Ability Owned, ItemSet He
 /// </summary>
 public readonly record struct WayState(string Room, string Entry, Ability Owned, ItemSet Held)
 {
+    /// <summary>The place, arrived at holding no item.</summary>
     public WayState(string room, string entry, Ability owned) : this(room, entry, owned, ItemSet.Empty)
     {
     }
@@ -34,6 +36,7 @@ public readonly record struct WayState(string Room, string Entry, Ability Owned,
 /// </summary>
 public readonly record struct RoomReach(Ability Owned, ItemSet Held, IReadOnlyCollection<string> Exits, bool Goal)
 {
+    /// <summary>What is reached holding no item.</summary>
     public RoomReach(Ability owned, IReadOnlyCollection<string> exits, bool goal) : this(owned, ItemSet.Empty, exits, goal)
     {
     }
@@ -42,8 +45,10 @@ public readonly record struct RoomReach(Ability Owned, ItemSet Held, IReadOnlyCo
 /// <summary>What the inside solver found.</summary>
 public sealed class InsideReport
 {
+    /// <summary>How many states can be reached from the start.</summary>
     public int ReachableStates { get; init; }
 
+    /// <summary>Whether some reachable state reaches a goal.</summary>
     public bool GoalReachable { get; init; }
 
     /// <summary>Reachable states from which no goal can be reached, each with the path (states) that leads there from the start.</summary>
@@ -58,6 +63,7 @@ public sealed class InsideReport
     /// <summary>Items no reachable state takes.</summary>
     public IReadOnlyList<MapItem> UntakenItems { get; init; } = Array.Empty<MapItem>();
 
+    /// <summary>Whether a goal can be reached, and still can from every reachable state.</summary>
     public bool SoftlockFree => GoalReachable && Softlocks.Count == 0;
 }
 
@@ -70,12 +76,16 @@ public sealed class MapReport
     /// <summary>Reachable states from which no goal can be reached, each with the path (states) that leads there from the start.</summary>
     public IReadOnlyList<(SolverState State, IReadOnlyList<SolverState> Path)> Softlocks { get; init; } = Array.Empty<(SolverState, IReadOnlyList<SolverState>)>();
 
+    /// <summary>Whether some reachable state reaches a goal.</summary>
     public bool GoalReachable { get; init; }
 
+    /// <summary>The map's rooms no reachable state stands in.</summary>
     public IReadOnlyList<string> UnreachableRooms { get; init; } = Array.Empty<string>();
 
+    /// <summary>The map's relics that can never be collected.</summary>
     public IReadOnlyList<MapRelic> UnreachableRelics { get; init; } = Array.Empty<MapRelic>();
 
+    /// <summary>The map's items that can never be picked up.</summary>
     public IReadOnlyList<MapItem> UnreachableItems { get; init; } = Array.Empty<MapItem>();
 
     /// <summary>The orders in which every ability on the map can be collected.</summary>
@@ -87,6 +97,7 @@ public sealed class MapReport
     /// <summary>For each ability on the map, the positions (0-based) it takes in some achievable order.</summary>
     public IReadOnlyDictionary<Ability, SortedSet<int>> Positions { get; init; } = new Dictionary<Ability, SortedSet<int>>();
 
+    /// <summary>Whether a goal can be reached, and still can from every reachable state.</summary>
     public bool SoftlockFree => GoalReachable && Softlocks.Count == 0;
 
     /// <summary>All permutations of the abilities on the map: n!.</summary>
@@ -102,6 +113,8 @@ public sealed class MapReport
 /// </summary>
 public static class MapSolver
 {
+    /// <summary>Solves <paramref name="map"/> from its start room: what can be reached, the softlocks, and the orders its
+    /// abilities can be collected in.</summary>
     public static MapReport Solve(MapGraph map)
     {
         // 1. Every reachable state, with how it was first reached (for softlock paths).
