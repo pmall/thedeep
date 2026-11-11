@@ -264,6 +264,7 @@ public sealed class VideoEncoder : IDisposable
             }
             catch (IOException)
             {
+                // The pipe is already broken (the reason we are here): there is nothing left to close.
             }
         }
     }

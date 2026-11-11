@@ -34,7 +34,7 @@ public partial class HeatCheck : Node
     /// <summary>The physics ticks at which a blow hurt the pilgrim, since the check began.</summary>
     private readonly List<int> _hurts = new();
 
-    private HeatZone _channel = null!;
+    private HeatZone? _zone;
     private int _index = -1;
     private int _ticks;
     private int _clock;
@@ -56,14 +56,16 @@ public partial class HeatCheck : Node
 
     private Vector2 P => new(Player.GlobalPosition.X, Player.GlobalPosition.Y);
 
-    private Box Channel => _channel.Region;
+    /// <summary>The slag channel of the room under check, found on first use.</summary>
+    private HeatZone Zone => _zone ??= World.Room.GetNode<HeatZone>("Heat/Slag");
+
+    private Box Channel => Zone.Region;
 
     /// <summary>Standing on the west bank, clear of the channel, in control.</summary>
     private bool OnWestBank => Player.InControl && Player.IsOnFloor() && P.X < Channel.MinX - 0.4f && P.Y > Channel.MaxY - 1f;
 
     public override void _Ready()
     {
-        _channel = World.Room.GetNode<HeatZone>("Heat/Slag");
         Hints.Said += kind => _hinted.Add(kind);
         Player.Hurt += () => _hurts.Add(_clock);
         Vector3 bank = new(Channel.MinX - 4f, Channel.MaxY, 0f);

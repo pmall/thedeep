@@ -44,7 +44,8 @@ public class MapTests
 
         var data = new SaveData { Room = "Nave" };
         data.SetMap(map);
-        SaveData back = SaveData.FromJson(data.ToJson())!;
+        SaveData? back = SaveData.FromJson(data.ToJson());
+        Assert.NotNull(back);
         var restored = new MapState();
         restored.Restore(back.MapRooms(), "Nave", back.MapWays(), back.Taken);
         Assert.Equal(2, restored.WaysOf("Nave").Count);

@@ -116,7 +116,8 @@ public class MapSolverTests
     [Fact]
     public void RouteTakesTheFewestWaysToTheGoalPickingUpWhatItNeeds()
     {
-        IReadOnlyList<MapEdge> route = MapSolver.Route(Slice())!;
+        IReadOnlyList<MapEdge>? route = MapSolver.Route(Slice());
+        Assert.NotNull(route);
         // Down the hatch to the Reliquary for Mag-grip, back up the flue, up the metal wall to the Descent.
         Assert.Equal(new[] { "DrownedHall", "Nave", "Cistern", "Reliquary", "Cistern", "Nave", "Descent" }, route.Select(e => e.To));
         Assert.Equal("Narthex", route[0].From);

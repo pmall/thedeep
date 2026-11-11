@@ -75,7 +75,8 @@ public class CombatTests
         var data = new SaveData { Room = "Narthex", Shrine = "Shrine", Abilities = 1, Collected = { SaveData.RelicId("Reliquary", "MagGrip") } };
         data.SetMap(map.Rooms);
 
-        SaveData back = SaveData.FromJson(data.ToJson())!;
+        SaveData? back = SaveData.FromJson(data.ToJson());
+        Assert.NotNull(back);
         Assert.Equal("Narthex", back.Room);
         Assert.Equal("Shrine", back.Shrine);
         Assert.Equal(1, back.Abilities);
