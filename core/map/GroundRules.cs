@@ -28,7 +28,7 @@ public enum SeamKind
 public readonly record struct Seam(SeamKind Kind, int A, int B, float X, float Y, float Size);
 
 /// <summary>
-/// Rules on a room's solids (play-plane boxes) that hold the ground it is walked on (`docs/roadmap.md#volcanic-rethink`), pure:
+/// Rules on a room's solids (play-plane boxes) that hold the ground it is walked on (`docs/roadmap.md#bricks-ready`), pure:
 /// headroom over ground (<see cref="Headroom"/>), seams on walking surfaces and shared faces (<see cref="Seams"/>), and a mesh
 /// lying across the play plane where nothing solid is (<see cref="OpenSpans"/>). The room check reports what they find, every room of
 /// both worlds; they don't fail it yet.

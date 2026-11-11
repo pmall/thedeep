@@ -266,7 +266,7 @@ for entry in "${CHECKS[@]}"; do
         continue
     fi
     if [ -n "$ok" ]; then
-        # With the report-only lines: the ground rules' totals and the Slag's verdicts (docs/roadmap.md#volcanic-rethink).
+        # With the report-only lines: the ground rules' totals and the Slag's verdicts (docs/roadmap.md#bricks-ready).
         grep -E "^$ok|^(MAP|INSIDE|DRAFT) OK|^GROUND REPORT|^SLAG \(" "$log" | cut -c1-240 | sed "s/\$/  ($name, ${secs}s)/" | head -12
     else
         echo "$name: ok (${secs}s)"

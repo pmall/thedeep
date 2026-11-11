@@ -279,7 +279,7 @@ public partial class RoomValidator : Node
 
     /// <summary>
     /// The ground rules (<see cref="GroundRules"/>) on the room's blocks and meshes, one `GROUND &lt;Room&gt; &lt;kind&gt;:` line per finding:
-    /// report-only (no problem) until `docs/roadmap.md#volcanic-rethink` rebuilds the Slag on its bricks and a rule holds everywhere.
+    /// report-only (no problem) until `docs/roadmap.md#bricks-ready` rebuilds the Slag on its bricks and a rule holds everywhere.
     /// Exit openings are passages the room marks low (extended outward, where the doorway's lintel lies).
     /// </summary>
     private void ReportGround(Room room, string name, List<RoomExit> exits)
@@ -356,7 +356,7 @@ public partial class RoomValidator : Node
         string kinds = string.Join(", ", GroundKinds.Select((k, i) => $"{k} {_groundCounts.Sum(r => r.Counts[i])}"));
         string top = string.Join(", ", _groundCounts.OrderByDescending(r => r.Counts.Sum()).Take(5)
             .Select(r => $"{r.Room} {string.Join("/", r.Counts)}"));
-        return $"GROUND REPORT (report-only, docs/roadmap.md#volcanic-rethink): {_groundCounts.Count} rooms with findings; {kinds}; most: {top}";
+        return $"GROUND REPORT (report-only, docs/roadmap.md#bricks-ready): {_groundCounts.Count} rooms with findings; {kinds}; most: {top}";
     }
 
     private static IEnumerable<Node> Ancestors(Node node)
