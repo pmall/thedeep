@@ -2,12 +2,13 @@
 
 ; The Chimney, over the Slag (map offset (211, -117)): a narrow vent through the bedrock between the Sanctum and the
 ; Vault, from the Slag's roof up to the slag welling in the Coldstacks' floor: the shortcut home. Ledges of slag set
-; hard zig-zag up its throat; at the top the vent's mouth is molten, and only Heat plating passes it.
+; hard zig-zag up its throat; at the top the throat narrows to the vent's mouth, a column of heat from its lip up into
+; the Coldstacks, and only Heat plating passes it.
 
 [ext_resource type="Material" path="res://assets/materials/basalt.tres" id="1_basalt"]
 [ext_resource type="PackedScene" path="res://scenes/kit/Block.tscn" id="2_block"]
 [ext_resource type="Script" path="res://scripts/rooms/RoomExit.cs" id="3_exit"]
-[ext_resource type="Script" path="res://scripts/props/HeatColumn.cs" id="4_heatcolumn"]
+[ext_resource type="PackedScene" path="res://scenes/kit/HeatColumn.tscn" id="4_heatcolumn"]
 [ext_resource type="PackedScene" path="res://scenes/fx/Embers.tscn" id="6_embers"]
 [ext_resource type="Script" path="res://scripts/kit/BlockMesh.cs" id="7_blockmesh"]
 [ext_resource type="Material" path="res://assets/materials/stone_mid.tres" id="8_stone_mid"]
@@ -121,19 +122,21 @@ transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.5, 27.25, 0)
 Size = Vector3(4, 0.5, 4)
 Material = ExtResource("1_basalt")
 
+; the vent's lip under the mouth, in its heat: plated only
 [node name="Ledge11" parent="Geometry" instance=ExtResource("2_block")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 6, 29.75, 0)
-Size = Vector3(4, 0.5, 4)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 5, 29.75, 0)
+Size = Vector3(3, 0.5, 4)
 Material = ExtResource("1_basalt")
 
+; the throat's sides around the mouth: the heat's only way round is through it
 [node name="Cap" parent="Geometry" instance=ExtResource("2_block")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 1, 36.5, 0)
-Size = Vector3(5, 3, 4)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 1, 35.25, 0)
+Size = Vector3(5, 5.5, 4)
 Material = ExtResource("1_basalt")
 
 [node name="CapEast" parent="Geometry" instance=ExtResource("2_block")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 7.25, 36.5, 0)
-Size = Vector3(1.5, 3, 4)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 7.25, 34, 0)
+Size = Vector3(1.5, 8, 4)
 Material = ExtResource("1_basalt")
 
 [node name="Exits" type="Node3D" parent="."]
@@ -161,15 +164,10 @@ Size = Vector2(3, 1)
 
 [node name="Heat" type="Node3D" parent="."]
 
-; the molten mouth of the vent
-[node name="Mouth" type="Node3D" parent="Heat"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 5, 31, 0)
-script = ExtResource("4_heatcolumn")
-Strip = true
-Size = Vector2(3, 6)
-Embers = ExtResource("6_embers")
-EmberDensity = 1.5
-GlowEnergy = 3
+; the mouth of the vent: heat from its lip up through the exit into the Coldstacks' vent, walled on both sides
+[node name="Mouth" parent="Heat" instance=ExtResource("4_heatcolumn")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 5, 30, 0)
+Size = Vector2(3, 4)
 
 [node name="Particles" type="Node3D" parent="."]
 
@@ -218,6 +216,6 @@ PlayerPosition = Vector3(1, 15, 0)
 
 ; the molten mouth: Heat plating passes it
 [node name="Top" type="Marker3D" parent="PhotoSpots"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 3.25, 28, 22)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 3.25, 29.5, 18)
 script = ExtResource("9_spot")
-PlayerPosition = Vector3(6, 27, 0)
+PlayerPosition = Vector3(0.5, 27.5, 0)
