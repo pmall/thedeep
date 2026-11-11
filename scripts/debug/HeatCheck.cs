@@ -6,7 +6,7 @@ namespace TheDeep;
 
 /// <summary>
 /// Scripted burn check in place, in the Basalt (`-- --room Basalt --heat-check`, run by tools/check.sh), through the real input
-/// actions: its slag channel (a <see cref="SlagBody"/>, `docs/gameplay.md#slag`) and its vent (a <see cref="HeatZone"/>,
+/// actions: its slag channel (a <see cref="SlagBody"/>, `docs/gameplay.md#slag`) and its vent (a <see cref="HeatColumn"/>,
 /// `docs/gameplay.md#heat`). Without Heat plating: walking off the bank into the slag burns, and the pilgrim is soon back on the
 /// bank it came from, in control; walking into it again and again hurts once per touch, never faster than the grace period, and
 /// it is never across nor stuck in it; dropped onto the slag past its middle it still comes back to its own bank; the vent's heat
@@ -40,7 +40,7 @@ public partial class HeatCheck : Node
     private readonly List<int> _hurts = new();
 
     private SlagBody? _slag;
-    private HeatZone? _vent;
+    private HeatColumn? _vent;
     private int _index = -1;
     private int _ticks;
     private int _clock;
@@ -67,7 +67,7 @@ public partial class HeatCheck : Node
     private Box Channel => (_slag ??= World.Room.GetNode<SlagBody>("Slag")).PlayRegion;
 
     /// <summary>The vent's heat, on the cavern's floor, found on first use.</summary>
-    private Box Vent => (_vent ??= World.Room.GetNode<HeatZone>("Heat/Vent")).Region;
+    private Box Vent => (_vent ??= World.Room.GetNode<HeatColumn>("Heat/Vent")).Region;
 
     /// <summary>Standing on the west bank, clear of the channel, in control.</summary>
     private bool OnWestBank => Player.InControl && Player.IsOnFloor() && P.X < Channel.MinX - 0.4f && P.Y > Channel.MaxY - 1f;

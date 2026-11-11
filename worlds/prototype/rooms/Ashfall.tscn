@@ -8,8 +8,7 @@
 [ext_resource type="PackedScene" path="res://scenes/kit/Block.tscn" id="2_block"]
 [ext_resource type="Material" path="res://assets/materials/rust.tres" id="3_rust"]
 [ext_resource type="Script" path="res://scripts/rooms/RoomExit.cs" id="4_exit"]
-[ext_resource type="Script" path="res://scripts/props/HeatZone.cs" id="5_heatzone"]
-[ext_resource type="PackedScene" path="res://scenes/fx/Embers.tscn" id="7_embers"]
+[ext_resource type="PackedScene" path="res://scenes/kit/HeatColumn.tscn" id="5_heatcolumn"]
 [ext_resource type="Script" path="res://scripts/machines/Machine.cs" id="8_machine"]
 [ext_resource type="Resource" path="res://resources/machines/gleaner.tres" id="9_gleaner"]
 [ext_resource type="Script" path="res://scripts/kit/BlockMesh.cs" id="10_blockmesh"]
@@ -50,12 +49,6 @@ Points = PackedVector3Array(0, 0, 0, 12, 0, 0)
 Radius = 2.4
 BendRadius = 1
 FlangeSpacing = 8
-
-[sub_resource type="PrimitiveMesh" id="grate_5"]
-script = ExtResource("14_grate")
-Size = Vector3(3, 0.2, 3)
-Spacing = 0.3
-Bar = 0.06
 
 [sub_resource type="PrimitiveMesh" id="grate_6"]
 script = ExtResource("14_grate")
@@ -225,14 +218,10 @@ Item = ExtResource("23_pyre_litany")
 
 [node name="Heat" type="Node3D" parent="."]
 
-; heat rising from the floor grates before the Pyre
-[node name="Grates" type="Node3D" parent="Heat"]
+; heat rising from its vent before the Pyre to the hood, which meets the wall over the Pyre's door: no way round
+[node name="Grates" parent="Heat" instance=ExtResource("5_heatcolumn")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 53.5, -18, 0)
-script = ExtResource("5_heatzone")
 Size = Vector2(3, 6)
-Embers = ExtResource("7_embers")
-EmberDensity = 1.8
-GlowEnergy = 3.5
 
 [node name="Machines" type="Node3D" parent="."]
 
@@ -293,12 +282,6 @@ transform = Transform3D(0.9703, -0.2419, 0, 0.2419, 0.9703, 0, 0, 0, 1, 30, -15.
 mesh = SubResource("pipe_4")
 material_override = ExtResource("13_rust_mid")
 
-; the floor grates the heat comes through
-[node name="FloorGrate" type="MeshInstance3D" parent="Kit"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 53.5, -17.75, 0)
-mesh = SubResource("grate_5")
-material_override = ExtResource("13_rust_mid")
-
 ; the hatch, its grate rusted open
 [node name="Hatch" type="MeshInstance3D" parent="Kit"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 40, -18.25, -1.25)
@@ -352,11 +335,6 @@ transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 29, -8, -2)
 Extents = Vector3(28, 14, 4)
 Density = 0.25
 
-[node name="Embers" parent="Particles" instance=ExtResource("7_embers")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 53.5, -12, -0.5)
-Extents = Vector3(3, 6, 1.5)
-Density = 0.4
-
 [node name="PhotoSpots" type="Node3D" parent="."]
 
 ; the Slag's door, the stair down, the ash falling
@@ -373,7 +351,7 @@ PlayerPosition = Vector3(30, -18, 0)
 
 ; the heat before the Pyre
 [node name="Grates" type="Marker3D" parent="PhotoSpots"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 50, -12, 18)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 52, -14, 16)
 script = ExtResource("17_spot")
 PlayerPosition = Vector3(48, -18, 0)
 

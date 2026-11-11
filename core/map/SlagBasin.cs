@@ -35,8 +35,8 @@ public static class SlagBasin
         }
     }
 
-    /// <summary>The stretches of [<paramref name="from"/>, <paramref name="to"/>] no span covers.</summary>
-    private static IEnumerable<(float From, float To)> Gaps(IEnumerable<(float Min, float Max)> spans, float from, float to)
+    /// <summary>The stretches of [<paramref name="from"/>, <paramref name="to"/>] no span covers (wider than the tolerance); shared with <see cref="HeatGate"/>.</summary>
+    internal static IEnumerable<(float From, float To)> Gaps(IEnumerable<(float Min, float Max)> spans, float from, float to)
     {
         float covered = from;
         foreach ((float min, float max) in spans.OrderBy(s => s.Min))

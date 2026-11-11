@@ -1,5 +1,5 @@
 [gd_resource type="ShaderMaterial" format=3]
-; Magma and slag: dark crust drifting on a glowing molten web (magma.gdshader). Pair with a HeatZone.
+; Magma and slag: dark crust drifting on a glowing molten web (magma.gdshader). Pair with a HeatColumn.
 
 [ext_resource type="Shader" path="res://assets/shaders/magma.gdshader" id="1_shader"]
 

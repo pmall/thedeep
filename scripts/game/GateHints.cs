@@ -32,17 +32,17 @@ public partial class GateHints : Node
     public override void _Ready()
     {
         World.RoomLoaded += OnRoomLoaded;
-        HeatZone.Scorched += OnScorched;
+        HeatColumn.Scorched += OnScorched;
         OnRoomLoaded(World.Room);
     }
 
     public override void _ExitTree()
     {
         World.RoomLoaded -= OnRoomLoaded;
-        HeatZone.Scorched -= OnScorched;
+        HeatColumn.Scorched -= OnScorched;
     }
 
-    private void OnScorched(HeatZone zone)
+    private void OnScorched(HeatColumn zone)
     {
         if (!Player.Abilities.Has(Ability.HeatPlating) && !_said.Contains(Ability.HeatPlating))
         {

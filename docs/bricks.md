@@ -34,7 +34,7 @@ All working; the art pass makes them ready (`docs/roadmap.md#art-restore`).
 | `AnchorPointer` (the edge chevron toward a ring in sight off screen) | working (look) | `docs/roadmap.md#bricks-ready` |
 | `WaterBody` (swim) | ready | — |
 | `SlagBody` (`scenes/kit/SlagBody.tscn`: placed at its surface and sized to a basin of blocks, a bed and two banks the room check holds) | working (one room: the Basalt; the look's final pass) | `docs/roadmap.md#volcanic-rethink` |
-| `HeatZone` (its `Lethal` stand-in for slag goes with the Slag's rebuild) | working | `docs/roadmap.md#volcanic-rethink` |
+| `HeatColumn` (`scenes/kit/HeatColumn.tscn`: placed at its foot on rock and sized up to the roof, hood or exit that ends it, a gate the room check holds to having no way round; its old `Strip` and `Lethal` stand-ins are named by the check until their rooms are rebuilt) | working (one room: the Ashfall's grates) | `docs/roadmap.md#volcanic-rethink` |
 | `Lift` | ready | — |
 | `Portcullis` | working | `docs/roadmap.md#bricks-ready` |
 | `MapGoal` | ready | — |

@@ -13,7 +13,7 @@
 [ext_resource type="Material" path="res://assets/materials/water.tres" id="6_water"]
 [ext_resource type="Material" path="res://assets/materials/water_section.tres" id="8_water_section"]
 [ext_resource type="PackedScene" path="res://scenes/props/Shrine.tscn" id="9_shrine"]
-[ext_resource type="Script" path="res://scripts/props/HeatZone.cs" id="10_heatzone"]
+[ext_resource type="Script" path="res://scripts/props/HeatColumn.cs" id="10_heatcolumn"]
 [ext_resource type="PackedScene" path="res://scenes/fx/Embers.tscn" id="12_embers"]
 [ext_resource type="Script" path="res://scripts/kit/BlockMesh.cs" id="13_blockmesh"]
 [ext_resource type="Material" path="res://assets/materials/magma.tres" id="14_magma"]
@@ -281,7 +281,8 @@ transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 46, -2, 0)
 ; heat over the river between the platforms (falling in is the end)
 [node name="RiverOne" type="Node3D" parent="Heat"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 26, -31, 0)
-script = ExtResource("10_heatzone")
+script = ExtResource("10_heatcolumn")
+Strip = true
 Size = Vector2(4, 25)
 Embers = ExtResource("12_embers")
 EmberDensity = 0.8
@@ -289,7 +290,8 @@ GlowEnergy = 3
 
 [node name="RiverTwo" type="Node3D" parent="Heat"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 38.5, -31, 0)
-script = ExtResource("10_heatzone")
+script = ExtResource("10_heatcolumn")
+Strip = true
 Size = Vector2(3, 25.5)
 Embers = ExtResource("12_embers")
 EmberDensity = 0.8
@@ -297,7 +299,8 @@ GlowEnergy = 3
 
 [node name="RiverThree" type="Node3D" parent="Heat"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 54, -31, 0)
-script = ExtResource("10_heatzone")
+script = ExtResource("10_heatcolumn")
+Strip = true
 Size = Vector2(4, 25)
 Embers = ExtResource("12_embers")
 EmberDensity = 0.8
@@ -305,7 +308,8 @@ GlowEnergy = 3
 
 [node name="RiverFour" type="Node3D" parent="Heat"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 69.5, -31, 0)
-script = ExtResource("10_heatzone")
+script = ExtResource("10_heatcolumn")
+Strip = true
 Size = Vector2(3, 24)
 Embers = ExtResource("12_embers")
 EmberDensity = 0.8
@@ -314,7 +318,7 @@ GlowEnergy = 3
 ; the river itself, under the platforms: it swallows the pilgrim, plated or not (the plug's shaft walled off from it)
 [node name="RiverUnder" type="Node3D" parent="Heat"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 37.5, -31, 0)
-script = ExtResource("10_heatzone")
+script = ExtResource("10_heatcolumn")
 Size = Vector2(41, 22)
 Lethal = true
 Embers = ExtResource("12_embers")
@@ -323,7 +327,7 @@ GlowEnergy = 2
 
 [node name="RiverUnderEast" type="Node3D" parent="Heat"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 68, -31, 0)
-script = ExtResource("10_heatzone")
+script = ExtResource("10_heatcolumn")
 Size = Vector2(6, 22)
 Lethal = true
 Embers = ExtResource("12_embers")

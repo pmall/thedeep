@@ -1,6 +1,6 @@
 // Magma and slag (a slag river's surface, a pool in a kiln's floor): plates of dark crust drifting slowly on a molten
 // web that glows in the biome's accent, brightest and yellowest at the heart of each crack, breathing. Projected from the
-// world (top faces from above, side faces from the front), so it needs no UVs. Pair it with a HeatZone over the pool.
+// world (top faces from above, side faces from the front), so it needs no UVs. Pair it with a HeatColumn over the pool.
 shader_type spatial;
 render_mode cull_back;
 

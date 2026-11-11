@@ -11,7 +11,7 @@
 [ext_resource type="Script" path="res://scripts/rooms/RoomExit.cs" id="4_exit"]
 [ext_resource type="PackedScene" path="res://scenes/props/AbilityRelic.tscn" id="5_relic"]
 [ext_resource type="PackedScene" path="res://scenes/props/Shrine.tscn" id="6_shrine"]
-[ext_resource type="Script" path="res://scripts/props/HeatZone.cs" id="7_heatzone"]
+[ext_resource type="Script" path="res://scripts/props/HeatColumn.cs" id="7_heatcolumn"]
 [ext_resource type="PackedScene" path="res://scenes/fx/Embers.tscn" id="9_embers"]
 [ext_resource type="Script" path="res://scripts/rooms/WaterBody.cs" id="10_water_body"]
 [ext_resource type="Material" path="res://assets/materials/water.tres" id="11_water"]
@@ -242,7 +242,8 @@ transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 54, 4, 0)
 ; heat over the molten moulds
 [node name="MoldWest" type="Node3D" parent="Heat"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 24, 2, 0)
-script = ExtResource("7_heatzone")
+script = ExtResource("7_heatcolumn")
+Strip = true
 Size = Vector2(4, 3.5)
 Embers = ExtResource("9_embers")
 EmberDensity = 1.6
@@ -250,7 +251,8 @@ GlowEnergy = 3
 
 [node name="MoldEast" type="Node3D" parent="Heat"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 46, 2, 0)
-script = ExtResource("7_heatzone")
+script = ExtResource("7_heatcolumn")
+Strip = true
 Size = Vector2(4, 3.5)
 Embers = ExtResource("9_embers")
 EmberDensity = 1.6

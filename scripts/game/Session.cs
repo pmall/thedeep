@@ -400,7 +400,7 @@ public partial class Session : Node
             block.Shattered += OnShattered;
         }
 
-        foreach (HeatZone zone in room.All<HeatZone>())
+        foreach (HeatColumn zone in room.All<HeatColumn>())
         {
             zone.Player = Player;
         }

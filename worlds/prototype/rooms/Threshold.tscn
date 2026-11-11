@@ -9,7 +9,7 @@
 [ext_resource type="PackedScene" path="res://scenes/kit/Block.tscn" id="2_block"]
 [ext_resource type="Material" path="res://assets/materials/rust.tres" id="3_rust"]
 [ext_resource type="Script" path="res://scripts/rooms/RoomExit.cs" id="4_exit"]
-[ext_resource type="Script" path="res://scripts/props/HeatZone.cs" id="5_heatzone"]
+[ext_resource type="Script" path="res://scripts/props/HeatColumn.cs" id="5_heatcolumn"]
 [ext_resource type="PackedScene" path="res://scenes/fx/Embers.tscn" id="7_embers"]
 [ext_resource type="PackedScene" path="res://scenes/props/Shrine.tscn" id="8_shrine"]
 [ext_resource type="Script" path="res://scripts/kit/BlockMesh.cs" id="9_blockmesh"]
@@ -174,7 +174,8 @@ Material = ExtResource("1_basalt")
 ; the column of heat under the vents: only Heat plating stands in it
 [node name="Column" type="Node3D" parent="Heat"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 8, 0, 0)
-script = ExtResource("5_heatzone")
+script = ExtResource("5_heatcolumn")
+Strip = true
 Size = Vector2(14, 15)
 Embers = ExtResource("7_embers")
 EmberDensity = 0.8

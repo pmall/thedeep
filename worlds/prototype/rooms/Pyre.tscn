@@ -9,7 +9,7 @@
 [ext_resource type="PackedScene" path="res://scenes/kit/Block.tscn" id="2_block"]
 [ext_resource type="Material" path="res://assets/materials/rust.tres" id="3_rust"]
 [ext_resource type="Script" path="res://scripts/rooms/RoomExit.cs" id="4_exit"]
-[ext_resource type="Script" path="res://scripts/props/HeatZone.cs" id="5_heatzone"]
+[ext_resource type="Script" path="res://scripts/props/HeatColumn.cs" id="5_heatcolumn"]
 [ext_resource type="PackedScene" path="res://scenes/fx/Embers.tscn" id="7_embers"]
 [ext_resource type="PackedScene" path="res://scenes/props/ScripturePlate.tscn" id="8_plate"]
 [ext_resource type="PackedScene" path="res://scenes/props/Shrine.tscn" id="9_shrine"]
@@ -141,7 +141,8 @@ Size = Vector2(1, 4)
 ; the pyre on the altar
 [node name="Pyre" type="Node3D" parent="Heat"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 15, 1.5, 0)
-script = ExtResource("5_heatzone")
+script = ExtResource("5_heatcolumn")
+Strip = true
 Size = Vector2(5, 5)
 Embers = ExtResource("7_embers")
 EmberDensity = 2.4

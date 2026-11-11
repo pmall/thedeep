@@ -28,6 +28,10 @@ namespace TheDeep;
 public partial class RoomValidator : Node
 {
     private readonly List<string> _problems = new();
+
+    /// <summary>The old heat strips still placed (`Room/Node`), named by the check but not failed (<see cref="HeatColumn.Strip"/>).</summary>
+    private readonly List<string> _strips = new();
+
     private readonly RequiredExports _exports = new();
     private readonly LineCheck _lines = new();
     private readonly SeamCheck _seams = new();
@@ -115,6 +119,12 @@ public partial class RoomValidator : Node
         if (_problems.Count == 0)
         {
             GD.Print($"ROOMS OK: {rooms} rooms, {exits} exits");
+            if (_strips.Count > 0)
+            {
+                // Report-only until the rooms are rebuilt: an old strip is no column, so HeatGate can't hold it yet.
+                GD.Print($"HEAT STRIPS to convert into columns (docs/roadmap.md#volcanic-rethink): {string.Join(", ", _strips)}");
+            }
+
             GD.Print(map);
         }
         else if (Report)
@@ -234,6 +244,18 @@ public partial class RoomValidator : Node
             }
         }
 
+        var openings = exits.Select(e => e.Threshold.Area).ToList();
+        var bounds = new Box(room.BoundsMin.X, room.BoundsMin.Y, room.BoundsMax.X, room.BoundsMax.Y);
+        foreach (HeatColumn heat in room.All<HeatColumn>().Where(h => h.IsColumn))
+        {
+            foreach (string problem in HeatGate.Problems(heat.Region, solids, openings, bounds, body))
+            {
+                Problem($"heat {heat.Name}: {problem}");
+            }
+        }
+
+        _strips.AddRange(room.All<HeatColumn>().Where(h => h.Strip).Select(h => $"{World.NameOf(path)}/{h.Name}"));
+
         if (!room.PhotoSpots().Any())
         {
             Problem("no PhotoSpot (tools/capture.sh needs at least one)");
@@ -288,7 +310,7 @@ public partial class RoomValidator : Node
 
         var anchors = room.All<HarpoonAnchor>().Select(a => a.GlobalPosition.Flat()).ToList();
         var waters = room.All<WaterBody>().Where(w => w.Swim).Select(w => w.PlayRegion).ToList();
-        var heat = room.All<HeatZone>().Where(z => !z.Lethal).Select(z => z.Region).ToList();
+        var heat = room.All<HeatColumn>().Where(z => !z.Lethal).Select(z => z.Region).ToList();
         // Where walking takes a relic (its range from the feet) and reaches a goal (the feet inside its area), as trigger boxes.
         var relics = room.All<AbilityRelic>()
             .Select(r => (Box.Around(r.GlobalPosition.Flat() + new NVector2(0f, 0.1f), new NVector2(1.6f, 0.4f)), r.Ability)).ToList();
@@ -302,7 +324,7 @@ public partial class RoomValidator : Node
             room.All<Lift>().Select(l => l.Path).ToList(), sound, waters, heat, relics, goals, metal, room.SpawnPoint.GlobalPosition.Flat())
         {
             Items = items,
-            Slag = room.All<SlagBody>().Select(s => s.PlayRegion).Concat(room.All<HeatZone>().Where(z => z.Lethal).Select(z => z.Region)).ToList(),
+            Slag = room.All<SlagBody>().Select(s => s.PlayRegion).Concat(room.All<HeatColumn>().Where(z => z.Lethal).Select(z => z.Region)).ToList(),
         });
 
         foreach (RoomExit exit in exits.Where(e => e.TargetRoom != "" && ResourceLoader.Exists(e.TargetRoom)))

@@ -7,7 +7,7 @@
 [ext_resource type="Material" path="res://assets/materials/basalt.tres" id="1_basalt"]
 [ext_resource type="PackedScene" path="res://scenes/kit/Block.tscn" id="2_block"]
 [ext_resource type="Script" path="res://scripts/rooms/RoomExit.cs" id="3_exit"]
-[ext_resource type="Script" path="res://scripts/props/HeatZone.cs" id="4_heatzone"]
+[ext_resource type="Script" path="res://scripts/props/HeatColumn.cs" id="4_heatcolumn"]
 [ext_resource type="PackedScene" path="res://scenes/fx/Embers.tscn" id="6_embers"]
 [ext_resource type="Script" path="res://scripts/kit/BlockMesh.cs" id="7_blockmesh"]
 [ext_resource type="Material" path="res://assets/materials/stone_mid.tres" id="8_stone_mid"]
@@ -164,7 +164,8 @@ Size = Vector2(3, 1)
 ; the molten mouth of the vent
 [node name="Mouth" type="Node3D" parent="Heat"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 5, 31, 0)
-script = ExtResource("4_heatzone")
+script = ExtResource("4_heatcolumn")
+Strip = true
 Size = Vector2(3, 6)
 Embers = ExtResource("6_embers")
 EmberDensity = 1.5

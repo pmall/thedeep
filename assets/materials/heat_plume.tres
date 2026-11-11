@@ -1,0 +1,23 @@
+[gd_resource type="ShaderMaterial" format=3]
+; The plume of a heat column (heat_plume.gdshader, HeatColumn): its wisps are this seamless noise, baked once with mipmaps.
+
+[ext_resource type="Shader" path="res://assets/shaders/heat_plume.gdshader" id="1_shader"]
+
+[sub_resource type="FastNoiseLite" id="FastNoiseLite_wisps"]
+noise_type = 3
+seed = 7
+frequency = 0.02
+fractal_octaves = 3
+
+[sub_resource type="NoiseTexture2D" id="NoiseTexture2D_wisps"]
+width = 256
+height = 256
+seamless = true
+seamless_blend_skirt = 0.3
+generate_mipmaps = true
+noise = SubResource("FastNoiseLite_wisps")
+
+[resource]
+render_priority = 1
+shader = ExtResource("1_shader")
+shader_parameter/wisps = SubResource("NoiseTexture2D_wisps")

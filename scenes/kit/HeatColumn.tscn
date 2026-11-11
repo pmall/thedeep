@@ -1,0 +1,16 @@
+[gd_scene format=3]
+
+; A column of heat: place it at its foot on rock, size it up to the roof, hood or exit that ends it (HeatColumn).
+
+[ext_resource type="Script" path="res://scripts/props/HeatColumn.cs" id="1_heat"]
+[ext_resource type="PackedScene" path="res://scenes/fx/Embers.tscn" id="2_embers"]
+[ext_resource type="Material" path="res://assets/materials/heat_plume.tres" id="3_plume"]
+[ext_resource type="Material" path="res://assets/materials/rust_mid.tres" id="4_vent"]
+
+[node name="HeatColumn" type="Node3D"]
+script = ExtResource("1_heat")
+Embers = ExtResource("2_embers")
+EmberDensity = 1.8
+GlowEnergy = 3.5
+Plume = ExtResource("3_plume")
+Source = ExtResource("4_vent")
