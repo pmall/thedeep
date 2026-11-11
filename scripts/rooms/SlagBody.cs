@@ -8,8 +8,9 @@ namespace TheDeep;
 /// its basin with blocks: a bed under its whole width and a bank on each side from the bed up to the surface, which the room
 /// check holds (<see cref="SlagBasin"/>); rock standing in it is a pillar from the bed. Built here: the surface, carrying a
 /// drifting crust (<see cref="SurfaceMaterial"/>); its front on the play plane from surface to bed (<see cref="SectionMaterial"/>,
-/// brightest at the surface, darkening with depth, the bed and the banks' feet dark through it); a light just over it and ahead
-/// of the front in the biome's accent, lighting the banks from below.
+/// brightest at the surface, darkening with depth, the bed and the banks' feet dark through it); a row of small shadowless lights
+/// just over it and ahead of the front, in the biome's accent, from bank to bank (<see cref="GlowSpacing"/>), so every bank and
+/// pillar standing in it is lit from below, the light falling off up the rock.
 /// Touching it burns, plated or not (<see cref="Burn"/>, <see cref="Player.Scorch"/>: one health unless in the grace, the
 /// pilgrim set back on its <see cref="Player.Footing"/>); ground within <see cref="FootingMargin"/> beside it and
 /// <see cref="FootingHeight"/> over it is no footing. It never
@@ -45,14 +46,23 @@ public partial class SlagBody : Node3D
     /// <summary>The front's world Z on the play plane (the blocks' front faces are at 2: kept off them, so no face shares its plane).</summary>
     [Export] public float SectionFront { get; set; } = 2.05f;
 
-    /// <summary>The light over the surface: its energy (its color is the biome's accent).</summary>
-    [Export] public float GlowEnergy { get; set; } = 9f;
+    /// <summary>Each light over the surface: its energy (its color is the biome's accent).</summary>
+    [Export] public float GlowEnergy { get; set; } = 10f;
 
-    /// <summary>How high that light hangs over the surface, meters: low, so it lights the rock over the slag from below.</summary>
-    [Export] public float GlowHeight { get; set; } = 0.3f;
+    /// <summary>How far each light reaches, meters: small, so the light stays on the rock near the slag and costs little.</summary>
+    [Export] public float GlowRange { get; set; } = 5f;
 
-    /// <summary>How far ahead of the front (toward the camera) that light hangs, meters, so it reaches the faces on the play plane.</summary>
-    [Export] public float GlowAhead { get; set; } = 0.9f;
+    /// <summary>
+    /// The most room between two lights along the surface, meters. One stands at each bank (just inside it) and the rest are spread
+    /// evenly between, so the faces at the slag's edges, where banks and pillars stand, are lit as well as its middle.
+    /// </summary>
+    [Export] public float GlowSpacing { get; set; } = 2.5f;
+
+    /// <summary>How high the lights hang over the surface, meters: low, so they light the rock over the slag from below.</summary>
+    [Export] public float GlowHeight { get; set; } = 0.25f;
+
+    /// <summary>How far ahead of the front (toward the camera) the lights hang, meters, so they reach the faces on the play plane.</summary>
+    [Export] public float GlowAhead { get; set; } = 1.3f;
 
     /// <summary>The surface's look: crust drifting on the melt (<c>magma.tres</c>).</summary>
     [Export] public Material SurfaceMaterial { get; set; } = null!;
@@ -90,23 +100,31 @@ public partial class SlagBody : Node3D
         front.SetInstanceShaderParameter(HalfWidthParameter, 0.5f * Size.X);
         AddChild(front);
 
-        var glow = new OmniLight3D
-        {
-            Position = new Vector3(0f, GlowHeight, SectionFront + GlowAhead - GlobalPosition.Z),
-            LightEnergy = GlowEnergy,
-            OmniAttenuation = 1.6f,
-            OmniRange = Mathf.Max(Size.X, 3f) * 1.6f,
-        };
+        Color color = Colors.OrangeRed;
         for (Node? n = GetParent(); n is not null; n = n.GetParent())
         {
             if (n is Room { Biome: { } biome })
             {
-                glow.LightColor = biome.Accent;
+                color = biome.Accent;
                 break;
             }
         }
 
-        AddChild(glow);
+        float half = 0.5f * Size.X - 0.15f;
+        int gaps = Mathf.Max(1, Mathf.CeilToInt(2f * half / GlowSpacing));
+        for (int i = 0; i <= gaps; i++)
+        {
+            AddChild(new OmniLight3D
+            {
+                Name = $"Glow{i}",
+                Position = new Vector3(-half + 2f * half * i / gaps, GlowHeight, SectionFront + GlowAhead - GlobalPosition.Z),
+                LightColor = color,
+                LightEnergy = GlowEnergy,
+                OmniAttenuation = 1.3f,
+                OmniRange = GlowRange,
+                ShadowEnabled = false,
+            });
+        }
     }
 
     public override void _PhysicsProcess(double delta)

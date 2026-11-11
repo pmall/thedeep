@@ -9,9 +9,9 @@
 [resource]
 script = ExtResource("1_biome")
 DisplayName = "Volcanic"
-Rock = Color(0.17, 0.16, 0.165, 1)
+Rock = Color(0.22, 0.205, 0.205, 1)
 Metal = Color(0.56, 0.61, 0.68, 1)
-Backdrop = Color(0.07, 0.065, 0.07, 1)
+Backdrop = Color(0.1, 0.085, 0.085, 1)
 BackdropAccent = Color(1, 0.55, 0.2, 1)
 Rust = Color(0.42, 0.24, 0.15, 1)
 Silt = Color(0.25, 0.24, 0.24, 1)
@@ -19,7 +19,7 @@ Foreground = Color(0.03, 0.025, 0.025, 1)
 Accent = Color(1, 0.55, 0.18, 1)
 Background = Color(0.1, 0.05, 0.03, 1)
 AmbientColor = Color(0.52, 0.57, 0.66, 1)
-AmbientEnergy = 0.5
+AmbientEnergy = 0.85
 KeyColor = Color(0.82, 0.84, 0.88, 1)
 KeyEnergy = 1.5
 LampColor = Color(1, 0.5, 0.2, 1)
@@ -49,4 +49,4 @@ FarSkyline = ExtResource("2_far")
 NearSkyline = ExtResource("3_near")
 Masonry = 0.0
 UnderglowColor = Color(1, 0.48, 0.2, 1)
-UnderglowEnergy = 0.7
+UnderglowEnergy = 1.2

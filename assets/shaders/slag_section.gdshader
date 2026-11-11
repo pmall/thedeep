@@ -1,7 +1,7 @@
 // The front of a SlagBody on the play plane, seen from the side: the cut through the molten slag from its surface down to its
 // bed. A deep orange-gold just under the surface (never white: only the surface line runs hotter), cooling through the biome's
-// accent to a red-black at the bed. Slow convection rolls along it, folded by darker cooling veins near the surface that turn
-// into glowing seams in the dark depths; every shape is smooth noise tens of centimeters wide and
+// accent to a red-black at the bed. Slow convection rolls along it in broad cells, their folds soft darker bands of cooling melt
+// near the surface that turn into dim glowing seams in the dark depths; every shape is smooth noise tens of centimeters wide and
 // anti-aliased, never per-pixel detail (docs/art-direction.md#stable-image). The bed (a rubble line) and the banks' feet
 // (talus widening toward the bed) show through it as dark silhouettes, drawn here since nothing stands behind the cut. A bright
 // incandescent line marks the surface (a few pixels wide, anti-aliased). Unshaded, nearly opaque: slag is its own light.
@@ -27,9 +27,9 @@ uniform float cover : hint_range(0.0, 1.0) = 0.98;
 uniform float cell_size : hint_range(0.3, 4.0) = 1.1;
 uniform float current_speed : hint_range(0.0, 1.0) = 0.1;
 uniform float current_strength : hint_range(0.0, 1.0) = 0.6;
-/// The veins where the flow folds: their width (in noise units, about a tenth of a cell) and strength.
-uniform float vein_width : hint_range(0.0, 0.3) = 0.05;
-uniform float vein_strength : hint_range(0.0, 1.0) = 0.7;
+/// The bands where the flow folds: their half width (in noise units: wide and soft, never a thin contour line) and strength.
+uniform float vein_width : hint_range(0.0, 0.4) = 0.16;
+uniform float vein_strength : hint_range(0.0, 1.0) = 0.45;
 /// The bed's and the banks' silhouettes: the rubble's height and the talus' width at the bed (meters).
 uniform float bed_rubble : hint_range(0.0, 1.0) = 0.35;
 uniform float foot_width : hint_range(0.0, 2.0) = 0.7;
@@ -75,11 +75,11 @@ void fragment() {
 	float roll = value_noise2(q * 0.8) * 0.7 + value_noise2(q * 1.7 + 5.3) * 0.3;
 	glow *= 1.0 + current_strength * (roll * 2.0 - 1.0);
 
-	// Veins where the flow folds (a contour of the warped noise): cooler skin near the surface, glowing seams in the dark.
-	float fold = value_noise2(q * 1.1 + vec2(11.0, 3.0)) - 0.5;
-	float fine = value_noise2(q * 2.3 + vec2(-6.0, 1.0)) - 0.5;
-	float vein = max(1.0 - soft_step(vein_width * 0.5, vein_width * 0.5, abs(fold)),
-			0.6 * (1.0 - soft_step(vein_width * 0.35, vein_width * 0.35, abs(fine))));
+	// Bands where the flow folds (a broad, soft neighbourhood of one contour of the coarse warped noise): cooler skin near the
+	// surface, dim seams in the dark.
+	float fold = value_noise2(q * 0.8 + vec2(11.0, 3.0)) - 0.5;
+	float vein = 1.0 - smoothstep(0.0, vein_width, abs(fold));
+	vein *= vein;
 	vec3 color = hot * heat * glow;
 	float seam = smoothstep(0.3, 0.7, cool);
 	color = mix(color, color * (1.0 - vein_strength), vein * (1.0 - seam));

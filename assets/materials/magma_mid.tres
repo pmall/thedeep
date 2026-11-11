@@ -1,0 +1,10 @@
+[gd_resource type="ShaderMaterial" format=3]
+
+; Magma behind the play plane (a seam in a far wall, a channel or a pour in the backdrop): the slag's look, duller and with a
+; thinner web, so the slag on the play plane stays the brightest fire (docs/art-direction.md#midground).
+[ext_resource type="Shader" path="res://assets/shaders/magma.gdshader" id="1_shader"]
+
+[resource]
+shader = ExtResource("1_shader")
+shader_parameter/heat = 1.4
+shader_parameter/crack_width = 0.08

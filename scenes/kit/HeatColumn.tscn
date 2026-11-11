@@ -11,6 +11,6 @@
 script = ExtResource("1_heat")
 Embers = ExtResource("2_embers")
 EmberDensity = 1.8
-GlowEnergy = 3.5
+GlowEnergy = 7.0
 Plume = ExtResource("3_plume")
 Source = ExtResource("4_vent")
