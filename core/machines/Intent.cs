@@ -19,6 +19,7 @@ public struct Intent
     /// <summary>Where the sensors aim, if anywhere.</summary>
     public Vector2? LookAt { get; set; }
 
+    /// <summary>What the machine is doing this tick, for the body and its animation to show.</summary>
     public MachineAct Act { get; set; }
 
     /// <summary>Broadcast to neighbors (<see cref="Neighbor.Signal"/>).</summary>

@@ -166,6 +166,8 @@ public sealed class PilgrimMotion
     private Spring _lean = new(3.2f, 0.42f);
     private Spring _compression = new(2.2f, 0.55f);
 
+    /// <summary>The motion of a body of sizes <paramref name="dims"/>, whose run cycle shows in full at
+    /// <paramref name="runSpeed"/> m/s.</summary>
     public PilgrimMotion(HumanoidDims dims, float runSpeed)
     {
         _dims = dims;
@@ -201,6 +203,7 @@ public sealed class PilgrimMotion
     /// </summary>
     public void Strike(float progress, float windUpEnd, float activeEnd, StrikeKind kind) => _strikes.Strike(progress, windUpEnd, activeEnd, kind);
 
+    /// <summary>The strike is over: the body holds its end pose a moment, then lets go.</summary>
     public void EndStrike() => _strikes.End();
 
     /// <summary>How far the blade is out of the near forearm, 0 (folded away) to 1 (<see cref="StrikeMotion.Blade"/>).</summary>
@@ -996,6 +999,7 @@ public sealed class PilgrimMotion
     /// <summary>A damped spring toward a moving target (semi-implicit Euler).</summary>
     private struct Spring
     {
+        /// <summary>A spring at rest at 0, with its natural frequency in Hz and its damping ratio.</summary>
         public Spring(float frequency, float damping)
         {
             Frequency = frequency;
@@ -1010,9 +1014,12 @@ public sealed class PilgrimMotion
         /// <summary>Damping ratio: 1 settles without overshoot, lower sways.</summary>
         public float Damping { get; }
 
+        /// <summary>Where the spring is now, in the unit of its target.</summary>
         public float Value { get; private set; }
+        /// <summary>How fast the value is changing, per second; set to kick the spring.</summary>
         public float Velocity { get; set; }
 
+        /// <summary>Moves the spring toward <paramref name="target"/> over <paramref name="delta"/> seconds.</summary>
         public void Step(float target, float delta)
         {
             float omega = MathF.Tau * Frequency;

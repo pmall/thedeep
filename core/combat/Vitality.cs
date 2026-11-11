@@ -8,6 +8,8 @@ namespace TheDeep;
 /// </summary>
 public sealed class Vitality
 {
+    /// <summary>Full health at <paramref name="max"/> (at least 1), with <paramref name="graceTime"/> seconds of grace after
+    /// each hit.</summary>
     public Vitality(int max, float graceTime = 0f)
     {
         Max = Math.Max(1, max);
@@ -15,17 +17,22 @@ public sealed class Vitality
         GraceTime = graceTime;
     }
 
+    /// <summary>Full health, in health points; at least 1.</summary>
     public int Max { get; private set; }
 
+    /// <summary>Health left, in health points, from 0 (dead) to <see cref="Max"/>.</summary>
     public int Current { get; private set; }
 
+    /// <summary>Seconds after a hit during which nothing hurts; 0 for none.</summary>
     public float GraceTime { get; }
 
     /// <summary>Seconds left in the grace period after a hit.</summary>
     public float Grace { get; private set; }
 
+    /// <summary>Whether no health is left.</summary>
     public bool Dead => Current <= 0;
 
+    /// <summary>Whether a hit would hurt now: alive and out of the grace period.</summary>
     public bool Vulnerable => !Dead && Grace <= 0f;
 
     /// <summary>Raised when health changes, with the new value.</summary>
@@ -58,6 +65,7 @@ public sealed class Vitality
         return true;
     }
 
+    /// <summary>Runs the grace period down by <paramref name="delta"/> seconds.</summary>
     public void Tick(float delta) => Grace = Math.Max(0f, Grace - delta);
 
     /// <summary>Back to full health, no grace period.</summary>

@@ -11,12 +11,14 @@ public sealed class CrawlMotion
 {
     private float _speed;
 
+    /// <summary>A crawler on <paramref name="path"/>, at rest at the surface point nearest <paramref name="spawn"/>.</summary>
     public CrawlMotion(SurfacePath path, Vector2 spawn)
     {
         Path = path;
         Reset(spawn);
     }
 
+    /// <summary>The surface path the crawler is held to.</summary>
     public SurfacePath Path { get; }
 
     /// <summary>The distance along the path, meters.</summary>

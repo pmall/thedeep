@@ -39,10 +39,13 @@ public sealed class BladeTrail
         _strength = new float[capacity];
     }
 
+    /// <summary>How long a sample lasts before it has faded away, seconds.</summary>
     public float Lifetime { get; }
 
+    /// <summary>How many samples are laid per physics tick along the blade's arc.</summary>
     public int Steps { get; }
 
+    /// <summary>The tip's speed from which the trail is laid at full strength, m/s; slower lays it fainter.</summary>
     public float FullSpeed { get; }
 
     /// <summary>How many samples are alive, oldest first.</summary>

@@ -5,6 +5,7 @@ namespace TheDeep;
 /// <summary>The humanoid skeleton's shape (Godot-free): which bone hangs from which, and the sizes the gait needs.</summary>
 public static class Humanoid
 {
+    /// <summary>How many bones the humanoid skeleton has: one per <see cref="HumanoidBone"/>.</summary>
     public static readonly int BoneCount = Enum.GetValues<HumanoidBone>().Length;
 
     /// <summary>The bone each bone hangs from; null for the hips (the root).</summary>

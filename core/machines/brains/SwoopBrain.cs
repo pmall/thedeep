@@ -23,19 +23,25 @@ public sealed class SwoopBrain : MachineBrain
     private bool _again;
     private float _alert;
 
+    /// <summary>It wakes when the player comes within this distance, meters, whether it can see them or not.</summary>
     public float SightRange { get; init; } = 16f;
 
     /// <summary>How high over the player's chest it drifts, meters, and how far to the side.</summary>
     public float Altitude { get; init; } = 6f;
+    /// <summary>How far to the side of the player it drifts, meters.</summary>
     public float Offset { get; init; } = 3f;
 
+    /// <summary>Its speed while drifting over the player, m/s.</summary>
     public float DriftSpeed { get; init; } = 4f;
 
     /// <summary>Seconds of drifting between dives.</summary>
     public float Interval { get; init; } = 2.4f;
 
+    /// <summary>Seconds it shudders in place before a dive: the player's warning.</summary>
     public float WindUp { get; init; } = 0.7f;
+    /// <summary>Seconds of wind-up before the second dive of a double.</summary>
     public float QuickWindUp { get; init; } = 0.4f;
+    /// <summary>Its speed along the dive's line, m/s.</summary>
     public float DiveSpeed { get; init; } = 15f;
 
     /// <summary>How far past its aim a dive carries on, meters.</summary>
@@ -47,6 +53,7 @@ public sealed class SwoopBrain : MachineBrain
     /// <summary>Seconds it hangs still after a dive: the opening.</summary>
     public float Hang { get; init; } = 1.4f;
 
+    /// <summary>Every this many dives, a second one follows at once; 0 for never.</summary>
     public int Flurry { get; init; } = 3;
 
     /// <summary>Whether it has seen the player (the fight is on).</summary>

@@ -15,12 +15,14 @@ public sealed class SleeperBrain : MachineBrain
     private float _timer;
     private Vector2 _target;
 
+    /// <summary>A sleeper, asleep, that strikes with <paramref name="strike"/> once awake.</summary>
     public SleeperBrain(StrikeAction strike)
     {
         _strike = strike;
         Act = MachineAct.Sleep;
     }
 
+    /// <summary>The distance at which an impact has faded to nothing for it, meters.</summary>
     public float HearingRange { get; init; } = 10f;
 
     /// <summary>Impact speed (m/s, after fading with distance) that wakes it.</summary>
@@ -29,8 +31,11 @@ public sealed class SleeperBrain : MachineBrain
     /// <summary>Range at which it keeps tracking an awake target, meters.</summary>
     public float TrackRange { get; init; } = 9f;
 
+    /// <summary>Its hunting speed along its surface, m/s.</summary>
     public float Speed { get; init; } = 3f;
+    /// <summary>It strikes when the player is within this distance, meters.</summary>
     public float Reach { get; init; } = 1.3f;
+    /// <summary>Seconds it takes to unfold once woken, before it hunts.</summary>
     public float WakeTime { get; init; } = 0.7f;
 
     /// <summary>Seconds with nothing to track before it goes back to sleep.</summary>

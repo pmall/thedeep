@@ -11,6 +11,7 @@ public sealed class Pilgrimage
 {
     private bool _goalShown;
 
+    /// <summary>Takes up the run that <paramref name="save"/> holds; a new save starts a new run.</summary>
     public Pilgrimage(SaveData save) => Save = save;
 
     /// <summary>What the save holds; written out by the session whenever it changes.</summary>

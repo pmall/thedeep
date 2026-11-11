@@ -23,6 +23,7 @@ public sealed class VideoClock
         _maxBurst = maxBurst;
     }
 
+    /// <summary>The video's frame rate, in frames per second.</summary>
     public int Fps { get; }
 
     /// <summary>Video frames handed out so far (including repeats).</summary>
@@ -31,6 +32,7 @@ public sealed class VideoClock
     /// <summary>Video frames lost to stalls longer than the burst limit.</summary>
     public long FramesCut { get; private set; }
 
+    /// <summary>The length of the video handed out so far, in seconds.</summary>
     public double DurationSeconds => (double)FramesEmitted / Fps;
 
     /// <summary>

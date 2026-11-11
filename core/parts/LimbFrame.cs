@@ -31,6 +31,7 @@ public sealed record LimbFrame
     /// <summary>How many cables bow along the strut.</summary>
     public int Cables { get; init; }
 
+    /// <summary>Each cable's thickness, meters.</summary>
     public float CableWidth { get; init; } = 0.012f;
 
     /// <summary>How far across the strut the cables bow at their middle.</summary>

@@ -12,19 +12,25 @@ public sealed class StrikeAction
     private float _time = -1f;
     private float _cooldown;
 
+    /// <summary>Seconds of warning before the blow.</summary>
     public float WindUp { get; init; } = 0.45f;
+    /// <summary>Seconds the blow takes; it lands at the end of them.</summary>
     public float Blow { get; init; } = 0.12f;
+    /// <summary>Seconds after the blow before the machine can act again: the player's opening.</summary>
     public float Recover { get; init; } = 0.6f;
+    /// <summary>Seconds after the recovery before another strike can start.</summary>
     public float Cooldown { get; init; } = 0.8f;
 
     /// <summary>Between the start of the wind-up and the end of the recovery.</summary>
     public bool Active => _time >= 0f;
 
+    /// <summary>Whether a strike can start now: none is under way and the cooldown has passed.</summary>
     public bool Ready => !Active && _cooldown <= 0f;
 
     /// <summary>The strike's animation channel, 0 to 1.</summary>
     public float Channel { get; private set; }
 
+    /// <summary>The part of the strike under way (wind-up, strike or recovery), or idle when none is.</summary>
     public MachineAct Act => !Active ? MachineAct.Idle
         : _time < WindUp ? MachineAct.WindUp
         : _time < WindUp + Blow ? MachineAct.Strike

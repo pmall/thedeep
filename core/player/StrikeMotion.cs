@@ -41,6 +41,7 @@ public sealed class StrikeMotion
     private bool _started;
     private float _released = float.MaxValue;
 
+    /// <summary>The strikes of a body of sizes <paramref name="dims"/>, each kind's four poses keyed to those sizes.</summary>
     public StrikeMotion(HumanoidDims dims)
     {
         _dims = dims;
@@ -88,6 +89,7 @@ public sealed class StrikeMotion
         }
     }
 
+    /// <summary>No strike shown at all, at once: the blade folded away and no trail.</summary>
     public void Reset()
     {
         _active = false;

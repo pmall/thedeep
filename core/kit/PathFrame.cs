@@ -16,6 +16,7 @@ namespace TheDeep;
 /// </param>
 public readonly record struct PathFrame(Vector3 Position, Vector3 Tangent, Vector3 Side, Vector3 Up, float Distance, Vector3 SideOffset)
 {
+    /// <summary>A station with a square cut: the profile's X is placed along <paramref name="side"/> unstretched.</summary>
     public PathFrame(Vector3 position, Vector3 tangent, Vector3 side, Vector3 up, float distance)
         : this(position, tangent, side, up, distance, side)
     {

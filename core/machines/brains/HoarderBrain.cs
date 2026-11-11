@@ -19,6 +19,8 @@ public sealed class HoarderBrain : MachineBrain
     private float _alert;
     private bool _started;
 
+    /// <summary>A hoarder whose choice of spots and pecking times is drawn from <paramref name="seed"/>, so each one gleans
+    /// differently and the same one always the same.</summary>
     public HoarderBrain(int seed)
     {
         _random = new Random(seed);
@@ -27,7 +29,9 @@ public sealed class HoarderBrain : MachineBrain
     /// <summary>How far from home it gleans, meters.</summary>
     public float HomeRange { get; init; } = 4f;
 
+    /// <summary>Its speed walking between gleaning spots, m/s.</summary>
     public float WalkSpeed { get; init; } = 1.3f;
+    /// <summary>Its speed bolting from the player, m/s.</summary>
     public float FleeSpeed { get; init; } = 6.5f;
 
     /// <summary>It bolts when the player comes within this distance, meters.</summary>
@@ -38,6 +42,7 @@ public sealed class HoarderBrain : MachineBrain
 
     /// <summary>Seconds spent pecking at one spot, shortest and longest.</summary>
     public float MinWork { get; init; } = 1.5f;
+    /// <summary>The longest it pecks at one spot, seconds.</summary>
     public float MaxWork { get; init; } = 3.5f;
 
     public override Intent Think(in Perception p, float delta)

@@ -15,6 +15,8 @@ public sealed class Combo
     private int _step;
     private float _sinceEnd = float.MaxValue;
 
+    /// <summary>A chain with the given shape for each kind of strike (every kind is needed) and a chain window of
+    /// <paramref name="chainWindow"/> seconds.</summary>
     public Combo(IReadOnlyDictionary<StrikeKind, StrikeShape> shapes, float chainWindow)
     {
         foreach (StrikeKind kind in Enum.GetValues<StrikeKind>())
@@ -54,6 +56,8 @@ public sealed class Combo
     /// <summary>A strike's recovery ended: the chain window opens.</summary>
     public void Ended() => _sinceEnd = 0f;
 
+    /// <summary>Runs the chain window down by <paramref name="seconds"/>; once it has passed, the next press starts the chain
+    /// over.</summary>
     public void Tick(float seconds)
     {
         if (_sinceEnd < float.MaxValue)

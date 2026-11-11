@@ -30,6 +30,8 @@ public enum LiftPhase
 /// </summary>
 public sealed class LiftMotion
 {
+    /// <summary>A lift waiting empty at its lower stop, with the given travel (lengths in meters, speeds in m/s, delays in
+    /// seconds).</summary>
     public LiftMotion(float rise, float speed, float acceleration, float boardDelay, float returnSpeed, float returnDelay)
     {
         Rise = rise;
@@ -40,13 +42,20 @@ public sealed class LiftMotion
         ReturnDelay = returnDelay;
     }
 
+    /// <summary>How far the upper stop is above the lower one, meters.</summary>
     public float Rise { get; }
+    /// <summary>Its cruising speed on the way up, m/s.</summary>
     public float Speed { get; }
+    /// <summary>How fast it gathers speed and brakes, m/s².</summary>
     public float Acceleration { get; }
+    /// <summary>Seconds a rider stands on it at the lower stop before the brake lets go.</summary>
     public float BoardDelay { get; }
+    /// <summary>Its cruising speed sinking back empty, m/s.</summary>
     public float ReturnSpeed { get; }
+    /// <summary>Seconds it waits empty at the upper stop before sinking back.</summary>
     public float ReturnDelay { get; }
 
+    /// <summary>What the lift is doing now.</summary>
     public LiftPhase Phase { get; private set; } = LiftPhase.Waiting;
 
     /// <summary>Height above the lower stop, meters (0 to <see cref="Rise"/>).</summary>

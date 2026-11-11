@@ -26,6 +26,7 @@ public enum ArenaChange
 /// </summary>
 public sealed class ArenaFight
 {
+    /// <summary>Where the fight stands; waiting until the pilgrim steps in.</summary>
     public ArenaPhase Phase { get; private set; }
 
     /// <summary>Won before (from the save).</summary>

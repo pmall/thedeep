@@ -19,6 +19,7 @@ public sealed class HumanoidPose
     /// <summary>Hips joint offset from its rest position, meters (X forward, Y up).</summary>
     public Vector2 HipsOffset { get; set; }
 
+    /// <summary>The bone's absolute angle in the side plane, radians: 0 at rest, positive counterclockwise for a body facing right.</summary>
     public float this[HumanoidBone bone]
     {
         get => _angles[(int)bone];
@@ -31,6 +32,7 @@ public sealed class HumanoidPose
     /// </summary>
     public (float Yaw, float Roll) Turn(HumanoidBone bone) => (_yaw[(int)bone], _roll[(int)bone]);
 
+    /// <summary>Sets the bone's absolute turn out of the side plane, radians (<see cref="Turn"/>).</summary>
     public void SetTurn(HumanoidBone bone, float yaw, float roll)
     {
         _yaw[(int)bone] = yaw;
@@ -53,6 +55,7 @@ public sealed class HumanoidPose
         return new Vector2(HipsOffset.X + x, dims.HipsHeight + HipsOffset.Y + y);
     }
 
+    /// <summary>Becomes the same pose as <paramref name="other"/>: every bone's angle and turn, and the hips' offset.</summary>
     public void CopyFrom(HumanoidPose other)
     {
         Array.Copy(other._angles, _angles, _angles.Length);

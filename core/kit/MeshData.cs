@@ -12,7 +12,9 @@ namespace TheDeep;
 /// </summary>
 public sealed class MeshData
 {
+    /// <summary>Where each vertex is, in the mesh's own space, meters.</summary>
     public List<Vector3> Positions { get; } = new();
+    /// <summary>Each vertex's unit direction out of the surface.</summary>
     public List<Vector3> Normals { get; } = new();
 
     /// <summary>XYZ: direction of +U. W: sign such that cross(normal, xyz) * w is the direction of +V (Godot's convention).</summary>
@@ -36,9 +38,12 @@ public sealed class MeshData
     /// <summary>Triangles, clockwise seen from the front (Godot's front-face convention).</summary>
     public List<int> Indices { get; } = new();
 
+    /// <summary>How many vertices the mesh has.</summary>
     public int VertexCount => Positions.Count;
+    /// <summary>How many triangles the mesh has.</summary>
     public int TriangleCount => Indices.Count / 3;
 
+    /// <summary>The opposite corners of the box that holds every vertex, meters; both zero for an empty mesh.</summary>
     public (Vector3 Min, Vector3 Max) Bounds()
     {
         if (Positions.Count == 0)

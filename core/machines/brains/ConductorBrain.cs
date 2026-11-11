@@ -20,12 +20,15 @@ public sealed class ConductorBrain : MachineBrain
     private float _beat;
     private float _alert;
 
+    /// <summary>A conductor that strikes with <paramref name="strike"/>, and with <paramref name="quick"/> for the second blow
+    /// of a double strike.</summary>
     public ConductorBrain(StrikeAction strike, StrikeAction quick)
     {
         _strike = strike;
         _quick = quick;
     }
 
+    /// <summary>How far in front it sees the player, meters; behind, half as far. Seeing them starts the fight.</summary>
     public float SightRange { get; init; } = 14f;
 
     /// <summary>How far in front its baton reaches, meters.</summary>
@@ -34,6 +37,7 @@ public sealed class ConductorBrain : MachineBrain
     /// <summary>Half the height of the band in front where the baton lands, meters (around its chest).</summary>
     public float Band { get; init; } = 2f;
 
+    /// <summary>How high above its feet the middle of the baton's band is, meters.</summary>
     public float ChestHeight { get; init; } = 1.6f;
 
     /// <summary>Stalking speed, m/s.</summary>

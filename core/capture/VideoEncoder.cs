@@ -47,6 +47,8 @@ public sealed class VideoEncoder : IDisposable
         _writer.Start();
     }
 
+    /// <summary>The ffmpeg command this encoder runs: the frame size, rate, codec and output file it was started
+    /// with.</summary>
     public FfmpegCommand Command { get; }
 
     /// <summary>Frames sent to ffmpeg so far, repeats included.</summary>

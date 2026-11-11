@@ -18,6 +18,8 @@ public sealed class PrayerBrain : MachineBrain
     private float _bow;
     private float _calm;
 
+    /// <summary>A praying machine of species <paramref name="kind"/> that bows every <paramref name="period"/> seconds,
+    /// starting <paramref name="phase"/> (0 to 1) through the cycle, and strikes with <paramref name="strike"/>.</summary>
     public PrayerBrain(string kind, float period, float phase, StrikeAction strike)
     {
         Kind = kind;

@@ -10,6 +10,8 @@ namespace TheDeep;
 /// </summary>
 public sealed class PrayerCycle
 {
+    /// <summary>A cycle of <paramref name="period"/> seconds per bow (at least 0.1), starting <paramref name="phase"/> of the
+    /// way through it (0 to 1, wrapped).</summary>
     public PrayerCycle(float period, float phase = 0f)
     {
         Period = MathF.Max(period, 0.1f);

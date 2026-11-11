@@ -8,11 +8,13 @@ namespace TheDeep;
 /// </summary>
 public sealed class Inventory
 {
+    /// <summary>The ids of every item the pilgrim holds.</summary>
     public ItemSet Held { get; private set; } = ItemSet.Empty;
 
     /// <summary>Raised with the item's id when it is taken (not when held items are restored).</summary>
     public event Action<string>? Taken;
 
+    /// <summary>Whether the item <paramref name="id"/> is held.</summary>
     public bool Holds(string id) => Held.Contains(id);
 
     /// <summary>Takes <paramref name="id"/>; false if it was already held.</summary>

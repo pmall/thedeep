@@ -11,5 +11,7 @@ public abstract class MachineBrain
     /// <summary>What the machine was doing at the last tick.</summary>
     public MachineAct Act { get; protected set; }
 
+    /// <summary>One physics tick of <paramref name="delta"/> seconds: what the machine wants to do, given what it
+    /// perceives.</summary>
     public abstract Intent Think(in Perception p, float delta);
 }

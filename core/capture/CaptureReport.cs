@@ -12,11 +12,13 @@ public sealed class CaptureReport
     private readonly string _title;
     private readonly List<(string Key, string Value)> _lines = new();
 
+    /// <summary>Starts a report whose first line is <paramref name="title"/>.</summary>
     public CaptureReport(string title)
     {
         _title = title;
     }
 
+    /// <summary>Appends one "key  value" line, in the order added; returns this report so calls chain.</summary>
     public CaptureReport Add(string key, string value)
     {
         _lines.Add((key, value));

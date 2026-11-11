@@ -8,6 +8,7 @@ namespace TheDeep;
 /// </summary>
 public readonly record struct Prowess(int Strength, int Defense)
 {
+    /// <summary>No power-up taken: nothing added to damage or health.</summary>
     public static readonly Prowess None = new(0, 0);
 
     /// <summary>With <paramref name="amount"/> more of <paramref name="stat"/>.</summary>

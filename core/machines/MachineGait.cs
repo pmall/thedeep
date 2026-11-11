@@ -23,6 +23,7 @@ public sealed class MachineGait
     /// <summary>How much the machine is stepping, 0 (standing) to 1 (walking).</summary>
     public float Stepping { get; private set; }
 
+    /// <summary>Standing still with nothing walked, as when the machine is put back at its spawn.</summary>
     public void Reset()
     {
         Walked = 0f;

@@ -26,6 +26,8 @@ public sealed class DialogueFlow
     private readonly IReadOnlyList<string> _texts;
     private float _revealed;
 
+    /// <summary>A conversation of <paramref name="texts"/> (at least one line), starting on the first with no letter
+    /// shown.</summary>
     public DialogueFlow(IReadOnlyList<string> texts, float lettersPerSecond)
     {
         if (texts.Count == 0)
@@ -37,13 +39,16 @@ public sealed class DialogueFlow
         LettersPerSecond = Math.Max(1f, lettersPerSecond);
     }
 
+    /// <summary>How fast a line is revealed, in letters per second; at least 1.</summary>
     public float LettersPerSecond { get; }
 
     /// <summary>The line being spoken (0-based).</summary>
     public int Index { get; private set; }
 
+    /// <summary>How many lines the conversation has.</summary>
     public int Count => _texts.Count;
 
+    /// <summary>The whole text of the line being spoken.</summary>
     public string Text => _texts[Index];
 
     /// <summary>How many of the line's letters show.</summary>
@@ -52,6 +57,7 @@ public sealed class DialogueFlow
     /// <summary>The whole line shows: a press moves on.</summary>
     public bool Whole => Shown >= Text.Length;
 
+    /// <summary>Whether the last line was passed: nothing is spoken any more.</summary>
     public bool Over { get; private set; }
 
     /// <summary>Reveals more of the line, <paramref name="seconds"/> later.</summary>
@@ -63,6 +69,8 @@ public sealed class DialogueFlow
         }
     }
 
+    /// <summary>The player's press: shows the line whole if it is still being revealed, else moves to the next line, or ends
+    /// the conversation after the last.</summary>
     public DialoguePress Press()
     {
         if (Over)

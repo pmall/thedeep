@@ -18,8 +18,10 @@ public sealed record SavedWay(string Room, string Exit, float X, float Y, string
 /// </summary>
 public sealed class SaveData
 {
+    /// <summary>The save format this build writes; a save with a higher version is refused.</summary>
     public const int CurrentVersion = 1;
 
+    /// <summary>The save format this save was written in.</summary>
     public int Version { get; set; } = CurrentVersion;
 
     /// <summary>The room of the last shrine rested at (a room name, its scene's file name).</summary>
@@ -34,6 +36,7 @@ public sealed class SaveData
     /// <summary>What the power-ups taken add (<see cref="Prowess"/>): damage per blow, and health.</summary>
     public int Strength { get; set; }
 
+    /// <summary>Health added by the power-ups taken (<see cref="Prowess"/>).</summary>
     public int Defense { get; set; }
 
     /// <summary>The items held (keys, codes), by id (empty in a save from before items).</summary>
@@ -42,6 +45,7 @@ public sealed class SaveData
     /// <summary>What is done once and for good, as "Room/NodeName": relics and items taken, bosses beaten, laws broken, doors opened.</summary>
     public List<string> Collected { get; set; } = new();
 
+    /// <summary>The rooms on the pilgrim's map, each with where it sits and its bounds.</summary>
     public List<SavedRoom> Map { get; set; } = new();
 
     /// <summary>The visited rooms' ways out (empty in a save from before they were kept).</summary>
@@ -52,6 +56,7 @@ public sealed class SaveData
 
     private static readonly JsonSerializerOptions Options = new() { WriteIndented = true, DefaultIgnoreCondition = JsonIgnoreCondition.Never };
 
+    /// <summary>The save as indented JSON text, as written to the file.</summary>
     public string ToJson() => JsonSerializer.Serialize(this, Options);
 
     /// <summary>Reads a save; null if the text isn't one (or is from a newer version).</summary>
@@ -78,6 +83,7 @@ public sealed class SaveData
         }
     }
 
+    /// <summary>Replaces the saved rooms with <paramref name="rooms"/>.</summary>
     public void SetMap(IEnumerable<MapRoom> rooms)
     {
         Map.Clear();

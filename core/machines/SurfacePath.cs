@@ -24,6 +24,7 @@ public sealed class SurfacePath
         Length = stations[^1].S;
     }
 
+    /// <summary>The whole path's length, meters: the largest <c>s</c> on it.</summary>
     public float Length { get; }
 
     /// <summary>A loop around the whole box: <c>s</c> wraps instead of stopping at the ends.</summary>

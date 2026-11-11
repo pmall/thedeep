@@ -17,6 +17,7 @@ public sealed class Profile
     /// <param name="PatchWidth">Width of the patch across the profile; negative when it wraps all the way round.</param>
     public readonly record struct Segment(Vector2 A, Vector2 B, Vector2 NormalA, Vector2 NormalB, float VA, float VB, float PatchWidth);
 
+    /// <summary>The sides of the cross-section, in order around it, each ending where the next starts.</summary>
     public IReadOnlyList<Segment> Segments { get; }
 
     private readonly Vector2[] _outline;

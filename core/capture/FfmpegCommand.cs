@@ -27,8 +27,11 @@ public enum VideoCodec
 public sealed record FfmpegCommand(
     int Width, int Height, string PixelFormat, int Fps, VideoCodec Codec, int MaxWidth, string OutputPath)
 {
+    /// <summary>The program to launch, found on the PATH.</summary>
     public const string Executable = "ffmpeg";
 
+    /// <summary>The arguments that read the raw frames from stdin and write the MP4, with a keyframe every two
+    /// seconds.</summary>
     public IReadOnlyList<string> Arguments()
     {
         var args = new List<string>
@@ -67,6 +70,7 @@ public sealed record FfmpegCommand(
         return args;
     }
 
+    /// <summary>The name ffmpeg knows <paramref name="codec"/> by.</summary>
     public static string CodecName(VideoCodec codec) => codec switch
     {
         VideoCodec.Nvenc => "h264_nvenc",

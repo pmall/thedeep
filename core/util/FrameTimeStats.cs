@@ -8,12 +8,16 @@ public sealed class FrameTimeStats
 {
     private readonly List<double> _milliseconds = new();
 
+    /// <summary>How many frames were added.</summary>
     public int Count => _milliseconds.Count;
 
+    /// <summary>The mean frame time, in milliseconds; 0 before any frame.</summary>
     public double Average { get; private set; }
 
+    /// <summary>The longest frame time, in milliseconds; 0 before any frame.</summary>
     public double Worst { get; private set; }
 
+    /// <summary>Records one frame that took <paramref name="milliseconds"/>.</summary>
     public void Add(double milliseconds)
     {
         _milliseconds.Add(milliseconds);

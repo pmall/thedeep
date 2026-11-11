@@ -15,6 +15,7 @@ public sealed class FollowerBrain : MachineBrain
     private int _side = -1;
     private float _alert;
 
+    /// <summary>How far it sees the player, meters, in front or behind; seeing them once, it follows for good.</summary>
     public float SightRange { get; init; } = 12f;
 
     /// <summary>How far behind the player it keeps, meters.</summary>
@@ -26,6 +27,7 @@ public sealed class FollowerBrain : MachineBrain
     /// <summary>Closer than this, it darts away, meters.</summary>
     public float Shy { get; init; } = 2.2f;
 
+    /// <summary>Its flying speed when following, m/s; it darts away 1.3 times as fast.</summary>
     public float Speed { get; init; } = 6f;
 
     /// <summary>Player speed (m/s) above which it moves to trail behind them.</summary>

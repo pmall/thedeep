@@ -67,6 +67,8 @@ public static class GripMath
     /// <summary>After an inner corner the player keeps moving away from the old surface; after an outer one, back past its plane.</summary>
     public static Vector2 TravelAfterInner(Vector2 oldUp) => oldUp;
 
+    /// <summary>The way the player keeps moving once around an outer corner: back past the old surface's plane, opposite its
+    /// normal <paramref name="oldUp"/>.</summary>
     public static Vector2 TravelAfterOuter(Vector2 oldUp) => -oldUp;
 
     /// <summary>

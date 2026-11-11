@@ -24,6 +24,7 @@ public sealed class PilgrimControl
     private readonly Countdown _stun = new();
     private int _steerDirection;
 
+    /// <summary>A pilgrim in control with every air dash left, timed by <paramref name="limits"/>.</summary>
     public PilgrimControl(ControlLimits limits)
     {
         _limits = limits;
@@ -33,8 +34,10 @@ public sealed class PilgrimControl
     /// <summary>The input of the last <see cref="Read"/>.</summary>
     public PlayerInput Input { get; private set; }
 
+    /// <summary>How many dashes are left before touching down again; spent by a dash off the floor.</summary>
     public int AirDashesLeft { get; private set; }
 
+    /// <summary>Seconds before the next dash can start.</summary>
     public float DashCooldownRemaining => _dashCooldown.Remaining;
 
     /// <summary>Reeling from a blow: the input counts for nothing.</summary>
@@ -55,6 +58,8 @@ public sealed class PilgrimControl
     /// <summary>A dash pressed a moment ago, off cooldown, and an air dash left if <paramref name="onFloor"/> is false.</summary>
     public bool WantsDash(bool onFloor) => _dashBuffer.Active && !_dashCooldown.Active && (onFloor || AirDashesLeft > 0);
 
+    /// <summary>Runs every timer down by <paramref name="dt"/> seconds: the kept presses, coyote time, the dash cooldown, the
+    /// grip pause, steering and the stun.</summary>
     public void Tick(float dt)
     {
         _coyote.Tick(dt);
@@ -120,6 +125,7 @@ public sealed class PilgrimControl
         _coyote.Clear();
     }
 
+    /// <summary>The harpoon press is used: it will not fire again.</summary>
     public void ConsumeHarpoon() => _harpoonBuffer.Clear();
 
     /// <summary>A dash (or the Drill's dive) starts: the press is used, and off the floor an air dash is spent.</summary>
@@ -132,8 +138,10 @@ public sealed class PilgrimControl
         }
     }
 
+    /// <summary>A dash ends: the cooldown before the next one starts.</summary>
     public void EndDash() => _dashCooldown.Start(_limits.DashCooldown);
 
+    /// <summary>The body lets go of a surface: no grip for the regrab delay.</summary>
     public void HoldOffGrip() => _regrab.Start(_limits.GripRegrabDelay);
 
     /// <summary>Holds the horizontal input toward <paramref name="direction"/> for up to <paramref name="seconds"/>, or until landing.</summary>

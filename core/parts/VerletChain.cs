@@ -14,6 +14,8 @@ public sealed class VerletChain
     private readonly Vector3[] _previous;
     private readonly Vector3[] _rest;
 
+    /// <summary>A chain of <paramref name="links"/> links (at least one), each <paramref name="linkLength"/> meters
+    /// long.</summary>
     public VerletChain(int links, float linkLength)
     {
         Links = Math.Max(1, links);
@@ -23,7 +25,9 @@ public sealed class VerletChain
         _rest = new Vector3[Links + 1];
     }
 
+    /// <summary>How many links the chain has: one fewer than its points.</summary>
     public int Links { get; }
+    /// <summary>The fixed length of each link, meters.</summary>
     public float LinkLength { get; }
 
     /// <summary>Current positions, anchor first. Read only outside the chain.</summary>
@@ -47,6 +51,8 @@ public sealed class VerletChain
     /// </summary>
     public Vector3 RestDirection { get; set; } = -Vector3.UnitY;
 
+    /// <summary>The bend the chain curls by at rest, radians per link around the anchor's Z axis
+    /// (<see cref="RestDirection"/>).</summary>
     public float RestCurl { get; set; }
 
     /// <summary>Puts the chain at rest under the anchor, still (spawn, teleport).</summary>
