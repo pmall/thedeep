@@ -1,3 +1,4 @@
+using System.Linq;
 using Godot;
 
 namespace TheDeep;
@@ -23,6 +24,14 @@ public partial class HeatColumn : Node3D
 {
     /// <summary>Width (X) and height (Y) of the column, rising from the node's origin, meters.</summary>
     [Export] public Vector2 Size { get; set; } = new(2f, 6f);
+
+    /// <summary>
+    /// The hatch exit the column rises through, if any: the seam's frame then gives the column its width and line
+    /// (<see cref="SeamFrame.Heat"/>), so the two rooms' columns are one column through the seam by construction. Under an up exit the
+    /// column keeps its foot (the node's height) and reaches the slab; over a down exit it rises from the slab to its own top (the node's
+    /// height plus <see cref="Size"/>.Y). Unset, the column's place and <see cref="Size"/> are its own.
+    /// </summary>
+    [Export] public RoomExit? Through { get; set; }
 
     [Export] public int Damage { get; set; } = 1;
 
@@ -68,8 +77,25 @@ public partial class HeatColumn : Node3D
     /// <summary>The column on the play plane, for the map's geometry check.</summary>
     public Box Region => new(GlobalPosition.X - 0.5f * Size.X, GlobalPosition.Y, GlobalPosition.X + 0.5f * Size.X, GlobalPosition.Y + Size.Y);
 
+    /// <summary>Takes the column's width, line and the end at the seam from the hatch it rises through (<see cref="Through"/>).</summary>
+    private void RiseThrough()
+    {
+        if (Through is null)
+        {
+            return;
+        }
+
+        SeamEnd frame = Through.GetChildren().OfType<SeamEnd>().FirstOrDefault()
+            ?? throw new System.InvalidOperationException($"heat {Name} rises through {Through.Name}, an exit no seam brick frames");
+        float end = Through.Side == ExitSide.Up ? GlobalPosition.Y : GlobalPosition.Y + Size.Y;
+        Box column = frame.Profile.Frame.Heat(Through.Side, Through.RoomPosition.ToCore(), end);
+        GlobalPosition = new Vector3(0.5f * (column.MinX + column.MaxX), column.MinY, GlobalPosition.Z);
+        Size = new Vector2(column.MaxX - column.MinX, column.MaxY - column.MinY);
+    }
+
     public override void _Ready()
     {
+        RiseThrough();
         if (Embers?.Instantiate() is AmbientParticles embers)
         {
             // The embers start low and inside its width, so they rise within it.

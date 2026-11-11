@@ -103,6 +103,20 @@ public class SeamFrameTests
     private static readonly SeamFrame Shaft = new(3f, 1f, 2.5f);
 
     [Fact]
+    public void BothHeatColumnsThroughAHatchAreOneColumnAsWideAsTheFrame()
+    {
+        // The lower room's marker at (8, 15), the upper room's at (55, -9.5): the same place on the map, (47, -24.5) apart.
+        Box below = Hatch.Heat(ExitSide.Up, new Vector2(8f, 15f), 0f);
+        Box above = Hatch.Heat(ExitSide.Down, new Vector2(55f, -9.5f), 6f);
+
+        Assert.Equal(new Box(4.5f, 0f, 11.5f, 14f), below);
+        Assert.Equal(new Box(51.5f, -8.5f, 58.5f, 6f), above);
+        Assert.Equal(below.MinX + 47f, above.MinX); // in line
+        Assert.Equal(below.MaxY + 2f - 24.5f, above.MinY); // the slab between them, nothing else
+        Assert.Throws<System.ArgumentException>(() => Hatch.Heat(ExitSide.Up, new Vector2(8f, 15f), 14.5f));
+    }
+
+    [Fact]
     public void BothLiftsThroughAHatchMeetAtOneHandOffInLineWithTheHole()
     {
         // The lower room's marker at (13, 26), the upper room's at (42, -3): the same place on the map.

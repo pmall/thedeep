@@ -28,6 +28,8 @@
 [ext_resource type="Script" path="res://scripts/rooms/dressing/WallDressing.cs" id="21_wall"]
 [ext_resource type="PackedScene" path="res://scenes/kit/Doorway.tscn" id="90_doorway"]
 [ext_resource type="Resource" path="res://resources/seams/doorway.tres" id="91_seam"]
+[ext_resource type="PackedScene" path="res://scenes/kit/Hatch.tscn" id="92_hatch"]
+[ext_resource type="Resource" path="res://resources/seams/hatch.tres" id="93_seam_hatch"]
 
 [sub_resource type="PrimitiveMesh" id="blockmesh_1"]
 script = ExtResource("9_blockmesh")
@@ -65,7 +67,7 @@ Stage = NodePath("Stage")
 Biome = ExtResource("19_core")
 Lamps = [NodePath("Lamps/Gate"), NodePath("Lamps/Shrine")]
 GlyphLights = [NodePath("Props/Shrine/Light"), NodePath("Glyphs/GateLight")]
-BoundsMin = Vector2(-1, -1)
+BoundsMin = Vector2(2.5, -1)
 BoundsMax = Vector2(50, 16)
 
 [node name="SpawnPoint" type="Marker3D" parent="."]
@@ -93,51 +95,51 @@ Size = Vector3(6, 1, 4)
 Material = ExtResource("1_basalt")
 
 [node name="WallWest" parent="Geometry" instance=ExtResource("2_block")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -1, 7.5, 0)
-Size = Vector3(4, 15, 4)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.75, 7, 0)
+Size = Vector3(7.5, 14, 4)
 Material = ExtResource("1_basalt")
 
 ; the Foundry's vents open in the roof between them
 [node name="RoofWest" parent="Geometry" instance=ExtResource("2_block")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 1.75, 16.5, 0)
-Size = Vector3(9.5, 3, 4)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.75, 16, 0)
+Size = Vector3(7.5, 4, 4)
 Material = ExtResource("1_basalt")
 
 [node name="RoofEast" parent="Geometry" instance=ExtResource("2_block")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 31.25, 16.5, 0)
-Size = Vector3(43.5, 3, 4)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 32.25, 16, 0)
+Size = Vector3(41.5, 4, 4)
 Material = ExtResource("1_basalt")
 
 ; over the door on to the Mantle
 [node name="WallEast" parent="Geometry" instance=ExtResource("2_block")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 51.5, 10.5, 0)
-Size = Vector3(3, 9, 4)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 51.5, 10, 0)
+Size = Vector3(3, 8, 4)
 Material = ExtResource("1_basalt")
 
 ; ledges up the column of heat to the vents
 [node name="Ledge0" parent="Geometry" instance=ExtResource("2_block")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 4.25, 2.25, 0)
-Size = Vector3(4.5, 0.5, 4)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 6, 2.25, 0)
+Size = Vector3(3, 0.5, 4)
 Material = ExtResource("3_rust")
 
 [node name="Ledge1" parent="Geometry" instance=ExtResource("2_block")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 11.75, 4.75, 0)
-Size = Vector3(4.5, 0.5, 4)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 10, 4.25, 0)
+Size = Vector3(3, 0.5, 4)
 Material = ExtResource("3_rust")
 
 [node name="Ledge2" parent="Geometry" instance=ExtResource("2_block")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 4.25, 7.25, 0)
-Size = Vector3(4.5, 0.5, 4)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 6, 6.75, 0)
+Size = Vector3(3, 0.5, 4)
 Material = ExtResource("3_rust")
 
 [node name="Ledge3" parent="Geometry" instance=ExtResource("2_block")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 11.75, 9.75, 0)
-Size = Vector3(4.5, 0.5, 4)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 10, 8.75, 0)
+Size = Vector3(3, 0.5, 4)
 Material = ExtResource("3_rust")
 
 [node name="Ledge4" parent="Geometry" instance=ExtResource("2_block")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 4.25, 12.25, 0)
-Size = Vector3(4.5, 0.5, 4)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 6, 11.25, 0)
+Size = Vector3(3, 0.5, 4)
 Material = ExtResource("3_rust")
 
 ; the gate's sill, old bronze
@@ -156,7 +158,10 @@ Side = 3
 TargetRoom = "res://worlds/prototype/rooms/Foundry.tscn"
 TargetExit = "Threshold"
 Requires = "HeatPlating"
-Size = Vector2(3, 2)
+
+[node name="Hatch" parent="Exits/Foundry" instance=ExtResource("92_hatch")]
+Profile = ExtResource("93_seam_hatch")
+Material = ExtResource("1_basalt")
 
 ; east, on to the Mantle
 [node name="Mantle" type="Marker3D" parent="Exits"]
@@ -172,11 +177,12 @@ Material = ExtResource("1_basalt")
 
 [node name="Heat" type="Node3D" parent="."]
 
-; the column of heat under the vents, from its grate on the floor to the roof and the hatch, centred on the hatch as
-; the Foundry's shaft is above it: only Heat plating stands in it
-[node name="Column" parent="Heat" instance=ExtResource("5_heatcolumn")]
+; the column of heat under the vents, from its grate on the floor to the hatch in the roof, against the west wall: the
+; hatch gives it its width and line (Through), so it is one column with the Foundry's over the slab; only Heat plating stands in it
+[node name="Column" parent="Heat" node_paths=PackedStringArray("Through") instance=ExtResource("5_heatcolumn")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 8, 0, 0)
-Size = Vector2(14, 15)
+Size = Vector2(7, 14)
+Through = NodePath("../../Exits/Foundry")
 
 [node name="Props" type="Node3D" parent="."]
 
@@ -301,3 +307,10 @@ transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 25, 7, 52)
 script = ExtResource("17_spot")
 PlayerPosition = Vector3(22, 0.5, 0)
 Fov = 40
+
+; the hatch in the roof up into the Foundry's shaft, the column under it
+[node name="Hatch" type="Marker3D" parent="PhotoSpots"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 8, 12, 12)
+script = ExtResource("17_spot")
+PlayerPosition = Vector3(20, 0, 0)
+PlayerFacing = -1

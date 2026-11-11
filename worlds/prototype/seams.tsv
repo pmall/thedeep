@@ -8,6 +8,5 @@ seam	rule	reason
 # Vertical, batch 4: the volcanic layer
 
 # Vertical, batch 5: the volcanic layer and the core
-Foundry:Threshold | Threshold:Foundry	Solids	to fix under seam-coherence (vertical)
 
 # Doorways, after the vertical exits: where each room puts the wall and lintel around a shared doorway

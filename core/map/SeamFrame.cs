@@ -62,6 +62,24 @@ public sealed record SeamFrame(float Opening, float Approach, float HeadRise = 0
     }
 
     /// <summary>
+    /// A column of heat rising through the hatch on <paramref name="side"/> at <paramref name="marker"/> (docs/gameplay.md#heat), on the
+    /// play plane: as wide as the frame and centred on the hole, so the two rooms' columns are one column through the seam by
+    /// construction, sealing the hole where the room's walls meet the frame. Under an up exit it rises from <paramref name="end"/> (its
+    /// foot, the vent) to the slab's underside; over a down exit, from the slab's top to <paramref name="end"/> (the roof or hood over it).
+    /// </summary>
+    public Box Heat(ExitSide side, Vector2 marker, float end)
+    {
+        Box area = Exit(side, marker).Area;
+        float a = SeamCheck.Around;
+        return side switch
+        {
+            ExitSide.Up when end < area.MinY => new Box(area.MinX - a, end, area.MaxX + a, area.MinY),
+            ExitSide.Down when end > area.MaxY => new Box(area.MinX - a, area.MaxY, area.MaxX + a, end),
+            _ => throw new ArgumentException($"no heat rises through a {side} exit of this seam at {marker} to {end} m"),
+        };
+    }
+
+    /// <summary>
     /// A lift whose cage rides up through the hatch on <paramref name="side"/> at <paramref name="marker"/>: its lower stop (the cage
     /// floor's center) and how far it rises (docs/gameplay.md#seam-rule). Under an up exit, the lower room's lift stands in line with the
     /// hole at <paramref name="floor"/> and rises to the hand-off, the frame's top, where the crossing body arrives; over a down exit,
