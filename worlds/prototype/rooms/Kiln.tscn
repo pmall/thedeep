@@ -2,22 +2,21 @@
 
 ; The Kiln, past the Sanctum's forbidden door (map offset (118, -104)): the first room of the volcanic layer, where the
 ; machines were fired. A stair goes down west from the door into a kiln the size of a nave, long cold: its upper floor
-; lined with molds in the shape of machines, a drop at its west end to the firing floor. There the first heat breathes
-; up through a crack (a low vent: jump it, or with Heat plating walk through), a pilgrim shrine, and the low door east
-; on to the Slag, barred by a gate its lever (by the door) raises. Ledges up the west wall climb back to the upper floor.
+; lined with molds in the shape of machines, a drop at its west end to the firing floor. There the first heat rises in
+; the old firebox at the foot of the west wall (a column that burns and closes nothing: what heat is), a pilgrim shrine,
+; and the low door east on to the Slag, barred by a gate its lever (by the door) raises. Ledges up the west wall climb
+; back to the upper floor.
 
 [ext_resource type="Material" path="res://assets/materials/basalt.tres" id="1_basalt"]
 [ext_resource type="PackedScene" path="res://scenes/kit/Block.tscn" id="2_block"]
 [ext_resource type="Script" path="res://scripts/rooms/RoomExit.cs" id="3_exit"]
 [ext_resource type="PackedScene" path="res://scenes/props/Shrine.tscn" id="4_shrine"]
-[ext_resource type="Script" path="res://scripts/props/HeatColumn.cs" id="5_heatcolumn"]
-[ext_resource type="PackedScene" path="res://scenes/fx/Embers.tscn" id="7_embers"]
+[ext_resource type="PackedScene" path="res://scenes/kit/HeatColumn.tscn" id="5_heatcolumn"]
 [ext_resource type="Script" path="res://scripts/kit/BlockMesh.cs" id="8_blockmesh"]
 [ext_resource type="Material" path="res://assets/materials/stone_mid.tres" id="9_stone_mid"]
 [ext_resource type="Script" path="res://scripts/kit/ArchMesh.cs" id="10_arch"]
 [ext_resource type="Script" path="res://scripts/parts/PodMesh.cs" id="11_pod"]
 [ext_resource type="Material" path="res://assets/materials/rust_mid.tres" id="12_rust_mid"]
-[ext_resource type="Material" path="res://assets/materials/magma.tres" id="13_magma"]
 [ext_resource type="PackedScene" path="res://scenes/fx/Dust.tscn" id="14_dust"]
 [ext_resource type="Script" path="res://scripts/rooms/PhotoSpot.cs" id="15_spot"]
 [ext_resource type="Script" path="res://scripts/rooms/Room.cs" id="16_room"]
@@ -55,11 +54,6 @@ script = ExtResource("8_blockmesh")
 Size = Vector3(50, 0.6, 6)
 Bevel = 0.25
 
-[sub_resource type="PrimitiveMesh" id="blockmesh_5"]
-script = ExtResource("8_blockmesh")
-Size = Vector3(3, 0.3, 3)
-Bevel = 0.1
-
 [node name="Kiln" type="Node3D" node_paths=PackedStringArray("SpawnPoint", "Stage", "Lamps", "Shafts", "GlyphLights")]
 script = ExtResource("16_room")
 SpawnPoint = NodePath("SpawnPoint")
@@ -68,7 +62,7 @@ Biome = ExtResource("17_volcanic")
 Lamps = [NodePath("Lamps/Shrine"), NodePath("Lamps/Upper")]
 Shafts = [NodePath("Shafts/Door")]
 GlyphLights = [NodePath("Props/Shrine/Light")]
-BoundsMin = Vector2(-1, -30)
+BoundsMin = Vector2(-4, -30)
 BoundsMax = Vector2(53, 8)
 
 [node name="SpawnPoint" type="Marker3D" parent="."]
@@ -128,9 +122,16 @@ transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 54.5, -11, 0)
 Size = Vector3(3, 14, 4)
 Material = ExtResource("1_basalt")
 
+; the west wall, over the old firebox's mouth
 [node name="WestWall" parent="Geometry" instance=ExtResource("2_block")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -1.5, -12, 0)
-Size = Vector3(3, 40, 4)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -3, -5.75, 0)
+Size = Vector3(6, 27.5, 4)
+Material = ExtResource("1_basalt")
+
+; the back of the firebox, under it
+[node name="FireboxBack" parent="Geometry" instance=ExtResource("2_block")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -4.5, -25.75, 0)
+Size = Vector3(3, 12.5, 4)
 Material = ExtResource("1_basalt")
 
 ; the firing floor
@@ -206,15 +207,12 @@ transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 12, -22, 0)
 
 [node name="Heat" type="Node3D" parent="."]
 
-; the first heat, breathing up through a crack: jump it, or walk through with Heat plating
-[node name="FirstHeat" type="Node3D" parent="Heat"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 30, -22, 0)
-script = ExtResource("5_heatcolumn")
-Strip = true
-Size = Vector2(2, 1.5)
-Embers = ExtResource("7_embers")
-EmberDensity = 2
-GlowEnergy = 3
+; the first heat: the old firebox still breathing, from its vent in the firing floor to the wall over its mouth, in a
+; recess of the west wall where the pilgrim lands from the upper floor. It closes nothing: it shows what heat is (a wall
+; that burns) before Heat plating exists
+[node name="FirstHeat" parent="Heat" instance=ExtResource("5_heatcolumn")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -1.5, -22, 0)
+Size = Vector2(3, 2.5)
 
 [node name="Kit" type="Node3D" parent="."]
 
@@ -282,12 +280,6 @@ transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 26, -21.75, -4.5)
 mesh = SubResource("blockmesh_4")
 material_override = ExtResource("9_stone_mid")
 
-; the crack the first heat comes through
-[node name="Crack" type="MeshInstance3D" parent="Kit"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 30, -22, 0.5)
-mesh = SubResource("blockmesh_5")
-material_override = ExtResource("13_magma")
-
 [node name="Shafts" type="Node3D" parent="."]
 
 [node name="Door" type="SpotLight3D" parent="Shafts"]
@@ -337,11 +329,18 @@ script = ExtResource("15_spot")
 PlayerPosition = Vector3(20, -10, 0)
 PlayerFacing = -1
 
-; the firing floor: the shrine, the first heat, the low door
+; the firing floor: the shrine, the low door
 [node name="Firing" type="Marker3D" parent="PhotoSpots"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 24, -18, 22)
 script = ExtResource("15_spot")
 PlayerPosition = Vector3(16, -22, 0)
+
+; the first heat in its firebox, under the ledges
+[node name="FirstHeat" type="Marker3D" parent="PhotoSpots"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 1, -19, 15)
+script = ExtResource("15_spot")
+PlayerPosition = Vector3(5, -22, 0)
+PlayerFacing = -1
 
 ; the whole kiln
 [node name="Wide" type="Marker3D" parent="PhotoSpots"]
