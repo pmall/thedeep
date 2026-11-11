@@ -9,6 +9,7 @@ namespace TheDeep.States;
 /// </summary>
 public sealed class SwimState : PlayerState
 {
+    /// <summary>The swim state of <paramref name="player"/>, made once by <see cref="PlayerStateSet"/>.</summary>
     public SwimState(Player player) : base(player)
     {
     }

@@ -3,6 +3,7 @@ namespace TheDeep.States;
 /// <summary>Airborne and not rising: past the apex, or walked off a ledge (coyote time applies).</summary>
 public sealed class FallState : PlayerState
 {
+    /// <summary>The fall state of <paramref name="player"/>, made once by <see cref="PlayerStateSet"/>.</summary>
     public FallState(Player player) : base(player)
     {
     }

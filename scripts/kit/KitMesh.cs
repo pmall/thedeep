@@ -36,6 +36,7 @@ public partial class KitMesh : PrimitiveMesh
     {
         private readonly NativeMeshArrays? _native;
 
+        /// <summary>Buffers used once, or with <paramref name="kept"/> reused frame after frame and written in place.</summary>
         public Buffers(bool kept = false)
         {
             _native = kept ? new NativeMeshArrays() : null;
@@ -45,18 +46,28 @@ public partial class KitMesh : PrimitiveMesh
         /// <summary>The Godot array the slots are written into (the native writer's own, for kept buffers).</summary>
         public Array Arrays { get; }
 
+        /// <summary>The in-place writer of kept buffers; null for buffers used once.</summary>
         internal NativeMeshArrays? Native => _native;
 
         public void Dispose() => _native?.Dispose();
 
+        /// <summary>Each vertex's position, in meters.</summary>
         public Vector3[] Positions { get; private set; } = System.Array.Empty<Vector3>();
+        /// <summary>Each vertex's normal.</summary>
         public Vector3[] Normals { get; private set; } = System.Array.Empty<Vector3>();
+        /// <summary>Each vertex's tangent, four floats a vertex (X, Y, Z and the binormal's sign).</summary>
         public float[] Tangents { get; private set; } = System.Array.Empty<float>();
+        /// <summary>Each vertex's color.</summary>
         public Color[] Colors { get; private set; } = System.Array.Empty<Color>();
+        /// <summary>Each vertex's texture coordinates.</summary>
         public Vector2[] Uvs { get; private set; } = System.Array.Empty<Vector2>();
+        /// <summary>Each vertex's second texture coordinates (the mesh's UV2 slot).</summary>
         public Vector2[] Patches { get; private set; } = System.Array.Empty<Vector2>();
+        /// <summary>The triangles, three vertex indices each.</summary>
         public int[] Indices { get; private set; } = System.Array.Empty<int>();
 
+        /// <summary>Sizes the buffers for <paramref name="vertices"/> vertices and <paramref name="indices"/> indices, keeping
+        /// those already that size.</summary>
         public void Fit(int vertices, int indices)
         {
             if (Positions.Length != vertices)

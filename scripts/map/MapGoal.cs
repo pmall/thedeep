@@ -22,6 +22,8 @@ public partial class MapGoal : Marker3D, INamesLines
     /// <inheritdoc/>
     public System.Collections.Generic.IEnumerable<StringName> LineIds => new[] { TitleLine, HintLine };
 
+    /// <summary>Whether <paramref name="point"/> is inside the goal's area on the play plane; never for a marker
+    /// only.</summary>
     public bool Contains(Vector3 point) =>
         Size != Vector2.Zero && Mathf.Abs(point.X - GlobalPosition.X) <= Size.X * 0.5f && Mathf.Abs(point.Y - GlobalPosition.Y) <= Size.Y * 0.5f;
 }

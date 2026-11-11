@@ -27,6 +27,7 @@ public partial class LockedDoor : Node3D
 
     private DoorLock? _lock;
 
+    /// <summary>Unlocked: the way through is open.</summary>
     public bool Opened { get; private set; }
 
     public override void _Ready()

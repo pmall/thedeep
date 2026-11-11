@@ -7,6 +7,7 @@ namespace TheDeep;
 /// does, shown when taken).</summary>
 public static class PowerStats
 {
+    /// <summary>The color the crystal raising <paramref name="stat"/> glows.</summary>
     public static Color ColorOf(PowerStat stat) => stat switch
     {
         PowerStat.Strength => new Color(1f, 0.4f, 0.3f),
@@ -14,8 +15,10 @@ public static class PowerStats
         _ => new Color(0.86f, 0.86f, 0.95f),
     };
 
+    /// <summary>The id of the line naming <paramref name="stat"/>.</summary>
     public static StringName NameLine(PowerStat stat) => $"powerup.{Key(stat)}.name";
 
+    /// <summary>The id of the line saying what <paramref name="stat"/> does, shown when its power-up is taken.</summary>
     public static StringName HintLine(PowerStat stat) => $"powerup.{Key(stat)}.hint";
 
     private static string Key(PowerStat stat) => stat switch

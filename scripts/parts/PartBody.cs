@@ -239,13 +239,20 @@ public partial class PartBody : Node3D
     /// <summary>What drawing one chain reuses every frame: its profile and taper (fixed), the builder, path and arrays.</summary>
     private sealed class ChainMesh : IDisposable
     {
+        /// <summary>The chain's points, one per frame of the path.</summary>
         public readonly NVector3[] Points;
+        /// <summary>The profile's scale at each point (width, thickness): the chain's taper.</summary>
         public readonly NVector2[] Scales;
+        /// <summary>The chain's cross-section: a flat rectangle for a ribbon, a circle for a tube.</summary>
         public readonly Profile Profile;
+        /// <summary>The mesh builder, reused every frame.</summary>
         public readonly MeshBuilder Builder = new();
+        /// <summary>The frames the profile is swept along, reused every frame.</summary>
         public readonly List<PathFrame> Path = new();
+        /// <summary>The mesh arrays, kept and written in place every frame.</summary>
         public readonly KitMesh.Buffers Arrays = new(kept: true);
 
+        /// <summary>What drawing the chain <paramref name="spec"/> with <paramref name="count"/> points reuses.</summary>
         public ChainMesh(PartChain spec, int count)
         {
             Points = new NVector3[count];

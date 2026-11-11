@@ -28,6 +28,7 @@ public partial class AbilityRelic : Node3D, INamesLines
     private float _time;
     private bool _taken;
 
+    /// <summary>Taken already.</summary>
     public bool Taken => _taken;
 
     public override void _Ready()

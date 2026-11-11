@@ -10,6 +10,7 @@ public sealed class DiveState : PlayerState
     private float _timeLeft;
     private bool _firstTick;
 
+    /// <summary>The dive state of <paramref name="player"/>, made once by <see cref="PlayerStateSet"/>.</summary>
     public DiveState(Player player) : base(player)
     {
     }

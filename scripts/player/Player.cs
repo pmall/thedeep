@@ -81,6 +81,7 @@ public partial class Player : CharacterBody3D
     /// <summary>Raised on going into water deep enough to swim, with the downward speed (m/s) just before.</summary>
     public event Action<float>? Splashed;
 
+    /// <summary>The abilities the pilgrim has.</summary>
     public AbilitySet Abilities { get; } = new();
 
     /// <summary>The items held (keys, codes): the doors they open (<see cref="LockedDoor"/>).</summary>
@@ -124,17 +125,22 @@ public partial class Player : CharacterBody3D
     /// <summary>Held still, velocity kept, no input read (during a room transition's fade).</summary>
     public bool Frozen { get; set; }
 
+    /// <summary>The pilgrim's movement states, made on first use.</summary>
     public PlayerStateSet States => _states ??= new PlayerStateSet(this);
 
+    /// <summary>The movement state the pilgrim is in (idle at first).</summary>
     public PlayerState CurrentState => _state ??= States.Idle;
 
+    /// <summary>The player's input, as last read.</summary>
     public PlayerInput CurrentInput => Control.Input;
 
     /// <summary>+1 facing right, -1 facing left.</summary>
     public int Facing { get; private set; } = 1;
 
+    /// <summary>Seconds before the pilgrim may dash again; 0 when it may.</summary>
     public float DashCooldownRemaining => Control.DashCooldownRemaining;
 
+    /// <summary>Dashes the pilgrim still has off the ground.</summary>
     public int AirDashesLeft => Control.AirDashesLeft;
 
     /// <summary>What the player stands on (from the floor's physics layer), or null in the air.</summary>
@@ -637,6 +643,8 @@ public partial class Player : CharacterBody3D
     /// <summary>Called by JumpState on take-off so the same press and ledge can't be used twice.</summary>
     public void ConsumeJump() => Control.ConsumeJump();
 
+    /// <summary>Called by DashState as it starts: spends the dash, faces <paramref name="direction"/> (+1 right, -1 left) and
+    /// raises <see cref="Dashed"/>.</summary>
     public void BeginDash(int direction)
     {
         Control.BeginDash(IsOnFloor());
@@ -644,6 +652,7 @@ public partial class Player : CharacterBody3D
         Dashed?.Invoke(direction);
     }
 
+    /// <summary>Called by DashState as the dash ends.</summary>
     public void EndDash() => Control.EndDash();
 
     /// <summary>

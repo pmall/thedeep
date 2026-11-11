@@ -21,6 +21,7 @@ public partial class LightShaft : MeshInstance3D
 
     private static readonly StringName FocusParameter = "focus";
 
+    /// <summary>The spot light whose beam this draws.</summary>
     public required SpotLight3D Light { get; init; }
 
     /// <summary>The beam's look (assets/materials/light_shaft.tres).</summary>

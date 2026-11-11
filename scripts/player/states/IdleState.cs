@@ -3,6 +3,7 @@ namespace TheDeep.States;
 /// <summary>Standing on the ground; decelerates to a stop.</summary>
 public sealed class IdleState : PlayerState
 {
+    /// <summary>The idle state of <paramref name="player"/>, made once by <see cref="PlayerStateSet"/>.</summary>
     public IdleState(Player player) : base(player)
     {
     }

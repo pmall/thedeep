@@ -11,14 +11,23 @@ namespace TheDeep;
 /// </summary>
 public static class GameLines
 {
+    /// <summary>The prompt beside someone to talk to.</summary>
     public static readonly StringName Talk = "ui.talk";
+    /// <summary>The prompt beside a lever.</summary>
     public static readonly StringName Pull = "ui.pull";
+    /// <summary>The prompt at a shrine.</summary>
     public static readonly StringName Rest = "ui.rest";
+    /// <summary>The prompt beside a scripture plate.</summary>
     public static readonly StringName Read = "ui.read";
+    /// <summary>The map legend's word for the mark of an open way.</summary>
     public static readonly StringName MapWayOpen = "map.way.open";
+    /// <summary>The map legend's word for the mark of a way to a room not built yet.</summary>
     public static readonly StringName MapWayUnbuilt = "map.way.unbuilt";
+    /// <summary>The end card's title.</summary>
     public static readonly StringName EndingTitle = "ending.title";
+    /// <summary>The end card's line.</summary>
     public static readonly StringName EndingLine = "ending.line";
+    /// <summary>The end card's thanks.</summary>
     public static readonly StringName EndingThanks = "ending.thanks";
 
     /// <summary>Every line id the code names.</summary>

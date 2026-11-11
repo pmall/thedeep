@@ -16,6 +16,7 @@ public partial class WorldDefinition : Resource
     /// <summary>Where worlds live: one folder each, its definition in <see cref="FileName"/>.</summary>
     public const string Folder = "res://worlds";
 
+    /// <summary>The name of a world's definition file in its folder.</summary>
     public const string FileName = "world.tres";
 
     /// <summary>Folder of the world's room scenes; a room's name is its file name there.</summary>
@@ -45,6 +46,7 @@ public partial class WorldDefinition : Resource
     /// <summary>The save's file name (user://&lt;name&gt;.json): each world keeps its own.</summary>
     [Export] public string SaveName { get; set; } = "save";
 
+    /// <summary>Where this world's save is written (<see cref="SaveFile"/>).</summary>
     public string SavePath => $"user://{SaveName}.json";
 
     /// <summary>The scene path of the room named <paramref name="name"/>.</summary>

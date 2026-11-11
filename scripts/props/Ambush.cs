@@ -26,8 +26,10 @@ public partial class Ambush : Node3D
     /// <summary>The pilgrim, set when the room loads (it lives outside the room's scene).</summary>
     public Player? Player { get; set; }
 
+    /// <summary>The fight is on, not won yet.</summary>
     public bool Fighting => _fight.Phase == ArenaPhase.Fighting;
 
+    /// <summary>The fight is won.</summary>
     public bool Cleared => _fight.Phase == ArenaPhase.Won;
 
     /// <summary>The trap sprang: the gates are falling, the wave standing up.</summary>

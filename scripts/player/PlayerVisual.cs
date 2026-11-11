@@ -103,12 +103,14 @@ public partial class PlayerVisual : Node3D
         _shimmer = shimmer;
     }
 
+    /// <summary>The side the body turns to: +1 right, -1 left.</summary>
     public void SetFacing(int facing) => _facing = facing < 0 ? -1 : 1;
 
     /// <summary>A strike under way (<see cref="PilgrimMotion.Strike"/>); each physics tick it lasts.</summary>
     public void Strike(float progress, float windUpEnd, float activeEnd, StrikeKind kind) =>
         _motion?.Strike(progress, windUpEnd, activeEnd, kind);
 
+    /// <summary>The strike is over (<see cref="PilgrimMotion.EndStrike"/>).</summary>
     public void EndStrike() => _motion?.EndStrike();
 
     /// <summary>The held moment the body plays (resting, taking a relic, dying); None lets it go.</summary>

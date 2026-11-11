@@ -14,8 +14,10 @@ public static class TokenGlow
     private static readonly StringName TintParameter = "tint";
     private static readonly StringName GlowParameter = "glow";
 
+    /// <summary>Sets the color of <paramref name="glow"/>: its kind's.</summary>
     public static void Tint(GeometryInstance3D glow, Color color) => glow.SetInstanceShaderParameter(TintParameter, color);
 
+    /// <summary>Sets how lit <paramref name="glow"/> is: 1 waiting to be used, <see cref="Spent"/> once used.</summary>
     public static void Light(GeometryInstance3D glow, float lit) => glow.SetInstanceShaderParameter(GlowParameter, lit);
 
     /// <summary>On <paramref name="tween"/> (in parallel with what it plays): flares <paramref name="glow"/> to <paramref name="peak"/>, then fades it to spent.</summary>

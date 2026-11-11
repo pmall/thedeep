@@ -8,6 +8,7 @@ namespace TheDeep;
 /// </summary>
 public static class SaveFile
 {
+    /// <summary>The save at <paramref name="path"/>, or null when there is none (a new game) or it cannot be opened.</summary>
     public static SaveData? Read(string path)
     {
         if (!FileAccess.FileExists(path))
@@ -28,6 +29,8 @@ public static class SaveFile
         }
     }
 
+    /// <summary>Writes <paramref name="data"/> as the save at <paramref name="path"/>, replacing the one there; a failure is
+    /// reported as an engine error.</summary>
     public static void Write(string path, SaveData data)
     {
         using FileAccess? file = FileAccess.Open(path, FileAccess.ModeFlags.Write);

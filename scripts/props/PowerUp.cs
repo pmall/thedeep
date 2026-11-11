@@ -39,6 +39,7 @@ public partial class PowerUp : Node3D
     private Vector3 _rest;
     private float _time;
 
+    /// <summary>Taken already.</summary>
     public bool Taken { get; private set; }
 
     public override void _Ready()

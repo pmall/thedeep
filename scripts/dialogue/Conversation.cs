@@ -36,6 +36,7 @@ public partial class Conversation : Node3D, INamesLines
         Prompt.Modulate = Prompt.Modulate with { A = 0f };
     }
 
+    /// <summary>Whether the talk prompt is wanted now; it fades in and out toward that.</summary>
     public void ShowPrompt(bool shown) => _wanted = shown;
 
     /// <summary>Whether feet at <paramref name="feet"/> are near enough to talk.</summary>

@@ -12,8 +12,11 @@ public partial class Shatter : Node3D
 {
     /// <summary>The block's size, its look, the direction the Drill moved in, the dust burst.</summary>
     public Vector3 Size { get; set; } = Vector3.One;
+    /// <summary>The broken block's own material, worn by the chunks.</summary>
     public Material? Material { get; set; }
+    /// <summary>The direction the Drill moved in: the chunks are thrown along it.</summary>
     public Vector3 Push { get; set; }
+    /// <summary>The dust burst left where the block stood; null for none.</summary>
     public PackedScene? Dust { get; set; }
 
     /// <summary>Seconds a chunk flies, and the share of it spent shrinking away at the end.</summary>

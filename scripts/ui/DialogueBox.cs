@@ -30,6 +30,7 @@ public partial class DialogueBox : CanvasLayer
     private bool _open;
     private float _time;
 
+    /// <summary>A conversation's text is on screen (or fading in).</summary>
     public bool IsOpen => _open;
 
     public override void _Ready()
@@ -78,6 +79,7 @@ public partial class DialogueBox : CanvasLayer
         More.Visible = whole;
     }
 
+    /// <summary>Closes the box: it fades out.</summary>
     public void Close() => _open = false;
 
     public override void _Process(double delta)

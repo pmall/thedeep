@@ -9,6 +9,7 @@ namespace TheDeep;
 /// </summary>
 public static class GateKinds
 {
+    /// <summary>The color of what gates a way on <paramref name="ability"/>, on the map and in the gate hints.</summary>
     public static Color ColorOf(Ability ability) => ability switch
     {
         Ability.MagGrip => new Color(0.66f, 0.80f, 1f),

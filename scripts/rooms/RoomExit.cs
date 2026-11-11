@@ -58,6 +58,7 @@ public partial class RoomExit : Marker3D
     /// </summary>
     [Export] public Vector2 Size { get; set; } = new(1f, 4f);
 
+    /// <summary>What the pilgrim needs to take this exit, parsed from <see cref="Requires"/>.</summary>
     public Requirement Requirement => Requirement.Parse(Requires);
 
     /// <summary>An exit with a target room; one leading to a room not built yet stays sealed.</summary>

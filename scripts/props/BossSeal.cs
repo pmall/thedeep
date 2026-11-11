@@ -32,6 +32,7 @@ public partial class BossSeal : Node3D, INamesLines
     /// <summary>The pilgrim, set when the room loads (it lives outside the room's scene).</summary>
     public Player? Player { get; set; }
 
+    /// <summary>The fight is on, not won yet.</summary>
     public bool Fighting => _fight.Phase == ArenaPhase.Fighting;
 
     /// <summary>The boss is broken (this visit, or for good before).</summary>

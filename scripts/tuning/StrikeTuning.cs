@@ -30,6 +30,8 @@ public partial class StrikeTuning : Resource
     /// <summary>Upward speed a hit gives the pilgrim (a down strike's bounce), m/s; 0 for none.</summary>
     [Export] public float Bounce { get; set; }
 
+    /// <summary>The strike these knobs describe, as the combat rules read it: ahead of the pilgrim, or below it for a downward
+    /// one.</summary>
     public StrikeShape Shape => new(Kind, Reach, Width, Downward ? -System.Numerics.Vector2.UnitY : System.Numerics.Vector2.UnitX,
         ExtraDamage, Knockback, HitStop, Bounce);
 }

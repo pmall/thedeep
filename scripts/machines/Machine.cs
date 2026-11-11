@@ -71,6 +71,7 @@ public partial class Machine : CharacterBody3D
     /// <summary>What the brain wanted at the last tick.</summary>
     public Intent Intent { get; private set; }
 
+    /// <summary>The side it faces: +1 right, -1 left.</summary>
     public int Facing { get; private set; } = 1;
 
     /// <summary>Broken by the pilgrim: folding down, then gone until the room is entered again.</summary>

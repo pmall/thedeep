@@ -11,6 +11,7 @@ namespace TheDeep;
 [GlobalClass]
 public partial class MachineSpecies : Resource, INamesLines
 {
+    /// <summary>Where the species live, one file each.</summary>
     public const string Folder = "res://resources/machines";
 
     /// <summary>Stable id (the file name): neighbors recognize their kind by it, the bestiary keys on it.</summary>

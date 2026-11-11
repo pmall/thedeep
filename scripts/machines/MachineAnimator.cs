@@ -19,6 +19,8 @@ public sealed class MachineAnimator
     private readonly Dictionary<StringName, Node3D> _driven = new();
     private readonly List<Leg> _legs = new();
 
+    /// <summary>Poses <paramref name="body"/>, carried by <paramref name="ground"/>, with the drivers and legs of
+    /// <paramref name="species"/>.</summary>
     public MachineAnimator(PartBody body, Node3D ground, MachineSpecies species)
     {
         _body = body;

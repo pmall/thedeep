@@ -35,6 +35,7 @@ public partial class ItemPickup : Node3D
     private Vector3 _rest;
     private float _time;
 
+    /// <summary>Picked up already.</summary>
     public bool Taken { get; private set; }
 
     public override void _Ready()

@@ -39,8 +39,10 @@ public partial class PlayerAttack : Node3D
     /// <summary>The strike under way (or the last one).</summary>
     public StrikeShape Strike { get; private set; }
 
+    /// <summary>The side the strike under way (or the last one) went: +1 right, -1 left.</summary>
     public int Facing => _facing;
 
+    /// <summary>Where the swing is now (wind-up, active, recovery, or none).</summary>
     public SwingPhase Phase => Timing.Phase;
 
     public override void _Ready()

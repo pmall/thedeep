@@ -13,6 +13,7 @@ namespace TheDeep;
 /// </summary>
 public partial class SurfaceBake : Node
 {
+    /// <summary>Where the baked surface textures are written.</summary>
     public const string Folder = "res://assets/textures/surfaces";
 
     public override void _Ready()

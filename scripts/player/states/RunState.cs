@@ -3,6 +3,7 @@ namespace TheDeep.States;
 /// <summary>Running on the ground toward the held direction.</summary>
 public sealed class RunState : PlayerState
 {
+    /// <summary>The run state of <paramref name="player"/>, made once by <see cref="PlayerStateSet"/>.</summary>
     public RunState(Player player) : base(player)
     {
     }

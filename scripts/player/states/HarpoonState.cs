@@ -26,6 +26,7 @@ public sealed class HarpoonState : PlayerState
     private NVector2 _before;
     private NVector2 _pull;
 
+    /// <summary>The harpoon state of <paramref name="player"/>, made once by <see cref="PlayerStateSet"/>.</summary>
     public HarpoonState(Player player) : base(player)
     {
     }

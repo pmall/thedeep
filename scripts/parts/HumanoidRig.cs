@@ -22,6 +22,7 @@ public sealed class HumanoidRig
         Dims = dims;
     }
 
+    /// <summary>The body's sizes, measured from the joints' rest offsets (meters).</summary>
     public HumanoidDims Dims { get; }
 
     /// <summary>The rig of <paramref name="body"/>, or null (with an error) if a humanoid joint is missing.</summary>

@@ -71,6 +71,7 @@ public partial class Lift : Node3D
     /// <summary>The pilgrim, set by the session when the room loads.</summary>
     public Player? Player { get; set; }
 
+    /// <summary>The lift's travel: where it is and what it is doing.</summary>
     public LiftMotion Travel => Motion;
 
     /// <summary>Raised when the brake lets go under a rider (for a shake).</summary>

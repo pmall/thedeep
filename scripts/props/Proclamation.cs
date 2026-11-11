@@ -19,6 +19,7 @@ public partial class Proclamation : Marker3D, INamesLines
     /// <inheritdoc/>
     public System.Collections.Generic.IEnumerable<StringName> LineIds => new[] { SpeakerLine, TextLine };
 
+    /// <summary>Whether <paramref name="point"/> is inside the area on the play plane.</summary>
     public bool Contains(Vector3 point) =>
         Mathf.Abs(point.X - GlobalPosition.X) <= Size.X * 0.5f && Mathf.Abs(point.Y - GlobalPosition.Y) <= Size.Y * 0.5f;
 }

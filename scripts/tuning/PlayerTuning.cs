@@ -126,8 +126,12 @@ public partial class PlayerTuning : Resource
     [Export] public float HurtLift { get; set; } = 6f;
     [Export] public float HurtStun { get; set; } = 0.22f;
 
+    /// <summary>Gravity (m/s², positive) that makes the jump peak as tuned, derived from <see cref="JumpHeight"/> and
+    /// <see cref="JumpTimeToApex"/>.</summary>
     public float Gravity => JumpMath.Gravity(JumpHeight, JumpTimeToApex);
 
+    /// <summary>Upward speed at take-off (m/s), derived from <see cref="JumpHeight"/> and
+    /// <see cref="JumpTimeToApex"/>.</summary>
     public float JumpTakeOffSpeed => JumpMath.TakeOffSpeed(JumpHeight, JumpTimeToApex);
 
     // The core reads these numbers as plain records: each one is built here, the one place they cross the seam.

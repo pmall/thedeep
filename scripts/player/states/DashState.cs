@@ -16,6 +16,7 @@ public sealed class DashState : PlayerState
     private bool _startedGrounded;
     private bool _boring;
 
+    /// <summary>The dash state of <paramref name="player"/>, made once by <see cref="PlayerStateSet"/>.</summary>
     public DashState(Player player) : base(player)
     {
     }

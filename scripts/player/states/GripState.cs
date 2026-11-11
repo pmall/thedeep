@@ -34,6 +34,7 @@ public sealed class GripState : PlayerState
     private float _lockedAlong;
     private GripPose _attach;
 
+    /// <summary>The grip state of <paramref name="player"/>, made once by <see cref="PlayerStateSet"/>.</summary>
     public GripState(Player player) : base(player)
     {
     }

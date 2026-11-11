@@ -36,6 +36,7 @@ public partial class Conversations : Node
 
     /// <summary>Raised when a conversation begins, and when it has been heard to its end.</summary>
     public event System.Action<Conversation>? Began;
+    /// <summary>Raised when a conversation has been heard to its end.</summary>
     public event System.Action<Conversation>? Ended;
 
     public override void _Ready()

@@ -98,6 +98,7 @@ public partial class ControlsManual : Control
     /// <summary>Sits at the top left, <see cref="TopOffset"/> down; otherwise at the bottom left.</summary>
     public bool Top { get; init; }
 
+    /// <summary>How far below the screen's top the manual sits when <see cref="Top"/>, in pixels.</summary>
     public float TopOffset { get; init; } = 150f;
 
     /// <summary>What a row shows for one device, left to right: buttons (<see cref="Glyph"/>) and the marks between them (<see cref="Separator"/>).</summary>
@@ -110,16 +111,22 @@ public partial class ControlsManual : Control
     /// <summary>A mark between buttons: "/" between alternatives, "+" between buttons pressed together.</summary>
     private sealed class Separator(string text) : Item
     {
+        /// <summary>The mark's text.</summary>
         public string Text { get; } = text;
     }
 
     /// <summary>One button on screen: a key cap, or a pad glyph; lit while any of its actions is held.</summary>
     private sealed class Glyph : Item
     {
+        /// <summary>The key's or button's name, written on its cap.</summary>
         public string Text = "";
+        /// <summary>The pad button's shape, for a pad glyph.</summary>
         public ButtonNames.PadShape? Shape;
+        /// <summary>Which face button it is, A, B, X, Y as 0–3 (their colors); -1 for any other.</summary>
         public int Face = -1;
+        /// <summary>The input actions that light it while held.</summary>
         public StringName[] Actions = System.Array.Empty<StringName>();
+        /// <summary>How lit it is now, 0–1.</summary>
         public float Lit;
 
         /// <summary>A stick pushed one way (a direction on the stick), or zero for the live stick.</summary>
@@ -129,9 +136,13 @@ public partial class ControlsManual : Control
     /// <summary>A row as drawn: its spec, its words, and for each device its buttons and the separators between them.</summary>
     private sealed class Row(Spec spec, string words, bool header)
     {
+        /// <summary>What the row is made from.</summary>
         public Spec Spec { get; } = spec;
+        /// <summary>What the row says its buttons do.</summary>
         public string Words { get; } = words;
+        /// <summary>A title row, not a control.</summary>
         public bool Header { get; } = header;
+        /// <summary>The row's buttons and separators, one list per device.</summary>
         public readonly List<Item>[] Items = { new(), new() };
     }
 

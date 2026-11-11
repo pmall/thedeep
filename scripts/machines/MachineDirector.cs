@@ -45,6 +45,7 @@ public partial class MachineDirector : Node
     /// <summary>False hides the player from every machine (the species check runs them alone).</summary>
     public bool PlayerPresent { get; set; } = true;
 
+    /// <summary>The machines of the room it is in charge of.</summary>
     public IReadOnlyList<Machine> Machines => _machines;
 
     /// <summary>The pilgrim's swing hit a machine (true: and broke it).</summary>
@@ -74,6 +75,7 @@ public partial class MachineDirector : Node
     /// <summary>Takes charge of a machine added after the room loaded (the species check spawns them).</summary>
     public void Add(Machine machine) => _machines.Add(machine);
 
+    /// <summary>Lets go of a machine taken out of the room.</summary>
     public void Remove(Machine machine) => _machines.Remove(machine);
 
     /// <summary>Every machine back where it spawned, with a fresh brain.</summary>

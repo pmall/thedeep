@@ -30,6 +30,7 @@ public partial class RoomTravel : Node
     /// <summary>Raised after the player arrived in a new room through an exit.</summary>
     public event System.Action<RoomExit>? Travelled;
 
+    /// <summary>A room transition is under way.</summary>
     public bool Travelling => _travelling;
 
     /// <summary>False keeps the player in the room whatever exit they walk into (look-dev runs stay in their room).</summary>

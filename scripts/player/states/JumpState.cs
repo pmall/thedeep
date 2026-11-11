@@ -5,6 +5,7 @@ public sealed class JumpState : PlayerState
 {
     private bool _cut;
 
+    /// <summary>The jump state of <paramref name="player"/>, made once by <see cref="PlayerStateSet"/>.</summary>
     public JumpState(Player player) : base(player)
     {
     }

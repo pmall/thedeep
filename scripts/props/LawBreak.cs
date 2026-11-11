@@ -49,11 +49,13 @@ public partial class LawBreak : Node3D, INamesLines
     /// <summary>The pilgrim, set by the session when the room loads.</summary>
     public Player? Player { get; set; }
 
+    /// <summary>The law is broken: the veil is gone and the way open.</summary>
     public bool Broken => _gone >= 0f;
 
     /// <summary>0 to 1 while the pilgrim presses against the law.</summary>
     public float Strain => _strain;
 
+    /// <summary>Raised once, as the law breaks.</summary>
     public event Action<LawBreak>? Broke;
 
     public override void _Ready()

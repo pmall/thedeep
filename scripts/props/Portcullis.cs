@@ -44,8 +44,10 @@ public partial class Portcullis : Node3D
         Place();
     }
 
+    /// <summary>The gate is to shut: it moves there over the next frames.</summary>
     public void Close() => _target = 0f;
 
+    /// <summary>The gate is to open: it moves there over the next frames.</summary>
     public void Open() => _target = 1f;
 
     /// <summary>Open or shut at once, without the drop or the winch (a room loaded with the gate already so).</summary>

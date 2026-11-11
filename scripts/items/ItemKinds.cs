@@ -10,6 +10,8 @@ namespace TheDeep;
 /// </summary>
 public static class ItemKinds
 {
+    /// <summary>The color of an item of <paramref name="kind"/> and of the lock it opens, on the pickup, the door and
+    /// the map.</summary>
     public static Color ColorOf(ItemKind kind) => kind switch
     {
         ItemKind.Key => new Color(1f, 0.68f, 0.26f),

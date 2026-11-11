@@ -37,6 +37,7 @@ public partial class HarpoonRig : Node3D
     private float _reel;
     private Vector3 _reelEnd;
 
+    /// <summary>Makes the sight test once, so choosing an anchor each tick allocates nothing.</summary>
     public HarpoonRig()
     {
         _inSight = i => InSight(_sightFrom, _points[i]); // made once: a lambda per tick would allocate

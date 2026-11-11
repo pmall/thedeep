@@ -25,6 +25,7 @@ public sealed unsafe class NativeMeshArrays : IDisposable
     /// <summary>The array to hand to <see cref="ArrayMesh.AddSurfaceFromArrays"/>.</summary>
     public Godot.Collections.Array Managed { get; } = new();
 
+    /// <summary>An array with every mesh slot empty, and the native reference its slots are written through.</summary>
     public NativeMeshArrays()
     {
         Managed.Resize((int)Mesh.ArrayType.Max);
@@ -39,14 +40,19 @@ public sealed unsafe class NativeMeshArrays : IDisposable
 
     ~NativeMeshArrays() => Release();
 
+    /// <summary>Writes the 3D vectors <paramref name="values"/> into <paramref name="slot"/>, releasing what it held.</summary>
     public void Set(Mesh.ArrayType slot, Span<Vector3> values) => Write(slot, VariantUtils.CreateFromPackedVector3Array(values));
 
+    /// <summary>Writes the 2D vectors <paramref name="values"/> into <paramref name="slot"/>, releasing what it held.</summary>
     public void Set(Mesh.ArrayType slot, Span<Vector2> values) => Write(slot, VariantUtils.CreateFromPackedVector2Array(values));
 
+    /// <summary>Writes the floats <paramref name="values"/> into <paramref name="slot"/>, releasing what it held.</summary>
     public void Set(Mesh.ArrayType slot, Span<float> values) => Write(slot, VariantUtils.CreateFromPackedFloat32Array(values));
 
+    /// <summary>Writes the colors <paramref name="values"/> into <paramref name="slot"/>, releasing what it held.</summary>
     public void Set(Mesh.ArrayType slot, Span<Color> values) => Write(slot, VariantUtils.CreateFromPackedColorArray(values));
 
+    /// <summary>Writes the indices <paramref name="values"/> into <paramref name="slot"/>, releasing what it held.</summary>
     public void Set(Mesh.ArrayType slot, Span<int> values) => Write(slot, VariantUtils.CreateFromPackedInt32Array(values));
 
     public void Dispose()

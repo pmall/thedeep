@@ -38,6 +38,7 @@ public partial class MapScreen : CanvasLayer
     private bool _open;
     private float _time;
 
+    /// <summary>The map is on screen and the game paused.</summary>
     public bool IsOpen => _open;
 
     public override void _Ready()
@@ -59,6 +60,7 @@ public partial class MapScreen : CanvasLayer
         }
     }
 
+    /// <summary>Opens the map and pauses the game, or closes it and resumes.</summary>
     public void Toggle()
     {
         _open = !_open;

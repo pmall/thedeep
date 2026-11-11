@@ -21,6 +21,7 @@ public partial class FalseWall : Node3D
 
     private MeshInstance3D? _face;
 
+    /// <summary>Found by the pilgrim, now or on an earlier visit: fading or gone.</summary>
     public bool Found { get; private set; }
 
     /// <summary>The wall on the play plane, room-local.</summary>

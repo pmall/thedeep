@@ -31,6 +31,7 @@ public partial class Lever : Node3D
     private float _shown;
     private bool _wanted;
 
+    /// <summary>Thrown already.</summary>
     public bool Pulled { get; private set; }
 
     public override void _Ready()
@@ -46,8 +47,10 @@ public partial class Lever : Node3D
         }
     }
 
+    /// <summary>Whether feet at <paramref name="feet"/> are near enough to pull it.</summary>
     public bool Near(Vector3 feet) => new Vector2(feet.X - GlobalPosition.X, feet.Y - GlobalPosition.Y).Length() <= Range;
 
+    /// <summary>Whether the pull prompt is wanted now; it fades in and out toward that.</summary>
     public void ShowPrompt(bool shown) => _wanted = shown;
 
     /// <summary>Thrown: the handle swings down across the quadrant and bounces on its stop, the glow flares and dies.</summary>
