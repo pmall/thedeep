@@ -31,9 +31,6 @@ public partial class RoomValidator : Node
 {
     private readonly List<string> _problems = new();
 
-    /// <summary>The old heat strips still placed (`Room/Node`), named by the check but not failed (<see cref="HeatColumn.Strip"/>).</summary>
-    private readonly List<string> _strips = new();
-
     /// <summary>What the ground rules (<see cref="GroundRules"/>) find, one line each; report-only until the Slag is rebuilt.</summary>
     private readonly List<string> _ground = new();
 
@@ -127,12 +124,6 @@ public partial class RoomValidator : Node
         if (_problems.Count == 0)
         {
             GD.Print($"ROOMS OK: {rooms} rooms, {exits} exits");
-            if (_strips.Count > 0)
-            {
-                // Report-only until the rooms are rebuilt: an old strip is no column, so HeatGate can't hold it yet.
-                GD.Print($"HEAT STRIPS to convert into columns (docs/roadmap.md#volcanic-rethink): {string.Join(", ", _strips)}");
-            }
-
             GD.Print(map);
         }
 
@@ -261,7 +252,7 @@ public partial class RoomValidator : Node
 
         var openings = exits.Select(e => e.Threshold.Area).ToList();
         var bounds = new Box(room.BoundsMin.X, room.BoundsMin.Y, room.BoundsMax.X, room.BoundsMax.Y);
-        foreach (HeatColumn heat in room.All<HeatColumn>().Where(h => h.IsColumn))
+        foreach (HeatColumn heat in room.All<HeatColumn>())
         {
             foreach (string problem in HeatGate.Problems(heat.Region, solids, openings, bounds, body))
             {
@@ -269,7 +260,6 @@ public partial class RoomValidator : Node
             }
         }
 
-        _strips.AddRange(room.All<HeatColumn>().Where(h => h.Strip).Select(h => $"{World.NameOf(path)}/{h.Name}"));
         ReportGround(room, World.NameOf(path), exits);
 
         if (!room.PhotoSpots().Any())

@@ -15,9 +15,8 @@ namespace TheDeep;
 /// grate as wide as the column between two posts at its edges (<see cref="Source"/>); a light in the room's lamp color.
 /// </para>
 /// <para>
-/// One kind is an old stand-in kept until `docs/roadmap.md#volcanic-rethink` converts its rooms: a <see cref="Strip"/> (heat lying
-/// over a floor, embers and a glow only, which the room check names but doesn't fail). Not a <see cref="Block"/>: the map's
-/// geometry check reads its <see cref="Region"/> as space no planner may enter without Heat plating.
+/// Not a <see cref="Block"/>: the map's geometry check reads its <see cref="Region"/> as space no planner may enter without Heat
+/// plating.
 /// </para>
 /// </summary>
 public partial class HeatColumn : Node3D
@@ -29,9 +28,6 @@ public partial class HeatColumn : Node3D
 
     /// <summary>Ground closer than this to the column (meters, around it) is no footing to be set back on.</summary>
     [Export] public float FootingMargin { get; set; } = 0.75f;
-
-    /// <summary>An old strip of heat over a floor, not a column yet: drawn as embers and a glow only, to convert.</summary>
-    [Export] public bool Strip { get; set; }
 
     [Export] public PackedScene? Embers { get; set; }
 
@@ -72,26 +68,19 @@ public partial class HeatColumn : Node3D
     /// <summary>The column on the play plane, for the map's geometry check.</summary>
     public Box Region => new(GlobalPosition.X - 0.5f * Size.X, GlobalPosition.Y, GlobalPosition.X + 0.5f * Size.X, GlobalPosition.Y + Size.Y);
 
-    /// <summary>A column proper: not the old strip.</summary>
-    public bool IsColumn => !Strip;
-
     public override void _Ready()
     {
         if (Embers?.Instantiate() is AmbientParticles embers)
         {
-            // A column's embers start low and inside its width, so they rise within it; a strip's fill its lower half.
-            float across = IsColumn ? 0.4f : 0.5f;
-            embers.Extents = new Vector3(across * Size.X, 0.25f * Size.Y, IsColumn ? 0.5f : 0.6f);
+            // The embers start low and inside its width, so they rise within it.
+            embers.Extents = new Vector3(0.4f * Size.X, 0.25f * Size.Y, 0.5f);
             embers.Density = EmberDensity;
-            embers.Position = new Vector3(0f, 0.25f * Size.Y, IsColumn ? 0f : 0.2f);
+            embers.Position = new Vector3(0f, 0.25f * Size.Y, 0f);
             AddChild(embers);
         }
 
-        if (IsColumn)
-        {
-            BuildPlume();
-            BuildVent();
-        }
+        BuildPlume();
+        BuildVent();
 
         Glow.LightEnergy = GlowEnergy;
         Glow.OmniRange = Mathf.Max(Size.X, 3f) * 1.6f;
