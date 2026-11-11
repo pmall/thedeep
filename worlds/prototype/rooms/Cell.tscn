@@ -19,6 +19,9 @@
 [ext_resource type="PackedScene" path="res://scenes/stage/RoomStage.tscn" id="13_stage"]
 [ext_resource type="Script" path="res://scripts/rooms/dressing/WallDressing.cs" id="14_walldressing"]
 [ext_resource type="Material" path="res://assets/materials/wall_stone.tres" id="15_wall_stone"]
+[ext_resource type="Script" path="res://scripts/kit/ColumnMesh.cs" id="16_column"]
+[ext_resource type="Script" path="res://scripts/kit/CableMesh.cs" id="17_cables"]
+[ext_resource type="Material" path="res://assets/materials/foreground.tres" id="18_foreground"]
 
 [sub_resource type="QuadMesh" id="QuadMesh_1"]
 size = Vector2(2.6, 0.3)
@@ -32,6 +35,51 @@ Bevel = 0.1
 script = ExtResource("7_blockmesh")
 Size = Vector3(30, 16, 1)
 Bevel = 0.1
+
+[sub_resource type="PrimitiveMesh" id="fore_pierwest"]
+script = ExtResource("16_column")
+Height = 12.5
+Radius = 0.8
+Sides = 20
+Shafts = 4
+Plinth = 0.6
+Capital = 0.5
+
+[sub_resource type="PrimitiveMesh" id="fore_piereast"]
+script = ExtResource("16_column")
+Height = 5
+Radius = 0.9
+Sides = 20
+Shafts = 4
+Plinth = 0.6
+Capital = 0.5
+
+[sub_resource type="PrimitiveMesh" id="fore_chains"]
+script = ExtResource("17_cables")
+End = Vector3(-0.3, -5.25, 0)
+Sag = 0.1
+Radius = 0.05
+Strands = 3
+Seed = 7
+
+[sub_resource type="PrimitiveMesh" id="fore_rubblewest"]
+script = ExtResource("7_blockmesh")
+Size = Vector3(2.8, 1.6, 1.6)
+Bevel = 0.15
+
+[sub_resource type="PrimitiveMesh" id="fore_rubblemid"]
+script = ExtResource("7_blockmesh")
+Size = Vector3(3.4, 1.6, 1.8)
+Bevel = 0.15
+
+[sub_resource type="PrimitiveMesh" id="fore_drum"]
+script = ExtResource("16_column")
+Height = 3.4
+Radius = 0.7
+Sides = 20
+Shafts = 4
+Plinth = 0
+Capital = 0
 
 [node name="Cell" type="Node3D" node_paths=PackedStringArray("SpawnPoint", "Stage", "Shafts", "GlyphLights")]
 script = ExtResource("11_room")
@@ -172,3 +220,48 @@ transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 7, 2.2, 8)
 script = ExtResource("10_spot")
 PlayerPosition = Vector3(9, 0, 0)
 PlayerFacing = -1
+
+; dark silhouettes framing the screen's edges, in front of the play plane
+[node name="Backdrop" type="Node3D" parent="."]
+
+; a pier at the west edge, floor to vault, clear of the plinth's close framing
+[node name="ForePierWest" type="MeshInstance3D" parent="Backdrop"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 3, -2, 7)
+mesh = SubResource("fore_pierwest")
+material_override = ExtResource("18_foreground")
+cast_shadow = 0
+
+; a broken pier hanging at the east edge, above the doorway
+[node name="ForePierEast" type="MeshInstance3D" parent="Backdrop"]
+transform = Transform3D(1, 0, 0, 0, -1, 0, 0, 0, -1, 17.25, 10, 7)
+mesh = SubResource("fore_piereast")
+material_override = ExtResource("18_foreground")
+cast_shadow = 0
+
+; chains hanging from the vault
+[node name="ForeChains" type="MeshInstance3D" parent="Backdrop"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 11.5, 10.25, 7.25)
+mesh = SubResource("fore_chains")
+material_override = ExtResource("18_foreground")
+cast_shadow = 0
+
+; fallen masonry below the floor's edge
+[node name="ForeRubbleWest" type="MeshInstance3D" parent="Backdrop"]
+transform = Transform3D(0.9925, 0.1219, 0, -0.1219, 0.9925, 0, 0, 0, 1, 5, 0, 7)
+mesh = SubResource("fore_rubblewest")
+material_override = ExtResource("18_foreground")
+cast_shadow = 0
+
+; fallen masonry below the floor's edge
+[node name="ForeRubbleMid" type="MeshInstance3D" parent="Backdrop"]
+transform = Transform3D(0.9976, -0.0698, 0, 0.0698, 0.9976, 0, 0, 0, 1, 11.5, 0, 7.25)
+mesh = SubResource("fore_rubblemid")
+material_override = ExtResource("18_foreground")
+cast_shadow = 0
+
+; a fallen column drum by the doorway
+[node name="ForeDrum" type="MeshInstance3D" parent="Backdrop"]
+transform = Transform3D(0, -1, 0, 1, 0, 0, 0, 0, 1, 19.25, 0.25, 7.5)
+mesh = SubResource("fore_drum")
+material_override = ExtResource("18_foreground")
+cast_shadow = 0
