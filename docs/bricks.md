@@ -6,7 +6,7 @@ Every piece a world is built from (`instructions/principles.md#bricks`). This fi
 
 ## Stage: the look of a place <a id="bricks-stage"></a>
 
-All working; the art pass makes them ready (`docs/roadmap.md#art-restore`).
+All working; brought to ready under `docs/roadmap.md#bricks-ready`.
 
 - `BiomeProfile` (flooded, frozen, volcanic, core; brine, the sequel world's variant of frozen)
 - Material library (`assets/materials/`, `assets/shaders/`)
