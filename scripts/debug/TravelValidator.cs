@@ -33,8 +33,11 @@ public partial class TravelValidator : Node
     /// <summary>Longest walk back out through the doorway just arrived through, ticks.</summary>
     private const int BackTicks = 240;
 
+    /// <summary>The running game's world: its rooms, and the one loaded.</summary>
     public required World World { get; init; }
+    /// <summary>The running game's pilgrim.</summary>
     public required Player Player { get; init; }
+    /// <summary>The running game's travel between rooms.</summary>
     public required RoomTravel Travel { get; init; }
 
     /// <summary>

@@ -17,7 +17,9 @@ namespace TheDeep;
 /// </summary>
 public partial class GripCheck : Node
 {
+    /// <summary>The running game's pilgrim.</summary>
     public required Player Player { get; init; }
+    /// <summary>The running game's world: its rooms, and the one loaded.</summary>
     public required World World { get; init; }
 
     /// <summary>The pier east of the metal wall: its east face, the top of its metal foot, its top.</summary>
@@ -40,6 +42,7 @@ public partial class GripCheck : Node
 
     private sealed record Step(string What, float Seconds, Action Start, Func<bool> Done);
 
+    /// <summary>Runs before the pilgrim each frame and each physics tick, so what it presses is read the same tick.</summary>
     public GripCheck()
     {
         ProcessPriority = -100;

@@ -14,7 +14,9 @@ namespace TheDeep;
 /// </summary>
 public partial class FightCheck : Node
 {
+    /// <summary>The running game's pilgrim.</summary>
     public required Player Player { get; init; }
+    /// <summary>The running game's world: its rooms, and the one loaded.</summary>
     public required World World { get; init; }
 
     private readonly List<Step> _steps = new();
@@ -26,6 +28,7 @@ public partial class FightCheck : Node
 
     private sealed record Step(string What, float Seconds, Action Start, Func<bool> Done, Action? Tick = null);
 
+    /// <summary>Runs before the pilgrim each frame and each physics tick, so what it presses is read the same tick.</summary>
     public FightCheck()
     {
         ProcessPriority = -100;

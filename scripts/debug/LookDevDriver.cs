@@ -59,20 +59,27 @@ public partial class LookDevDriver : Node
     private long _allocatedAtStart, _allocated;
     private readonly AllocationSampler? _sampler = System.Environment.GetEnvironmentVariable("THEDEEP_ALLOC_SAMPLE") == "1" ? new() : null;
 
+    /// <summary>The running game's pilgrim.</summary>
     public required Player Player { get; init; }
+    /// <summary>The room loaded for the run.</summary>
     public required Room Room { get; init; }
+    /// <summary>The running game's camera.</summary>
     public required SideCamera Camera { get; init; }
+    /// <summary>The running game's machine director.</summary>
     public required MachineDirector Machines { get; init; }
 
     /// <summary>Layers hidden during the run (HUD, capture overlay).</summary>
     public CanvasLayer[] Overlays { get; set; } = Array.Empty<CanvasLayer>();
 
+    /// <summary>The folder the captures, reels and frame times are written to.</summary>
     public string OutputDir { get; set; } = "";
 
     /// <summary>File name of the frame times in <see cref="OutputDir"/>.</summary>
     public string PerfFile { get; set; } = "perf.json";
+    /// <summary>The size the run renders at, in pixels; it fails at any other.</summary>
     public Vector2I RenderSize { get; set; } = new(1920, 1080);
 
+    /// <summary>Runs before the pilgrim each frame and each physics tick, so what it presses is read the same tick.</summary>
     public LookDevDriver()
     {
         ProcessPriority = -100;

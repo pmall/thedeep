@@ -14,15 +14,25 @@ namespace TheDeep;
 /// </summary>
 public partial class UiShot : Node
 {
+    /// <summary>The running game's world: its rooms, and the one loaded.</summary>
     public required World World { get; init; }
+    /// <summary>The running game's pilgrim.</summary>
     public required Player Player { get; init; }
+    /// <summary>The running game's travel between rooms.</summary>
     public required RoomTravel Travel { get; init; }
+    /// <summary>The running game's hint line.</summary>
     public required HintLine Hint { get; init; }
+    /// <summary>The running game's map screen.</summary>
     public required MapScreen Map { get; init; }
+    /// <summary>The running game's end card.</summary>
     public required EndCard EndCard { get; init; }
+    /// <summary>The controls manual to shoot, if the game shows one.</summary>
     public ControlsManual? Manual { get; set; }
+    /// <summary>The manual of the debug keys, shown for the hint shot only; null for none.</summary>
     public ControlsManual? DebugKeys { get; set; }
+    /// <summary>The dialogue box to shoot; null skips that shot's box.</summary>
     public DialogueBox? Dialogue { get; set; }
+    /// <summary>The folder the images are written to.</summary>
     public string OutputDir { get; set; } = "";
 
     /// <summary>How many exits to cross before the map is shown.</summary>

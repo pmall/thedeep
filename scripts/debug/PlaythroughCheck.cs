@@ -17,8 +17,11 @@ namespace TheDeep;
 /// </summary>
 public partial class PlaythroughCheck : Node
 {
+    /// <summary>The running game's world: its rooms, and the one loaded.</summary>
     public required World World { get; init; }
+    /// <summary>The running game's pilgrim.</summary>
     public required Player Player { get; init; }
+    /// <summary>The running game's session.</summary>
     public required Session Session { get; init; }
 
     private enum Phase { Done = -1, Relic, Item, Law, Boss, Door, Cross, Arrive, End }
@@ -37,6 +40,7 @@ public partial class PlaythroughCheck : Node
     private BossSeal? _seal;
     private int _bosses, _laws, _relics, _items, _levers, _doors;
 
+    /// <summary>Runs before the pilgrim each frame and each physics tick, so what it presses is read the same tick.</summary>
     public PlaythroughCheck()
     {
         ProcessPriority = -100;

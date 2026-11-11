@@ -22,11 +22,16 @@ public partial class SpeciesValidator : Node
     private readonly List<string> _problems = new();
     private IEnumerator<int>? _script;
 
+    /// <summary>The running game's world: its rooms, and the one loaded.</summary>
     public required World World { get; init; }
+    /// <summary>The room loaded for the run.</summary>
     public required Room Room { get; init; }
+    /// <summary>The running game's pilgrim.</summary>
     public required Player Player { get; init; }
+    /// <summary>The running game's machine director.</summary>
     public required MachineDirector Machines { get; init; }
 
+    /// <summary>Runs before the pilgrim each physics tick, so what it does is read the same tick.</summary>
     public SpeciesValidator()
     {
         ProcessPhysicsPriority = -100;

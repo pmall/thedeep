@@ -14,8 +14,11 @@ namespace TheDeep;
 /// </summary>
 public partial class HarpoonCheck : Node
 {
+    /// <summary>The running game's pilgrim.</summary>
     public required Player Player { get; init; }
+    /// <summary>The running game's world: its rooms, and the one loaded.</summary>
     public required World World { get; init; }
+    /// <summary>The running game's pointer to a Harpoon target off screen.</summary>
     public required AnchorPointer Pointer { get; init; }
 
     private readonly List<Step> _steps = new();
@@ -31,6 +34,7 @@ public partial class HarpoonCheck : Node
 
     private HarpoonAnchor B => World.Room.All<HarpoonAnchor>().First(a => a.Name == "AnchorB");
 
+    /// <summary>Runs before the pilgrim each frame and each physics tick, so what it presses is read the same tick.</summary>
     public HarpoonCheck()
     {
         ProcessPriority = -100;

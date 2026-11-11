@@ -22,8 +22,10 @@ public partial class SmokeDriver : Node
     private float _fullJumpBaseY;
     private float _maxAbsZ;
 
+    /// <summary>The running game's pilgrim.</summary>
     public required Player Player { get; init; }
 
+    /// <summary>Runs before the pilgrim each frame and each physics tick, so what it presses is read the same tick.</summary>
     public SmokeDriver()
     {
         // Run before the player each tick so "just pressed" lands on the same physics frame.

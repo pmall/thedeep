@@ -31,8 +31,10 @@ public partial class CaptureTestDriver : Node
     private string? _screenshot;
     private string? _video;
 
+    /// <summary>The running game's capture: the owner's screenshot and video keys.</summary>
     public required OwnerCapture Capture { get; init; }
 
+    /// <summary>Runs before the pilgrim each frame and each physics tick, so what it presses is read the same tick.</summary>
     public CaptureTestDriver()
     {
         ProcessPriority = -100;

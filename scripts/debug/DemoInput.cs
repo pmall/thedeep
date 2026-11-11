@@ -10,6 +10,7 @@ public sealed class DemoInput
 {
     private int _tick;
 
+    /// <summary>Plays one physics tick of the script: holds and releases the actions due.</summary>
     public void Tick()
     {
         _tick++;

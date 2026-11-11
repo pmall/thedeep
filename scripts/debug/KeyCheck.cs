@@ -20,15 +20,21 @@ public partial class KeyCheck : Node
     /// and the word its result prints.</summary>
     public sealed record Plan(string Item, string DoorRoom, string ItemRoom, string Beyond, int Toward, Ability[] Needs, bool WalkBack, string Tag);
 
+    /// <summary>The Sacristy key: its door in the Narthex, the key in the Scriptorium; the check walks back out.</summary>
     public static readonly Plan Sacristy = new("SacristyKey", "Narthex", "Scriptorium", "Sacristy", -1, Array.Empty<Ability>(), true, "KEY");
 
     /// <summary>The Pyre's ambush gate stands just inside its door, so the check does not turn back there.</summary>
     public static readonly Plan Pyre = new("PyreLitany", "Ashfall", "Belfry", "Pyre", 1, new[] { Ability.HeatPlating }, false, "CODE");
 
+    /// <summary>The running game's pilgrim.</summary>
     public required Player Player { get; init; }
+    /// <summary>The running game's world: its rooms, and the one loaded.</summary>
     public required World World { get; init; }
+    /// <summary>The running game's items and the doors they open.</summary>
     public required Keyring Keyring { get; init; }
+    /// <summary>The running game's session.</summary>
     public required Session Session { get; init; }
+    /// <summary>The plan this run checks.</summary>
     public Plan Checked { get; init; } = Sacristy;
 
     private string Key => Checked.Item;
@@ -43,6 +49,7 @@ public partial class KeyCheck : Node
 
     private sealed record Step(string What, float Seconds, Action Start, Func<bool> Done);
 
+    /// <summary>Runs before the pilgrim each frame and each physics tick, so what it presses is read the same tick.</summary>
     public KeyCheck()
     {
         ProcessPriority = -100;

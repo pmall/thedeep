@@ -23,6 +23,7 @@ public sealed class AllocationSampler : EventListener
 
     private long _thread = -1;
 
+    /// <summary>Whether allocations are being summed now; off, the events are ignored.</summary>
     public bool Active { get; set; }
 
     /// <summary>Counts only what the calling thread allocates from now on (the main thread: game logic and physics).</summary>

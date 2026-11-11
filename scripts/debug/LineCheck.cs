@@ -16,6 +16,7 @@ public sealed class LineCheck
     /// <summary>Each id named, with where it was first named.</summary>
     private readonly Dictionary<StringName, string> _named = new();
 
+    /// <summary>Starts with the ids the code names (<see cref="GameLines.Named"/>).</summary>
     public LineCheck()
     {
         foreach (StringName id in GameLines.Named())

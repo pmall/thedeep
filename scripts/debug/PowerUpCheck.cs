@@ -13,9 +13,13 @@ namespace TheDeep;
 /// </summary>
 public partial class PowerUpCheck : Node
 {
+    /// <summary>The running game's pilgrim.</summary>
     public required Player Player { get; init; }
+    /// <summary>The running game's world: its rooms, and the one loaded.</summary>
     public required World World { get; init; }
+    /// <summary>The running game's power-ups in play (<see cref="TheDeep.PowerUps"/>).</summary>
     public required PowerUps PowerUps { get; init; }
+    /// <summary>The running game's session.</summary>
     public required Session Session { get; init; }
 
     /// <summary>Where the check lays its strength power-up, and how much it adds.</summary>
@@ -31,6 +35,7 @@ public partial class PowerUpCheck : Node
 
     private sealed record Step(string What, float Seconds, Action Start, Func<bool> Done);
 
+    /// <summary>Runs before the pilgrim each frame and each physics tick, so what it presses is read the same tick.</summary>
     public PowerUpCheck()
     {
         ProcessPriority = -100;

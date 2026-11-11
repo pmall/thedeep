@@ -14,10 +14,15 @@ namespace TheDeep;
 /// </summary>
 public partial class DialogueCheck : Node
 {
+    /// <summary>The running game's pilgrim.</summary>
     public required Player Player { get; init; }
+    /// <summary>The running game's world: its rooms, and the one loaded.</summary>
     public required World World { get; init; }
+    /// <summary>The running game's conversations.</summary>
     public required Conversations Conversations { get; init; }
+    /// <summary>The running game's dialogue box.</summary>
     public required DialogueBox Box { get; init; }
+    /// <summary>The running game's session.</summary>
     public required Session Session { get; init; }
 
     private readonly List<Step> _steps = new();
@@ -29,6 +34,7 @@ public partial class DialogueCheck : Node
 
     private sealed record Step(string What, float Seconds, Action Start, Func<bool> Done);
 
+    /// <summary>Runs before the pilgrim each frame and each physics tick, so what it presses is read the same tick.</summary>
     public DialogueCheck()
     {
         ProcessPriority = -100;

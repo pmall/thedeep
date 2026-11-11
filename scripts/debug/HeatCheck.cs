@@ -15,8 +15,11 @@ namespace TheDeep;
 /// </summary>
 public partial class HeatCheck : Node
 {
+    /// <summary>The running game's pilgrim.</summary>
     public required Player Player { get; init; }
+    /// <summary>The running game's world: its rooms, and the one loaded.</summary>
     public required World World { get; init; }
+    /// <summary>The running game's gate hints.</summary>
     public required GateHints Hints { get; init; }
 
     /// <summary>The longest the heat may take control away at once (the blow, the veil and the return), seconds.</summary>
@@ -48,6 +51,7 @@ public partial class HeatCheck : Node
 
     private sealed record Step(string What, float Seconds, Action Start, Func<bool> Done);
 
+    /// <summary>Runs before the pilgrim each frame and each physics tick, so what it presses is read the same tick.</summary>
     public HeatCheck()
     {
         ProcessPriority = -100;

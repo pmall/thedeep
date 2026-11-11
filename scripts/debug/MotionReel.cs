@@ -23,6 +23,7 @@ namespace TheDeep;
 /// </summary>
 public static class MotionReel
 {
+    /// <summary>Every reel the look-dev run plays.</summary>
     public static readonly Reel[] Reels =
     {
         new("DrownedHall", "motion", "Motion", 10f, new Segment[]

@@ -14,8 +14,11 @@ namespace TheDeep;
 /// </summary>
 public partial class BallastCheck : Node
 {
+    /// <summary>The running game's pilgrim.</summary>
     public required Player Player { get; init; }
+    /// <summary>The running game's world: its rooms, and the one loaded.</summary>
     public required World World { get; init; }
+    /// <summary>The running game's gate hints.</summary>
     public required GateHints Hints { get; init; }
 
     /// <summary>The gates the pilgrim has said it can't pass (GateHints).</summary>
@@ -32,6 +35,7 @@ public partial class BallastCheck : Node
 
     private sealed record Step(string What, float Seconds, Action Start, Func<bool> Done, bool Hold = false);
 
+    /// <summary>Runs before the pilgrim each frame and each physics tick, so what it presses is read the same tick.</summary>
     public BallastCheck()
     {
         ProcessPriority = -100;
