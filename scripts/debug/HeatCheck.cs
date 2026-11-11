@@ -5,13 +5,15 @@ using Godot;
 namespace TheDeep;
 
 /// <summary>
-/// Scripted heat check in place, at the Basalt's slag channel (`-- --room Basalt --heat-check`, run by tools/check.sh), through
-/// the real input actions (`docs/gameplay.md#heat`). Without Heat plating: walking off the bank into the channel burns, and the
-/// pilgrim is soon back on the bank it came from, in control; walking into it again and again hurts once per touch, never
-/// faster than the grace period, and it is never across nor stuck in it; dropped into the heat past its middle it still comes
-/// back to its own bank; the pilgrim says its plating would not bear it. With Heat plating: it walks into the channel
-/// unharmed and jumps out on the far bank. Throughout, control is never gone longer than <see cref="ControlLoss"/>. Each step
-/// has a time limit. Prints `HEAT OK` or `HEAT CHECK` errors.
+/// Scripted burn check in place, in the Basalt (`-- --room Basalt --heat-check`, run by tools/check.sh), through the real input
+/// actions: its slag channel (a <see cref="SlagBody"/>, `docs/gameplay.md#slag`) and its vent (a <see cref="HeatZone"/>,
+/// `docs/gameplay.md#heat`). Without Heat plating: walking off the bank into the slag burns, and the pilgrim is soon back on the
+/// bank it came from, in control; walking into it again and again hurts once per touch, never faster than the grace period, and
+/// it is never across nor stuck in it; dropped onto the slag past its middle it still comes back to its own bank; the vent's heat
+/// burns too, and the pilgrim says its plating would not bear it. With Heat plating: it stands in the vent's heat unharmed; the slag
+/// burns it all the same and sets it back on its bank; a running jump from the bank's edge lands it on the far bank, unharmed.
+/// Throughout, control is never gone longer than <see cref="ControlLoss"/>. Each step has a time limit. Prints `HEAT OK` or
+/// `HEAT CHECK` errors.
 /// </summary>
 public partial class HeatCheck : Node
 {
@@ -37,7 +39,8 @@ public partial class HeatCheck : Node
     /// <summary>The physics ticks at which a blow hurt the pilgrim, since the check began.</summary>
     private readonly List<int> _hurts = new();
 
-    private HeatZone? _zone;
+    private SlagBody? _slag;
+    private HeatZone? _vent;
     private int _index = -1;
     private int _ticks;
     private int _clock;
@@ -61,9 +64,10 @@ public partial class HeatCheck : Node
     private Vector2 P => new(Player.GlobalPosition.X, Player.GlobalPosition.Y);
 
     /// <summary>The slag channel of the room under check, found on first use.</summary>
-    private HeatZone Zone => _zone ??= World.Room.GetNode<HeatZone>("Heat/Slag");
+    private Box Channel => (_slag ??= World.Room.GetNode<SlagBody>("Slag")).PlayRegion;
 
-    private Box Channel => Zone.Region;
+    /// <summary>The vent's heat, on the cavern's floor, found on first use.</summary>
+    private Box Vent => (_vent ??= World.Room.GetNode<HeatZone>("Heat/Vent")).Region;
 
     /// <summary>Standing on the west bank, clear of the channel, in control.</summary>
     private bool OnWestBank => Player.InControl && Player.IsOnFloor() && P.X < Channel.MinX - 0.4f && P.Y > Channel.MaxY - 1f;
@@ -72,15 +76,16 @@ public partial class HeatCheck : Node
     {
         Hints.Said += kind => _hinted.Add(kind);
         Player.Hurt += () => _hurts.Add(_clock);
-        Vector3 bank = new(Channel.MinX - 4f, Channel.MaxY, 0f);
+        Vector3 bank = new(Channel.MinX - 4f, 1f, 0f);
+        Vector3 cavern = new(Vent.MaxX + 3.5f, Vent.MinY, 0f);
         int pressingFrom = 0;
 
-        _steps.Add(new("without Heat plating, walking off the bank into the slag channel burns", 2f,
+        _steps.Add(new("without Heat plating, walking off the bank into the slag burns", 2f,
             () =>
             {
                 Player.Abilities.Lock(Ability.HeatPlating);
                 Player.Vitality.Restore();
-                Player.Respawn(bank with { Y = 1f }, 1);
+                Player.Respawn(bank, 1);
                 Input.ActionPress(InputActions.MoveRight);
             },
             () => _hurts.Count == 1 && Player.Vitality.Current == Player.Vitality.Max - 1));
@@ -95,18 +100,6 @@ public partial class HeatCheck : Node
                 Tap(InputActions.Jump);
                 return OnWestBank;
             }));
-        _steps.Add(new("fallen to the channel's bed by its bank: holding toward the bank and jumping, the pilgrim is soon on it", 1.5f,
-            () =>
-            {
-                Player.Vitality.Restore();
-                Player.GlobalPosition = new Vector3(Channel.MinX + 1.2f, Channel.MinY + 0.3f, 0f);
-                Player.Velocity = Vector3.Zero;
-            },
-            () =>
-            {
-                Tap(InputActions.Jump);
-                return _ticks > 2 && OnWestBank;
-            }));
         _steps.Add(new($"walking into it for {Pressing} s: one health per touch, never faster than the grace, never across nor stuck", Pressing + 0.5f,
             () =>
             {
@@ -117,7 +110,7 @@ public partial class HeatCheck : Node
                 pressingFrom = _clock;
             },
             () => _clock - pressingFrom >= Pressing * 60f && Burned(pressingFrom)));
-        _steps.Add(new("dropped into the heat past its middle, it comes back to the bank it came from", 1.5f,
+        _steps.Add(new("dropped onto the slag past its middle, it comes back to the bank it came from", 1.5f,
             () =>
             {
                 Input.ActionRelease(InputActions.MoveRight);
@@ -126,23 +119,56 @@ public partial class HeatCheck : Node
                 Player.Velocity = Vector3.Zero;
             },
             () => _ticks > 2 && OnWestBank));
-        _steps.Add(new("and the pilgrim says its plating would not bear it (the gate hint)", 1f,
-            () => { },
-            () => _hinted.Contains(Ability.HeatPlating)));
-        _steps.Add(new("with Heat plating, the pilgrim walks into the channel unharmed and jumps out on the far bank", 3f,
+        _steps.Add(new("the vent's heat burns too, and the pilgrim says its plating would not bear it (the gate hint)", 2f,
+            () =>
+            {
+                Player.Vitality.Restore();
+                Player.Respawn(cavern, -1);
+                Input.ActionPress(InputActions.MoveLeft);
+            },
+            () => _hurts.Count > 0 && _hurts[^1] >= _clock - _ticks && _hinted.Contains(Ability.HeatPlating)));
+        _steps.Add(new("with Heat plating, the pilgrim walks into the vent's heat to the wall behind it and stands there unharmed", 2.5f,
             () =>
             {
                 Player.Vitality.Restore();
                 Player.Abilities.Unlock(Ability.HeatPlating);
-                Player.Respawn(bank with { Y = 1f }, 1);
-                _crossed = false;
+                Player.Respawn(cavern, -1);
+            },
+            () => _ticks > 60 && P.X < Vent.MinX && Player.Vitality.Current == Player.Vitality.Max));
+        _steps.Add(new("with Heat plating, walking off the bank into the slag burns all the same", 2f,
+            () =>
+            {
+                Input.ActionRelease(InputActions.MoveLeft);
+                Player.Vitality.Restore();
+                Player.Respawn(bank, 1);
+                Input.ActionPress(InputActions.MoveRight);
+            },
+            () => _ticks > 2 && Player.Vitality.Current == Player.Vitality.Max - 1));
+        _steps.Add(new("and sets the pilgrim back on its bank, in control (holding toward it and jumping)", 1.5f,
+            () =>
+            {
+                Input.ActionRelease(InputActions.MoveRight);
+                Input.ActionPress(InputActions.MoveLeft);
+            },
+            () =>
+            {
+                Tap(InputActions.Jump);
+                return OnWestBank;
+            }));
+        _steps.Add(new("with Heat plating, a running jump from the bank's edge lands on the far bank unharmed", 3f,
+            () =>
+            {
+                Input.ActionRelease(InputActions.MoveLeft);
+                Input.ActionRelease(InputActions.Jump);
+                Player.Vitality.Restore();
+                Player.Respawn(bank, 1);
                 Input.ActionPress(InputActions.MoveRight);
             },
             () =>
             {
-                if (P.X > Channel.MinX + 1f && Player.IsOnFloor())
+                if (P.X > Channel.MinX - 0.35f && Player.IsOnFloor())
                 {
-                    Input.ActionPress(InputActions.Jump); // held: a full jump out of the bed
+                    Input.ActionPress(InputActions.Jump); // held: a full jump over the slag
                 }
 
                 return P.X > Channel.MaxX + 0.5f && Player.IsOnFloor() && Player.Vitality.Current == Player.Vitality.Max;
@@ -207,7 +233,7 @@ public partial class HeatCheck : Node
         }
 
         _clock++;
-        if (!Player.Abilities.Has(Ability.HeatPlating) && P.X > Channel.MaxX)
+        if (_index < _steps.Count - 1 && P.X > Channel.MaxX)
         {
             _crossed = true;
         }
@@ -248,7 +274,7 @@ public partial class HeatCheck : Node
         Input.ActionRelease(InputActions.Jump);
         if (_crossed)
         {
-            _problems.Add("without Heat plating, the pilgrim got across the channel");
+            _problems.Add("the pilgrim got across the slag other than by the jump over it");
         }
 
         if (_longestLoss > ControlLoss * 60f)
@@ -263,8 +289,8 @@ public partial class HeatCheck : Node
 
         if (_problems.Count == 0)
         {
-            GD.Print($"HEAT OK: {_steps.Count} steps (burned and back on its bank, one blow per grace, never across, the gate hint, " +
-                     $"through unharmed with it; control gone at most {_longestLoss / 60f:0.00} s)");
+            GD.Print($"HEAT OK: {_steps.Count} steps (slag: burned and back on its bank, plated or not, one blow per grace, " +
+                     $"never across but by the jump; the vent: burned, the gate hint, in it unharmed with plating; control gone at most {_longestLoss / 60f:0.00} s)");
         }
 
         GetTree().Quit(_problems.Count == 0 ? 0 : 1);

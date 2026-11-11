@@ -19,16 +19,12 @@
 [ext_resource type="Resource" path="res://resources/biomes/volcanic.tres" id="13_volcanic"]
 [ext_resource type="PackedScene" path="res://scenes/stage/RoomStage.tscn" id="14_stage"]
 [ext_resource type="Script" path="res://scripts/rooms/dressing/WallDressing.cs" id="15_wall"]
+[ext_resource type="PackedScene" path="res://scenes/kit/SlagBody.tscn" id="16_slag"]
 
 [sub_resource type="PrimitiveMesh" id="blockmesh_1"]
 script = ExtResource("7_blockmesh")
 Size = Vector3(76, 64, 1.2)
 Bevel = 0.3
-
-[sub_resource type="PrimitiveMesh" id="blockmesh_2"]
-script = ExtResource("7_blockmesh")
-Size = Vector3(4, 0.4, 3)
-Bevel = 0.1
 
 [sub_resource type="PrimitiveMesh" id="blockmesh_3"]
 script = ExtResource("7_blockmesh")
@@ -130,7 +126,7 @@ SpawnPoint = NodePath("SpawnPoint")
 Stage = NodePath("Stage")
 Biome = ExtResource("13_volcanic")
 Lamps = [NodePath("Lamps/Cavern"), NodePath("Lamps/Bottom")]
-BoundsMin = Vector2(-1, -1)
+BoundsMin = Vector2(-1, -3)
 BoundsMax = Vector2(40, 40)
 
 [node name="SpawnPoint" type="Marker3D" parent="."]
@@ -228,10 +224,10 @@ transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 13.5, -1, 0)
 Size = Vector3(9, 4, 4)
 Material = ExtResource("1_basalt")
 
-; a channel of slag across the bottom: jumped
+; the bed of the slag channel across the bottom (the Slag body): jumped
 [node name="Channel" parent="Geometry" instance=ExtResource("2_block")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 20, -2, 0)
-Size = Vector3(4, 2, 4)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 20, -2.5, 0)
+Size = Vector3(4, 1, 4)
 Material = ExtResource("1_basalt")
 
 [node name="FloorEast" parent="Geometry" instance=ExtResource("2_block")]
@@ -270,14 +266,10 @@ Embers = ExtResource("6_embers")
 EmberDensity = 1.6
 GlowEnergy = 2.5
 
-; the slag channel
-[node name="Slag" type="Node3D" parent="Heat"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 20, -1, 0)
-script = ExtResource("4_heatzone")
-Size = Vector2(4, 2.5)
-Embers = ExtResource("6_embers")
-EmberDensity = 2
-GlowEnergy = 3
+; the slag channel between the floor's banks, a meter under them, down to its bed: jumped, never waded
+[node name="Slag" parent="." instance=ExtResource("16_slag")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 20, 0, 0)
+Size = Vector2(4, 4)
 
 [node name="Kit" type="Node3D" parent="."]
 
@@ -293,12 +285,6 @@ script = ExtResource("15_wall")
 Style = 0
 Size = Vector2(43.4286, 36.5714)
 Seed = 600
-
-; slag in the channel
-[node name="ChannelSlag" type="MeshInstance3D" parent="Kit"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 20, -0.75, 0)
-mesh = SubResource("blockmesh_2")
-material_override = ExtResource("9_magma")
 
 [node name="VentGlow" type="MeshInstance3D" parent="Kit"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 3, 15.25, 0)
@@ -459,7 +445,7 @@ PlayerPosition = Vector3(12, 15, 0)
 
 ; the bottom: the slag channel, the hole down
 [node name="Bottom" type="Marker3D" parent="PhotoSpots"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 17, 5, 22)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 17, 2.5, 22)
 script = ExtResource("11_spot")
 PlayerPosition = Vector3(26, 1, 0)
 PlayerFacing = -1
