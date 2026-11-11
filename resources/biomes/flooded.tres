@@ -1,5 +1,5 @@
 [gd_resource type="Resource" script_class="BiomeProfile" format=3]
-; Layer 1, near the surface: the perfect.jpg palette (pale blue-white, lavender haze, a touch of magenta).
+; Layer 1, near the surface: the perfect.jpg palette (pale blue-white, steel-blue haze, a touch of magenta).
 
 [ext_resource type="Script" path="res://scripts/biome/BiomeProfile.cs" id="1_biome"]
 [ext_resource type="Material" path="res://assets/materials/backdrop_cathedral.tres" id="2_far"]
@@ -17,28 +17,28 @@ Silt = Color(0.74, 0.74, 0.8, 1)
 Foreground = Color(0.02, 0.02, 0.035, 1)
 Accent = Color(0.85, 0.35, 0.9, 1)
 Background = Color(0.05, 0.055, 0.08, 1)
-AmbientColor = Color(0.55, 0.58, 0.7, 1)
+AmbientColor = Color(0.48, 0.56, 0.78, 1)
 AmbientEnergy = 0.3
 KeyColor = Color(0.88, 0.92, 1, 1)
 KeyEnergy = 1.9
 LampColor = Color(0.9, 0.86, 1, 1)
 ShaftColor = Color(0.94, 0.95, 1, 1)
-FogColor = Color(0.42, 0.42, 0.52, 1)
+FogColor = Color(0.36, 0.4, 0.53, 1)
 FogDensity = 0.6
 FogDepthBegin = 1.5
 FogDepthEnd = 68.0
 FogDepthCurve = 0.3
 MistDensity = 0.04
 MistTop = 1.0
-HazeColor = Color(0.56, 0.55, 0.68, 1)
+HazeColor = Color(0.47, 0.52, 0.68, 1)
 Exposure = 1.0
 Brightness = 1.0
 Contrast = 1.12
-Saturation = 0.92
+Saturation = 1.02
 Lift = Color(0.02, 0.015, 0.04, 1)
 Gain = Color(1, 0.98, 1, 1)
 GlowIntensity = 0.6
-WaterTint = Color(0.42, 0.42, 0.52, 1)
+WaterTint = Color(0.36, 0.4, 0.53, 1)
 WaterDeep = Color(0.06, 0.07, 0.11, 1)
 CausticColor = Color(0.85, 0.88, 1, 1)
 CausticStrength = 2.0
