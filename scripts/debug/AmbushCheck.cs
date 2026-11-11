@@ -7,7 +7,8 @@ namespace TheDeep;
 
 /// <summary>
 /// The Pyre's trap in place (`-- --room Pyre --ambush-check`, run by tools/check.sh), through the real input actions where they
-/// matter: before it springs its wave is not there and the gate is up; walking in past the doorway springs it (the gate falls behind,
+/// matter, plated as every way into the Pyre needs (its heat stands inside the doorway): before it springs its wave is not there and
+/// the gate is up; walking in past the doorway springs it (the gate falls behind,
 /// the wave stands up); walking back is barred by the gate; when the wave is broken (struck down directly: the fight itself is the
 /// combat check's) the gate rises and the trap is remembered; the room loaded again holds no trap, its gate up. Each step has a time
 /// limit. Prints `AMBUSH OK` or `AMBUSH CHECK` errors.
@@ -54,7 +55,12 @@ public partial class AmbushCheck : Node
             () => { },
             () => trap.Wave.All(m => m.Broken && !m.Visible) && gate.Raised && !trap.Fighting));
         _steps.Add(new("walking in past the doorway springs it: the gate falls behind, the wave stands up", 3f,
-            () => { Player.Respawn(new Vector3(gateX - 1.2f, 0f, 0f), 1); Input.ActionPress(InputActions.MoveRight); },
+            () =>
+            {
+                Player.Abilities.Unlock(Ability.HeatPlating);
+                Player.Respawn(new Vector3(gateX - 1.2f, 0f, 0f), 1);
+                Input.ActionPress(InputActions.MoveRight);
+            },
             () => _sprang && trap.Fighting && gate.Shut && trap.Wave.All(m => !m.Broken && m.Visible)));
         _steps.Add(new("walking back, the gate bars the way out", 1.5f,
             () => { Input.ActionRelease(InputActions.MoveRight); Input.ActionPress(InputActions.MoveLeft); },

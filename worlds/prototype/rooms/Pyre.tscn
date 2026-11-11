@@ -2,20 +2,21 @@
 
 ; The Pyre, east of the Ashfall, behind its heat (map offset (319, -144)): where the machines are given to the fire. A
 ; pyre burns on an altar under a tall flue, broken machines laid around it; a scripture plate tells the rite, and a shrine
-; keeps watch. Only reached with Heat plating; the heat here is harmless to the plated. A trap (an Ambush): two of the broken
+; keeps watch. Heat rises from grates inside the door to the roof (Heat plating, as on the Ashfall's side). The coals are slag in the altar's hollow, burning
+; on touch, plated or not: the altar is jumped over. A trap (an Ambush): two of the broken
 ; machines rise as the pilgrim steps past the doorway, a gate falling behind it, until both are broken again.
 
 [ext_resource type="Material" path="res://assets/materials/basalt.tres" id="1_basalt"]
 [ext_resource type="PackedScene" path="res://scenes/kit/Block.tscn" id="2_block"]
 [ext_resource type="Material" path="res://assets/materials/rust.tres" id="3_rust"]
 [ext_resource type="Script" path="res://scripts/rooms/RoomExit.cs" id="4_exit"]
-[ext_resource type="Script" path="res://scripts/props/HeatColumn.cs" id="5_heatcolumn"]
+[ext_resource type="PackedScene" path="res://scenes/kit/SlagBody.tscn" id="5_slag"]
+[ext_resource type="PackedScene" path="res://scenes/kit/HeatColumn.tscn" id="6_heatcolumn"]
 [ext_resource type="PackedScene" path="res://scenes/fx/Embers.tscn" id="7_embers"]
 [ext_resource type="PackedScene" path="res://scenes/props/ScripturePlate.tscn" id="8_plate"]
 [ext_resource type="PackedScene" path="res://scenes/props/Shrine.tscn" id="9_shrine"]
 [ext_resource type="Script" path="res://scripts/kit/BlockMesh.cs" id="10_blockmesh"]
 [ext_resource type="Material" path="res://assets/materials/stone_mid.tres" id="11_stone_mid"]
-[ext_resource type="Material" path="res://assets/materials/magma.tres" id="12_magma"]
 [ext_resource type="Script" path="res://scripts/kit/PipeMesh.cs" id="13_pipe"]
 [ext_resource type="Material" path="res://assets/materials/rust_mid.tres" id="14_rust_mid"]
 [ext_resource type="Script" path="res://scripts/kit/WreckMesh.cs" id="15_wreck"]
@@ -34,11 +35,6 @@
 script = ExtResource("10_blockmesh")
 Size = Vector3(60, 44, 1.2)
 Bevel = 0.3
-
-[sub_resource type="PrimitiveMesh" id="blockmesh_2"]
-script = ExtResource("10_blockmesh")
-Size = Vector3(5, 0.4, 3)
-Bevel = 0.12
 
 [sub_resource type="PrimitiveMesh" id="pipe_3"]
 script = ExtResource("13_pipe")
@@ -112,10 +108,20 @@ transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 28, 8, 0)
 Size = Vector3(4, 16, 4)
 Material = ExtResource("1_basalt")
 
-; the altar
-[node name="Altar" parent="Geometry" instance=ExtResource("2_block")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 15, 0.75, 0)
-Size = Vector3(6, 1.5, 4)
+; the altar: a hollow between two rims, the coals' bed
+[node name="AltarWest" parent="Geometry" instance=ExtResource("2_block")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 12.5, 0.75, 0)
+Size = Vector3(1, 1.5, 4)
+Material = ExtResource("3_rust")
+
+[node name="AltarBed" parent="Geometry" instance=ExtResource("2_block")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 15, 0.25, 0)
+Size = Vector3(4, 0.5, 4)
+Material = ExtResource("3_rust")
+
+[node name="AltarEast" parent="Geometry" instance=ExtResource("2_block")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 17.5, 0.75, 0)
+Size = Vector3(1, 1.5, 4)
 Material = ExtResource("3_rust")
 
 ; the doorway's head, deep enough to take the trap's gate when it rises
@@ -138,15 +144,18 @@ Size = Vector2(1, 4)
 
 [node name="Heat" type="Node3D" parent="."]
 
-; the pyre on the altar
-[node name="Pyre" type="Node3D" parent="Heat"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 15, 1.5, 0)
-script = ExtResource("5_heatcolumn")
-Strip = true
-Size = Vector2(5, 5)
-Embers = ExtResource("7_embers")
-EmberDensity = 2.4
-GlowEnergy = 4
+; heat rising from the grates inside the door to the roof, flush against the doorway's head: no way round
+[node name="Grates" parent="Heat" instance=ExtResource("6_heatcolumn")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 4, 0, 0)
+Size = Vector2(3, 16)
+
+[node name="Slag" type="Node3D" parent="."]
+
+; the pyre's coals in the altar's hollow
+[node name="Coals" parent="Slag" instance=ExtResource("5_slag")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 15, 1.2, 0)
+Size = Vector2(4, 4)
+Depth = 0.7
 
 [node name="Props" type="Node3D" parent="."]
 
@@ -201,12 +210,6 @@ script = ExtResource("21_wall")
 Style = 0
 Size = Vector2(34.2857, 25.1429)
 Seed = 219
-
-; the coals of the pyre
-[node name="Coals" type="MeshInstance3D" parent="Kit"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 15, 1.75, 0)
-mesh = SubResource("blockmesh_2")
-material_override = ExtResource("12_magma")
 
 ; the flue over the pyre
 [node name="Flue" type="MeshInstance3D" parent="Kit"]

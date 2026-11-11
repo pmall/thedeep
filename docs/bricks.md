@@ -33,8 +33,8 @@ All working; the art pass makes them ready (`docs/roadmap.md#art-restore`).
 | `HarpoonAnchor` (its state shown: `AnchorLook`) | ready | — |
 | `AnchorPointer` (the edge chevron toward a ring in sight off screen) | working (look) | `docs/roadmap.md#bricks-ready` |
 | `WaterBody` (swim) | ready | — |
-| `SlagBody` (`scenes/kit/SlagBody.tscn`: placed at its surface and sized to a basin of blocks, a bed and two banks the room check holds) | working (one room: the Basalt; the look's final pass) | `docs/roadmap.md#volcanic-rethink` |
-| `HeatColumn` (`scenes/kit/HeatColumn.tscn`: placed at its foot on rock and sized up to the roof, hood or exit that ends it, a gate the room check holds to having no way round; its old `Strip` stand-in is named by the check until its rooms are rebuilt) | working (one room: the Ashfall's grates) | `docs/roadmap.md#volcanic-rethink` |
+| `SlagBody` (`scenes/kit/SlagBody.tscn`: placed at its surface and sized to a basin of blocks, a bed and two banks the room check holds) | working (the Basalt, the Slag, the Crucible's moulds, the Pyre's altar; the look's final pass) | `docs/roadmap.md#volcanic-rethink` |
+| `HeatColumn` (`scenes/kit/HeatColumn.tscn`: placed at its foot on rock and sized up to the roof, hood or exit that ends it, a gate the room check holds to having no way round; its old `Strip` stand-in is named by the check until its rooms are rebuilt) | working (the Ashfall, the Kiln, the Basalt, the Chimney, the Coldstacks, the Pyre) | `docs/roadmap.md#volcanic-rethink` |
 | `Lift` | ready | — |
 | `Portcullis` | working | `docs/roadmap.md#bricks-ready` |
 | `MapGoal` | ready | — |
