@@ -31,6 +31,8 @@
 [ext_resource type="PackedScene" path="res://scenes/stage/RoomStage.tscn" id="24_stage"]
 [ext_resource type="PackedScene" path="res://scenes/props/ItemPickup.tscn" id="25_pickup"]
 [ext_resource type="Resource" path="res://worlds/prototype/items/pyre_litany.tres" id="26_pyre_litany"]
+[ext_resource type="PackedScene" path="res://scenes/kit/Hatch.tscn" id="90_hatch"]
+[ext_resource type="Resource" path="res://resources/seams/hatch.tres" id="91_seam_hatch"]
 
 [sub_resource type="PrimitiveMesh" id="column_1"]
 script = ExtResource("1_column")
@@ -181,7 +183,7 @@ Stage = NodePath("Stage")
 Biome = ExtResource("23_flooded")
 Shafts = [NodePath("Shafts/Openings"), NodePath("Shafts/Lookout")]
 GlyphLights = [NodePath("Props/Shrine/Light"), NodePath("Glyphs/LookoutLight"), NodePath("Glyphs/HoleLight")]
-BoundsMin = Vector2(-2, -1)
+BoundsMin = Vector2(-2, -2)
 BoundsMax = Vector2(44, 26)
 
 [node name="SpawnPoint" type="Marker3D" parent="."]
@@ -196,12 +198,12 @@ PillarDensity = 4
 [node name="Geometry" type="Node3D" parent="."]
 
 [node name="FloorWest" parent="Geometry" instance=ExtResource("4_block")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 15.25, -1, 0)
-Size = Vector3(38.5, 2, 4)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 14.25, -1, 0)
+Size = Vector3(36.5, 2, 4)
 
 [node name="FloorEast" parent="Geometry" instance=ExtResource("4_block")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 41.75, -1, 0)
-Size = Vector3(8.5, 2, 4)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 42.75, -1, 0)
+Size = Vector3(6.5, 2, 4)
 
 [node name="WallWest" parent="Geometry" instance=ExtResource("4_block")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -2, 14, 0)
@@ -243,7 +245,9 @@ Side = 2
 TargetRoom = "res://worlds/prototype/rooms/DrownedHall.tscn"
 TargetExit = "ShaftHatch"
 ArrivalSide = -1
-Size = Vector2(3, 1)
+
+[node name="Hatch" parent="Exits/Floor" instance=ExtResource("90_hatch")]
+Profile = ExtResource("91_seam_hatch")
 
 [node name="Props" type="Node3D" parent="."]
 

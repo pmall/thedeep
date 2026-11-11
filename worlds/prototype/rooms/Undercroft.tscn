@@ -40,6 +40,8 @@
 [ext_resource type="PackedScene" path="res://scenes/props/Lift.tscn" id="31_lift"]
 [ext_resource type="PackedScene" path="res://scenes/kit/Doorway.tscn" id="90_doorway"]
 [ext_resource type="Resource" path="res://resources/seams/doorway.tres" id="91_seam"]
+[ext_resource type="PackedScene" path="res://scenes/kit/Hatch.tscn" id="92_hatch"]
+[ext_resource type="Resource" path="res://resources/seams/hatch.tres" id="93_seam_hatch"]
 
 [sub_resource type="QuadMesh" id="QuadMesh_1"]
 size = Vector2(3, 0.3)
@@ -242,8 +244,8 @@ Size = Vector3(2.5, 1, 4)
 
 ; west wall above the doorway: the flue's west side, metal
 [node name="WallWest" parent="Geometry" instance=ExtResource("2_block")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -1.5, 16.5, 0)
-Size = Vector3(3, 21, 4)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -1.5, 15, 0)
+Size = Vector3(3, 18, 4)
 Surface = 1
 
 ; the low metal vault over the west door
@@ -259,8 +261,8 @@ Size = Vector3(1, 18, 4)
 Surface = 1
 
 [node name="Ceiling" parent="Geometry" instance=ExtResource("2_block")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 31, 25.5, 0)
-Size = Vector3(56, 3, 4)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 32, 25.5, 0)
+Size = Vector3(54, 3, 4)
 
 ; the tall east wall, metal: climb it
 [node name="WallEast" parent="Geometry" instance=ExtResource("2_block")]
@@ -318,15 +320,18 @@ Requires = "MagGrip | Harpoon"
 Profile = ExtResource("91_seam")
 Surface = 1
 
-; the top of the flue, up into the Scriptorium, in the middle of the ceiling (coming back is a drop down the flue)
+; the top of the flue, up into the Scriptorium, in the middle of the hatch's slab (coming back is a drop down the flue)
 [node name="Scriptorium" type="Marker3D" parent="Exits"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 1.5, 25.5, 0)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 1.5, 25, 0)
 script = ExtResource("3_exit")
 Side = 3
 TargetRoom = "res://worlds/prototype/rooms/Scriptorium.tscn"
 TargetExit = "Hatch"
 Requires = "MagGrip"
-Size = Vector2(3, 1)
+
+[node name="Hatch" parent="Exits/Scriptorium" instance=ExtResource("92_hatch")]
+Profile = ExtResource("93_seam_hatch")
+Surface = 1
 
 ; the Counterweight's cage rises into the shaft's head in the east floor, in the middle of the slab; the rider arrives
 ; on the cage waiting there (only arrived through: the lift never goes down)
@@ -660,6 +665,6 @@ PlayerPosition = Vector3(47, 0, 0)
 
 ; the top of the flue, up through the vault into the Scriptorium
 [node name="FlueTop" type="Marker3D" parent="PhotoSpots"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 2, 23.5, 6)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 2, 22, 12)
 script = ExtResource("27_spot")
 PlayerPosition = Vector3(1, 0, 0)

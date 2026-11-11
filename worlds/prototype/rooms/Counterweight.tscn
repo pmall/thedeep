@@ -29,6 +29,8 @@
 [ext_resource type="Script" path="res://scripts/rooms/Room.cs" id="20_room"]
 [ext_resource type="Resource" path="res://resources/biomes/frozen.tres" id="21_frozen"]
 [ext_resource type="PackedScene" path="res://scenes/stage/RoomStage.tscn" id="22_stage"]
+[ext_resource type="PackedScene" path="res://scenes/kit/Hatch.tscn" id="90_hatch"]
+[ext_resource type="Resource" path="res://resources/seams/hatch.tres" id="91_seam_hatch"]
 
 [sub_resource type="PrimitiveMesh" id="blockmesh_1"]
 script = ExtResource("4_blockmesh")
@@ -159,12 +161,12 @@ FrameBelow = false
 
 ; the landing, either side of the hatch from the Coldstacks: the slab is the Coldstacks' roof
 [node name="FloorWest" parent="Geometry" instance=ExtResource("1_block")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.25, -1, 0)
-Size = Vector3(5.5, 2, 4)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -1.25, -1, 0)
+Size = Vector3(3.5, 2, 4)
 
 [node name="FloorMid" parent="Geometry" instance=ExtResource("1_block")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 8.5, -1, 0)
-Size = Vector3(6, 2, 4)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 9.5, -1, 0)
+Size = Vector3(4, 2, 4)
 
 ; under the cage at its lower stop
 [node name="Pit" parent="Geometry" instance=ExtResource("1_block")]
@@ -202,7 +204,9 @@ Side = 2
 TargetRoom = "res://worlds/prototype/rooms/Coldstacks.tscn"
 TargetExit = "Counterweight"
 ArrivalSide = 1
-Size = Vector2(3, 1)
+
+[node name="Hatch" parent="Exits/Bottom" instance=ExtResource("90_hatch")]
+Profile = ExtResource("91_seam_hatch")
 
 ; up through the Undercroft's floor, in the middle of the slab: the rider crosses it as the cage nears its upper stop
 ; (the lift only rises)

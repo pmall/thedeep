@@ -39,6 +39,8 @@
 [ext_resource type="Material" path="res://assets/materials/wall_stone.tres" id="45_wall_stone"]
 [ext_resource type="PackedScene" path="res://scenes/kit/Doorway.tscn" id="90_doorway"]
 [ext_resource type="Resource" path="res://resources/seams/doorway.tres" id="91_seam"]
+[ext_resource type="PackedScene" path="res://scenes/kit/Hatch.tscn" id="92_hatch"]
+[ext_resource type="Resource" path="res://resources/seams/hatch.tres" id="93_seam_hatch"]
 
 [sub_resource type="PrimitiveMesh" id="wall_back"]
 script = ExtResource("11_blockmesh")
@@ -261,12 +263,12 @@ Size = Vector3(3, 29, 4)
 
 ; the roof, open over the Counterweight's hatch: its top is the Counterweight's landing (the camera stops there)
 [node name="RoofWest" parent="Geometry" instance=ExtResource("1_block")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 30.25, 31.5, 0)
-Size = Vector3(66.5, 4, 4)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 29.25, 31.5, 0)
+Size = Vector3(64.5, 4, 4)
 
 [node name="RoofEast" parent="Geometry" instance=ExtResource("1_block")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 72.75, 31.5, 0)
-Size = Vector3(12.5, 4, 4)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 73.75, 31.5, 0)
+Size = Vector3(10.5, 4, 4)
 
 ; the galleries, zigzagging up to the roof, 2.5 m apart (a jump with room to spare)
 [node name="Gallery0" parent="Geometry" instance=ExtResource("1_block")]
@@ -333,7 +335,9 @@ script = ExtResource("4_exit")
 Side = 3
 TargetRoom = "res://worlds/prototype/rooms/Counterweight.tscn"
 TargetExit = "Bottom"
-Size = Vector2(3, 1)
+
+[node name="Hatch" parent="Exits/Counterweight" instance=ExtResource("92_hatch")]
+Profile = ExtResource("93_seam_hatch")
 
 ; the high doorway west, on to the Calving's ice cliff
 [node name="Calving" type="Marker3D" parent="Exits"]

@@ -34,6 +34,8 @@
 [ext_resource type="Script" path="res://scripts/rooms/dressing/RackRow.cs" id="38_rackrow"]
 [ext_resource type="PackedScene" path="res://scenes/kit/Doorway.tscn" id="90_doorway"]
 [ext_resource type="Resource" path="res://resources/seams/doorway.tres" id="91_seam"]
+[ext_resource type="PackedScene" path="res://scenes/kit/Hatch.tscn" id="92_hatch"]
+[ext_resource type="Resource" path="res://resources/seams/hatch.tres" id="93_seam_hatch"]
 [sub_resource type="QuadMesh" id="QuadMesh_glyph_row"]
 size = Vector2(3.2, 0.62)
 
@@ -349,13 +351,13 @@ Material = ExtResource("10_rust")
 ; the slabs closing the shaft's top either side of the hatch: metal, so a grip walks from the walls under them
 ; and round into the hole
 [node name="HatchSlabWest" parent="Geometry" instance=ExtResource("2_block")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 47.75, 33, 0)
-Size = Vector3(3.5, 2, 4)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 46.75, 33, 0)
+Size = Vector3(1.5, 2, 4)
 Surface = 1
 
 [node name="HatchSlabEast" parent="Geometry" instance=ExtResource("2_block")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 54.25, 33, 0)
-Size = Vector3(3.5, 2, 4)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 55.25, 33, 0)
+Size = Vector3(1.5, 2, 4)
 Surface = 1
 Material = ExtResource("10_rust")
 
@@ -435,7 +437,10 @@ Side = 3
 TargetRoom = "res://worlds/prototype/rooms/Belfry.tscn"
 TargetExit = "Floor"
 Requires = "MagGrip | Harpoon"
-Size = Vector2(3, 1)
+
+[node name="Hatch" parent="Exits/ShaftHatch" instance=ExtResource("92_hatch")]
+Profile = ExtResource("93_seam_hatch")
+Surface = 1
 
 ; east doorway into the Nave, from the ledge at the top of the shaft
 [node name="EastGate" type="Marker3D" parent="Exits"]
