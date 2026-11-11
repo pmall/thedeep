@@ -28,6 +28,7 @@ All working; the art pass makes them ready (`docs/roadmap.md#art-restore`).
 | -- | -- | -- |
 | `Block` (rock, metal, cracked) | ready | — |
 | `RoomExit` | ready (seams: `docs/roadmap.md#seam-coherence`) | — |
+| `Doorway` (a doorway's sill and lintel, from a `SeamProfile` both rooms of the way share, `resources/seams/`) | working (one seam framed; the hatch is its sibling to build) | `docs/roadmap.md#seam-coherence` |
 | `HarpoonAnchor` (its state shown: `AnchorLook`) | ready | — |
 | `AnchorPointer` (the edge chevron toward a ring in sight off screen) | working (look) | `docs/roadmap.md#bricks-ready` |
 | `WaterBody` (swim) | ready | — |

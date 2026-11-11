@@ -1,0 +1,8 @@
+[gd_scene format=3]
+
+[ext_resource type="Script" path="res://scripts/rooms/Doorway.cs" id="1_doorway"]
+[ext_resource type="PackedScene" path="res://scenes/kit/Block.tscn" id="2_block"]
+
+[node name="Doorway" type="Node3D"]
+script = ExtResource("1_doorway")
+BlockScene = ExtResource("2_block")

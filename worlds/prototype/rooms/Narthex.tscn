@@ -33,6 +33,8 @@
 [ext_resource type="Script" path="res://scripts/rooms/dressing/WallDressing.cs" id="26_walldressing"]
 [ext_resource type="Material" path="res://assets/materials/wall_stone.tres" id="27_wall_stone"]
 [ext_resource type="Material" path="res://assets/materials/foreground.tres" id="28_foreground"]
+[ext_resource type="PackedScene" path="res://scenes/kit/Doorway.tscn" id="90_doorway"]
+[ext_resource type="Resource" path="res://resources/seams/doorway.tres" id="91_seam"]
 
 [sub_resource type="PrimitiveMesh" id="column_1"]
 script = ExtResource("1_column")
@@ -186,8 +188,8 @@ PillarDensity = 3.2
 [node name="Geometry" type="Node3D" parent="."]
 
 [node name="Floor" parent="Geometry" instance=ExtResource("8_block")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 18, -1, 0)
-Size = Vector3(44, 2, 4)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 15.25, -1, 0)
+Size = Vector3(38.5, 2, 4)
 Material = ExtResource("7_wet_stone")
 
 ; west wall above the Sacristy's doorway
@@ -206,8 +208,8 @@ Size = Vector3(40, 4, 4)
 
 ; east wall above the doorway into the hall
 [node name="WallRight" parent="Geometry" instance=ExtResource("8_block")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 38, 12, 0)
-Size = Vector3(4, 16, 4)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 38, 13, 0)
+Size = Vector3(4, 14, 4)
 
 ; the shrine stands on a low dais
 [node name="Dais" parent="Geometry" instance=ExtResource("8_block")]
@@ -221,8 +223,8 @@ Size = Vector3(3.5, 1.5, 4)
 
 ; a stone lintel over the way to the doorway
 [node name="Lintel" parent="Geometry" instance=ExtResource("8_block")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 33, 4.5, 0)
-Size = Vector3(6, 1, 4)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 32.25, 4.5, 0)
+Size = Vector3(4.5, 1, 4)
 
 [node name="Exits" type="Node3D" parent="."]
 
@@ -233,7 +235,9 @@ script = ExtResource("9_exit")
 Side = 1
 TargetRoom = "res://worlds/prototype/rooms/DrownedHall.tscn"
 TargetExit = "WestGate"
-Size = Vector2(1, 4)
+
+[node name="Doorway" parent="Exits/East" instance=ExtResource("90_doorway")]
+Profile = ExtResource("91_seam")
 
 ; west doorway into the Sacristy, barred by its locked door
 [node name="West" type="Marker3D" parent="Exits" node_paths=PackedStringArray("Door")]
@@ -375,6 +379,12 @@ lifetime = 1.95
 [node name="PhotoSpots" type="Node3D" parent="."]
 
 ; gameplay framing at the spawn point
+; the east doorway into the Drowned Hall: its sill, lintel and the wall around it (the seam's frame)
+[node name="EastDoor" type="Marker3D" parent="PhotoSpots"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 35, 3.5, 12)
+script = ExtResource("19_spot")
+PlayerPosition = Vector3(33, 0, 0)
+
 [node name="Start" type="Marker3D" parent="PhotoSpots"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 8.5, 3.9, 22)
 script = ExtResource("19_spot")

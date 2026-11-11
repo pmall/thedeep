@@ -32,6 +32,8 @@
 [ext_resource type="PackedScene" path="res://scenes/stage/RoomStage.tscn" id="36_stage"]
 [ext_resource type="Script" path="res://scripts/rooms/dressing/Colonnade.cs" id="37_colonnade"]
 [ext_resource type="Script" path="res://scripts/rooms/dressing/RackRow.cs" id="38_rackrow"]
+[ext_resource type="PackedScene" path="res://scenes/kit/Doorway.tscn" id="90_doorway"]
+[ext_resource type="Resource" path="res://resources/seams/doorway.tres" id="91_seam"]
 [sub_resource type="QuadMesh" id="QuadMesh_glyph_row"]
 size = Vector2(3.2, 0.62)
 
@@ -182,7 +184,7 @@ Biome = ExtResource("8_biome")
 Lamps = [NodePath("ShaftLamp")]
 Shafts = [NodePath("Shafts/Arcade"), NodePath("Shafts/Shaft")]
 GlyphLights = [NodePath("Glyphs/StepLight"), NodePath("Glyphs/ShaftLight")]
-BoundsMin = Vector2(-2, -2)
+BoundsMin = Vector2(-1.5, -2)
 BoundsMax = Vector2(66, 34)
 
 [node name="SpawnPoint" type="Marker3D" parent="."]
@@ -271,13 +273,13 @@ Extents = Vector3(3, 0.05, 0.8)
 [node name="Geometry" type="Node3D" parent="."]
 
 [node name="Floor" parent="Geometry" instance=ExtResource("2_block")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 32, -1, 0)
-Size = Vector3(68, 2, 4)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 34.75, -1, 0)
+Size = Vector3(62.5, 2, 4)
 Material = ExtResource("9_wet")
 
 [node name="WallLeft" parent="Geometry" instance=ExtResource("2_block")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -1, 19, 0)
-Size = Vector3(2, 30, 4)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -1, 20, 0)
+Size = Vector3(2, 28, 4)
 
 [node name="WallRight" parent="Geometry" instance=ExtResource("2_block")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 65, 12, 0)
@@ -420,7 +422,9 @@ script = ExtResource("12_exit")
 Side = 0
 TargetRoom = "res://worlds/prototype/rooms/Narthex.tscn"
 TargetExit = "East"
-Size = Vector2(1, 4)
+
+[node name="Doorway" parent="Exits/WestGate" instance=ExtResource("90_doorway")]
+Profile = ExtResource("91_seam")
 
 ; up through the hatch in the shaft's top into the Belfry, under the Belfry's hole: its area starts above the
 ; highest jump from the east ledge (Y 26 + 3.4 + the body), so only a grip or a harpoon reaches it
@@ -637,6 +641,13 @@ cast_shadow = 0
 [node name="PhotoSpots" type="Node3D" parent="."]
 
 ; gameplay framing at the spawn point
+; the west gate from the Narthex: its sill, lintel and the wall around it (the seam's frame)
+[node name="WestDoor" type="Marker3D" parent="PhotoSpots"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 2, 3.5, 12)
+script = ExtResource("7_spot")
+PlayerPosition = Vector3(4, 0, 0)
+PlayerFacing = -1
+
 [node name="Start" type="Marker3D" parent="PhotoSpots"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 8.5, 3.9, 22)
 script = ExtResource("7_spot")
