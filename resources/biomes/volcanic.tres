@@ -1,5 +1,5 @@
 [gd_resource type="Resource" script_class="BiomeProfile" format=3]
-; Layer 3, the foundry: cool grey stone and iron silhouetted against amber light and haze (the NieR furnace,
+; Layer 3, the foundry: dark basalt and iron silhouetted against amber light and haze (the NieR furnace,
 ; docs/references/nier-factory-furnace.png); the accent is the molten orange of slag and vents.
 
 [ext_resource type="Script" path="res://scripts/biome/BiomeProfile.cs" id="1_biome"]
@@ -9,12 +9,12 @@
 [resource]
 script = ExtResource("1_biome")
 DisplayName = "Volcanic"
-Rock = Color(0.4, 0.39, 0.4, 1)
+Rock = Color(0.17, 0.16, 0.165, 1)
 Metal = Color(0.56, 0.61, 0.68, 1)
 Backdrop = Color(0.07, 0.065, 0.07, 1)
 BackdropAccent = Color(1, 0.55, 0.2, 1)
 Rust = Color(0.42, 0.24, 0.15, 1)
-Silt = Color(0.3, 0.29, 0.29, 1)
+Silt = Color(0.25, 0.24, 0.24, 1)
 Foreground = Color(0.03, 0.025, 0.025, 1)
 Accent = Color(1, 0.55, 0.18, 1)
 Background = Color(0.1, 0.05, 0.03, 1)

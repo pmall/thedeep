@@ -8,7 +8,8 @@ namespace TheDeep;
 /// its basin with blocks: a bed under its whole width and a bank on each side from the bed up to the surface, which the room
 /// check holds (<see cref="SlagBasin"/>); rock standing in it is a pillar from the bed. Built here: the surface, carrying a
 /// drifting crust (<see cref="SurfaceMaterial"/>); its front on the play plane from surface to bed (<see cref="SectionMaterial"/>,
-/// brightest at the surface, darkening with depth); a light just over it in the biome's accent, lighting the banks from below.
+/// brightest at the surface, darkening with depth, the bed and the banks' feet dark through it); a light just over it and ahead
+/// of the front in the biome's accent, lighting the banks from below.
 /// Touching it burns, plated or not (<see cref="Burn"/>, <see cref="Player.Scorch"/>: one health unless in the grace, the
 /// pilgrim set back on its <see cref="Player.Footing"/>); ground within <see cref="FootingMargin"/> beside it and
 /// <see cref="FootingHeight"/> over it is no footing. It never
@@ -20,6 +21,8 @@ public partial class SlagBody : Node3D
     private static readonly StringName SurfaceParameter = "surface_y";
 
     private static readonly StringName BedParameter = "bed_y";
+
+    private static readonly StringName HalfWidthParameter = "half_width";
 
     /// <summary>Surface size: X across the room, Y into the scene (world Z).</summary>
     [Export] public Vector2 Size { get; set; } = new(4f, 4f);
@@ -43,7 +46,13 @@ public partial class SlagBody : Node3D
     [Export] public float SectionFront { get; set; } = 2.05f;
 
     /// <summary>The light over the surface: its energy (its color is the biome's accent).</summary>
-    [Export] public float GlowEnergy { get; set; } = 3f;
+    [Export] public float GlowEnergy { get; set; } = 9f;
+
+    /// <summary>How high that light hangs over the surface, meters: low, so it lights the rock over the slag from below.</summary>
+    [Export] public float GlowHeight { get; set; } = 0.3f;
+
+    /// <summary>How far ahead of the front (toward the camera) that light hangs, meters, so it reaches the faces on the play plane.</summary>
+    [Export] public float GlowAhead { get; set; } = 0.9f;
 
     /// <summary>The surface's look: crust drifting on the melt (<c>magma.tres</c>).</summary>
     [Export] public Material SurfaceMaterial { get; set; } = null!;
@@ -78,12 +87,14 @@ public partial class SlagBody : Node3D
         };
         front.SetInstanceShaderParameter(SurfaceParameter, SurfaceY);
         front.SetInstanceShaderParameter(BedParameter, SurfaceY - Depth);
+        front.SetInstanceShaderParameter(HalfWidthParameter, 0.5f * Size.X);
         AddChild(front);
 
         var glow = new OmniLight3D
         {
-            Position = new Vector3(0f, 0.5f, 1.2f),
+            Position = new Vector3(0f, GlowHeight, SectionFront + GlowAhead - GlobalPosition.Z),
             LightEnergy = GlowEnergy,
+            OmniAttenuation = 1.6f,
             OmniRange = Mathf.Max(Size.X, 3f) * 1.6f,
         };
         for (Node? n = GetParent(); n is not null; n = n.GetParent())
