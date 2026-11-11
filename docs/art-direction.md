@@ -31,6 +31,14 @@ Read this before any visual work. Every room is built to this direction. How a m
 - **Machines against the pilgrim** <a id="machine-palette"></a>: native machines take the biome palette, shells at mid value with dark limbs, the saturated accent only on small devotional plates; the pilgrim keeps its own colors (human-built, foreign at every depth) and stays the highest-contrast figure. Eyes turn the hazard color only on hostile machines, alert or striking (color means gameplay).
 - **No SDFGI**: it cost 1.7 ms on average, with p99 over budget, for a barely visible change in this lighting; VoxelGI needs a bake. Revisit if rooms get darker interiors.
 
+## The volcanic layer <a id="volcanic-look"></a>
+
+The layer is lit by what burns in it: slag and furnace mouths are its light, the rock is dark basalt against them.
+
+- **Slag has a body** (`docs/gameplay.md#slag`). On the play plane it shows a front from its surface down to its bed: brightest at the surface, darkening with depth, the bed and the banks' feet seen through it as dark shapes. Its surface carries a drifting dark crust that breaks on a bright line where it meets rock. Rock stands in it or on its banks, never floats over it: a platform over slag is a pillar rising from the bed. It lights the rock above it from below, in its own colour.
+- **Heat is seen** (`docs/gameplay.md#heat`): a plume exactly as wide and tall as the column that burns, rising from a source that reads as its cause (a grated vent, a furnace throat) to the hood or roof that ends it, with embers carried up inside. Where there is no plume there is no burn.
+- Both hold `docs/art-direction.md#stable-image`: baked, scrolling textures, no per-pixel noise, no face sharing a plane with rock.
+
 ## Reference board <a id="references"></a>
 
 The owner's screenshots are in `docs/references/` (Godot ignores `docs/`). **They are about colors and graphical style only. Don't copy their props, venues or layouts.** To view the `.avif`, convert it first: `ffmpeg -i in.avif out.png` in the scratchpad.
