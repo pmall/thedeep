@@ -7,7 +7,8 @@
 ;   the Calving, a high doorway on the west wall: up the metal buttress by grip, or by two rings;
 ;   down the well and east along the corridor under the floor, the Mere;
 ;   the Vault under the corridor, its way plugged with ice: dive through it (Drill), one way down;
-;   the Chimney, a vent in the floor welling with slag: it burns without Heat plating; down it, the volcanic layer.
+;   the Chimney, a vent under a cap of slag set hard, its heat entered from a step down beside it: only Heat plating
+;   passes it; down it, the volcanic layer.
 
 [ext_resource type="PackedScene" path="res://scenes/kit/Block.tscn" id="1_block"]
 [ext_resource type="Material" path="res://assets/materials/rust.tres" id="2_rust"]
@@ -30,9 +31,8 @@
 [ext_resource type="Script" path="res://scripts/kit/CableMesh.cs" id="20_cables"]
 [ext_resource type="Script" path="res://scripts/rooms/PhotoSpot.cs" id="21_spot"]
 [ext_resource type="Script" path="res://scripts/rooms/Room.cs" id="22_room"]
-[ext_resource type="Script" path="res://scripts/props/HeatColumn.cs" id="40_heatcolumn"]
+[ext_resource type="PackedScene" path="res://scenes/kit/HeatColumn.tscn" id="40_heatcolumn"]
 [ext_resource type="PackedScene" path="res://scenes/fx/Embers.tscn" id="42_embers"]
-[ext_resource type="Material" path="res://assets/materials/magma.tres" id="43_magma"]
 [ext_resource type="Resource" path="res://resources/biomes/frozen.tres" id="23_frozen"]
 [ext_resource type="PackedScene" path="res://scenes/stage/RoomStage.tscn" id="24_stage"]
 [ext_resource type="Script" path="res://scripts/rooms/dressing/WallDressing.cs" id="44_walldressing"]
@@ -46,11 +46,6 @@
 script = ExtResource("11_blockmesh")
 Size = Vector3(93, 60, 1.2)
 Bevel = 0.3
-
-[sub_resource type="PrimitiveMesh" id="blockmesh_slag"]
-script = ExtResource("11_blockmesh")
-Size = Vector3(3, 0.5, 4)
-Bevel = 0.1
 
 [sub_resource type="PrimitiveMesh" id="rack_1"]
 script = ExtResource("8_rack")
@@ -157,8 +152,18 @@ FrameBelow = false
 
 ; the floor of the stacks
 [node name="FloorWest" parent="Geometry" instance=ExtResource("1_block")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 3.5, -8, 0)
-Size = Vector3(13, 16, 4)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 2, -8, 0)
+Size = Vector3(10, 16, 4)
+
+; the step down beside the Chimney's vent, under its cap: the way into the heat, and out of it
+[node name="VentStep" parent="Geometry" instance=ExtResource("1_block")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 8.5, -9.25, 0)
+Size = Vector3(3, 13.5, 4)
+
+; the cap of slag set hard over the vent, a hood level with the floor: the heat under it is crossed only through it
+[node name="SlagCap" parent="Geometry" instance=ExtResource("1_block")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 11.5, 0.25, 0)
+Size = Vector3(3, 0.5, 4)
 
 ; ledges of slag set hard up the Chimney's vent, 2.5 m apart, for the way home from below (inside the heat: plated only)
 [node name="VentFloor" parent="Geometry" instance=ExtResource("1_block")]
@@ -397,21 +402,10 @@ Size = Vector2(3, 1)
 
 [node name="Heat" type="Node3D" parent="."]
 
-; the Chimney's vent: molten slag welling up from the volcanic layer; it burns without Heat plating (jump the vent)
-[node name="Vent" type="Node3D" parent="Heat"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 11.5, -16, 0)
-script = ExtResource("40_heatcolumn")
-Strip = true
-Size = Vector2(3, 15.5)
-Embers = ExtResource("42_embers")
-EmberDensity = 1.0
-GlowEnergy = 2.0
-
-; the slag's surface in the vent's mouth
-[node name="Slag" type="MeshInstance3D" parent="Heat"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 11.5, -1, 0)
-mesh = SubResource("blockmesh_slag")
-material_override = ExtResource("43_magma")
+; the Chimney's vent: heat rising from the volcanic layer up the shaft to its cap, entered from the step beside it
+[node name="Vent" parent="Heat" instance=ExtResource("40_heatcolumn")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 11.5, -15, 0)
+Size = Vector2(3, 15)
 
 [node name="Anchors" type="Node3D" parent="."]
 
@@ -847,6 +841,12 @@ PlayerPosition = Vector3(27, 0, 0)
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 64, 14, 22)
 script = ExtResource("21_spot")
 PlayerPosition = Vector3(66, 9, 0)
+
+; the Chimney's vent: the step down, the heat under its cap
+[node name="Vent" type="Marker3D" parent="PhotoSpots"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 10, -4, 18)
+script = ExtResource("21_spot")
+PlayerPosition = Vector3(4, 0, 0)
 
 ; the metal buttress, the two rings, the Calving ledge, the pilgrim on it (on the floor below, it would fall down the vent)
 [node name="Calving" type="Marker3D" parent="PhotoSpots"]
