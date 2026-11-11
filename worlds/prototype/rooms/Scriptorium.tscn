@@ -1,6 +1,6 @@
 [gd_scene format=3]
 
-; The Scriptorium, up the Undercroft's metal flue (map offset (223.5, 15.5)): a tall dry hall where Votaries
+; The Scriptorium, up the Undercroft's metal flue (map offset (224, 18.5)): a tall dry hall where Votaries
 ; kneel at lecterns, copying scripture onto plates; their bowing is the copying. The flue comes up through a
 ; hatch in the floor (Mag-grip from below); dropping back through it returns to the Undercroft. West, under a
 ; low vault: a pilgrim shrine and the first plate. East: a stair up to a gallery over the copyists (the second
@@ -165,13 +165,13 @@ PillarDensity = 2.4
 [node name="Geometry" type="Node3D" parent="."]
 
 [node name="FloorWest" parent="Geometry" instance=ExtResource("1_block")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 5, -2, 0)
-Size = Vector3(16, 4, 4)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 4.75, -1.5, 0)
+Size = Vector3(15.5, 3, 4)
 
-; the hatch is the gap between the two floors (x 13 to 15)
+; the hatch is the gap between the two floors (x 12.5 to 15.5): the floor is the Undercroft's ceiling
 [node name="FloorEast" parent="Geometry" instance=ExtResource("1_block")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 32.5, -2, 0)
-Size = Vector3(35, 4, 4)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 32.75, -1.5, 0)
+Size = Vector3(34.5, 3, 4)
 
 [node name="WallWest" parent="Geometry" instance=ExtResource("1_block")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -1.5, 9, 0)
@@ -204,13 +204,13 @@ Size = Vector3(22, 0.5, 4)
 
 ; the hatch down the flue to the Undercroft (climbing up it needs Mag-grip, from the Undercroft side)
 [node name="Hatch" type="Marker3D" parent="Exits"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 14, -0.5, 0)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 14, -1.5, 0)
 script = ExtResource("2_exit")
 Side = 2
 TargetRoom = "res://worlds/prototype/rooms/Undercroft.tscn"
 TargetExit = "Scriptorium"
 ArrivalSide = -1
-Size = Vector2(2, 1)
+Size = Vector2(3, 1)
 
 [node name="Props" type="Node3D" parent="."]
 

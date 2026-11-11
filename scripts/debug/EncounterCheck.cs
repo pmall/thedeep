@@ -12,7 +12,7 @@ namespace TheDeep;
 /// the gates stay up. At the Brink: the third law holds the pilgrim at the lip; pressing on breaks it (remembered); over
 /// the lip, the jump falls on into Rimefall and lands there. In the Choir: walking past a sleeping Chorister wakes none;
 /// a hard landing beside one wakes it. In the Counterweight: standing in the cage lets go of its brake, and it carries the
-/// pilgrim (standing on its floor all the way) up into the Undercroft, onto the grate. In the Calving: Mag-grip climbs the
+/// pilgrim (standing on its floor all the way) up into the Undercroft, where the shaft's head cage lifts it to the floor. In the Calving: Mag-grip climbs the
 /// girder up the ice cliff and the cliff's top leads back into the Coldstacks. In the Bore: the shaft drops into the
 /// chamber, the relic gives the Drill, a dash bores the cracked wall (remembered), the tunnel's steps climb back to the
 /// hall. In the Sounding: the drop into the well, floating to the shelf, the relic gives Ballast; sunk under the well's
@@ -148,10 +148,10 @@ public partial class EncounterCheck : Node
             },
             () => Cage.Travel.Phase == LiftPhase.Rising,
             () => Hold(InputActions.MoveRight, X < 12.6f)));
-        _steps.Add(new("it carries the pilgrim up the shaft, through the Undercroft's floor, onto the grate", 16f,
+        _steps.Add(new("it carries the pilgrim up the shaft into the Undercroft, its head cage onto the floor", 16f,
             () => { _rodeTo = 0f; },
             () => World.RoomName == "Undercroft" && Player.InControl && Player.IsOnFloor() && Mathf.Abs(X - 42f) < 2.1f
-                  && Mathf.Abs(Player.GlobalPosition.Y) < 0.05f && _rodeTo > 25f,
+                  && Mathf.Abs(Player.GlobalPosition.Y) < 0.05f && _rodeTo > 23f,
             () =>
             {
                 if (World.RoomName != "Counterweight")

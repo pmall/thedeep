@@ -3,8 +3,8 @@
 ; The Counterweight, over the Coldstacks' roof hatch (map offset (265.5, -37.5)): an old lift shaft cut up through
 ; the frozen archive to the crypts. Up through the hatch from the galleries, a short landing, and the lift: an iron
 ; cage on a rope over a sheave out of sight above, an iron weight hanging on the rope's other end. Standing in the cage lets
-; go of its brake: it rises the whole shaft while the weight sinks past it, and carries the pilgrim up through the
-; floor of the Undercroft. It only rises: nothing climbs back down to it from above; left empty at the top, the cage
+; go of its brake: it rises the whole shaft while the weight sinks past it, and carries the pilgrim up into the
+; shaft's head in the Undercroft's floor, where the same cage lifts it the last stretch (the Undercroft's LiftHead). It only rises: nothing climbs back down to it from above; left empty at the top, the cage
 ; sinks back to wait. Dropping back into the hatch returns to the Coldstacks.
 
 [ext_resource type="PackedScene" path="res://scenes/kit/Block.tscn" id="1_block"]
@@ -143,7 +143,7 @@ Lamps = [NodePath("Props/Lift/Cage/Lamp"), NodePath("Lamps/Landing"), NodePath("
 Shafts = [NodePath("Shafts/Head"), NodePath("Shafts/High")]
 GlyphLights = [NodePath("Glyphs/AscentLight")]
 BoundsMin = Vector2(-1, -2)
-BoundsMax = Vector2(25, 29.5)
+BoundsMax = Vector2(25, 29)
 
 [node name="SpawnPoint" type="Marker3D" parent="."]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 8, 0, 0)
@@ -157,69 +157,70 @@ FrameBelow = false
 
 [node name="Geometry" type="Node3D" parent="."]
 
-; the landing, either side of the hatch from the Coldstacks
+; the landing, either side of the hatch from the Coldstacks: the slab is the Coldstacks' roof
 [node name="FloorWest" parent="Geometry" instance=ExtResource("1_block")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.5, -1.5, 0)
-Size = Vector3(5, 3, 4)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.25, -1, 0)
+Size = Vector3(5.5, 2, 4)
 
 [node name="FloorMid" parent="Geometry" instance=ExtResource("1_block")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 8.75, -1.5, 0)
-Size = Vector3(5.5, 3, 4)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 8.5, -1, 0)
+Size = Vector3(6, 2, 4)
 
 ; under the cage at its lower stop
 [node name="Pit" parent="Geometry" instance=ExtResource("1_block")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 13, -1.75, 0)
-Size = Vector3(3, 2.5, 4)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 13, -1.25, 0)
+Size = Vector3(3, 1.5, 4)
 
 [node name="FloorEast" parent="Geometry" instance=ExtResource("1_block")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 20.75, -1.5, 0)
-Size = Vector3(12.5, 3, 4)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 20.75, -1, 0)
+Size = Vector3(12.5, 2, 4)
 
 [node name="WallWest" parent="Geometry" instance=ExtResource("1_block")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -1.5, 14, 0)
-Size = Vector3(3, 28, 4)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -1.5, 11.5, 0)
+Size = Vector3(3, 23, 4)
 
 [node name="WallEast" parent="Geometry" instance=ExtResource("1_block")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 25.5, 14, 0)
-Size = Vector3(3, 28, 4)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 25.5, 11.5, 0)
+Size = Vector3(3, 23, 4)
 
-; the shaft's head: open over the cage, up through the Undercroft's floor
+; the shaft's head, as wide as the cage: the slab is the Undercroft's floor (the camera stops at its top)
 [node name="CeilingWest" parent="Geometry" instance=ExtResource("1_block")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 4, 29.5, 0)
-Size = Vector3(14, 3, 4)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 4.25, 26, 0)
+Size = Vector3(14.5, 6, 4)
 
 [node name="CeilingEast" parent="Geometry" instance=ExtResource("1_block")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 21, 29.5, 0)
-Size = Vector3(12, 3, 4)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 20.75, 26, 0)
+Size = Vector3(12.5, 6, 4)
 
 [node name="Exits" type="Node3D" parent="."]
 
 ; the hatch down to the Coldstacks' galleries (arriving up through it lands east of it)
 [node name="Bottom" type="Marker3D" parent="Exits"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 4, -0.5, 0)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 4, -1, 0)
 script = ExtResource("2_exit")
 Side = 2
 TargetRoom = "res://worlds/prototype/rooms/Coldstacks.tscn"
 TargetExit = "Counterweight"
 ArrivalSide = 1
-Size = Vector2(4, 1)
+Size = Vector2(3, 1)
 
-; the cage at its upper stop: up through the Undercroft's floor (the lift only rises)
+; up through the Undercroft's floor, in the middle of the slab: the rider crosses it as the cage nears its upper stop
+; (the lift only rises)
 [node name="Top" type="Marker3D" parent="Exits"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 13, 29, 0)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 13, 26, 0)
 script = ExtResource("2_exit")
 Side = 3
 TargetRoom = "res://worlds/prototype/rooms/Undercroft.tscn"
 TargetExit = "Lift"
 OneWay = true
-Size = Vector2(4, 1)
+Size = Vector2(3, 1)
 
 [node name="Props" type="Node3D" parent="."]
 
-; the cage at its lower stop, flush with the landing; it rises 27.5 m
+; the cage at its lower stop, flush with the landing; it rises 26.5 m, to where the Undercroft's cage waits
 [node name="Lift" parent="Props" instance=ExtResource("3_lift")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 13, 0, 0)
-Rise = 27.5
+Rise = 26.5
 
 [node name="Shafts" type="Node3D" parent="."]
 
@@ -442,48 +443,6 @@ transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 21.25, 21.5, -4.5)
 mesh = SubResource("icicles_8")
 material_override = ExtResource("10_ice_mid")
 
-[node name="West4" type="MeshInstance3D" parent="Kit/Shelves"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 5, 24.25, -5.5)
-mesh = SubResource("blockmesh_2")
-material_override = ExtResource("5_stone_mid")
-
-[node name="West4" type="Node3D" parent="Kit/Racks"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.75, 24.5, -5.5)
-script = ExtResource("9_rackrow")
-Variants = [SubResource("rack_4"), SubResource("rack_5"), SubResource("rack_6")]
-Material = ExtResource("8_metal_mid")
-Count = 6
-Pitch = 1.6
-GapChance = 0.18
-ToppleChance = 0.06
-Seed = 224
-
-[node name="West4" type="MeshInstance3D" parent="Kit/Icicles"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 5, 24, -4.5)
-mesh = SubResource("icicles_7")
-material_override = ExtResource("10_ice_mid")
-
-[node name="East4" type="MeshInstance3D" parent="Kit/Shelves"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 21.25, 26.75, -5.5)
-mesh = SubResource("blockmesh_3")
-material_override = ExtResource("5_stone_mid")
-
-[node name="East4" type="Node3D" parent="Kit/Racks"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 18.5, 27, -5.5)
-script = ExtResource("9_rackrow")
-Variants = [SubResource("rack_4"), SubResource("rack_5"), SubResource("rack_6")]
-Material = ExtResource("8_metal_mid")
-Count = 4
-Pitch = 1.6
-GapChance = 0.2
-ToppleChance = 0.05
-Seed = 244
-
-[node name="East4" type="MeshInstance3D" parent="Kit/Icicles"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 21.25, 26.5, -4.5)
-mesh = SubResource("icicles_8")
-material_override = ExtResource("10_ice_mid")
-
 [node name="Guides" type="Node3D" parent="Kit"]
 
 [node name="CageWest" type="MeshInstance3D" parent="Kit/Guides"]
@@ -569,12 +528,12 @@ mesh = SubResource("blockmesh_13")
 material_override = ExtResource("12_rust_mid")
 
 [node name="HeadWest" type="MeshInstance3D" parent="Kit/Icicles"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 5.5, 28, 1.25)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 5.5, 23, 1.25)
 mesh = SubResource("icicles_14")
 material_override = ExtResource("13_ice")
 
 [node name="HeadEast" type="MeshInstance3D" parent="Kit/Icicles"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 19.5, 28, 1.25)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 19.5, 23, 1.25)
 mesh = SubResource("icicles_15")
 material_override = ExtResource("13_ice")
 
@@ -643,3 +602,9 @@ PlayerPosition = Vector3(13, 0, 0)
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 13, 23, 22)
 script = ExtResource("19_spot")
 PlayerPosition = Vector3(13, 0, 0)
+
+; the hatch in the landing down into the Coldstacks' roof
+[node name="Hatch" type="Marker3D" parent="PhotoSpots"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 5, 2, 14)
+script = ExtResource("19_spot")
+PlayerPosition = Vector3(9, 0, 0)

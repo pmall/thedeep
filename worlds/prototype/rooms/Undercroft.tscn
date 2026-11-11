@@ -5,7 +5,7 @@
 ; over them, and a tall east wall. East at floor level: the Ossuary. High in the east wall: the way on to the
 ; Chapterhouse, on a metal ledge: climb the metal wall and wrap around the ledge (Mag-grip), or harpoon the two
 ; mooring rings (Harpoon). Above the west door a metal flue rises to the Scriptorium (Mag-grip). Coming back
-; from either is a drop. The lift up from the frozen layer (the Counterweight) arrives at a grate in the east floor.
+; from either is a drop. The lift up from the frozen layer (the Counterweight) rises through a shaft in the east floor.
 
 [ext_resource type="Material" path="res://assets/materials/wet_stone.tres" id="1_wet_stone"]
 [ext_resource type="PackedScene" path="res://scenes/kit/Block.tscn" id="2_block"]
@@ -37,8 +37,7 @@
 [ext_resource type="Script" path="res://scripts/rooms/Room.cs" id="28_room"]
 [ext_resource type="Resource" path="res://resources/biomes/flooded.tres" id="29_flooded"]
 [ext_resource type="PackedScene" path="res://scenes/stage/RoomStage.tscn" id="30_stage"]
-[ext_resource type="Script" path="res://scripts/kit/GrateMesh.cs" id="31_grate"]
-[ext_resource type="Material" path="res://assets/materials/metal.tres" id="32_metal"]
+[ext_resource type="PackedScene" path="res://scenes/props/Lift.tscn" id="31_lift"]
 
 [sub_resource type="QuadMesh" id="QuadMesh_1"]
 size = Vector2(3, 0.3)
@@ -51,7 +50,7 @@ size = Vector2(2, 0.4)
 
 [sub_resource type="PrimitiveMesh" id="blockmesh_4"]
 script = ExtResource("9_blockmesh")
-Size = Vector3(2, 18, 0.5)
+Size = Vector3(3, 21, 0.5)
 Bevel = 0.06
 
 [sub_resource type="QuadMesh" id="QuadMesh_5"]
@@ -173,26 +172,12 @@ Radius = 0.07
 Strands = 3
 Seed = 6
 
-[sub_resource type="PrimitiveMesh" id="Grate_lift"]
-script = ExtResource("31_grate")
-Size = Vector3(4, 0.5, 4)
-Spacing = 0.3
-Bar = 0.07
-
-[sub_resource type="PrimitiveMesh" id="cables_lift"]
-script = ExtResource("20_cables")
-End = Vector3(0, -5, 0)
-Sag = 0.2
-Radius = 0.05
-Strands = 2
-Seed = 11
-
 [node name="Undercroft" type="Node3D" node_paths=PackedStringArray("SpawnPoint", "Stage", "Lamps", "Shafts", "GlyphLights")]
 script = ExtResource("28_room")
 SpawnPoint = NodePath("SpawnPoint")
 Stage = NodePath("Stage")
 Biome = ExtResource("29_flooded")
-Lamps = [NodePath("Lamps/Shrine"), NodePath("Lamps/Ledge")]
+Lamps = [NodePath("Lamps/Shrine"), NodePath("Lamps/Ledge"), NodePath("Props/LiftHead/Cage/Lamp")]
 Shafts = [NodePath("Shafts/Oculus"), NodePath("Shafts/East")]
 GlyphLights = [NodePath("Props/Shrine/Light"), NodePath("Glyphs/DoorLight"), NodePath("Glyphs/TombWestLight"), NodePath("Glyphs/TombEastLight"), NodePath("Glyphs/FlueLight")]
 BoundsMin = Vector2(-1, -5)
@@ -221,26 +206,15 @@ Size = Vector3(14, 3, 4)
 Material = ExtResource("1_wet_stone")
 
 [node name="FloorEastNear" parent="Geometry" instance=ExtResource("2_block")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 38, -3, 0)
-Size = Vector3(4, 6, 4)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 38.25, -3, 0)
+Size = Vector3(4.5, 6, 4)
 Material = ExtResource("1_wet_stone")
 
-; the head of the Counterweight's shaft: a grate over the dark, flush with the floor (shown by Kit/LiftGrate)
-[node name="LiftHead" parent="Geometry" instance=ExtResource("2_block")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 42, -0.25, 0)
-Size = Vector3(4, 0.5, 4)
-Surface = 1
-CollisionOnly = true
-
-; the shaft below the grate, 1.5 m down to its stone
-[node name="LiftWell" parent="Geometry" instance=ExtResource("2_block")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 42, -4, 0)
-Size = Vector3(4, 4, 4)
-Material = ExtResource("1_wet_stone")
-
+; the head of the Counterweight's shaft is the gap between FloorEastNear and FloorEast, as wide as its cage: the floor
+; is the Counterweight's roof
 [node name="FloorEast" parent="Geometry" instance=ExtResource("2_block")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 51.5, -3, 0)
-Size = Vector3(15, 6, 4)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 51.25, -3, 0)
+Size = Vector3(15.5, 6, 4)
 Material = ExtResource("1_wet_stone")
 
 ; two tombs in the crypt
@@ -260,19 +234,19 @@ Surface = 1
 
 ; the low metal vault over the west door
 [node name="Vault" parent="Geometry" instance=ExtResource("2_block")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 8, 5.25, 0)
-Size = Vector3(12, 1.5, 4)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 8.5, 5.25, 0)
+Size = Vector3(11, 1.5, 4)
 Surface = 1
 
-; the flue's east side, up to the Scriptorium
+; the flue's east side, up to the Scriptorium (the flue as wide as the hatch over it)
 [node name="FlueEast" parent="Geometry" instance=ExtResource("2_block")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 2.5, 15, 0)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 3.5, 15, 0)
 Size = Vector3(1, 18, 4)
 Surface = 1
 
 [node name="Ceiling" parent="Geometry" instance=ExtResource("2_block")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 30.5, 25.5, 0)
-Size = Vector3(57, 3, 4)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 31, 25.5, 0)
+Size = Vector3(56, 3, 4)
 
 ; the tall east wall, metal: climb it
 [node name="WallEast" parent="Geometry" instance=ExtResource("2_block")]
@@ -321,23 +295,24 @@ TargetExit = "West"
 Requires = "MagGrip | Harpoon"
 Size = Vector2(1, 4)
 
-; the top of the flue, up into the Scriptorium (coming back is a drop down the flue)
+; the top of the flue, up into the Scriptorium, in the middle of the ceiling (coming back is a drop down the flue)
 [node name="Scriptorium" type="Marker3D" parent="Exits"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 1, 23.5, 0)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 1.5, 25.5, 0)
 script = ExtResource("3_exit")
 Side = 3
 TargetRoom = "res://worlds/prototype/rooms/Scriptorium.tscn"
 TargetExit = "Hatch"
 Requires = "MagGrip"
-Size = Vector2(2, 1)
+Size = Vector2(3, 1)
 
-; the Counterweight's cage rises to the grate in the east floor (only arrived through: the lift never goes down)
+; the Counterweight's cage rises into the shaft's head in the east floor, in the middle of the slab; the rider arrives
+; on the cage waiting there (only arrived through: the lift never goes down)
 [node name="Lift" type="Marker3D" parent="Exits"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 42, 0, 0)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 42, -3, 0)
 script = ExtResource("3_exit")
 Side = 2
 ArrivalOnly = true
-Size = Vector2(4, 1)
+Size = Vector2(3, 1)
 
 [node name="Anchors" type="Node3D" parent="."]
 
@@ -353,6 +328,15 @@ transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 49, 15.5, 0)
 ; a pilgrim shrine past the vault
 [node name="Shrine" parent="Props" instance=ExtResource("5_shrine")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 16, 0, 0)
+
+; the Counterweight's cage at the head of its shaft, where it stops below (the same cage as the Counterweight's, in
+; line): it carries its rider the last 2.5 m up to the floor, then sinks back to wait; its sheave hangs from the vault,
+; its weight far down the shaft
+[node name="LiftHead" parent="Props" instance=ExtResource("31_lift")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 42, -2.5, 0)
+Rise = 2.5
+WeightLow = -12.0
+SheaveClearance = 21.4
 
 [node name="Machines" type="Node3D" parent="."]
 
@@ -445,32 +429,21 @@ omni_range = 2
 
 [node name="Kit" type="Node3D" parent="."]
 
-; the grate over the Counterweight's shaft, and its ropes going down into the dark
-[node name="LiftGrate" type="MeshInstance3D" parent="Kit"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 42, -0.5, 0)
-mesh = SubResource("Grate_lift")
-material_override = ExtResource("32_metal")
-
-[node name="LiftRopes" type="MeshInstance3D" parent="Kit"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 42.5, -0.75, -1)
-mesh = SubResource("cables_lift")
-material_override = ExtResource("21_cable")
-
-; the back of the flue
+; the back of the flue, up through the ceiling
 [node name="FlueBack" type="MeshInstance3D" parent="Kit"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 1, 15, -2.25)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 1.5, 16.5, -2.25)
 mesh = SubResource("blockmesh_4")
 material_override = ExtResource("10_stone_mid")
 
 ; glyphs up the back of the flue
 [node name="Flue" type="MeshInstance3D" parent="Glyphs"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 1, 12, -1.99)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 1.5, 12, -1.99)
 mesh = SubResource("QuadMesh_5")
 material_override = ExtResource("8_glyphs")
 cast_shadow = 0
 
 [node name="FlueLight" type="OmniLight3D" parent="Glyphs"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 1, 12, -1.29)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 1.5, 12, -1.29)
 light_energy = 0.5
 light_volumetric_fog_energy = 0
 omni_range = 3
@@ -636,3 +609,15 @@ transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 28, 11, 48)
 script = ExtResource("27_spot")
 PlayerPosition = Vector3(18, 0, 0)
 Fov = 40
+
+; the head of the Counterweight's shaft in the east floor
+[node name="Lift" type="Marker3D" parent="PhotoSpots"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 43, 2, 14)
+script = ExtResource("27_spot")
+PlayerPosition = Vector3(47, 0, 0)
+
+; the top of the flue, up through the vault into the Scriptorium
+[node name="FlueTop" type="Marker3D" parent="PhotoSpots"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 2, 23.5, 6)
+script = ExtResource("27_spot")
+PlayerPosition = Vector3(1, 0, 0)

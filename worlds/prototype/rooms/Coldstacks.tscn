@@ -137,7 +137,7 @@ Lamps = [NodePath("Lamps/Shrine"), NodePath("Lamps/Well"), NodePath("Lamps/Stack
 Shafts = [NodePath("Shafts/Hatch"), NodePath("Shafts/High")]
 GlyphLights = [NodePath("Props/Shrine/Light"), NodePath("Glyphs/ShrineLight")]
 BoundsMin = Vector2(-1, -16)
-BoundsMax = Vector2(76, 34)
+BoundsMax = Vector2(76, 31.5)
 
 [node name="SpawnPoint" type="Marker3D" parent="."]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 30, 0, 0)
@@ -252,14 +252,14 @@ Size = Vector3(3, 4, 4)
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 77.5, 19.5, 0)
 Size = Vector3(3, 31, 4)
 
-; the roof, open over the Counterweight's hatch
+; the roof, open over the Counterweight's hatch: its top is the Counterweight's landing (the camera stops there)
 [node name="RoofWest" parent="Geometry" instance=ExtResource("1_block")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 30, 33, 0)
-Size = Vector3(66, 4, 4)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 30.25, 31.5, 0)
+Size = Vector3(66.5, 4, 4)
 
 [node name="RoofEast" parent="Geometry" instance=ExtResource("1_block")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 73, 33, 0)
-Size = Vector3(12, 4, 4)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 72.75, 31.5, 0)
+Size = Vector3(12.5, 4, 4)
 
 ; the galleries, zigzagging up to the roof, 2.5 m apart (a jump with room to spare)
 [node name="Gallery0" parent="Geometry" instance=ExtResource("1_block")]
@@ -319,12 +319,12 @@ Size = Vector2(1, 4)
 
 ; the roof hatch: up into the Counterweight, the lift to the Undercroft (dropping back from it lands on the top gallery)
 [node name="Counterweight" type="Marker3D" parent="Exits"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 65, 31, 0)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 65, 30.5, 0)
 script = ExtResource("4_exit")
 Side = 3
 TargetRoom = "res://worlds/prototype/rooms/Counterweight.tscn"
 TargetExit = "Bottom"
-Size = Vector2(4, 1)
+Size = Vector2(3, 1)
 
 ; the high doorway west, on to the Calving's ice cliff
 [node name="Calving" type="Marker3D" parent="Exits"]
@@ -735,7 +735,7 @@ mesh = SubResource("icicles_9")
 material_override = ExtResource("3_ice")
 
 [node name="Roof" type="MeshInstance3D" parent="Kit/Icicles"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 30, 31, -2.5)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 30, 29.5, -2.5)
 mesh = SubResource("icicles_10")
 material_override = ExtResource("14_ice_mid")
 
@@ -819,3 +819,9 @@ transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 38, 9, 64)
 script = ExtResource("21_spot")
 PlayerPosition = Vector3(30, 0, 0)
 Fov = 40
+
+; the roof hatch over the top gallery, up into the Counterweight
+[node name="Roof" type="Marker3D" parent="PhotoSpots"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 65, 29, 12)
+script = ExtResource("21_spot")
+PlayerPosition = Vector3(68, 27.5, 0)

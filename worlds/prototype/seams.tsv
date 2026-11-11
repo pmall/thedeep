@@ -3,12 +3,6 @@
 # what disagrees: tools/check.sh's room check, or this file emptied of a seam's lines. Vertical exits first (owner), then doorways.
 seam	rule	reason
 
-# Vertical, batch 2: the Undercroft and the Counterweight's lift
-Counterweight:Bottom | Coldstacks:Counterweight	Solids	to fix under seam-coherence (vertical)
-Scriptorium:Hatch | Undercroft:Scriptorium	Solids	to fix under seam-coherence (vertical)
-Undercroft:Lift | Counterweight:Top	Solids	to fix under seam-coherence (vertical)
-Undercroft:Lift | Counterweight:Top	Lift	to fix under seam-coherence (vertical)
-
 # Vertical, batch 3: the frozen layer
 Brink:Down | Rimefall:Sky	Opening	to fix under seam-coherence (vertical)
 Brink:Down | Rimefall:Sky	Solids	to fix under seam-coherence (vertical)
