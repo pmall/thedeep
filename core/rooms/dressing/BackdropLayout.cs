@@ -62,6 +62,8 @@ public readonly record struct BackdropRow(float MinX, float MaxX, float BaseY, f
 /// </summary>
 public static class BackdropLayout
 {
+    /// <summary>The pieces of one row of the given style, placed in the row's frame; the same row always gives the same
+    /// pieces.</summary>
     public static List<BackdropPlacement> Build(BackdropStyle style, BackdropRow row) => style switch
     {
         BackdropStyle.Stacks => Stacks(row),
@@ -288,28 +290,46 @@ public static class BackdropLayout
 /// <summary>The sizes of a row's pieces, from its pitch and scale (shared by the layout and the meshes built for it).</summary>
 public readonly record struct BackdropDims(float Pitch, float Scale)
 {
+    /// <summary>The sizes of the pieces of <paramref name="row"/>.</summary>
     public static BackdropDims For(BackdropRow row) => new(row.Pitch, row.Scale);
 
+    /// <summary>A nave pier's height, from the row's base to where its arch springs, meters.</summary>
     public float PierHeight => 9f * Scale;
+    /// <summary>A nave pier's radius, meters.</summary>
     public float PierRadius => 0.9f * Scale;
+    /// <summary>The height of an upper tier's pier, slimmer and shorter than the first tier's, meters.</summary>
     public float UpperHeight => 7.5f * Scale;
+    /// <summary>How far a first-tier arch rises above its springing line, meters; over half the bay it spans, so it is
+    /// pointed.</summary>
     public float PointedRise => 0.62f * Pitch;
 
     /// <summary>The upper tiers' arches: pointed too (round ones stacked read as a lattice of rings), a little lower.</summary>
     public float UpperRise => 0.56f * Pitch;
+    /// <summary>The height of the stone course that runs over a tier's arches, meters.</summary>
     public float CourseHeight => 0.7f * Scale;
+    /// <summary>The thickness of an arch's ring, in the plane of the row, meters.</summary>
     public float ArchThickness => 0.8f * Scale;
+    /// <summary>An arch's depth toward the camera, meters.</summary>
     public float ArchDepth => 1.6f * Scale;
 
+    /// <summary>The height of one tier of an archive tower, meters; tiers stack up out of frame.</summary>
     public float TowerHeight => 6f * Scale;
+    /// <summary>An archive tower's width along the row, meters; the walkways span the rest of the bay.</summary>
     public float TowerWidth => 0.5f * Pitch;
+    /// <summary>A walkway's thickness, meters.</summary>
     public float WalkwayHeight => 0.5f * Scale;
+    /// <summary>A walkway's depth toward the camera, meters.</summary>
     public float WalkwayDepth => 2f * Scale;
 
+    /// <summary>A foundry chimney's radius, meters; a truss runs between two chimneys' sides.</summary>
     public float ChimneyRadius => 1.3f * Scale;
+    /// <summary>A truss's height from its lower chord to its upper one, meters; its panels are about as long.</summary>
     public float TrussDepth => 1.8f * Scale;
+    /// <summary>The side of a truss chord's square section, meters; a brace is thinner.</summary>
     public float BeamSection => 0.3f * Scale;
 
+    /// <summary>A machinery ring's mean radius, meters; each ring takes between 0.75 and 1.15 times it.</summary>
     public float RingRadius => 0.85f * Pitch;
+    /// <summary>A piston's radius, meters.</summary>
     public float PistonRadius => 0.45f * Scale;
 }

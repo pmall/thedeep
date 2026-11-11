@@ -79,6 +79,7 @@ public static class WallLayout
     /// <summary>Pilasters stand about this far apart, meters (the bays share the width evenly).</summary>
     public const float Bay = 7f;
 
+    /// <summary>A pilaster's width along the wall, meters; a bay's motif fits between two of them.</summary>
     public const float PilasterWidth = 0.9f;
 
     /// <summary>
@@ -162,6 +163,7 @@ public static class WallLayout
     /// <summary>An archive's shelves stand this far apart, meters; a rack on them is <see cref="RackPitch"/> wide.</summary>
     public const float ShelfPitch = 3.2f;
 
+    /// <summary>The width a server rack takes on its shelf, meters.</summary>
     public const float RackPitch = 1.1f;
 
     private static List<WallPlacement> Archive(float width, float height, int seed)
@@ -217,6 +219,7 @@ public static class WallLayout
     /// <summary>A nave's plinth height and its arcade pilasters' width, meters.</summary>
     public const float NavePlinth = 0.8f;
 
+    /// <summary>The width of a nave's arcade pilaster, meters.</summary>
     public const float NavePilaster = 1f;
 
     private static List<WallPlacement> Nave(float width, float height, int seed, float frost)
