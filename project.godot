@@ -266,6 +266,10 @@ water_floor={
 "type": "float",
 "value": -20000.0
 }
+water_murk={
+"type": "float",
+"value": 1.0
+}
 water_area={
 "type": "vec4",
 "value": Vector4(0, 0, 0, 0)

@@ -172,6 +172,7 @@ transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 31, 28, -6)
 script = ExtResource("4_water_body")
 Size = Vector2(68, 16.1)
 Depth = 31
+Murk = 0.4
 Swim = true
 SurfaceMaterial = ExtResource("5_water")
 SectionMaterial = ExtResource("7_water_section")

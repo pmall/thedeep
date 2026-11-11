@@ -5,7 +5,7 @@ namespace TheDeep;
 /// <summary>
 /// A body of water: its surface at the node's height, <see cref="Size"/> wide (X) and deep into the scene
 /// (Z), <see cref="Depth"/> meters deep. Builds the surface mesh (told its floor and sides, so it draws its depth) and
-/// the reflection probe it mirrors, and pushes its level, floor and area into the water globals so nearby materials draw caustics
+/// the reflection probe it mirrors, and pushes its level, floor, area and murk into the water globals so nearby materials draw caustics
 /// and sink into the water what lies in it (lib/water.gdshaderinc). One water body
 /// per room for now (the globals hold one). Colors come from the biome. With <see cref="Swim"/>, the pilgrim swims in it:
 /// its play-plane region (<see cref="Size"/>.X wide, from the surface down <see cref="Depth"/>) becomes an area on the water
@@ -42,11 +42,17 @@ public partial class WaterBody : Node3D
     /// <summary>How far below the surface the water reaches, meters.</summary>
     [Export] public float Depth { get; set; } = 4f;
 
+    /// <summary>
+    /// How thick the water is: scales its murk and how fast the room's light fades in it (lib/water.gdshaderinc). 1 is
+    /// the biome's water as it is; under 1 clearer (a room lit by its own lamps deep under the surface), over 1 murkier.
+    /// </summary>
+    [Export(PropertyHint.Range, "0.1,3,0.05")] public float Murk { get; set; } = 1f;
+
     /// <summary>Whether the pilgrim swims in it (its region on the play plane is water); otherwise it is scenery.</summary>
     [Export] public bool Swim { get; set; }
 
     /// <summary>
-    /// Whether it pushes its level, floor and area into the water globals (caustics, the murk). One water body per room does;
+    /// Whether it pushes its level, floor, area and murk into the water globals (caustics, the murk). One water body per room does;
     /// a second one (a pool on the play plane beside scenery water at the same level) doesn't.
     /// </summary>
     [Export] public bool Globals { get; set; } = true;
@@ -138,6 +144,7 @@ public partial class WaterBody : Node3D
 
         RenderingServer.GlobalShaderParameterSet(ShaderGlobals.WaterLevel, center.Y);
         RenderingServer.GlobalShaderParameterSet(ShaderGlobals.WaterFloor, center.Y - Depth);
+        RenderingServer.GlobalShaderParameterSet(ShaderGlobals.WaterMurk, Murk);
         RenderingServer.GlobalShaderParameterSet(ShaderGlobals.WaterArea, rect);
     }
 
