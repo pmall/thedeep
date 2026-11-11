@@ -195,6 +195,8 @@ CHECKS=(
     "drill|DRILL OK|DRILL CHECK|2000|--room MechanicsLab --drill-check"
     "ballast|BALLAST OK|BALLAST CHECK|2000|--room MechanicsLab --ballast-check"
     "heat|HEAT OK|HEAT CHECK|1500|--room Basalt --heat-check"
+    # SlagCheck: the Slag measured in play, report-only until it is rebuilt on the bricks (docs/roadmap.md#volcanic-rethink).
+    "slag|SLAG REPORT|SLAG CHECK|15000|--room Slag --slag-check"
     # KeyCheck: the Sacristy key and its locked door, in place.
     "key|KEY OK|KEY CHECK|2000|--room Narthex --key-check"
     # KeyCheck's Pyre plan: the Pyre's litany (a code) and its seal on the Ashfall's low door, in place.
@@ -264,7 +266,8 @@ for entry in "${CHECKS[@]}"; do
         continue
     fi
     if [ -n "$ok" ]; then
-        grep -E "^$ok|^(MAP|INSIDE|DRAFT) OK" "$log" | sed "s/\$/  ($name, ${secs}s)/" | head -6
+        # With the report-only lines: the ground rules' totals and the Slag's verdicts (docs/roadmap.md#volcanic-rethink).
+        grep -E "^$ok|^(MAP|INSIDE|DRAFT) OK|^GROUND REPORT|^SLAG \(" "$log" | cut -c1-240 | sed "s/\$/  ($name, ${secs}s)/" | head -12
     else
         echo "$name: ok (${secs}s)"
     fi

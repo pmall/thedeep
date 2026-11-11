@@ -24,6 +24,8 @@ namespace TheDeep;
 /// room for error; the seams, every way's two ends held to each other (<see cref="SeamCheck"/>, less the world's
 /// <see cref="WorldDefinition.SeamExceptions"/>); and the world's network (<see cref="MapDraft"/>): its targets, its layers, its agreement with the built rooms, and its room
 /// table held to it (<see cref="RoomTable.Check"/>; `--map-report`: each room's kinds).
+/// Last, report-only: the ground rules' findings per room and their totals (`GROUND`, <see cref="ReportGround"/>). Run alone:
+/// `godot --headless --path . -- --room MechanicsLab --validate-rooms | grep GROUND` (`--world sequel --room Strongroom` for the sequel).
 /// </summary>
 public partial class RoomValidator : Node
 {
@@ -31,6 +33,12 @@ public partial class RoomValidator : Node
 
     /// <summary>The old heat strips still placed (`Room/Node`), named by the check but not failed (<see cref="HeatColumn.Strip"/>).</summary>
     private readonly List<string> _strips = new();
+
+    /// <summary>What the ground rules (<see cref="GroundRules"/>) find, one line each; report-only until the Slag is rebuilt.</summary>
+    private readonly List<string> _ground = new();
+
+    /// <summary>Per room, how many findings of each kind the ground rules made (headroom, step, flush, coplanar, open mesh).</summary>
+    private readonly List<(string Room, int[] Counts)> _groundCounts = new();
 
     private readonly RequiredExports _exports = new();
     private readonly LineCheck _lines = new();
@@ -127,7 +135,14 @@ public partial class RoomValidator : Node
 
             GD.Print(map);
         }
-        else if (Report)
+
+        foreach (string line in _ground)
+        {
+            GD.Print(line);
+        }
+
+        GD.Print(GroundTotal());
+        if (_problems.Count > 0 && Report)
         {
             GD.Print(map); // the placements help find what doesn't line up
         }
@@ -255,6 +270,7 @@ public partial class RoomValidator : Node
         }
 
         _strips.AddRange(room.All<HeatColumn>().Where(h => h.Strip).Select(h => $"{World.NameOf(path)}/{h.Name}"));
+        ReportGround(room, World.NameOf(path), exits);
 
         if (!room.PhotoSpots().Any())
         {
@@ -267,6 +283,99 @@ public partial class RoomValidator : Node
         }
 
         return exits.Count;
+    }
+
+    /// <summary>The ground rules' kinds of finding, in the order of <see cref="_groundCounts"/>.</summary>
+    private static readonly string[] GroundKinds = { "headroom", "step", "flush", "coplanar", "open mesh" };
+
+    /// <summary>
+    /// The ground rules (<see cref="GroundRules"/>) on the room's blocks and meshes, one `GROUND &lt;Room&gt; &lt;kind&gt;:` line per finding:
+    /// report-only (no problem) until `docs/roadmap.md#volcanic-rethink` rebuilds the Slag on its bricks and a rule holds everywhere.
+    /// Exit openings are passages the room marks low (extended outward, where the doorway's lintel lies).
+    /// </summary>
+    private void ReportGround(Room room, string name, List<RoomExit> exits)
+    {
+        int[] counts = new int[GroundKinds.Length];
+        void Found(int kind, string what)
+        {
+            counts[kind]++;
+            _ground.Add($"GROUND {name} {GroundKinds[kind]}: {what}");
+        }
+
+        List<Block> blocks = room.Blocks().ToList();
+        var solids = blocks.Select(BoxOf).ToList();
+        float radius = 0.5f * Tuning.Move.Width;
+        var low = new List<Box>();
+        foreach (RoomExit exit in exits)
+        {
+            Box a = exit.Threshold.Area;
+            low.Add(exit.Side switch
+            {
+                ExitSide.West => a with { MinX = a.MinX - 1000f, MaxX = a.MaxX + radius },
+                ExitSide.East => a with { MinX = a.MinX - radius, MaxX = a.MaxX + 1000f },
+                _ => a.Grown(radius),
+            });
+        }
+
+        var bounds = new Box(room.BoundsMin.X, room.BoundsMin.Y, room.BoundsMax.X, room.BoundsMax.Y);
+        foreach (LowCeiling c in GroundRules.Headroom(solids, Tuning.Move.JumpHeight + Tuning.Move.Height, Tuning.Move.Height, radius, low, bounds))
+        {
+            Found(0, $"{blocks[c.Ground].Name}'s top at y {c.Y:0.##}, x {c.MinX:0.##}..{c.MaxX:0.##}: {blocks[c.Ceiling].Name} {c.Clearance:0.##} m over it " +
+                     $"(a jump's head reaches {Tuning.Move.JumpHeight + Tuning.Move.Height:0.##})");
+        }
+
+        foreach (Seam seam in GroundRules.Seams(solids, Tuning.Move.LedgeAssist))
+        {
+            string where = $"{blocks[seam.A].Name} and {blocks[seam.B].Name} at x {seam.X:0.##}, y {seam.Y:0.##}";
+            switch (seam.Kind)
+            {
+                case SeamKind.Step: Found(1, $"{where}: a {seam.Size:0.##} m step on a walking surface (under the {Tuning.Move.LedgeAssist} m ledge assist)"); break;
+                case SeamKind.Flush: Found(2, $"{where}: tops flush side by side on a walking surface (a ghost edge)"); break;
+                default: Found(3, $"{where}: overlapping, a face {seam.Size:0.##} m long in one plane (z-fighting)"); break;
+            }
+        }
+
+        foreach (MeshInstance3D mesh in Descendants(room).OfType<MeshInstance3D>().Where(m => m.Mesh is not null && m.IsVisibleInTree() && m is not LightShaft))
+        {
+            if (Ancestors(mesh).Any(n => n is CollisionObject3D or WaterBody or HeatColumn or SlagBody) || mesh.GetChildren().Any(n => n is CollisionObject3D))
+            {
+                continue;
+            }
+
+            Aabb box = mesh.GlobalTransform * mesh.GetAabb();
+            if (box.Position.Z >= -radius || box.End.Z <= radius)
+            {
+                continue; // wholly in front of or behind the pilgrim's body
+            }
+
+            var plane = new Box(box.Position.X, box.Position.Y, box.End.X, box.End.Y);
+            foreach ((float from, float to) in GroundRules.OpenSpans(plane, solids))
+            {
+                Found(4, $"{room.GetPathTo(mesh)} lies across the play plane (y {plane.MinY:0.##}..{plane.MaxY:0.##}) with no solid from x {from:0.##} to {to:0.##}: the pilgrim passes through it");
+            }
+        }
+
+        if (counts.Any(c => c > 0))
+        {
+            _groundCounts.Add((name, counts));
+        }
+    }
+
+    /// <summary>The ground rules' totals over the world, and the rooms with the most findings.</summary>
+    private string GroundTotal()
+    {
+        string kinds = string.Join(", ", GroundKinds.Select((k, i) => $"{k} {_groundCounts.Sum(r => r.Counts[i])}"));
+        string top = string.Join(", ", _groundCounts.OrderByDescending(r => r.Counts.Sum()).Take(5)
+            .Select(r => $"{r.Room} {string.Join("/", r.Counts)}"));
+        return $"GROUND REPORT (report-only, docs/roadmap.md#volcanic-rethink): {_groundCounts.Count} rooms with findings; {kinds}; most: {top}";
+    }
+
+    private static IEnumerable<Node> Ancestors(Node node)
+    {
+        for (Node? n = node.GetParent(); n is not null; n = n.GetParent())
+        {
+            yield return n;
+        }
     }
 
     /// <summary>

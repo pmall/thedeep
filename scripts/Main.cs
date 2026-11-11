@@ -75,6 +75,9 @@ public partial class Main : Node3D
     /// <summary>User argument that runs the scripted Heat plating check (see HeatCheck), used by tools/check.sh.</summary>
     private const string HeatCheckArgument = "--heat-check";
 
+    /// <summary>User argument that measures the Slag in play (see SlagCheck), used by tools/check.sh.</summary>
+    private const string SlagCheckArgument = "--slag-check";
+
     /// <summary>User argument that runs the fight moveset check (see FightCheck), used by tools/check.sh.</summary>
     private const string FightCheckArgument = "--fight-check";
 
@@ -135,7 +138,7 @@ public partial class Main : Node3D
     private static readonly string[] DriverArguments =
     {
         SmokeArgument, CaptureTestArgument, LookDevArgument, ValidateRoomsArgument, ValidateTravelArgument, ValidateSpeciesArgument,
-        UiShotArgument, PlaythroughCheckArgument, GripCheckArgument, CombatCheckArgument, HarpoonCheckArgument, EncounterCheckArgument, DrillCheckArgument, BallastCheckArgument, HeatCheckArgument, KeyCheckArgument, CodeCheckArgument, PowerUpCheckArgument, DialogueCheckArgument, AmbushCheckArgument, SecretCheckArgument, FightCheckArgument, BakeSurfacesArgument,
+        UiShotArgument, PlaythroughCheckArgument, GripCheckArgument, CombatCheckArgument, HarpoonCheckArgument, EncounterCheckArgument, DrillCheckArgument, BallastCheckArgument, HeatCheckArgument, SlagCheckArgument, KeyCheckArgument, CodeCheckArgument, PowerUpCheckArgument, DialogueCheckArgument, AmbushCheckArgument, SecretCheckArgument, FightCheckArgument, BakeSurfacesArgument,
     };
 
     private SaveData? _resume;
@@ -314,6 +317,10 @@ public partial class Main : Node3D
         else if (Array.IndexOf(args, HeatCheckArgument) >= 0)
         {
             AddChild(new HeatCheck { Player = Player, World = World, Hints = Hints });
+        }
+        else if (Array.IndexOf(args, SlagCheckArgument) >= 0)
+        {
+            AddChild(new SlagCheck { Player = Player, World = World });
         }
         else if (Array.IndexOf(args, CombatCheckArgument) >= 0)
         {
