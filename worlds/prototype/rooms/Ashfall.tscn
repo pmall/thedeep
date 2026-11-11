@@ -25,6 +25,8 @@
 [ext_resource type="Script" path="res://scripts/rooms/dressing/WallDressing.cs" id="21_wall"]
 [ext_resource type="PackedScene" path="res://scenes/props/LockedDoor.tscn" id="22_door"]
 [ext_resource type="Resource" path="res://worlds/prototype/items/pyre_litany.tres" id="23_pyre_litany"]
+[ext_resource type="PackedScene" path="res://scenes/kit/Doorway.tscn" id="90_doorway"]
+[ext_resource type="Resource" path="res://resources/seams/doorway.tres" id="91_seam"]
 
 [sub_resource type="PrimitiveMesh" id="blockmesh_1"]
 script = ExtResource("10_blockmesh")
@@ -97,19 +99,19 @@ Material = ExtResource("1_basalt")
 
 ; over the door from the Slag
 [node name="WallWestHigh" parent="Geometry" instance=ExtResource("2_block")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -1.5, 5.75, 0)
-Size = Vector3(3, 3.5, 4)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 6.75, 0)
+Size = Vector3(6, 1.5, 4)
 Material = ExtResource("1_basalt")
 
 ; the ledge inside the Slag's door
 [node name="Entry" parent="Geometry" instance=ExtResource("2_block")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 4.5, -0.5, 0)
-Size = Vector3(15, 1, 4)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 7.5, -0.5, 0)
+Size = Vector3(9, 1, 4)
 Material = ExtResource("1_basalt")
 
 [node name="WallWest" parent="Geometry" instance=ExtResource("2_block")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -1, -9.5, 0)
-Size = Vector3(4, 17, 4)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -1, -10, 0)
+Size = Vector3(4, 16, 4)
 Material = ExtResource("1_basalt")
 
 ; a stair of ledges down to the ash floor, 2 to 2.5 m apart
@@ -186,7 +188,10 @@ script = ExtResource("4_exit")
 Side = 0
 TargetRoom = "res://worlds/prototype/rooms/Slag.tscn"
 TargetExit = "East"
-Size = Vector2(1, 4)
+
+[node name="Doorway" parent="Exits/West" instance=ExtResource("90_doorway")]
+Profile = ExtResource("91_seam")
+Material = ExtResource("1_basalt")
 
 ; east, behind the heat: the Pyre, its low door sealed by its litany
 [node name="Pyre" type="Marker3D" parent="Exits" node_paths=PackedStringArray("Door")]
@@ -336,6 +341,13 @@ Extents = Vector3(28, 14, 4)
 Density = 0.25
 
 [node name="PhotoSpots" type="Node3D" parent="."]
+
+; the west doorway from the Slag: its sill, lintel and the wall around it (the seam's frame)
+[node name="WestDoor" type="Marker3D" parent="PhotoSpots"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 2, 3.5, 12)
+script = ExtResource("17_spot")
+PlayerPosition = Vector3(4, 0, 0)
+PlayerFacing = -1
 
 ; the Slag's door, the stair down, the ash falling
 [node name="Entry" type="Marker3D" parent="PhotoSpots"]

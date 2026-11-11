@@ -91,7 +91,7 @@ public partial class SlagCheck : Node
         _routes.Add(new("the climb from the shrine up the mound's steps to the vent", 10f, () => Place(new(38.75f, -1.5f), 1, false),
             () => Run(1, true, Player.IsOnFloor() && P.Y > 5.9f)));
         // A jump straight up on every walkway (the mound's top step is under the vent, the way out).
-        foreach ((float x, float y) in new[] { (3f, 0f), (7.5f, -2f), (10.5f, -4.5f), (16.5f, -6.5f), (24.5f, -5f), (32f, -3.5f), (38.75f, -1.5f),
+        foreach ((float x, float y) in new[] { (5f, 0f), (7.5f, -2f), (10.5f, -4.5f), (16.5f, -6.5f), (24.5f, -5f), (32f, -3.5f), (38.75f, -1.5f),
                      (41f, 1f), (51f, 1f), (43.5f, 3.5f), (48.5f, 3.5f), (53.5f, -1.5f), (60.5f, -1.5f), (66f, 0f), (88f, 0f) })
         {
             _routes.Add(new($"a jump straight up at ({x}, {y})", 3f, () => Place(new(x, y), 1, false), () =>

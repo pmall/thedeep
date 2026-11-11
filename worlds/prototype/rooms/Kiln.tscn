@@ -26,6 +26,9 @@
 [ext_resource type="PackedScene" path="res://scenes/props/LockedDoor.tscn" id="21_door"]
 [ext_resource type="PackedScene" path="res://scenes/props/Lever.tscn" id="22_lever"]
 [ext_resource type="Resource" path="res://worlds/prototype/items/kiln_lever.tres" id="23_kiln_lever"]
+[ext_resource type="PackedScene" path="res://scenes/kit/Doorway.tscn" id="90_doorway"]
+[ext_resource type="Resource" path="res://resources/seams/doorway.tres" id="91_seam"]
+[ext_resource type="Resource" path="res://resources/seams/portal.tres" id="92_portal"]
 
 [sub_resource type="PrimitiveMesh" id="blockmesh_1"]
 script = ExtResource("8_blockmesh")
@@ -79,8 +82,14 @@ FrameBelow = false
 
 ; inside the forbidden door
 [node name="Landing" parent="Geometry" instance=ExtResource("2_block")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 48, -2, 0)
-Size = Vector3(16, 4, 4)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 45, -2, 0)
+Size = Vector3(10, 4, 4)
+Material = ExtResource("1_basalt")
+
+; the landing under the forbidden door's sill (East's Doorway frames X 50 to 55, Y -2 to 0 and 6 to 8)
+[node name="LandingFoot" parent="Geometry" instance=ExtResource("2_block")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 53, -3, 0)
+Size = Vector3(6, 2, 4)
 Material = ExtResource("1_basalt")
 
 ; the stair down west
@@ -105,21 +114,15 @@ transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 18.5, -11, 0)
 Size = Vector3(25, 2, 4)
 Material = ExtResource("1_basalt")
 
-; over the forbidden door
-[node name="UpperWall" parent="Geometry" instance=ExtResource("2_block")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 48, 8.5, 0)
-Size = Vector3(16, 5, 4)
-Material = ExtResource("1_basalt")
-
 [node name="Roof" parent="Geometry" instance=ExtResource("2_block")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 26.5, 9.5, 0)
 Size = Vector3(59, 3, 4)
 Material = ExtResource("1_basalt")
 
-; between the two doors
+; between the two doors, flush with the low door's lintel: its head, deep enough to take the gate when it rises
 [node name="EastWall" parent="Geometry" instance=ExtResource("2_block")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 54.5, -11, 0)
-Size = Vector3(3, 14, 4)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 53, -10, 0)
+Size = Vector3(6, 12, 4)
 Material = ExtResource("1_basalt")
 
 ; the west wall, over the old firebox's mouth
@@ -136,8 +139,14 @@ Material = ExtResource("1_basalt")
 
 ; the firing floor
 [node name="FiringFloor" parent="Geometry" instance=ExtResource("2_block")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 26.5, -27, 0)
-Size = Vector3(59, 10, 4)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 23.5, -27, 0)
+Size = Vector3(53, 10, 4)
+Material = ExtResource("1_basalt")
+
+; the floor under the low door's sill (Slag's Doorway frames X 50 to 55, Y -24 to -22 and -18 to -16)
+[node name="FiringFloorFoot" parent="Geometry" instance=ExtResource("2_block")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 53, -28, 0)
+Size = Vector3(6, 8, 4)
 Material = ExtResource("1_basalt")
 
 ; ledges up the west wall to the upper floor, 2.5 m apart (a jump with room to spare)
@@ -161,12 +170,6 @@ transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 4.5, -12.25, 0)
 Size = Vector3(3, 0.5, 4)
 Material = ExtResource("1_basalt")
 
-; the low door's head, deep enough to take its gate when it rises
-[node name="GateHead" parent="Geometry" instance=ExtResource("2_block")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 50.75, -11, 0)
-Size = Vector3(1.5, 14, 4)
-Material = ExtResource("1_basalt")
-
 [node name="Exits" type="Node3D" parent="."]
 
 ; back up through the forbidden door into the Sanctum
@@ -176,7 +179,10 @@ script = ExtResource("3_exit")
 Side = 1
 TargetRoom = "res://worlds/prototype/rooms/Sanctum.tscn"
 TargetExit = "Kiln"
-Size = Vector2(1, 6)
+
+[node name="Doorway" parent="Exits/East" instance=ExtResource("90_doorway")]
+Profile = ExtResource("92_portal")
+Material = ExtResource("1_basalt")
 
 ; the low door east, on to the Slag
 [node name="Slag" type="Marker3D" parent="Exits" node_paths=PackedStringArray("Door")]
@@ -187,7 +193,10 @@ TargetRoom = "res://worlds/prototype/rooms/Slag.tscn"
 TargetExit = "West"
 Requires = "KilnLever"
 Door = NodePath("../../Props/SlagGate")
-Size = Vector2(1, 4)
+
+[node name="Doorway" parent="Exits/Slag" instance=ExtResource("90_doorway")]
+Profile = ExtResource("91_seam")
+Material = ExtResource("1_basalt")
 
 [node name="Props" type="Node3D" parent="."]
 
@@ -314,6 +323,18 @@ Extents = Vector3(26, 14, 3)
 Density = 0.5
 
 [node name="PhotoSpots" type="Node3D" parent="."]
+
+; the forbidden door up to the Sanctum: its sill, lintel and the wall around it (the seam's frame)
+[node name="EastDoor" type="Marker3D" parent="PhotoSpots"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 50.5, 4.5, 12)
+script = ExtResource("15_spot")
+PlayerPosition = Vector3(48, 0, 0)
+
+; the low door on to the Slag, its gate shut: its sill, lintel and the wall around it (the seam's frame)
+[node name="SlagDoor" type="Marker3D" parent="PhotoSpots"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 50.5, -18.5, 12)
+script = ExtResource("15_spot")
+PlayerPosition = Vector3(46, -22, 0)
 
 ; inside the forbidden door, the stair down
 [node name="Door" type="Marker3D" parent="PhotoSpots"]

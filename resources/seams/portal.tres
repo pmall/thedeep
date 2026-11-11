@@ -1,0 +1,10 @@
+[gd_resource type="Resource" script_class="SeamProfile" format=3]
+
+[ext_resource type="Script" path="res://scripts/rooms/SeamProfile.cs" id="1_profile"]
+
+; a great door between two halls: an opening 6 m tall, a stretch of floor 1 m deep before it, framed as deep as a wall block
+[resource]
+script = ExtResource("1_profile")
+Opening = 6.0
+Approach = 1.0
+Depth = 4.0

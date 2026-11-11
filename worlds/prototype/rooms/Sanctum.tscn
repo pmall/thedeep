@@ -28,6 +28,7 @@
 [ext_resource type="Material" path="res://assets/materials/wall_stone.tres" id="20_wall_stone"]
 [ext_resource type="PackedScene" path="res://scenes/kit/Doorway.tscn" id="90_doorway"]
 [ext_resource type="Resource" path="res://resources/seams/doorway.tres" id="91_seam"]
+[ext_resource type="Resource" path="res://resources/seams/portal.tres" id="92_portal"]
 
 [sub_resource type="PrimitiveMesh" id="blockmesh_1"]
 script = ExtResource("9_blockmesh")
@@ -51,7 +52,7 @@ Bevel = 0.2
 [sub_resource type="PrimitiveMesh" id="arch_4"]
 script = ExtResource("11_arch")
 Span = 6
-Rise = 4
+Rise = 3
 Thickness = 0.8
 Depth = 1.4
 Flange = 0.4
@@ -59,7 +60,7 @@ Segments = 32
 
 [sub_resource type="PrimitiveMesh" id="blockmesh_5"]
 script = ExtResource("9_blockmesh")
-Size = Vector3(0.8, 7, 1.4)
+Size = Vector3(0.8, 8, 1.4)
 Bevel = 0.15
 
 [sub_resource type="QuadMesh" id="QuadMesh_6"]
@@ -100,8 +101,13 @@ FrameBelow = false
 [node name="Geometry" type="Node3D" parent="."]
 
 [node name="Floor" parent="Geometry" instance=ExtResource("1_block")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 19.5, -2, 0)
-Size = Vector3(45, 4, 4)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 22.5, -2, 0)
+Size = Vector3(39, 4, 4)
+
+; the floor under the forbidden door's sill (Kiln's Doorway frames Y -2 to 0 and 6 to 8, X -2 to 3)
+[node name="FloorWestFoot" parent="Geometry" instance=ExtResource("1_block")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -3, 0)
+Size = Vector3(6, 2, 4)
 
 ; the floor under the east doorway's sill (East's Doorway frames Y -2 to 0 and 4 to 6, X 42 to 47)
 [node name="FloorEastFoot" parent="Geometry" instance=ExtResource("1_block")]
@@ -118,8 +124,8 @@ Size = Vector3(51, 3, 4)
 
 ; the wall over the forbidden door
 [node name="DoorLintel" parent="Geometry" instance=ExtResource("1_block")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 1, 14, 0)
-Size = Vector3(8, 14, 4)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 1, 14.5, 0)
+Size = Vector3(8, 13, 4)
 
 [node name="Exits" type="Node3D" parent="."]
 
@@ -141,7 +147,9 @@ script = ExtResource("2_exit")
 Side = 0
 TargetRoom = "res://worlds/prototype/rooms/Kiln.tscn"
 TargetExit = "East"
-Size = Vector2(1, 6)
+
+[node name="Doorway" parent="Exits/Kiln" instance=ExtResource("90_doorway")]
+Profile = ExtResource("92_portal")
 
 [node name="Props" type="Node3D" parent="."]
 
@@ -244,7 +252,7 @@ mesh = SubResource("arch_4")
 material_override = ExtResource("12_rust_mid")
 
 [node name="JambEast" type="MeshInstance3D" parent="Kit/Door"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 5.25, 3.5, 1.25)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 5.25, 4, 1.25)
 mesh = SubResource("blockmesh_5")
 material_override = ExtResource("12_rust_mid")
 
@@ -334,6 +342,13 @@ Extents = Vector3(22, 9, 3)
 Density = 0.8
 
 [node name="PhotoSpots" type="Node3D" parent="."]
+
+; the forbidden door down to the Kiln: its sill, lintel and the wall around it (the seam's frame)
+[node name="WestDoor" type="Marker3D" parent="PhotoSpots"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 2, 4.5, 12)
+script = ExtResource("15_spot")
+PlayerPosition = Vector3(4, 0, 0)
+PlayerFacing = -1
 
 ; the east doorway into the Vault: its sill, lintel and the wall around it (the seam's frame)
 [node name="EastDoor" type="Marker3D" parent="PhotoSpots"]

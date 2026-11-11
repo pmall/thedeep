@@ -26,6 +26,8 @@
 [ext_resource type="PackedScene" path="res://scenes/stage/RoomStage.tscn" id="23_stage"]
 [ext_resource type="Script" path="res://scripts/rooms/dressing/WallDressing.cs" id="24_wall"]
 [ext_resource type="PackedScene" path="res://scenes/kit/SlagBody.tscn" id="25_slag"]
+[ext_resource type="PackedScene" path="res://scenes/kit/Doorway.tscn" id="90_doorway"]
+[ext_resource type="Resource" path="res://resources/seams/doorway.tres" id="91_seam"]
 
 [sub_resource type="PrimitiveMesh" id="blockmesh_3"]
 script = ExtResource("13_blockmesh")
@@ -80,13 +82,19 @@ FrameBelow = false
 
 ; by the door from the Kiln
 [node name="WestFloor" parent="Geometry" instance=ExtResource("2_block")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 1.5, -4, 0)
-Size = Vector3(9, 8, 4)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 4.5, -4, 0)
+Size = Vector3(3, 8, 4)
+Material = ExtResource("1_basalt")
+
+; the floor under the west doorway's sill (West's Doorway frames X -2 to 3, Y -2 to 0 and 4 to 6)
+[node name="WestFloorFoot" parent="Geometry" instance=ExtResource("2_block")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -5, 0)
+Size = Vector3(6, 6, 4)
 Material = ExtResource("1_basalt")
 
 [node name="WestWall" parent="Geometry" instance=ExtResource("2_block")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -1.5, 6.75, 0)
-Size = Vector3(3, 5.5, 4)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 7.75, 0)
+Size = Vector3(6, 3.5, 4)
 Material = ExtResource("1_basalt")
 
 [node name="Roof" parent="Geometry" instance=ExtResource("2_block")]
@@ -180,13 +188,19 @@ Cracked = true
 
 ; the east floor, the shaft's east wall
 [node name="EastFloor" parent="Geometry" instance=ExtResource("2_block")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 79, -15, 0)
-Size = Vector3(32, 30, 4)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 76, -15, 0)
+Size = Vector3(26, 30, 4)
+Material = ExtResource("1_basalt")
+
+; the shaft's east wall under the east doorway's sill (East's Doorway frames X 89 to 94, Y -2 to 0 and 4 to 6)
+[node name="EastFloorFoot" parent="Geometry" instance=ExtResource("2_block")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 92, -16, 0)
+Size = Vector3(6, 28, 4)
 Material = ExtResource("1_basalt")
 
 [node name="EastWall" parent="Geometry" instance=ExtResource("2_block")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 93.5, 6.75, 0)
-Size = Vector3(3, 5.5, 4)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 92, 7.75, 0)
+Size = Vector3(6, 3.5, 4)
 Material = ExtResource("1_basalt")
 
 [node name="Exits" type="Node3D" parent="."]
@@ -199,7 +213,10 @@ Side = 0
 TargetRoom = "res://worlds/prototype/rooms/Kiln.tscn"
 TargetExit = "Slag"
 Requires = "KilnLever"
-Size = Vector2(1, 4)
+
+[node name="Doorway" parent="Exits/West" instance=ExtResource("90_doorway")]
+Profile = ExtResource("91_seam")
+Material = ExtResource("1_basalt")
 
 ; east, on to the Ashfall
 [node name="East" type="Marker3D" parent="Exits"]
@@ -208,7 +225,10 @@ script = ExtResource("3_exit")
 Side = 1
 TargetRoom = "res://worlds/prototype/rooms/Ashfall.tscn"
 TargetExit = "West"
-Size = Vector2(1, 4)
+
+[node name="Doorway" parent="Exits/East" instance=ExtResource("90_doorway")]
+Profile = ExtResource("91_seam")
+Material = ExtResource("1_basalt")
 
 ; up the vent: the Chimney, the shortcut home
 [node name="Chimney" type="Marker3D" parent="Exits"]
@@ -379,6 +399,19 @@ Extents = Vector3(40, 10, 3)
 Density = 0.15
 
 [node name="PhotoSpots" type="Node3D" parent="."]
+
+; the west doorway from the Kiln: its sill, lintel and the wall around it (the seam's frame)
+[node name="WestDoor" type="Marker3D" parent="PhotoSpots"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 2, 3.5, 12)
+script = ExtResource("20_spot")
+PlayerPosition = Vector3(4, 0, 0)
+PlayerFacing = -1
+
+; the east doorway on to the Ashfall: its sill, lintel and the wall around it (the seam's frame)
+[node name="EastDoor" type="Marker3D" parent="PhotoSpots"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 89, 3.5, 12)
+script = ExtResource("20_spot")
+PlayerPosition = Vector3(87, 0, 0)
 
 ; the shrine at the mound's foot, the river, the steps up to the vent
 [node name="Hub" type="Marker3D" parent="PhotoSpots"]
