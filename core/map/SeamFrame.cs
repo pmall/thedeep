@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.Numerics;
 
@@ -14,7 +15,12 @@ namespace TheDeep;
 /// </summary>
 /// <param name="Opening">How tall a doorway's opening is, or how wide a hatch's hole, meters.</param>
 /// <param name="Approach">How deep the exit's area runs along the way, meters: a doorway's stretch of floor, a hatch's slab.</param>
-public sealed record SeamFrame(float Opening, float Approach)
+/// <param name="HeadRise">
+/// For a hatch a lift rides up through: how far the shaft's head, the upper room's lift, carries the rider from the frame's top (where
+/// the lower room's lift hands it over, where a body crossing up arrives) on up to the floor, meters (<see cref="Lift"/>).
+/// 0: no head, the frame's top is the floor.
+/// </param>
+public sealed record SeamFrame(float Opening, float Approach, float HeadRise = 0f)
 {
     /// <summary>The size (width, height) of an exit framed by this seam on <paramref name="side"/> (<see cref="Threshold.Size"/>).</summary>
     public Vector2 ExitSize(ExitSide side) =>
@@ -52,6 +58,25 @@ public sealed record SeamFrame(float Opening, float Approach)
             ExitSide.Up => area with { MinY = marker.Y },
             ExitSide.West => area with { MinX = area.MinX - a, MaxX = marker.X },
             _ => area with { MinX = marker.X, MaxX = area.MaxX + a },
+        };
+    }
+
+    /// <summary>
+    /// A lift whose cage rides up through the hatch on <paramref name="side"/> at <paramref name="marker"/>: its lower stop (the cage
+    /// floor's center) and how far it rises (docs/gameplay.md#seam-rule). Under an up exit, the lower room's lift stands in line with the
+    /// hole at <paramref name="floor"/> and rises to the hand-off, the frame's top, where the crossing body arrives; over a down exit,
+    /// the shaft's head waits at the hand-off and rises <see cref="HeadRise"/> to the floor. The two markers meet on the map, so both rooms
+    /// find the same hand-off: the shaft runs on through the seam as wide and in line by construction.
+    /// </summary>
+    /// <param name="floor">Under an up exit, the height of the lift's own lower stop (the floor of the shaft's foot); else unused.</param>
+    public (Vector2 LowerStop, float Rise) Lift(ExitSide side, Vector2 marker, float floor)
+    {
+        float handOff = marker.Y + Approach * 0.5f;
+        return side switch
+        {
+            ExitSide.Up when handOff > floor => (new Vector2(marker.X, floor), handOff - floor),
+            ExitSide.Down when HeadRise > 0f => (new Vector2(marker.X, handOff), HeadRise),
+            _ => throw new ArgumentException($"no lift rides through a {side} exit of this seam from {floor} m (head rise {HeadRise} m)"),
         };
     }
 }

@@ -1,4 +1,5 @@
 using System;
+using System.Linq;
 using Godot;
 
 namespace TheDeep;
@@ -53,6 +54,14 @@ public partial class Lift : Node3D
     /// <summary>From the lower stop to the upper, meters.</summary>
     [Export] public float Rise { get; set; } = 20f;
 
+    /// <summary>
+    /// The hatch exit the cage rides through, if any: its frame's profile then gives the lift its stops (<see cref="SeamFrame.Lift"/>),
+    /// so the two rooms' lifts meet at the seam by construction. Under an up exit, the lift keeps its own height (its lower stop) and
+    /// is set in line with the hole, its <see cref="Rise"/> reaching the hand-off; over a down exit it is the shaft's head, placed at
+    /// the hand-off. Unset, the lift's place and <see cref="Rise"/> are its own.
+    /// </summary>
+    [Export] public RoomExit? Through { get; set; }
+
     /// <summary>Cruising speed and how quickly it gathers and sheds it (m/s, m/s²): slow and heavy, a breath to get going.</summary>
     [Export] public float Speed { get; set; } = 4.5f;
     [Export] public float Acceleration { get; set; } = 1.6f;
@@ -89,8 +98,24 @@ public partial class Lift : Node3D
         }
     }
 
+    /// <summary>Takes the lift's stops from the seam it rides through (<see cref="Through"/>).</summary>
+    private void RideThrough()
+    {
+        if (Through is null)
+        {
+            return;
+        }
+
+        SeamEnd frame = Through.GetChildren().OfType<SeamEnd>().FirstOrDefault()
+            ?? throw new InvalidOperationException($"lift {Name} rides through {Through.Name}, an exit no seam brick frames");
+        (System.Numerics.Vector2 stop, float rise) = frame.Profile.Frame.Lift(Through.Side, Through.RoomPosition.ToCore(), GlobalPosition.Y);
+        GlobalPosition = new Vector3(stop.X, stop.Y, GlobalPosition.Z);
+        Rise = rise;
+    }
+
     public override void _Ready()
     {
+        RideThrough();
         Cage.CollisionLayer = PhysicsLayers.WorldRock;
         Cage.CollisionMask = 0;
         _weightRest = new Vector3(Weight.Position.X, WeightLow + Rise * WeightRatio, Weight.Position.Z);

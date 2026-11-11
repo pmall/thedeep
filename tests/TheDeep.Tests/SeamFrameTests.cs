@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Numerics;
@@ -96,5 +97,31 @@ public class SeamFrameTests
         check.AddWay("Mere", "Hatch", "Underice", "Top");
 
         Assert.Empty(check.Problems(1.6f));
+    }
+
+    // A lift shaft's head: a 3 m hole through a 1 m collar, the head lift carrying the rider the last 2.5 m.
+    private static readonly SeamFrame Shaft = new(3f, 1f, 2.5f);
+
+    [Fact]
+    public void BothLiftsThroughAHatchMeetAtOneHandOffInLineWithTheHole()
+    {
+        // The lower room's marker at (13, 26), the upper room's at (42, -3): the same place on the map.
+        (Vector2 foot, float rise) = Shaft.Lift(ExitSide.Up, new Vector2(13f, 26f), 0f);
+        (Vector2 head, float headRise) = Shaft.Lift(ExitSide.Down, new Vector2(42f, -3f), 99f);
+
+        Assert.Equal(new Vector2(13f, 0f), foot);
+        Assert.Equal(26.5f, rise);
+        Assert.Equal(new Vector2(42f, -2.5f), head);
+        Assert.Equal(2.5f, headRise);
+        Assert.Equal(foot.Y + rise - 29f, head.Y); // the foot's upper stop is the head's lower stop, the map offset (29, -29) away
+        Assert.Equal(0f, head.Y + headRise); // and the head rises to the floor
+    }
+
+    [Fact]
+    public void WithoutAHeadTheLowerLiftRisesToTheFloorAndNoHeadIsPlaced()
+    {
+        Assert.Equal(3f, Hatch.Lift(ExitSide.Up, new Vector2(0f, 1f), -1f).Rise);
+        Assert.Throws<ArgumentException>(() => Hatch.Lift(ExitSide.Down, Vector2.Zero, 0f));
+        Assert.Throws<ArgumentException>(() => Shaft.Lift(ExitSide.Up, new Vector2(0f, 1f), 5f));
     }
 }

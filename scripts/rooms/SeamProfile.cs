@@ -19,5 +19,8 @@ public partial class SeamProfile : Resource
     [Export] public float Depth { get; set; } = 4f;
 
     /// <summary>The seam's rule in the core.</summary>
-    public SeamFrame Frame => new(Opening, Approach);
+    /// <summary>For a hatch a lift rides up through, how far the shaft's head carries the rider from the frame's top to the floor, meters.</summary>
+    [Export] public float HeadRise { get; set; }
+
+    public SeamFrame Frame => new(Opening, Approach, HeadRise);
 }

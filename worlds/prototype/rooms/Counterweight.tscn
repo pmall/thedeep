@@ -31,6 +31,7 @@
 [ext_resource type="PackedScene" path="res://scenes/stage/RoomStage.tscn" id="22_stage"]
 [ext_resource type="PackedScene" path="res://scenes/kit/Hatch.tscn" id="90_hatch"]
 [ext_resource type="Resource" path="res://resources/seams/hatch.tres" id="91_seam_hatch"]
+[ext_resource type="Resource" path="res://resources/seams/shaft.tres" id="92_seam_shaft"]
 
 [sub_resource type="PrimitiveMesh" id="blockmesh_1"]
 script = ExtResource("4_blockmesh")
@@ -145,7 +146,7 @@ Lamps = [NodePath("Props/Lift/Cage/Lamp"), NodePath("Lamps/Landing"), NodePath("
 Shafts = [NodePath("Shafts/Head"), NodePath("Shafts/High")]
 GlyphLights = [NodePath("Glyphs/AscentLight")]
 BoundsMin = Vector2(-1, -2)
-BoundsMax = Vector2(25, 29)
+BoundsMax = Vector2(25, 26.5)
 
 [node name="SpawnPoint" type="Marker3D" parent="."]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 8, 0, 0)
@@ -187,12 +188,20 @@ Size = Vector3(3, 23, 4)
 
 ; the shaft's head, as wide as the cage: the slab is the Undercroft's floor (the camera stops at its top)
 [node name="CeilingWest" parent="Geometry" instance=ExtResource("1_block")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 4.25, 26, 0)
-Size = Vector3(14.5, 6, 4)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 3.25, 26, 0)
+Size = Vector3(12.5, 6, 4)
+
+[node name="CeilingWestLip" parent="Geometry" instance=ExtResource("1_block")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 10.5, 24.25, 0)
+Size = Vector3(2, 2.5, 4)
+
+[node name="CeilingEastLip" parent="Geometry" instance=ExtResource("1_block")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 15.5, 24.25, 0)
+Size = Vector3(2, 2.5, 4)
 
 [node name="CeilingEast" parent="Geometry" instance=ExtResource("1_block")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 20.75, 26, 0)
-Size = Vector3(12.5, 6, 4)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 21.75, 26, 0)
+Size = Vector3(10.5, 6, 4)
 
 [node name="Exits" type="Node3D" parent="."]
 
@@ -217,14 +226,17 @@ Side = 3
 TargetRoom = "res://worlds/prototype/rooms/Undercroft.tscn"
 TargetExit = "Lift"
 OneWay = true
-Size = Vector2(3, 1)
+
+[node name="Hatch" parent="Exits/Top" instance=ExtResource("90_hatch")]
+Profile = ExtResource("92_seam_shaft")
 
 [node name="Props" type="Node3D" parent="."]
 
-; the cage at its lower stop, flush with the landing; it rises 26.5 m, to where the Undercroft's cage waits
-[node name="Lift" parent="Props" instance=ExtResource("3_lift")]
+; the cage at its lower stop, flush with the landing, under the hatch it rides through: it rises to where the
+; Undercroft's cage waits (26.5 m, the seam's hand-off)
+[node name="Lift" parent="Props" node_paths=PackedStringArray("Through") instance=ExtResource("3_lift")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 13, 0, 0)
-Rise = 26.5
+Through = NodePath("../../Exits/Top")
 
 [node name="Shafts" type="Node3D" parent="."]
 
@@ -603,7 +615,7 @@ PlayerPosition = Vector3(13, 0, 0)
 
 ; the shaft's head, the opening up to the crypts
 [node name="Head" type="Marker3D" parent="PhotoSpots"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 13, 23, 22)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 13, 24, 14)
 script = ExtResource("19_spot")
 PlayerPosition = Vector3(13, 0, 0)
 

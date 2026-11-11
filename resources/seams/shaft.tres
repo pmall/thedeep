@@ -1,0 +1,12 @@
+[gd_resource type="Resource" script_class="SeamProfile" format=3]
+
+[ext_resource type="Script" path="res://scripts/rooms/SeamProfile.cs" id="1_profile"]
+
+; a lift shaft's head: a hole 3 m wide (the cage's width) through a collar 1 m thick, the floor's middle, where a rider
+; crossing up arrives on the head lift that carries it the last 2.5 m up to the floor (the rest of the floor is each room's)
+[resource]
+script = ExtResource("1_profile")
+Opening = 3.0
+Approach = 1.0
+Depth = 4.0
+HeadRise = 2.5

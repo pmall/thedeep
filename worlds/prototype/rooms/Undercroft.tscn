@@ -42,6 +42,7 @@
 [ext_resource type="Resource" path="res://resources/seams/doorway.tres" id="91_seam"]
 [ext_resource type="PackedScene" path="res://scenes/kit/Hatch.tscn" id="92_hatch"]
 [ext_resource type="Resource" path="res://resources/seams/hatch.tres" id="93_seam_hatch"]
+[ext_resource type="Resource" path="res://resources/seams/shaft.tres" id="94_seam_shaft"]
 
 [sub_resource type="QuadMesh" id="QuadMesh_1"]
 size = Vector2(3, 0.3)
@@ -184,7 +185,7 @@ Biome = ExtResource("29_flooded")
 Lamps = [NodePath("Lamps/Shrine"), NodePath("Lamps/Ledge"), NodePath("Props/LiftHead/Cage/Lamp")]
 Shafts = [NodePath("Shafts/Oculus"), NodePath("Shafts/East")]
 GlyphLights = [NodePath("Props/Shrine/Light"), NodePath("Glyphs/DoorLight"), NodePath("Glyphs/TombWestLight"), NodePath("Glyphs/TombEastLight"), NodePath("Glyphs/FlueLight")]
-BoundsMin = Vector2(-1, -5)
+BoundsMin = Vector2(-1, -3.5)
 BoundsMax = Vector2(57.5, 26)
 
 [node name="SpawnPoint" type="Marker3D" parent="."]
@@ -216,15 +217,25 @@ Size = Vector3(14, 3, 4)
 Material = ExtResource("1_wet_stone")
 
 [node name="FloorEastNear" parent="Geometry" instance=ExtResource("2_block")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 38.25, -3, 0)
-Size = Vector3(4.5, 6, 4)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 37.25, -3, 0)
+Size = Vector3(2.5, 6, 4)
 Material = ExtResource("1_wet_stone")
 
-; the head of the Counterweight's shaft is the gap between FloorEastNear and FloorEast, as wide as its cage: the floor
-; is the Counterweight's roof
+[node name="LipWest" parent="Geometry" instance=ExtResource("2_block")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 39.5, -1.25, 0)
+Size = Vector3(2, 2.5, 4)
+Material = ExtResource("1_wet_stone")
+
+[node name="LipEast" parent="Geometry" instance=ExtResource("2_block")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 44.5, -1.25, 0)
+Size = Vector3(2, 2.5, 4)
+Material = ExtResource("1_wet_stone")
+
+; the head of the Counterweight's shaft is the hatch between FloorEastNear and FloorEast, the shaft profile's collar in the
+; floor's middle, a lip of floor over it either side (the floor is the Counterweight's roof)
 [node name="FloorEast" parent="Geometry" instance=ExtResource("2_block")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 49, -3, 0)
-Size = Vector3(11, 6, 4)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 50, -3, 0)
+Size = Vector3(9, 6, 4)
 Material = ExtResource("1_wet_stone")
 
 ; the floor under the east doorway's sill (East's Doorway frames Y -2 to 0 and 4 to 6, X 54.5 to 59.5)
@@ -340,7 +351,10 @@ transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 42, -3, 0)
 script = ExtResource("3_exit")
 Side = 2
 ArrivalOnly = true
-Size = Vector2(3, 1)
+
+[node name="Hatch" parent="Exits/Lift" instance=ExtResource("92_hatch")]
+Profile = ExtResource("94_seam_shaft")
+Material = ExtResource("1_wet_stone")
 
 [node name="Anchors" type="Node3D" parent="."]
 
@@ -357,12 +371,12 @@ transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 49, 15.5, 0)
 [node name="Shrine" parent="Props" instance=ExtResource("5_shrine")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 16, 0, 0)
 
-; the Counterweight's cage at the head of its shaft, where it stops below (the same cage as the Counterweight's, in
-; line): it carries its rider the last 2.5 m up to the floor, then sinks back to wait; its sheave hangs from the vault,
-; its weight far down the shaft
-[node name="LiftHead" parent="Props" instance=ExtResource("31_lift")]
+; the Counterweight's cage at the head of its shaft, placed by the hatch it rides through (the same cage as the
+; Counterweight's, in line): it carries its rider the shaft profile's last 2.5 m up to the floor, then sinks back to
+; wait; its sheave hangs from the vault, its weight far down the shaft
+[node name="LiftHead" parent="Props" node_paths=PackedStringArray("Through") instance=ExtResource("31_lift")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 42, -2.5, 0)
-Rise = 2.5
+Through = NodePath("../../Exits/Lift")
 WeightLow = -12.0
 SheaveClearance = 21.4
 
