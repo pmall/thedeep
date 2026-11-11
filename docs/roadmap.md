@@ -1,6 +1,12 @@
 # Roadmap — The Deep
 
-The owner's plan and the open items, in order. Where the work stands is [state.md](state.md). A finished item is deleted (`AGENTS.md#doc-rules`); what exists is in the code and [bricks.md](bricks.md).
+The owner's plan and the open items, in order, opened by where the work stands. A finished item is deleted (`AGENTS.md#doc-rules`); what exists is in the code and [bricks.md](bricks.md).
+
+## Now <a id="status"></a>
+
+- **Stage:** A, the prototype (`docs/roadmap.md#stage-prototype`).
+- **Current item:** the art pass (`docs/roadmap.md#art-restore`). Next step: its open box, the owner's judgment in play.
+- **Waiting on the owner:** the art pass, judged in play (`docs/roadmap.md#art-restore`); the Blender MCP installed, for the pilgrim (`docs/roadmap.md#pilgrim`).
 
 ## The plan <a id="direction"></a>
 
@@ -11,7 +17,7 @@ The owner's plan and the open items, in order. Where the work stands is [state.m
 - **C. The real game**: built from the plan with the prototype's bricks (`docs/roadmap.md#stage-real-game`).
 - **D. Polish**: the details (`docs/roadmap.md#stage-polish`).
 
-Why bricks: the real game, or a sequel, is then assembled from finished pieces instead of rewritten (`docs/principles.md#bricks`).
+Why bricks: the real game, or a sequel, is then assembled from finished pieces instead of rewritten (`instructions/principles.md#bricks`).
 
 ______________________________________________________________________
 
@@ -21,7 +27,7 @@ A room gets the attention its bricks need, no more. Bosses, machines and law bre
 
 The open items, in order:
 
-1. **The art pass** <a id="art-restore"></a> (owner: first priority). The effects that flickered are deleted, and the look comes back on the bare render under `docs/art-direction.md#stable-image`:
+1. **The art pass** <a id="art-restore"></a> (owner: first priority). The look is rebuilt on the bare render under `docs/art-direction.md#stable-image`:
    - [ ] **The owner's judgment**: the frozen layer against its look at commit `0cf4b04`, the flooded layer against [`perfect.jpg`](references/perfect.jpg), the core in dark amber and ember. Built; what the owner asks for in play becomes the next tasks. The volcanic layer's look comes with `docs/roadmap.md#volcanic-rethink`.
    - Done when every biome reads at a glance and looks very cool to the owner, without flicker, within the frame budget.
 2. **The pilgrim, from zero** <a id="pilgrim"></a> (owner). The current character, its procedural animation and its halo are thrown away. The bar is *Ori*'s animation (a 3D-rendered character) with *NieR: Automata*'s dynamism; the look is `docs/art-direction.md#character`. First the environment for top-quality animation, then the character: modeled and rigged in Blender (the owner installs the Blender MCP), animated from real motion capture (free libraries and Mixamo first), keyed by hand, blended in the game with its feet held to the ground. Every move and ability: run, jump, land, dash, air dash, ledge assist, grip and its corners, harpoon throw and zip, bore and dive, swim, sink and rise, the strikes, hurt, death, rest, taking a relic. Its secondary motion is stage D's. Done when every state reads at a glance in motion, in the reels and in the owner's play.

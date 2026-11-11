@@ -18,7 +18,7 @@ Read this before any visual work. Every room is built to this direction. How a m
 - **The world is procedural; the pilgrim is modeled** <a id="procedural-first"></a> (owner). Rooms, materials, machines, light, fog and particles come from code (shaders, generated meshes, textures baked by tools) and must look good that way. The pilgrim is modeled, rigged and animated in Blender (`docs/roadmap.md#pilgrim`). Blender for anything else is the owner's call.
 - **Everything visual is swappable** <a id="swappable"></a>. Materials, kit pieces and machine parts are referenced through resources, so a procedural version can be replaced by an authored one without touching gameplay or rooms. A material is a `.tres` referenced by scenes, never a shader assigned in code.
 - **Visuals never decide gameplay** <a id="visuals-never-gameplay"></a>. Rock versus metal is the physics layer, not the material. Collision is simple boxes (`Block`), kept apart from visual meshes: kit pieces are visual only.
-- **Judge with images, not code** <a id="judge-images"></a>. For every visual change, render captures before and after and look at them (`docs/testing.md#lookdev`), within the frame budget (`docs/principles.md#performance`).
+- **Judge with images, not code** <a id="judge-images"></a>. For every visual change, render captures before and after and look at them (`instructions/testing.md#lookdev`), within the frame budget (`instructions/principles.md#performance`).
 - **No flicker, ever** <a id="stable-image"></a> (owner). Held by construction; the second and third by a guard in the fast check (`tools/stable_image.py`):
   - Anti-aliasing stays on: 4x MSAA and TAA.
   - Nothing random per pixel per frame (no grain, no dither).

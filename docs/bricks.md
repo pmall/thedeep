@@ -1,6 +1,6 @@
 # Bricks — the catalog
 
-Every piece a world is built from (`docs/principles.md#bricks`). This file is the world builder's view: what you can place, and how far along it is. What a brick is and how to configure it is in its type's docblock; a brick that doesn't exist yet is described by the roadmap item that builds it.
+Every piece a world is built from (`instructions/principles.md#bricks`). This file is the world builder's view: what you can place, and how far along it is. What a brick is and how to configure it is in its type's docblock; a brick that doesn't exist yet is described by the roadmap item that builds it.
 
 **Status** <a id="brick-status"></a>: **ready**: works, checked, at the visual bar, reusable as is. **working**: works and is checked, but its look, feel or generality still needs its pass. **missing**: not built yet. **Item**: the open roadmap item that makes it ready. Keep this file current when a brick is added or changes status.
 
@@ -17,7 +17,7 @@ All working; the art pass makes them ready (`docs/roadmap.md#art-restore`).
 - `WallDressing`
 - `Colonnade`, `RackRow`, `Spinner`
 - Kit meshes (`scripts/kit/`)
-- Light shafts (`Room.Shafts`; each spot light with a light_volumetric_fog_energy shows its beam, a soft mesh: `LightShaft`), lamps, glyph lights (`Room`)
+- Light shafts (`Room.Shafts`, `LightShaft`), lamps, glyph lights (`Room`)
 - The vignette (`scenes/camera/Vignette.tscn`; its strength and color per `BiomeProfile`)
 - `AmbientParticles`
 - `WaterBody` (scenery)
@@ -94,4 +94,4 @@ All working; the art pass makes them ready (`docs/roadmap.md#art-restore`).
 
 ## Proof <a id="bricks-proof"></a>
 
-All ready: the map solver (`MapSolver`), the reach planner (`ReachPlanner`), the room, travel, species and lab checks (`docs/testing.md#check`), required exports (`RequiredExports`), the line check (`LineCheck`), the network and room table check (`MapDraft`, `RoomTable`, kinds in `RoomKind`) and its drawing (`MapDrawing`, written by `tools/map.sh`).
+All ready: the map solver (`MapSolver`), the reach planner (`ReachPlanner`), the room, travel, species and lab checks (`instructions/testing.md#check`), required exports (`RequiredExports`), the line check (`LineCheck`), the network and room table check (`MapDraft`, `RoomTable`, kinds in `RoomKind`) and its drawing (`MapDrawing`, written by `tools/map.sh`).

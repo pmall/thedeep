@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# The checks (docs/testing.md#check). Fails if any step fails; each step prints how long it took.
+# The checks (instructions/testing.md#check). Fails if any step fails; each step prints how long it took.
 #   tools/check.sh --fast   checks the doc citations and the stable-image guard, formats every file (applies the
 #                           formatters), lints, type-checks the Python tools and builds: seconds, no Godot. Ends every turn that changed files.
 #   tools/check.sh          the full check: verifies that every file is formatted and lint-clean without changing one,
@@ -27,7 +27,7 @@ export DOTNET_CLI_TELEMETRY_OPTOUT=1 DOTNET_NOLOGO=1
 GODOT="${GODOT:-godot}"
 TESTS=tests/TheDeep.Tests/TheDeep.Tests.csproj
 
-# The formatters and linters, at exact versions (docs/toolchain.md#format-tools). uvx resolves their dependencies as
+# The formatters and linters, at exact versions (instructions/toolchain.md#format-tools). uvx resolves their dependencies as
 # they were on UV_EXCLUDE_NEWER, so every machine runs the same code; move the date when upgrading a pin.
 export UV_EXCLUDE_NEWER=2026-11-08
 RUFF=(uvx ruff@0.17.4)
@@ -175,7 +175,7 @@ step "5 headless checks and unit tests, in parallel"
 trap 'kill $(jobs -p) 2>/dev/null' INT TERM
 
 # The checks: name | what its passing line starts with | what its problem lines start with | frames before Godot quits | arguments.
-# The driver's docblock says what each one proves (docs/testing.md#check).
+# The driver's docblock says what each one proves (instructions/testing.md#check).
 CHECKS=(
     # The main scene's idle boot, exactly as the owner launches it (no driver: passes when it runs clean).
     "smoke_idle||ERROR|300|"

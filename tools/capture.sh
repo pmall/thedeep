@@ -13,7 +13,7 @@
 #   tools/capture.sh [label] --world NAME    render worlds/NAME's rooms instead (all of them, or --rooms of them): --world sequel
 #   tools/capture.sh --compare BEFORE AFTER  only build the sheet for two existing runs
 #
-# Opens a small window: about 8 minutes for every room, under a minute for one with --rooms (rendering needs a GPU). See docs/testing.md#lookdev.
+# Opens a small window: about 8 minutes for every room, under a minute for one with --rooms (rendering needs a GPU). See instructions/testing.md#lookdev.
 set -euo pipefail
 
 cd "$(dirname "$0")/.."

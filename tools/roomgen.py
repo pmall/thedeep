@@ -1,6 +1,6 @@
 """Room authoring helper: writes a readable room .tscn from a short Python description.
 
-The generated .tscn is the source of truth (docs/godot-csharp.md#files); this only saves typing when a room is
+The generated .tscn is the source of truth (instructions/godot-csharp.md#files); this only saves typing when a room is
 first laid out. Usage, from a throwaway script:
 
     import sys; sys.path.insert(0, 'tools'); from roomgen import Room

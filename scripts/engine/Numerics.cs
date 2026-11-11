@@ -5,7 +5,7 @@ using NVector3 = System.Numerics.Vector3;
 namespace TheDeep;
 
 /// <summary>
-/// Vectors at the seam (docs/principles.md#engine-detail): the core speaks <see cref="System.Numerics"/>, the engine its own types, and
+/// Vectors at the seam (instructions/principles.md#engine-detail): the core speaks <see cref="System.Numerics"/>, the engine its own types, and
 /// every conversion between them goes through here. Play happens on the Z = 0 plane, so a point on the plane is a 2D vector
 /// in the core and a 3D one at Z = 0 in the engine.
 /// </summary>

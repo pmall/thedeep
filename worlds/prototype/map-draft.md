@@ -1,6 +1,6 @@
 # Map draft — the prototype world
 
-The prototype world's network file (`Network` in [world.tres](world.tres)): 42 rooms over three layers and the core, 5 abilities, a key, a code, a lever, a secret, an ambush, 2 power-ups, 4 bosses, 3 law breaks, all built. It is a **planning graph**: the `map` blocks below are parsed by `MapDraft` (its docblock has the format) and checked on every build, by the unit tests and against the built rooms (`docs/testing.md#check`); everything outside them is design notes. Its room table is [rooms.tsv](rooms.tsv) (`RoomTable` has the format), held to this network on every build; the real game's map will be its own network and table (`docs/roadmap.md#stage-plan`). Room names, boss names and story beats are placeholders unless [theme.md](../../docs/theme.md) says otherwise.
+The prototype world's network file (`Network` in [world.tres](world.tres)): 42 rooms over three layers and the core, 5 abilities, a key, a code, a lever, a secret, an ambush, 2 power-ups, 4 bosses, 3 law breaks. It is a **planning graph**: the `map` blocks below are parsed by `MapDraft` (its docblock has the format) and checked on every build, by the unit tests and against the built rooms (`instructions/testing.md#check`); everything outside them is design notes. Its room table is [rooms.tsv](rooms.tsv) (`RoomTable` has the format), held to this network on every build; the real game's map will be its own network and table (`docs/roadmap.md#stage-plan`). Room names, boss names and story beats are placeholders unless [theme.md](../../docs/theme.md) says otherwise.
 
 **The markers are the truth** <a id="draft-markers"></a>: a built room's exits, sealed exits and relics must match its ways and relics here. When a room is built or changed, update its part of the draft in the same commit. Keep its row in [rooms.tsv](rooms.tsv) in step too. Print both with `tools/map.sh`.
 
@@ -75,7 +75,7 @@ One per layer, plus the end, each on the main road. Placeholders.
 
 ## Flooded — the drowned cathedral (15 rooms) <a id="draft-flooded"></a>
 
-The first slice plus the crypts under it and the road down. Pale white, a touch of purple, water everywhere.
+The cathedral, the crypts under it and the road down. Pale white, a touch of purple, water everywhere.
 
 Its rooms, what each is for and what happens there: their rows in [rooms.tsv](rooms.tsv).
 
@@ -96,7 +96,7 @@ room Brink Flooded
 room Sacristy Flooded
 room Cell Flooded
 
-# the slice (built: these must match the scenes' markers)
+# the cathedral
 way Narthex <-> DrownedHall
 way Narthex <-> Sacristy : SacristyKey           # the locked door in the porch's west wall
 way Sacristy <-> Cell                            # hidden: through the false foot of the Sacristy's west wall
@@ -115,7 +115,7 @@ way Cistern <-> Reliquary
 relic Reliquary MagGrip
 way Descent -> Sluice : Ballast                  # the flooded gate drains into the Sluice's vault
 
-# under the cathedral and the road down (built)
+# under the cathedral and the road down
 way Cistern <-> Sluice
 way Sluice <-> Undercroft
 way Undercroft <-> Ossuary
@@ -149,7 +149,6 @@ room Underice Frozen
 room Vault Frozen
 room Sanctum Frozen
 
-# built: these must match the scenes' markers
 way Rimefall <-> Choir
 way Choir <-> Coldstacks
 way Coldstacks <-> Counterweight                 # the roof hatch at the top of the galleries

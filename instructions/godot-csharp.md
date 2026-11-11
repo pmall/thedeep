@@ -9,7 +9,7 @@ The owner never opens the Godot editor. Every `.tscn`, `.tres`, `.cs` file and `
 - Never edit `.godot/` or `*.import` files (generated), except an `.import` file's `[params]`, which is how a texture's import settings are chosen without the editor (Godot keeps them on reimport). Do commit `*.import` files.
 - Bulky scene text (like a room layout) may be generated with a small script. Keep the generated `.tscn` readable, because the `.tscn` is the source of truth.
 - `.tscn` `Transform3D(...)` values are the basis **row-major** (`x.x, y.x, z.x, x.y, y.y, z.y, x.z, y.z, z.z`) followed by the origin.
-- Folders Godot must not scan (docs, tests, the core) contain an empty `.gdignore`.
+- Folders Godot must not scan (docs, instructions, tests, the core) contain an empty `.gdignore`.
 
 ## C# rules the compiler won't always flag <a id="csharp-rules"></a>
 

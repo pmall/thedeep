@@ -7,7 +7,7 @@ using Xunit;
 
 namespace TheDeep.Tests;
 
-/// <summary>Runs the real ffmpeg, a required tool for the F10 video capture (docs/toolchain.md#versions).</summary>
+/// <summary>Runs the real ffmpeg, a required tool for the F10 video capture (instructions/toolchain.md#versions).</summary>
 public class VideoEncoderTests
 {
     private const int Width = 64;

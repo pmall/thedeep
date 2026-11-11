@@ -7,7 +7,7 @@ namespace TheDeep;
 /// The slash a strike's blade leaves (assets/shaders/slash.gdshader): the band its edge swept over the last moment, from
 /// the core's <see cref="BladeTrail"/>, drawn just in front of the body so it reads over it. Recorded on physics ticks
 /// (<see cref="Track"/>), so it holds still through a hit stop; rebuilt only when it changes, from kept buffers, so drawing
-/// it leaves nothing for the garbage collector (docs/principles.md#performance). Visual only.
+/// it leaves nothing for the garbage collector (instructions/principles.md#performance). Visual only.
 /// </summary>
 public partial class SlashTrail : MeshInstance3D
 {

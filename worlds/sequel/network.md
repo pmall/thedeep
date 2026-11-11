@@ -1,6 +1,6 @@
 # Network — the sequel world
 
-The sequel world's network file (`Network` in [world.tres](world.tres)): the sequel test's world (`docs/roadmap.md#sequel-test`), 7 rooms on one layer, Brine (`resources/biomes/brine.tres`, a variant of the frozen layer), built from the prototype's bricks and nothing else. It stays as a fixture the check loads (`docs/testing.md#check`). The `map` blocks below are parsed by `MapDraft` (its docblock has the format) and held to the built rooms like the prototype's network (`worlds/prototype/map-draft.md#draft-markers`): the rooms' markers are the truth, and this file follows them. Names and text are placeholders.
+The sequel world's network file (`Network` in [world.tres](world.tres)): the sequel test's world (`docs/roadmap.md#sequel-test`), 7 rooms on one layer, Brine (`resources/biomes/brine.tres`, a variant of the frozen layer), built from the prototype's bricks and nothing else. It stays as a fixture the check loads (`instructions/testing.md#check`). The `map` blocks below are parsed by `MapDraft` (its docblock has the format) and held to the built rooms like the prototype's network (`worlds/prototype/map-draft.md#draft-markers`): the rooms' markers are the truth, and this file follows them. Names and text are placeholders.
 
 ```map
 start Quay

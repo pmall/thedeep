@@ -1,4 +1,4 @@
-# The layout and style the formatters read (docs/toolchain.md#format-tools): dotnet format for C#, shfmt for the shell
+# The layout and style the formatters read (instructions/toolchain.md#format-tools): dotnet format for C#, shfmt for the shell
 # tools, and every editor. The C# rules match the code as it was written; a rule at `warning` is enforced by the
 # build (EnforceCodeStyleInBuild, Directory.Build.props) and fixed by `dotnet format` where it can be.
 root = true
@@ -93,7 +93,7 @@ dotnet_naming_symbols.types_and_members.applicable_accessibilities = *
 dotnet_naming_style.pascal.capitalization = pascal_case
 
 # The SDK's Recommended analyzers (AnalysisMode, Directory.Build.props) run on all three projects; a rule is turned off
-# only where it is wrong for this project, each with its reason (docs/toolchain.md#format-tools).
+# only where it is wrong for this project, each with its reason (instructions/toolchain.md#format-tools).
 # Two naming rules guard a library's public API for callers in other .NET languages; this game is one C# program that
 # nothing else links against, and state machines name their hooks Enter and Exit (a VB keyword).
 dotnet_diagnostic.CA1716.severity = none

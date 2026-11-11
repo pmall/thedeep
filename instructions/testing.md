@@ -4,7 +4,7 @@
 
 When to run them is `AGENTS.md#checks`. The script's header says what each one runs; both stop at the first failing step.
 
-- **The fast check** <a id="fast-check"></a>, `tools/check.sh --fast`: about 10 s, no Godot. It checks the doc citations and the stable-image guard (`docs/art-direction.md#stable-image`), applies every formatter of `docs/toolchain.md#format-tools`, lints with the safe fixes applied, type-checks the Python tools and builds. What it reformats belongs to the change.
+- **The fast check** <a id="fast-check"></a>, `tools/check.sh --fast`: about 10 s, no Godot. It checks the doc citations and the stable-image guard (`docs/art-direction.md#stable-image`), applies every formatter of `instructions/toolchain.md#format-tools`, lints with the safe fixes applied, type-checks the Python tools and builds. What it reformats belongs to the change.
 - **The full check** <a id="full-check"></a>, `tools/check.sh`: it changes no file. The doc citations (`tools/docrefs.py`) and the stable-image guard, every file formatted and lint-clean, the build (warnings are errors, and the build holds the C# to `.editorconfig` and the analyzers), the headless import (every shader compiled), then every headless check and the unit tests (`tests/TheDeep.Tests`, xUnit over the core) at once, one Godot per check. When formatting or lint fails, run the fast check and finish by hand only what a linter asks for.
 
 The headless checks are one driver each in `scripts/debug/`; each driver's docblock says what it proves. They cover every room and the map (solver, geometry, the network and its room table, the line book), every species, every exit crossed, each ability through the real inputs, each game system in place, the fight, the encounters, a whole playthrough, and the sequel world as a fixture (`--world sequel`). Logs go to `.godot/check/`.
@@ -34,7 +34,7 @@ A check that prints its passing line and then crashes or reports a leak while Go
 | Re-bake the materials' texture sets after changing a pattern (`SurfaceBake`), then import them | `godot --headless --path . -- --bake-surfaces && godot --headless --import` |
 | Print the map (built rooms and the network: ways, placements, orders) and draw it | `tools/map.sh` |
 | Where the geometry check's planner stops in a room | `godot --headless --path . -- --room MechanicsLab --validate-rooms --reach-report <Room>` (`--abilities …`, `--slack-report` for the clumsy pilgrim) |
-| Look-dev captures and frame times | `tools/capture.sh [label]` (`docs/testing.md#lookdev`; `--world sequel` for another world's rooms) |
+| Look-dev captures and frame times | `tools/capture.sh [label]` (`instructions/testing.md#lookdev`; `--world sequel` for another world's rooms) |
 | UI screens to PNGs (windowed) | `godot --path . --disable-vsync -- --room Undercroft --ui-shot <dir>` |
 | Windowed capture check (needs a GPU; after touching capture code) | `godot --path . -- --capture-test` (add `--disable-vsync` before `--` for the raw cost) |
 
@@ -50,9 +50,9 @@ tools/capture.sh before-fog        # before the change (optional label)
 tools/capture.sh after-fog         # renders, then compares with the previous run
 ```
 
-Each run opens a small window and needs the GPU to itself (`docs/toolchain.md#gpu`): about 8 minutes for every room, under a minute for one. While working, capture only the rooms the change touches (`--rooms`); a change shared by many rooms captures them all once before and once at the end, and iterates on the one or two rooms that show the problem (owner: captures cost time and tokens). A run writes `lookdev/<date>_<time>[-label]/` (git-ignored): every photo spot, the motion and interaction reels as contact sheets (`MotionReel` lists them), frame times per room (`perf*.json`), and `compare/sheet.png`, the before and after of every spot with the share of pixels that changed. **Look at `compare/sheet.png`.** Runs are deterministic (fixed 60 fps game time), so any visible change in the sheet is real.
+Each run opens a small window and needs the GPU to itself (`instructions/toolchain.md#gpu`): about 8 minutes for every room, under a minute for one. While working, capture only the rooms the change touches (`--rooms`); a change shared by many rooms captures them all once before and once at the end, and iterates on the one or two rooms that show the problem (owner: captures cost time and tokens). A run writes `lookdev/<date>_<time>[-label]/` (git-ignored): every photo spot, the motion and interaction reels as contact sheets (`MotionReel` lists them), frame times per room (`perf*.json`), and `compare/sheet.png`, the before and after of every spot with the share of pixels that changed. **Look at `compare/sheet.png`.** Runs are deterministic (fixed 60 fps game time), so any visible change in the sheet is real.
 
-Reading `perf*.json` against the budget (`docs/principles.md#performance`): a slow frame with a garbage collection and a normal GPU time is garbage; one with a long GPU time is the GPU (a room reloaded after a fall builds its shaders anew, a frame or two of 40–70 ms under the veil).
+Reading `perf*.json` against the budget (`instructions/principles.md#performance`): a slow frame with a garbage collection and a normal GPU time is garbage; one with a long GPU time is the GPU (a room reloaded after a fall builds its shaders anew, a frame or two of 40–70 ms under the veil).
 
 **Photo spots** are `PhotoSpot` markers in each room scene. Add one for anything a visual change should be judged on; keep a spot's camera out of the foreground layer unless that is the point.
 

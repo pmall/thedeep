@@ -6,7 +6,7 @@ The game is built twice: first a **prototype** that is our playground, then the 
 
 ## Bricks, not rooms <a id="bricks"></a>
 
-Everything the game is made of is a **brick**: a reusable piece that a world places, configures and connects. A material, a backdrop, a water body, a block, a lift, a gate, a key door, a machine species, a dialogue box, a shrine, an ambush arena. The catalog of bricks and their status is [bricks.md](bricks.md).
+Everything the game is made of is a **brick**: a reusable piece that a world places, configures and connects. A material, a backdrop, a water body, a block, a lift, a gate, a key door, a machine species, a dialogue box, a shrine, an ambush arena. The catalog of bricks and their status is [bricks.md](../docs/bricks.md).
 
 A brick:
 
@@ -45,7 +45,7 @@ Rules:
 - **Numbers live in resources**: movement and combat in `player_tuning.tres`, a species' stats in its `.tres`, a mechanism's knobs as its exports. Never a magic number in a rule.
 - **Text lives in line books**: stable id, speaker, text, delivery notes. The game's own lines (its screens' words, the abilities, the power-ups, the species' creeds) are written once, in `resources/lines.tres`; a world's book (the prototype's is `worlds/prototype/lines.tres`) holds only its content's lines and extends the game's. Never a string shown to the player in code or in a scene.
 - **Requirements live with the geometry**: a way's requirement is a marker in the room scene. Items (keys, codes) are part of that same requirement language, so the solver sees them.
-- **Data is written and read in the invariant culture** <a id="invariant-culture"></a>: a number or a comparison in a save file, a world table, a log or report a tool reads, or a command-line argument never depends on the machine's locale (one that writes 1,5 would break them). The analyzers flag the calls that would (`docs/toolchain.md#format-tools`); what the player reads comes from the line books.
+- **Data is written and read in the invariant culture** <a id="invariant-culture"></a>: a number or a comparison in a save file, a world table, a log or report a tool reads, or a command-line argument never depends on the machine's locale (one that writes 1,5 would break them). The analyzers flag the calls that would (`instructions/toolchain.md#format-tools`); what the player reads comes from the line books.
 - **New content is data.** Adding a room, a species, a biome, a key door or a dialogue should mean new content files. New code is for a truly new behavior.
 - Names that cross systems (action names, physics layers, shader globals) are constants in one class each (`InputActions`, `PhysicsLayers`, `ShaderGlobals`).
 
@@ -69,12 +69,12 @@ C# is typed: use the type system to model the game, never to be silenced. **If y
 ## Proven, not hoped <a id="proven"></a>
 
 - Pure logic is unit tested (xUnit, `tests/TheDeep.Tests`). A new rule in the core comes with its tests.
-- Every brick has a headless check that exercises it through the real inputs where it matters (`docs/testing.md#check`).
+- Every brick has a headless check that exercises it through the real inputs where it matters (`instructions/testing.md#check`).
 - The world is proven on every build: the map solver (no softlock, ability orders), the reach planner from inside each room, with room for error. Anything that gates a way (an ability, a key, a code, a switch) must be visible to the solver.
 
 ## Performance is a rule, not a pass <a id="performance"></a>
 
-- **The frame budget:** 1080p at 60 fps on the owner's RTX 3060, **≤ 10 ms per frame p99**, measured by `tools/capture.sh` (`docs/testing.md#lookdev`).
+- **The frame budget:** 1080p at 60 fps on the owner's RTX 3060, **≤ 10 ms per frame p99**, measured by `tools/capture.sh` (`instructions/testing.md#lookdev`).
 - **Per-frame code allocates nothing** (`_Process`, `_PhysicsProcess` and what they call). A garbage collection is a dropped frame, and engine objects (arrays and dictionaries from the engine, query parameters, node wrappers) are finalizable, so they survive into gen1 and make every collection slow. Keep buffers and reuse them, ask the room for its nodes (`Room.All<T>()`) instead of walking the tree, cast rays through `PlaneRay` and `ShapeProbe`; no LINQ, no new collections, no `GetChildren()` per tick. A look-dev run should see a handful of collections, not one every few frames.
 - `unsafe` only where a copy out of the engine's native buffers would otherwise allocate every frame (`FrameGrabber`, `NativeMeshArrays`). Don't spread it.
 

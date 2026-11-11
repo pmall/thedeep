@@ -17,5 +17,6 @@ obj/
 # Look-dev runs (tools/capture.sh)
 /lookdev/
 .claude/worktrees/
+.claude/scheduled_tasks.lock
 # Python bytecode (the tools)
 __pycache__/

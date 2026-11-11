@@ -1,6 +1,6 @@
 # Gameplay
 
-What the player does and what the world asks of them: design intent and the rules rooms are built to. How each move works is in its state's docblock (`scripts/player/states/`); every number is in `resources/player_tuning.tres` (`docs/principles.md#data-first`). The feel is `docs/vision.md#graceful`.
+What the player does and what the world asks of them: design intent and the rules rooms are built to. How each move works is in its state's docblock (`scripts/player/states/`); every number is in `resources/player_tuning.tres` (`instructions/principles.md#data-first`). The feel is `docs/vision.md#graceful`.
 
 ## Base moveset <a id="moveset"></a>
 
@@ -65,7 +65,7 @@ These gate the map. Every ability is one simple state or rule: no systemic or em
 | **Ballast** <a id="ballast"></a> | Without it the pilgrim floats; with it, in water, hold down to sink and walk the bottom, up or jump to rise | Exits under water, under walls that reach into it |
 | **Heat plating** <a id="heat-plating"></a> | Passive: heat (vents, the air over slag) no longer burns (`docs/gameplay.md#heat`). Slag itself kills, plated or not | Vents and molten mouths |
 
-Rules for rooms: only the physics layer makes metal (`docs/art-direction.md#visuals-never-gameplay`); keep a body's height of air below a ring; deep water beside metal stays Ballast's gate, since water lets go of a grip. Each ability has its lab check (`docs/testing.md#check`).
+Rules for rooms: only the physics layer makes metal (`docs/art-direction.md#visuals-never-gameplay`); keep a body's height of air below a ring; deep water beside metal stays Ballast's gate, since water lets go of a grip. Each ability has its lab check (`instructions/testing.md#check`).
 
 ## Controls <a id="controls"></a>
 

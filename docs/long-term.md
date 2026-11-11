@@ -1,6 +1,6 @@
 # Long-term objectives — "The Deep"
 
-Two objectives every architectural choice keeps possible and cheap to grow. They share one idea: the game should hold something a solo developer could not realistically build by hand, but a coding agent can. Not one complex system: **a very large number of simple, well-made pieces, plus automated proof that they all fit together.** The game itself stays simple to play. The third, a new world from the bricks alone, is `docs/principles.md#bricks`.
+Two objectives every architectural choice keeps possible and cheap to grow. They share one idea: the game should hold something a solo developer could not realistically build by hand, but a coding agent can. Not one complex system: **a very large number of simple, well-made pieces, plus automated proof that they all fit together.** The game itself stays simple to play. The third, a new world from the bricks alone, is `instructions/principles.md#bricks`.
 
 ______________________________________________________________________
 

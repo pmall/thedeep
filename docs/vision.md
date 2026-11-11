@@ -16,7 +16,7 @@ Design principles (owner):
 
 - **A finished, playable game.** No novel signature systems. Classic metroidvania structure done well.
 - **A small, fixed set of abilities** (five, `docs/gameplay.md#abilities`); the map is built around them.
-- **Built from bricks** (`docs/principles.md#bricks`), in the owner's four stages (`docs/roadmap.md#four-stages`).
+- **Built from bricks** (`instructions/principles.md#bricks`), in the owner's four stages (`docs/roadmap.md#four-stages`).
 
 ## Scope <a id="scope"></a>
 
@@ -37,4 +37,4 @@ A planet in the *Nirvanary* universe. Machines across many worlds seek "Nirvanar
 
 **The game is a descent:** deeper means older, stranger, hotter.
 
-Narrative is polish (`docs/roadmap.md#stage-polish`): until then, placeholder text only. Given the *Inside* reference, expect storytelling to come mostly through environments and machine behavior rather than text, so keep rooms and machines able to carry it. The owner wants **high-quality voiced dialogue** someday, with generated voices: hence all text is data (`docs/principles.md#data-first`, `docs/roadmap.md#audio`).
+Narrative is polish (`docs/roadmap.md#stage-polish`): until then, placeholder text only. Given the *Inside* reference, expect storytelling to come mostly through environments and machine behavior rather than text, so keep rooms and machines able to carry it. The owner wants **high-quality voiced dialogue** someday, with generated voices: hence all text is data (`instructions/principles.md#data-first`, `docs/roadmap.md#audio`).

@@ -30,7 +30,7 @@ public partial class LookDevDriver : Node
     private const int WarmupFrames = 120;
     private const int MeasuredFrames = 900;
 
-    /// <summary>Frame time the game must stay under at 1080p on the owner's RTX 3060 (docs/principles.md#performance).</summary>
+    /// <summary>Frame time the game must stay under at 1080p on the owner's RTX 3060 (instructions/principles.md#performance).</summary>
     private const double BudgetMs = 10.0;
 
     /// <summary>How the perf report is written: indented, for people to read.</summary>

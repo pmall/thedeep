@@ -11,7 +11,7 @@ namespace TheDeep;
 /// chain per frame, the last steady garbage of a room full of machines. Here each slot's old packed array is released and
 /// the new one written straight into the engine array, so nothing managed is allocated.
 /// <para>
-/// <c>unsafe</c> is allowed in the game assembly only here and in <see cref="FrameGrabber"/> (docs/principles.md#performance).
+/// <c>unsafe</c> is allowed in the game assembly only here and in <see cref="FrameGrabber"/> (instructions/principles.md#performance).
 /// </para>
 /// </summary>
 public sealed unsafe class NativeMeshArrays : IDisposable
