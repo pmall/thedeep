@@ -5,8 +5,8 @@ The owner's plan and the open items, in order, opened by where the work stands. 
 ## Now <a id="status"></a>
 
 - **Stage:** A, the prototype (`docs/roadmap.md#stage-prototype`).
-- **Current item:** the art pass (`docs/roadmap.md#art-restore`). Next step: its open box, the owner's judgment in play.
-- **Waiting on the owner:** the art pass, judged in play (`docs/roadmap.md#art-restore`); the Blender MCP installed, for the pilgrim (`docs/roadmap.md#pilgrim`).
+- **Current item:** the art pass (`docs/roadmap.md#art-restore`). Next step: its first open box.
+- **Waiting on the owner:** nothing blocks. The Blender MCP installed is needed only when the pilgrim starts (`docs/roadmap.md#pilgrim`), last of the stage.
 
 ## The plan <a id="direction"></a>
 
@@ -25,18 +25,19 @@ ______________________________________________________________________
 
 A room gets the attention its bricks need, no more. Bosses, machines and law breaks stay working placeholders (their richness is stage D), with the systems behind them ready.
 
-The open items, in order:
+The open items, in order (owner: the world, its bricks and its look are finished before the character):
 
-1. **The art pass** <a id="art-restore"></a> (owner: first priority). The look is rebuilt on the bare render under `docs/art-direction.md#stable-image`:
-   - [ ] **The owner's judgment**: the frozen layer against its look at commit `0cf4b04`, the flooded layer against [`perfect.jpg`](references/perfect.jpg), the core in dark amber and ember. Built; what the owner asks for in play becomes the next tasks. The volcanic layer's look comes with `docs/roadmap.md#volcanic-rethink`.
-   - Done when every biome reads at a glance and looks very cool to the owner, without flicker, within the frame budget.
-2. **The pilgrim, from zero** <a id="pilgrim"></a> (owner). The current character, its procedural animation and its halo are thrown away. The bar is *Ori*'s animation (a 3D-rendered character) with *NieR: Automata*'s dynamism; the look is `docs/art-direction.md#character`. First the environment for top-quality animation, then the character: modeled and rigged in Blender (the owner installs the Blender MCP), animated from real motion capture (free libraries and Mixamo first), keyed by hand, blended in the game with its feet held to the ground. Every move and ability: run, jump, land, dash, air dash, ledge assist, grip and its corners, harpoon throw and zip, bore and dive, swim, sink and rise, the strikes, hurt, death, rest, taking a relic. Its secondary motion is stage D's. Done when every state reads at a glance in motion, in the reels and in the owner's play.
-3. **The rest of the owner's review** <a id="review-1108"></a>:
-   - **Rooms that agree at their seams** <a id="seam-coherence"></a>: whatever crosses an exit continues on the other side. An elevator's shaft and car exist in both rooms, water never ends at a seam (a hole in a roof never leads under water that has no bottom), a hole in a floor lands under the matching opening above. A rule in `docs/gameplay.md#leaving-a-room`, a check over both worlds, then every vertical exit of the prototype fixed to it.
-   - **The volcanic layer, rethought** <a id="volcanic-rethink"></a>: lava is a real body with a depth you can read (never a thin skin you might cross), touching it has one clear rule, heat reads as something the player understands (not bands), the Slag's collision bugs are gone, and the layer looks finished. Designed first (its rules in `docs/gameplay.md`, its look in `docs/art-direction.md`), then built.
-   - **Readable law breaks and gates** <a id="law-readable"></a>: a law break says what to do and the player does it on purpose (not by mashing); the Pyre's litany door says what it needs and where to look. The real law breaks (stage D) are scenes where the player, as the pilgrim's conscience, makes it break the law (owner).
-4. **Feel and fight** <a id="feel-fight"></a>: moves chain and carry momentum (Mag-grip corners, harpoon, dive and swim flowing into each other), the camera eased, the fight's hits land and health reads (`docs/gameplay.md#fight`), tuned from the owner's play.
-5. **Every brick ready** <a id="bricks-ready"></a>: each brick of [bricks.md](bricks.md) still short of ready is brought there (look, feel, reuse).
+1. **The art pass** <a id="art-restore"></a> (owner: first priority). The look is rebuilt on the bare render under `docs/art-direction.md#stable-image`; the owner finds it very good and free of the old flicker. What their play asked for:
+   - [ ] **The Nave's water**: its reflections and the light on it flicker; they hold still like the rest of the image.
+   - [ ] **The Sluice's water**: so transparent it is not seen at first glance; water reads as water at a glance in every room that holds some.
+   - [ ] **The frozen layer under light**: a little too bright where a light falls; brought down without losing the look the owner likes.
+   - Done when every biome reads at a glance and looks very cool to the owner, without flicker, within the frame budget. The volcanic layer's look comes with `docs/roadmap.md#volcanic-rethink`.
+2. **Rooms that agree at their seams** <a id="seam-coherence"></a> (owner: the vertical transitions first): whatever crosses an exit continues on the other side. An elevator's shaft and car exist in both rooms, water never ends at a seam (a hole in a roof never leads under water that has no bottom), a hole in a floor lands under the matching opening above. A rule in `docs/gameplay.md#leaving-a-room`, a check over both worlds, then every vertical exit of the prototype fixed to it.
+3. **The volcanic layer, rethought** <a id="volcanic-rethink"></a>: lava is a real body with a depth you can read (never a thin skin you might cross), touching it has one clear rule, heat reads as something the player understands (not bands), the Slag's collision bugs are gone, and the layer looks finished. Designed first (its rules in `docs/gameplay.md`, its look in `docs/art-direction.md`), then built.
+4. **Readable law breaks and gates** <a id="law-readable"></a>: a law break says what to do and the player does it on purpose (not by mashing); the Pyre's litany door says what it needs and where to look. The real law breaks (stage D) are scenes where the player, as the pilgrim's conscience, makes it break the law (owner).
+5. **Feel and fight** <a id="feel-fight"></a>: moves chain and carry momentum (Mag-grip corners, harpoon, dive and swim flowing into each other), the camera eased, the fight's hits land and health reads (`docs/gameplay.md#fight`), tuned from the owner's play.
+6. **Every brick ready** <a id="bricks-ready"></a>: each brick of [bricks.md](bricks.md) still short of ready is brought there (look, feel, reuse), the pilgrim's own aside (`docs/roadmap.md#pilgrim`).
+7. **The pilgrim, from zero** <a id="pilgrim"></a> (owner: last, once the world, its bricks and its look are finished). The current character, its procedural animation and its halo are thrown away. The bar is *Ori*'s animation (a 3D-rendered character) with *NieR: Automata*'s dynamism; the look is `docs/art-direction.md#character`. First the environment for top-quality animation, then the character: modeled and rigged in Blender (the owner installs the Blender MCP), animated from real motion capture (free libraries and Mixamo first), keyed by hand, blended in the game with its feet held to the ground. Every move and ability: run, jump, land, dash, air dash, ledge assist, grip and its corners, harpoon throw and zip, bore and dive, swim, sink and rise, the strikes, hurt, death, rest, taking a relic. Its secondary motion is stage D's. Done when every state reads at a glance in motion, in the reels and in the owner's play.
 
 **Done when** <a id="sequel-test"></a> every brick in [bricks.md](bricks.md) is ready, the sequel world still loads, plays and passes the checks with no code change (whatever it would force into the code is a missing brick, built as one), and the owner plays the prototype from `godot --path . -- --new` to the end with no debug keys, always knowing what a gate needs, and signs it off.
 
