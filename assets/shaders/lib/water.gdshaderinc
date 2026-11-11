@@ -28,6 +28,8 @@ global uniform float biome_caustic_strength;
 //   just under the surface and growing with depth up to UNDERWATER_FRONT, so the play plane's own faces read darker and
 //   bluer from the surface line down. Only water entered through the box's front or sides counts: the view through the
 //   top crosses the surface, whose own opacity already sinks it.
+// The murk darkens rather than replaces: a surface keeps at least UNDERWATER_KEEP_MIN of its own light and the veil
+// covers at most the rest, so deep walls keep their blotches, joints and shadows under a dark veil instead of a flat color.
 // So the play plane reads clearly near the surface and sinks into murk deeper down, and walls and backdrops farther
 // behind it sink further.
 const float UNDERWATER_MURK = 0.025;
@@ -37,9 +39,10 @@ const float UNDERWATER_PATH_MAX = 0.5;
 const float UNDERWATER_FRONT_TOP = 0.3;
 const float UNDERWATER_FRONT = 0.35;
 const float UNDERWATER_FRONT_FALL = 0.3;
-const float UNDERWATER_DARKEN = 0.1;
-const float UNDERWATER_SHALLOWEST = 0.3;
-const float UNDERWATER_DEEPEST = 0.75;
+const float UNDERWATER_DARKEN = 0.35;
+const float UNDERWATER_SHALLOWEST = 0.5;
+const float UNDERWATER_DEEPEST = 1.0;
+const float UNDERWATER_KEEP_MIN = 0.35;
 const float UNDERWATER_LIGHT_STEP = 0.25;
 const float UNDERWATER_LIGHT_FALL = 0.5;
 const float UNDERWATER_LIGHT_FLOOR = 0.3;
@@ -129,6 +132,6 @@ float underwater_at(vec3 p, vec3 eye, out vec3 murk_color, out float light) {
 	vec3 uw_color; \
 	float uw_light; \
 	float uw_murk = underwater_at((INV_VIEW_MATRIX * vec4(VERTEX, 1.0)).xyz, CAMERA_POSITION_WORLD, uw_color, uw_light); \
-	float uw_keep = uw_light * (1.0 - uw_murk); \
+	float uw_keep = max(uw_light * (1.0 - uw_murk), UNDERWATER_KEEP_MIN); \
 	ALBEDO *= uw_keep; \
-	EMISSION = EMISSION * (1.0 - uw_murk) + uw_color * uw_murk;
+	EMISSION = EMISSION * (1.0 - uw_murk) + uw_color * min(uw_murk, 1.0 - UNDERWATER_KEEP_MIN);
