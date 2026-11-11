@@ -75,7 +75,7 @@ public partial class Main : Node3D
     /// <summary>User argument that runs the scripted Heat plating check (see HeatCheck), used by tools/check.sh.</summary>
     private const string HeatCheckArgument = "--heat-check";
 
-    /// <summary>User argument that measures the Slag in play (see SlagCheck), used by tools/check.sh.</summary>
+    /// <summary>User argument that checks the Slag in play (see SlagCheck), used by tools/check.sh.</summary>
     private const string SlagCheckArgument = "--slag-check";
 
     /// <summary>User argument that runs the fight moveset check (see FightCheck), used by tools/check.sh.</summary>

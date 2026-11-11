@@ -6,14 +6,16 @@ using Godot;
 namespace TheDeep;
 
 /// <summary>
-/// The Slag measured in play (`-- --room Slag --slag-check`, run by tools/check.sh; alone:
+/// The Slag held in play (`-- --room Slag --slag-check`, run by tools/check.sh; alone:
 /// `godot --headless --path . --fixed-fps 60 --quit-after 15000 -- --room Slag --slag-check | grep SLAG`), through the real input
-/// actions: its routes walked and jumped west to east and back, plated and not, the jumps under its ledges and the climb up them, the
-/// falls between its platforms, standing at its edges and on its slag, the drop down the Drill's shaft and the run over the plug. Every
-/// tick it records each snag: the head meeting a ceiling in a jump, the floor lost for a few ticks on flat ground, the body jolted up or
-/// down while it stands, a burn while standing on rock, standing alive on slag, a death; a route that doesn't finish is one too. It
-/// prints `SLAG` lines: each snag, a verdict per suspect of `docs/roadmap.md#volcanic-rethink`'s measurement ((a) to (f)), then
-/// `SLAG REPORT`. Report-only (it never fails) until the Slag is rebuilt on the bricks; then its snags become failures.
+/// actions, on the abilities any pilgrim first walks it with: its routes run west to east and back, plated and not (a jump at
+/// every gap and every step up, a step down walked off), the climb up the mound to the vent, a jump straight up on every
+/// walkway, standing still at every take-off edge, walking off into each slag body, plated and not, the way out of the coolant
+/// pool, the drop down the Drill's shaft and the runs over the plug. Every tick it records each snag: the head meeting a ceiling,
+/// the floor lost for a few ticks on flat ground, the body jolted up or down while it stands, a burn while standing on rock,
+/// standing alive on slag, a death, stopping against a wall it can't jump, leaving the room; a route that doesn't finish is one
+/// too, and so is a fall into slag that doesn't end set back on rock, in control and unburned there (`docs/gameplay.md#slag`).
+/// Prints `SLAG CHECK` errors, one per snag, or `SLAG OK`.
 /// </summary>
 public partial class SlagCheck : Node
 {
@@ -28,22 +30,29 @@ public partial class SlagCheck : Node
     /// <summary>The longest loss of the floor on flat ground that counts as a drop (longer is a fall), ticks.</summary>
     private const int DropTicks = 4;
 
+    /// <summary>The deepest drop the runner walks off rather than jumps, meters (a top level with slag is no step: it jumps over).</summary>
+    private const float StepDown = 3f;
+
+    /// <summary>Ticks stopped against a wall, after jumping at it, that make the runner blocked.</summary>
+    private const int Stuck = 30;
+
+    /// <summary>Ticks the pilgrim stands still after a burn sets it back, unburned, before a fall counts as ended.</summary>
+    private const int Settle = 45;
+
     /// <summary>A snag: the route it happened on, its kind, where, and what.</summary>
     private sealed record Snag(int Route, string Kind, Vector2 At, string What);
 
-    /// <summary>A route: its suspect ((a) to (f), or "" for the main routes), what it does, its time limit, how it starts and drives.</summary>
-    private sealed record Route(string Suspect, string What, float Seconds, Action Start, Func<bool> Drive);
+    /// <summary>A route: what it does, its time limit, how it starts and drives (true once done).</summary>
+    private sealed record Route(string What, float Seconds, Action Start, Func<bool> Drive);
 
     private readonly List<Route> _routes = new();
     private readonly List<Snag> _snags = new();
-    private readonly List<string> _outcomes = new();
     private List<Box> _solids = new();
     private List<Box> _slag = new();
-    private int _index = -1, _ticks, _clock, _jumpTick = -100, _phase;
-    private bool _jumpHeld, _wasOnFloor, _placing, _dying, _setBack, _hurtThisRoute;
+    private int _index = -1, _ticks, _clock, _jumpTick = -100, _stillTicks, _hurts;
+    private bool _jumpHeld, _wasOnFloor, _placing, _dying, _setBack;
     private int _respawnedAt = -1, _airFrom = -1, _diedAt;
     private float _airY, _takeoffY;
-    private float? _crossedSlab;
 
     /// <summary>Runs before the pilgrim each physics tick, so what it presses is read the same tick.</summary>
     public SlagCheck()
@@ -79,159 +88,127 @@ public partial class SlagCheck : Node
         Main("west to east on foot, unplated", plated: false, new(3f, 0f), 1, 88f);
         Main("west to east on foot, plated", plated: true, new(3f, 0f), 1, 88f);
         Main("east to west on foot, unplated", plated: false, new(88f, 0f), -1, 4f);
-        JumpUnder("a", "a jump straight up under LedgeA", new(41.5f, -2f));
-        JumpUnder("a", "a jump straight up under LedgeB (over the shrine)", new(47.5f, -2f));
-        _routes.Add(new("a", "the climb from PlatformThree to LedgeA, LedgeB and LedgeC", 15f, () => Place(new(45.2f, -2f), -1, false), Climb));
+        _routes.Add(new("the climb from the shrine up the mound's steps to the vent", 10f, () => Place(new(38.75f, -1.5f), 1, false),
+            () => Run(1, true, Player.IsOnFloor() && P.Y > 5.9f)));
+        // A jump straight up on every walkway (the mound's top step is under the vent, the way out).
+        foreach ((float x, float y) in new[] { (3f, 0f), (7.5f, -2f), (10.5f, -4.5f), (16.5f, -6.5f), (24.5f, -5f), (32f, -3.5f), (38.75f, -1.5f),
+                     (41f, 1f), (51f, 1f), (43.5f, 3.5f), (48.5f, 3.5f), (53.5f, -1.5f), (60.5f, -1.5f), (66f, 0f), (88f, 0f) })
+        {
+            _routes.Add(new($"a jump straight up at ({x}, {y})", 3f, () => Place(new(x, y), 1, false), () =>
+            {
+                if (_ticks == 5)
+                {
+                    Jump();
+                }
+
+                return _ticks > 20 && Player.IsOnFloor();
+            }));
+        }
+
+        // Standing still at every take-off edge over slag: no burn reaches there.
+        foreach ((float x, float y, int facing) in new[] { (17.8f, -6.5f, 1), (23.2f, -5f, -1), (25.8f, -5f, 1), (30.7f, -3.5f, -1), (33.3f, -3.5f, 1),
+                     (37.7f, -1.5f, -1), (54.3f, -1.5f, 1), (58.2f, -1.5f, -1) })
+        {
+            _routes.Add(new($"standing still at the edge ({x}, {y})", 1.5f, () => Place(new(x, y), facing, false), () => _ticks > 85));
+        }
+
+        // Walking off into each slag body: burned and set back on rock, plated or not, never killed.
         foreach (bool plated in new[] { false, true })
         {
-            foreach ((float gap, float top) in new[] { (24f, -6.5f), (37f, -4f), (52f, -2f), (68f, -2.5f) })
+            foreach ((float edge, float top, int dir) in new[] { (18f, -6.5f, 1), (26f, -5f, 1), (33.5f, -3.5f, 1), (54.5f, -1.5f, 1), (58f, -1.5f, -1) })
             {
-                _routes.Add(new("d", $"walking off the edge at x {gap} into the river, {(plated ? "plated" : "unplated")}", 6f,
-                    () => Place(new(gap - 1.2f, top), 1, plated), () => Fall(gap)));
+                _routes.Add(new($"walking off the edge at x {edge} into the slag, {(plated ? "plated" : "unplated")}", 6f,
+                    () => Place(new(edge - dir * 1.2f, top), dir, plated), () => Fall(dir)));
             }
         }
 
-        foreach (float x in new[] { 23.5f, 23.7f, 23.9f })
-        {
-            _routes.Add(new("c", $"standing still on PlatformOne at x {x}", 1.5f, () => Place(new(x, -6.5f), 1, false), () => _ticks > 85));
-        }
-
-        _routes.Add(new("b", "standing on PoolEast (x 15..17)", 1.5f, () => Place(new(16f, -9f), -1, false), () => _ticks > 85));
-        _routes.Add(new("b", "walking west off PlatformOne", 2f, () => Place(new(17.6f, -6.5f), -1, false), () =>
-        {
-            Hold(_ticks < 12 ? -1 : 0);
-            return _ticks > 110;
-        }));
-        _routes.Add(new("e", "falling down the Drill's shaft (x 60..63) past the river's slab", 3f, () => Place(new(61.5f, -5.5f), 0, false), Shaft));
-        _routes.Add(new("f", "running east over PlatformFourWest, the Plug and PlatformFourEast", 4f, () => Place(new(56.6f, -3f), 1, false), () => Run(1, false, P.X > 67.4f)));
-        _routes.Add(new("f", "running west back over them", 4f, () => Place(new(67.4f, -2.5f), -1, false), () => Run(-1, false, P.X < 56.6f)));
+        _routes.Add(new("out of the coolant pool, floating up and jumping east onto its wall", 8f, () => Place(new(13.5f, -12f), 1, false), Swim));
+        _routes.Add(new("falling down the Drill's shaft (x 60..63), walled from the slag", 3f, () => Place(new(61.5f, -4f), 0, false), () => P.Y < -14f));
+        _routes.Add(new("running east from the mound over the plug onto the east floor", 4f, () => Place(new(52.5f, -1.5f), 1, false),
+            () => Run(1, true, Player.IsOnFloor() && P.X > 66f)));
+        _routes.Add(new("running west from the east floor over the plug onto the mound", 4f, () => Place(new(66f, 0f), -1, false),
+            () => Run(-1, true, Player.IsOnFloor() && P.X < 53f && P.Y > -2f)));
         Next();
     }
 
     private void Main(string what, bool plated, Vector2 from, int dir, float toX) =>
-        _routes.Add(new("", what, 40f, () => Place(from, dir, plated), () => Run(dir, true, dir * (P.X - toX) > 0 && Player.IsOnFloor())));
+        _routes.Add(new(what, 40f, () => Place(from, dir, plated), () => Run(dir, true, dir * (P.X - toX) > 0 && Player.IsOnFloor())));
 
-    private void JumpUnder(string suspect, string what, Vector2 at) =>
-        _routes.Add(new(suspect, what, 3f, () => Place(at, 1, false), () =>
+    /// <summary>
+    /// Walking off an edge toward <paramref name="dir"/> into the slag: done once burned, set back on rock and standing there in
+    /// control for <see cref="Settle"/> ticks; a death, a second burn there or a fall that never burns is a snag.
+    /// </summary>
+    private bool Fall(int dir)
+    {
+        Hold(_hurts == 0 && !_dying ? dir : 0);
+        if (_dying)
         {
-            if (_ticks == 5)
+            return true;
+        }
+
+        if (_setBack && Player.InControl && _clock - _respawnedAt > Settle)
+        {
+            if (_hurts > 1)
             {
-                Jump();
+                Record("burned again", $"burned {_hurts} times: set back where the slag burns again, at ({P.X:0.##}, {P.Y:0.##})");
             }
 
-            return _ticks > 20 && Player.IsOnFloor();
-        }));
+            if (!Player.IsOnFloor() || _slag.Any(s => P.Y < s.MaxY + 0.5f && s.MinX - 0.5f < P.X && P.X < s.MaxX + 0.5f))
+            {
+                Record("bad footing", $"set back to ({P.X:0.##}, {P.Y:0.##}), not standing on rock clear of the slag");
+            }
 
-    /// <summary>Up the ledges: onto LedgeA (west), LedgeB (east, jumping at its edge), LedgeC (west, jumping from LedgeB's middle).</summary>
-    private bool Climb()
-    {
-        bool landed = Player.IsOnFloor() && _ticks - _phase > 10;
-        switch (_phase == 0 ? 0 : P.Y > 2.8f ? 2 : 1)
-        {
-            case 0:
-                Hold(-1);
-                if (_ticks == 3)
-                {
-                    Jump();
-                }
-
-                if (landed && P.Y > 0.3f)
-                {
-                    _phase = _ticks;
-                }
-
-                return false;
-            case 1:
-                if (Player.IsOnFloor() && P.Y < 0f)
-                {
-                    Record("unfinished", $"fell from the jump off LedgeA back to ({P.X:0.##}, {P.Y:0.##})");
-                    return true;
-                }
-
-                return Run(1, true, false);
-            default:
-                Hold(-1);
-                if (P.X < 48.6f && Player.IsOnFloor() && P.Y < 3.3f)
-                {
-                    Jump();
-                }
-
-                return landed && P.Y > 5.3f;
+            return true;
         }
+
+        if (_ticks == (int)(_routes[_index].Seconds * 60f) - 1 && !_setBack)
+        {
+            Record("no burn", $"fell into the slag and was neither burned and set back nor dead, at ({P.X:0.##}, {P.Y:0.##})");
+        }
+
+        return false;
     }
 
-    /// <summary>Walking off the edge at <paramref name="gap"/>: done once dead, or set back by a burn and in control again.</summary>
-    private bool Fall(float gap)
+    /// <summary>Floating up the pool and leaving it east: jump pressed every few ticks, done standing on the pool's wall.</summary>
+    private bool Swim()
     {
-        if (!_hurtThisRoute && !_dying)
+        Hold(1);
+        if (_ticks % 20 == 0)
         {
-            Hold(1);
+            Input.ActionPress(InputActions.Jump);
         }
-        else
+        else if (_ticks % 20 == 6)
         {
-            Hold(0);
-        }
-
-        bool done = _dying || (_setBack && _clock - _respawnedAt > 10 && Player.InControl);
-        if (!_outcomeTold && (done || _ticks == (int)(_routes[_index].Seconds * 60f)))
-        {
-            _outcomeTold = true;
-            string outcome = _dying ? $"died at ({P.X:0.##}, {P.Y:0.##})"
-                : _setBack ? $"scorched, set back to ({P.X:0.##}, {P.Y:0.##})"
-                : $"neither burned nor dead, at ({P.X:0.##}, {P.Y:0.##})";
-            _outcomes.Add($"{_routes[_index].What}: {outcome}");
+            Input.ActionRelease(InputActions.Jump);
         }
 
-        return done;
-    }
-
-    /// <summary>The drop down the shaft: whether the body crossed the slab's height there, and how.</summary>
-    private bool Shaft()
-    {
-        foreach (Box s in _slag.Where(s => _crossedSlab is null && s.MinX <= P.X && P.X <= s.MaxX && P.Y < s.MinY))
-        {
-            _crossedSlab = s.MaxY;
-        }
-
-        return P.Y < -12f;
+        return Player.IsOnFloor() && P.Y > -7f && P.X > 15f;
     }
 
     /// <summary>
-    /// Runs toward <paramref name="dir"/>, jumping (held, a full jump) over a gap ahead when <paramref name="jumps"/> (a step down
-    /// under <see cref="StepDown"/> is walked off). Stopped on flat ground against a wall for <see cref="Stuck"/> ticks, it is
-    /// blocked (a snag), and jumps.
+    /// Runs toward <paramref name="dir"/>, jumping (held, a full jump) over a gap ahead (a step down under <see cref="StepDown"/>
+    /// is walked off) and at a step up ahead, when <paramref name="jumps"/>. Stopped on flat ground against a wall for
+    /// <see cref="Stuck"/> ticks, it is blocked (a snag).
     /// </summary>
     private bool Run(int dir, bool jumps, bool arrived)
     {
         Hold(arrived ? 0 : dir);
         float ahead = P.X + dir * 0.3f;
-        bool gap = !Solid(ahead, P.Y - 0.1f) && !_solids.Any(s => s.MinX <= ahead && ahead <= s.MaxX && s.MaxY < P.Y && s.MaxY > P.Y - StepDown &&
-                                                                    !_slag.Any(l => Math.Abs(l.MaxY - s.MaxY) < 0.05f && l.MinX < s.MaxX && s.MinX < l.MaxX));
+        bool gap = !Solid(ahead, P.Y - 0.1f) && !_solids.Any(s => s.MinX <= ahead && ahead <= s.MaxX && s.MaxY < P.Y && s.MaxY > P.Y - StepDown);
+        bool wall = Solid(P.X + dir * 0.6f, P.Y + 0.7f);
         _stillTicks = !arrived && Player.IsOnFloor() && Math.Abs(Player.Velocity.X) < 0.05f ? _stillTicks + 1 : 0;
         if (_stillTicks >= Stuck)
         {
-            Record("blocked", $"running {(dir > 0 ? "east" : "west")}, stopped against a wall at ({P.X:0.##}, {P.Y:0.##}): it takes a jump");
-            Jump();
+            Record("blocked", $"running {(dir > 0 ? "east" : "west")}, stopped against a wall at ({P.X:0.##}, {P.Y:0.##}) it can't jump");
         }
-        else if (jumps && !arrived && Player.IsOnFloor() && gap)
+
+        if (jumps && !arrived && Player.IsOnFloor() && (gap || wall))
         {
             Jump();
         }
 
         return arrived;
     }
-
-    /// <summary>The deepest drop the runner walks off rather than jumps, meters (a top level with slag is no step: it jumps over).</summary>
-    private const float StepDown = 3f;
-
-    /// <summary>Ticks stopped against a wall that make the runner blocked.</summary>
-    private const int Stuck = 15;
-
-    private int _stillTicks, _fTicks;
-
-    /// <summary>The fastest vertical speed while standing on the runs over the plug (suspect f), m/s.</summary>
-    private float _fMaxSpeed;
-    private bool _outcomeTold;
 
     private bool Solid(float x, float y) => _solids.Any(s => s.MinX <= x && x <= s.MaxX && s.MinY <= y && y <= s.MaxY);
 
@@ -278,10 +255,15 @@ public partial class SlagCheck : Node
 
     private void OnHurt()
     {
-        _hurtThisRoute = true;
-        bool onRock = _wasOnFloor && !OverSlag();
-        Record(onRock ? "burn on rock" : "burn", $"hurt at ({P.X:0.##}, {P.Y:0.##}), {(onRock ? "standing on rock" : "in the air or on slag")}, " +
-                                                $"plated {Player.Abilities.Has(Ability.HeatPlating)}");
+        _hurts++;
+        if (_wasOnFloor && !OverSlag())
+        {
+            Record("burn on rock", $"hurt at ({P.X:0.##}, {P.Y:0.##}) standing on rock, plated {Player.Abilities.Has(Ability.HeatPlating)}");
+        }
+        else if (!_routes[_index].What.StartsWith("walking off", StringComparison.Ordinal))
+        {
+            Record("burn", $"hurt at ({P.X:0.##}, {P.Y:0.##}) on a route that never meets the slag");
+        }
     }
 
     private bool OverSlag() => _slag.Any(s => s.MinX <= P.X && P.X <= s.MaxX && Math.Abs(P.Y - s.MaxY) < 0.15f);
@@ -302,8 +284,8 @@ public partial class SlagCheck : Node
         _jumpHeld = false;
         _index++;
         _ticks = 0;
-        _phase = 0;
-        _dying = _setBack = _hurtThisRoute = _outcomeTold = false;
+        _hurts = 0;
+        _dying = _setBack = false;
         _stillTicks = 0;
         _airFrom = _respawnedAt = -1;
         if (_index >= _routes.Count)
@@ -314,12 +296,6 @@ public partial class SlagCheck : Node
 
         _solids = World.Room.Blocks().Select(b => Box.Around(b.GlobalPosition.Flat(), new System.Numerics.Vector2(b.Size.X, b.Size.Y))).ToList();
         _slag = World.Room.All<SlagBody>().Select(s => s.PlayRegion).ToList();
-        if (World.Room.GetNodeOrNull<MeshInstance3D>("Kit/River") is { } river)
-        {
-            Aabb box = river.GlobalTransform * river.GetAabb();
-            _slag.Add(new Box(box.Position.X, box.Position.Y, box.End.X, box.End.Y));
-        }
-
         _routes[_index].Start();
         _wasOnFloor = Player.IsOnFloor();
     }
@@ -342,13 +318,8 @@ public partial class SlagCheck : Node
 
         Watch();
         Route route = _routes[_index];
-        bool done = route.Drive();
-        if (_dying && route.Suspect != "d")
-        {
-            done = true;
-        }
-
-        if (_dying && done)
+        bool done = route.Drive() || _dying;
+        if (_dying)
         {
             // Wait for the session to bring the pilgrim back from its death before the next route.
             Hold(0);
@@ -405,12 +376,6 @@ public partial class SlagCheck : Node
             _airFrom = -1;
         }
 
-        if (onFloor && _wasOnFloor && !jumping && _routes[_index].Suspect == "f")
-        {
-            _fTicks++;
-            _fMaxSpeed = Math.Max(_fMaxSpeed, Math.Abs(Player.Velocity.Y));
-        }
-
         if (onFloor && _wasOnFloor && !jumping && Math.Abs(Player.Velocity.Y) > Jolt)
         {
             Record("jolt", $"vertical velocity {Player.Velocity.Y:0.##} m/s while standing at ({P.X:0.##}, {P.Y:0.##})");
@@ -431,43 +396,15 @@ public partial class SlagCheck : Node
         Input.ActionRelease(InputActions.Jump);
         foreach (Snag snag in _snags)
         {
-            GD.Print($"SLAG {snag.Kind}: route {snag.Route + 1} \"{_routes[Math.Min(snag.Route, _routes.Count - 1)].What}\": {snag.What}");
+            GD.PushError($"SLAG CHECK: {snag.Kind}: route {snag.Route + 1} \"{_routes[Math.Min(snag.Route, _routes.Count - 1)].What}\": {snag.What}");
         }
 
-        foreach (string outcome in _outcomes)
+        if (_snags.Count == 0)
         {
-            GD.Print($"SLAG fall: {outcome}");
+            GD.Print($"SLAG OK: {_routes.Count} routes (on foot both ways, plated or not; the climb to the vent; headroom on every walkway; " +
+                     "no burn at a take-off edge; every fall into slag burned and set back on rock; out of the pool; the shaft walled)");
         }
 
-        Verdict("a", "ceilings over walkways", Of("ceiling").Where(s => s.At.X > 39f && s.At.X < 50f));
-        Verdict("b", "standing on slag", Of("on slag"));
-        Verdict("c", "burned on rock", Of("burn on rock"));
-        bool inverted = _outcomes.Any(o => o.Contains("unplated") && o.Contains("set back")) && _outcomes.Any(o => o.Contains(", plated") && o.Contains("died"));
-        GD.Print($"SLAG (d) inverted rule: {(inverted ? "CONFIRMED" : "not reproduced")}: " +
-                 $"unplated falls {Count("unplated", "set back")} set back, {Count("unplated", "died")} dead; plated falls {Count(", plated", "set back")} set back, {Count(", plated", "died")} dead");
-        string shaft = _crossedSlab is { } y
-            ? $"the body fell through the slab's top (y {y:0.##}) in the shaft unhindered{(Of("burn").Concat(Of("burn on rock")).Any(s => _routes[s.Route].Suspect == "e") ? ", burned" : ", unburned")}"
-            : "the body never crossed the slab in the shaft";
-        string planes = string.Join("; ", _slag.SelectMany(s => _solids.Where(b => Math.Abs(b.MaxY - s.MaxY) < 0.01f && b.MinX < s.MaxX && s.MinX < b.MaxX)
-            .Select(b => $"slag's top at y {s.MaxY:0.##} level with a block's top at x {b.MinX:0.##}..{b.MaxX:0.##}")));
-        GD.Print($"SLAG (e) slab through the shaft: {(_crossedSlab is not null || planes != "" ? "CONFIRMED" : "not reproduced")}: {shaft}; {(planes == "" ? "no shared plane" : planes)}");
-        Verdict("f", $"ghost edges and steps over the plug ({_fTicks} ticks standing, vertical speed at most {_fMaxSpeed:0.###} m/s)",
-            Of("floor drop").Concat(Of("jolt")).Concat(Of("blocked")).Where(s => _routes[s.Route].Suspect == "f"));
-        IEnumerable<Snag> elsewhere = _snags.Where(s => s.Kind is "floor drop" or "jolt" or "unfinished" or "death" && _routes[s.Route].Suspect is "" or "a");
-        GD.Print($"SLAG other snags on the main routes and the climb: {elsewhere.Count()} " +
-                 $"({string.Join(", ", elsewhere.GroupBy(s => s.Kind).Select(g => $"{g.Key} {g.Count()}"))})");
-        GD.Print($"SLAG REPORT (report-only until the Slag is rebuilt, docs/roadmap.md#volcanic-rethink): {_routes.Count} routes, {_snags.Count} snags");
-        GetTree().Quit(0);
-    }
-
-    private IEnumerable<Snag> Of(string kind) => _snags.Where(s => s.Kind == kind);
-
-    private int Count(string plating, string outcome) => _outcomes.Count(o => o.Contains(plating) && o.Contains(outcome));
-
-    private static void Verdict(string suspect, string what, IEnumerable<Snag> found)
-    {
-        List<Snag> list = found.ToList();
-        GD.Print($"SLAG ({suspect}) {what}: " + (list.Count == 0 ? "not reproduced"
-            : $"CONFIRMED, {list.Count}: {string.Join(" | ", list.Take(4).Select(s => s.What))}"));
+        GetTree().Quit(_snags.Count == 0 ? 0 : 1);
     }
 }

@@ -195,8 +195,8 @@ CHECKS=(
     "drill|DRILL OK|DRILL CHECK|2000|--room MechanicsLab --drill-check"
     "ballast|BALLAST OK|BALLAST CHECK|2000|--room MechanicsLab --ballast-check"
     "heat|HEAT OK|HEAT CHECK|1500|--room Basalt --heat-check"
-    # SlagCheck: the Slag measured in play, report-only until it is rebuilt on the bricks (docs/roadmap.md#volcanic-rethink).
-    "slag|SLAG REPORT|SLAG CHECK|15000|--room Slag --slag-check"
+    # SlagCheck: the Slag's routes, falls and edges in play.
+    "slag|SLAG OK|SLAG CHECK|15000|--room Slag --slag-check"
     # KeyCheck: the Sacristy key and its locked door, in place.
     "key|KEY OK|KEY CHECK|2000|--room Narthex --key-check"
     # KeyCheck's Pyre plan: the Pyre's litany (a code) and its seal on the Ashfall's low door, in place.
