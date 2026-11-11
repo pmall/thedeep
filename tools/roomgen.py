@@ -607,7 +607,7 @@ class Room:
         pos: Point3,
         basis: Basis = SHAFT_DIAGONAL,
         energy: float = 6.0,
-        fog: float = 12.0,
+        fog: float = 0.0,  # above 0 shows a beam (LightShaft): only the few rooms that feature one
         angle: float = 10.0,
         range: float = 80.0,
         comment: str = '',

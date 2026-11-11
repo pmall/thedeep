@@ -310,7 +310,7 @@ StartFacing = -1
 [node name="Flue" type="SpotLight3D" parent="Shafts"]
 transform = Transform3D(-0.7071, 0.6288, -0.3234, 0, 0.4573, 0.8893, 0.7071, 0.6288, -0.3234, 20, 48, -6.75)
 light_energy = 6
-light_volumetric_fog_energy = 12
+light_volumetric_fog_energy = 0
 shadow_enabled = true
 spot_range = 80
 spot_attenuation = 0.25
@@ -321,7 +321,7 @@ spot_angle_attenuation = 2
 [node name="Vault" type="SpotLight3D" parent="Shafts"]
 transform = Transform3D(-0.7071, 0.6288, -0.3234, 0, 0.4573, 0.8893, 0.7071, 0.6288, -0.3234, -9, 44, -16)
 light_energy = 5
-light_volumetric_fog_energy = 12
+light_volumetric_fog_energy = 0
 shadow_enabled = true
 spot_range = 80
 spot_attenuation = 0.25

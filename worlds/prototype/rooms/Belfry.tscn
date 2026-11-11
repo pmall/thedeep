@@ -271,7 +271,7 @@ StartFacing = 1
 [node name="Openings" type="SpotLight3D" parent="Shafts"]
 transform = Transform3D(-0.7071, 0.6288, -0.3234, 0, 0.4573, 0.8893, 0.7071, 0.6288, -0.3234, 8, 44, -16)
 light_energy = 6
-light_volumetric_fog_energy = 14
+light_volumetric_fog_energy = 0
 shadow_enabled = true
 spot_range = 80
 spot_attenuation = 0.25
@@ -282,7 +282,7 @@ spot_angle_attenuation = 2
 [node name="Lookout" type="SpotLight3D" parent="Shafts"]
 transform = Transform3D(-0.7071, 0.6288, -0.3234, 0, 0.4573, 0.8893, 0.7071, 0.6288, -0.3234, 10, 44, -4.75)
 light_energy = 4
-light_volumetric_fog_energy = 9
+light_volumetric_fog_energy = 0
 shadow_enabled = true
 spot_range = 80
 spot_attenuation = 0.25

@@ -17,7 +17,7 @@ public partial class Room : Node3D
     /// <summary>Lamps that take the biome's lamp color.</summary>
     [Export] public Light3D[] Lamps { get; set; } = System.Array.Empty<Light3D>();
 
-    /// <summary>Light shafts that take the biome's shaft color; each spot light among them shows a beam (<see cref="LightShaft"/>).</summary>
+    /// <summary>Light shafts that take the biome's shaft color; each spot light among them with a light_volumetric_fog_energy above 0 shows a beam (<see cref="LightShaft"/>); the others only light the room.</summary>
     [Export] public Light3D[] Shafts { get; set; } = System.Array.Empty<Light3D>();
 
     /// <summary>Small lights at emissive decor (faith glyphs) that take the biome's glyph color.</summary>

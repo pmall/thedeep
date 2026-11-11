@@ -372,7 +372,7 @@ StartFacing = 1
 [node name="Well" type="SpotLight3D" parent="Shafts"]
 transform = Transform3D(-0.7071, 0.6288, -0.3234, 0, 0.4573, 0.8893, 0.7071, 0.6288, -0.3234, 28, 52, -7.5)
 light_energy = 8
-light_volumetric_fog_energy = 16
+light_volumetric_fog_energy = 0
 shadow_enabled = true
 spot_range = 80
 spot_attenuation = 0.25
@@ -383,7 +383,7 @@ spot_angle_attenuation = 2
 [node name="Balcony" type="SpotLight3D" parent="Shafts"]
 transform = Transform3D(-0.7071, 0.6288, -0.3234, 0, 0.4573, 0.8893, 0.7071, 0.6288, -0.3234, 31, 46, -10)
 light_energy = 5
-light_volumetric_fog_energy = 10
+light_volumetric_fog_energy = 0
 shadow_enabled = true
 spot_range = 80
 spot_attenuation = 0.25
@@ -394,7 +394,7 @@ spot_angle_attenuation = 2
 [node name="Ledge" type="SpotLight3D" parent="Shafts"]
 transform = Transform3D(-0.7071, 0.6288, -0.3234, 0, 0.4573, 0.8893, 0.7071, 0.6288, -0.3234, -3.25, 50, -7.25)
 light_energy = 4
-light_volumetric_fog_energy = 8
+light_volumetric_fog_energy = 0
 shadow_enabled = true
 spot_range = 80
 spot_attenuation = 0.25

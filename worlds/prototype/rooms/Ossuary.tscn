@@ -264,7 +264,7 @@ StartFacing = -1
 [node name="Relic" type="SpotLight3D" parent="Shafts"]
 transform = Transform3D(-0.7071, 0.6288, -0.3234, 0, 0.4573, 0.8893, 0.7071, 0.6288, -0.3234, 27, 40, -14.25)
 light_energy = 5
-light_volumetric_fog_energy = 8
+light_volumetric_fog_energy = 0
 shadow_enabled = true
 spot_range = 80
 spot_attenuation = 0.25
@@ -275,7 +275,7 @@ spot_angle_attenuation = 2
 [node name="Nave" type="SpotLight3D" parent="Shafts"]
 transform = Transform3D(-0.7071, 0.6288, -0.3234, 0, 0.4573, 0.8893, 0.7071, 0.6288, -0.3234, 8, 40, -8)
 light_energy = 3
-light_volumetric_fog_energy = 7
+light_volumetric_fog_energy = 0
 shadow_enabled = true
 spot_range = 80
 spot_attenuation = 0.25

@@ -209,12 +209,12 @@ TextLine = &"plate.sacristy.text"
 ; a single shaft onto the dais
 [node name="Dais" type="SpotLight3D" parent="Shafts"]
 transform = Transform3D(-0.7071, 0.6288, -0.3234, 0, 0.4573, 0.8893, 0.7071, 0.6288, -0.3234, -7, 40, -14)
-light_energy = 4.5
-light_volumetric_fog_energy = 8
+light_energy = 5
+light_volumetric_fog_energy = 30
 shadow_enabled = true
 spot_range = 80
 spot_attenuation = 0.25
-spot_angle = 8
+spot_angle = 6
 spot_angle_attenuation = 2
 
 [node name="Glyphs" type="Node3D" parent="."]
@@ -281,6 +281,12 @@ omni_attenuation = 1.2
 [node name="Dust" parent="Particles" instance=ExtResource("14_dust")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 12, 6, -1)
 Extents = Vector3(13, 6, 2)
+
+; thicker in the shaft, so its motes catch the light
+[node name="ShaftDust" parent="Particles" instance=ExtResource("14_dust")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 4.5, 8, -2)
+Extents = Vector3(3, 8, 2.5)
+Density = 4.5
 
 [node name="PhotoSpots" type="Node3D" parent="."]
 

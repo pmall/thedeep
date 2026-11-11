@@ -7,7 +7,7 @@ namespace TheDeep;
 /// The visible beam of one of a room's light shafts (<see cref="Room.Shafts"/>): a soft column of light from the spot light down to
 /// the solid it falls on, as wide as its cone, in the biome's shaft color, as bright as the light's light_volumetric_fog_energy says (<see cref="ShaftBeam"/> builds it, its
 /// <see cref="Material"/> draws it). Built once by the room's stage (<see cref="RoomStage.Build"/>) for every shaft that is a spot
-/// light, so a room only places its lights. Visual only.
+/// light with a fog energy above 0, so a room only places its lights and picks which of them show a beam. Visual only.
 /// </summary>
 public partial class LightShaft : MeshInstance3D
 {

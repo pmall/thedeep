@@ -133,7 +133,7 @@ public partial class RoomStage : Node3D
         List<SolidBox> solids = room.SolidBoxes();
         foreach (Light3D light in room.Shafts)
         {
-            if (light is SpotLight3D spot)
+            if (light is SpotLight3D { LightVolumetricFogEnergy: > 0f } spot)
             {
                 AddChild(new LightShaft { Name = $"Beam{spot.Name}", Light = spot, Material = ShaftMaterial, Solids = solids, FloorY = min.Y });
             }

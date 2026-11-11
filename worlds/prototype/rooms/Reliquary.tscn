@@ -249,7 +249,7 @@ transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 31, 0, 0)
 [node name="Relic" type="SpotLight3D" parent="Shafts"]
 transform = Transform3D(-0.7071, 0.6288, -0.3234, 0, 0.4573, 0.8893, 0.7071, 0.6288, -0.3234, -6.25, 40, -14.25)
 light_energy = 7
-light_volumetric_fog_energy = 14
+light_volumetric_fog_energy = 0
 shadow_enabled = true
 spot_range = 80
 spot_attenuation = 0.25
@@ -260,7 +260,7 @@ spot_angle_attenuation = 2
 [node name="Climb" type="SpotLight3D" parent="Shafts"]
 transform = Transform3D(-0.7071, 0.6288, -0.3234, 0, 0.4573, 0.8893, 0.7071, 0.6288, -0.3234, 19.5, 40, -4)
 light_energy = 3.5
-light_volumetric_fog_energy = 7
+light_volumetric_fog_energy = 0
 shadow_enabled = true
 spot_range = 80
 spot_attenuation = 0.25

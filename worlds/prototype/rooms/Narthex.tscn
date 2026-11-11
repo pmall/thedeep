@@ -293,7 +293,7 @@ Once = true
 [node name="Shrine" type="SpotLight3D" parent="Shafts"]
 transform = Transform3D(-0.7071, 0.6288, -0.3234, 0, 0.4573, 0.8893, 0.7071, 0.6288, -0.3234, -6, 40, -14)
 light_energy = 6
-light_volumetric_fog_energy = 12
+light_volumetric_fog_energy = 0
 shadow_enabled = true
 spot_range = 80
 spot_attenuation = 0.25

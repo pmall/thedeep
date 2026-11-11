@@ -323,18 +323,18 @@ StartFacing = 1
 [node name="Altar" type="SpotLight3D" parent="Shafts"]
 transform = Transform3D(-0.7071, 0.6288, -0.3234, 0, 0.4573, 0.8893, 0.7071, 0.6288, -0.3234, 31.75, 44, -15.75)
 light_energy = 6
-light_volumetric_fog_energy = 14
+light_volumetric_fog_energy = 26
 shadow_enabled = true
 spot_range = 80
 spot_attenuation = 0.25
-spot_angle = 10
+spot_angle = 11
 spot_angle_attenuation = 2
 
-; straight down onto the choir ledge: the goal
+; onto the choir ledge, the goal: lights it without a beam (the altar's is the room's one shaft)
 [node name="Choir" type="SpotLight3D" parent="Shafts"]
 transform = Transform3D(-0.7071, 0.6288, -0.3234, 0, 0.4573, 0.8893, 0.7071, 0.6288, -0.3234, 77, 46, -4.5)
 light_energy = 5
-light_volumetric_fog_energy = 10
+light_volumetric_fog_energy = 0
 shadow_enabled = true
 spot_range = 80
 spot_attenuation = 0.25
@@ -543,9 +543,9 @@ material_override = ExtResource("18_metal_mid")
 [node name="Particles" type="Node3D" parent="."]
 
 [node name="AltarDust" parent="Particles" instance=ExtResource("25_dust")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 47, 8, -1)
-Extents = Vector3(5, 8, 2.5)
-Density = 2.5
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 45, 9, -2)
+Extents = Vector3(4.5, 9, 2.5)
+Density = 4.5
 
 [node name="ChoirDust" parent="Particles" instance=ExtResource("25_dust")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 77, 17, -1)
