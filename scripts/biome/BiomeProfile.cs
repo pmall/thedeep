@@ -70,8 +70,14 @@ public partial class BiomeProfile : Resource
     /// <summary>Color of the room's lamps; their energy and range stay per lamp.</summary>
     [Export] public Color LampColor { get; set; } = Colors.White;
 
-    /// <summary>Color of the room's light shafts; energy stays per shaft.</summary>
+    /// <summary>Color of the room's light shafts and of their beams; energy stays per shaft.</summary>
     [Export] public Color ShaftColor { get; set; } = Colors.White;
+
+    /// <summary>
+    /// How much of each shaft's light reaches what it falls on, against its beam (1 all). Under 1 where the layer's surfaces
+    /// are pale: rime under a shaft otherwise burns to a flat white pool, while the beam in the air keeps its brightness.
+    /// </summary>
+    [Export(PropertyHint.Range, "0,1")] public float ShaftLight { get; set; } = 1f;
 
     /// <summary>The murk's color: what depth fog and mist veil things in (the Environment's fog light color).</summary>
     [ExportGroup("Fog")]
@@ -216,9 +222,10 @@ public partial class BiomeProfile : Resource
             lamp.LightColor = LampColor;
         }
 
+        Color shaftLight = (ShaftColor.SrgbToLinear() * ShaftLight).LinearToSrgb();
         foreach (Light3D shaft in shafts)
         {
-            shaft.LightColor = ShaftColor;
+            shaft.LightColor = shaftLight with { A = 1f };
         }
 
         foreach (Light3D glyphLight in glyphLights)
