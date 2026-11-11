@@ -30,6 +30,10 @@ global uniform float biome_caustic_strength;
 //   top crosses the surface, whose own opacity already sinks it.
 // The murk darkens rather than replaces: a surface keeps at least UNDERWATER_KEEP_MIN of its own light and the veil
 // covers at most the rest, so deep walls keep their blotches, joints and shadows under a dark veil instead of a flat color.
+// A surface beyond the box seen through the water (a backdrop behind the lake) takes the light at the mid-depth of the
+// water the view crosses. Its emission (a backdrop's haze, a glow) dims with that light and the murk, with no
+// UNDERWATER_KEEP_MIN floor (the floor keeps lit structure, which a flat haze has none of), so a pale haze doesn't shine
+// through the lake.
 // So the play plane reads clearly near the surface and sinks into murk deeper down, and walls and backdrops farther
 // behind it sink further.
 const float UNDERWATER_MURK = 0.025;
@@ -70,8 +74,8 @@ float caustic_pattern(vec2 p, float t) {
 }
 
 // Caustic light (linear color, add as emission times albedo) at world point `p` with world normal `n`:
-// strongest just under the surface and fading fast with depth, as the room's light does there, plus light reflected
-// onto walls up to 2.5 m above the water.
+// strongest just under the surface and fading fast with depth, plus light reflected onto walls up to 2.5 m above the
+// water. Added as emission, it then loses the room's light under water with the rest of the emission (UNDERWATER).
 vec3 caustics_at(vec3 p, vec3 n, float t) {
 	if (biome_caustic_strength <= 0.0) {
 		return vec3(0.0);
@@ -85,7 +89,7 @@ vec3 caustics_at(vec3 p, vec3 n, float t) {
 	if (inside.x * inside.y == 0.0) {
 		return vec3(0.0);
 	}
-	float under = smoothstep(-0.05, 0.15, depth) * exp(-max(depth, 0.0) * CAUSTIC_FALL) * underwater_light(depth);
+	float under = smoothstep(-0.05, 0.15, depth) * exp(-max(depth, 0.0) * CAUSTIC_FALL);
 	float above = (1.0 - smoothstep(0.0, 2.5, -depth)) * step(depth, 0.0) * (1.0 - abs(n.y)) * 0.5;
 	// Floors take the pattern from above; walls along their own plane, squashed into wavering bands.
 	vec2 q = abs(n.y) > 0.5 ? p.xz : vec2(p.x + p.z, p.y * 2.5);
@@ -99,7 +103,7 @@ float underwater_at(vec3 p, vec3 eye, out vec3 murk_color, out float light) {
 	vec3 hi = vec3(water_area.z, water_level, water_area.w);
 	vec3 in_box = step(lo - 0.05, p) * step(p, hi + 0.05);
 	float depth = max(water_level - p.y, 0.0);
-	light = mix(1.0, underwater_light(depth), in_box.x * in_box.y * in_box.z);
+	float inside = in_box.x * in_box.y * in_box.z;
 
 	// The part of the ray from the eye to `p` inside the box (slabs), unless it enters through the top.
 	vec3 d = p - eye;
@@ -116,6 +120,8 @@ float underwater_at(vec3 p, vec3 eye, out vec3 murk_color, out float light) {
 	float mid_depth = max(water_level - (eye.y + d.y * 0.5 * (t0 + t1)), 0.0);
 	float front_grow = UNDERWATER_FRONT_TOP + (UNDERWATER_FRONT - UNDERWATER_FRONT_TOP) * (1.0 - exp(-depth * UNDERWATER_FRONT_FALL));
 	float front = crossed ? front_grow * smoothstep(0.0, 0.05, depth) * water_murk : 0.0;
+	// A point beyond the box seen through the water takes the light of the water the view crosses, at its mid-depth.
+	light = mix(crossed ? underwater_light(mid_depth) : 1.0, underwater_light(depth), inside);
 
 	vec3 tint = srgb_to_linear(biome_water.rgb);
 	vec3 deep = srgb_to_linear(biome_water_deep.rgb);
@@ -134,4 +140,4 @@ float underwater_at(vec3 p, vec3 eye, out vec3 murk_color, out float light) {
 	float uw_murk = underwater_at((INV_VIEW_MATRIX * vec4(VERTEX, 1.0)).xyz, CAMERA_POSITION_WORLD, uw_color, uw_light); \
 	float uw_keep = max(uw_light * (1.0 - uw_murk), UNDERWATER_KEEP_MIN); \
 	ALBEDO *= uw_keep; \
-	EMISSION = EMISSION * (1.0 - uw_murk) + uw_color * min(uw_murk, 1.0 - UNDERWATER_KEEP_MIN);
+	EMISSION = EMISSION * uw_light * (1.0 - uw_murk) + uw_color * min(uw_murk, 1.0 - UNDERWATER_KEEP_MIN);
