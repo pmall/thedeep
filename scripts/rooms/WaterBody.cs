@@ -48,6 +48,12 @@ public partial class WaterBody : Node3D
     /// </summary>
     [Export(PropertyHint.Range, "0.1,3,0.05")] public float Murk { get; set; } = 1f;
 
+    /// <summary>
+    /// How bright the room shows in the surface: the reflection probe's intensity. 1 is the room as lit; under 1 a
+    /// dimmer mirror, for a room whose bright glow (a furnace, magma) would light the water up rather than sit in dark water.
+    /// </summary>
+    [Export(PropertyHint.Range, "0,1,0.05")] public float Reflection { get; set; } = 1f;
+
     /// <summary>Whether the pilgrim swims in it (its region on the play plane is water); otherwise it is scenery.</summary>
     [Export] public bool Swim { get; set; }
 
@@ -163,6 +169,7 @@ public partial class WaterBody : Node3D
             Position = new Vector3(0f, 0.5f * (ReflectionHeight - 1f), 0f),
             OriginOffset = new Vector3(0f, ReflectionEye + 0.5f - 0.5f * ReflectionHeight, eyeZ),
             BlendDistance = 0f,
+            Intensity = Reflection,
             BoxProjection = true,
             Interior = true,
             EnableShadows = true,
