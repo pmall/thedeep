@@ -40,6 +40,7 @@ script = ExtResource("1_world")
 RoomsFolder = "res://worlds/prototype/rooms"
 Network = "res://worlds/prototype/map-draft.md"
 RoomTable = "res://worlds/prototype/rooms.tsv"
+SeamExceptions = "res://worlds/prototype/seams.tsv"
 StartRoom = ExtResource("3_start")
 Layers = [SubResource("layer_flooded"), SubResource("layer_frozen"), SubResource("layer_volcanic"), SubResource("layer_core")]
 Items = [ExtResource("9_sacristy_key"), ExtResource("10_kiln_lever"), ExtResource("11_pyre_litany")]

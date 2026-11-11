@@ -1,0 +1,65 @@
+# The prototype's seams that don't agree yet (SeamExceptions has the format; docs/gameplay.md#leaving-a-room): each is fixed
+# under docs/roadmap.md#seam-coherence and its lines deleted (the room check fails on a line whose seam agrees). Positions and
+# what disagrees: tools/check.sh's room check, or this file emptied of a seam's lines. Vertical exits first (owner), then doorways.
+seam	rule	reason
+
+# Vertical, batch 1: the flooded layer's holes
+Belfry:Floor | DrownedHall:ShaftHatch	Opening	to fix under seam-coherence (vertical)
+Belfry:Floor | DrownedHall:ShaftHatch	Solids	to fix under seam-coherence (vertical)
+Descent:Sluice | Sluice:Descent	Solids	to fix under seam-coherence (vertical)
+Nave:Hatch | Cistern:Top	Opening	to fix under seam-coherence (vertical)
+Nave:Hatch | Cistern:Top	Solids	to fix under seam-coherence (vertical)
+Sluice	Water	to fix under seam-coherence (vertical)
+
+# Vertical, batch 2: the Undercroft and the Counterweight's lift
+Counterweight:Bottom | Coldstacks:Counterweight	Solids	to fix under seam-coherence (vertical)
+Scriptorium:Hatch | Undercroft:Scriptorium	Solids	to fix under seam-coherence (vertical)
+Undercroft:Lift | Counterweight:Top	Solids	to fix under seam-coherence (vertical)
+Undercroft:Lift | Counterweight:Top	Lift	to fix under seam-coherence (vertical)
+
+# Vertical, batch 3: the frozen layer
+Brink:Down | Rimefall:Sky	Opening	to fix under seam-coherence (vertical)
+Brink:Down | Rimefall:Sky	Solids	to fix under seam-coherence (vertical)
+Coldstacks:Chimney | Chimney:Top	Solids	to fix under seam-coherence (vertical)
+Coldstacks:Vault | Vault:Coldstacks	Solids	to fix under seam-coherence (vertical)
+Mere:Underice | Underice:Mere	Solids	to fix under seam-coherence (vertical)
+
+# Vertical, batch 4: the volcanic layer
+Basalt:Crucible | Crucible:Basalt	Solids	to fix under seam-coherence (vertical)
+Chimney:Bottom | Slag:Chimney	Solids	to fix under seam-coherence (vertical)
+Quench:Crucible | Crucible:Quench	Solids	to fix under seam-coherence (vertical)
+Quench:Crucible | Crucible:Quench	Water	to fix under seam-coherence (vertical)
+Slag:Quench | Quench:Slag	Solids	to fix under seam-coherence (vertical)
+
+# Vertical, batch 5: the volcanic layer and the core
+Ashfall:Bellows | Bellows:Ashfall	Solids	to fix under seam-coherence (vertical)
+Foundry:Threshold | Threshold:Foundry	Solids	to fix under seam-coherence (vertical)
+Orrery:Lode | Lode:Orrery	Solids	to fix under seam-coherence (vertical)
+
+# Doorways, after the vertical exits: where each room puts the wall and lintel around a shared doorway
+Ashfall:Pyre | Pyre:West	Solids	to fix under seam-coherence (doorway)
+Bellows:Foundry | Foundry:West	Solids	to fix under seam-coherence (doorway)
+Bore:East | Calving:West	Solids	to fix under seam-coherence (doorway)
+Calving:East | Coldstacks:Calving	Solids	to fix under seam-coherence (doorway)
+Chapterhouse:East | Brink:West	Solids	to fix under seam-coherence (doorway)
+Choir:East | Rimefall:West	Solids	to fix under seam-coherence (doorway)
+Cistern:East | Sluice:West	Solids	to fix under seam-coherence (doorway)
+Coldstacks:East | Choir:West	Solids	to fix under seam-coherence (doorway)
+Coldstacks:Mere | Mere:West	Solids	to fix under seam-coherence (doorway)
+DrownedHall:EastGate | Nave:West	Solids	to fix under seam-coherence (doorway)
+Effigy:East | Heart:West	Solids	to fix under seam-coherence (doorway)
+Kiln:East | Sanctum:Kiln	Solids	to fix under seam-coherence (doorway)
+Kiln:Slag | Slag:West	Solids	to fix under seam-coherence (doorway)
+Lode:Effigy | Effigy:West	Solids	to fix under seam-coherence (doorway)
+Mantle:Orrery | Orrery:West	Solids	to fix under seam-coherence (doorway)
+Mere:East | Sounding:West	Solids	to fix under seam-coherence (doorway)
+Narthex:East | DrownedHall:WestGate	Solids	to fix under seam-coherence (doorway)
+Nave:East | Descent:West	Solids	to fix under seam-coherence (doorway)
+Reliquary:East | Cistern:West	Solids	to fix under seam-coherence (doorway)
+Sanctum:East | Vault:West	Solids	to fix under seam-coherence (doorway)
+Slag:East | Ashfall:West	Solids	to fix under seam-coherence (doorway)
+Sluice:East | Undercroft:West	Solids	to fix under seam-coherence (doorway)
+Threshold:Mantle | Mantle:West	Solids	to fix under seam-coherence (doorway)
+Undercroft:Chapterhouse | Chapterhouse:West	Solids	to fix under seam-coherence (doorway)
+Undercroft:East | Ossuary:West	Solids	to fix under seam-coherence (doorway)
+Vault:Underice | Underice:Vault	Solids	to fix under seam-coherence (doorway)

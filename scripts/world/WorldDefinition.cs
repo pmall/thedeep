@@ -31,6 +31,12 @@ public partial class WorldDefinition : Resource
     /// <summary>The world's room table, beside its network: one row per room (<see cref="TheDeep.RoomTable"/>), held to the network on every build.</summary>
     [Export(PropertyHint.File, "*.tsv")] public string RoomTable { get; set; } = "";
 
+    /// <summary>
+    /// The world's seams that don't agree yet (<see cref="SeamExceptions"/>, a `.tsv` beside its network), each with its reason; empty
+    /// when every seam agrees (docs/gameplay.md#leaving-a-room).
+    /// </summary>
+    [Export(PropertyHint.File, "*.tsv")] public string SeamExceptions { get; set; } = "";
+
     /// <summary>Where a new game starts.</summary>
     [Export] public PackedScene StartRoom { get; set; } = null!;
 
@@ -61,6 +67,9 @@ public partial class WorldDefinition : Resource
 
     /// <summary>Reads and parses the world's room table (<see cref="RoomTable"/>).</summary>
     public WorldData<RoomTable> LoadRoomTable() => Read(RoomTable, TheDeep.RoomTable.Parse);
+
+    /// <summary>Reads and parses the world's seam exceptions (<see cref="SeamExceptions"/>).</summary>
+    public WorldData<SeamExceptions> LoadSeamExceptions() => Read(SeamExceptions, TheDeep.SeamExceptions.Parse);
 
     /// <summary>The one place a world's data files are opened: <paramref name="path"/> read as text and given to <paramref name="parse"/>.</summary>
     private static WorldData<T> Read<T>(string path, Func<string, T> parse)

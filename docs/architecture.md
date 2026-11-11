@@ -47,7 +47,7 @@ The type to open first for each system; its docblock leads on.
 | Sealed arenas (bosses, ambushes) | `Arenas`, `BossSeal`, `Ambush` (over `ArenaFight`) |
 | Hidden passages | `FalseWall`, `Secrets` |
 | Machines | `Machine`, `MachineSpecies`, `MachineDirector`; brains in `core/machines/brains/` |
-| The map and its proof | `MapGraph`, `MapSolver`, `ReachPlanner`, `MapDraft`, `WorldCheck`; fed by `RoomValidator` |
+| The map and its proof | `MapGraph`, `MapSolver`, `ReachPlanner`, `MapDraft`, `WorldCheck`, `SeamCheck`; fed by `RoomValidator` |
 | Looks | `BiomeProfile`, the kit (`KitMesh`, `KitShapes`), the part system (`PartAssembly`, `PartBody`), `assets/shaders/`, the baked surfaces (`SurfaceSet`, `SurfaceBake`) |
 | Text | `LineBook` |
 | Captures | `OwnerCapture`, `LookDevDriver` |

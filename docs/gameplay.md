@@ -38,6 +38,12 @@ Room transitions as in the classics (Hollow Knight, Super Metroid), and never a 
 - **Each exit has a trigger covering its whole opening**, from the room's edge outward: a doorway's from floor to lintel, a hatch's from wall to wall. Touching it leaves the room, whatever the pilgrim is doing: walking, jumping, dashing, gripping, swinging. Standing in a doorway, or dropping into one from a flue above, is still being in the room; dipping into a hatch's hole is leaving.
 - **Arriving**, the pilgrim appears clear of the matching exit's trigger with its speed kept, never moving back out: through a doorway standing on its marker, up through a floor with a hop that clears the hole (carried onto the floor beside it), down through a roof falling. Going straight back out goes back.
 - **Each exit leads one way** (west, east, down, up), and the exit it leads to faces the other way. A doorway's marker stands on its floor, inside the room; a hatch's area is its hole. The room check holds every exit to its real opening: no room for a body over a doorway's trigger or beside a hatch's, and an arrival that fits.
+- **Whatever crosses an exit continues on the other side** <a id="seam-rule"></a> (owner), so a transition never changes the world under the pilgrim. The two ends of a way meet at one place on the map, and there:
+  - the opening is as wide (a hatch) or as tall (a doorway) on both sides;
+  - around it, what both rooms' cameras show is solid, water or open in both: a hole in a floor lands under the matching hole in the roof below, a wall or a slab is as thick on both sides;
+  - water never ends at a seam, and it always has a bottom: a floor, or a hole onto water or a floor beyond it. A hole in a roof never leads under water that has no bottom;
+  - a lift that rises through a hatch has its shaft and its car in the room beyond too, as wide and in line.
+    The room check holds every seam to this (`SeamCheck`, both worlds). A seam that doesn't agree yet is written in its world's seam exceptions with its reason, and fails the check once it agrees, so the list only shrinks.
 - **A place meant to kill says so**: the Slag's river of slag is lethal heat. Nothing is a fall out of the world.
 - **Falling out of a room** (below its camera bounds) is therefore a bug: the pilgrim is put back at the exit it came in by (or its shrine, if it woke there), and the log says so as an error.
 

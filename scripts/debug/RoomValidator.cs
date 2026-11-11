@@ -21,7 +21,8 @@ namespace TheDeep;
 /// Then the world's line book: every line the code, the rooms and the world's items name is in it or its base (<see cref="LineCheck"/>).
 /// Then the map, extracted from the rooms in the game (<see cref="Room.InGame"/>) and proven by the core's <see cref="WorldCheck"/>:
 /// layout, reachability, softlocks, ability orders (`--map-report`: the whole graph), the geometry, the map from inside the rooms,
-/// room for error; and the world's network (<see cref="MapDraft"/>): its targets, its layers, its agreement with the built rooms, and its room
+/// room for error; the seams, every way's two ends held to each other (<see cref="SeamCheck"/>, less the world's
+/// <see cref="WorldDefinition.SeamExceptions"/>); and the world's network (<see cref="MapDraft"/>): its targets, its layers, its agreement with the built rooms, and its room
 /// table held to it (<see cref="RoomTable.Check"/>; `--map-report`: each room's kinds).
 /// </summary>
 public partial class RoomValidator : Node
@@ -29,6 +30,7 @@ public partial class RoomValidator : Node
     private readonly List<string> _problems = new();
     private readonly RequiredExports _exports = new();
     private readonly LineCheck _lines = new();
+    private readonly SeamCheck _seams = new();
     private bool _done;
 
     /// <summary>The world's network (its `map` blocks), or null if it doesn't parse (a problem then).</summary>
@@ -103,6 +105,7 @@ public partial class RoomValidator : Node
             }
         }
 
+        _problems.AddRange(_seams.Check(LoadSeamExceptions(), Tuning.Move.Height));
         map += "\n" + CheckDraft(world);
         foreach (string problem in _problems)
         {
@@ -308,6 +311,7 @@ public partial class RoomValidator : Node
             world.AddSealed(name, exit.Requirement);
         }
 
+        AddSeams(room, name, exits, solids);
         _powerUps.AddRange(room.All<PowerUp>().Select(p => (name, p.Stat)));
 
         foreach (AbilityRelic relic in room.All<AbilityRelic>())
@@ -355,6 +359,37 @@ public partial class RoomValidator : Node
         finally
         {
             target.Free();
+        }
+    }
+
+    /// <summary>
+    /// The room as the seam check sees it (<see cref="SeamCheck"/>): its solids, the water crossing its play plane (scenery too:
+    /// it shows where it ends), its lifts and exits, and the ways from its exits.
+    /// </summary>
+    private void AddSeams(Room room, string name, List<RoomExit> exits, List<Box> solids)
+    {
+        var waters = room.All<WaterBody>().Where(w => w.Area.Position.Y <= 0f && 0f <= w.Area.End.Y)
+            .Select(w => (w.Name.ToString(), w.PlayRegion)).ToList();
+        _seams.AddRoom(name, new SeamRoom(new Box(room.BoundsMin.X, room.BoundsMin.Y, room.BoundsMax.X, room.BoundsMax.Y), solids, waters,
+            room.All<Lift>().Select(l => l.Path).ToList(), exits.ToDictionary(e => e.Name.ToString(), e => e.Threshold)));
+        foreach (RoomExit exit in exits.Where(e => e.TargetRoom != "" && e.TargetExit != ""))
+        {
+            _seams.AddWay(name, exit.Name, World.NameOf(exit.TargetRoom), exit.TargetExit);
+        }
+    }
+
+    /// <summary>The world's seam exceptions (<see cref="SeamExceptions"/>); a world without them has none, one that doesn't parse is a problem.</summary>
+    private SeamExceptions LoadSeamExceptions()
+    {
+        switch (World.Definition.LoadSeamExceptions())
+        {
+            case WorldData<SeamExceptions>.Loaded(var exceptions):
+                return exceptions;
+            case WorldData<SeamExceptions>.Malformed(var message):
+                _problems.Add($"seam exceptions ({World.Definition.SeamExceptions}): {message}");
+                return SeamExceptions.None;
+            default:
+                return SeamExceptions.None;
         }
     }
 
