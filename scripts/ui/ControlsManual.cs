@@ -47,6 +47,12 @@ public partial class ControlsManual : Control
         Set,
     }
 
+    /// <summary>One row of the manual: what the pilgrim can do and the buttons that do it.</summary>
+    /// <param name="Line">The line naming the action.</param>
+    /// <param name="Kind">How <paramref name="Actions"/> become buttons.</param>
+    /// <param name="Actions">The input actions whose bindings the row shows.</param>
+    /// <param name="Needs">The ability the row is for: the row is dimmed until the pilgrim owns it.</param>
+    /// <param name="Separator">What stands between the buttons of a joined row.</param>
     public sealed record Spec(StringName Line, Kind Kind, StringName[] Actions, Ability Needs = Ability.None, string Separator = "/");
 
     private static readonly StringName[] MoveSet = { InputActions.MoveUp, InputActions.MoveLeft, InputActions.MoveDown, InputActions.MoveRight };

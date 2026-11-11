@@ -7,7 +7,7 @@ namespace TheDeep;
 /// (Z), <see cref="Depth"/> meters deep. Builds the surface mesh (told its floor and sides, so it draws its depth) and
 /// the reflection probe it mirrors, and pushes its level, floor, area and murk into the water globals so nearby materials draw caustics
 /// and sink into the water what lies in it (lib/water.gdshaderinc). One water body
-/// per room for now (the globals hold one). Colors come from the biome. With <see cref="Swim"/>, the pilgrim swims in it:
+/// per room (the globals hold one). Colors come from the biome. With <see cref="Swim"/>, the pilgrim swims in it:
 /// its play-plane region (<see cref="Size"/>.X wide, from the surface down <see cref="Depth"/>) becomes an area on the water
 /// layer that the pilgrim finds itself in (<see cref="Player.WaterSurface"/>), and the map's geometry check swims it.
 /// </summary>

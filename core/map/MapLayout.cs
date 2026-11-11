@@ -19,6 +19,9 @@ public static class MapLayout
     /// <summary>Two placements of the same room closer than this agree, meters.</summary>
     public const float Tolerance = 0.01f;
 
+    /// <summary>Where the map's rooms sit and what is wrong with the placement (empty when the map fits together).</summary>
+    /// <param name="Offsets">Each placed room's offset on the map, meters, the start room at zero.</param>
+    /// <param name="Problems">Rooms that disagree on their place or overlap, in words.</param>
     public sealed record Result(IReadOnlyDictionary<string, Vector2> Offsets, IReadOnlyList<string> Problems);
 
     /// <param name="bounds">Each room's camera bounds (min, max), room-local.</param>

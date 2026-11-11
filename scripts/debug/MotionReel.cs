@@ -402,6 +402,9 @@ public static class MotionReel
     /// <param name="Tick">Physics tick within the segment.</param>
     public readonly record struct Press(int Tick, StringName Action, bool Down);
 
+    /// <summary>One frame of a reel: the moment of a segment that is captured.</summary>
+    /// <param name="Tick">Physics tick within the segment.</param>
+    /// <param name="Label">What the frame shows, in a few words; its picture is named after it.</param>
     public readonly record struct Shot(int Tick, string Label);
 
     /// <param name="Start">Where the player respawns (room coordinates), facing <paramref name="Facing"/>.</param>

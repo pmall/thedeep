@@ -144,8 +144,8 @@ public partial class PlayerVisual : Node3D
     public void Land(float impactSpeed) => _motion?.Land(impactSpeed);
 
     /// <summary>
-    /// The body (the parent) just snapped to a new pose: keep the visible body at <paramref name="previousGlobal"/>
-    /// for now, so it eases into the new pose instead of jumping.
+    /// The body (the parent) just snapped to a new pose: the visible body starts from
+    /// <paramref name="previousGlobal"/> and eases into the new pose instead of jumping.
     /// </summary>
     public void CarryOver(Transform3D previousGlobal)
     {

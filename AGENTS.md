@@ -8,7 +8,7 @@ Make the game of [docs/vision.md](docs/vision.md), following the owner's plan: a
 
 Every task, rule and doc line answers to this goal. Before adding one, ask whether the next agent needs it to do the roadmap's work; if not, leave it out.
 
-**This file is the only agent instruction file** <a id="agents-file"></a>. Claude Code reads `AGENTS.md` only when no `CLAUDE.md`, `.claude/CLAUDE.md` or `CLAUDE.local.md` exists in the project or above it. Create none; if one appears above the project, tell the owner.
+**This file is the only agent instruction file the harness loads** <a id="agents-file"></a>; its parts are in `instructions/`. Claude Code reads `AGENTS.md` only when no `CLAUDE.md`, `.claude/CLAUDE.md` or `CLAUDE.local.md` exists in the project or above it. Create none; if one appears above the project, tell the owner.
 
 ## Every session <a id="session"></a>
 
