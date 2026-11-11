@@ -6,7 +6,6 @@ seam	rule	reason
 # Vertical, batch 3: the frozen layer
 
 # Vertical, batch 4: the volcanic layer
-Basalt:Crucible | Crucible:Basalt	Solids	to fix under seam-coherence (vertical)
 
 # Vertical, batch 5: the volcanic layer and the core
 Foundry:Threshold | Threshold:Foundry	Solids	to fix under seam-coherence (vertical)

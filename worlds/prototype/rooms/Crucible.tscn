@@ -22,7 +22,6 @@
 [ext_resource type="Script" path="res://scripts/parts/PodMesh.cs" id="17_pod"]
 [ext_resource type="Material" path="res://assets/materials/rust_mid.tres" id="18_rust_mid"]
 [ext_resource type="Script" path="res://scripts/kit/CableMesh.cs" id="19_cables"]
-[ext_resource type="Script" path="res://scripts/kit/PipeMesh.cs" id="20_pipe"]
 [ext_resource type="Script" path="res://scripts/rooms/PhotoSpot.cs" id="22_spot"]
 [ext_resource type="Script" path="res://scripts/rooms/Room.cs" id="23_room"]
 [ext_resource type="Resource" path="res://resources/biomes/volcanic.tres" id="24_volcanic"]
@@ -81,13 +80,6 @@ Stations = PackedVector4Array(0, 1.0, 1.0, 0, 0.2, 1.5, 1.5, 0, 1, 1.6, 1.6, 0)
 Sides = 18
 Rings = 6
 
-[sub_resource type="PrimitiveMesh" id="pipe_8"]
-script = ExtResource("20_pipe")
-Points = PackedVector3Array(0, 0, 0, 0, -6, 0)
-Radius = 1.6
-BendRadius = 1
-FlangeSpacing = 4
-
 [node name="Crucible" type="Node3D" node_paths=PackedStringArray("SpawnPoint", "Stage", "Lamps", "Shafts", "GlyphLights")]
 script = ExtResource("23_room")
 SpawnPoint = NodePath("SpawnPoint")
@@ -123,15 +115,15 @@ transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 20.75, 23.5, 0)
 Size = Vector3(6.5, 5, 4)
 Material = ExtResource("1_basalt")
 
-; the high roof over the casting floor; the Basalt's hole opens in it
+; the roof over the casting floor, flush with the rest; the Basalt's hole opens in it (x 36 to 43, framed by the brick on Exits/Basalt)
 [node name="RoofHigh" parent="Geometry" instance=ExtResource("2_block")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 31, 24.25, 0)
-Size = Vector3(14, 3.5, 4)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 30, 23.5, 0)
+Size = Vector3(12, 5, 4)
 Material = ExtResource("1_basalt")
 
 [node name="RoofEast" parent="Geometry" instance=ExtResource("2_block")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 52.5, 24.25, 0)
-Size = Vector3(23, 3.5, 4)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 53.5, 23.5, 0)
+Size = Vector3(21, 5, 4)
 Material = ExtResource("1_basalt")
 
 [node name="WallWest" parent="Geometry" instance=ExtResource("2_block")]
@@ -241,7 +233,10 @@ transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 39.5, 22, 0)
 script = ExtResource("4_exit")
 Side = 3
 ArrivalOnly = true
-Size = Vector2(3, 1)
+
+[node name="Hatch" parent="Exits/Basalt" instance=ExtResource("90_hatch")]
+Profile = ExtResource("91_seam_hatch")
+Material = ExtResource("1_basalt")
 
 [node name="Props" type="Node3D" parent="."]
 
@@ -363,11 +358,6 @@ transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 20.5, 4, -3.5)
 mesh = SubResource("pod_7")
 material_override = ExtResource("18_rust_mid")
 
-[node name="BasaltHole" type="MeshInstance3D" parent="Kit"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 39.5, 27.5, -2.5)
-mesh = SubResource("pipe_8")
-material_override = ExtResource("15_stone_mid")
-
 [node name="Lamps" type="Node3D" parent="."]
 
 ; the pour lighting the floor
@@ -443,3 +433,10 @@ transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 30, 11, 60)
 script = ExtResource("22_spot")
 PlayerPosition = Vector3(30, 5.5, 0)
 Fov = 40
+
+; the hatch in the roof the Basalt drops through
+[node name="BasaltHatch" type="Marker3D" parent="PhotoSpots"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 39.5, 21, 12)
+script = ExtResource("22_spot")
+PlayerPosition = Vector3(52, 4, 0)
+PlayerFacing = -1
