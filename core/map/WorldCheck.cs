@@ -85,9 +85,6 @@ public sealed class WorldCheck
     /// <summary>An exit of the built room <paramref name="room"/> leading to a room not built yet, and what it needs.</summary>
     public void AddSealed(string room, Requirement requires) => _sealed.Add((room, requires));
 
-    /// <summary>Adds <paramref name="what"/> to what is wrong with the world: a problem found outside this check.</summary>
-    public void Problem(string what) => _problems.Add(what);
-
     /// <summary>
     /// Solves the map from <paramref name="start"/> and lays it out, holding it to <paramref name="targets"/>; adds problems and
     /// returns the summary (with <paramref name="report"/>, the whole graph and every order too).
