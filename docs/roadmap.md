@@ -5,7 +5,7 @@ The owner's plan and the open items, in order, opened by where the work stands. 
 ## Now <a id="status"></a>
 
 - **Stage:** A, the prototype (`docs/roadmap.md#stage-prototype`).
-- **Current item:** rooms that agree at their seams (`docs/roadmap.md#seam-coherence`). Next step: its rule in `docs/gameplay.md#leaving-a-room`.
+- **Current item:** rooms that agree at their seams (`docs/roadmap.md#seam-coherence`). Next step: the first batch of vertical seams in `worlds/prototype/seams.tsv`.
 - **Waiting on the owner:** nothing blocks. The art pass, judged in play (`docs/roadmap.md#art-restore`); the Blender MCP installed, needed only when the pilgrim starts (`docs/roadmap.md#pilgrim`), last of the stage.
 
 ## The plan <a id="direction"></a>
@@ -30,7 +30,7 @@ The open items, in order (owner: the world, its bricks and its look are finished
 1. **The art pass** <a id="art-restore"></a> (owner: first priority). The look is rebuilt on the bare render under `docs/art-direction.md#stable-image`; the owner finds it very good and free of the old flicker. What their play asked for:
    - [ ] **The owner's judgment in play** of the three fixes their play asked for: the Nave's water holding still, water reading as water at a glance (the Sluice), the frozen layer no longer burning white where a light shaft falls (the Rimefall's landing, the Choir's organ). What they ask for next becomes the next tasks.
    - Done when every biome reads at a glance and looks very cool to the owner, without flicker, within the frame budget. The volcanic layer's look comes with `docs/roadmap.md#volcanic-rethink`.
-2. **Rooms that agree at their seams** <a id="seam-coherence"></a> (owner: the vertical transitions first): whatever crosses an exit continues on the other side. An elevator's shaft and car exist in both rooms, water never ends at a seam (a hole in a roof never leads under water that has no bottom), a hole in a floor lands under the matching opening above. A rule in `docs/gameplay.md#leaving-a-room`, a check over both worlds, then every vertical exit of the prototype fixed to it.
+2. **Rooms that agree at their seams** <a id="seam-coherence"></a> (owner: the vertical transitions first): whatever crosses an exit continues on the other side (`docs/gameplay.md#seam-rule`), held by the room check over both worlds. Left: every seam of `worlds/prototype/seams.tsv` fixed and its lines deleted, the vertical exits first in the file's batches (one batch a task), then the doorways. Each fix is judged on captures of both rooms at the seam. Done when the file holds no seam.
 3. **The volcanic layer, rethought** <a id="volcanic-rethink"></a>: lava is a real body with a depth you can read (never a thin skin you might cross), touching it has one clear rule, heat reads as something the player understands (not bands), the Slag's collision bugs are gone, and the layer looks finished. Designed first (its rules in `docs/gameplay.md`, its look in `docs/art-direction.md`), then built.
 4. **Readable law breaks and gates** <a id="law-readable"></a>: a law break says what to do and the player does it on purpose (not by mashing); the Pyre's litany door says what it needs and where to look. The real law breaks (stage D) are scenes where the player, as the pilgrim's conscience, makes it break the law (owner).
 5. **Feel and fight** <a id="feel-fight"></a>: moves chain and carry momentum (Mag-grip corners, harpoon, dive and swim flowing into each other), the camera eased, the fight's hits land and health reads (`docs/gameplay.md#fight`), tuned from the owner's play.
