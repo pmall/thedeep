@@ -138,4 +138,35 @@ public class SeamFrameTests
         Assert.Throws<ArgumentException>(() => Hatch.Lift(ExitSide.Down, Vector2.Zero, 0f));
         Assert.Throws<ArgumentException>(() => Shaft.Lift(ExitSide.Up, new Vector2(0f, 1f), 5f));
     }
+
+    [Fact]
+    public void TheTrimNeverEntersTheOpeningsPlayPlane()
+    {
+        foreach ((SeamFrame frame, ExitSide side) in new[] { (Door, ExitSide.West), (Door, ExitSide.East), (Hatch, ExitSide.Down), (Hatch, ExitSide.Up) })
+        {
+            IReadOnlyList<TrimPiece> trim = frame.Trim(side, lined: true, bracket: true);
+            Assert.NotEmpty(trim);
+            Assert.All(trim.Where(p => !p.Through), p => Assert.True(p.Proud > 0f));
+            Assert.All(trim.Where(p => p.Lining && p.Through), p => Assert.True(p.Face.MaxX - p.Face.MinX < 0.2f));
+        }
+
+        Assert.DoesNotContain(Door.Trim(ExitSide.West, lined: false), p => p.Lining || p.Through);
+    }
+
+    [Fact]
+    public void AFrameTakesTheLookOfTheWallItMeetsTheMost()
+    {
+        IReadOnlyList<Box> frame = Door.Solids(ExitSide.West, Vector2.Zero);
+        var walls = new[] { new Box(2.5f, -2f, 10f, 0f), new Box(2.5f, 4f, 3f, 6f), new Box(-20f, -20f, -10f, -10f) };
+        Assert.Equal(0, SeamFrame.Neighbour(frame, walls));
+        Assert.Null(SeamFrame.Neighbour(frame, new[] { walls[2] }));
+    }
+
+    [Fact]
+    public void ASillHangsWhenNothingCarriesItsRoomSideEnd()
+    {
+        Assert.False(Door.SillHangs(ExitSide.West, Vector2.Zero, new[] { new Box(2.5f, -2f, 10f, 0f) }));
+        Assert.True(Door.SillHangs(ExitSide.West, Vector2.Zero, new[] { new Box(2.5f, -0.5f, 10f, 0f) }));
+        Assert.False(Hatch.SillHangs(ExitSide.Down, Vector2.Zero, Array.Empty<Box>()));
+    }
 }

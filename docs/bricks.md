@@ -28,8 +28,8 @@ All working; brought to ready under `docs/roadmap.md#bricks-ready`.
 | -- | -- | -- |
 | `Block` (rock, metal, cracked) | ready | — |
 | `RoomExit` | ready (seams: `docs/roadmap.md#seam-coherence`) | — |
-| `Doorway` (a doorway's sill and lintel, from a `SeamProfile` both rooms of the way share, `resources/seams/`; placed by `instructions/testing.md#seam-brick`) | working (one seam framed) | `docs/roadmap.md#seam-coherence` |
-| `Hatch` (the slab either side of a hatch's hole, or of a chasm's open floor, from the same kind of `SeamProfile`; placed by `instructions/testing.md#seam-brick`; `Flooded`, on a `Doorway` too, runs the room's water through the opening; a `Lift` whose `Through` names the exit takes its stops from the profile) | working (ten seams framed, three flooded hatches and one flooded doorway, one lift shaft) | `docs/roadmap.md#seam-coherence` |
+| `Doorway` (a doorway's sill and lintel, from a `SeamProfile` both rooms of the way share, `resources/seams/`; placed by `instructions/testing.md#seam-brick`; dressed as a portal by its trim, `SeamFrame.Trim`, in the look of the room's wall it meets, `Material` only to override it) | working (its look ready in every biome) | `docs/roadmap.md#seam-coherence` |
+| `Hatch` (the slab either side of a hatch's hole, or of a chasm's open floor, from the same kind of `SeamProfile`, trimmed and matched to its room like a `Doorway`, a metal one in rock lined with metal at its hole; placed by `instructions/testing.md#seam-brick`; `Flooded`, on a `Doorway` too, runs the room's water through the opening; a `Lift` whose `Through` names the exit takes its stops from the profile) | working (ten seams framed, three flooded hatches and one flooded doorway, one lift shaft) | `docs/roadmap.md#seam-coherence` |
 | `HarpoonAnchor` (its state shown: `AnchorLook`) | ready | — |
 | `AnchorPointer` (the edge chevron toward a ring in sight off screen) | working (look) | `docs/roadmap.md#bricks-ready` |
 | `WaterBody` (swim) | ready | — |

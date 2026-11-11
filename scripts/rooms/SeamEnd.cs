@@ -10,7 +10,8 @@ namespace TheDeep;
 /// <see cref="RoomExit"/> (as its child, where it stays), it sizes the exit and builds the frame around the opening as
 /// <see cref="Block"/>s. The room at the other end frames its exit with the same profile, so the seam agrees by construction
 /// (docs/gameplay.md#seam-rule): neither room places a block of its own there, and its own solids stop where the frame starts. The
-/// frame's blocks look like any block of the room (its biome's material for their <see cref="Surface"/>). A
+/// frame's blocks take the look of the room's wall they meet, and its trim (molding proud of the front face, visual only) makes the
+/// frame read as a portal built on purpose wherever it stands. A
 /// <see cref="Doorway"/> frames a west or east exit, a <see cref="Hatch"/> a down or up one.
 /// </summary>
 public abstract partial class SeamEnd : Node3D
@@ -54,6 +55,7 @@ public abstract partial class SeamEnd : Node3D
         Transform = Transform3D.Identity; // centered on its exit by construction, whatever the scene says
 
         var solids = frame.Solids(exit.Side, System.Numerics.Vector2.Zero);
+        var blocks = new List<Block>();
         for (int i = 0; i < solids.Count; i++)
         {
             Box b = solids[i];
@@ -62,9 +64,22 @@ public abstract partial class SeamEnd : Node3D
             block.Size = new Vector3(b.MaxX - b.MinX, b.MaxY - b.MinY, Profile.Depth);
             block.Position = new Vector3((b.MinX + b.MaxX) * 0.5f, (b.MinY + b.MaxY) * 0.5f, 0f);
             block.Surface = Surface;
-            block.Material = Material;
+            blocks.Add(block);
+        }
+
+        var marker = new System.Numerics.Vector2(exit.GlobalPosition.X, exit.GlobalPosition.Y);
+        List<Block> walls = Blocks(exit.Owner ?? exit)
+            .Where(b => !b.Cracked && !b.CollisionOnly && b.GetParent() is not SeamEnd && Mathf.Abs(b.GlobalPosition.Z) < b.Size.Z * 0.5f)
+            .ToList();
+        List<Box> wallBoxes = walls.Select(PlayBox).ToList();
+        (Material look, bool lined) = Look(frame.Solids(exit.Side, marker), walls, wallBoxes, blocks[0]);
+        foreach (Block block in blocks)
+        {
+            block.Material = look;
             AddChild(block);
         }
+
+        BuildTrim(frame.Trim(exit.Side, lined, frame.SillHangs(exit.Side, marker, wallBoxes)), look, blocks[0].MetalMaterial);
 
         if (Flooded)
         {
@@ -75,6 +90,75 @@ public abstract partial class SeamEnd : Node3D
             water.Flood(passage);
         }
     }
+
+    /// <summary>
+    /// What the frame looks like: <see cref="Material"/> when set; else the look of the room's own block it meets the most
+    /// (<see cref="SeamFrame.Neighbour"/>), so the frame is of the wall around it in any biome, unless that look would lie about the
+    /// frame's layer. A metal frame set in rock takes the rock's look and is lined with metal where the climb runs (<c>lined</c>).
+    /// </summary>
+    private (Material Look, bool Lined) Look(IReadOnlyList<Box> frame, List<Block> walls, List<Box> wallBoxes, Block made)
+    {
+        Material own = Material ?? (Surface == SurfaceKind.Metal ? made.MetalMaterial : made.RockMaterial);
+        if (Material is not null)
+        {
+            return (own, false);
+        }
+
+        int? meets = SeamFrame.Neighbour(frame, wallBoxes);
+        if (meets is not { } index)
+        {
+            return (own, false);
+        }
+
+        Block wall = walls[index];
+        Material wallLook = wall.Material ?? (wall.Surface == SurfaceKind.Metal ? wall.MetalMaterial : wall.RockMaterial);
+        return (Surface, wall.Surface) switch
+        {
+            (SurfaceKind.Metal, SurfaceKind.Rock) => (wallLook, true),
+            _ when Surface == wall.Surface => (wallLook, false),
+            _ => (own, false),
+        };
+    }
+
+    /// <summary>The frame's trim (<see cref="SeamFrame.Trim"/>) as bevelled kit pieces on its front face: no collision.</summary>
+    private void BuildTrim(IReadOnlyList<TrimPiece> pieces, Material look, Material metal)
+    {
+        float front = Profile.Depth * 0.5f, overlap = 0.04f;
+        List<WaterBody> waters = Owner is null ? new() : Waters(Owner).ToList();
+        for (int i = 0; i < pieces.Count; i++)
+        {
+            TrimPiece p = ClearOfWater(pieces[i], waters);
+            float z0 = p.Through ? -front - overlap : front - p.Sink, z1 = p.Through ? front + overlap : front + p.Proud;
+            var size = new Vector3(p.Face.MaxX - p.Face.MinX, p.Face.MaxY - p.Face.MinY, z1 - z0);
+            AddChild(new MeshInstance3D
+            {
+                Name = $"Trim{i}",
+                Mesh = new BlockMesh { Size = size, Bevel = MathF.Min(0.04f, MathF.Min(size.X, size.Y) * 0.25f) },
+                MaterialOverride = p.Lining ? metal : look,
+                Position = new Vector3((p.Face.MinX + p.Face.MaxX) * 0.5f, (p.Face.MinY + p.Face.MaxY) * 0.5f, (z0 + z1) * 0.5f),
+            });
+        }
+    }
+
+    /// <summary>The piece lowered off a water surface its top would lie on (a face on the surface would fight it).</summary>
+    private TrimPiece ClearOfWater(TrimPiece piece, List<WaterBody> waters)
+    {
+        Vector3 at = GlobalPosition;
+        float top = at.Y + piece.Face.MaxY;
+        bool onSurface = waters.Any(w => Mathf.Abs(top - w.SurfaceY) < 0.1f && w.PlayRegion.MinX < at.X + piece.Face.MaxX && at.X + piece.Face.MinX < w.PlayRegion.MaxX);
+        return onSurface ? piece with { Face = piece.Face with { MaxY = piece.Face.MaxY - 0.15f } } : piece;
+    }
+
+    /// <summary>A block's box on the play plane, in world meters.</summary>
+    private static Box PlayBox(Block b)
+    {
+        Vector3 c = b.GlobalPosition, s = b.Size;
+        return new Box(c.X - s.X * 0.5f, c.Y - s.Y * 0.5f, c.X + s.X * 0.5f, c.Y + s.Y * 0.5f);
+    }
+
+    /// <summary>The blocks under <paramref name="node"/>, at any depth.</summary>
+    private static IEnumerable<Block> Blocks(Node node) =>
+        node.GetChildren().SelectMany(child => child is Block block ? new[] { block } : Blocks(child));
 
     /// <summary>The water bodies under <paramref name="node"/>, at any depth.</summary>
     private static IEnumerable<WaterBody> Waters(Node node) =>
