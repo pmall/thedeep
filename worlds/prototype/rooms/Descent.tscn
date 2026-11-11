@@ -15,6 +15,8 @@
 [ext_resource type="PackedScene" path="res://scenes/kit/Block.tscn" id="5_block"]
 [ext_resource type="Material" path="res://assets/materials/stone_mid.tres" id="6_stone_mid"]
 [ext_resource type="Script" path="res://scripts/rooms/RoomExit.cs" id="7_exit"]
+[ext_resource type="PackedScene" path="res://scenes/kit/Doorway.tscn" id="90_doorway"]
+[ext_resource type="Resource" path="res://resources/seams/doorway.tres" id="91_seam"]
 [ext_resource type="Script" path="res://scripts/machines/Machine.cs" id="8_machine"]
 [ext_resource type="Resource" path="res://resources/machines/votary.tres" id="9_votary"]
 [ext_resource type="Resource" path="res://resources/machines/lamplighter.tres" id="10_lamplighter"]
@@ -234,23 +236,28 @@ Size = Vector3(3, 1, 4)
 
 ; the well's west wall, under the ledge
 [node name="WallWest" parent="Geometry" instance=ExtResource("5_block")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -1.5, 14, 0)
-Size = Vector3(3, 32, 4)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -1.5, 13, 0)
+Size = Vector3(3, 30, 4)
 
-; above the doorway from the Nave
+; above the doorway from the Nave (West's Doorway frames Y 28 to 30 and 34 to 36, X -1.5 to 3.5)
 [node name="WallWestTop" parent="Geometry" instance=ExtResource("5_block")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -1.5, 36, 0)
-Size = Vector3(3, 4, 4)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.25, 37, 0)
+Size = Vector3(6.5, 2, 4)
 
 ; a lintel over the ledge
 [node name="Lintel" parent="Geometry" instance=ExtResource("5_block")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 3, 36, 0)
-Size = Vector3(6, 4, 4)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 4.75, 36, 0)
+Size = Vector3(2.5, 4, 4)
 
-; the west ledge, where the pilgrim enters
+; the west ledge, where the pilgrim enters, past the doorway's sill
 [node name="Ledge" parent="Geometry" instance=ExtResource("5_block")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 3.5, 28, 0)
-Size = Vector3(7, 4, 4)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 5.25, 28, 0)
+Size = Vector3(3.5, 4, 4)
+
+; the ledge under the doorway's sill
+[node name="LedgeFoot" parent="Geometry" instance=ExtResource("5_block")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 1.75, 27, 0)
+Size = Vector3(3.5, 2, 4)
 
 ; its metal face: the last climb back to the doorway
 [node name="LedgeFace" parent="Geometry" instance=ExtResource("5_block")]
@@ -330,7 +337,9 @@ script = ExtResource("7_exit")
 Side = 0
 TargetRoom = "res://worlds/prototype/rooms/Nave.tscn"
 TargetExit = "East"
-Size = Vector2(1, 4)
+
+[node name="Doorway" parent="Exits/West" instance=ExtResource("90_doorway")]
+Profile = ExtResource("91_seam")
 
 ; the grate at the bottom of the flooded gate: sunk onto it, the pilgrim goes down with the water into the Sluice (one way)
 [node name="Sluice" type="Marker3D" parent="Exits"]
@@ -621,6 +630,13 @@ cast_shadow = 0
 [node name="PhotoSpots" type="Node3D" parent="."]
 
 ; gameplay framing on the west ledge, the well below
+; the west doorway from the Nave: its sill, lintel and the wall around it (the seam's frame)
+[node name="WestDoor" type="Marker3D" parent="PhotoSpots"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 3, 33.5, 12)
+script = ExtResource("27_spot")
+PlayerPosition = Vector3(5, 30, 0)
+PlayerFacing = -1
+
 [node name="Entrance" type="Marker3D" parent="PhotoSpots"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 9, 30.5, 22)
 script = ExtResource("27_spot")

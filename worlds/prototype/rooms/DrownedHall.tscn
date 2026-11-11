@@ -185,7 +185,7 @@ Lamps = [NodePath("ShaftLamp")]
 Shafts = [NodePath("Shafts/Arcade"), NodePath("Shafts/Shaft")]
 GlyphLights = [NodePath("Glyphs/StepLight"), NodePath("Glyphs/ShaftLight")]
 BoundsMin = Vector2(-1.5, -2)
-BoundsMax = Vector2(66, 34)
+BoundsMax = Vector2(65.5, 34)
 
 [node name="SpawnPoint" type="Marker3D" parent="."]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 3, 0, 0)
@@ -282,13 +282,13 @@ transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -1, 20, 0)
 Size = Vector3(2, 28, 4)
 
 [node name="WallRight" parent="Geometry" instance=ExtResource("2_block")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 65, 12, 0)
-Size = Vector3(2, 28, 4)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 65, 11, 0)
+Size = Vector3(2, 26, 4)
 
-; the east doorway into the Nave is the gap between WallRight and WallRightTop (Y 26 to 30)
+; the east doorway into the Nave lies between WallRight and WallRightTop: its frame (EastGate's Doorway) fills Y 24 to 26 and 30 to 32
 [node name="WallRightTop" parent="Geometry" instance=ExtResource("2_block")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 65, 32, 0)
-Size = Vector3(2, 4, 4)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 65, 33, 0)
+Size = Vector3(2, 2, 4)
 
 ; the shaft's top: the ceiling, then metal slabs closing it to the hatch up into the Belfry (X 49.5 to 52.5, under the
 ; Belfry's hole)
@@ -360,8 +360,8 @@ Surface = 1
 Material = ExtResource("10_rust")
 
 [node name="TopLedgeRight" parent="Geometry" instance=ExtResource("2_block")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 60.75, 25.75, 0)
-Size = Vector3(7.5, 0.5, 4)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 58.75, 25.75, 0)
+Size = Vector3(3.5, 0.5, 4)
 
 ; the ladder up the shaft: ledges on alternating walls, 2.5 m apart (a jump with room to spare), the last beside the
 ; right wall's top
@@ -444,7 +444,9 @@ script = ExtResource("12_exit")
 Side = 1
 TargetRoom = "res://worlds/prototype/rooms/Nave.tscn"
 TargetExit = "West"
-Size = Vector2(1, 4)
+
+[node name="Doorway" parent="Exits/EastGate" instance=ExtResource("90_doorway")]
+Profile = ExtResource("91_seam")
 
 ; Kit dressing (visual only): a two-tier arcade behind the play plane, drowned server racks on a wet back
 ; floor, pipes, cables, wrecks, and iron ribs far back. Origins on the 0.25 m grid (RoomValidator checks it).
@@ -647,6 +649,12 @@ transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 2, 3.5, 12)
 script = ExtResource("7_spot")
 PlayerPosition = Vector3(4, 0, 0)
 PlayerFacing = -1
+
+; the east gate from the top ledge: its sill, lintel and the wall around it (the seam's frame)
+[node name="EastDoor" type="Marker3D" parent="PhotoSpots"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 61, 29.5, 12)
+script = ExtResource("7_spot")
+PlayerPosition = Vector3(59, 26, 0)
 
 [node name="Start" type="Marker3D" parent="PhotoSpots"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 8.5, 3.9, 22)

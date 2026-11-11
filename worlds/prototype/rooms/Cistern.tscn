@@ -37,6 +37,8 @@
 [ext_resource type="PackedScene" path="res://scenes/stage/RoomStage.tscn" id="30_stage"]
 [ext_resource type="PackedScene" path="res://scenes/kit/Hatch.tscn" id="90_hatch"]
 [ext_resource type="Resource" path="res://resources/seams/hatch.tres" id="91_seam"]
+[ext_resource type="PackedScene" path="res://scenes/kit/Doorway.tscn" id="92_doorway"]
+[ext_resource type="Resource" path="res://resources/seams/doorway.tres" id="93_doorseam"]
 
 [sub_resource type="PrimitiveMesh" id="column_1"]
 script = ExtResource("1_column")
@@ -216,19 +218,19 @@ PillarDensity = 3
 [node name="Geometry" type="Node3D" parent="."]
 
 [node name="Floor" parent="Geometry" instance=ExtResource("5_block")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 20.5, -1, 0)
-Size = Vector3(47, 2, 4)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 19.75, -1, 0)
+Size = Vector3(34.5, 2, 4)
 Material = ExtResource("4_wet_stone")
 
-; west wall above the doorway to the Reliquary
+; west wall above the doorway to the Reliquary (West's Doorway frames Y -2 to 0 and 4 to 6, X -2.5 to 2.5)
 [node name="WallWest" parent="Geometry" instance=ExtResource("5_block")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -2, 18.5, 0)
-Size = Vector3(2, 29, 4)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -2, 19.5, 0)
+Size = Vector3(2, 27, 4)
 
-; east wall above the doorway to the Sluice
+; east wall above the doorway to the Sluice (East's Doorway frames Y -2 to 0 and 4 to 6, X 37 to 42)
 [node name="WallEast" parent="Geometry" instance=ExtResource("5_block")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 42, 18.5, 0)
-Size = Vector3(4, 29, 4)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 42, 19.5, 0)
+Size = Vector3(4, 27, 4)
 
 [node name="CeilingWest" parent="Geometry" instance=ExtResource("5_block")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 6.75, 30.75, 0)
@@ -281,7 +283,10 @@ script = ExtResource("6_exit")
 Side = 0
 TargetRoom = "res://worlds/prototype/rooms/Reliquary.tscn"
 TargetExit = "East"
-Size = Vector2(1, 4)
+
+[node name="Doorway" parent="Exits/West" instance=ExtResource("92_doorway")]
+Profile = ExtResource("93_doorseam")
+Material = ExtResource("4_wet_stone")
 
 ; the floodgate east into the Sluice
 [node name="East" type="Marker3D" parent="Exits"]
@@ -290,7 +295,10 @@ script = ExtResource("6_exit")
 Side = 1
 TargetRoom = "res://worlds/prototype/rooms/Sluice.tscn"
 TargetExit = "West"
-Size = Vector2(1, 4)
+
+[node name="Doorway" parent="Exits/East" instance=ExtResource("92_doorway")]
+Profile = ExtResource("93_doorseam")
+Material = ExtResource("4_wet_stone")
 
 [node name="Machines" type="Node3D" parent="."]
 
@@ -546,6 +554,19 @@ material_override = ExtResource("26_foreground")
 cast_shadow = 0
 
 [node name="PhotoSpots" type="Node3D" parent="."]
+
+; the west doorway from the Reliquary: its sill, lintel and the wall around it (the seam's frame)
+[node name="WestDoor" type="Marker3D" parent="PhotoSpots"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 1, 3.5, 12)
+script = ExtResource("27_spot")
+PlayerPosition = Vector3(3, 0, 0)
+PlayerFacing = -1
+
+; the east floodgate into the Sluice: its sill, lintel and the wall around it (the seam's frame)
+[node name="EastDoor" type="Marker3D" parent="PhotoSpots"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 37.5, 3.5, 12)
+script = ExtResource("27_spot")
+PlayerPosition = Vector3(35.5, 0, 0)
 
 ; gameplay framing at the foot of the flue
 [node name="Landing" type="Marker3D" parent="PhotoSpots"]

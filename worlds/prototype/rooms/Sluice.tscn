@@ -11,6 +11,8 @@
 [ext_resource type="Material" path="res://assets/materials/wet_stone.tres" id="1_wet_stone"]
 [ext_resource type="PackedScene" path="res://scenes/kit/Block.tscn" id="2_block"]
 [ext_resource type="Script" path="res://scripts/rooms/RoomExit.cs" id="3_exit"]
+[ext_resource type="PackedScene" path="res://scenes/kit/Doorway.tscn" id="90_doorway"]
+[ext_resource type="Resource" path="res://resources/seams/doorway.tres" id="91_seam"]
 [ext_resource type="Script" path="res://scripts/machines/Machine.cs" id="4_machine"]
 [ext_resource type="Resource" path="res://resources/machines/limpet.tres" id="5_limpet"]
 [ext_resource type="Resource" path="res://resources/machines/gleaner.tres" id="6_gleaner"]
@@ -188,8 +190,14 @@ PillarDensity = 2.4
 
 ; the landing by the Cistern doorway, down to the room's bottom: the channel's water lies under it
 [node name="FloorWest" parent="Geometry" instance=ExtResource("2_block")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 6.5, -4, 0)
-Size = Vector3(19, 8, 4)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 9.75, -4, 0)
+Size = Vector3(12.5, 8, 4)
+Material = ExtResource("1_wet_stone")
+
+; the landing under the doorway's sill (West's Doorway frames Y -2 to 0 and 4 to 6, X -1.5 to 3.5)
+[node name="FloorWestFoot" parent="Geometry" instance=ExtResource("2_block")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.25, -5, 0)
+Size = Vector3(6.5, 6, 4)
 Material = ExtResource("1_wet_stone")
 
 ; a step down under the first gate; its east face is the pit wall
@@ -211,8 +219,8 @@ Material = ExtResource("1_wet_stone")
 
 ; west wall above the doorway into the Cistern
 [node name="WallWest" parent="Geometry" instance=ExtResource("2_block")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -2, 8, 0)
-Size = Vector3(2, 8, 4)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -2, 9, 0)
+Size = Vector3(2, 6, 4)
 
 ; east wall above the doorway down to the Undercroft
 [node name="WallEast" parent="Geometry" instance=ExtResource("2_block")]
@@ -273,7 +281,10 @@ script = ExtResource("3_exit")
 Side = 0
 TargetRoom = "res://worlds/prototype/rooms/Cistern.tscn"
 TargetExit = "East"
-Size = Vector2(1, 4)
+
+[node name="Doorway" parent="Exits/West" instance=ExtResource("90_doorway")]
+Profile = ExtResource("91_seam")
+Material = ExtResource("1_wet_stone")
 
 ; east doorway down to the Undercroft
 ; the drain in the vault: the far end of the Descent's flooded gate (arrival only), its area the grate and the
@@ -587,6 +598,13 @@ material_override = ExtResource("27_foreground")
 cast_shadow = 0
 
 [node name="PhotoSpots" type="Node3D" parent="."]
+
+; the west doorway from the Cistern: its sill, lintel and the wall around it (the seam's frame)
+[node name="WestDoor" type="Marker3D" parent="PhotoSpots"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 2, 3.5, 12)
+script = ExtResource("28_spot")
+PlayerPosition = Vector3(4, 0, 0)
+PlayerFacing = -1
 
 ; gameplay framing at the doorway, the raised gate ahead
 [node name="Entry" type="Marker3D" parent="PhotoSpots"]

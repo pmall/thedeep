@@ -11,6 +11,8 @@
 [ext_resource type="Material" path="res://assets/materials/wet_stone.tres" id="4_wet_stone"]
 [ext_resource type="PackedScene" path="res://scenes/kit/Block.tscn" id="5_block"]
 [ext_resource type="Script" path="res://scripts/rooms/RoomExit.cs" id="6_exit"]
+[ext_resource type="PackedScene" path="res://scenes/kit/Doorway.tscn" id="90_doorway"]
+[ext_resource type="Resource" path="res://resources/seams/doorway.tres" id="91_seam"]
 [ext_resource type="PackedScene" path="res://scenes/props/AbilityRelic.tscn" id="7_relic"]
 [ext_resource type="PackedScene" path="res://scenes/props/Shrine.tscn" id="8_shrine"]
 [ext_resource type="Material" path="res://assets/materials/glyphs.tres" id="9_glyphs"]
@@ -187,18 +189,18 @@ PillarDensity = 2.6
 [node name="Geometry" type="Node3D" parent="."]
 
 [node name="Floor" parent="Geometry" instance=ExtResource("5_block")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 19.5, -1, 0)
-Size = Vector3(43, 2, 4)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 16.25, -1, 0)
+Size = Vector3(36.5, 2, 4)
 Material = ExtResource("4_wet_stone")
 
 [node name="WallWest" parent="Geometry" instance=ExtResource("5_block")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 11, 0)
 Size = Vector3(4, 22, 4)
 
-; east wall above the doorway to the Cistern
+; east wall above the doorway to the Cistern (East's Doorway frames Y -2 to 0 and 4 to 6, X 34.5 to 39.5)
 [node name="WallEast" parent="Geometry" instance=ExtResource("5_block")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 39.5, 13, 0)
-Size = Vector3(3, 18, 4)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 39.5, 14, 0)
+Size = Vector3(3, 16, 4)
 
 [node name="Ceiling" parent="Geometry" instance=ExtResource("5_block")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 19.5, 20, 0)
@@ -230,7 +232,10 @@ script = ExtResource("6_exit")
 Side = 1
 TargetRoom = "res://worlds/prototype/rooms/Cistern.tscn"
 TargetExit = "West"
-Size = Vector2(1, 4)
+
+[node name="Doorway" parent="Exits/East" instance=ExtResource("90_doorway")]
+Profile = ExtResource("91_seam")
+Material = ExtResource("4_wet_stone")
 
 [node name="Props" type="Node3D" parent="."]
 
@@ -449,6 +454,12 @@ material_override = ExtResource("19_foreground")
 cast_shadow = 0
 
 [node name="PhotoSpots" type="Node3D" parent="."]
+
+; the east doorway into the Cistern: its sill, lintel and the wall around it (the seam's frame)
+[node name="EastDoor" type="Marker3D" parent="PhotoSpots"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 35, 3.5, 12)
+script = ExtResource("20_spot")
+PlayerPosition = Vector3(33, 0, 0)
 
 ; gameplay framing at the shrine by the doorway
 [node name="Entrance" type="Marker3D" parent="PhotoSpots"]
