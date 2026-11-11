@@ -149,6 +149,8 @@ public static class TileNoise
         return new VoronoiCell(border, (Wrap(by, cells) * cells) + Wrap(bx, cells), nx, ny);
     }
 
+    /// <summary>0 at <paramref name="edge0"/> and before it, 1 at <paramref name="edge1"/> and beyond, a smooth S curve between
+    /// (flat at both ends). With the edges swapped it falls from 1 to 0.</summary>
     public static double SmoothStep(double edge0, double edge1, double x)
     {
         double t = Math.Clamp((x - edge0) / (edge1 - edge0), 0.0, 1.0);
@@ -165,5 +167,7 @@ public static class TileNoise
 
     private static double Quintic(double t) => t * t * t * ((t * ((t * 6.0) - 15.0)) + 10.0);
 
+    /// <summary>The value <paramref name="t"/> of the way from <paramref name="a"/> to <paramref name="b"/> (0 is
+    /// <paramref name="a"/>, 1 is <paramref name="b"/>).</summary>
     public static double Lerp(double a, double b, double t) => a + ((b - a) * t);
 }

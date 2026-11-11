@@ -10,6 +10,8 @@ namespace TheDeep;
 /// </summary>
 public static class SurfaceBaker
 {
+    /// <summary>The texture set of <paramref name="pattern"/>, <paramref name="size"/> texels on a side: one tile of
+    /// it.</summary>
     public static SurfaceMaps Bake(ISurfacePattern pattern, int size)
     {
         double tile = pattern.TileMeters;

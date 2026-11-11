@@ -24,17 +24,25 @@ public sealed record IceSurface : ISurfacePattern
     /// <see cref="CrackCells"/> per tile), and how far a crack strays from straight.</summary>
     public int PlateCells { get; init; } = 5;
 
+    /// <summary>Share of the plates' borders that cracked (0 to 1), in stretches.</summary>
     public double CrackShare { get; init; } = 0.75;
 
+    /// <summary>Cells per tile of the noise that says which stretches of border cracked; the finer cracks use three times as
+    /// many.</summary>
     public int CrackCells { get; init; } = 3;
 
+    /// <summary>How far a crack strays from the straight border between two plates, meters.</summary>
     public double CrackWarpMeters { get; init; } = 0.05;
 
     /// <summary>A crack's bright edge (half width); the wash on its lit side: how bright at the edge and how far it reaches.</summary>
     public double CrackMeters { get; init; } = 0.012;
 
+    /// <summary>How bright the wash is at a crack's edge on its lit side, added to the ice's tone (1 is the plain
+    /// ice).</summary>
     public double Wash { get; init; } = 0.1;
 
+    /// <summary>The distance from the crack over which the wash falls to about a third (it fades exponentially),
+    /// meters.</summary>
     public double WashMeters { get; init; } = 0.06;
 
     /// <summary>Share of plates whose cracks wash them (the planes slanting under them).</summary>
@@ -44,53 +52,69 @@ public sealed record IceSurface : ISurfacePattern
     /// cells per tile side of the patches they cluster in.</summary>
     public int FineCells { get; init; } = 14;
 
+    /// <summary>Share of the finer cracks' length that cracked (0 to 1), in stretches.</summary>
     public double FineShare { get; init; } = 0.35;
 
+    /// <summary>A finer crack's half width, meters.</summary>
     public double FineMeters { get; init; } = 0.008;
 
+    /// <summary>How white a finer crack is at most, added to the ice's tone.</summary>
     public double Fine { get; init; } = 0.25;
 
+    /// <summary>Cells per tile side of the noise whose high patches hold the finer cracks.</summary>
     public int FinePatchCells { get; init; } = 4;
 
     /// <summary>Bubbles: cells per tile side (one bubble per cell at most), the share of cells holding one where they crowd most,
     /// and their radius at least and at most (a share of a cell).</summary>
     public int BubbleCells { get; init; } = 40;
 
+    /// <summary>Share of cells (0 to 1) that hold a bubble where bubbles crowd most.</summary>
     public double BubbleShare { get; init; } = 0.06;
 
+    /// <summary>A bubble's radius at least, a share of a cell.</summary>
     public double BubbleMinRadius { get; init; } = 0.14;
 
+    /// <summary>A bubble's radius at most, a share of a cell.</summary>
     public double BubbleMaxRadius { get; init; } = 0.32;
 
     /// <summary>Small bubbles, the same way, smaller and many more.</summary>
     public int SmallBubbleCells { get; init; } = 110;
 
+    /// <summary>Share of cells (0 to 1) that hold a small bubble where bubbles crowd most.</summary>
     public double SmallBubbleShare { get; init; } = 0.04;
 
     /// <summary>Where bubbles crowd: vertical trails (columns per tile) and horizontal bands (bands per tile).</summary>
     public int TrailCells { get; init; } = 9;
 
+    /// <summary>Horizontal bands of bubbles per tile, up the face.</summary>
     public int BandCells { get; init; } = 5;
 
     /// <summary>The frozen-in veils: how white at most, and their noise's cells per tile along and up the face.</summary>
     public double Veil { get; init; } = 0.08;
 
+    /// <summary>The veil noise's cells per tile along the face.</summary>
     public int VeilCellsAlong { get; init; } = 2;
 
+    /// <summary>The veil noise's cells per tile up the face.</summary>
     public int VeilCellsUp { get; init; } = 6;
 
     /// <summary>The skin's undulation: its relief and its first octave's cells per tile.</summary>
     public double RippleMeters { get; init; } = 0.01;
 
+    /// <summary>The undulation noise's first octave's cells per tile.</summary>
     public int RippleCells { get; init; } = 6;
 
     /// <summary>The glossy skin's roughness, the matte patches' and those patches' cells per tile.</summary>
     public double Roughness { get; init; } = 0.05;
 
+    /// <summary>The roughness (0 to 1) of the matte patches.</summary>
     public double MatteRoughness { get; init; } = 0.32;
 
+    /// <summary>The matte patches' noise's cells per tile.</summary>
     public int MatteCells { get; init; } = 5;
 
+    /// <summary>The seed of every noise of the pattern: another seed gives another sheet of ice of the same
+    /// character.</summary>
     public int Seed { get; init; } = 4;
 
     public SurfacePoint At(double alongMeters, double upMeters)

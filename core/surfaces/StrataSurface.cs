@@ -17,6 +17,7 @@ public sealed record StrataSurface : ISurfacePattern
     /// <summary>Beds per tile, stacked up it. Each bed's lower joint is moved by up to <see cref="BedJitter"/> of a mean bed.</summary>
     public int Beds { get; init; } = 6;
 
+    /// <summary>How far a bed's lower joint is moved from even spacing, either way, a share of a mean bed.</summary>
     public double BedJitter { get; init; } = 0.35;
 
     /// <summary>How far the beds wave up and down, at most.</summary>
@@ -25,8 +26,10 @@ public sealed record StrataSurface : ISurfacePattern
     /// <summary>Half widths of a joint's groove: into the bed above it and into the bed below it (the lower lip is the wider).</summary>
     public double JointAboveMeters { get; init; } = 0.045;
 
+    /// <summary>Half width of a joint's groove into the bed below it, meters.</summary>
     public double JointBelowMeters { get; init; } = 0.07;
 
+    /// <summary>A joint's depth where it shows fully, meters.</summary>
     public double JointDepthMeters { get; init; } = 0.03;
 
     /// <summary>Noise cells per tile along a joint for where it shows and how wide it is.</summary>
@@ -35,54 +38,68 @@ public sealed record StrataSurface : ISurfacePattern
     /// <summary>Share of beds split once more, the split joint's half width and its strength against a bed joint.</summary>
     public double SplitShare { get; init; } = 0.45;
 
+    /// <summary>A split joint's half width, meters; a bed thinner than four of them is never split.</summary>
     public double SplitMeters { get; init; } = 0.03;
 
+    /// <summary>A split joint's strength against a bed joint's (0 to 1): how much of a bed joint's depth and shadow it
+    /// reaches.</summary>
     public double Split { get; init; } = 0.65;
 
     /// <summary>How far a bed stands proud of the face, at most, and how much its middle bulges.</summary>
     public double ReliefMeters { get; init; } = 0.035;
 
+    /// <summary>How far the middle of a bed bulges out past its joints in the coarsest bed, meters.</summary>
     public double BulgeMeters { get; init; } = 0.012;
 
     /// <summary>Thin layers inside a bed: their relief, and how many per bed at most.</summary>
     public double LaminaMeters { get; init; } = 0.0025;
 
+    /// <summary>Thin layers per bed at most, in the finest bed; the coarsest has two.</summary>
     public int Laminae { get; init; } = 9;
 
     /// <summary>How far a joint's lips stray from its line, and the cells per tile of that noise's first octave.</summary>
     public double RaggedMeters { get; init; } = 0.014;
 
+    /// <summary>The ragged lips' noise's first octave's cells per tile.</summary>
     public int RaggedCells { get; init; } = 24;
 
     /// <summary>Lumps on the beds' faces: their relief and their first octave's cells per tile.</summary>
     public double LumpMeters { get; init; } = 0.02;
 
+    /// <summary>The lumps' noise's first octave's cells per tile.</summary>
     public int LumpCells { get; init; } = 10;
 
     /// <summary>The fine grain: its relief, its first octave's cells per tile along the face (twice as many up it), and octaves.</summary>
     public double GrainMeters { get; init; } = 0.02;
 
+    /// <summary>The grain noise's first octave's cells per tile along the face; twice as many up it.</summary>
     public int GrainCells { get; init; } = 24;
 
+    /// <summary>The grain noise's octaves: more add finer detail.</summary>
     public int GrainOctaves { get; init; } = 4;
 
     /// <summary>Small pits: their depth, cells per tile (one pit per cell at most), and the share of cells pitted in the coarsest bed.</summary>
     public double PitMeters { get; init; } = 0.006;
 
+    /// <summary>Pit cells per tile side, one pit per cell at most.</summary>
     public int PitCells { get; init; } = 96;
 
+    /// <summary>Share of cells (0 to 1) pitted in the coarsest bed; fewer in the others.</summary>
     public double PitShare { get; init; } = 0.2;
 
     /// <summary>Tone difference between beds, and how much the grain shows in the tone.</summary>
     public double BedContrast { get; init; } = 0.18;
 
+    /// <summary>How much the grain shows in the tone, more in the coarse beds than in the fine ones.</summary>
     public double GrainTone { get; init; } = 0.35;
 
     /// <summary>The dry rock's roughness, and how far a bed's departs from it.</summary>
     public double Roughness { get; init; } = 0.88;
 
+    /// <summary>How far a bed's roughness departs from the dry rock's, either way (roughness runs 0 to 1).</summary>
     public double RoughnessSpread { get; init; } = 0.06;
 
+    /// <summary>The seed of every noise of the pattern: another seed gives another face of the same character.</summary>
     public int Seed { get; init; } = 1;
 
     public SurfacePoint At(double alongMeters, double upMeters)

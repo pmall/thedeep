@@ -25,6 +25,7 @@ public sealed record GlyphBandSurface : ISurfacePattern
     /// <c>Rows * BandMeters</c>.</summary>
     public int Columns { get; init; } = 8;
 
+    /// <summary>Bands up the tile.</summary>
     public int Rows { get; init; } = 4;
 
     /// <summary>A glyph cell's width along the band.</summary>
@@ -37,33 +38,44 @@ public sealed record GlyphBandSurface : ISurfacePattern
     /// depth) and how dark both grooves and strokes are.</summary>
     public double RimFromMeters { get; init; } = 0.014;
 
+    /// <summary>A rim's half width, meters.</summary>
     public double RimMeters { get; init; } = 0.008;
 
+    /// <summary>How high a rim stands at its crown, meters.</summary>
     public double RimHeightMeters { get; init; } = 0.003;
 
+    /// <summary>A rim's tone (1 is the face's).</summary>
     public double RimTone { get; init; } = 1.12;
 
+    /// <summary>Half width of the groove beside a rim, meters.</summary>
     public double GrooveMeters { get; init; } = 0.003;
 
+    /// <summary>Depth of the groove beside a rim, meters.</summary>
     public double GrooveDepthMeters { get; init; } = 0.0015;
 
+    /// <summary>What the tone is multiplied by in a groove or a stroke (below 1 darkens).</summary>
     public double CutTone { get; init; } = 0.5;
 
     /// <summary>A glyph's height (centered between the rims, its halo included), a stroke's width as a share of it, how deep a
     /// stroke is cut, and the share of cells left empty (the gaps between words).</summary>
     public double GlyphMeters { get; init; } = 0.088;
 
+    /// <summary>A stroke's width, a share of the glyph's height.</summary>
     public double Stroke { get; init; } = 0.11;
 
+    /// <summary>How deep a stroke is cut, meters.</summary>
     public double StrokeDepthMeters { get; init; } = 0.0012;
 
+    /// <summary>Share of glyph cells left empty (0 to 1): the gaps between words.</summary>
     public double Gaps { get; init; } = 0.15;
 
     /// <summary>The face's roughness, the strokes' (dull, so a glowing glyph reads by its light) and the rims' (polished).</summary>
     public double Roughness { get; init; } = 0.3;
 
+    /// <summary>The roughness (0 to 1) in a stroke.</summary>
     public double StrokeRoughness { get; init; } = 0.55;
 
+    /// <summary>The roughness (0 to 1) of a rim.</summary>
     public double RimRoughness { get; init; } = 0.22;
 
     /// <summary>A glyph's width in glyph heights.</summary>

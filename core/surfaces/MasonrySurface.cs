@@ -24,59 +24,76 @@ public sealed record MasonrySurface : ISurfacePattern
     /// strays from even spacing, as a share of a block.</summary>
     public int MinBlocks { get; init; } = 3;
 
+    /// <summary>Blocks per course at most.</summary>
     public int MaxBlocks { get; init; } = 5;
 
+    /// <summary>How far a joint between two blocks strays from even spacing, either way, a share of a block.</summary>
     public double BlockJitter { get; init; } = 0.2;
 
     /// <summary>Half width of a mortar joint (flat, recessed by <see cref="JointDepthMeters"/>), and how far an arris rounds.</summary>
     public double JointMeters { get; init; } = 0.02;
 
+    /// <summary>How far the mortar lies behind the blocks' faces, meters.</summary>
     public double JointDepthMeters { get; init; } = 0.03;
 
+    /// <summary>The width over which a block's edge rounds, from the mortar up to its face, meters.</summary>
     public double ArrisMeters { get; init; } = 0.012;
 
     /// <summary>How far a chip bites into a block's arris at most, how deep its scar is, and its noise's cells per tile.</summary>
     public double ChipMeters { get; init; } = 0.06;
 
+    /// <summary>How deep a chip's scar is, meters.</summary>
     public double ChipDepthMeters { get; init; } = 0.012;
 
+    /// <summary>The chips' noise's first octave's cells per tile.</summary>
     public int ChipCells { get; init; } = 40;
 
     /// <summary>A block's face: its tilt (slope, along and up), how far it bulges, and how far it stands proud of the others.</summary>
     public double TiltSlope { get; init; } = 0.04;
 
+    /// <summary>How far the middle of a block's face bulges out past its edges, meters.</summary>
     public double BulgeMeters { get; init; } = 0.01;
 
+    /// <summary>How far a block stands proud of the wall's plane or behind it, at most, meters.</summary>
     public double ReliefMeters { get; init; } = 0.01;
 
     /// <summary>The tooled grain: its relief, its first octave's cells per tile and octaves.</summary>
     public double GrainMeters { get; init; } = 0.004;
 
+    /// <summary>The grain noise's first octave's cells per tile.</summary>
     public int GrainCells { get; init; } = 48;
 
+    /// <summary>The grain noise's octaves: more add finer detail.</summary>
     public int GrainOctaves { get; init; } = 4;
 
     /// <summary>Small pits: their depth, cells per tile (one pit per cell at most), and the share of cells pitted in the most weathered block.</summary>
     public double PitMeters { get; init; } = 0.004;
 
+    /// <summary>Pit cells per tile side, one pit per cell at most.</summary>
     public int PitCells { get; init; } = 128;
 
+    /// <summary>Share of cells (0 to 1) pitted in the most weathered block; fewer in the others.</summary>
     public double PitShare { get; init; } = 0.12;
 
     /// <summary>How much the grain shows in the tone; how much paler a chip's fresh stone is; the mortar's tone.</summary>
     public double GrainTone { get; init; } = 0.3;
 
+    /// <summary>How much paler a chip's fresh stone is, a share of the stone's tone.</summary>
     public double ChipTone { get; init; } = 0.12;
 
+    /// <summary>The mortar's tone (1 is the stone's).</summary>
     public double MortarTone { get; init; } = 0.85;
 
     /// <summary>Roughness of the cut stone (each block departs from it by up to <see cref="RoughnessSpread"/>) and of the mortar.</summary>
     public double Roughness { get; init; } = 0.8;
 
+    /// <summary>How far a block's roughness departs from the cut stone's, either way (roughness runs 0 to 1).</summary>
     public double RoughnessSpread { get; init; } = 0.06;
 
+    /// <summary>The mortar's roughness (0 to 1).</summary>
     public double MortarRoughness { get; init; } = 0.95;
 
+    /// <summary>The seed of every noise of the pattern: another seed gives another wall of the same character.</summary>
     public int Seed { get; init; } = 2;
 
     /// <summary>A course's height.</summary>

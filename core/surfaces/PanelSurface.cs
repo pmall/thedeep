@@ -50,56 +50,76 @@ public sealed record PanelSurface : ISurfacePattern
     /// <summary>The seam's half width, its depth, and how dark its bottom is.</summary>
     public double SeamMeters { get; init; } = 0.014;
 
+    /// <summary>How deep the seam's bottom lies below the panels' edges, meters.</summary>
     public double SeamDepthMeters { get; init; } = 0.008;
 
+    /// <summary>What the coating's tone is multiplied by at the seam's bottom (below 1 darkens).</summary>
     public double SeamTone { get; init; } = 0.25;
 
     /// <summary>The bevel beside the seam: how wide, and how high the panel's face stands once over it.</summary>
     public double BevelMeters { get; init; } = 0.05;
 
+    /// <summary>How high a panel's face stands above its edge once over the bevel, meters.</summary>
     public double BevelRiseMeters { get; init; } = 0.012;
 
     /// <summary>A rivet: its distance from the seams, its radius, its head's height and tone, the dirt ring round it.</summary>
     public double RivetInsetMeters { get; init; } = 0.1;
 
+    /// <summary>A corner rivet's radius, meters.</summary>
     public double RivetMeters { get; init; } = 0.028;
 
+    /// <summary>How high a rivet's head stands at its crown, meters.</summary>
     public double RivetHeightMeters { get; init; } = 0.006;
 
+    /// <summary>The tone of a rivet's head (1 is the coating's).</summary>
     public double RivetTone { get; init; } = 1.08;
 
+    /// <summary>How far the dirt ring reaches beyond a rivet's rim, meters.</summary>
     public double RingMeters { get; init; } = 0.025;
 
     /// <summary>The corner plate: its inner edge's distance from the seams, how far it reaches, its thickness and tone; its
     /// rivets' distances from the seams and radius.</summary>
     public double GussetFromMeters { get; init; } = 0.035;
 
+    /// <summary>How far the corner plate reaches from the seams along them, meters; its outer corner is cut on the
+    /// diagonal.</summary>
     public double GussetToMeters { get; init; } = 0.185;
 
+    /// <summary>The corner plate's thickness, meters.</summary>
     public double GussetMeters { get; init; } = 0.003;
 
+    /// <summary>The corner plate's tone (1 is the coating's).</summary>
     public double GussetTone { get; init; } = 1.04;
 
+    /// <summary>The distance from both seams of the plate's corner rivet, and from the nearer seam of its two others,
+    /// meters.</summary>
     public double GussetRivetNearMeters { get; init; } = 0.075;
 
+    /// <summary>The distance from the farther seam of the plate's two outer rivets, meters.</summary>
     public double GussetRivetFarMeters { get; init; } = 0.14;
 
+    /// <summary>The radius of a corner plate's rivet, meters.</summary>
     public double GussetRivetMeters { get; init; } = 0.02;
 
     /// <summary>The sunk middle: its frame's width from the seams, its corners' radius, its depth and the chamfer down to it.</summary>
     public double InsetMeters { get; init; } = 0.13;
 
+    /// <summary>The radius of the sunk middle's rounded corners, meters.</summary>
     public double InsetCornerMeters { get; init; } = 0.04;
 
+    /// <summary>How far the middle is sunk behind its frame, meters.</summary>
     public double InsetDepthMeters { get; init; } = 0.004;
 
+    /// <summary>The width of the chamfer from the frame down to the sunk middle, meters.</summary>
     public double InsetChamferMeters { get; init; } = 0.012;
 
     /// <summary>The coating's roughness, and the rivet heads' (matte, so their small domes never glint).</summary>
     public double Roughness { get; init; } = 0.32;
 
+    /// <summary>The roughness (0 to 1) at the seam's bottom.</summary>
     public double SeamRoughness { get; init; } = 0.5;
 
+    /// <summary>The roughness (0 to 1) of a rivet's head.</summary>
     public double RivetRoughness { get; init; } = 0.48;
 
     public SurfacePoint At(double alongMeters, double upMeters)

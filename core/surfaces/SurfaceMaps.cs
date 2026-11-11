@@ -27,6 +27,7 @@ public sealed class SurfaceMaps
     /// <summary>How many cells the alpha channel tells apart (<see cref="SurfacePoint.Cell"/>).</summary>
     public const int Cells = 15;
 
+    /// <summary>The side of both square maps, texels.</summary>
     public required int Size { get; init; }
 
     /// <summary>RGB8, <see cref="Size"/> squared texels.</summary>
