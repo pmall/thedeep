@@ -37,6 +37,8 @@
 [ext_resource type="PackedScene" path="res://scenes/stage/RoomStage.tscn" id="24_stage"]
 [ext_resource type="Script" path="res://scripts/rooms/dressing/WallDressing.cs" id="44_walldressing"]
 [ext_resource type="Material" path="res://assets/materials/wall_stone.tres" id="45_wall_stone"]
+[ext_resource type="PackedScene" path="res://scenes/kit/Doorway.tscn" id="90_doorway"]
+[ext_resource type="Resource" path="res://resources/seams/doorway.tres" id="91_seam"]
 
 [sub_resource type="PrimitiveMesh" id="wall_back"]
 script = ExtResource("11_blockmesh")
@@ -222,8 +224,8 @@ Size = Vector3(13, 6, 4)
 
 ; the east floor, over the corridor (8 m across the well from the west floor, by the beam in the middle)
 [node name="Slab" parent="Geometry" instance=ExtResource("1_block")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 66.5, -1, 0)
-Size = Vector3(25, 2, 4)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 63.25, -1, 0)
+Size = Vector3(18.5, 2, 4)
 
 [node name="WallWest" parent="Geometry" instance=ExtResource("1_block")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -1.5, 6, 0)
@@ -231,8 +233,8 @@ Size = Vector3(3, 12, 4)
 
 ; the Calving ledge, high on the west wall
 [node name="Ledge" parent="Geometry" instance=ExtResource("1_block")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 2.25, 13, 0)
-Size = Vector3(10.5, 2, 4)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 5.5, 13, 0)
+Size = Vector3(4, 2, 4)
 
 ; a metal buttress under the ledge: grip up it (or take the two rings)
 [node name="Buttress" parent="Geometry" instance=ExtResource("1_block")]
@@ -241,16 +243,16 @@ Size = Vector3(2, 10, 4)
 Surface = 1
 
 [node name="WallWestHigh" parent="Geometry" instance=ExtResource("1_block")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -1.5, 26.5, 0)
-Size = Vector3(3, 17, 4)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -1.5, 27.5, 0)
+Size = Vector3(3, 15, 4)
 
 [node name="WallEastLow" parent="Geometry" instance=ExtResource("1_block")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 77.5, -4, 0)
 Size = Vector3(3, 4, 4)
 
 [node name="WallEast" parent="Geometry" instance=ExtResource("1_block")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 77.5, 19.5, 0)
-Size = Vector3(3, 31, 4)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 77.5, 20.5, 0)
+Size = Vector3(3, 29, 4)
 
 ; the roof, open over the Counterweight's hatch: its top is the Counterweight's landing (the camera stops there)
 [node name="RoofWest" parent="Geometry" instance=ExtResource("1_block")]
@@ -263,8 +265,8 @@ Size = Vector3(12.5, 4, 4)
 
 ; the galleries, zigzagging up to the roof, 2.5 m apart (a jump with room to spare)
 [node name="Gallery0" parent="Geometry" instance=ExtResource("1_block")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 69, 2.25, 0)
-Size = Vector3(10, 0.5, 4)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 68.25, 2.25, 0)
+Size = Vector3(8.5, 0.5, 4)
 
 [node name="Gallery1" parent="Geometry" instance=ExtResource("1_block")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 57, 4.75, 0)
@@ -315,7 +317,9 @@ script = ExtResource("4_exit")
 Side = 1
 TargetRoom = "res://worlds/prototype/rooms/Choir.tscn"
 TargetExit = "West"
-Size = Vector2(1, 4)
+
+[node name="Doorway" parent="Exits/East" instance=ExtResource("90_doorway")]
+Profile = ExtResource("91_seam")
 
 ; the roof hatch: up into the Counterweight, the lift to the Undercroft (dropping back from it lands on the top gallery)
 [node name="Counterweight" type="Marker3D" parent="Exits"]
@@ -334,7 +338,9 @@ Side = 0
 TargetRoom = "res://worlds/prototype/rooms/Calving.tscn"
 TargetExit = "East"
 Requires = "MagGrip | Harpoon"
-Size = Vector2(1, 4)
+
+[node name="Doorway" parent="Exits/Calving" instance=ExtResource("90_doorway")]
+Profile = ExtResource("91_seam")
 
 ; the corridor's end, east to the frozen lake
 [node name="Mere" type="Marker3D" parent="Exits"]
@@ -787,6 +793,19 @@ material_override = ExtResource("19_foreground")
 cast_shadow = 0
 
 [node name="PhotoSpots" type="Node3D" parent="."]
+
+; the east doorway into the Choir: its sill, lintel and the wall around it (the seam's frame)
+[node name="EastDoor" type="Marker3D" parent="PhotoSpots"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 73, 3.5, 12)
+script = ExtResource("21_spot")
+PlayerPosition = Vector3(71, 0, 0)
+
+; the west doorway from the Calving, over the ledge: its sill, lintel and the wall around it (the seam's frame)
+[node name="CalvingDoor" type="Marker3D" parent="PhotoSpots"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 2, 17.5, 12)
+script = ExtResource("21_spot")
+PlayerPosition = Vector3(4, 14, 0)
+PlayerFacing = -1
 
 ; gameplay framing: the shrine among the frozen racks
 [node name="Shrine" type="Marker3D" parent="PhotoSpots"]

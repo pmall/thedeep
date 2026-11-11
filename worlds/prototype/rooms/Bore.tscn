@@ -31,6 +31,8 @@
 [ext_resource type="Resource" path="res://resources/biomes/frozen.tres" id="23_frozen"]
 [ext_resource type="PackedScene" path="res://scenes/stage/RoomStage.tscn" id="24_stage"]
 [ext_resource type="Script" path="res://scripts/rooms/dressing/WallDressing.cs" id="25_wall"]
+[ext_resource type="PackedScene" path="res://scenes/kit/Doorway.tscn" id="90_doorway"]
+[ext_resource type="Resource" path="res://resources/seams/doorway.tres" id="91_seam"]
 
 [sub_resource type="PrimitiveMesh" id="blockmesh_1"]
 script = ExtResource("5_blockmesh")
@@ -158,13 +160,18 @@ transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 27, -0.75, 0)
 Size = Vector3(14, 1.5, 4)
 
 [node name="HallFloorEast" parent="Geometry" instance=ExtResource("1_block")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 46.5, -7, 0)
-Size = Vector3(9, 14, 4)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 43.25, -7, 0)
+Size = Vector3(2.5, 14, 4)
+
+; the floor under the east doorway's sill (East's Doorway frames Y -2 to 0 and 4 to 6, X 44.5 to 49.5)
+[node name="HallFloorEastFoot" parent="Geometry" instance=ExtResource("1_block")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 47.75, -8, 0)
+Size = Vector3(6.5, 12, 4)
 
 ; over the east doorway
 [node name="WallEast" parent="Geometry" instance=ExtResource("1_block")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 49.5, 11.5, 0)
-Size = Vector3(3, 15, 4)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 49.5, 12.5, 0)
+Size = Vector3(3, 13, 4)
 
 [node name="Ceiling" parent="Geometry" instance=ExtResource("1_block")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 24, 15.5, 0)
@@ -225,7 +232,9 @@ script = ExtResource("2_exit")
 Side = 1
 TargetRoom = "res://worlds/prototype/rooms/Calving.tscn"
 TargetExit = "West"
-Size = Vector2(1, 4)
+
+[node name="Doorway" parent="Exits/East" instance=ExtResource("90_doorway")]
+Profile = ExtResource("91_seam")
 
 [node name="Props" type="Node3D" parent="."]
 
@@ -437,6 +446,12 @@ material_override = ExtResource("20_foreground")
 cast_shadow = 0
 
 [node name="PhotoSpots" type="Node3D" parent="."]
+
+; the east doorway into the Calving: its sill, lintel and the wall around it (the seam's frame)
+[node name="EastDoor" type="Marker3D" parent="PhotoSpots"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 45, 3.5, 12)
+script = ExtResource("21_spot")
+PlayerPosition = Vector3(44, 0, 0)
 
 ; gameplay framing: the hall, the machine frozen mid-bore, the shrine, the hole in the floor
 [node name="Hall" type="Marker3D" parent="PhotoSpots"]

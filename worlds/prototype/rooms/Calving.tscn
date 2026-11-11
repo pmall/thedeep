@@ -28,6 +28,8 @@
 [ext_resource type="Resource" path="res://resources/biomes/frozen.tres" id="21_frozen"]
 [ext_resource type="PackedScene" path="res://scenes/stage/RoomStage.tscn" id="22_stage"]
 [ext_resource type="Script" path="res://scripts/rooms/dressing/WallDressing.cs" id="23_wall"]
+[ext_resource type="PackedScene" path="res://scenes/kit/Doorway.tscn" id="90_doorway"]
+[ext_resource type="Resource" path="res://resources/seams/doorway.tres" id="91_seam"]
 
 [sub_resource type="PrimitiveMesh" id="blockmesh_1"]
 script = ExtResource("7_blockmesh")
@@ -133,13 +135,24 @@ FrameBelow = false
 
 ; the floor under the cliff
 [node name="Floor" parent="Geometry" instance=ExtResource("1_block")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 12, -1.5, 0)
-Size = Vector3(30, 3, 4)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 15.25, -1.5, 0)
+Size = Vector3(23.5, 3, 4)
+
+; the floor under the west doorway's sill (West's Doorway frames Y -2 to 0 and 4 to 6, X -1.5 to 3.5)
+[node name="FloorWestFoot" parent="Geometry" instance=ExtResource("1_block")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.25, -2.5, 0)
+Size = Vector3(6.5, 1, 4)
 
 ; the cliff of old ice; the Coldstacks' doorway on its top
 [node name="Cliff" parent="Geometry" instance=ExtResource("1_block")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 37.5, 6.5, 0)
-Size = Vector3(19, 19, 4)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 34.25, 6.5, 0)
+Size = Vector3(12.5, 19, 4)
+Material = ExtResource("2_ice")
+
+; the cliff under the east doorway's sill (East's Doorway frames Y 14 to 16 and 20 to 22, X 40.5 to 45.5)
+[node name="CliffEastFoot" parent="Geometry" instance=ExtResource("1_block")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 43.75, 5.5, 0)
+Size = Vector3(6.5, 17, 4)
 Material = ExtResource("2_ice")
 
 ; an iron girder frozen into the cliff's face: grip up it
@@ -161,13 +174,13 @@ Material = ExtResource("2_ice")
 
 ; over the west doorway
 [node name="WallWest" parent="Geometry" instance=ExtResource("1_block")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -1.5, 16.5, 0)
-Size = Vector3(3, 25, 4)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -1.5, 17.5, 0)
+Size = Vector3(3, 23, 4)
 
 ; over the east doorway
 [node name="WallEast" parent="Geometry" instance=ExtResource("1_block")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 45.5, 24.5, 0)
-Size = Vector3(3, 9, 4)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 45.5, 25.5, 0)
+Size = Vector3(3, 7, 4)
 
 [node name="Ceiling" parent="Geometry" instance=ExtResource("1_block")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 22, 27.5, 0)
@@ -183,7 +196,10 @@ Side = 1
 TargetRoom = "res://worlds/prototype/rooms/Coldstacks.tscn"
 TargetExit = "Calving"
 Requires = "MagGrip | Harpoon"
-Size = Vector2(1, 4)
+
+[node name="Doorway" parent="Exits/East" instance=ExtResource("90_doorway")]
+Profile = ExtResource("91_seam")
+Material = ExtResource("2_ice")
 
 ; on to the Bore
 [node name="West" type="Marker3D" parent="Exits"]
@@ -192,7 +208,9 @@ script = ExtResource("3_exit")
 Side = 0
 TargetRoom = "res://worlds/prototype/rooms/Bore.tscn"
 TargetExit = "East"
-Size = Vector2(1, 4)
+
+[node name="Doorway" parent="Exits/West" instance=ExtResource("90_doorway")]
+Profile = ExtResource("91_seam")
 
 [node name="Anchors" type="Node3D" parent="."]
 
@@ -372,6 +390,19 @@ material_override = ExtResource("18_foreground")
 cast_shadow = 0
 
 [node name="PhotoSpots" type="Node3D" parent="."]
+
+; the east doorway into the Coldstacks, on the cliff's top: its sill, lintel and the wall around it (the seam's frame)
+[node name="EastDoor" type="Marker3D" parent="PhotoSpots"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 41, 19.5, 12)
+script = ExtResource("19_spot")
+PlayerPosition = Vector3(40, 16, 0)
+
+; the west doorway from the Bore: its sill, lintel and the wall around it (the seam's frame)
+[node name="WestDoor" type="Marker3D" parent="PhotoSpots"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 2, 3.5, 12)
+script = ExtResource("19_spot")
+PlayerPosition = Vector3(4, 0, 0)
+PlayerFacing = -1
 
 ; gameplay framing: the floor, the calved ice, the Chorister asleep at the cliff's foot
 [node name="Foot" type="Marker3D" parent="PhotoSpots"]
