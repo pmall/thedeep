@@ -28,6 +28,8 @@
 [ext_resource type="PackedScene" path="res://scenes/kit/SlagBody.tscn" id="25_slag"]
 [ext_resource type="PackedScene" path="res://scenes/kit/Doorway.tscn" id="90_doorway"]
 [ext_resource type="Resource" path="res://resources/seams/doorway.tres" id="91_seam"]
+[ext_resource type="PackedScene" path="res://scenes/kit/Hatch.tscn" id="92_hatch"]
+[ext_resource type="Resource" path="res://resources/seams/hatch.tres" id="93_seam_hatch"]
 
 [sub_resource type="PrimitiveMesh" id="blockmesh_3"]
 script = ExtResource("13_blockmesh")
@@ -93,19 +95,19 @@ Size = Vector3(6, 6, 4)
 Material = ExtResource("1_basalt")
 
 [node name="WestWall" parent="Geometry" instance=ExtResource("2_block")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 7.75, 0)
-Size = Vector3(6, 3.5, 4)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 7.5, 0)
+Size = Vector3(6, 3, 4)
 Material = ExtResource("1_basalt")
 
 [node name="Roof" parent="Geometry" instance=ExtResource("2_block")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 20.75, 11.25, 0)
-Size = Vector3(47.5, 3.5, 4)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 19.5, 11, 0)
+Size = Vector3(45, 4, 4)
 Material = ExtResource("1_basalt")
 
-; the Chimney's vent opens in the roof between them
+; the Chimney's vent opens in the roof between them: the roof stops at the hatch's frame (x 42 to 49, framed by the brick on Exits/Chimney)
 [node name="RoofEast" parent="Geometry" instance=ExtResource("2_block")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 71.25, 11.25, 0)
-Size = Vector3(47.5, 3.5, 4)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 72, 11, 0)
+Size = Vector3(46, 4, 4)
 Material = ExtResource("1_basalt")
 
 ; the steps down from the west floor to the coolant pool's lip, 2 and 2.5 m
@@ -169,7 +171,7 @@ Size = Vector3(7, 2.5, 4)
 Material = ExtResource("1_basalt")
 
 [node name="MoundStepThree" parent="Geometry" instance=ExtResource("2_block")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 46, 4.75, 0)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 45.5, 4.75, 0)
 Size = Vector3(2, 2.5, 4)
 Material = ExtResource("1_basalt")
 
@@ -199,8 +201,8 @@ Size = Vector3(6, 28, 4)
 Material = ExtResource("1_basalt")
 
 [node name="EastWall" parent="Geometry" instance=ExtResource("2_block")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 92, 7.75, 0)
-Size = Vector3(6, 3.5, 4)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 92, 7.5, 0)
+Size = Vector3(6, 3, 4)
 Material = ExtResource("1_basalt")
 
 [node name="Exits" type="Node3D" parent="."]
@@ -232,12 +234,15 @@ Material = ExtResource("1_basalt")
 
 ; up the vent: the Chimney, the shortcut home
 [node name="Chimney" type="Marker3D" parent="Exits"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 46, 9.5, 0)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 45.5, 10, 0)
 script = ExtResource("3_exit")
 Side = 3
 TargetRoom = "res://worlds/prototype/rooms/Chimney.tscn"
 TargetExit = "Bottom"
-Size = Vector2(3, 1)
+
+[node name="Hatch" parent="Exits/Chimney" instance=ExtResource("92_hatch")]
+Profile = ExtResource("93_seam_hatch")
+Material = ExtResource("1_basalt")
 
 ; the coolant pool's bottom: sunk (Ballast), down to the Quench
 [node name="Quench" type="Marker3D" parent="Exits"]
@@ -339,7 +344,7 @@ material_override = ExtResource("15_stone_mid")
 
 ; the Chimney's iron throat over the vent
 [node name="Throat" type="MeshInstance3D" parent="Kit"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 46, 9.5, -3)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 45.5, 9.5, -3)
 mesh = SubResource("pipe_5")
 material_override = ExtResource("17_rust_mid")
 
@@ -399,6 +404,12 @@ Extents = Vector3(40, 10, 3)
 Density = 0.15
 
 [node name="PhotoSpots" type="Node3D" parent="."]
+
+; the hatch up to the Chimney: the slab either side of its hole (the seam's frame)
+[node name="ChimneyHatch" type="Marker3D" parent="PhotoSpots"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 45.5, 7, 12)
+script = ExtResource("20_spot")
+PlayerPosition = Vector3(43, 3.5, 0)
 
 ; the west doorway from the Kiln: its sill, lintel and the wall around it (the seam's frame)
 [node name="WestDoor" type="Marker3D" parent="PhotoSpots"]

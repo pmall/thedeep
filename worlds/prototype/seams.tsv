@@ -7,7 +7,6 @@ seam	rule	reason
 
 # Vertical, batch 4: the volcanic layer
 Basalt:Crucible | Crucible:Basalt	Solids	to fix under seam-coherence (vertical)
-Chimney:Bottom | Slag:Chimney	Solids	to fix under seam-coherence (vertical)
 Quench:Crucible | Crucible:Quench	Solids	to fix under seam-coherence (vertical)
 Quench:Crucible | Crucible:Quench	Water	to fix under seam-coherence (vertical)
 Slag:Quench | Quench:Slag	Solids	to fix under seam-coherence (vertical)
