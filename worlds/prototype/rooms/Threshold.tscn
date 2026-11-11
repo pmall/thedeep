@@ -273,11 +273,12 @@ Density = 0.15
 
 [node name="PhotoSpots" type="Node3D" parent="."]
 
-; the column of heat, its ledges, the vents above
+; the column of heat, its ledges, the vents above, the pilgrim on the floor beside it (inside it, unplated, it would be scorched)
 [node name="Column" type="Marker3D" parent="PhotoSpots"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 10, 7, 20)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 10, 6.5, 20)
 script = ExtResource("17_spot")
-PlayerPosition = Vector3(4, 7.5, 0)
+PlayerPosition = Vector3(16.5, 0, 0)
+PlayerFacing = -1
 
 ; the ring gate, turning
 [node name="Gate" type="Marker3D" parent="PhotoSpots"]
