@@ -15,6 +15,9 @@ public static class HarpoonAim
     /// <summary>Half-angle (radians) of the cone around held input inside which an anchor can be picked.</summary>
     public const float AimCone = 1.2f;
 
+    /// <summary>Sight to an anchor stops this short of it, meters (an anchor may hang by a wall's face).</summary>
+    public const float SightMargin = 0.3f;
+
     /// <summary>
     /// The index of the anchor to fire at, or −1. <paramref name="aim"/> is the held input (screen axes, zero for none);
     /// <paramref name="facing"/> +1 or −1; <paramref name="clear"/> says whether an anchor is in sight from <paramref name="chest"/>.

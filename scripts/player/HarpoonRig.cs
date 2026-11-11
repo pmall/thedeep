@@ -16,9 +16,6 @@ public partial class HarpoonRig : Node3D
     /// <summary>How fast the line reels back in after letting go (m/s).</summary>
     private const float ReelSpeed = 90f;
 
-    /// <summary>The line stops this short of an anchor when testing sight (an anchor may hang by a wall's face).</summary>
-    private const float SightMargin = 0.3f;
-
     [Export] public World World { get; set; } = null!;
     [Export] public Player Player { get; set; } = null!;
 
@@ -184,7 +181,7 @@ public partial class HarpoonRig : Node3D
 
     private bool InSight(NVector2 from, NVector2 to)
     {
-        NVector2 end = to - NVector2.Normalize(to - from) * SightMargin;
+        NVector2 end = to - NVector2.Normalize(to - from) * HarpoonAim.SightMargin;
         return !Ray.Cast(from.OnPlane(), end.OnPlane());
     }
 

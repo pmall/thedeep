@@ -18,11 +18,6 @@ public partial class BackdropArchitecture : Node3D
     private static readonly float[] Pitches = { 9f, 12f, 15f };
     private static readonly float[] Scales = { 1f, 1.3f, 1.7f };
 
-    /// <summary>Half the view's width per meter of distance from the camera (30° vertical FOV at 16:9), with a margin.</summary>
-    private const float ViewHalfWidthPerMeter = 0.55f;
-
-    private const float CameraDistance = 22f;
-
     [Export] public BackdropStyle Style { get; set; }
 
     /// <summary>Masonry (naves).</summary>
@@ -53,8 +48,8 @@ public partial class BackdropArchitecture : Node3D
         for (int i = Depths.Length - rows; i < Depths.Length; i++)
         {
             float depth = Depths[i];
-            float extra = depth * ViewHalfWidthPerMeter + 10f;
-            float viewHeight = (CameraDistance + depth) * 0.27f; // tan(15°), half the vertical view
+            float extra = depth * RoomStage.ViewHalfWidthPerMeter + 10f;
+            float viewHeight = (RoomStage.CameraDistance + depth) * 0.27f; // tan(15°), half the vertical view
             var row = new BackdropRow(
                 BoundsMin.X - extra, BoundsMax.X + extra,
                 BoundsMin.Y - 6f - depth * 0.15f, BoundsMax.Y + viewHeight * 0.6f + 4f,

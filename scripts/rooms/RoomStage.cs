@@ -16,10 +16,13 @@ namespace TheDeep;
 public partial class RoomStage : Node3D
 {
     /// <summary>Distance from the camera to the play plane (the gameplay camera); used to size the backdrop.</summary>
-    private const float CameraDistance = 22f;
+    public const float CameraDistance = 22f;
 
-    /// <summary>Half the horizontal field of view's tangent at 16:9 with the 30° vertical FOV, with a margin.</summary>
-    private const float ViewHalfWidthPerMeter = 0.55f;
+    /// <summary>
+    /// Half the view's width per meter of distance from the camera: half the horizontal field of view's tangent
+    /// at 16:9 with the 30° vertical FOV, with a margin.
+    /// </summary>
+    public const float ViewHalfWidthPerMeter = 0.55f;
 
     [Export] public WorldEnvironment Environment { get; set; } = null!;
     [Export] public DirectionalLight3D KeyLight { get; set; } = null!;

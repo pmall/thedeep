@@ -100,9 +100,6 @@ public sealed class ReachPlanner
     private const int MaxSwimTicks = 900;
     private const float Skin = 0.001f;
 
-    /// <summary>Sight to an anchor stops this short of it (an anchor may hang by a wall's face).</summary>
-    private const float SightMargin = 0.3f;
-
     private readonly MoveLimits _m;
     private readonly List<Box> _solids;
     private readonly SolidGrid _grid;
@@ -579,7 +576,7 @@ public sealed class ReachPlanner
     /// <summary>Whether nothing solid lies between two points on the play plane (stopping a little short of <paramref name="to"/>).</summary>
     private bool InSight(Vector2 from, Vector2 to)
     {
-        float length = Vector2.Distance(from, to) - SightMargin;
+        float length = Vector2.Distance(from, to) - HarpoonAim.SightMargin;
         if (length <= 0f)
         {
             return true;
