@@ -37,6 +37,8 @@
 [ext_resource type="Script" path="res://scripts/rooms/Room.cs" id="30_room"]
 [ext_resource type="Resource" path="res://resources/biomes/flooded.tres" id="31_flooded"]
 [ext_resource type="PackedScene" path="res://scenes/stage/RoomStage.tscn" id="32_stage"]
+[ext_resource type="PackedScene" path="res://scenes/kit/Hatch.tscn" id="90_hatch"]
+[ext_resource type="Resource" path="res://resources/seams/hatch.tres" id="91_seam"]
 
 [sub_resource type="PrimitiveMesh" id="column_1"]
 script = ExtResource("1_column")
@@ -200,7 +202,7 @@ Biome = ExtResource("31_flooded")
 Lamps = [NodePath("Lamps/Hatch")]
 Shafts = [NodePath("Shafts/Altar"), NodePath("Shafts/Choir")]
 GlyphLights = [NodePath("Glyphs/AltarLight"), NodePath("Glyphs/ChoirLight"), NodePath("Glyphs/HatchWestLight"), NodePath("Glyphs/ReredosLight")]
-BoundsMin = Vector2(-1, -1.5)
+BoundsMin = Vector2(-1, -2)
 BoundsMax = Vector2(86.5, 24)
 
 [node name="SpawnPoint" type="Marker3D" parent="."]
@@ -215,14 +217,14 @@ PillarDensity = 3.4
 [node name="Geometry" type="Node3D" parent="."]
 
 [node name="Floor" parent="Geometry" instance=ExtResource("5_block")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 27.75, -1, 0)
-Size = Vector3(61.5, 2, 4)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 26.75, -1, 0)
+Size = Vector3(59.5, 2, 4)
 Material = ExtResource("4_wet_stone")
 
 ; the strip of floor between the hatch and the metal wall, and under it
 [node name="FloorEast" parent="Geometry" instance=ExtResource("5_block")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 64.75, -1, 0)
-Size = Vector3(6.5, 2, 4)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 65.75, -1, 0)
+Size = Vector3(4.5, 2, 4)
 Material = ExtResource("4_wet_stone")
 
 ; west wall above the doorway from the hall
@@ -278,13 +280,16 @@ Size = Vector2(1, 4)
 
 ; a hole in the floor: drop into the Cistern; climbing back up lands west of the hole
 [node name="Hatch" type="Marker3D" parent="Exits"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 60, -0.5, 0)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 60, -1, 0)
 script = ExtResource("6_exit")
 Side = 2
 TargetRoom = "res://worlds/prototype/rooms/Cistern.tscn"
 TargetExit = "Top"
 ArrivalSide = -1
-Size = Vector2(3, 1)
+
+[node name="Hatch" parent="Exits/Hatch" instance=ExtResource("90_hatch")]
+Profile = ExtResource("91_seam")
+Material = ExtResource("4_wet_stone")
 
 ; east doorway off the choir ledge: only Mag-grip climbs the metal wall to it
 [node name="East" type="Marker3D" parent="Exits"]
@@ -643,6 +648,6 @@ Fov = 34
 
 ; the hatch in the floor down into the Cistern
 [node name="Hatch" type="Marker3D" parent="PhotoSpots"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 60, 2, 16)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 60, 1, 12)
 script = ExtResource("29_spot")
 PlayerPosition = Vector3(56, 0, 0)

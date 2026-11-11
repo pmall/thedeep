@@ -35,6 +35,8 @@
 [ext_resource type="Script" path="res://scripts/rooms/Room.cs" id="28_room"]
 [ext_resource type="Resource" path="res://resources/biomes/flooded.tres" id="29_flooded"]
 [ext_resource type="PackedScene" path="res://scenes/stage/RoomStage.tscn" id="30_stage"]
+[ext_resource type="PackedScene" path="res://scenes/kit/Hatch.tscn" id="90_hatch"]
+[ext_resource type="Resource" path="res://resources/seams/hatch.tres" id="91_seam"]
 
 [sub_resource type="PrimitiveMesh" id="column_1"]
 script = ExtResource("1_column")
@@ -229,22 +231,22 @@ transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 42, 18.5, 0)
 Size = Vector3(4, 29, 4)
 
 [node name="CeilingWest" parent="Geometry" instance=ExtResource("5_block")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 7.25, 31, 0)
-Size = Vector3(20.5, 4, 4)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 6.75, 30.75, 0)
+Size = Vector3(19.5, 4.5, 4)
 
 [node name="CeilingEast" parent="Geometry" instance=ExtResource("5_block")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 33.25, 31, 0)
-Size = Vector3(21.5, 4, 4)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 33.75, 30.75, 0)
+Size = Vector3(20.5, 4.5, 4)
 
 ; the flue under the hatch, as wide as the Nave's hole over it: metal walls, open below
 [node name="FlueWest" parent="Geometry" instance=ExtResource("5_block")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 18, 17.75, 0)
-Size = Vector3(1, 30.5, 4)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 18, 15.5, 0)
+Size = Vector3(1, 26, 4)
 Surface = 1
 
 [node name="FlueEast" parent="Geometry" instance=ExtResource("5_block")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 22, 17.75, 0)
-Size = Vector3(1, 30.5, 4)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 22, 15.5, 0)
+Size = Vector3(1, 26, 4)
 Surface = 1
 
 ; a fallen column drum
@@ -262,13 +264,15 @@ Surface = 1
 
 ; up the flue to the hatch in the nave floor (falling in from it arrives here)
 [node name="Top" type="Marker3D" parent="Exits"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 20, 30, 0)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 20, 29.5, 0)
 script = ExtResource("6_exit")
 Side = 3
 TargetRoom = "res://worlds/prototype/rooms/Nave.tscn"
 TargetExit = "Hatch"
 Requires = "MagGrip"
-Size = Vector2(3, 1)
+
+[node name="Hatch" parent="Exits/Top" instance=ExtResource("90_hatch")]
+Profile = ExtResource("91_seam")
 
 ; west doorway into the Reliquary
 [node name="West" type="Marker3D" parent="Exits"]
@@ -576,6 +580,6 @@ Fov = 40
 
 ; the top of the flue: the hatch up into the Nave
 [node name="FlueTop" type="Marker3D" parent="PhotoSpots"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 20, 27.5, 18)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 20, 27.5, 12)
 script = ExtResource("27_spot")
 PlayerPosition = Vector3(12, 0, 0)

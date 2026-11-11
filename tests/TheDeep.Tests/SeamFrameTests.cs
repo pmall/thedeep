@@ -10,6 +10,9 @@ public class SeamFrameTests
     // The common doorway: 4 m tall, a stretch of floor 1 m deep before it.
     private static readonly SeamFrame Door = new(4f, 1f);
 
+    // The common hatch: a hole 3 m wide through a slab 2 m thick.
+    private static readonly SeamFrame Hatch = new(3f, 2f);
+
     private static readonly Box Wide = new(-200f, -200f, 200f, 200f);
 
     private static SeamRoom Room(Box bounds, IEnumerable<Box> solids, string exit, Threshold at) =>
@@ -32,11 +35,26 @@ public class SeamFrameTests
     }
 
     [Fact]
-    public void AHatchsFrameIsTheSameFrameTurned()
+    public void AHatchsFrameIsTheSlabEitherSideOfTheHole()
     {
-        IReadOnlyList<Box> frame = new SeamFrame(2f, 1f).Solids(ExitSide.Down, new Vector2(10f, -0.5f));
-        float reach = SeamCheck.Around + 0.5f;
-        Assert.Equal(new[] { new Box(9f - SeamCheck.Around, -0.5f - reach, 9f, -0.5f + reach), new Box(11f, -0.5f - reach, 11f + SeamCheck.Around, -0.5f + reach) }, frame);
+        IReadOnlyList<Box> frame = Hatch.Solids(ExitSide.Down, new Vector2(10f, -1f));
+        Assert.Equal(new[] { new Box(8.5f - SeamCheck.Around, -2f, 8.5f, 0f), new Box(11.5f, -2f, 11.5f + SeamCheck.Around, 0f) }, frame);
+        Assert.Equal(new Vector2(3f, 2f), Hatch.ExitSize(ExitSide.Up));
+    }
+
+    [Fact]
+    public void TwoRoomsFramingAHatchFromOneDefinitionAgree()
+    {
+        // The upper room bounds its camera at the slab's underside, the lower one at its top; each room's floor or ceiling stops at the frame.
+        Threshold down = Hatch.Exit(ExitSide.Down, new Vector2(60f, -1f)), up = Hatch.Exit(ExitSide.Up, new Vector2(20f, 29.5f));
+        var upper = Hatch.Solids(ExitSide.Down, down.Marker).Append(new Box(-3f, -2f, 56.5f, 0f)).Append(new Box(63.5f, -2f, 68f, 0f));
+        var lower = Hatch.Solids(ExitSide.Up, up.Marker).Append(new Box(-3f, 28.5f, 16.5f, 33f)).Append(new Box(17.5f, 2.5f, 18.5f, 28.5f));
+        var check = new SeamCheck();
+        check.AddRoom("Nave", Room(new Box(-1f, -2f, 86.5f, 24f), upper, "Hatch", down));
+        check.AddRoom("Cistern", Room(new Box(-1.5f, -2f, 41f, 30.5f), lower, "Top", up));
+        check.AddWay("Nave", "Hatch", "Cistern", "Top");
+
+        Assert.Empty(check.Problems(1.6f));
     }
 
     [Fact]

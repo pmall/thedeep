@@ -1,0 +1,10 @@
+[gd_resource type="Resource" script_class="SeamProfile" format=3]
+
+[ext_resource type="Script" path="res://scripts/rooms/SeamProfile.cs" id="1_profile"]
+
+; the common hatch: a hole 3 m wide through a slab 2 m thick, framed as deep as a floor block
+[resource]
+script = ExtResource("1_profile")
+Opening = 3.0
+Approach = 2.0
+Depth = 4.0

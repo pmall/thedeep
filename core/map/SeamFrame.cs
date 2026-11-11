@@ -8,9 +8,9 @@ namespace TheDeep;
 /// stretch before it, and the frame of solids it builds around one end. Each room frames its end of the way from this one definition,
 /// centered on its exit's marker; the two markers meet at one place on the map, so the two frames lie on each other and the seam agrees
 /// by construction. The frame fills everything around the opening that <see cref="SeamCheck"/> compares (<see cref="SeamCheck.Around"/>
-/// past the exit's area): what lies beyond is each room's own.
-/// A doorway's frame is a sill under the opening and a lintel over it, both running along the way; a hatch's is the same frame turned
-/// 90°, a jamb on each side of the hole.
+/// past the exit's area, within both rooms' camera bounds): what lies beyond is each room's own.
+/// A doorway's frame is a sill under the opening and a lintel over it, both running along the way. A hatch's is the slab either side of
+/// the hole, as thick as the exit's area: past the slab lie the two rooms' own spaces, each bounding its camera at the slab's far face.
 /// </summary>
 /// <param name="Opening">How tall a doorway's opening is, or how wide a hatch's hole, meters.</param>
 /// <param name="Approach">How deep the exit's area runs along the way, meters: a doorway's stretch of floor, a hatch's slab.</param>
@@ -33,7 +33,7 @@ public sealed record SeamFrame(float Opening, float Approach)
         float a = SeamCheck.Around;
         var near = new Box(area.MinX - a, area.MinY - a, area.MaxX + a, area.MaxY + a);
         return side is ExitSide.Down or ExitSide.Up
-            ? new[] { near with { MaxX = area.MinX }, near with { MinX = area.MaxX } }
+            ? new[] { area with { MinX = near.MinX, MaxX = area.MinX }, area with { MinX = area.MaxX, MaxX = near.MaxX } }
             : new[] { near with { MaxY = area.MinY }, near with { MinY = area.MaxY } };
     }
 }
