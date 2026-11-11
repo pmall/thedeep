@@ -1,0 +1,12 @@
+[gd_scene format=3]
+
+; A body of molten slag: place it at its surface, size it to its basin (SlagBody).
+
+[ext_resource type="Script" path="res://scripts/rooms/SlagBody.cs" id="1_slag"]
+[ext_resource type="Material" path="res://assets/materials/magma.tres" id="2_magma"]
+[ext_resource type="Material" path="res://assets/materials/slag_section.tres" id="3_section"]
+
+[node name="SlagBody" type="Node3D"]
+script = ExtResource("1_slag")
+SurfaceMaterial = ExtResource("2_magma")
+SectionMaterial = ExtResource("3_section")

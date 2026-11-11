@@ -51,17 +51,17 @@ public partial class Player : CharacterBody3D
     /// <summary>Raised when the last health is lost.</summary>
     public event Action? Died;
 
-    /// <summary>Raised when heat burns the pilgrim without Heat plating and it lives (<see cref="Scorch"/>): it is to be set back on its <see cref="Footing"/>.</summary>
+    /// <summary>Raised when slag, or heat it isn't plated for, burns the pilgrim and it lives (<see cref="Scorch"/>): it is to be set back on its <see cref="Footing"/>.</summary>
     public event Action? Scorched;
 
     /// <summary>
-    /// The last ground the pilgrim stood on, upright and in control, clear of any heat that burns it: where heat sets it back
+    /// The last ground the pilgrim stood on, upright and in control, clear of any slag or heat that burns it: where a burn sets it back
     /// (<see cref="Scorch"/>). Set again by every respawn and arrival.
     /// </summary>
     public Vector3 Footing { get; private set; }
 
-    /// <summary>The last physics frame some burning heat was near the body (<see cref="NearHeat"/>).</summary>
-    private ulong _heatNear;
+    /// <summary>The last physics frame something that burns it was near the body (<see cref="NearBurn"/>).</summary>
+    private ulong _burnNear;
 
     /// <summary>Raised after <see cref="Arrive"/> places the player in a new room.</summary>
     public event Action? Arrived;
@@ -193,6 +193,9 @@ public partial class Player : CharacterBody3D
     /// <summary>The body on the play plane (upright: the capsule's width and height over the feet).</summary>
     public Rect2 BodyRect => new(GlobalPosition.X - Capsule.Radius, GlobalPosition.Y, 2f * Capsule.Radius, 2f * CenterHeight);
 
+    /// <summary>The body on the play plane as the core's box (<see cref="BodyRect"/>).</summary>
+    public Box BodyBox => new(GlobalPosition.X - Capsule.Radius, GlobalPosition.Y, GlobalPosition.X + Capsule.Radius, GlobalPosition.Y + 2f * CenterHeight);
+
     /// <summary>Height of the body's center above the feet.</summary>
     public float CenterHeight => CapsuleOffset.Y;
 
@@ -293,7 +296,7 @@ public partial class Player : CharacterBody3D
             LastAnchor = null;
         }
 
-        if (IsOnFloor() && IsUpright && InControl && Engine.GetPhysicsFrames() > _heatNear + 1)
+        if (IsOnFloor() && IsUpright && InControl && Engine.GetPhysicsFrames() > _burnNear + 1)
         {
             Footing = GlobalPosition;
         }
@@ -595,7 +598,7 @@ public partial class Player : CharacterBody3D
     }
 
     /// <summary>
-    /// Burned by heat without Heat plating: <paramref name="damage"/> health taken unless in the grace period, held where it is
+    /// Burned by slag, or by heat without Heat plating (`docs/gameplay.md#slag`): <paramref name="damage"/> health taken unless in the grace period, held where it is
     /// in its recoil, control gone, then <see cref="Scorched"/> (the session sets it back on its <see cref="Footing"/>) or
     /// <see cref="Died"/>. Returns whether it hurt.
     /// </summary>
@@ -623,8 +626,8 @@ public partial class Player : CharacterBody3D
         return hurt;
     }
 
-    /// <summary>Burning heat is near the body this tick (within its zone's margin): the ground here is no <see cref="Footing"/>.</summary>
-    public void NearHeat() => _heatNear = Engine.GetPhysicsFrames();
+    /// <summary>Slag or burning heat is near the body this tick (within its margin): the ground here is no <see cref="Footing"/>.</summary>
+    public void NearBurn() => _burnNear = Engine.GetPhysicsFrames();
 
     /// <summary>
     /// Holds the horizontal input toward <paramref name="direction"/> for up to <paramref name="seconds"/>, or until

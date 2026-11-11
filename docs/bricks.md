@@ -33,7 +33,8 @@ All working; the art pass makes them ready (`docs/roadmap.md#art-restore`).
 | `HarpoonAnchor` (its state shown: `AnchorLook`) | ready | — |
 | `AnchorPointer` (the edge chevron toward a ring in sight off screen) | working (look) | `docs/roadmap.md#bricks-ready` |
 | `WaterBody` (swim) | ready | — |
-| `HeatZone` | working | `docs/roadmap.md#volcanic-rethink` |
+| `SlagBody` (`scenes/kit/SlagBody.tscn`: placed at its surface and sized to a basin of blocks, a bed and two banks the room check holds) | working (one room: the Basalt; the look's final pass) | `docs/roadmap.md#volcanic-rethink` |
+| `HeatZone` (its `Lethal` stand-in for slag goes with the Slag's rebuild) | working | `docs/roadmap.md#volcanic-rethink` |
 | `Lift` | ready | — |
 | `Portcullis` | working | `docs/roadmap.md#bricks-ready` |
 | `MapGoal` | ready | — |

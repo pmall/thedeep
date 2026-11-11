@@ -229,7 +229,7 @@ public sealed class WorldCheck
         bool grip = (g & Ability.MagGrip) != 0;
         return new ReachPlanner(clumsy ? _limits.Move.Clumsy() : _limits.Move, (g & Ability.Drill) != 0 ? shape.Sound : shape.Solids,
             (g & Ability.Harpoon) != 0 ? _limits.Harpoon : null, shape.Anchors, shape.Lifts, _limits.Water, shape.Waters,
-            ballast: (g & Ability.Ballast) != 0, hazards: (g & Ability.HeatPlating) != 0 ? shape.Lethal : shape.Heat.Concat(shape.Lethal),
+            ballast: (g & Ability.Ballast) != 0, hazards: (g & Ability.HeatPlating) != 0 ? shape.Slag : shape.Heat.Concat(shape.Slag),
             grip: grip ? _limits.Grip : null, metal: grip ? shape.Metal : null);
     }
 

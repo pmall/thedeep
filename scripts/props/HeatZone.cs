@@ -7,9 +7,11 @@ namespace TheDeep;
 /// tall, rising from the node's origin. Without Heat plating, touching it burns (<see cref="Player.Scorch"/>: health taken
 /// unless in the grace period, and the pilgrim set back on the last ground it stood on clear of heat, its
 /// <see cref="Player.Footing"/>); ground within <see cref="FootingMargin"/> of it is no footing. With Heat plating it is
-/// harmless (`docs/gameplay.md#heat`). A <see cref="Lethal"/> zone is molten slag itself: touching it is death, plated or not. It looks like heat:
+/// harmless (`docs/gameplay.md#heat`). A <see cref="Lethal"/> zone is the old stand-in for molten slag, kept only until the Slag's
+/// river moves onto <see cref="SlagBody"/> (`docs/roadmap.md#volcanic-rethink`): touching it is death, plated or not. It looks like heat:
 /// embers rising (<see cref="Embers"/>), a glow at its foot. Not a <see cref="Block"/>:
-/// the map's geometry check reads its <see cref="Region"/> as space no planner may enter without Heat plating (a lethal one: ever).
+/// the map's geometry check reads its <see cref="Region"/> as space no planner may enter without Heat plating (a lethal one: ever,
+/// as <see cref="RoomShape.Slag"/>).
 /// </summary>
 public partial class HeatZone : Node3D
 {
@@ -77,16 +79,14 @@ public partial class HeatZone : Node3D
             return;
         }
 
-        Rect2 body = player.BodyRect;
-        Box r = Region;
-        float m = FootingMargin;
-        if (body.Position.X >= r.MaxX + m || r.MinX - m >= body.End.X || body.Position.Y >= r.MaxY + m || r.MinY - m >= body.End.Y)
+        BurnReach reach = Burn.Reach(Region, Region.Grown(FootingMargin), player.BodyBox);
+        if (reach == BurnReach.Clear)
         {
             return;
         }
 
-        player.NearHeat();
-        if (body.Position.X >= r.MaxX || r.MinX >= body.End.X || body.Position.Y >= r.MaxY || r.MinY >= body.End.Y)
+        player.NearBurn();
+        if (reach == BurnReach.Near)
         {
             return;
         }

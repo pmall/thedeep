@@ -1,0 +1,7 @@
+[gd_resource type="ShaderMaterial" format=3]
+; The front of a slag body on the play plane, from its surface down to its bed (slag_section.gdshader, SlagBody).
+
+[ext_resource type="Shader" path="res://assets/shaders/slag_section.gdshader" id="1_shader"]
+
+[resource]
+shader = ExtResource("1_shader")

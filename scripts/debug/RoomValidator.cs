@@ -226,6 +226,14 @@ public partial class RoomValidator : Node
         }
 
         CheckWaterClearance(room, Problem);
+        foreach (SlagBody slag in room.All<SlagBody>())
+        {
+            foreach (string problem in SlagBasin.Problems(slag.PlayRegion, solids))
+            {
+                Problem($"slag {slag.Name}: {problem}");
+            }
+        }
+
         if (!room.PhotoSpots().Any())
         {
             Problem("no PhotoSpot (tools/capture.sh needs at least one)");
@@ -294,7 +302,7 @@ public partial class RoomValidator : Node
             room.All<Lift>().Select(l => l.Path).ToList(), sound, waters, heat, relics, goals, metal, room.SpawnPoint.GlobalPosition.Flat())
         {
             Items = items,
-            Lethal = room.All<HeatZone>().Where(z => z.Lethal).Select(z => z.Region).ToList(),
+            Slag = room.All<SlagBody>().Select(s => s.PlayRegion).Concat(room.All<HeatZone>().Where(z => z.Lethal).Select(z => z.Region)).ToList(),
         });
 
         foreach (RoomExit exit in exits.Where(e => e.TargetRoom != "" && ResourceLoader.Exists(e.TargetRoom)))

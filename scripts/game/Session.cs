@@ -341,7 +341,7 @@ public partial class Session : Node
     }
 
     /// <summary>
-    /// Burned by heat without its plating (`docs/gameplay.md#heat`): the veil falls quickly over the recoil, the pilgrim stands
+    /// Burned by slag, or by heat without its plating (`docs/gameplay.md#slag`): the veil falls quickly over the recoil, the pilgrim stands
     /// again on its <see cref="Player.Footing"/>, in control, and the veil lifts.
     /// </summary>
     private async void SetBack()
@@ -403,6 +403,11 @@ public partial class Session : Node
         foreach (HeatZone zone in room.All<HeatZone>())
         {
             zone.Player = Player;
+        }
+
+        foreach (SlagBody slag in room.All<SlagBody>())
+        {
+            slag.Player = Player;
         }
 
         foreach (Lift lift in room.All<Lift>())
