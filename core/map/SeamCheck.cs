@@ -32,53 +32,6 @@ public sealed record SeamRoom(Box Bounds, List<Box> Solids, List<(string Name, B
 public sealed record SeamProblem(string Seam, SeamRule Rule, string Detail);
 
 /// <summary>
-/// Seams that don't agree yet, each written down with its reason (a world's seam exceptions, a `.tsv` of columns seam, rule, reason):
-/// the seam check accepts exactly these, and an entry nothing breaks any more is a problem too, so the list only shrinks.
-/// </summary>
-public sealed record SeamExceptions(IReadOnlyList<(string Seam, SeamRule Rule, string Reason)> Entries)
-{
-    private static readonly string[] Columns = { "seam", "rule", "reason" };
-
-    /// <summary>No exceptions: every seam agrees.</summary>
-    public static SeamExceptions None { get; } = new(Array.Empty<(string, SeamRule, string)>());
-
-    /// <summary>The exceptions in <paramref name="text"/> (blank lines and `#` comments skipped; a header row first).</summary>
-    /// <exception cref="FormatException">A row without its three cells, an unknown rule or an empty reason, naming its line.</exception>
-    public static SeamExceptions Parse(string text)
-    {
-        var entries = new List<(string, SeamRule, string)>();
-        bool header = false;
-        string[] lines = text.Split('\n');
-        for (int n = 0; n < lines.Length; n++)
-        {
-            string line = lines[n].TrimEnd('\r');
-            if (line.Trim() == "" || line.TrimStart().StartsWith('#'))
-            {
-                continue;
-            }
-
-            string[] cells = line.Split('\t').Select(c => c.Trim()).ToArray();
-            if (!header)
-            {
-                header = cells.SequenceEqual(Columns)
-                    ? true
-                    : throw new FormatException($"line {n + 1}: the header must be the columns {string.Join(", ", Columns)}, tab-separated");
-                continue;
-            }
-
-            if (cells.Length != Columns.Length || !Enum.TryParse(cells[1], out SeamRule rule) || cells[2] == "")
-            {
-                throw new FormatException($"line {n + 1}: a seam, one of the rules {string.Join(", ", Enum.GetNames<SeamRule>())}, and a reason");
-            }
-
-            entries.Add((cells[0], rule, cells[2]));
-        }
-
-        return header ? new SeamExceptions(entries) : throw new FormatException("no header");
-    }
-}
-
-/// <summary>
 /// The rooms held to each other across their exits (docs/gameplay.md#leaving-a-room), pure. The two ends of a way meet at one place
 /// on the map (<see cref="ExitMath.RoomOffset"/>); there
 /// - the opening is as wide (a hatch) or as tall (a doorway) on both sides (<see cref="SeamRule.Opening"/>);
@@ -89,7 +42,7 @@ public sealed record SeamExceptions(IReadOnlyList<(string Seam, SeamRule Rule, s
 /// - a lift that rises through a hatch has a car on the other side too, as wide and in line, at the matching hatch
 ///   (<see cref="SeamRule.Lift"/>).
 /// Solids and water are compared on a grid of <see cref="Step"/>, sampled between the block grid's lines. The room check (an
-/// adapter) feeds it the rooms in the game and the ways between them, and prints what it finds less the world's exceptions.
+/// adapter) feeds it the rooms in the game and the ways between them, and prints what it finds.
 /// </summary>
 public sealed class SeamCheck
 {
@@ -118,22 +71,10 @@ public sealed class SeamCheck
     }
 
     /// <summary>
-    /// What disagrees at the seams, less <paramref name="exceptions"/>, one line each; and each exception nothing breaks any more.
-    /// <paramref name="reach"/> is how far above a lift's car its rider reaches (the pilgrim's height), meters.
+    /// What disagrees at the seams, one line each. <paramref name="reach"/> is how far above a lift's car its rider reaches (the
+    /// pilgrim's height), meters.
     /// </summary>
-    public IEnumerable<string> Check(SeamExceptions exceptions, float reach)
-    {
-        var found = Problems(reach).ToList();
-        foreach (SeamProblem p in found.Where(p => !exceptions.Entries.Any(e => e.Seam == p.Seam && e.Rule == p.Rule)))
-        {
-            yield return $"seam {p.Seam} ({p.Rule}): {p.Detail}";
-        }
-
-        foreach ((string seam, SeamRule rule, _) in exceptions.Entries.Where(e => !found.Any(p => p.Seam == e.Seam && p.Rule == e.Rule)))
-        {
-            yield return $"seam {seam} ({rule}) is listed as an exception, but agrees now (or is no seam): delete its line";
-        }
-    }
+    public IEnumerable<string> Check(float reach) => Problems(reach).Select(p => $"seam {p.Seam} ({p.Rule}): {p.Detail}");
 
     /// <summary>Every disagreement at the seams, the seams in name order.</summary>
     public IEnumerable<SeamProblem> Problems(float reach)

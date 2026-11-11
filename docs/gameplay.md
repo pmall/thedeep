@@ -44,7 +44,7 @@ Room transitions as in the classics (Hollow Knight, Super Metroid), and never a 
   - around it, what both rooms' cameras show is solid, water or open in both: a hole in a floor lands under the matching hole in the roof below, a wall or a slab is as thick on both sides;
   - water never ends at a seam, and it always has a bottom: a floor, or a hole onto water or a floor beyond it. A hole in a roof never leads under water that has no bottom;
   - a lift that rises through a hatch has its shaft and its car in the room beyond too, as wide and in line.
-    The room check holds every seam to this (`SeamCheck`, both worlds). A seam that doesn't agree yet is written in its world's seam exceptions with its reason, and fails the check once it agrees, so the list only shrinks.
+    The room check holds every seam to this (`SeamCheck`, both worlds), with no exception: a way is built by a seam brick from both sides (`instructions/testing.md#seam-brick`).
 - **Nothing kills outright and nothing is a fall out of the world**: a pit holds a floor, water or slag (`docs/gameplay.md#slag`).
 - **Falling out of a room** (below its camera bounds) is therefore a bug: the pilgrim is put back at the exit it came in by (or its shrine, if it woke there), and the log says so as an error.
 

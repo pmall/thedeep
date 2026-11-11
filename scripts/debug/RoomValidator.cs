@@ -21,8 +21,7 @@ namespace TheDeep;
 /// Then the world's line book: every line the code, the rooms and the world's items name is in it or its base (<see cref="LineCheck"/>).
 /// Then the map, extracted from the rooms in the game (<see cref="Room.InGame"/>) and proven by the core's <see cref="WorldCheck"/>:
 /// layout, reachability, softlocks, ability orders (`--map-report`: the whole graph), the geometry, the map from inside the rooms,
-/// room for error; the seams, every way's two ends held to each other (<see cref="SeamCheck"/>, less the world's
-/// <see cref="WorldDefinition.SeamExceptions"/>); and the world's network (<see cref="MapDraft"/>): its targets, its layers, its agreement with the built rooms, and its room
+/// room for error; the seams, every way's two ends held to each other (<see cref="SeamCheck"/>); and the world's network (<see cref="MapDraft"/>): its targets, its layers, its agreement with the built rooms, and its room
 /// table held to it (<see cref="RoomTable.Check"/>; `--map-report`: each room's kinds).
 /// Last, report-only: the ground rules' findings per room and their totals (`GROUND`, <see cref="ReportGround"/>). Run alone:
 /// `godot --headless --path . -- --room MechanicsLab --validate-rooms | grep GROUND` (`--world sequel --room Strongroom` for the sequel).
@@ -114,7 +113,7 @@ public partial class RoomValidator : Node
             }
         }
 
-        _problems.AddRange(_seams.Check(LoadSeamExceptions(), Tuning.Move.Height));
+        _problems.AddRange(_seams.Check(Tuning.Move.Height));
         map += "\n" + CheckDraft(world);
         foreach (string problem in _problems)
         {
@@ -504,21 +503,6 @@ public partial class RoomValidator : Node
         foreach (RoomExit exit in exits.Where(e => e.TargetRoom != "" && e.TargetExit != ""))
         {
             _seams.AddWay(name, exit.Name, World.NameOf(exit.TargetRoom), exit.TargetExit);
-        }
-    }
-
-    /// <summary>The world's seam exceptions (<see cref="SeamExceptions"/>); a world without them has none, one that doesn't parse is a problem.</summary>
-    private SeamExceptions LoadSeamExceptions()
-    {
-        switch (World.Definition.LoadSeamExceptions())
-        {
-            case WorldData<SeamExceptions>.Loaded(var exceptions):
-                return exceptions;
-            case WorldData<SeamExceptions>.Malformed(var message):
-                _problems.Add($"seam exceptions ({World.Definition.SeamExceptions}): {message}");
-                return SeamExceptions.None;
-            default:
-                return SeamExceptions.None;
         }
     }
 

@@ -97,26 +97,12 @@ public class SeamCheckTests
     }
 
     [Fact]
-    public void ExceptionsHideTheirProblemsAndFailOnceTheSeamAgrees()
+    public void EachProblemIsALineNamingItsSeamAndRule()
     {
         var seams = new SeamCheck();
         seams.AddRoom("Loft", Loft(hole: 4f));
         seams.AddRoom("Well", Well());
         seams.AddWay("Loft", "Hole", "Well", "Roof");
-        SeamExceptions listed = SeamExceptions.Parse("seam\trule\treason\nLoft:Hole | Well:Roof\tOpening\tto fix\nLoft:Hole | Well:Roof\tSolids\tto fix\n");
-        Assert.Empty(seams.Check(listed, Reach));
-
-        var fixedSeams = new SeamCheck();
-        fixedSeams.AddRoom("Loft", Loft());
-        fixedSeams.AddRoom("Well", Well());
-        fixedSeams.AddWay("Loft", "Hole", "Well", "Roof");
-        Assert.Equal(2, fixedSeams.Check(listed, Reach).Count(l => l.Contains("delete its line", StringComparison.Ordinal)));
-    }
-
-    [Fact]
-    public void AnExceptionWithoutItsReasonDoesNotParse()
-    {
-        Assert.Throws<FormatException>(() => SeamExceptions.Parse("seam\trule\treason\nLoft:Hole | Well:Roof\tOpening\t\n"));
-        Assert.Throws<FormatException>(() => SeamExceptions.Parse("seam\trule\treason\nLoft:Hole | Well:Roof\tShape\tto fix\n"));
+        Assert.Contains(seams.Check(Reach), l => l.StartsWith("seam Loft:Hole | Well:Roof (Opening): ", StringComparison.Ordinal));
     }
 }
