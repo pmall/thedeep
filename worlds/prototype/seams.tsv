@@ -17,4 +17,3 @@ Ashfall:Bellows | Bellows:Ashfall	Solids	to fix under seam-coherence (vertical)
 Foundry:Threshold | Threshold:Foundry	Solids	to fix under seam-coherence (vertical)
 
 # Doorways, after the vertical exits: where each room puts the wall and lintel around a shared doorway
-Bellows:Foundry | Foundry:West	Solids	to fix under seam-coherence (doorway)

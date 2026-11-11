@@ -25,6 +25,8 @@
 [ext_resource type="Script" path="res://scripts/kit/CableMesh.cs" id="19_cables"]
 [ext_resource type="Script" path="res://scripts/kit/PipeMesh.cs" id="20_pipe"]
 [ext_resource type="Script" path="res://scripts/rooms/PhotoSpot.cs" id="21_spot"]
+[ext_resource type="PackedScene" path="res://scenes/kit/Doorway.tscn" id="90_doorway"]
+[ext_resource type="Resource" path="res://resources/seams/doorway.tres" id="91_seam"]
 [ext_resource type="Script" path="res://scripts/rooms/Room.cs" id="22_room"]
 [ext_resource type="Resource" path="res://resources/biomes/volcanic.tres" id="23_volcanic"]
 [ext_resource type="PackedScene" path="res://scenes/stage/RoomStage.tscn" id="24_stage"]
@@ -109,8 +111,14 @@ FrameAbove = false
 
 ; the foundry floor
 [node name="FloorWest" parent="Geometry" instance=ExtResource("2_block")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 24, -6, 0)
-Size = Vector3(54, 12, 4)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 27, -6, 0)
+Size = Vector3(48, 12, 4)
+Material = ExtResource("1_basalt")
+
+; the floor under the west doorway's sill (West's Doorway frames X -2 to 3, Y -2 to 0 and 4 to 6)
+[node name="FloorWestFoot" parent="Geometry" instance=ExtResource("2_block")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -7, 0)
+Size = Vector3(6, 10, 4)
 Material = ExtResource("1_basalt")
 
 [node name="FloorEast" parent="Geometry" instance=ExtResource("2_block")]
@@ -145,15 +153,15 @@ transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 52, -1.75, 0)
 Size = Vector3(2, 0.5, 4)
 Material = ExtResource("3_rust")
 
-; over the door from the Bellows
+; over the door from the Bellows, from its lintel's top to the roof and flush with its face
 [node name="WallWestHigh" parent="Geometry" instance=ExtResource("2_block")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -1.5, 15, 0)
-Size = Vector3(3, 22, 4)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 12, 0)
+Size = Vector3(6, 12, 4)
 Material = ExtResource("1_basalt")
 
 [node name="Roof" parent="Geometry" instance=ExtResource("2_block")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 32, 22, 0)
-Size = Vector3(64, 8, 4)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 30.5, 22, 0)
+Size = Vector3(67, 8, 4)
 Material = ExtResource("1_basalt")
 
 [node name="WallEast" parent="Geometry" instance=ExtResource("2_block")]
@@ -182,7 +190,10 @@ script = ExtResource("5_exit")
 Side = 0
 TargetRoom = "res://worlds/prototype/rooms/Bellows.tscn"
 TargetExit = "Foundry"
-Size = Vector2(1, 4)
+
+[node name="Doorway" parent="Exits/West" instance=ExtResource("90_doorway")]
+Profile = ExtResource("91_seam")
+Material = ExtResource("1_basalt")
 
 ; down the vents, toward the core: the Threshold
 [node name="Threshold" type="Marker3D" parent="Exits"]
@@ -362,6 +373,13 @@ Extents = Vector3(26, 5, 3)
 Density = 0.12
 
 [node name="PhotoSpots" type="Node3D" parent="."]
+
+; the west doorway from the Bellows: its sill, lintel and the wall around it (the seam's frame)
+[node name="WestDoor" type="Marker3D" parent="PhotoSpots"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 2, 3.5, 12)
+script = ExtResource("21_spot")
+PlayerPosition = Vector3(3, 0, 0)
+PlayerFacing = -1
 
 ; the foundry floor, the Founder at its anvil
 [node name="Arena" type="Marker3D" parent="PhotoSpots"]

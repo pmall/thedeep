@@ -22,6 +22,8 @@
 [ext_resource type="PackedScene" path="res://scenes/fx/Embers.tscn" id="15_embers"]
 [ext_resource type="PackedScene" path="res://scenes/fx/Dust.tscn" id="16_dust"]
 [ext_resource type="Script" path="res://scripts/rooms/PhotoSpot.cs" id="17_spot"]
+[ext_resource type="PackedScene" path="res://scenes/kit/Doorway.tscn" id="90_doorway"]
+[ext_resource type="Resource" path="res://resources/seams/doorway.tres" id="91_seam"]
 [ext_resource type="Script" path="res://scripts/rooms/Room.cs" id="18_room"]
 [ext_resource type="Resource" path="res://resources/biomes/volcanic.tres" id="19_volcanic"]
 [ext_resource type="PackedScene" path="res://scenes/stage/RoomStage.tscn" id="20_stage"]
@@ -157,18 +159,20 @@ Surface = 1
 
 ; the high ledge before the Foundry
 [node name="Ledge" parent="Geometry" instance=ExtResource("2_block")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 51, 15.75, 0)
-Size = Vector3(10, 0.5, 4)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 49.5, 15.75, 0)
+Size = Vector3(7, 0.5, 4)
 Material = ExtResource("1_basalt")
 
+; the east wall under the Foundry doorway's sill (Foundry's Doorway frames X 53 to 58, Y 14 to 16 and 20 to 22)
 [node name="WallEastLow" parent="Geometry" instance=ExtResource("2_block")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 57.5, 8, 0)
-Size = Vector3(3, 16, 4)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 57.5, 7, 0)
+Size = Vector3(3, 14, 4)
 Material = ExtResource("1_basalt")
 
+; over the Foundry doorway, from its lintel's top to the roof and flush with its face
 [node name="WallEastHigh" parent="Geometry" instance=ExtResource("2_block")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 57.5, 21.5, 0)
-Size = Vector3(3, 3, 4)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 56, 22.5, 0)
+Size = Vector3(6, 1, 4)
 Material = ExtResource("1_basalt")
 
 [node name="Exits" type="Node3D" parent="."]
@@ -190,7 +194,10 @@ Side = 1
 TargetRoom = "res://worlds/prototype/rooms/Foundry.tscn"
 TargetExit = "West"
 Requires = "MagGrip | Harpoon"
-Size = Vector2(1, 4)
+
+[node name="Doorway" parent="Exits/Foundry" instance=ExtResource("90_doorway")]
+Profile = ExtResource("91_seam")
+Material = ExtResource("1_basalt")
 
 [node name="Anchors" type="Node3D" parent="."]
 
@@ -305,6 +312,12 @@ Extents = Vector3(24, 10, 3)
 Density = 0.15
 
 [node name="PhotoSpots" type="Node3D" parent="."]
+
+; the high doorway on to the Foundry: its sill, lintel and the wall around it (the seam's frame)
+[node name="FoundryDoor" type="Marker3D" parent="PhotoSpots"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 53, 19.5, 12)
+script = ExtResource("17_spot")
+PlayerPosition = Vector3(50, 16, 0)
 
 ; under the hatch: the gantries up
 [node name="Hatch" type="Marker3D" parent="PhotoSpots"]
