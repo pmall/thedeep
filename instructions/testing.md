@@ -44,7 +44,7 @@ The full list of arguments is in `Main`; each tool's options are in its header.
 
 A way's two exits are framed by the same brick and `SeamProfile` (`docs/gameplay.md#seam-rule`): a `Doorway` on a west or east exit (`res://scenes/kit/Doorway.tscn`, `res://resources/seams/doorway.tres`), a `Hatch` on a down or up one (`Hatch.tscn`, `hatch.tres`). In each room's `.tscn`, grepped, never read whole:
 
-1. Delete the exit's `Size` line; add the two ext_resources and `[node name="Doorway" parent="Exits/<Exit>" instance=ExtResource(...)]` (or `Hatch`) with `Profile = ExtResource(...)`, plus `Material` when the room's blocks there carry one.
+1. Delete the exit's `Size` line; add the two ext_resources and `[node name="Doorway" parent="Exits/<Exit>" instance=ExtResource(...)]` (or `Hatch`) with `Profile = ExtResource(...)`, plus `Material` when the room's blocks there carry one, and `Surface = 1` where a Mag-grip climb runs up that wall (the wall between two framed openings then comes out flush with the frames' face, so the climb stays one metal face: `Undercroft/WallEast`).
 2. Trim the room's own blocks out of the frame's span (`tools/seamblocks.py <scene> x0 x1 y0 y1` lists what reaches in). A doorway's spans marker.x ± 2.5 m, y −2..0 (sill) and 4..6 (lintel) from the marker; a hatch's, marker.x ± 3.5 m and marker.y ± 1 (the slab either side of the hole), its marker in the slab's middle: −1 in a floor at y −2..0.
 3. A camera bound within 0.5 m past a doorway's frame moves to its end; a hatch's two rooms bound theirs at the slab's far face, so the seam check sees only the frame.
 4. A marker moved moves its room: a loop pins rooms (`MapLayout`), but both markers of one seam moved by the same amount is safe, and a dead-end room moves freely.

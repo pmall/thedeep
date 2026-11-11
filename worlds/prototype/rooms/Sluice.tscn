@@ -213,8 +213,14 @@ Size = Vector3(5, 5, 4)
 Material = ExtResource("1_wet_stone")
 
 [node name="FloorEast" parent="Geometry" instance=ExtResource("2_block")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 48.5, -7, 0)
-Size = Vector3(31, 6, 4)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 45.75, -7, 0)
+Size = Vector3(25.5, 6, 4)
+Material = ExtResource("1_wet_stone")
+
+; the landing under the east doorway's sill (East's Doorway frames Y -6 to -4 and 0 to 2, X 58.5 to 63.5)
+[node name="FloorEastFoot" parent="Geometry" instance=ExtResource("2_block")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 61.25, -8, 0)
+Size = Vector3(5.5, 4, 4)
 Material = ExtResource("1_wet_stone")
 
 ; west wall above the doorway into the Cistern
@@ -224,8 +230,8 @@ Size = Vector3(2, 6, 4)
 
 ; east wall above the doorway down to the Undercroft
 [node name="WallEast" parent="Geometry" instance=ExtResource("2_block")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 63, 6, 0)
-Size = Vector3(2, 12, 4)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 63, 7, 0)
+Size = Vector3(2, 10, 4)
 
 [node name="Ceiling" parent="Geometry" instance=ExtResource("2_block")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 8.75, 10.5, 0)
@@ -286,7 +292,6 @@ TargetExit = "East"
 Profile = ExtResource("91_seam")
 Material = ExtResource("1_wet_stone")
 
-; east doorway down to the Undercroft
 ; the drain in the vault: the far end of the Descent's flooded gate (arrival only), its area the grate and the
 ; water over it, so the pilgrim arrives under the grate
 [node name="Descent" type="Marker3D" parent="Exits"]
@@ -296,13 +301,17 @@ Side = 3
 ArrivalOnly = true
 Size = Vector2(3, 2.5)
 
+; east doorway down to the Undercroft
 [node name="East" type="Marker3D" parent="Exits"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 61, -4, 0)
 script = ExtResource("3_exit")
 Side = 1
 TargetRoom = "res://worlds/prototype/rooms/Undercroft.tscn"
 TargetExit = "West"
-Size = Vector2(1, 4)
+
+[node name="Doorway" parent="Exits/East" instance=ExtResource("90_doorway")]
+Profile = ExtResource("91_seam")
+Material = ExtResource("1_wet_stone")
 
 [node name="Machines" type="Node3D" parent="."]
 
@@ -598,6 +607,12 @@ material_override = ExtResource("27_foreground")
 cast_shadow = 0
 
 [node name="PhotoSpots" type="Node3D" parent="."]
+
+; the east doorway down to the Undercroft: its sill, lintel and the wall around it (the seam's frame)
+[node name="EastDoor" type="Marker3D" parent="PhotoSpots"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 57, -0.5, 12)
+script = ExtResource("28_spot")
+PlayerPosition = Vector3(55, -4, 0)
 
 ; the west doorway from the Cistern: its sill, lintel and the wall around it (the seam's frame)
 [node name="WestDoor" type="Marker3D" parent="PhotoSpots"]

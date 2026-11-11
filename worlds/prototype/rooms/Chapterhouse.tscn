@@ -36,6 +36,8 @@
 [ext_resource type="Script" path="res://scripts/rooms/Room.cs" id="29_room"]
 [ext_resource type="Resource" path="res://resources/biomes/flooded.tres" id="30_flooded"]
 [ext_resource type="PackedScene" path="res://scenes/stage/RoomStage.tscn" id="31_stage"]
+[ext_resource type="PackedScene" path="res://scenes/kit/Doorway.tscn" id="90_doorway"]
+[ext_resource type="Resource" path="res://resources/seams/doorway.tres" id="91_seam"]
 
 [sub_resource type="PrimitiveMesh" id="blockmesh_1"]
 script = ExtResource("11_blockmesh")
@@ -189,28 +191,40 @@ PillarDensity = 2.8
 
 [node name="Floor" parent="Geometry" instance=ExtResource("2_block")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 24, -2, 0)
-Size = Vector3(54, 4, 4)
+Size = Vector3(41, 4, 4)
+Material = ExtResource("1_wet_stone")
+
+; the floor under the west doorway's sill (West's Doorway frames Y -2 to 0 and 4 to 6, X -1.5 to 3.5)
+[node name="FloorWestFoot" parent="Geometry" instance=ExtResource("2_block")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.25, -3, 0)
+Size = Vector3(6.5, 2, 4)
+Material = ExtResource("1_wet_stone")
+
+; the floor under the east doorway's sill (East's Doorway frames Y -2 to 0 and 4 to 6, X 44.5 to 49.5)
+[node name="FloorEastFoot" parent="Geometry" instance=ExtResource("2_block")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 47.75, -3, 0)
+Size = Vector3(6.5, 2, 4)
 Material = ExtResource("1_wet_stone")
 
 ; over the west doorway
 [node name="WallWest" parent="Geometry" instance=ExtResource("2_block")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -1.5, 15, 0)
-Size = Vector3(3, 22, 4)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.25, 16, 0)
+Size = Vector3(6.5, 20, 4)
 
 ; the mass over the west vestibule: the raised gate hangs inside it
 [node name="VestibuleWest" parent="Geometry" instance=ExtResource("2_block")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 3, 15.5, 0)
-Size = Vector3(6, 21, 4)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 4.75, 15.5, 0)
+Size = Vector3(2.5, 21, 4)
 
 ; and over the east one
 [node name="VestibuleEast" parent="Geometry" instance=ExtResource("2_block")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 45, 15.5, 0)
-Size = Vector3(6, 21, 4)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 43.25, 15.5, 0)
+Size = Vector3(2.5, 21, 4)
 
 ; over the east doorway
 [node name="WallEast" parent="Geometry" instance=ExtResource("2_block")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 49.5, 15, 0)
-Size = Vector3(3, 22, 4)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 47.75, 16, 0)
+Size = Vector3(6.5, 20, 4)
 
 ; the vault's crown
 [node name="Vault" parent="Geometry" instance=ExtResource("2_block")]
@@ -226,7 +240,10 @@ script = ExtResource("3_exit")
 Side = 0
 TargetRoom = "res://worlds/prototype/rooms/Undercroft.tscn"
 TargetExit = "Chapterhouse"
-Size = Vector2(1, 4)
+
+[node name="Doorway" parent="Exits/West" instance=ExtResource("90_doorway")]
+Profile = ExtResource("91_seam")
+Material = ExtResource("1_wet_stone")
 
 ; on to the Brink
 [node name="East" type="Marker3D" parent="Exits"]
@@ -235,7 +252,10 @@ script = ExtResource("3_exit")
 Side = 1
 TargetRoom = "res://worlds/prototype/rooms/Brink.tscn"
 TargetExit = "West"
-Size = Vector2(1, 4)
+
+[node name="Doorway" parent="Exits/East" instance=ExtResource("90_doorway")]
+Profile = ExtResource("91_seam")
+Material = ExtResource("1_wet_stone")
 
 [node name="Props" type="Node3D" parent="."]
 
@@ -538,6 +558,19 @@ material_override = ExtResource("27_foreground")
 cast_shadow = 0
 
 [node name="PhotoSpots" type="Node3D" parent="."]
+
+; the east doorway into the Brink: its sill, lintel and the wall around it (the seam's frame)
+[node name="EastDoor" type="Marker3D" parent="PhotoSpots"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 43, 3.5, 12)
+script = ExtResource("28_spot")
+PlayerPosition = Vector3(41, 0, 0)
+
+; the west doorway from the Undercroft: its sill, lintel and the wall around it (the seam's frame)
+[node name="WestDoor" type="Marker3D" parent="PhotoSpots"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 2, 3.5, 12)
+script = ExtResource("28_spot")
+PlayerPosition = Vector3(4, 0, 0)
+PlayerFacing = -1
 
 ; gameplay framing: arriving, the gate up in its vestibule
 [node name="Vestibule" type="Marker3D" parent="PhotoSpots"]

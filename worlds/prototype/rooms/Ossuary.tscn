@@ -35,6 +35,8 @@
 [ext_resource type="Script" path="res://scripts/rooms/Room.cs" id="27_room"]
 [ext_resource type="Resource" path="res://resources/biomes/flooded.tres" id="28_flooded"]
 [ext_resource type="PackedScene" path="res://scenes/stage/RoomStage.tscn" id="29_stage"]
+[ext_resource type="PackedScene" path="res://scenes/kit/Doorway.tscn" id="90_doorway"]
+[ext_resource type="Resource" path="res://resources/seams/doorway.tres" id="91_seam"]
 
 [sub_resource type="QuadMesh" id="QuadMesh_1"]
 size = Vector2(3, 0.3)
@@ -175,8 +177,14 @@ PillarDensity = 2
 [node name="Geometry" type="Node3D" parent="."]
 
 [node name="FloorUpper" parent="Geometry" instance=ExtResource("2_block")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 5.5, -3, 0)
-Size = Vector3(17, 6, 4)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 8.75, -3, 0)
+Size = Vector3(10.5, 6, 4)
+Material = ExtResource("1_wet_stone")
+
+; the floor under the west doorway's sill (West's Doorway frames Y -2 to 0 and 4 to 6, X -1.5 to 3.5)
+[node name="FloorWestFoot" parent="Geometry" instance=ExtResource("2_block")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.25, -4, 0)
+Size = Vector3(6.5, 4, 4)
 Material = ExtResource("1_wet_stone")
 
 [node name="StepA" parent="Geometry" instance=ExtResource("2_block")]
@@ -204,8 +212,8 @@ Size = Vector3(8, 0.5, 4)
 
 ; west wall above the doorway
 [node name="WallWest" parent="Geometry" instance=ExtResource("2_block")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -1.5, 12, 0)
-Size = Vector3(3, 16, 4)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -1.5, 13, 0)
+Size = Vector3(3, 14, 4)
 
 [node name="WallEast" parent="Geometry" instance=ExtResource("2_block")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 47.5, 8, 0)
@@ -229,7 +237,10 @@ script = ExtResource("3_exit")
 Side = 0
 TargetRoom = "res://worlds/prototype/rooms/Undercroft.tscn"
 TargetExit = "East"
-Size = Vector2(1, 4)
+
+[node name="Doorway" parent="Exits/West" instance=ExtResource("90_doorway")]
+Profile = ExtResource("91_seam")
+Material = ExtResource("1_wet_stone")
 
 [node name="Props" type="Node3D" parent="."]
 
@@ -478,6 +489,13 @@ material_override = ExtResource("25_foreground")
 cast_shadow = 0
 
 [node name="PhotoSpots" type="Node3D" parent="."]
+
+; the west doorway from the Undercroft: its sill, lintel and the wall around it (the seam's frame)
+[node name="WestDoor" type="Marker3D" parent="PhotoSpots"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 2, 3.5, 12)
+script = ExtResource("26_spot")
+PlayerPosition = Vector3(4, 0, 0)
+PlayerFacing = -1
 
 ; gameplay framing at the doorway, the steps down
 [node name="Entry" type="Marker3D" parent="PhotoSpots"]
