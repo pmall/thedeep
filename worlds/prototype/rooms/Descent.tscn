@@ -17,6 +17,8 @@
 [ext_resource type="Script" path="res://scripts/rooms/RoomExit.cs" id="7_exit"]
 [ext_resource type="PackedScene" path="res://scenes/kit/Doorway.tscn" id="90_doorway"]
 [ext_resource type="Resource" path="res://resources/seams/doorway.tres" id="91_seam"]
+[ext_resource type="PackedScene" path="res://scenes/kit/Hatch.tscn" id="92_hatch"]
+[ext_resource type="Resource" path="res://resources/seams/drain.tres" id="93_drain"]
 [ext_resource type="Script" path="res://scripts/machines/Machine.cs" id="8_machine"]
 [ext_resource type="Resource" path="res://resources/machines/votary.tres" id="9_votary"]
 [ext_resource type="Resource" path="res://resources/machines/lamplighter.tres" id="10_lamplighter"]
@@ -203,7 +205,7 @@ Stage = NodePath("Stage")
 Biome = ExtResource("29_flooded")
 Shafts = [NodePath("Shafts/Well"), NodePath("Shafts/Balcony"), NodePath("Shafts/Ledge")]
 GlyphLights = [NodePath("Glyphs/GateLight"), NodePath("Glyphs/LedgeLight"), NodePath("Glyphs/BalconyLight")]
-BoundsMin = Vector2(-1, -8)
+BoundsMin = Vector2(-1, -7.5)
 BoundsMax = Vector2(44.5, 35)
 
 [node name="SpawnPoint" type="Marker3D" parent="."]
@@ -219,20 +221,26 @@ PillarDensity = 4.2
 
 ; the floor of the well, under the slots between the pillars
 [node name="Floor" parent="Geometry" instance=ExtResource("5_block")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 6, -5, 0)
-Size = Vector3(18, 10, 4)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 5, -5, 0)
+Size = Vector3(16, 10, 4)
 Material = ExtResource("4_wet_stone")
 
-; the flooded gate: a well in the floor between the first two pillars, its water the great well's
+; the flooded gate: a well in the floor between the first two pillars, its water the great well's; its walls stop on the
+; drain's slab (the Sluice hatch's frame, y -8.5 to -5.5)
+[node name="GateWallWest" parent="Geometry" instance=ExtResource("5_block")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 14, -2.75, 0)
+Size = Vector3(2, 5.5, 4)
+Material = ExtResource("4_wet_stone")
+
+[node name="GateWallEast" parent="Geometry" instance=ExtResource("5_block")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 19, -2.75, 0)
+Size = Vector3(2, 5.5, 4)
+Material = ExtResource("4_wet_stone")
+
 [node name="FloorEast" parent="Geometry" instance=ExtResource("5_block")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 32.5, -5, 0)
-Size = Vector3(29, 10, 4)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 33.5, -5, 0)
+Size = Vector3(27, 10, 4)
 Material = ExtResource("4_wet_stone")
-
-; the well's floor: the grate the gate drains through, down into the Sluice
-[node name="GateGrate" parent="Geometry" instance=ExtResource("5_block")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 16.5, -8, 0)
-Size = Vector3(3, 1, 4)
 
 ; the well's west wall, under the ledge
 [node name="WallWest" parent="Geometry" instance=ExtResource("5_block")]
@@ -341,16 +349,21 @@ TargetExit = "East"
 [node name="Doorway" parent="Exits/West" instance=ExtResource("90_doorway")]
 Profile = ExtResource("91_seam")
 
-; the grate at the bottom of the flooded gate: sunk onto it, the pilgrim goes down with the water into the Sluice (one way)
+; the drain at the bottom of the flooded gate: sunk into it, the pilgrim goes down with the water into the Sluice (one
+; way: the Sluice's grate at the hole's bottom, under this room's camera, holds it from coming back)
 [node name="Sluice" type="Marker3D" parent="Exits"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 16.5, -7.25, 0)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 16.5, -7, 0)
 script = ExtResource("7_exit")
 Side = 2
 TargetRoom = "res://worlds/prototype/rooms/Sluice.tscn"
 TargetExit = "Descent"
 Requires = "Ballast"
 OneWay = true
-Size = Vector2(3, 0.5)
+
+[node name="Hatch" parent="Exits/Sluice" instance=ExtResource("92_hatch")]
+Profile = ExtResource("93_drain")
+Material = ExtResource("4_wet_stone")
+Flooded = true
 
 
 [node name="Machines" type="Node3D" parent="."]

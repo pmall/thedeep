@@ -1,0 +1,10 @@
+[gd_resource type="Resource" script_class="SeamProfile" format=3]
+
+[ext_resource type="Script" path="res://scripts/rooms/SeamProfile.cs" id="1_profile"]
+
+; a drain: a hole 3 m wide through a slab 3 m thick, the bottom of a flooded well, held by a grate in the room below (its own)
+[resource]
+script = ExtResource("1_profile")
+Opening = 3.0
+Approach = 3.0
+Depth = 4.0

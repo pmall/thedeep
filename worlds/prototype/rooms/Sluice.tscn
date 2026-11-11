@@ -13,6 +13,8 @@
 [ext_resource type="Script" path="res://scripts/rooms/RoomExit.cs" id="3_exit"]
 [ext_resource type="PackedScene" path="res://scenes/kit/Doorway.tscn" id="90_doorway"]
 [ext_resource type="Resource" path="res://resources/seams/doorway.tres" id="91_seam"]
+[ext_resource type="PackedScene" path="res://scenes/kit/Hatch.tscn" id="92_hatch"]
+[ext_resource type="Resource" path="res://resources/seams/drain.tres" id="93_drain"]
 [ext_resource type="Script" path="res://scripts/machines/Machine.cs" id="4_machine"]
 [ext_resource type="Resource" path="res://resources/machines/limpet.tres" id="5_limpet"]
 [ext_resource type="Resource" path="res://resources/machines/gleaner.tres" id="6_gleaner"]
@@ -40,8 +42,8 @@
 [ext_resource type="Script" path="res://scripts/rooms/Room.cs" id="29_room"]
 [ext_resource type="Resource" path="res://resources/biomes/flooded.tres" id="30_flooded"]
 [ext_resource type="PackedScene" path="res://scenes/stage/RoomStage.tscn" id="31_stage"]
-[ext_resource type="Material" path="res://assets/materials/water_section.tres" id="32_water_section"]
 [ext_resource type="Shader" path="res://assets/shaders/water_section.gdshader" id="40_section_shader"]
+[ext_resource type="Material" path="res://assets/materials/water_section.tres" id="32_water_section"]
 
 [sub_resource type="QuadMesh" id="QuadMesh_1"]
 size = Vector2(3, 0.3)
@@ -154,7 +156,8 @@ Radius = 0.07
 Strands = 3
 Seed = 5
 
-; the drain's water, seen whole through the drain's front: a thicker veil than the channel's, its globals being the channel's
+; the drain's water, seen through the hole from under it: a thicker veil than the channel's, so the column over the grate
+; reads as water in the vault's light (its globals being the channel's)
 [sub_resource type="ShaderMaterial" id="drain_section"]
 shader = ExtResource("40_section_shader")
 shader_parameter/veil = 0.8
@@ -175,7 +178,7 @@ Lamps = [NodePath("Lamps/Gate")]
 Shafts = [NodePath("Shafts/Pit"), NodePath("Shafts/Gate")]
 GlyphLights = [NodePath("Glyphs/DoorLight"), NodePath("Glyphs/GateLight"), NodePath("Glyphs/LowLight")]
 BoundsMin = Vector2(-1, -8)
-BoundsMax = Vector2(62.5, 11)
+BoundsMax = Vector2(62.5, 9)
 
 [node name="SpawnPoint" type="Marker3D" parent="."]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 4, 0, 0)
@@ -237,18 +240,8 @@ Size = Vector3(2, 10, 4)
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 8.75, 10.5, 0)
 Size = Vector3(23.5, 3, 4)
 
-; the drain from the Descent's flooded gate, through the vault (X 20.5 to 23.5): the bottom of the Descent's well,
-; its grate and the stone either side hanging under the vault, the gate's water over the grate
-[node name="DrainWest" parent="Geometry" instance=ExtResource("2_block")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 19.25, 7.5, 0)
-Size = Vector3(2.5, 3, 4)
-Material = ExtResource("1_wet_stone")
-
-[node name="DrainEast" parent="Geometry" instance=ExtResource("2_block")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 24.75, 7.5, 0)
-Size = Vector3(2.5, 3, 4)
-Material = ExtResource("1_wet_stone")
-
+; the grate at the bottom of the drain's hole (the Descent hatch's frame hangs under the vault, X 18.5 to 25.5): it holds
+; the pilgrim under it, as the Descent's, at the same place, holds the gate's water over it
 [node name="DrainGrate" parent="Geometry" instance=ExtResource("2_block")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 22, 6.5, 0)
 Size = Vector3(3, 1, 4)
@@ -292,14 +285,18 @@ TargetExit = "East"
 Profile = ExtResource("91_seam")
 Material = ExtResource("1_wet_stone")
 
-; the drain in the vault: the far end of the Descent's flooded gate (arrival only), its area the grate and the
-; water over it, so the pilgrim arrives under the grate
+; the drain in the vault: the far end of the Descent's flooded gate (arrival only), its hole the grate and the water
+; over it, so the pilgrim arrives under the grate
 [node name="Descent" type="Marker3D" parent="Exits"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 22, 7.25, 0)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 22, 7.5, 0)
 script = ExtResource("3_exit")
 Side = 3
 ArrivalOnly = true
-Size = Vector2(3, 2.5)
+
+[node name="Hatch" parent="Exits/Descent" instance=ExtResource("92_hatch")]
+Profile = ExtResource("93_drain")
+Material = ExtResource("1_wet_stone")
+Flooded = true
 
 ; east doorway down to the Undercroft
 [node name="East" type="Marker3D" parent="Exits"]
@@ -339,15 +336,15 @@ SectionArea = Rect2(-2, -0.75, 5, 0.75)
 SurfaceMaterial = ExtResource("8_water")
 SectionMaterial = ExtResource("32_water_section")
 
-; the Descent's flooded gate seen from under it: its water over the drain's grate, at the Descent's level (its front
-; drawn over the grate only)
+; the Descent's flooded gate seen from under it: its water over the drain's grate, up to the Descent's level, swum
+; where the hatch floods it (the pilgrim never reaches it past the grate)
 [node name="DrainWater" type="Node3D" parent="."]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 22, 14, 0)
 script = ExtResource("7_water_body")
 Size = Vector2(3, 4.2)
-Depth = 8
+Depth = 7
+Swim = true
 Globals = false
-SectionArea = Rect2(-1.5, -7, 3, 7)
 SurfaceMaterial = ExtResource("8_water")
 SectionMaterial = SubResource("drain_section")
 
