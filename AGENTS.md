@@ -23,7 +23,7 @@ Every task, rule and doc line answers to this goal. Before adding one, ask wheth
 
 The main session plans and subagents build (owner), so the main session's context stays small across a long session.
 
-- **The main session splits the current item into small tasks itself** and gives each to a fresh subagent: one deliverable each, done in one short sitting. Measuring a problem, finding its cause and fixing one cause are three tasks. Handing a whole item to one subagent is not orchestrating (owner).
+- **The main session splits the current item into small tasks itself** and gives each to a fresh subagent: one deliverable each, done in one short sitting. Measuring a problem, finding its cause and fixing one cause are three tasks. A visual task is one fix judged on one or two rooms; a subagent that nears 100k tokens of context was given too much (owner). Handing a whole item to one subagent is not orchestrating (owner).
 - **A brief** names the task, the doc sections it needs (by id), the files in play, what done means, the captures to judge by and how many tries before it commits what is good and reports the rest. The subagent runs the full check, commits only its own files as each step passes, and reports in a few lines: what changed, the commit, what is left, any question for the owner.
 - **A subagent cut off** (a usage limit, a crash) is never resumed, which would reload its whole context: a fresh one takes over from the working tree with a short brief of what is left.
 - **Builders run one at a time.** Checks and captures see the whole tree, and captures need the GPU to themselves (`docs/toolchain.md#gpu`). Read-only research may run beside a builder.
