@@ -114,7 +114,7 @@ public partial class BiomeProfile : Resource
 
     [Export] public float GlowIntensity { get; set; } = 0.6f;
 
-    /// <summary>What water surfaces reflect where no geometry is reflected: the haze above the water.</summary>
+    /// <summary>The water's tint: what its surface takes where it reflects, and its section's color near the surface.</summary>
     [ExportGroup("Water")]
     [Export] public Color WaterTint { get; set; } = new(0.3f, 0.32f, 0.4f);
 

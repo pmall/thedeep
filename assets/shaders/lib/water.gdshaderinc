@@ -6,7 +6,7 @@
 global uniform float water_level;
 // World X/Z rectangle of the water: x min, z min, x max, z max.
 global uniform vec4 water_area;
-// What the surface reflects where no geometry is reflected (the haze above the water).
+// The water's tint: what its surface takes where it reflects, and its section's color near the surface.
 global uniform vec4 biome_water;
 // The water's own color with depth (absorption, underwater haze).
 global uniform vec4 biome_water_deep;

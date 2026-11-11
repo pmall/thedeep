@@ -4,8 +4,8 @@ namespace TheDeep;
 
 /// <summary>
 /// A body of water: its surface at the node's height, <see cref="Size"/> wide (X) and deep into the scene
-/// (Z), <see cref="Depth"/> meters deep. Builds the surface mesh,
-/// and pushes its level and area into the water globals so nearby materials draw caustics. One water body
+/// (Z), <see cref="Depth"/> meters deep. Builds the surface mesh (told its floor and sides, so it draws its depth) and
+/// the reflection probe it mirrors, and pushes its level and area into the water globals so nearby materials draw caustics. One water body
 /// per room for now (the globals hold one). Colors come from the biome. With <see cref="Swim"/>, the pilgrim swims in it:
 /// its play-plane region (<see cref="Size"/>.X wide, from the surface down <see cref="Depth"/>) becomes an area on the water
 /// layer that the pilgrim finds itself in (<see cref="Player.WaterSurface"/>), and the map's geometry check swims it.
@@ -17,6 +17,23 @@ public partial class WaterBody : Node3D
 
     /// <summary>The section shader's per-instance surface height.</summary>
     private static readonly StringName SurfaceParameter = "surface_y";
+
+    /// <summary>The surface shader's per-instance floor height and sides, from which it draws the water's depth.</summary>
+    private static readonly StringName FloorParameter = "floor_y";
+
+    private static readonly StringName BoundsParameter = "bounds";
+
+    /// <summary>
+    /// The render layer of the water's own meshes: only they take the reflection probe's picture, and the probe leaves
+    /// them out of it.
+    /// </summary>
+    private const uint WaterRenderLayer = 1u << 1;
+
+    /// <summary>How high above the surface the reflection probe's box reaches, meters.</summary>
+    private const float ReflectionHeight = 18f;
+
+    /// <summary>How high above the surface the reflection probe takes its picture, meters.</summary>
+    private const float ReflectionEye = 1.5f;
 
     /// <summary>Surface size: X across the room, Y into the scene (world Z).</summary>
     [Export] public Vector2 Size { get; set; } = new(10f, 10f);
@@ -91,6 +108,7 @@ public partial class WaterBody : Node3D
                     Mesh = new QuadMesh { Size = new Vector2(Size.X, Depth) },
                     MaterialOverride = SectionMaterial,
                     CastShadow = GeometryInstance3D.ShadowCastingSetting.Off,
+                    Layers = WaterRenderLayer,
                     Position = new Vector3(0f, -0.5f * Depth, SectionFront - GlobalPosition.Z),
                 };
                 section.SetInstanceShaderParameter(SurfaceParameter, SurfaceY);
@@ -98,21 +116,52 @@ public partial class WaterBody : Node3D
             }
         }
 
-        AddChild(new MeshInstance3D
+        Vector3 center = GlobalPosition;
+        var rect = new Vector4(
+            center.X - 0.5f * Size.X, center.Z - 0.5f * Size.Y, center.X + 0.5f * Size.X, center.Z + 0.5f * Size.Y);
+        var surface = new MeshInstance3D
         {
             Mesh = new PlaneMesh { Size = Size },
             MaterialOverride = SurfaceMaterial,
             CastShadow = GeometryInstance3D.ShadowCastingSetting.Off,
-        });
+            Layers = WaterRenderLayer,
+        };
+        surface.SetInstanceShaderParameter(FloorParameter, SurfaceY - Depth);
+        surface.SetInstanceShaderParameter(BoundsParameter, rect);
+        AddChild(surface);
+        AddChild(ReflectionOfRoom());
         if (!Globals)
         {
             return;
         }
 
-        Vector3 center = GlobalPosition;
         RenderingServer.GlobalShaderParameterSet(ShaderGlobals.WaterLevel, center.Y);
-        RenderingServer.GlobalShaderParameterSet(ShaderGlobals.WaterArea, new Vector4(
-            center.X - 0.5f * Size.X, center.Z - 0.5f * Size.Y, center.X + 0.5f * Size.X, center.Z + 0.5f * Size.Y));
+        RenderingServer.GlobalShaderParameterSet(ShaderGlobals.WaterArea, rect);
+    }
+
+    /// <summary>
+    /// What the surface reflects: the room above it, pictured once when the room loads (a fixed picture, so it never
+    /// flickers), box-projected so it lines up with the walls, and shown on the water alone. Its sharpness is the
+    /// reflection atlas's size in project.godot.
+    /// </summary>
+    private ReflectionProbe ReflectionOfRoom()
+    {
+        float eyeZ = Mathf.Clamp(-GlobalPosition.Z, -0.5f * Size.Y + 0.5f, 0.5f * Size.Y - 0.5f);
+        return new ReflectionProbe
+        {
+            // From a meter under the surface, so the surface lies well inside the box, where no blending fades it.
+            Size = new Vector3(Size.X, ReflectionHeight + 1f, Size.Y),
+            Position = new Vector3(0f, 0.5f * (ReflectionHeight - 1f), 0f),
+            OriginOffset = new Vector3(0f, ReflectionEye + 0.5f - 0.5f * ReflectionHeight, eyeZ),
+            BlendDistance = 0f,
+            BoxProjection = true,
+            Interior = true,
+            EnableShadows = true,
+            AmbientMode = ReflectionProbe.AmbientModeEnum.Disabled,
+            UpdateMode = ReflectionProbe.UpdateModeEnum.Once,
+            CullMask = ~WaterRenderLayer & 0xFFFFF,
+            ReflectionMask = WaterRenderLayer,
+        };
     }
 
     public override void _ExitTree()
