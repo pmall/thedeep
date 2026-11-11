@@ -861,7 +861,7 @@ public sealed class ReachPlanner
         return _hazards.Any(h => h.Overlaps(body));
     }
 
-    /// <summary>The water the feet at <paramref name="p"/> are in, or null.</summary>
+    /// <summary>The water the feet at <paramref name="p"/> are in, or null; of overlapping bodies (one water), the one whose surface is highest.</summary>
     private WaterHit? WaterAt(Vector2 p)
     {
         if (_water is not { } water)
@@ -869,15 +869,16 @@ public sealed class ReachPlanner
             return null;
         }
 
+        Box? hit = null;
         foreach (Box w in water.Bodies)
         {
-            if (p.X >= w.MinX && p.X <= w.MaxX && p.Y >= w.MinY && p.Y < w.MaxY)
+            if (p.X >= w.MinX && p.X <= w.MaxX && p.Y >= w.MinY && p.Y < w.MaxY && (hit is not { } h || w.MaxY > h.MaxY))
             {
-                return new WaterHit(w, water.Limits);
+                hit = w;
             }
         }
 
-        return null;
+        return hit is { } body ? new WaterHit(body, water.Limits) : null;
     }
 
     /// <summary>The Harpoon's numbers and the anchors it fires at.</summary>

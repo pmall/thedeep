@@ -90,20 +90,22 @@ public partial class WaterBody : Node3D
 
     /// <summary>
     /// The surface height of the swimmable water whose play-plane region holds (<paramref name="x"/>, <paramref name="y"/>),
-    /// or null. Read from the bodies in the tree, so it allocates nothing (a physics point query returns engine dictionaries).
+    /// or null: where bodies overlap (a standpipe dipping into a pool) they are one water, whose surface is the highest. Read from the
+    /// bodies in the tree, so it allocates nothing (a physics point query returns engine dictionaries).
     /// </summary>
     public static float? SurfaceAt(float x, float y)
     {
+        float? surface = null;
         foreach (WaterBody water in Swimmable)
         {
             Box r = water.PlayRegion;
-            if (x >= r.MinX && x <= r.MaxX && y >= r.MinY && y <= r.MaxY)
+            if (x >= r.MinX && x <= r.MaxX && y >= r.MinY && y <= r.MaxY && (surface is null || r.MaxY > surface))
             {
-                return r.MaxY;
+                surface = r.MaxY;
             }
         }
 
-        return null;
+        return surface;
     }
 
     public override void _EnterTree()

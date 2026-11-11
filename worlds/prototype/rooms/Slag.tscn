@@ -123,18 +123,24 @@ Material = ExtResource("1_basalt")
 
 ; the coolant pool's walls: its east wall is the slag's west bank, its top just over the coolant (jumped out of)
 [node name="PoolWest" parent="Geometry" instance=ExtResource("2_block")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 9, -19.5, 0)
-Size = Vector3(6, 21, 4)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 9, -18.5, 0)
+Size = Vector3(6, 19, 4)
+Material = ExtResource("1_basalt")
+
+; the pool walls' feet beside the hatch's slab
+[node name="PoolWestFoot" parent="Geometry" instance=ExtResource("2_block")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 8, -29, 0)
+Size = Vector3(4, 2, 4)
+Material = ExtResource("1_basalt")
+
+[node name="PoolEastFoot" parent="Geometry" instance=ExtResource("2_block")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 17.5, -29, 0)
+Size = Vector3(1, 2, 4)
 Material = ExtResource("1_basalt")
 
 [node name="PoolEast" parent="Geometry" instance=ExtResource("2_block")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 16.5, -18.25, 0)
-Size = Vector3(3, 23.5, 4)
-Material = ExtResource("1_basalt")
-
-[node name="PoolFloor" parent="Geometry" instance=ExtResource("2_block")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 13.5, -31, 0)
-Size = Vector3(3, 2, 4)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 16.5, -17.25, 0)
+Size = Vector3(3, 21.5, 4)
 Material = ExtResource("1_basalt")
 
 ; the slag's bed, under the whole river
@@ -244,7 +250,7 @@ TargetExit = "Bottom"
 Profile = ExtResource("93_seam_hatch")
 Material = ExtResource("1_basalt")
 
-; the coolant pool's bottom: sunk (Ballast), down to the Quench
+; the coolant pool's bottom, a flooded hatch: sunk through (Ballast), down the Quench's standpipe
 [node name="Quench" type="Marker3D" parent="Exits"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 13.5, -29, 0)
 script = ExtResource("3_exit")
@@ -252,7 +258,11 @@ Side = 2
 TargetRoom = "res://worlds/prototype/rooms/Quench.tscn"
 TargetExit = "Slag"
 Requires = "Ballast"
-Size = Vector2(3, 1)
+
+[node name="Hatch" parent="Exits/Quench" instance=ExtResource("92_hatch")]
+Profile = ExtResource("93_seam_hatch")
+Material = ExtResource("1_basalt")
+Flooded = true
 
 ; the bottom of the plug's shaft: down to the Basalt (one way: the shaft is too smooth to climb)
 [node name="Basalt" type="Marker3D" parent="Exits"]
@@ -410,6 +420,12 @@ Density = 0.15
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 45.5, 7, 12)
 script = ExtResource("20_spot")
 PlayerPosition = Vector3(43, 3.5, 0)
+
+; the flooded hatch down to the Quench: the pool's bottom and the slab either side of its hole (the seam's frame)
+[node name="QuenchHatch" type="Marker3D" parent="PhotoSpots"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 13.5, -25, 12)
+script = ExtResource("20_spot")
+PlayerPosition = Vector3(3, 0, 0)
 
 ; the west doorway from the Kiln: its sill, lintel and the wall around it (the seam's frame)
 [node name="WestDoor" type="Marker3D" parent="PhotoSpots"]
