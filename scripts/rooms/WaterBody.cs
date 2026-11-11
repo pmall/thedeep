@@ -102,6 +102,9 @@ public partial class WaterBody : Node3D
     /// <summary>The surface's height.</summary>
     public float SurfaceY => GlobalPosition.Y;
 
+    /// <summary>The surface's extent in world X (rect X) and Z (rect Y).</summary>
+    public Rect2 Area => new(GlobalPosition.X - 0.5f * Size.X, GlobalPosition.Z - 0.5f * Size.Y, Size);
+
     /// <summary>The water on the play plane (its top is the surface), for the map's geometry check.</summary>
     public Box PlayRegion => new(GlobalPosition.X - 0.5f * Size.X, SurfaceY - Depth, GlobalPosition.X + 0.5f * Size.X, SurfaceY);
 
@@ -130,8 +133,8 @@ public partial class WaterBody : Node3D
         }
 
         Vector3 center = GlobalPosition;
-        var rect = new Vector4(
-            center.X - 0.5f * Size.X, center.Z - 0.5f * Size.Y, center.X + 0.5f * Size.X, center.Z + 0.5f * Size.Y);
+        Rect2 extent = Area;
+        var rect = new Vector4(extent.Position.X, extent.Position.Y, extent.End.X, extent.End.Y);
         var surface = new MeshInstance3D
         {
             Mesh = new PlaneMesh { Size = Size },

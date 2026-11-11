@@ -444,7 +444,7 @@ Seed = 9
 
 ; low reliquary racks in rows, half drowned, like pews
 [node name="Pews" type="Node3D" parent="Kit"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 2, -1.5, -7.25)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 2, -1.75, -7.25)
 script = ExtResource("19_rackrow")
 Variants = [SubResource("rack_12"), SubResource("rack_13"), SubResource("rack_14")]
 Material = ExtResource("18_metal_mid")

@@ -515,7 +515,7 @@ mesh = SubResource("Wreck_1")
 material_override = ExtResource("26_rust_mid")
 
 [node name="Wreck2" type="MeshInstance3D" parent="Kit/Wrecks"]
-transform = Transform3D(0.766, 0, 0.6428, 0, 1, 0, -0.6428, 0, 0.766, 30, -1.25, -5.75)
+transform = Transform3D(0.766, 0, 0.6428, 0, 1, 0, -0.6428, 0, 0.766, 30, -1.5, -5.75)
 mesh = SubResource("Wreck_2")
 material_override = ExtResource("25_metal_mid")
 

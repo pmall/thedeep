@@ -14,6 +14,7 @@ namespace TheDeep;
 ///   (dressing generators only their own: the pieces they build are not owned by the room);
 /// - exits have unique names, a valid requirement, an existing target room and exit facing the other way, and a target that leads
 ///   back unless they are one-way; each exit's trigger covers its whole opening and an arrival through it fits (<see cref="Threshold.Problems"/>);
+/// - no mesh's top lies on a water surface over it (<see cref="WaterClearance"/>);
 /// - the room has at least one photo spot;
 /// - no required export is left empty, in the room's nodes, the bricks it places and the resources they reach, nor in the main
 ///   scene and its world (<see cref="RequiredExports"/>).
@@ -221,6 +222,7 @@ public partial class RoomValidator : Node
             }
         }
 
+        CheckWaterClearance(room, Problem);
         if (!room.PhotoSpots().Any())
         {
             Problem("no PhotoSpot (tools/capture.sh needs at least one)");
@@ -232,6 +234,32 @@ public partial class RoomValidator : Node
         }
 
         return exits.Count;
+    }
+
+    /// <summary>
+    /// How close under or over a water surface the top of a mesh beneath it may lie, meters: closer, the top and the surface
+    /// fight for the same depth, and the camera's sub-pixel jitter (TAA) shows one, then the other (docs/art-direction.md#stable-image).
+    /// </summary>
+    private const float WaterClearance = 0.05f;
+
+    /// <summary>Every mesh of the room (dressing included) whose top lies within <see cref="WaterClearance"/> of a water surface spread over it.</summary>
+    private static void CheckWaterClearance(Room room, System.Action<string> problem)
+    {
+        IReadOnlyList<WaterBody> waters = room.All<WaterBody>();
+        foreach (MeshInstance3D mesh in Descendants(room).OfType<MeshInstance3D>().Where(m => m.Mesh is not null))
+        {
+            if (waters.Any(w => w.IsAncestorOf(mesh)))
+            {
+                continue;
+            }
+
+            Aabb box = mesh.GlobalTransform * mesh.GetAabb();
+            var footprint = new Rect2(box.Position.X, box.Position.Z, box.Size.X, box.Size.Z);
+            foreach (WaterBody water in waters.Where(w => w.Area.Intersects(footprint) && Mathf.Abs(box.End.Y - w.SurfaceY) < WaterClearance))
+            {
+                problem($"{room.GetPathTo(mesh)}'s top at y {box.End.Y:0.###} lies on {water.Name}'s surface (y {water.SurfaceY:0.###}): keep it {WaterClearance} m clear");
+            }
+        }
     }
 
     /// <summary>The room's part of the map: its exits (one edge each, for leaving through it), relics, items, goals and shape.</summary>

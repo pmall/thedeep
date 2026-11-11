@@ -470,7 +470,7 @@ SectionMaterial = ExtResource("40_water_section")
 
 ; the flooded gate's back, behind the water
 [node name="GateBack" type="MeshInstance3D" parent="Kit"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 16.5, -5, -2.5)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 16.5, -5.25, -2.5)
 mesh = SubResource("blockmesh_gate")
 material_override = ExtResource("6_stone_mid")
 
