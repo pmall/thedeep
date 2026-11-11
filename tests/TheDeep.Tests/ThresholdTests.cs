@@ -111,6 +111,20 @@ public class ThresholdTests
     }
 
     [Fact]
+    public void AFallDownAWideHatchKeepsItsLine()
+    {
+        // A chasm's 20 m opening: the body arrives as far from the middle as it crossed the other end, never past the hole's edge,
+        // and moves across from there to where it fits.
+        var sky = new Threshold(ExitSide.Up, new Vector2(36f, 27f), new Vector2(20f, 2f));
+        Assert.Equal(28.5f, sky.Arrival(Body, along: -7.5f).X, 3);
+        Assert.Equal(36f + 10f - Body.X * 0.5f - Threshold.Clearance, sky.Arrival(Body, along: 30f).X, 3);
+        var rock = new List<Box> { new(27f, 20f, 30f, 26f) };
+        Assert.Equal(30.5f, sky.Arrival(Body, rock, along: -7.5f).X, 3); // the first quarter-meter step clear of the rock
+        // Rising through a floor, the climb out is steered from the middle.
+        Assert.Equal(Floor.Marker.X, Floor.Arrival(Body, along: 0.6f).X, 3);
+    }
+
+    [Fact]
     public void AnArrivalMustFit()
     {
         var roof = new List<Box> { new(-5f, 23f, 0f, 26f), new(2f, 23f, 8f, 26f) };

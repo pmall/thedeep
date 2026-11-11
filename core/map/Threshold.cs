@@ -71,10 +71,12 @@ public readonly record struct Threshold(ExitSide Side, Vector2 Marker, Vector2 S
     /// <summary>
     /// Where the feet of a body of <paramref name="body"/> size (width, height) arrive through this exit, clear of its trigger: through a
     /// doorway on its marker (or further in, for a shallow one); up through a hatch in a floor just above the hole; down through one in a
-    /// roof with the head just below it. Across a hatch, at its middle, or the nearest place to it where the body fits among
-    /// <paramref name="solids"/> (a ledge over part of the hole).
+    /// roof with the head just below it. Across a hatch: down through a roof, as far from its middle as the body crossed the other
+    /// end's (<paramref name="along"/>, so a fall down a wide chasm keeps its line) within the hole; up through a floor, at its middle,
+    /// where the climb out is steered from (<see cref="ExitShape.ArrivalSide"/>). Or the nearest place to that where the body fits
+    /// among <paramref name="solids"/> (a ledge over part of the hole).
     /// </summary>
-    public Vector2 Arrival(Vector2 body, IReadOnlyList<Box>? solids = null)
+    public Vector2 Arrival(Vector2 body, IReadOnlyList<Box>? solids = null, float along = 0f)
     {
         switch (Side)
         {
@@ -86,14 +88,15 @@ public readonly record struct Threshold(ExitSide Side, Vector2 Marker, Vector2 S
 
         float y = Side == ExitSide.Down ? Line + Clearance : Line - body.Y - Clearance;
         float half = MathF.Max(0f, (Size.X - body.X) * 0.5f - Clearance);
+        float start = Marker.X + (Side == ExitSide.Up ? Math.Clamp(along, -half, half) : 0f);
         if (solids is not null)
         {
-            for (float d = 0f; d <= half + 0.001f; d += 0.25f)
+            for (float d = 0f; d <= 2f * half + 0.001f; d += 0.25f)
             {
-                foreach (float x in new[] { Marker.X + d, Marker.X - d })
+                foreach (float x in new[] { start + d, start - d })
                 {
                     var at = new Box(x - body.X * 0.5f, y, x + body.X * 0.5f, y + body.Y);
-                    if (Hit(solids, at) is null)
+                    if (MathF.Abs(x - Marker.X) <= half + 0.001f && Hit(solids, at) is null)
                     {
                         return new Vector2(x, y);
                     }
@@ -101,7 +104,7 @@ public readonly record struct Threshold(ExitSide Side, Vector2 Marker, Vector2 S
             }
         }
 
-        return new Vector2(Marker.X, y);
+        return new Vector2(start, y);
     }
 
     /// <summary>

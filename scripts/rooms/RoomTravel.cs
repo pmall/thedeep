@@ -114,7 +114,7 @@ public partial class RoomTravel : Node
         World.Enter(room, ExitMath.RoomOffset(hereOffset, from, to.Marker));
         World.Map.Take(leaving, leavingExit);
         World.Map.Take(World.RoomName, arrival.Name);
-        NVector2 position = to.Arrival(Player.BodySize, room.Solids());
+        NVector2 position = to.Arrival(Player.BodySize, room.Solids(), along: player.X - from.X);
         NVector2 keep = to.ArrivalVelocity(velocity, ClimbRise * Player.Tuning.JumpTakeOffSpeed);
         GD.Print($"[travel] {leaving}:{leavingExit} → {World.RoomName}:{arrival.Name}, from {player} moving {velocity} ({Player.CurrentState.GetType().Name}), to {position} moving {keep}");
         Player.Arrive(position.OnPlane(), keep.OnPlane());

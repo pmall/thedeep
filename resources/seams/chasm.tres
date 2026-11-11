@@ -1,0 +1,11 @@
+[gd_resource type="Resource" script_class="SeamProfile" format=3]
+
+[ext_resource type="Script" path="res://scripts/rooms/SeamProfile.cs" id="1_profile"]
+
+; the chasm: a pit open wall to wall, 20 m wide, through the common 2 m slab (the slab either side is the pit's walls' feet),
+; framed as deep as a floor block
+[resource]
+script = ExtResource("1_profile")
+Opening = 20.0
+Approach = 2.0
+Depth = 4.0

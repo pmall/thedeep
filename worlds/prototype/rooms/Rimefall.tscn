@@ -1,7 +1,7 @@
 [gd_scene format=3]
 
 ; Rimefall, under the Brink (map offset (336.5, -69)): where the jump from the Brink lands, the first room of
-; the frozen layer. The fall goes on through a hatch in the dome and ends on a shelf of rime; meltwater that once
+; the frozen layer. The fall goes on through the dome's wide break and ends on a shelf of rime; meltwater that once
 ; poured through the dome froze into a cascade down the slope behind. Terraces of rime step down west to a
 ; pilgrim shrine at the slope's foot (the first rest after the jump), then the doorway on to the Choir.
 ; The sky is only arrived through: nothing climbs back up to the Brink.
@@ -33,7 +33,7 @@
 [ext_resource type="PackedScene" path="res://scenes/kit/Doorway.tscn" id="90_doorway"]
 [ext_resource type="Resource" path="res://resources/seams/doorway.tres" id="91_seam"]
 [ext_resource type="PackedScene" path="res://scenes/kit/Hatch.tscn" id="92_hatch"]
-[ext_resource type="Resource" path="res://resources/seams/hatch.tres" id="93_seam_hatch"]
+[ext_resource type="Resource" path="res://resources/seams/chasm.tres" id="93_seam_chasm"]
 
 [sub_resource type="PrimitiveMesh" id="wall_back"]
 script = ExtResource("6_blockmesh")
@@ -232,31 +232,36 @@ Size = Vector3(6.5, 2, 4)
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -1.5, 18, 0)
 Size = Vector3(3, 24, 4)
 
-; what still stands of the dome, over the slope
+; what still stands of the dome, over the slope, up to the frame of the break the fall comes through
 [node name="DomeRim" parent="Geometry" instance=ExtResource("1_block")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 11, 26.5, 0)
-Size = Vector3(28, 7, 4)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 10.5, 26.5, 0)
+Size = Vector3(27, 7, 4)
+
+; the rim's face under the frame's west slab, so the break's west edge is one face
+[node name="DomeRimLip" parent="Geometry" instance=ExtResource("1_block")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 25, 24.5, 0)
+Size = Vector3(2, 3, 4)
 
 [node name="WallEast" parent="Geometry" instance=ExtResource("1_block")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 53.5, 20, 0)
 Size = Vector3(3, 20, 4)
 
-; the dome closing over the shelf, east of the hatch the fall comes through (its underside flush with the hatch's slab)
+; the dome's last stretch east of the break, out to the east wall (its underside flush with the frame's slab)
 [node name="DomeEast" parent="Geometry" instance=ExtResource("1_block")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 42, 28, 0)
-Size = Vector3(20, 4, 4)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 50, 28, 0)
+Size = Vector3(4, 4, 4)
 
 [node name="Exits" type="Node3D" parent="."]
 
-; the jump from the Brink falls in here, through the hatch in the dome (only arrived through)
+; the jump from the Brink falls in here, through the dome's break, as wide as the chasm above (only arrived through)
 [node name="Sky" type="Marker3D" parent="Exits"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 28.5, 27, 0)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 36, 27, 0)
 script = ExtResource("2_exit")
 Side = 3
 ArrivalOnly = true
 
 [node name="Hatch" parent="Exits/Sky" instance=ExtResource("92_hatch")]
-Profile = ExtResource("93_seam_hatch")
+Profile = ExtResource("93_seam_chasm")
 
 ; on to the Choir
 [node name="West" type="Marker3D" parent="Exits"]
@@ -279,7 +284,7 @@ transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 5, 0, 0)
 
 ; down through the hole in the dome onto the shelf
 [node name="Hole" type="SpotLight3D" parent="Shafts"]
-transform = Transform3D(-1, 0, 0, 0, 0.1414, 0.9899, 0, 0.9899, -0.1414, 28.5, 46, -4)
+transform = Transform3D(-1, 0, 0, 0, 0.1414, 0.9899, 0, 0.9899, -0.1414, 36, 46, -4)
 light_energy = 5
 light_volumetric_fog_energy = 14
 shadow_enabled = true
@@ -585,9 +590,9 @@ PlayerFacing = -1
 
 ; gameplay framing: the shelf under the hole in the dome
 [node name="Landing" type="Marker3D" parent="PhotoSpots"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 30, 14, 22)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 36, 14, 22)
 script = ExtResource("17_spot")
-PlayerPosition = Vector3(30, 10, 0)
+PlayerPosition = Vector3(36, 10, 0)
 
 ; the terraces down the slope, the cascade behind
 [node name="Slope" type="Marker3D" parent="PhotoSpots"]
@@ -609,8 +614,8 @@ script = ExtResource("17_spot")
 PlayerPosition = Vector3(16, 6, 0)
 Fov = 40
 
-; the hatch in the dome the fall comes through: the slab and the hole (the seam's frame)
+; the dome's break the fall comes through: the slabs either side and the opening (the seam's frame)
 [node name="SkyHatch" type="Marker3D" parent="PhotoSpots"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 28.5, 23, 12)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 36, 24, 30)
 script = ExtResource("17_spot")
-PlayerPosition = Vector3(28.5, 10, 0)
+PlayerPosition = Vector3(36, 10, 0)

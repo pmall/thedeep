@@ -53,6 +53,8 @@ A way's two exits are framed by the same brick and `SeamProfile` (`docs/gameplay
 
 Water through a doorway reaches the frame's outer face in both rooms; a pool beside the doorway keeps its front off the wall over it and draws the passage's front with `WaterBody.SectionPassage` (`Vault/Water`). The plain profiles don't cover a `LockedDoor` (its gate rises into the head: a deeper lintel), a `FalseWall`, water through a hatch, a lift through a hatch, or an opening of another size (its own profile).
 
+A drop meant to read as bottomless (a chasm open wall to wall, `Brink/Down`) takes `chasm.tres` on the `Hatch` (its frame spans marker.x ± 12 m), its marker centered between the pit's walls so the slab either side is their feet: the pit never shows a floor, and the room below opens its roof as wide.
+
 ## Seeing the game <a id="lookdev"></a>
 
 Headless runs render nothing. For any visual change, render before and after and look (`docs/art-direction.md#judge-images`):
