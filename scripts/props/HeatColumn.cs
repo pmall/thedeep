@@ -11,7 +11,8 @@ namespace TheDeep;
 /// ground within <see cref="FootingMargin"/> of it is no footing. With Heat plating it is harmless.
 /// <para>
 /// It is seen at its true edges (`docs/art-direction.md#volcanic-look`), everything built from <see cref="Region"/> so look and
-/// burn never disagree: a plume of two sheets exactly its size (<see cref="Plume"/>, before and behind the pilgrim), dimmed to
+/// burn never disagree: a plume of one sheet exactly its size (<see cref="Plume"/>), just behind the play plane so its edges show at their true x from any
+/// camera angle, dimmed to
 /// <see cref="PlatedStrength"/> once the pilgrim is plated; embers carried up inside it; at its foot the vent it rises from, a
 /// grate as wide as the column between two posts at its edges (<see cref="Source"/>); a light in the room's lamp color.
 /// </para>
@@ -64,14 +65,14 @@ public partial class HeatColumn : Node3D
     /// <summary>The light at its foot, in the room's lamp color.</summary>
     public OmniLight3D Glow => _glow ??= new OmniLight3D { Position = new Vector3(0f, 0.6f, 1.2f) };
 
-    /// <summary>The sheets' depths: one behind the pilgrim, one before it (fainter), off every face of the play plane.</summary>
-    private static readonly (float Z, float Strength)[] Sheets = { (-0.6f, 1f), (0.35f, 0.4f) };
+    /// <summary>The sheet's depth: just behind the pilgrim, close enough to the play plane that no parallax moves its edges, off every face.</summary>
+    private const float SheetZ = -0.1f;
 
-    /// <summary>The vent: its grate's thickness and depth, its posts' width and height (meters).</summary>
-    private const float GrateThickness = 0.12f, VentDepth = 3f, PostWidth = 0.16f, PostHeight = 0.45f;
+    /// <summary>The vent: its grate's thickness and depth, its posts' width, height and depth (meters).</summary>
+    private const float GrateThickness = 0.1f, VentDepth = 3f, PostWidth = 0.08f, PostHeight = 0.3f, PostDepth = 0.5f;
 
     private OmniLight3D? _glow;
-    private readonly System.Collections.Generic.List<MeshInstance3D> _sheets = new();
+    private MeshInstance3D? _sheet;
     private float _strength = -1f;
 
     /// <summary>The column on the play plane, for the map's geometry check.</summary>
@@ -129,25 +130,20 @@ public partial class HeatColumn : Node3D
             return;
         }
 
-        for (int i = 0; i < Sheets.Length; i++)
+        _sheet = new MeshInstance3D
         {
-            var sheet = new MeshInstance3D
-            {
-                Name = $"Plume{i}",
-                Mesh = new QuadMesh { Size = Size, Material = Plume },
-                Position = new Vector3(0f, 0.5f * Size.Y, Sheets[i].Z),
-                CastShadow = GeometryInstance3D.ShadowCastingSetting.Off,
-            };
-            sheet.SetInstanceShaderParameter("size", Size);
-            sheet.SetInstanceShaderParameter("phase", 0.43f * i);
-            AddChild(sheet);
-            _sheets.Add(sheet);
-        }
+            Name = "Plume",
+            Mesh = new QuadMesh { Size = Size, Material = Plume },
+            Position = new Vector3(0f, 0.5f * Size.Y, SheetZ),
+            CastShadow = GeometryInstance3D.ShadowCastingSetting.Off,
+        };
+        _sheet.SetInstanceShaderParameter("size", Size);
+        AddChild(_sheet);
 
         ShowStrength(1f);
     }
 
-    /// <summary>The vent at its foot: a grate as wide as the column, raised off the floor's face, between two posts just outside its edges.</summary>
+    /// <summary>The vent at its foot: a grate as wide as the column, raised off the floor's face, between two slim posts just outside its edges, at the play plane.</summary>
     private void BuildVent()
     {
         if (Source is null)
@@ -168,7 +164,7 @@ public partial class HeatColumn : Node3D
             AddChild(new MeshInstance3D
             {
                 Name = side < 0f ? "PostWest" : "PostEast",
-                Mesh = new BoxMesh { Size = new Vector3(PostWidth, PostHeight, VentDepth + 0.2f) },
+                Mesh = new BoxMesh { Size = new Vector3(PostWidth, PostHeight, PostDepth) },
                 MaterialOverride = Source,
                 Position = new Vector3(side * (0.5f * Size.X + 0.5f * PostWidth), 0.5f * PostHeight + 0.01f, 0f),
             });
@@ -183,15 +179,12 @@ public partial class HeatColumn : Node3D
         }
 
         _strength = strength;
-        for (int i = 0; i < _sheets.Count; i++)
-        {
-            _sheets[i].SetInstanceShaderParameter("strength", strength * Sheets[i].Strength);
-        }
+        _sheet?.SetInstanceShaderParameter("strength", strength);
     }
 
     public override void _Process(double delta)
     {
-        if (_sheets.Count > 0)
+        if (_sheet is not null)
         {
             ShowStrength(Player is { } player && player.Abilities.Has(Ability.HeatPlating) ? PlatedStrength : 1f);
         }

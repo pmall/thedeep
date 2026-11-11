@@ -5,7 +5,7 @@
 [ext_resource type="Script" path="res://scripts/props/HeatColumn.cs" id="1_heat"]
 [ext_resource type="PackedScene" path="res://scenes/fx/Embers.tscn" id="2_embers"]
 [ext_resource type="Material" path="res://assets/materials/heat_plume.tres" id="3_plume"]
-[ext_resource type="Material" path="res://assets/materials/rust_mid.tres" id="4_vent"]
+[ext_resource type="Material" path="res://assets/materials/rust.tres" id="4_vent"]
 
 [node name="HeatColumn" type="Node3D"]
 script = ExtResource("1_heat")
