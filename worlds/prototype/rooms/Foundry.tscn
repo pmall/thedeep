@@ -2,8 +2,8 @@
 
 ; The Foundry, east of the Bellows (map offset (346, -151)): the great foundry where the machines were cast, its abbot
 ; still at the anvil. Stepping onto the floor drops the gates behind and ahead (BossSeal) until the Founder (a boss
-; placeholder) breaks. East, the vents breathe up from a shaft in the floor: only Heat plating goes down them, toward the
-; core (the Threshold); ledges in the shaft climb back.
+; placeholder) breaks. East, the heat of the Threshold's vents rises through the hatch in a shaft in the floor and fills it
+; wall to wall up to a hood: only Heat plating goes down, toward the core (the Threshold); ledges in the shaft climb back.
 
 [ext_resource type="Material" path="res://assets/materials/basalt.tres" id="1_basalt"]
 [ext_resource type="PackedScene" path="res://scenes/kit/Block.tscn" id="2_block"]
@@ -14,7 +14,7 @@
 [ext_resource type="Script" path="res://scripts/machines/Machine.cs" id="7_machine"]
 [ext_resource type="Resource" path="res://resources/machines/founder.tres" id="8_founder"]
 [ext_resource type="Script" path="res://scripts/props/BossSeal.cs" id="9_bossseal"]
-[ext_resource type="Script" path="res://scripts/props/HeatColumn.cs" id="10_heatcolumn"]
+[ext_resource type="PackedScene" path="res://scenes/kit/HeatColumn.tscn" id="10_heatcolumn"]
 [ext_resource type="PackedScene" path="res://scenes/fx/Embers.tscn" id="12_embers"]
 [ext_resource type="Script" path="res://scripts/kit/BlockMesh.cs" id="13_blockmesh"]
 [ext_resource type="Material" path="res://assets/materials/stone_mid.tres" id="14_stone_mid"]
@@ -157,9 +157,15 @@ Size = Vector3(64, 8, 4)
 Material = ExtResource("1_basalt")
 
 [node name="WallEast" parent="Geometry" instance=ExtResource("2_block")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 62, 9, 0)
-Size = Vector3(4, 18, 4)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 61.5, 9, 0)
+Size = Vector3(5, 18, 4)
 Material = ExtResource("1_basalt")
+
+; the hood over the vent shaft, from its west lip to the east wall: the heat ends under it
+[node name="Hood" parent="Geometry" instance=ExtResource("2_block")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 55, 6.5, 0)
+Size = Vector3(8, 1, 4)
+Material = ExtResource("3_rust")
 
 ; the Founder's anvil
 [node name="Anvil" parent="Geometry" instance=ExtResource("2_block")]
@@ -221,15 +227,11 @@ FallenHintLine = &"boss.founder.fallen.hint"
 
 [node name="Heat" type="Node3D" parent="."]
 
-; the vents breathing up the shaft: only Heat plating goes down
-[node name="Vents" type="Node3D" parent="Heat"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 55, -10, 0)
-script = ExtResource("10_heatcolumn")
-Strip = true
-Size = Vector2(8, 11)
-Embers = ExtResource("12_embers")
-EmberDensity = 1.4
-GlowEnergy = 3.5
+; the Threshold's column going on through the hatch: the shaft wall to wall, from its floor to the hood (its vent is below)
+[node name="Vents" parent="Heat" instance=ExtResource("10_heatcolumn")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 55, -9, 0)
+Size = Vector2(8, 15)
+Source = null
 
 [node name="Kit" type="Node3D" parent="."]
 
@@ -331,9 +333,9 @@ transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 26, 18, -5)
 mesh = SubResource("cables_7")
 material_override = ExtResource("18_rust_mid")
 
-; the vent hood over the shaft
+; the flue rising from the hood to the roof
 [node name="VentHood" type="MeshInstance3D" parent="Kit"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 55, 3, -4.5)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 55, 7, -4.5)
 mesh = SubResource("pipe_8")
 material_override = ExtResource("18_rust_mid")
 
@@ -359,11 +361,6 @@ transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 30, 5, -3)
 Extents = Vector3(26, 5, 3)
 Density = 0.12
 
-[node name="VentEmbers" parent="Particles" instance=ExtResource("12_embers")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 55, -2, -0.5)
-Extents = Vector3(3.5, 8, 1.5)
-Density = 0.5
-
 [node name="PhotoSpots" type="Node3D" parent="."]
 
 ; the foundry floor, the Founder at its anvil
@@ -378,9 +375,9 @@ transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 29, 3, 12)
 script = ExtResource("21_spot")
 PlayerPosition = Vector3(24, 0, 0)
 
-; the vents down to the core
+; the vents down to the core: the heat in the shaft from its floor to the hood
 [node name="Vents" type="Marker3D" parent="PhotoSpots"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 53, 0, 20)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 53, -1, 23)
 script = ExtResource("21_spot")
 PlayerPosition = Vector3(47, 0, 0)
 
