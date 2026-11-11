@@ -1,6 +1,6 @@
 [gd_scene format=3]
 
-; The Belfry, the bell loft over the Drowned Hall (map offset (15, 32)): reached up the hall's metal shaft,
+; The Belfry, the bell loft over the Drowned Hall (map offset (15, 34)): reached up the hall's metal shaft,
 ; through a hole in the loft floor; dropping back down the hole is free. A dead end that rewards the climb:
 ; a pilgrim shrine, a Lamplighter, and a great bell hanging in its frame against tall openings onto the
 ; skyline. Steps lead up to a lookout under the bell.
@@ -243,7 +243,7 @@ Side = 2
 TargetRoom = "res://worlds/prototype/rooms/DrownedHall.tscn"
 TargetExit = "ShaftHatch"
 ArrivalSide = -1
-Size = Vector2(2, 1)
+Size = Vector2(3, 1)
 
 [node name="Props" type="Node3D" parent="."]
 
@@ -468,3 +468,9 @@ transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 21, 12, 44)
 script = ExtResource("21_spot")
 PlayerPosition = Vector3(15, 10, 0)
 Fov = 36
+
+; the hole in the loft floor down into the hall's shaft
+[node name="Hole" type="Marker3D" parent="PhotoSpots"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 36, 2, 14)
+script = ExtResource("21_spot")
+PlayerPosition = Vector3(31, 0, 0)

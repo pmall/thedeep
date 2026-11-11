@@ -3,14 +3,6 @@
 # what disagrees: tools/check.sh's room check, or this file emptied of a seam's lines. Vertical exits first (owner), then doorways.
 seam	rule	reason
 
-# Vertical, batch 1: the flooded layer's holes
-Belfry:Floor | DrownedHall:ShaftHatch	Opening	to fix under seam-coherence (vertical)
-Belfry:Floor | DrownedHall:ShaftHatch	Solids	to fix under seam-coherence (vertical)
-Descent:Sluice | Sluice:Descent	Solids	to fix under seam-coherence (vertical)
-Nave:Hatch | Cistern:Top	Opening	to fix under seam-coherence (vertical)
-Nave:Hatch | Cistern:Top	Solids	to fix under seam-coherence (vertical)
-Sluice	Water	to fix under seam-coherence (vertical)
-
 # Vertical, batch 2: the Undercroft and the Counterweight's lift
 Counterweight:Bottom | Coldstacks:Counterweight	Solids	to fix under seam-coherence (vertical)
 Scriptorium:Hatch | Undercroft:Scriptorium	Solids	to fix under seam-coherence (vertical)

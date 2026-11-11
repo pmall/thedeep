@@ -651,3 +651,9 @@ transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 21.5, 16, 50)
 script = ExtResource("27_spot")
 PlayerPosition = Vector3(19.5, 18, 0)
 Fov = 40
+
+; the flooded gate's grate, down into the Sluice
+[node name="Grate" type="Marker3D" parent="PhotoSpots"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 16.5, -4.5, 12)
+script = ExtResource("27_spot")
+PlayerPosition = Vector3(9, 0, 0)

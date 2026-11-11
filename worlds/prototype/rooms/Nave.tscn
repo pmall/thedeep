@@ -284,7 +284,7 @@ Side = 2
 TargetRoom = "res://worlds/prototype/rooms/Cistern.tscn"
 TargetExit = "Top"
 ArrivalSide = -1
-Size = Vector2(2, 1)
+Size = Vector2(3, 1)
 
 ; east doorway off the choir ledge: only Mag-grip climbs the metal wall to it
 [node name="East" type="Marker3D" parent="Exits"]
@@ -640,3 +640,9 @@ transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 58, 11, 50)
 script = ExtResource("29_spot")
 PlayerPosition = Vector3(30, 4, 0)
 Fov = 34
+
+; the hatch in the floor down into the Cistern
+[node name="Hatch" type="Marker3D" parent="PhotoSpots"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 60, 2, 16)
+script = ExtResource("29_spot")
+PlayerPosition = Vector3(56, 0, 0)
