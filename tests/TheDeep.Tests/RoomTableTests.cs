@@ -39,12 +39,12 @@ public class RoomTableTests
     {
         RoomTable t = RoomTable.Parse(Table);
         Assert.Equal(4, t.Rows.Count);
-        RoomRow a = t.Row("A")!;
+        RoomRow a = Assert.IsType<RoomRow>(t.Row("A"));
         Assert.Equal(new[] { RoomKind.Start, RoomKind.Ambush }, a.Kinds);
         Assert.Equal(new[] { "Votary", "Gleaner" }, a.Machines);
         Assert.Empty(a.Items);
-        Assert.Equal("a note", t.Row("B")!.Notes);
-        Assert.Equal("", t.Row("C")!.Happens);
+        Assert.Equal("a note", Assert.IsType<RoomRow>(t.Row("B")).Notes);
+        Assert.Equal("", Assert.IsType<RoomRow>(t.Row("C")).Happens);
     }
 
     [Fact]

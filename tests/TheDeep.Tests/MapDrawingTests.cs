@@ -32,13 +32,14 @@ public class MapDrawingTests
         MapDraft draft = MapDraft.Parse(Network);
         XDocument svg = XDocument.Parse(MapDrawing.Svg(draft, null, "test"));
         XNamespace ns = "http://www.w3.org/2000/svg";
-        Assert.Equal("svg", svg.Root!.Name.LocalName);
+        XElement root = Assert.IsType<XElement>(svg.Root);
+        Assert.Equal("svg", root.Name.LocalName);
 
-        var rooms = svg.Descendants(ns + "g").Where(g => (string?)g.Attribute("class") == "room").Select(g => (string)g.Attribute("data-room")!).ToList();
+        var rooms = svg.Descendants(ns + "g").Where(g => (string?)g.Attribute("class") == "room").Select(g => Assert.IsType<XAttribute>(g.Attribute("data-room")).Value).ToList();
         Assert.Equal(draft.Graph.Rooms.OrderBy(r => r), rooms.OrderBy(r => r));
 
         var edges = svg.Descendants(ns + "g").Where(g => (string?)g.Attribute("class") == "way")
-            .SelectMany(g => ((string)g.Attribute("data-edges")!).Split(',').Select(int.Parse)).OrderBy(i => i).ToList();
+            .SelectMany(g => Assert.IsType<XAttribute>(g.Attribute("data-edges")).Value.Split(',').Select(int.Parse)).OrderBy(i => i).ToList();
         Assert.Equal(Enumerable.Range(0, draft.Graph.Edges.Count), edges);
     }
 
