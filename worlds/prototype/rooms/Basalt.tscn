@@ -8,7 +8,7 @@
 [ext_resource type="Material" path="res://assets/materials/basalt.tres" id="1_basalt"]
 [ext_resource type="PackedScene" path="res://scenes/kit/Block.tscn" id="2_block"]
 [ext_resource type="Script" path="res://scripts/rooms/RoomExit.cs" id="3_exit"]
-[ext_resource type="Script" path="res://scripts/props/HeatColumn.cs" id="4_heatcolumn"]
+[ext_resource type="PackedScene" path="res://scenes/kit/HeatColumn.tscn" id="4_heatcolumn"]
 [ext_resource type="PackedScene" path="res://scenes/fx/Embers.tscn" id="6_embers"]
 [ext_resource type="Script" path="res://scripts/kit/BlockMesh.cs" id="7_blockmesh"]
 [ext_resource type="Material" path="res://assets/materials/stone_mid.tres" id="8_stone_mid"]
@@ -25,11 +25,6 @@
 script = ExtResource("7_blockmesh")
 Size = Vector3(76, 64, 1.2)
 Bevel = 0.3
-
-[sub_resource type="PrimitiveMesh" id="blockmesh_3"]
-script = ExtResource("7_blockmesh")
-Size = Vector3(3, 0.3, 3)
-Bevel = 0.1
 
 [sub_resource type="PrimitiveMesh" id="column_4"]
 script = ExtResource("10_column")
@@ -257,15 +252,11 @@ Size = Vector2(3, 1)
 
 [node name="Heat" type="Node3D" parent="."]
 
-; heat breathing up through the west end of the cavern floor
-[node name="Vent" type="Node3D" parent="Heat"]
+; heat rising from a vent in the cavern's west end to the crust over it: it closes only that corner (the Basalt is
+; passed before Heat plating; the heat check walks into it)
+[node name="Vent" parent="Heat" instance=ExtResource("4_heatcolumn")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 3, 15, 0)
-script = ExtResource("4_heatcolumn")
-Strip = true
-Size = Vector2(3, 3)
-Embers = ExtResource("6_embers")
-EmberDensity = 1.6
-GlowEnergy = 2.5
+Size = Vector2(3, 12)
 
 ; the slag channel between the floor's banks, a meter under them, down to its bed: jumped, never waded
 [node name="Slag" parent="." instance=ExtResource("16_slag")]
@@ -286,11 +277,6 @@ script = ExtResource("15_wall")
 Style = 0
 Size = Vector2(43.4286, 36.5714)
 Seed = 600
-
-[node name="VentGlow" type="MeshInstance3D" parent="Kit"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 3, 15.25, 0)
-mesh = SubResource("blockmesh_3")
-material_override = ExtResource("9_magma")
 
 [node name="Columns" type="Node3D" parent="Kit"]
 
@@ -443,6 +429,13 @@ PlayerPosition = Vector3(8, 30, 0)
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 17, 20, 22)
 script = ExtResource("11_spot")
 PlayerPosition = Vector3(12, 15, 0)
+
+; the vent's heat in the cavern's west corner, up to the crust
+[node name="Vent" type="Marker3D" parent="PhotoSpots"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 6, 21, 20)
+script = ExtResource("11_spot")
+PlayerPosition = Vector3(8, 15, 0)
+PlayerFacing = -1
 
 ; the bottom: the slag channel, the hole down
 [node name="Bottom" type="Marker3D" parent="PhotoSpots"]
