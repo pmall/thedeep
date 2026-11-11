@@ -20,7 +20,7 @@ instance uniform vec4 bounds = vec4(-1e4, -1e4, 1e4, 1e4);
 group_uniforms ripples;
 /// Ripple size, meters (across the room; three times longer into the scene, where the view foreshortens them).
 uniform float ripple_scale : hint_range(0.5, 8.0) = 3.0;
-uniform float ripple_strength : hint_range(0.0, 1.0) = 0.06;
+uniform float ripple_strength : hint_range(0.0, 1.0) = 0.12;
 uniform float ripple_speed : hint_range(0.0, 2.0) = 0.18;
 
 group_uniforms look;
@@ -31,7 +31,7 @@ uniform float film : hint_range(0.0, 1.0) = 0.12;
 /// Reflection share looking straight down; it rises toward grazing angles (Fresnel).
 uniform float reflectance : hint_range(0.0, 1.0) = 0.04;
 /// How much of the biome's water tint the surface takes where it reflects (under the probe's picture).
-uniform float sky_tint : hint_range(0.0, 1.0) = 0.3;
+uniform float sky_tint : hint_range(0.0, 1.0) = 0.55;
 group_uniforms;
 
 varying vec3 v_world_pos;

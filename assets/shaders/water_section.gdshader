@@ -1,7 +1,7 @@
-// The front of a swimmable WaterBody, seen from the side: the cut through the water on the play plane's front, drawn
+// The front of a WaterBody on the play plane, seen from the side: the cut through the water on the play plane's front, drawn
 // without reading the screen (docs/art-direction.md#stable-image). What lies in the water sinks into it on its own
 // surface (lib/water.gdshaderinc, UNDERWATER), so this layer only marks the water: a bright meniscus on the surface line
-// (kept a few pixels wide and anti-aliased), a band of broad, soft caustic light under it, and a thin veil of the water's
+// (kept a few pixels wide and anti-aliased, between the water's tint and its caustic light), a band of broad, soft caustic light under it, and a thin veil of the water's
 // color over what has no murk of its own (the pilgrim, which stays the highest-contrast figure). Premultiplied, sorted
 // with the other transparents by distance, so particles in front of it stay untouched. Colors are the biome's, so it
 // follows every layer.
@@ -61,7 +61,7 @@ void fragment() {
 	float line_y = 0.04 * (value_noise2(vec2(p.x * 0.8 + t * 0.4, 0.0)) - 0.5);
 	float width = max(meniscus_width, meniscus_pixels * fwidth(v_world_pos.y));
 	float meniscus = 1.0 - smoothstep(0.0, width, abs(depth - line_y));
-	color += srgb_to_linear(biome_water.rgb) * meniscus * meniscus_strength;
+	color += mix(srgb_to_linear(biome_water.rgb), srgb_to_linear(biome_caustic.rgb), 0.5) * meniscus * meniscus_strength;
 
 	// Premultiplied: what the water adds over the scene behind, and how much of that scene it hides.
 	ALBEDO = color;

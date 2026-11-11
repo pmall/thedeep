@@ -133,15 +133,49 @@ float underwater_at(vec3 p, vec3 eye, out vec3 murk_color, out float light) {
 	return 1.0 - (1.0 - along) * exp(-front);
 }
 
-// At the end of fragment(), after ALBEDO and EMISSION (and HAZE): sinks the surface into the water. Leaves `uw_keep`, the
-// share of its own light the surface keeps, for the shader to scale what else it lights (SPECULAR, CLEARCOAT, RIM).
+// The waterline: where a surface meets the water's surface, a thin pale line (the meniscus catching the light) over a
+// band a little darker just under it, so the surface reads at a glance on every pier, wall and machine that stands in the
+// water. Only on faces that water touches: the face's own normal (from the position's derivatives, so a bumped normal
+// doesn't break the line) points into the box, so a block's front face on the box's front edge takes none. Its width
+// never falls under WATERLINE_PIXELS on screen and its edges are smoothed, so it holds still under TAA
+// (docs/art-direction.md#stable-image).
+const float WATERLINE_WIDTH = 0.05;
+const float WATERLINE_PIXELS = 1.5;
+const float WATERLINE_STRENGTH = 1.5;
+const float WATERLINE_SHADOW = 0.25;
+const float WATERLINE_SHADOW_DEPTH = 0.12;
+
+// The waterline's light at world point `p` seen from `eye` (linear, add to EMISSION), and in `shade` how much darker the
+// band just under it is (multiply ALBEDO by 1 - shade).
+vec3 waterline_at(vec3 p, vec3 eye, out float shade) {
+	vec3 face = normalize(cross(dFdx(p), dFdy(p)));
+	face *= sign(dot(face, eye - p));
+	vec3 q = p + face * 0.1;
+	vec3 lo = vec3(water_area.x, water_floor, water_area.y);
+	vec3 hi = vec3(water_area.z, water_level + 1.0, water_area.w);
+	vec3 in_box = step(lo, q) * step(q, hi);
+	float touches = in_box.x * in_box.y * in_box.z * (1.0 - smoothstep(0.6, 0.9, abs(face.y)));
+	float h = p.y - water_level;
+	float width = max(WATERLINE_WIDTH, WATERLINE_PIXELS * fwidth(p.y));
+	float line = 1.0 - smoothstep(0.0, width, abs(h));
+	float under = max(width, WATERLINE_SHADOW_DEPTH);
+	shade = touches * WATERLINE_SHADOW * smoothstep(0.0, width, -h) * (1.0 - smoothstep(under, 2.0 * under, -h));
+	return srgb_to_linear(biome_caustic.rgb) * WATERLINE_STRENGTH * line * touches;
+}
+
+// At the end of fragment(), after ALBEDO and EMISSION (and HAZE): sinks the surface into the water and draws its
+// waterline. Leaves `uw_keep`, the share of its own light the surface keeps, for the shader to scale what else it lights
+// (SPECULAR, CLEARCOAT, RIM).
 #define UNDERWATER \
 	vec3 uw_color; \
 	float uw_light; \
-	float uw_murk = underwater_at((INV_VIEW_MATRIX * vec4(VERTEX, 1.0)).xyz, CAMERA_POSITION_WORLD, uw_color, uw_light); \
-	float uw_keep = max(uw_light * (1.0 - uw_murk), UNDERWATER_KEEP_MIN); \
+	vec3 uw_p = (INV_VIEW_MATRIX * vec4(VERTEX, 1.0)).xyz; \
+	float uw_murk = underwater_at(uw_p, CAMERA_POSITION_WORLD, uw_color, uw_light); \
+	float uw_shade; \
+	vec3 uw_line = waterline_at(uw_p, CAMERA_POSITION_WORLD, uw_shade); \
+	float uw_keep = max(uw_light * (1.0 - uw_murk), UNDERWATER_KEEP_MIN) * (1.0 - uw_shade); \
 	ALBEDO *= uw_keep; \
-	EMISSION = EMISSION * uw_light * (1.0 - uw_murk) + uw_color * min(uw_murk, 1.0 - UNDERWATER_KEEP_MIN);
+	EMISSION = EMISSION * uw_light * (1.0 - uw_murk) + uw_color * min(uw_murk, 1.0 - UNDERWATER_KEEP_MIN) + uw_line;
 
 // UNDERWATER for a surface that also gives a gameplay glow (`glow`, linear, kept out of EMISSION until here): the surface's
 // own emission sinks as in UNDERWATER; the glow is veiled by the murk alone and never loses the room's light.

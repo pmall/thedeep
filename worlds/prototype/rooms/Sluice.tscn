@@ -38,6 +38,7 @@
 [ext_resource type="Script" path="res://scripts/rooms/Room.cs" id="29_room"]
 [ext_resource type="Resource" path="res://resources/biomes/flooded.tres" id="30_flooded"]
 [ext_resource type="PackedScene" path="res://scenes/stage/RoomStage.tscn" id="31_stage"]
+[ext_resource type="Material" path="res://assets/materials/water_section.tres" id="32_water_section"]
 
 [sub_resource type="QuadMesh" id="QuadMesh_1"]
 size = Vector2(3, 0.3)
@@ -279,13 +280,15 @@ script = ExtResource("4_machine")
 Species = ExtResource("6_gleaner")
 StartFacing = 1
 
-; the channel: still water behind the walkway and in the pit
+; the channel: still water behind the walkway and in the pit, its front drawn over the pit (x 28 to 33, down to the bed)
 [node name="Water" type="Node3D" parent="."]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 30, -4.25, -6)
 script = ExtResource("7_water_body")
 Size = Vector2(70, 16)
 Depth = 3
+SectionArea = Rect2(-2, -0.75, 5, 0.75)
 SurfaceMaterial = ExtResource("8_water")
+SectionMaterial = ExtResource("32_water_section")
 
 [node name="Shafts" type="Node3D" parent="."]
 

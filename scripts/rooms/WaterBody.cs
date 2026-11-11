@@ -10,6 +10,7 @@ namespace TheDeep;
 /// per room (the globals hold one). Colors come from the biome. With <see cref="Swim"/>, the pilgrim swims in it:
 /// its play-plane region (<see cref="Size"/>.X wide, from the surface down <see cref="Depth"/>) becomes an area on the water
 /// layer that the pilgrim finds itself in (<see cref="Player.WaterSurface"/>), and the map's geometry check swims it.
+/// With a <see cref="SectionMaterial"/>, its front on the play plane is drawn, so water seen from the side reads as water.
 /// </summary>
 public partial class WaterBody : Node3D
 {
@@ -63,12 +64,22 @@ public partial class WaterBody : Node3D
     /// </summary>
     [Export] public bool Globals { get; set; } = true;
 
-    /// <summary>A swimmable body's front, seen from the side: the world Z of the cut (the blocks' front faces are at 2).</summary>
+    /// <summary>The body's front, seen from the side: the world Z of the cut (the blocks' front faces are at 2).</summary>
     [Export] public float SectionFront { get; set; } = 2.05f;
+
+    /// <summary>
+    /// The part of the front that is water, in the body's local X (across the room) and Y (up, the surface at 0): for
+    /// scenery water that shows on the play plane only between blocks (a pit), so the front never veils a block's face.
+    /// Empty: the whole front, <see cref="Size"/>.X wide and <see cref="Depth"/> deep.
+    /// </summary>
+    [Export] public Rect2 SectionArea { get; set; }
 
     [Export] public Material SurfaceMaterial { get; set; } = null!;
 
-    /// <summary>The look of a swimmable body's front (<c>water_section.tres</c>); none for scenery water.</summary>
+    /// <summary>
+    /// The look of the body's front (<c>water_section.tres</c>): every swimmable body has one; scenery water has one
+    /// where it reaches the play plane, none where it lies only behind it.
+    /// </summary>
     [Export] public Material? SectionMaterial { get; set; }
 
     private static readonly System.Collections.Generic.List<WaterBody> Swimmable = new();
@@ -117,19 +128,21 @@ public partial class WaterBody : Node3D
             area.AddChild(new CollisionShape3D { Shape = box });
             area.Position = new Vector3(0f, -0.5f * Depth, -GlobalPosition.Z);
             AddChild(area);
-            if (SectionMaterial is not null)
+        }
+
+        if (SectionMaterial is not null)
+        {
+            Rect2 front = SectionArea.HasArea() ? SectionArea : new Rect2(-0.5f * Size.X, -Depth, Size.X, Depth);
+            var section = new MeshInstance3D
             {
-                var section = new MeshInstance3D
-                {
-                    Mesh = new QuadMesh { Size = new Vector2(Size.X, Depth) },
-                    MaterialOverride = SectionMaterial,
-                    CastShadow = GeometryInstance3D.ShadowCastingSetting.Off,
-                    Layers = WaterRenderLayer,
-                    Position = new Vector3(0f, -0.5f * Depth, SectionFront - GlobalPosition.Z),
-                };
-                section.SetInstanceShaderParameter(SurfaceParameter, SurfaceY);
-                AddChild(section);
-            }
+                Mesh = new QuadMesh { Size = front.Size },
+                MaterialOverride = SectionMaterial,
+                CastShadow = GeometryInstance3D.ShadowCastingSetting.Off,
+                Layers = WaterRenderLayer,
+                Position = new Vector3(front.GetCenter().X, front.GetCenter().Y, SectionFront - GlobalPosition.Z),
+            };
+            section.SetInstanceShaderParameter(SurfaceParameter, SurfaceY);
+            AddChild(section);
         }
 
         Vector3 center = GlobalPosition;

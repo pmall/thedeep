@@ -28,7 +28,6 @@ A room gets the attention its bricks need, no more. Bosses, machines and law bre
 The open items, in order (owner: the world, its bricks and its look are finished before the character):
 
 1. **The art pass** <a id="art-restore"></a> (owner: first priority). The look is rebuilt on the bare render under `docs/art-direction.md#stable-image`; the owner finds it very good and free of the old flicker. What their play asked for:
-   - [ ] **The Sluice's water**: so transparent it is not seen at first glance; water reads as water at a glance in every room that holds some.
    - [ ] **The frozen layer under light**: a little too bright where a light falls; brought down without losing the look the owner likes.
    - Done when every biome reads at a glance and looks very cool to the owner, without flicker, within the frame budget. The volcanic layer's look comes with `docs/roadmap.md#volcanic-rethink`.
 2. **Rooms that agree at their seams** <a id="seam-coherence"></a> (owner: the vertical transitions first): whatever crosses an exit continues on the other side. An elevator's shaft and car exist in both rooms, water never ends at a seam (a hole in a roof never leads under water that has no bottom), a hole in a floor lands under the matching opening above. A rule in `docs/gameplay.md#leaving-a-room`, a check over both worlds, then every vertical exit of the prototype fixed to it.
