@@ -160,11 +160,6 @@ Size = Vector3(10, 16, 4)
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 8.5, -9.25, 0)
 Size = Vector3(3, 13.5, 4)
 
-; the cap of slag set hard over the vent, a hood level with the floor: the heat under it is crossed only through it
-[node name="SlagCap" parent="Geometry" instance=ExtResource("1_block")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 11.5, 0.25, 0)
-Size = Vector3(3, 0.5, 4)
-
 ; ledges of slag set hard up the Chimney's vent, 2.5 m apart, for the way home from below (inside the heat: plated only)
 [node name="VentFloor" parent="Geometry" instance=ExtResource("1_block")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 11.5, -15.5, 0)
@@ -190,9 +185,14 @@ Size = Vector3(1.5, 0.5, 4)
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 10.75, -2.75, 0)
 Size = Vector3(1.5, 0.5, 4)
 
+; the floor's crust, running on west over the vent as its cap of slag set hard, one top with no seam: the hood of the heat under it
 [node name="Floor" parent="Geometry" instance=ExtResource("1_block")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 29.5, -8, 0)
-Size = Vector3(33, 16, 4)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 28, -0.25, 0)
+Size = Vector3(36, 0.5, 4)
+
+[node name="FloorBody" parent="Geometry" instance=ExtResource("1_block")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 29.5, -8.25, 0)
+Size = Vector3(33, 15.5, 4)
 
 ; steps down the well
 [node name="Step0" parent="Geometry" instance=ExtResource("1_block")]
@@ -405,7 +405,7 @@ Size = Vector2(3, 1)
 ; the Chimney's vent: heat rising from the volcanic layer up the shaft to its cap, entered from the step beside it
 [node name="Vent" parent="Heat" instance=ExtResource("40_heatcolumn")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 11.5, -15, 0)
-Size = Vector2(3, 15)
+Size = Vector2(3, 14.5)
 
 [node name="Anchors" type="Node3D" parent="."]
 
