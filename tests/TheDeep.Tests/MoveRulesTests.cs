@@ -30,6 +30,17 @@ public class MoveRulesTests
     }
 
     [Fact]
+    public void TheAirCarriesSpeedAboveARunUnlessPulledAgainst()
+    {
+        const float dt = 1f / 60f;
+        Assert.Equal(10f - L.AirDrag * dt, MoveRules.Run(10f, 1, grounded: false, L, dt), 4);
+        Assert.Equal(-10f + L.AirDrag * dt, MoveRules.Run(-10f, 0, grounded: false, L, dt), 4);
+        Assert.Equal(10f - L.AirDeceleration * dt, MoveRules.Run(10f, -1, grounded: false, L, dt), 4);
+        // It bleeds down to a run, never under it.
+        Assert.Equal(L.RunSpeed, MoveRules.Run(L.RunSpeed + 0.01f, 1, grounded: false, L, dt), 4);
+    }
+
+    [Fact]
     public void GravityHangsAtTheApexWhileJumpIsHeldAndPullsHarderFalling()
     {
         const float dt = 1f / 60f;

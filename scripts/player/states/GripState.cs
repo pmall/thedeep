@@ -7,7 +7,8 @@ namespace TheDeep.States;
 /// Mag-grip: walking on a metal wall or ceiling, the body's up along the surface's normal. Held input
 /// moves along the surface (up/down on a wall, left/right under a ceiling); pulling away lets go, jump
 /// leaps off, dash lets go and dashes. Corners snap (<see cref="GripMath"/>): a metal wall ahead turns
-/// the player onto it, the end of a surface wraps it around the edge; after a corner the held input keeps
+/// the player onto it, the end of a surface wraps it around the edge, the speed carried round; the speed it clamps on with
+/// carries along the surface; after a corner the held input keeps
 /// meaning "keep going" until it changes. Reaching a floor stands the player up. Metal is the physics
 /// layer only (world_metal), never the look. Only metal holds: where the metal ends and rock goes on in the same plane, the
 /// player lets go; so does a body walked down into water (its center <see cref="GripMath.Drowned"/>): water lets go of it.
@@ -48,9 +49,12 @@ public sealed class GripState : PlayerState
 
     public override void Enter()
     {
-        _speed = 0f;
         _lockedInput = null;
-        float into = -NVector2.Dot(Player.Velocity.Flat(), _attach.Up);
+        NVector2 v = Player.Velocity.Flat();
+        float into = -NVector2.Dot(v, _attach.Up);
+
+        // The way it was going along the surface carries on (a jump up into a wall climbs on, a run under a ceiling runs on).
+        _speed = Mathf.Clamp(NVector2.Dot(v, GripMath.Tangent(_attach.Up)), -Tuning.GripSpeed, Tuning.GripSpeed);
         Player.Orient(_attach);
         Player.Visual.Land(Mathf.Max(into, ClampKick));
         Player.Velocity = Vector3.Zero;

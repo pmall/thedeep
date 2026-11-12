@@ -7,18 +7,26 @@ namespace TheDeep;
 public static class MoveRules
 {
     /// <summary>The horizontal speed after <paramref name="dt"/> seconds of running toward <paramref name="moveX"/> (-1, 0, +1).</summary>
-    public static float Run(float vx, int moveX, bool grounded, ControlLimits l, float dt)
+    public static float Run(float vx, int moveX, bool grounded, ControlLimits l, float dt) => grounded
+        ? Toward(vx, moveX, l.RunSpeed, l.GroundAcceleration, l.GroundDeceleration, dt)
+        : Air(vx, moveX, l.RunSpeed, l.AirAcceleration, l.AirDeceleration, l.AirDrag, dt);
+
+    /// <summary>
+    /// The horizontal speed after <paramref name="dt"/> seconds in the air, steering toward <paramref name="moveX"/>: faster than a run
+    /// (a harpoon's release), the speed is carried, bleeding off at <paramref name="drag"/> m/s² down to a run, unless the stick pulls
+    /// against it; otherwise as on the ground, at the air's rates. The planner flies by the same rule.
+    /// </summary>
+    public static float Air(float vx, int moveX, float runSpeed, float acceleration, float deceleration, float drag, float dt) =>
+        MathF.Abs(vx) > runSpeed && moveX * MathF.Sign(vx) >= 0
+            ? Motion.Approach(vx, MathF.Sign(vx) * runSpeed, drag * dt)
+            : Toward(vx, moveX, runSpeed, acceleration, deceleration, dt);
+
+    /// <summary>Toward a run at <paramref name="moveX"/> (-1, 0, +1): <paramref name="acceleration"/> to speed up, <paramref name="deceleration"/> to brake or turn.</summary>
+    private static float Toward(float vx, int moveX, float runSpeed, float acceleration, float deceleration, float dt)
     {
-        float target = moveX * l.RunSpeed;
-        bool accelerating = target != 0f && (vx == 0f || MathF.Sign(target) == MathF.Sign(vx)) && MathF.Abs(vx) <= l.RunSpeed;
-        float rate = (grounded, accelerating) switch
-        {
-            (true, true) => l.GroundAcceleration,
-            (true, false) => l.GroundDeceleration,
-            (false, true) => l.AirAcceleration,
-            (false, false) => l.AirDeceleration,
-        };
-        return Motion.Approach(vx, target, rate * dt);
+        float target = moveX * runSpeed;
+        bool accelerating = target != 0f && (vx == 0f || MathF.Sign(target) == MathF.Sign(vx)) && MathF.Abs(vx) <= runSpeed;
+        return Motion.Approach(vx, target, (accelerating ? acceleration : deceleration) * dt);
     }
 
     /// <summary>

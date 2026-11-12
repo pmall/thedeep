@@ -7,7 +7,7 @@ namespace TheDeep;
 
 /// <summary>The base moveset's numbers (copied from <c>player_tuning.tres</c>, the single source), as the planner simulates them.</summary>
 public sealed record MoveLimits(
-    float RunSpeed, float AirAcceleration, float AirDeceleration, float JumpHeight, float JumpTimeToApex, float JumpCutFactor,
+    float RunSpeed, float AirAcceleration, float AirDeceleration, float AirDrag, float JumpHeight, float JumpTimeToApex, float JumpCutFactor,
     float FallGravityMultiplier, float ApexHangThreshold, float ApexGravityMultiplier, float MaxFallSpeed,
     float DashDistance, float DashDuration, float DashExitSpeedFactor, int AirDashes,
     float Width = 0.7f, float Height = 1.6f, float EdgeMargin = 0f, float LedgeAssist = 0f)
@@ -713,9 +713,7 @@ public sealed class ReachPlanner
                     cut = true;
                 }
 
-                float target = dir * _m.RunSpeed;
-                bool accelerating = target != 0f && (v.X == 0f || MathF.Sign(target) == MathF.Sign(v.X)) && MathF.Abs(v.X) <= _m.RunSpeed;
-                v.X = Motion.Approach(v.X, target, (accelerating ? _m.AirAcceleration : _m.AirDeceleration) * Dt);
+                v.X = MoveRules.Air(v.X, dir, _m.RunSpeed, _m.AirAcceleration, _m.AirDeceleration, _m.AirDrag, Dt);
                 float g = _m.Gravity;
                 if (held && jumping && MathF.Abs(v.Y) < _m.ApexHangThreshold)
                 {

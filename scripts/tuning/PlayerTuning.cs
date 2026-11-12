@@ -15,6 +15,8 @@ public partial class PlayerTuning : Resource
     [Export] public float GroundDeceleration { get; set; } = 80f;
     [Export] public float AirAcceleration { get; set; } = 45f;
     [Export] public float AirDeceleration { get; set; } = 30f;
+    /// <summary>In the air, speed above a run (a harpoon's release) bleeds off at this rate (m/s²) unless the stick pulls against it.</summary>
+    [Export] public float AirDrag { get; set; } = 12f;
 
     /// <summary>Apex height of a full (held) jump.</summary>
     [ExportGroup("Jump")]
@@ -72,7 +74,7 @@ public partial class PlayerTuning : Resource
     [Export] public float HarpoonZipSpeed { get; set; } = 17f;
     [Export] public float HarpoonZipAcceleration { get; set; } = 110f;
     /// <summary>Letting go at the anchor: the pull's speed kept, as a fraction, and at least this much upward speed.</summary>
-    [Export] public float HarpoonExitSpeedFactor { get; set; } = 0.5f;
+    [Export] public float HarpoonExitSpeedFactor { get; set; } = 0.65f;
     [Export] public float HarpoonExitLift { get; set; } = 6f;
     /// <summary>A harpoon pressed this long before an anchor comes into sight still fires.</summary>
     [Export] public float HarpoonBufferTime { get; set; } = 0.1f;
@@ -141,7 +143,7 @@ public partial class PlayerTuning : Resource
         WaterAcceleration, SplashKeep, WaterEnterDepth, WaterJumpWindow);
 
     /// <summary>Running, falling, the grace windows, the air dashes and the blows, as <see cref="PilgrimControl"/> and <see cref="MoveRules"/> read them.</summary>
-    public ControlLimits Control => new(RunSpeed, GroundAcceleration, GroundDeceleration, AirAcceleration, AirDeceleration,
+    public ControlLimits Control => new(RunSpeed, GroundAcceleration, GroundDeceleration, AirAcceleration, AirDeceleration, AirDrag,
         Gravity, ApexHangThreshold, ApexGravityMultiplier, FallGravityMultiplier, MaxFallSpeed,
         CoyoteTime, JumpBufferTime, DashBufferTime, DashCooldown, HarpoonBufferTime, GripRegrabDelay,
         AirDashes, HurtKnockback, HurtLift, HurtStun);
@@ -159,7 +161,7 @@ public partial class PlayerTuning : Resource
     }
 
     /// <summary>The base moveset as the map's planner simulates it (<see cref="ReachPlanner"/>).</summary>
-    public MoveLimits Move => new(RunSpeed, AirAcceleration, AirDeceleration, JumpHeight, JumpTimeToApex, JumpCutFactor,
+    public MoveLimits Move => new(RunSpeed, AirAcceleration, AirDeceleration, AirDrag, JumpHeight, JumpTimeToApex, JumpCutFactor,
         FallGravityMultiplier, ApexHangThreshold, ApexGravityMultiplier, MaxFallSpeed, DashDistance, DashDuration, DashExitSpeedFactor,
         AirDashes, LedgeAssist: LedgeAssistHeight);
 
