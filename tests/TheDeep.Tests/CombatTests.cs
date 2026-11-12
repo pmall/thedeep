@@ -54,6 +54,22 @@ public class CombatTests
     }
 
     [Fact]
+    public void APressDuringTheHitIsQueued()
+    {
+        var s = new Swing(0.05f, 0.1f, 0.15f, 0.05f);
+        s.Press();
+        s.Tick(0.06f);
+        Assert.Equal(SwingPhase.Active, s.Phase);
+        Assert.False(s.Press());
+        for (int i = 0; i < 20; i++)
+        {
+            s.Tick(0.02f);
+        }
+
+        Assert.Equal(2, s.Count);
+    }
+
+    [Fact]
     public void APressDuringTheWindUpIsNotQueued()
     {
         var s = new Swing(0.05f, 0.1f, 0.15f, 0f);

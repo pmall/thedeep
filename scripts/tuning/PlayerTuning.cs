@@ -127,6 +127,8 @@ public partial class PlayerTuning : Resource
     [Export] public float HurtKnockback { get; set; } = 6f;
     [Export] public float HurtLift { get; set; } = 6f;
     [Export] public float HurtStun { get; set; } = 0.22f;
+    /// <summary>Seconds a blow that hurts holds the pilgrim and the machine that dealt it still, before the throw.</summary>
+    [Export] public float HurtStop { get; set; } = 0.1f;
 
     /// <summary>Gravity (m/s², positive) that makes the jump peak as tuned, derived from <see cref="JumpHeight"/> and
     /// <see cref="JumpTimeToApex"/>.</summary>

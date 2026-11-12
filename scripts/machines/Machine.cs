@@ -217,6 +217,7 @@ public partial class Machine : CharacterBody3D
         if (_halt > 0f)
         {
             _halt -= delta; // a blow's hit stop: held where it was struck, its knockback waiting
+            Intent = Intent with { Hit = false }; // a blow lands on one tick, never again on each tick it is held
             return;
         }
 

@@ -18,7 +18,7 @@ These leave room for error, because jumps must never be exact (owner): the room 
 ## The pilgrimage <a id="pilgrimage"></a>
 
 - **Attack:** the fight moveset (`docs/gameplay.md#fight`). A machine hit flashes, reels and is pushed back; broken, it is gone until the room is entered again.
-- **Health:** a few hits, shown top left as thin diamonds. A blow throws the pilgrim back and takes control away a moment, then nothing hurts for a short grace.
+- **Health:** a few hits, shown top left as diamonds. A blow throws the pilgrim back and takes control away a moment, flashing the screen's edges, then nothing hurts for a short grace. With one hit left, the last diamond beats.
 - **Slag** <a id="slag"></a> is a body, like water: it fills its basin from a surface down to a bed the player sees, between banks. Touching it burns, the same with or without Heat plating: one health (none in the grace), the pilgrim recoils, and under a quick veil it stands again on the last ground it stood on clear of slag and heat, in control. So slag is never waded, crossed or stood on, it never kills outright, and nobody is ever stuck in it. A way over slag is a way over its surface (a jump, a grip, a harpoon); the planner never routes through it.
 - **Heat** <a id="heat"></a> is scorching air, and it is a gate: a column as wide as its source (a vent's mouth, a furnace's throat), rising from it to the roof, hood or exit above with no way round, drawn at its true edges. Without Heat plating, touching it burns exactly as slag does; with the plating it is harmless. Heat never lies over a floor as a strip to hop, and there is none over slag: the room check fails a heat column that stops short of a ceiling.
 - **Death:** the pilgrim wakes at the last shrine it rested at, whole, the room renewed (its machines back).
@@ -52,12 +52,12 @@ Room transitions as in the classics (Hollow Knight, Super Metroid), and never a 
 
 ## Fight <a id="fight"></a>
 
-A few moves, done well (`docs/roadmap.md#feel-fight`). No strike stops the pilgrim: momentum carries through. Presses during a recovery are kept.
+A few moves, done well (`docs/roadmap.md#feel-fight`). No strike stops the pilgrim: momentum carries through. A press once a strike hits (its hit stop, its recovery) is kept for the next.
 
 - **The chain:** presses in rhythm give a swing, a second swing, then a **finisher** (wider, one more damage, it throws the machine far); a pause starts the chain over.
 - **Down strike:** in the air, holding down: a strike under the feet. What it hits **bounces** the pilgrim up, the air dash refilled, so it can strike again.
 - **Dash strike:** attacking during a dash lunges along it: longer, one more damage.
-- **Hits that land:** a landed blow holds the pilgrim and its target still for a few hundredths of a second (the **hit stop**), with sparks and a camera shake that grow with the strike.
+- **Hits that land:** a landed blow holds the pilgrim and its target still for a few hundredths of a second (the **hit stop**), with sparks and a kick of the camera along the blow that grow with the strike. A machine's blow that hurts the pilgrim lands the same way: both held a moment, then the pilgrim thrown back.
 - **Power-ups** add to every blow's damage (strength) or to the pilgrim's health (defense), for good.
 
 Each strike's reach, width, damage, knockback, hit stop and bounce are `Strikes` in `player_tuning.tres`. How the strikes look (sword moves, the chain choreographed) is `docs/art-direction.md#strikes`.

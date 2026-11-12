@@ -11,7 +11,8 @@ public enum SwingPhase
 
 /// <summary>
 /// The timing of one melee swing, pure: a short wind-up, the window in which it hits, a recovery, then a
-/// cooldown before the next. A press during recovery is buffered so swings chain without dropped inputs.
+/// cooldown before the next. A press once the swing hits (its window, its recovery, the cooldown) is buffered so swings chain
+/// without dropped inputs; one during the wind-up is a double tap and is dropped.
 /// </summary>
 public sealed class Swing
 {
@@ -55,7 +56,7 @@ public sealed class Swing
     /// <summary>Whether a new swing can start now: none is under way and the cooldown has passed.</summary>
     public bool CanStart => _time >= WindUp + ActiveTime + Recover + Cooldown;
 
-    /// <summary>Asks for a swing: starts now if possible, else is queued for when it is (during the recovery only).</summary>
+    /// <summary>Asks for a swing: starts now if possible, else is queued for when it is (from the hit window on).</summary>
     public bool Press()
     {
         if (CanStart)
@@ -64,7 +65,7 @@ public sealed class Swing
             return true;
         }
 
-        if (Phase == SwingPhase.Recover || Phase == SwingPhase.Ready)
+        if (Phase != SwingPhase.WindUp)
         {
             _queued = true;
         }

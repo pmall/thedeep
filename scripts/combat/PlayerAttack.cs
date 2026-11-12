@@ -63,18 +63,21 @@ public partial class PlayerAttack : Node3D
 
     public override void _PhysicsProcess(double delta)
     {
+        bool pressed = Player.InControl && Input.IsActionJustPressed(InputActions.Attack);
         if (Player.HitStopped)
         {
-            return; // the blow holds: the window stays open as long as the stop lasts
+            // The blow holds: the window stays open as long as the stop lasts, and a press in it is kept for the next strike.
+            if (pressed)
+            {
+                Timing.Press();
+            }
+
+            return;
         }
 
         float dt = (float)delta;
         Chain.Tick(dt);
-        bool started = false;
-        if (Player.InControl && Input.IsActionJustPressed(InputActions.Attack))
-        {
-            started = Timing.Press();
-        }
+        bool started = pressed && Timing.Press();
 
         started |= Timing.Tick(dt);
         if (started)

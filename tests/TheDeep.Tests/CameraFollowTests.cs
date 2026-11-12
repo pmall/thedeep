@@ -8,7 +8,7 @@ public class CameraFollowTests
     private const float Dt = 1f / 60f;
 
     private static readonly FollowLimits L = new(LookAhead: 2.5f, LookAheadMinSpeed: 1f, LookAheadTime: 0.45f, HorizontalTime: 0.2f,
-        VerticalTime: 0.24f, RiseBand: 2.2f, FallLead: 4.5f, FallLeadFrom: 8f, FallLeadFull: 18f, LeashX: 4.5f, LeashY: 2.5f);
+        VerticalTime: 0.24f, RiseBand: 2.2f, FallLead: 4.5f, FallLeadFrom: 8f, FallLeadFull: 18f, LeashX: 4.5f, LeashY: 2.5f, KickTime: 0.06f);
 
     private static readonly ViewBounds Open = new(new Vector2(-1000f), new Vector2(1000f), new Vector2(10f, 6f));
 
@@ -127,6 +127,18 @@ public class CameraFollowTests
             Assert.InRange(follow.Focus.X, 10f, 30f);
             Assert.InRange(follow.Focus.Y, 6f, 14f);
         }
+    }
+
+    [Fact]
+    public void AKickThrowsTheViewThenEasesBack()
+    {
+        CameraFollow follow = At(Vector2.Zero);
+        follow.Kick(new Vector2(0.1f, 0f));
+        follow.Kick(new Vector2(0.05f, 0f)); // a weaker one under way changes nothing
+        Assert.Equal(0.1f, follow.KickOffset.X);
+        Hold(follow, Vector2.Zero, CameraFooting.Ground, 0.4f);
+        Assert.Equal(0f, follow.KickOffset.X, 3);
+        Assert.Equal(L.LookAhead, follow.Focus.X, 3); // the follow itself never moved
     }
 
     [Theory]

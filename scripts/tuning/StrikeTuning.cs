@@ -30,8 +30,13 @@ public partial class StrikeTuning : Resource
     /// <summary>Upward speed a hit gives the pilgrim (a down strike's bounce), m/s; 0 for none.</summary>
     [Export] public float Bounce { get; set; }
 
+    /// <summary>How far a landed blow kicks the camera along it (meters, eased back), and the strength of its sparks (0 to 1, a
+    /// full burst).</summary>
+    [Export] public float Kick { get; set; } = 0.06f;
+    [Export] public float Sparks { get; set; } = 0.5f;
+
     /// <summary>The strike these knobs describe, as the combat rules read it: ahead of the pilgrim, or below it for a downward
     /// one.</summary>
     public StrikeShape Shape => new(Kind, Reach, Width, Downward ? -System.Numerics.Vector2.UnitY : System.Numerics.Vector2.UnitX,
-        ExtraDamage, Knockback, HitStop, Bounce);
+        ExtraDamage, Knockback, HitStop, Bounce, Kick, Sparks);
 }

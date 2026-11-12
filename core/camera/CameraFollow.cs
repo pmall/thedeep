@@ -10,7 +10,8 @@ namespace TheDeep;
 /// reads the body's footing (<see cref="CameraFooting"/>): standing, it settles on the floor's height; in a jump it keeps the
 /// height the body left until the body rises out of <see cref="FollowLimits.RiseBand"/> or drops below it, so a hop doesn't rock
 /// the screen; a fast fall looks down ahead of the body, so the landing is seen. A leash keeps a body that runs from the camera on screen
-/// whatever its speed, and the view stays inside the room (<see cref="CameraMath.ClampAxis"/>).
+/// whatever its speed, and the view stays inside the room (<see cref="CameraMath.ClampAxis"/>). A blow that lands kicks the view
+/// along it (<see cref="Kick"/>), eased back on its own spring.
 /// </summary>
 public sealed class CameraFollow
 {
@@ -20,12 +21,27 @@ public sealed class CameraFollow
     private float _lookAheadVelocity;
     private int _lookAheadSide = 1;
     private float _floorY;
+    private Vector2 _kickVelocity;
 
     /// <summary>A follow by the numbers of <paramref name="limits"/>, looking at the origin until <see cref="Snap"/>.</summary>
     public CameraFollow(FollowLimits limits) => _l = limits;
 
-    /// <summary>Where the camera looks now, on the play plane (its shake aside).</summary>
+    /// <summary>Where the camera looks now, on the play plane (its shake and kick aside).</summary>
     public Vector2 Focus { get; private set; }
+
+    /// <summary>How far a blow's kick throws the view off <see cref="Focus"/> now, meters; back to zero within the kick's ease.</summary>
+    public Vector2 KickOffset { get; private set; }
+
+    /// <summary>A blow lands: the view is thrown by <paramref name="offset"/> meters (the strongest kick under way wins), then eases
+    /// back.</summary>
+    public void Kick(Vector2 offset)
+    {
+        if (offset.LengthSquared() > KickOffset.LengthSquared())
+        {
+            KickOffset = offset;
+            _kickVelocity = Vector2.Zero;
+        }
+    }
 
     /// <summary>
     /// Straight onto <paramref name="target"/> with no ease (a start, a respawn, an arrival), looking ahead toward
@@ -37,6 +53,8 @@ public sealed class CameraFollow
         _lookAhead = _lookAheadSide * _l.LookAhead;
         _lookAheadVelocity = 0f;
         _velocity = Vector2.Zero;
+        KickOffset = Vector2.Zero;
+        _kickVelocity = Vector2.Zero;
         _floorY = target.Y;
         Focus = view.Clamp(new Vector2(target.X + _lookAhead, target.Y));
     }
@@ -62,6 +80,11 @@ public sealed class CameraFollow
 
         // The leash: past it, the camera is dragged along at the body's own pace, and eases out of it when the body slows.
         focus = new Vector2(Leash(focus.X, desired.X, _l.LeashX, velocity.X, ref vx), Leash(focus.Y, desired.Y, _l.LeashY, velocity.Y, ref vy));
+        float kx = _kickVelocity.X, ky = _kickVelocity.Y;
+        KickOffset = new Vector2(
+            Motion.SmoothDamp(KickOffset.X, 0f, ref kx, _l.KickTime, dt), Motion.SmoothDamp(KickOffset.Y, 0f, ref ky, _l.KickTime, dt));
+        _kickVelocity = new Vector2(kx, ky);
+
         Vector2 clamped = view.Clamp(focus);
         _velocity = new Vector2(clamped.X != focus.X ? 0f : vx, clamped.Y != focus.Y ? 0f : vy);
         Focus = clamped;

@@ -8,11 +8,11 @@ public class ComboTests
 {
     private static Combo Make() => new(new Dictionary<StrikeKind, StrikeShape>
     {
-        [StrikeKind.Swing] = new(StrikeKind.Swing, 1.8f, 1.5f, Vector2.UnitX, 0, 3f, 0.04f, 0f),
-        [StrikeKind.Second] = new(StrikeKind.Second, 1.8f, 1.5f, Vector2.UnitX, 0, 3f, 0.04f, 0f),
-        [StrikeKind.Finisher] = new(StrikeKind.Finisher, 2.3f, 1.8f, Vector2.UnitX, 1, 7f, 0.08f, 0f),
-        [StrikeKind.Down] = new(StrikeKind.Down, 1.6f, 1.4f, -Vector2.UnitY, 0, 2f, 0.04f, 9f),
-        [StrikeKind.Dash] = new(StrikeKind.Dash, 2.6f, 1.2f, Vector2.UnitX, 1, 5f, 0.06f, 0f),
+        [StrikeKind.Swing] = new(StrikeKind.Swing, 1.8f, 1.5f, Vector2.UnitX, 0, 3f, 0.04f, 0f, 0.1f, 1f),
+        [StrikeKind.Second] = new(StrikeKind.Second, 1.8f, 1.5f, Vector2.UnitX, 0, 3f, 0.04f, 0f, 0.1f, 1f),
+        [StrikeKind.Finisher] = new(StrikeKind.Finisher, 2.3f, 1.8f, Vector2.UnitX, 1, 7f, 0.08f, 0f, 0.1f, 1f),
+        [StrikeKind.Down] = new(StrikeKind.Down, 1.6f, 1.4f, -Vector2.UnitY, 0, 2f, 0.04f, 9f, 0.1f, 1f),
+        [StrikeKind.Dash] = new(StrikeKind.Dash, 2.6f, 1.2f, Vector2.UnitX, 1, 5f, 0.06f, 0f, 0.1f, 1f),
     }, chainWindow: 0.25f);
 
     [Fact]

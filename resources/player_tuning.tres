@@ -10,7 +10,9 @@ Kind = 0
 Reach = 1.8
 Width = 1.5
 Knockback = 3.0
-HitStop = 0.04
+HitStop = 0.05
+Kick = 0.06
+Sparks = 0.5
 
 [sub_resource type="Resource" id="strike_second"]
 script = ExtResource("2_strike")
@@ -18,7 +20,9 @@ Kind = 1
 Reach = 1.9
 Width = 1.5
 Knockback = 3.5
-HitStop = 0.045
+HitStop = 0.055
+Kick = 0.07
+Sparks = 0.6
 
 [sub_resource type="Resource" id="strike_finisher"]
 script = ExtResource("2_strike")
@@ -27,7 +31,9 @@ Reach = 2.3
 Width = 1.9
 ExtraDamage = 1
 Knockback = 8.0
-HitStop = 0.09
+HitStop = 0.1
+Kick = 0.14
+Sparks = 1.0
 
 [sub_resource type="Resource" id="strike_down"]
 script = ExtResource("2_strike")
@@ -36,8 +42,10 @@ Reach = 1.6
 Width = 1.4
 Downward = true
 Knockback = 2.0
-HitStop = 0.05
+HitStop = 0.06
 Bounce = 9.0
+Kick = 0.08
+Sparks = 0.7
 
 [sub_resource type="Resource" id="strike_dash"]
 script = ExtResource("2_strike")
@@ -46,7 +54,9 @@ Reach = 2.6
 Width = 1.3
 ExtraDamage = 1
 Knockback = 6.0
-HitStop = 0.07
+HitStop = 0.08
+Kick = 0.11
+Sparks = 0.85
 
 [resource]
 script = ExtResource("1_tuning")
@@ -111,3 +121,4 @@ HurtGrace = 1.2
 HurtKnockback = 6.0
 HurtLift = 6.0
 HurtStun = 0.22
+HurtStop = 0.1

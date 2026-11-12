@@ -9,7 +9,8 @@ namespace TheDeep;
 /// Runs the machines of the current room. Each physics tick it gathers what they can perceive (the
 /// player and whether each machine can see them, impacts from the player's landings and dashes, the
 /// machines around each one) and steps every machine in a fixed order, so runs are deterministic. A strike
-/// that lands near the player throws sparks, shakes the camera and raises <see cref="PlayerStruck"/>.
+/// that reaches the player raises <see cref="PlayerStruck"/>; when it hurts, it throws sparks, shakes the camera and holds the
+/// machine still as long as the pilgrim's hurt stop.
 /// </summary>
 public partial class MachineDirector : Node
 {
@@ -29,8 +30,12 @@ public partial class MachineDirector : Node
 
     [Export] public SideCamera? Camera { get; set; }
 
-    /// <summary>Camera shake added by a blow, 0 to 1.</summary>
-    [Export] public float HitShake { get; set; } = 0.35f;
+    /// <summary>How far a machine's blow that hurts the pilgrim kicks the camera along it, meters.</summary>
+    [Export] public float HurtKick { get; set; } = 0.16f;
+
+    /// <summary>The kick (meters) and sparks a blow adds on top of its strike's when it breaks the machine.</summary>
+    [Export] public float BreakKick { get; set; } = 0.05f;
+    [Export] public float BreakSparks { get; set; } = 0.4f;
 
     private readonly List<Machine> _machines = new();
     private readonly List<Impact> _impacts = new();
@@ -124,9 +129,14 @@ public partial class MachineDirector : Node
             machine.Step(dt, machine.Perceive(player, _heard, _neighbors));
             if (machine.Intent.Hit && PlayerPresent && machine.SensorPosition.DistanceTo(chest) <= machine.Species.StrikeRange)
             {
-                HitSparks?.Emit(chest, 1f);
-                Camera?.AddShake(HitShake);
-                Player.TakeHit(machine.Species.Damage, machine.PlanePosition.ToCore());
+                if (Player.TakeHit(machine.Species.Damage, machine.PlanePosition.ToCore()))
+                {
+                    // It hurt: the blow lands, the machine held in its follow-through as long as the pilgrim.
+                    HitSparks?.Emit(chest, 1f);
+                    Camera?.Kick(new NVector2(chest.X >= machine.PlanePosition.X ? 1f : -1f, 0.3f) * HurtKick);
+                    machine.Halt(Player.Tuning.HurtStop);
+                }
+
                 PlayerStruck?.Invoke(machine);
             }
         }
@@ -151,8 +161,8 @@ public partial class MachineDirector : Node
             Vector2 at = body.GetCenter();
             bool broke = machine.TakeHit(Player.AttackDamage + strike.ExtraDamage, Player.GlobalPosition.X, strike.Knockback);
             machine.Halt(strike.HitStop);
-            HitSparks?.Emit(new Vector3(at.X, at.Y, 0.3f), broke || strike.Kind == StrikeKind.Finisher ? 1.5f : 0.7f);
-            Camera?.AddShake(broke ? 0.3f : strike.Kind == StrikeKind.Finisher ? 0.22f : 0.12f);
+            HitSparks?.Emit(new Vector3(at.X, at.Y, 0.3f), strike.Sparks + (broke ? BreakSparks : 0f));
+            Camera?.Kick(Along(strike) * (strike.Kick + (broke ? BreakKick : 0f)));
             MachineHit?.Invoke(machine, broke);
             landed = true;
         }
@@ -166,6 +176,9 @@ public partial class MachineDirector : Node
             }
         }
     }
+
+    /// <summary>The way a strike goes on the play plane: down for a down strike, else the side it was swung to.</summary>
+    private NVector2 Along(StrikeShape strike) => strike.Toward.Y < 0f ? new NVector2(0f, -1f) : new NVector2(Player.Attack.Facing, 0f);
 
     private void OnRoomLoaded(Room room)
     {

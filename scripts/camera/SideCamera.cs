@@ -5,8 +5,8 @@ namespace TheDeep;
 
 /// <summary>
 /// Locked side-view camera looking down -Z at the play plane. Follows the player by the core's <see cref="CameraFollow"/> (eased,
-/// looking ahead, steady through jumps, leading falls), never showing outside the room's bounds, and shakes on hard landings and
-/// on whatever calls <see cref="AddShake"/>.
+/// looking ahead, steady through jumps, leading falls), never showing outside the room's bounds; it shakes on hard landings and
+/// on whatever calls <see cref="AddShake"/>, and a blow that lands kicks it (<see cref="Kick"/>).
 /// Narrow-FOV perspective (not orthographic) so the backdrop and foreground layers get parallax.
 /// </summary>
 public partial class SideCamera : Camera3D
@@ -50,6 +50,9 @@ public partial class SideCamera : Camera3D
     [Export] public float LeashX { get; set; } = 4.5f;
     [Export] public float LeashY { get; set; } = 2.5f;
 
+    /// <summary>How long a blow's kick (<see cref="Kick"/>) takes to ease back, seconds.</summary>
+    [Export] public float KickTime { get; set; } = 0.07f;
+
     /// <summary>Landing speed (m/s) above which a landing shakes the camera, and the speed of the strongest shake.</summary>
     [Export] public float ShakeLandingSpeed { get; set; } = 13f;
     [Export] public float ShakeLandingMax { get; set; } = 22f;
@@ -60,7 +63,7 @@ public partial class SideCamera : Camera3D
 
     private CameraFollow? _follow;
     private CameraFollow Follow => _follow ??= new CameraFollow(new FollowLimits(LookAhead, LookAheadMinSpeed, LookAheadTime,
-        HorizontalTime, VerticalTime, RiseBand, FallLead, FallLeadFrom, FallLeadFull, LeashX, LeashY));
+        HorizontalTime, VerticalTime, RiseBand, FallLead, FallLeadFrom, FallLeadFull, LeashX, LeashY, KickTime));
 
     private bool _framingShot;
     private float _followFov;
@@ -86,6 +89,9 @@ public partial class SideCamera : Camera3D
 
     /// <summary>Adds shake (0 to 1); the offset grows with its square, so small amounts stay subtle.</summary>
     public void AddShake(float amount) => _trauma = Mathf.Clamp(_trauma + amount, 0f, 1f);
+
+    /// <summary>A blow lands: the view is thrown <paramref name="offset"/> meters along it and eases back (the strongest under way wins).</summary>
+    public void Kick(NVector2 offset) => Follow.Kick(offset);
 
     public override void _Process(double delta)
     {
@@ -155,7 +161,7 @@ public partial class SideCamera : Camera3D
         var offset = new Vector2(
             0.5f * Mathf.Sin(_shakeTime * 37f) * Mathf.Sin(_shakeTime * 13f),
             Mathf.Sin(_shakeTime * 43f + 1.3f) * Mathf.Cos(_shakeTime * 17f)) * shake;
-        NVector2 focus = Follow.Focus;
+        NVector2 focus = Follow.Focus + Follow.KickOffset;
         GlobalPosition = new Vector3(focus.X + offset.X, focus.Y + offset.Y, Distance);
     }
 

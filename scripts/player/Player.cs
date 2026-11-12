@@ -565,7 +565,8 @@ public partial class Player : CharacterBody3D
 
     /// <summary>
     /// A blow from <paramref name="from"/> (on the play plane): takes <paramref name="damage"/> health unless in the
-    /// grace period, throws the pilgrim back and up, and briefly takes control away. Returns whether it hurt.
+    /// grace period, holds the pilgrim still a moment (the hurt stop, so the blow lands), then throws it back and up, and briefly takes
+    /// control away. Returns whether it hurt.
     /// </summary>
     public bool TakeHit(int damage, NVector2 from)
     {
@@ -576,6 +577,7 @@ public partial class Player : CharacterBody3D
 
         ChangeState(States.Fall);
         Velocity = MoveRules.Knockback(GlobalPosition.X, from.X, Limits).OnPlane();
+        HitStop(Tuning.HurtStop);
         Control.Hurt();
         Visual.Hurt();
         Hurt?.Invoke();
