@@ -195,8 +195,8 @@ CHECKS=(
     "drill|DRILL OK|DRILL CHECK|2000|--room MechanicsLab --drill-check"
     "ballast|BALLAST OK|BALLAST CHECK|2000|--room MechanicsLab --ballast-check"
     "heat|HEAT OK|HEAT CHECK|1500|--room Basalt --heat-check"
-    # SlagCheck: the Slag's routes, falls and edges in play.
-    "slag|SLAG OK|SLAG CHECK|15000|--room Slag --slag-check"
+    # BurnProbe: every slag body and heat column walked into, plated and not.
+    "burn|BURN OK|BURN CHECK|20000|--burn-probe"
     # KeyCheck: the Sacristy key and its locked door, in place.
     "key|KEY OK|KEY CHECK|2000|--room Narthex --key-check"
     # KeyCheck's Pyre plan: the Pyre's litany (a code) and its seal on the Ashfall's low door, in place.
@@ -217,10 +217,11 @@ CHECKS=(
     "playthrough|PLAYTHROUGH OK|PLAYTHROUGH CHECK|60000|--playthrough-check"
     "species|SPECIES OK|SPECIES CHECK|9000|--room MachineArena --validate-species"
     # The sequel world (docs/roadmap.md#sequel-test), a fixture: its rooms and map (run from the Strongroom, its room without
-    # machines, as the prototype's are from the lab), every exit crossed, and the whole run.
+    # machines, as the prototype's are from the lab), every exit crossed, the whole run and its burns (none yet).
     "sequel_rooms|ROOMS OK|ROOM CHECK|600|--world sequel --room Strongroom --validate-rooms"
     "sequel_travel|TRAVEL OK|TRAVEL CHECK|20000|--world sequel --validate-travel"
     "sequel_playthrough|PLAYTHROUGH OK|PLAYTHROUGH CHECK|20000|--world sequel --playthrough-check"
+    "sequel_burn|BURN OK|BURN CHECK|20000|--world sequel --burn-probe"
 )
 
 # Runs one check in the background: its log, then a status file with its exit code and how long it took.
@@ -266,8 +267,8 @@ for entry in "${CHECKS[@]}"; do
         continue
     fi
     if [ -n "$ok" ]; then
-        # With the report-only lines: the ground rules' totals and the Slag's verdicts (docs/roadmap.md#bricks-ready).
-        grep -E "^$ok|^(MAP|INSIDE|DRAFT) OK|^GROUND REPORT|^SLAG \(" "$log" | cut -c1-240 | sed "s/\$/  ($name, ${secs}s)/" | head -12
+        # With the report-only lines: the ground rules' totals (docs/roadmap.md#bricks-ready).
+        grep -E "^$ok|^(MAP|INSIDE|DRAFT) OK|^GROUND REPORT" "$log" | cut -c1-240 | sed "s/\$/  ($name, ${secs}s)/" | head -12
     else
         echo "$name: ok (${secs}s)"
     fi

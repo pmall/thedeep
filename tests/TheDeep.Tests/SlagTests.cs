@@ -47,6 +47,32 @@ public class SlagTests
     }
 
     [Fact]
+    public void AFullBasinHasNoSunkenGround()
+    {
+        List<Box> solids = Basin();
+        solids.Add(new Box(19.5f, -3f, 20.5f, 0f)); // a pillar flush with the surface: rock to stand on
+        Assert.Empty(SlagBasin.SunkenGround(Slag, solids, 0.3f));
+    }
+
+    [Fact]
+    public void APillarSunkUnderTheSurfaceIsGroundInTheSlag()
+    {
+        List<Box> solids = Basin();
+        solids.Add(new Box(19.5f, -3f, 20.5f, -1f));
+        Assert.Single(SlagBasin.SunkenGround(Slag, solids, 0.3f));
+    }
+
+    [Fact]
+    public void ABankSteppingDownBesideItWithinAHalfWidthIsGroundInTheSlag()
+    {
+        List<Box> solids = Basin();
+        solids[0] = new Box(9f, -3f, 17.9f, 1f);
+        solids.Add(new Box(17.9f, -3f, 18f, -0.5f)); // the bank's last 0.1 m, half a meter under the surface
+        Assert.Single(SlagBasin.SunkenGround(Slag, solids, 0.3f));
+        Assert.Empty(SlagBasin.SunkenGround(Slag, solids.Append(new Box(17.9f, -0.5f, 18f, 1f)).ToList(), 0.3f));
+    }
+
+    [Fact]
     public void APillarRisingFromTheBedIsPartOfIt()
     {
         List<Box> solids = Basin();

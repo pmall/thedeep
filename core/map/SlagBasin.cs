@@ -35,6 +35,27 @@ public static class SlagBasin
         }
     }
 
+    /// <summary>
+    /// Ground among <paramref name="solids"/> a body <paramref name="halfWidth"/> wide each side of its feet stands on in
+    /// <paramref name="slag"/>, as sentences: an open top face lying between the bed and the surface, within a half width of the
+    /// slag's span (a pillar sunk under the surface, a bank's step down beside it). Standing there would burn on rock, and a set-back
+    /// never lands there (`docs/gameplay.md#slag`); a top flush with the surface, or under a solid, is no such ground.
+    /// </summary>
+    public static IEnumerable<string> SunkenGround(Box slag, IReadOnlyList<Box> solids, float halfWidth)
+    {
+        float west = slag.MinX - halfWidth, east = slag.MaxX + halfWidth;
+        foreach (Box s in solids.Where(s => s.MaxY > slag.MinY + Tolerance && s.MaxY < slag.MaxY - Tolerance && s.MinX < east && s.MaxX > west))
+        {
+            float over = s.MaxY + Probe;
+            IEnumerable<(float, float)> roofs = solids.Where(o => o.MinY <= over && over <= o.MaxY).Select(o => (o.MinX, o.MaxX));
+            foreach ((float from, float to) in Gaps(roofs, Math.Max(s.MinX, west), Math.Min(s.MaxX, east)))
+            {
+                yield return $"ground at y {s.MaxY:0.##} from x {from:0.##} to {to:0.##} lies under its surface at y {slag.MaxY:0.##}: " +
+                             "a body standing there is in the slag";
+            }
+        }
+    }
+
     /// <summary>The stretches of [<paramref name="from"/>, <paramref name="to"/>] no span covers (wider than the tolerance); shared with <see cref="HeatGate"/>.</summary>
     internal static IEnumerable<(float From, float To)> Gaps(IEnumerable<(float Min, float Max)> spans, float from, float to)
     {

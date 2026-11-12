@@ -235,7 +235,7 @@ public partial class RoomValidator : Node
         CheckWaterClearance(room, Problem);
         foreach (SlagBody slag in room.All<SlagBody>())
         {
-            foreach (string problem in SlagBasin.Problems(slag.PlayRegion, solids))
+            foreach (string problem in SlagBasin.Problems(slag.PlayRegion, solids).Concat(SlagBasin.SunkenGround(slag.PlayRegion, solids, 0.5f * body.X)))
             {
                 Problem($"slag {slag.Name}: {problem}");
             }
