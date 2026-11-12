@@ -10,7 +10,8 @@ namespace TheDeep;
 /// changes (<see cref="Offer"/>); who offers keeps two prompts from showing at once (<see cref="Session.Prompting"/>).
 /// <para>A press prompt (<see cref="HoldSeconds"/> zero) only shows: the prop takes the press itself. A hold prompt rings its
 /// button; while offered and held, the ring fills over <see cref="HoldSeconds"/> and the prompt raises <see cref="Completed"/>;
-/// letting go empties it at once, and taps never add up (<see cref="HoldProgress"/>).</para>
+/// letting go empties it at once, and taps never add up (<see cref="HoldProgress"/>). The hold counts physics ticks, like the rules it
+/// confirms. The verb may change while it shows (a prop that names its act per place, <see cref="LawBreak"/>).</para>
 /// </summary>
 public partial class ActionPrompt : Node3D, INamesLines
 {
@@ -22,6 +23,10 @@ public partial class ActionPrompt : Node3D, INamesLines
 
     /// <summary>How long the button must be held to act, seconds; zero for a press.</summary>
     [Export] public float HoldSeconds { get; set; }
+
+    /// <summary>Which way it reaches from its node: 0 centered on it, +1 reaching east (its west edge at the node), −1 reaching west, so a
+    /// prompt beside something bright (a veil) stays clear of it.</summary>
+    [Export] public int Reach { get; set; }
 
     /// <summary>How far it rises as it fades in, meters.</summary>
     [Export] public float Rise { get; set; } = 0.08f;
@@ -47,7 +52,7 @@ public partial class ActionPrompt : Node3D, INamesLines
     private HoldProgress? _hold;
     private ButtonNames.Device _device;
     private ButtonNames.Device _drawn;
-    private string _verb = "";
+    private StringName _drawnVerb = "";
     private float _shown;
 
     private SubViewport Viewport => _viewport ??= new SubViewport
@@ -78,7 +83,6 @@ public partial class ActionPrompt : Node3D, INamesLines
     public override void _Ready()
     {
         _hold = HoldSeconds > 0f ? new HoldProgress(HoldSeconds) : null;
-        _verb = LineBook.Shared.Find(Verb)?.Text ?? "";
         _device = _drawn = ButtonGlyph.FirstDevice();
         Viewport.AddChild(Face);
         AddChild(Viewport);
@@ -89,14 +93,17 @@ public partial class ActionPrompt : Node3D, INamesLines
 
     public override void _Input(InputEvent @event) => _device = ButtonGlyph.DeviceAfter(_device, @event);
 
-    public override void _Process(double delta)
+    public override void _PhysicsProcess(double delta)
     {
-        float dt = (float)delta;
-        if (_hold is { } hold && hold.Step(Input.IsActionPressed(Action), Offered, dt))
+        if (_hold is { } hold && hold.Step(Input.IsActionPressed(Action), Offered, (float)delta))
         {
             Completed?.Invoke();
         }
+    }
 
+    public override void _Process(double delta)
+    {
+        float dt = (float)delta;
         _shown = Motion.Approach(_shown, Offered ? 1f : 0f, dt * 4f);
         bool visible = _shown > 0f;
         Sprite.Visible = visible;
@@ -106,7 +113,7 @@ public partial class ActionPrompt : Node3D, INamesLines
             return;
         }
 
-        if (_device != _drawn)
+        if (_device != _drawn || _drawnVerb != Verb)
         {
             _drawn = _device;
             Draw();
@@ -117,8 +124,13 @@ public partial class ActionPrompt : Node3D, INamesLines
         Face.QueueRedraw();
         Sprite.Modulate = Sprite.Modulate with { A = _shown * _shown * (3f - 2f * _shown) };
         Sprite.Position = Sprite.Position with { Y = Rise * _shown };
+        Sprite.Offset = new Vector2(Reach * Viewport.Size.X * 0.5f, 0f);
     }
 
-    /// <summary>Draws the face for the device shown, sized to fit.</summary>
-    private void Draw() => Viewport.Size = Face.Show(ButtonGlyph.Main(Action, _drawn), _verb, _hold is not null);
+    /// <summary>Draws the face for the device and the verb shown, sized to fit.</summary>
+    private void Draw()
+    {
+        _drawnVerb = Verb;
+        Viewport.Size = Face.Show(ButtonGlyph.Main(Action, _drawn), LineBook.Shared.Find(Verb)?.Text ?? "", _hold is not null);
+    }
 }

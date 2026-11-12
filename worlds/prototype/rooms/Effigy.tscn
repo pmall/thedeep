@@ -2,7 +2,7 @@
 
 ; The Effigy, east of the Lode (map offset (559.5, -191)): an effigy of the makers, a colossus of stone standing astride
 ; the way to the Heart. A shrine and a scripture plate before it. The first law holds the pilgrim at its feet; the only
-; way on is through it, between its legs, and pressing on breaks the law.
+; way on is through it, between its legs, and holding the act offered there breaks the law.
 
 [ext_resource type="Material" path="res://assets/materials/basalt.tres" id="1_basalt"]
 [ext_resource type="PackedScene" path="res://scenes/kit/Block.tscn" id="2_block"]
@@ -157,13 +157,15 @@ transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 13, 0, 0)
 TitleLine = &"lore.effigy.title"
 TextLine = &"lore.effigy"
 
-; the first law: the pilgrim cannot pass the effigy until it presses on and breaks it
+; the first law: the pilgrim cannot pass the effigy until it holds the act that breaks it
 [node name="Law" parent="Props" instance=ExtResource("6_law")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 24, 0, 0)
 Toward = 1
 LawLine = &"law.first"
 BrokenLine = &"law.first.broken"
 BrokenHintLine = &"law.first.broken.hint"
+RefusalLine = &"law.first.refusal"
+ActLine = &"law.first.act"
 
 [node name="Kit" type="Node3D" parent="."]
 

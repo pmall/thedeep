@@ -8,7 +8,8 @@ namespace TheDeep;
 /// A gate the pilgrim can't pass yet says so: pressing into a metal wall or ceiling without Mag-grip, a mooring ring
 /// in sight without the Harpoon, against cracked rock without the Drill, pressing down in deep water without Ballast, thrown
 /// back by heat without Heat plating. Meeting one for a moment shows the pilgrim's line about it (<see cref="GateKinds"/>) in
-/// the <see cref="HintLine"/>, once per room visit for each kind.
+/// the <see cref="HintLine"/>, once per room visit for each kind. A law pressed on says why the pilgrim may not, the same way
+/// (<see cref="LawBreak.Refusal"/>).
 /// </summary>
 public partial class GateHints : Node
 {
@@ -113,8 +114,15 @@ public partial class GateHints : Node
         return false;
     }
 
-    private void OnRoomLoaded(Room _)
+    private void OnRefusal(LawBreak law) => Hint.Show(law.RefusalLine, LawBreak.WordsColor);
+
+    private void OnRoomLoaded(Room room)
     {
+        foreach (LawBreak law in room.All<LawBreak>())
+        {
+            law.Refusal += OnRefusal;
+        }
+
         _met.Clear();
         _said.Clear();
         Hint.Clear();

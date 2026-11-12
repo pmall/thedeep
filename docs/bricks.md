@@ -72,8 +72,8 @@ All working; brought to ready under `docs/roadmap.md#bricks-ready`.
 | `Banner`, `HintLine` | working | `docs/roadmap.md#bricks-ready` |
 | `Proclamation` | working | `docs/roadmap.md#law-readable` |
 | `ScripturePlate` | working | `docs/roadmap.md#bricks-ready` |
-| `LawBreak` | working | `docs/roadmap.md#law-readable` |
-| `ActionPrompt` (a verb and its button, pressed or held; the button a `ButtonGlyph` drawn by a `ButtonPainter`, as in the `ControlsManual`) | working | `docs/roadmap.md#law-readable` |
+| `LawBreak` (broken by a held act on its `ActionPrompt`, never a push; the pilgrim's refusal on the `HintLine`; its lines per room) | working | `docs/roadmap.md#stage-polish` (the real law-break scenes) |
+| `ActionPrompt` (a verb and its button, pressed or held; the button a `ButtonGlyph` drawn by a `ButtonPainter`, as in the `ControlsManual`; `Reach` keeps it clear of what stands beside it) | working | `docs/roadmap.md#bricks-ready` |
 | Dialogue: `Conversation`, `DialogueBox`, played by `Conversations` (over `DialogueFlow`) | working (look) | `docs/roadmap.md#bricks-ready` |
 
 ## Items and progress <a id="bricks-items"></a>

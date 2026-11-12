@@ -3,8 +3,8 @@
 ; The Sanctum, west of the Vault (map offset (170.5, -104)): the last chapel of the frozen layer, warmer than the
 ; archive: the stone here is dry, and the forbidden door at its west end breathes heat from below. A pilgrim shrine by
 ; the east door. Before the forbidden door kneels the Hierarch, the priest-machine that keeps it: coming near, the pilgrim
-; hears its order to turn back, and the second law holds it at the door (a veil of glyphs, the law's words); pressing on
-; breaks the law, and the door is open: down a stair to the Kiln, the volcanic layer.
+; hears its order to turn back, and the second law holds it at the door (a veil of glyphs, the law's words); holding the
+; act offered there breaks the law, and the door is open: down a stair to the Kiln, the volcanic layer.
 
 [ext_resource type="PackedScene" path="res://scenes/kit/Block.tscn" id="1_block"]
 [ext_resource type="Script" path="res://scripts/rooms/RoomExit.cs" id="2_exit"]
@@ -180,13 +180,15 @@ Size = Vector2(10, 6)
 SpeakerLine = &"speaker.hierarch"
 TextLine = &"order.hierarch"
 
-; the second law: the pilgrim cannot pass the door until it presses on and breaks it
+; the second law: the pilgrim cannot pass the door until it holds the act that breaks it
 [node name="Law" parent="Props" instance=ExtResource("8_law")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 7, 0, 0)
 Toward = -1
 LawLine = &"law.second"
 BrokenLine = &"law.second.broken"
 BrokenHintLine = &"law.second.broken.hint"
+RefusalLine = &"law.second.refusal"
+ActLine = &"law.second.act"
 
 [node name="Kit" type="Node3D" parent="."]
 

@@ -10,7 +10,7 @@ namespace TheDeep;
 /// the room scenes' markers, asks the solver for a shortest route from the start to the goal (<see cref="MapSolver.Route"/>),
 /// and plays it in the real game: every way is crossed through its real exit (the pilgrim put in its trigger moving out, its crossing the
 /// <see cref="TravelValidator"/>'s to prove) only once the pilgrim holds what it needs and a door on it stands open (a locked one opened by
-/// coming near it); in each room on the way it takes the relics and items (walking into them), pulls the levers (interact), breaks the laws (pressing on at the lip through the real inputs) and fights the bosses (through the
+/// coming near it); in each room on the way it takes the relics and items (walking into them), pulls the levers (interact), breaks the laws (pressing on at the lip, then holding the act offered there, through the real inputs) and fights the bosses (through the
 /// real inputs, kept alive: the rules, not the balance) before leaving. At the goal, reaching the heart plays the end card.
 /// Moving inside a room is the geometry check's to prove (<see cref="ReachPlanner"/>); this proves the game's flow: abilities
 /// in route order, gates, bosses, laws, the end. Prints `PLAYTHROUGH OK` or `PLAYTHROUGH CHECK` errors.
@@ -217,6 +217,7 @@ public partial class PlaythroughCheck : Node
                 }
 
                 Hold(_law.Toward > 0 ? InputActions.MoveRight : InputActions.MoveLeft, !_law.Broken);
+                Hold(InputActions.Interact, _law.Prompt.Offered && !_law.Broken);
                 if (_law.Broken && Player.InControl)
                 {
                     _log.Add($"{World.RoomName}: {_law.LawLine} broken");
@@ -226,7 +227,7 @@ public partial class PlaythroughCheck : Node
                 }
                 else if (_ticks > 900)
                 {
-                    Fail($"in {World.RoomName}, pressing on at the lip did not break the law");
+                    Fail($"in {World.RoomName}, pressing on at the lip and holding the act did not break the law");
                 }
 
                 break;

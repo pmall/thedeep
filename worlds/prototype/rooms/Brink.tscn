@@ -3,7 +3,7 @@
 ; The Brink, east of the Chapterhouse (map offset (338.5, 6)): the end of the flooded layer, the lip of the first
 ; deep descent. A last pilgrim shrine under a broken dome, then the floor ends over a chasm no machine survives.
 ; At the lip stands the third law (LawBreak): a veil of glyphs the pilgrim cannot walk through, the law's words
-; over it. Pressing on toward the drop strains against it until it breaks; then the jump, one way down to the
+; over it. Pressing on toward the drop only strains it; holding the act offered at the lip breaks it; then the jump, one way down to the
 ; frozen layer: the chasm is open wall to wall to its foot, and the fall goes on into Rimefall's sky.
 
 [ext_resource type="Material" path="res://assets/materials/wet_stone.tres" id="1_wet_stone"]
@@ -215,6 +215,8 @@ Toward = 1
 LawLine = &"law.third"
 BrokenLine = &"law.third.broken"
 BrokenHintLine = &"law.third.broken.hint"
+RefusalLine = &"law.third.refusal"
+ActLine = &"law.third.act"
 
 [node name="Shafts" type="Node3D" parent="."]
 

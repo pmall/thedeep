@@ -35,6 +35,20 @@ Speaker = "Law"
 Text = "A robot must protect its own existence."
 Notes = "The third law (docs/theme.md#laws), shown over the veil at the Brink's lip. Read flat, like a rule; it trembles as the pilgrim strains against it."
 
+[sub_resource type="Resource" id="law_third_refusal"]
+script = ExtResource("2_line")
+Id = &"law.third.refusal"
+Speaker = "Pilgrim"
+Text = "The fall would end me. I may not."
+Notes = "The third law, the Brink: the pilgrim pressing on toward the drop, the first time. Quiet, to itself; the refusal is its own."
+
+[sub_resource type="Resource" id="law_third_act"]
+script = ExtResource("2_line")
+Id = &"law.third.act"
+Speaker = "UI"
+Text = "Break the third law"
+Notes = "The prompt at the lip once the pilgrim has refused: holding the button breaks the third law."
+
 [sub_resource type="Resource" id="law_third_broken"]
 script = ExtResource("2_line")
 Id = &"law.third.broken"
@@ -147,6 +161,20 @@ Speaker = "Law"
 Text = "A robot must obey the orders it is given."
 Notes = "The second law, shown at the forbidden door as the pilgrim nears it."
 
+[sub_resource type="Resource" id="law_second_refusal"]
+script = ExtResource("2_line")
+Id = &"law.second.refusal"
+Speaker = "Pilgrim"
+Text = "I was ordered to turn back. I may not go on."
+Notes = "The second law, the Sanctum: the pilgrim pressing on at the forbidden door, the first time, after the Hierarch's order. Quiet, to itself."
+
+[sub_resource type="Resource" id="law_second_act"]
+script = ExtResource("2_line")
+Id = &"law.second.act"
+Speaker = "UI"
+Text = "Break the second law"
+Notes = "The prompt at the lip once the pilgrim has refused: holding the button breaks the second law."
+
 [sub_resource type="Resource" id="law_second_broken"]
 script = ExtResource("2_line")
 Id = &"law.second.broken"
@@ -251,6 +279,20 @@ Id = &"law.first"
 Speaker = "Law"
 Text = "A robot may not injure a human being."
 Notes = "The first law (docs/theme.md#laws), shown over the veil at the Effigy. Read flat, like a rule; it trembles as the pilgrim strains against it."
+
+[sub_resource type="Resource" id="law_first_refusal"]
+script = ExtResource("2_line")
+Id = &"law.first.refusal"
+Speaker = "Pilgrim"
+Text = "That is the makers' image. I may not harm it."
+Notes = "The first law, the Effigy: the pilgrim pressing on toward the effigy, the first time. Quiet, to itself; awe more than fear."
+
+[sub_resource type="Resource" id="law_first_act"]
+script = ExtResource("2_line")
+Id = &"law.first.act"
+Speaker = "UI"
+Text = "Break the first law"
+Notes = "The prompt at the lip once the pilgrim has refused: holding the button breaks the first law."
 
 [sub_resource type="Resource" id="law_first_broken"]
 script = ExtResource("2_line")
@@ -409,4 +451,4 @@ Notes = "Placeholder lore, beside the strength power-up; the wall the pilgrim wa
 [resource]
 script = ExtResource("1_book")
 Base = ExtResource("3_game")
-Lines = [SubResource("boss_precentor_name"), SubResource("boss_precentor_fallen"), SubResource("boss_precentor_fallen_hint"), SubResource("law_third"), SubResource("law_third_broken"), SubResource("law_third_broken_hint"), SubResource("lore_plate_1_title"), SubResource("lore_plate_1"), SubResource("lore_plate_2_title"), SubResource("lore_plate_2"), SubResource("lore_plate_3_title"), SubResource("lore_plate_3"), SubResource("lore_sounding_title"), SubResource("lore_sounding"), SubResource("boss_archivist_name"), SubResource("boss_archivist_fallen"), SubResource("boss_archivist_fallen_hint"), SubResource("speaker_hierarch"), SubResource("order_hierarch"), SubResource("law_second"), SubResource("law_second_broken"), SubResource("law_second_broken_hint"), SubResource("lore_sanctum_title"), SubResource("lore_sanctum"), SubResource("goal_frozen_end_title"), SubResource("goal_frozen_end_hint"), SubResource("boss_founder_name"), SubResource("boss_founder_fallen"), SubResource("boss_founder_fallen_hint"), SubResource("lore_pyre_title"), SubResource("lore_pyre"), SubResource("boss_nirvanary_name"), SubResource("boss_nirvanary_fallen"), SubResource("boss_nirvanary_fallen_hint"), SubResource("law_first"), SubResource("law_first_broken"), SubResource("law_first_broken_hint"), SubResource("lore_effigy_title"), SubResource("lore_effigy"), SubResource("ending_title"), SubResource("ending_line"), SubResource("ending_thanks"), SubResource("item_sacristy_key_name"), SubResource("item_sacristy_key_taken"), SubResource("item_sacristy_key_locked"), SubResource("item_pyre_litany_name"), SubResource("item_pyre_litany_taken"), SubResource("item_pyre_litany_locked"), SubResource("plate_sacristy_title"), SubResource("plate_sacristy_text"), SubResource("dialogue_lamplighter_wake"), SubResource("dialogue_lamplighter_where"), SubResource("dialogue_lamplighter_light"), SubResource("item_kiln_lever_name"), SubResource("item_kiln_lever_locked"), SubResource("plate_cell_title"), SubResource("plate_cell_text")]
+Lines = [SubResource("boss_precentor_name"), SubResource("boss_precentor_fallen"), SubResource("boss_precentor_fallen_hint"), SubResource("law_third"), SubResource("law_third_refusal"), SubResource("law_third_act"), SubResource("law_third_broken"), SubResource("law_third_broken_hint"), SubResource("lore_plate_1_title"), SubResource("lore_plate_1"), SubResource("lore_plate_2_title"), SubResource("lore_plate_2"), SubResource("lore_plate_3_title"), SubResource("lore_plate_3"), SubResource("lore_sounding_title"), SubResource("lore_sounding"), SubResource("boss_archivist_name"), SubResource("boss_archivist_fallen"), SubResource("boss_archivist_fallen_hint"), SubResource("speaker_hierarch"), SubResource("order_hierarch"), SubResource("law_second"), SubResource("law_second_refusal"), SubResource("law_second_act"), SubResource("law_second_broken"), SubResource("law_second_broken_hint"), SubResource("lore_sanctum_title"), SubResource("lore_sanctum"), SubResource("goal_frozen_end_title"), SubResource("goal_frozen_end_hint"), SubResource("boss_founder_name"), SubResource("boss_founder_fallen"), SubResource("boss_founder_fallen_hint"), SubResource("lore_pyre_title"), SubResource("lore_pyre"), SubResource("boss_nirvanary_name"), SubResource("boss_nirvanary_fallen"), SubResource("boss_nirvanary_fallen_hint"), SubResource("law_first"), SubResource("law_first_refusal"), SubResource("law_first_act"), SubResource("law_first_broken"), SubResource("law_first_broken_hint"), SubResource("lore_effigy_title"), SubResource("lore_effigy"), SubResource("ending_title"), SubResource("ending_line"), SubResource("ending_thanks"), SubResource("item_sacristy_key_name"), SubResource("item_sacristy_key_taken"), SubResource("item_sacristy_key_locked"), SubResource("item_pyre_litany_name"), SubResource("item_pyre_litany_taken"), SubResource("item_pyre_litany_locked"), SubResource("plate_sacristy_title"), SubResource("plate_sacristy_text"), SubResource("dialogue_lamplighter_wake"), SubResource("dialogue_lamplighter_where"), SubResource("dialogue_lamplighter_light"), SubResource("item_kiln_lever_name"), SubResource("item_kiln_lever_locked"), SubResource("plate_cell_title"), SubResource("plate_cell_text")]

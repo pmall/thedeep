@@ -9,7 +9,9 @@ namespace TheDeep;
 /// Scripted check of the flooded layer's end (`-- --room Chapterhouse --encounter-check`, run by tools/check.sh), through the
 /// real input actions. In the Chapterhouse: stepping into the arena drops both gates; the Precentor strikes the pilgrim
 /// lingering before it; swings break it; the gates rise and the fight is remembered; entering again, it stays broken and
-/// the gates stay up. At the Brink: the third law holds the pilgrim at the lip; pressing on breaks it (remembered); over
+/// the gates stay up. At the Brink: the third law holds the pilgrim at the lip and it says why; pressing on three times the old
+/// break time, or tapping the act's button, never breaks it; a hold let go at half starts again from zero, and the full hold
+/// breaks it (remembered); over
 /// the lip, the jump falls on into Rimefall and lands there. In the Choir: walking past a sleeping Chorister wakes none;
 /// a hard landing beside one wakes it. In the Counterweight: standing in the cage lets go of its brake, and it carries the
 /// pilgrim (standing on its floor all the way) up into the Undercroft, where the shaft's head cage lifts it to the floor. In the Calving: Mag-grip climbs the
@@ -20,7 +22,7 @@ namespace TheDeep;
 /// shaft into the Underice; the tanks blown, back up into the Mere. In the Coldstacks: a dive through the ice plug drops
 /// into the Vault's pool; out of it and into the arena, both gates fall; the Archivist dives at the pilgrim below it; swings
 /// break it while it hangs low; the gates rise, remembered. In the Sanctum: the Hierarch's order is heard coming near; the
-/// second law holds the pilgrim at the forbidden door; pressing on breaks it (remembered). Prints `ENCOUNTER OK` or
+/// second law holds the pilgrim at the forbidden door; holding the act breaks it (remembered). Prints `ENCOUNTER OK` or
 /// `ENCOUNTER CHECK` errors.
 /// </summary>
 public partial class EncounterCheck : Node
@@ -58,6 +60,7 @@ public partial class EncounterCheck : Node
     private bool _rideProblem;
     private int _jumpHeld;
     private bool _rose;
+    private int _brokeAt;
 
     private static void Hold(StringName action, bool held)
     {
@@ -109,7 +112,7 @@ public partial class EncounterCheck : Node
             },
             () => _ticks > 120 && X > 12f && Precentor.Broken && Seal.Gates.All(g => g.Raised) && !Seal.Fighting,
             () => Hold(InputActions.MoveRight, X < 14f)));
-        _steps.Add(new("at the Brink, the third law holds the pilgrim at the lip", 2f,
+        _steps.Add(new("at the Brink, the third law holds the pilgrim at the lip, and it says why", 3f,
             () =>
             {
                 Hold(InputActions.MoveRight, false);
@@ -117,10 +120,40 @@ public partial class EncounterCheck : Node
                 Player.Respawn(new Vector3(18f, 0f, 0f), 1);
                 Hold(InputActions.MoveRight, true);
             },
-            () => _ticks >= 75 && X < 24f && Player.IsOnFloor() && !Law.Broken && Law.Strain > 0.1f));
-        _steps.Add(new("pressing on breaks it, and it is remembered", 5f,
+            () => _ticks >= 75 && X < 24f && Player.IsOnFloor() && !Law.Broken && Law.Strain > 0.1f && Law.Refused));
+        _steps.Add(new("pressing on three times the old break time never breaks it; the act is offered", 9f,
             () => { },
-            () => Law.Broken && Session.Save.Collected.Contains("Brink/ThirdLaw")));
+            () => _ticks >= 3 * 156 && !Law.Broken && Law.Strain < 1f && Law.Prompt.Offered));
+        _steps.Add(new("tapping the act's button every 0.2 s for 5 s never breaks it", 6f,
+            () => Hold(InputActions.MoveRight, false),
+            () => _ticks >= 300 && !Law.Broken && Law.Prompt.Offered,
+            () => Hold(InputActions.Interact, _ticks % 12 < 6)));
+        _steps.Add(new("a hold let go at half starts from zero; the full hold breaks it, remembered", 5f,
+            () => { Hold(InputActions.Interact, false); _brokeAt = -1; },
+            () => _brokeAt >= 0 && Session.Save.Collected.Contains("Brink/ThirdLaw"),
+            () =>
+            {
+                int hold = Mathf.RoundToInt(Law.Prompt.HoldSeconds * 60f);
+                Hold(InputActions.Interact, (_ticks <= hold / 2 || _ticks > hold / 2 + 5) && !Law.Broken);
+                if (_ticks == hold / 2 && Law.Prompt.Fill < 0.45f)
+                {
+                    _problems.Add($"held to half, the hold filled only {Law.Prompt.Fill:0.00}");
+                }
+
+                if (_ticks == hold / 2 + 3 && Law.Prompt.Fill > 0f)
+                {
+                    _problems.Add($"let go at half, the hold kept {Law.Prompt.Fill:0.00}");
+                }
+
+                if (_brokeAt < 0 && Law.Broken)
+                {
+                    _brokeAt = _ticks;
+                    if (_ticks - (hold / 2 + 5) < hold - 2)
+                    {
+                        _problems.Add($"held again after half, the law broke after {_ticks - (hold / 2 + 5)} ticks, short of the full {hold}");
+                    }
+                }
+            }));
         _steps.Add(new("over the lip, the jump falls on into Rimefall and lands on its shelf", 12f,
             () => { },
             () => World.RoomName == "Rimefall" && Player.InControl && Player.IsOnFloor() && Player.GlobalPosition.Y > 9f,
@@ -340,12 +373,13 @@ public partial class EncounterCheck : Node
                 Hold(InputActions.MoveLeft, true);
             },
             () => _ordered));
-        _steps.Add(new("the second law holds the pilgrim at the forbidden door", 3f,
+        _steps.Add(new("the second law holds the pilgrim at the forbidden door, and it says why", 4f,
             () => { },
-            () => _ticks >= 90 && X > 7f && Player.IsOnFloor() && !Law.Broken && Law.Strain > 0.1f));
-        _steps.Add(new("pressing on breaks it, and it is remembered; past it, the end of what is built", 6f,
+            () => _ticks >= 90 && X > 7f && Player.IsOnFloor() && !Law.Broken && Law.Strain > 0.1f && Law.Refused));
+        _steps.Add(new("holding the act breaks it, and it is remembered; past it, the end of what is built", 6f,
             () => { },
-            () => Law.Broken && Session.Save.Collected.Contains("Sanctum/Law") && X < 6f));
+            () => Law.Broken && Session.Save.Collected.Contains("Sanctum/Law") && X < 6f,
+            () => Hold(InputActions.Interact, Law.Prompt.Offered && !Law.Broken)));
         Next();
     }
 
@@ -391,7 +425,7 @@ public partial class EncounterCheck : Node
     private void Finish()
     {
         _index = _steps.Count;
-        foreach (StringName action in new[] { InputActions.Attack, InputActions.MoveRight, InputActions.MoveLeft, InputActions.MoveUp,
+        foreach (StringName action in new[] { InputActions.Attack, InputActions.Interact, InputActions.MoveRight, InputActions.MoveLeft, InputActions.MoveUp,
                      InputActions.MoveDown, InputActions.Dash, InputActions.Jump })
         {
             Input.ActionRelease(action);
@@ -405,7 +439,7 @@ public partial class EncounterCheck : Node
 
         if (_problems.Count == 0)
         {
-            GD.Print($"ENCOUNTER OK: {_steps.Count} steps (arena gates, the Precentor struck and broken, remembered; the third law held, broken, the fall into Rimefall; the Choir asleep, woken; the Counterweight's ride up; the Calving's girder; the Bore's relic, its cracked wall, its steps; the Sounding's relic, under its wall; the Mere's lake bed down into the Underice and back; the ice plug into the Vault, its gates, the Archivist broken, remembered; the Hierarch's order, the second law held, broken)");
+            GD.Print($"ENCOUNTER OK: {_steps.Count} steps (arena gates, the Precentor struck and broken, remembered; the third law held, refused, never pushed or tapped through, broken by the full hold, the fall into Rimefall; the Choir asleep, woken; the Counterweight's ride up; the Calving's girder; the Bore's relic, its cracked wall, its steps; the Sounding's relic, under its wall; the Mere's lake bed down into the Underice and back; the ice plug into the Vault, its gates, the Archivist broken, remembered; the Hierarch's order, the second law held, broken by the hold)");
         }
 
         GetTree().Quit(_problems.Count == 0 ? 0 : 1);

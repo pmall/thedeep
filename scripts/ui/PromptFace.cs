@@ -13,7 +13,7 @@ public partial class PromptFace : Control
     private const int VerbFont = 48;
     private const int VerbOutline = 10;
     private const float Gap = 18f;
-    private const float RingWidth = 5f;
+    private const float RingWidth = 7f;
     private const float Margin = 16f;
 
     private static readonly Color Verb = new(0.94f, 0.92f, 1f);

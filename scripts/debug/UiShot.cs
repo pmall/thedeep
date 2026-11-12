@@ -8,7 +8,9 @@ namespace TheDeep;
 /// Renders the game's screens for a look (`-- --ui-shot &lt;dir&gt;`, windowed: headless renders nothing): a gate hint over the
 /// room with the gameplay controls for the keyboard, Jump held, and the debug keys (hint.png), the controls for the gamepad, Dash
 /// held (manual-pad.png), the dialogue box on a whole line (dialogue.png), the pilgrim at the start room's first shrine, plate or
-/// lever with its prompt offered, keyboard then gamepad (prompt.png, prompt-pad.png), then, after crossing a few open exits from the start room,
+/// lever with its prompt offered, keyboard then gamepad (prompt.png, prompt-pad.png); where the room holds a law, the pilgrim first
+/// presses on at its lip until it refuses, then holds the act offered there to two-thirds (prompt-law.png: the refusal on the hint
+/// line, the hold's ring part-filled), then, after crossing a few open exits from the start room,
 /// the map screen (map.png), then the end card
 /// (end.png). For judging UI as
 /// images, like the look-dev captures; not part of tools/check.sh.
@@ -45,6 +47,7 @@ public partial class UiShot : Node
     private bool _shotEnd;
     private float _endTime;
     private readonly HashSet<string> _visited = new();
+    private LawBreak? _law;
 
     public override void _Ready()
     {
@@ -55,6 +58,12 @@ public partial class UiShot : Node
 
     public override void _Process(double delta)
     {
+        if (_law is { } law)
+        {
+            HoldLaw(law);
+            return;
+        }
+
         _tick++;
         if (_tick == 70)
         {
@@ -96,7 +105,10 @@ public partial class UiShot : Node
         {
             Shot("dialogue.png");
             Dialogue?.Close();
-            StandAtProp();
+            if (!StandAtLaw())
+            {
+                StandAtProp();
+            }
         }
         else if (_tick == 200)
         {
@@ -149,6 +161,38 @@ public partial class UiShot : Node
         {
             Player.GlobalPosition = new Vector3(prop.GlobalPosition.X + 0.5f, prop.GlobalPosition.Y + 0.05f, 0f);
             Player.ResetPhysicsInterpolation();
+        }
+    }
+
+    /// <summary>Stands the pilgrim before the room's first law, if it has one, pressing on toward it; false for none.</summary>
+    private bool StandAtLaw()
+    {
+        if (First<LawBreak>() is not LawBreak { Broken: false } law)
+        {
+            return false;
+        }
+
+        _law = law;
+        Player.GlobalPosition = new Vector3(law.GlobalPosition.X - law.Toward * 0.8f, law.GlobalPosition.Y + 0.05f, 0f);
+        Player.ResetPhysicsInterpolation();
+        Input.ActionPress(law.Toward > 0 ? InputActions.MoveRight : InputActions.MoveLeft);
+        return true;
+    }
+
+    /// <summary>Presses on until the pilgrim refuses, then holds the act offered; shot two-thirds full, then let go.</summary>
+    private void HoldLaw(LawBreak law)
+    {
+        if (law.Prompt.Offered)
+        {
+            Input.ActionRelease(law.Toward > 0 ? InputActions.MoveRight : InputActions.MoveLeft);
+            Input.ActionPress(InputActions.Interact);
+        }
+
+        if (law.Prompt.Fill >= 0.66f)
+        {
+            Shot("prompt-law.png");
+            Input.ActionRelease(InputActions.Interact);
+            _law = null;
         }
     }
 
