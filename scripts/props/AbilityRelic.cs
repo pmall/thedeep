@@ -8,7 +8,7 @@ namespace TheDeep;
 /// floating over a pedestal. Walking up to it takes it (<see cref="Session"/>): the core drifts into the
 /// pilgrim, the ability unlocks, the game saves, and it is gone for good. The node stands on the floor.
 /// </summary>
-public partial class AbilityRelic : Node3D, INamesLines
+public partial class AbilityRelic : Node3D, INamesLines, IWalkedThrough
 {
     [Export] public Ability Ability { get; set; } = Ability.MagGrip;
 

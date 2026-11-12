@@ -57,7 +57,7 @@ Width = 0.6
 Length = 14
 Thickness = 0.3
 Taper = 0.2
-Curve = 30
+Curve = 15
 Bevel = 0.05
 
 [sub_resource type="PrimitiveMesh" id="cables_5"]

@@ -11,7 +11,7 @@ namespace TheDeep;
 /// (<see cref="PowerUps"/>): it sinks into the pilgrim, the stat rises, the game saves, and it is gone; the cradle's rim goes dark.
 /// It opens no way, so the map does not see it. The node stands on the floor.
 /// </summary>
-public partial class PowerUp : Node3D
+public partial class PowerUp : Node3D, IWalkedThrough
 {
     [Export] public PowerStat Stat { get; set; } = PowerStat.Defense;
 

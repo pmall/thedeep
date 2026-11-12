@@ -28,6 +28,12 @@ public partial class Block : StaticBody3D
     /// <summary>No mesh: the block is only collision, under kit pieces that show it.</summary>
     [Export] public bool CollisionOnly { get; set; }
 
+    /// <summary>
+    /// A ceiling low on purpose: the passage under it is walked, not jumped in, so the room check's headroom rule never reports a
+    /// pocket under it (<see cref="GroundRules.Headroom"/>). A seam frame's blocks are low by construction and need no mark.
+    /// </summary>
+    [Export] public bool Low { get; set; }
+
     /// <summary>Cracked rock: the Drill breaks it. Always on the rock layer; its default look is <see cref="CrackedMaterial"/>.</summary>
     [Export] public bool Cracked { get; set; }
 

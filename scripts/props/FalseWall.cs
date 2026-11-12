@@ -8,7 +8,7 @@ namespace TheDeep;
 /// the map's planner walks through it as through air; the exit it hides is marked <see cref="RoomExit.Hidden"/> (the room check holds
 /// a hidden exit to lie behind one), and the map shows that way only once taken. The node is the wall's center on the play plane.
 /// </summary>
-public partial class FalseWall : Node3D
+public partial class FalseWall : Node3D, IWalkedThrough
 {
     /// <summary>Width, height and depth, meters, like a block's.</summary>
     [Export] public Vector3 Size { get; set; } = new(2f, 4f, 4f);

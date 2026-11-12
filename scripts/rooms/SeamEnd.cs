@@ -112,7 +112,7 @@ public abstract partial class SeamEnd : Node3D
 
     /// <summary>
     /// The wall the frame stands in (<see cref="SeamFrame.Wall"/>), as more of the frame's blocks: stopped by the room's own blocks in
-    /// the play plane and its other doorways' frames, else by the camera bounds, and left open under or over its hatches. A wall column as wide as the lintel or the sill joins it
+    /// the play plane, its other doorways' frames and the walls those already built, else by the camera bounds, and left open under or over its hatches. A wall column as wide as the lintel or the sill joins it
     /// into one block, so no joint line crosses the wall at the frame's edge.
     /// </summary>
     private void BuildWall(SeamFrame frame, RoomExit exit, System.Numerics.Vector2 marker, Node room, IEnumerable<Box> solids, List<Block> blocks, bool head, bool foot)
@@ -123,7 +123,8 @@ public abstract partial class SeamEnd : Node3D
         }
 
         List<RoomExit> others = Exits(room).Where(e => e != exit).ToList();
-        var stops = solids.Concat(others.SelectMany(e => OtherFrame(e, hole: false))).ToList();
+        var built = Blocks(room).Where(b => b.GetParent() is SeamEnd end && end != this).Select(PlayBox); // other ends' walls, once built
+        var stops = solids.Concat(others.SelectMany(e => OtherFrame(e, hole: false))).Concat(built).ToList();
         var holes = others.Where(e => e.Threshold.IsHatch).SelectMany(e => OtherFrame(e, hole: true)).ToList();
         Vector3 origin = room is Node3D r ? r.GlobalPosition : Vector3.Zero;
         Box bounds = room is Room bounded

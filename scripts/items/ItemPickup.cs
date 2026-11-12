@@ -10,7 +10,7 @@ namespace TheDeep;
 /// The map sees it like a relic: the room check takes it from the box around its foot. The node stands on the floor;
 /// <see cref="KeyLook"/> or <see cref="CodeLook"/> shows, by the item's kind.
 /// </summary>
-public partial class ItemPickup : Node3D
+public partial class ItemPickup : Node3D, IWalkedThrough
 {
     [Export] public ItemDefinition Item { get; set; } = null!;
 
