@@ -33,8 +33,8 @@ All working; brought to ready under `docs/roadmap.md#bricks-ready`.
 | `HarpoonAnchor` (its state shown: `AnchorLook`) | ready | — |
 | `AnchorPointer` (the edge chevron toward a ring in sight off screen) | ready | — |
 | `WaterBody` (swim) | ready | — |
-| `SlagBody` (`scenes/kit/SlagBody.tscn`: placed at its surface and sized to a basin of blocks, a bed and two banks the room check holds) | working (the Basalt, the Slag, the Crucible's moulds, the Pyre's altar; the look's final pass) | `docs/roadmap.md#bricks-ready` |
-| `HeatColumn` (`scenes/kit/HeatColumn.tscn`: placed at its foot on rock and sized up to the roof, hood or exit that ends it, or through a hatch by naming it (`instructions/testing.md#seam-brick`); a gate the room check holds to having no way round) | working (the Ashfall, the Kiln, the Basalt, the Chimney, the Coldstacks, the Pyre, the Foundry, the Threshold) | `docs/roadmap.md#bricks-ready` |
+| `SlagBody` (`scenes/kit/SlagBody.tscn`: placed at its surface and sized to a basin of blocks, a bed and two banks the room check holds) | ready (the Basalt, the Slag, the Crucible's moulds, the Pyre's altar) | — |
+| `HeatColumn` (`scenes/kit/HeatColumn.tscn`: placed at its foot on rock and sized up to the roof, hood or exit that ends it, or through a hatch by naming it (`instructions/testing.md#seam-brick`); a gate the room check holds to having no way round) | ready (the Ashfall, the Kiln, the Basalt, the Chimney, the Coldstacks, the Pyre, the Foundry, the Threshold) | — |
 | `Lift` | ready | — |
 | `Portcullis` (`scenes/props/Portcullis.tscn`: a gate of iron bars and three beams that drops across a way and lifts, sized by `Width` and `Height`; used by arenas, boss seals, ambushes and a `LockedDoor`) | ready | — |
 | `MapGoal` | ready | — |

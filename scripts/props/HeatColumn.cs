@@ -76,7 +76,7 @@ public partial class HeatColumn : Node3D
     /// <summary>The sheet's depth: just behind the pilgrim, close enough to the play plane that no parallax moves its edges, off every face.</summary>
     private const float SheetZ = -0.1f;
 
-    /// <summary>The vent: its grate's thickness and depth, its posts' width, height and depth (meters).</summary>
+    /// <summary>The vent: fixed proportions of one look, no world sets them (the grate takes the column's width); its grate's thickness and depth, its posts' width, height and depth (meters).</summary>
     private const float GrateThickness = 0.1f, VentDepth = 3f, PostWidth = 0.08f, PostHeight = 0.3f, PostDepth = 0.5f;
 
     private readonly System.Collections.Generic.List<OmniLight3D> _glows = [];
