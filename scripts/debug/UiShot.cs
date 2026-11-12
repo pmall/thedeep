@@ -6,7 +6,8 @@ namespace TheDeep;
 
 /// <summary>
 /// Renders the game's screens for a look (`-- --ui-shot &lt;dir&gt;`, windowed: headless renders nothing): a gate hint over the
-/// room with the gameplay controls for the keyboard, Jump held, and the debug keys (hint.png), the controls for the gamepad, Dash
+/// room with the gameplay controls for the keyboard, Jump held, and the debug keys (hint.png), a blow that leaves one hit (hurt.png,
+/// the health a moment later: last-hit.png), the controls for the gamepad, Dash
 /// held (manual-pad.png), the dialogue box on a whole line (dialogue.png), the pilgrim at the start room's first shrine, plate or
 /// lever with its prompt offered, keyboard then gamepad (prompt.png, prompt-pad.png); where the room holds a law, the pilgrim first
 /// presses on at its lip until it refuses, then holds the act offered there to two-thirds (prompt-law.png: the refusal on the hint
@@ -86,6 +87,22 @@ public partial class UiShot : Node
             Hint.Clear();
             Input.ActionRelease(InputActions.Jump);
             SetDevice(ButtonNames.Device.Gamepad);
+        }
+        else if (_tick == 94)
+        {
+            Player.TakeHit(Player.Vitality.Current - 1, Player.Feet + new System.Numerics.Vector2(-1f, 0f));
+        }
+        else if (_tick == 98)
+        {
+            Shot("hurt.png");
+        }
+        else if (_tick == 114)
+        {
+            Shot("last-hit.png");
+        }
+        else if (_tick == 118)
+        {
+            Player.Vitality.Restore();
         }
         else if (_tick == 120)
         {
