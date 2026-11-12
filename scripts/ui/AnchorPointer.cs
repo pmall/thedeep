@@ -6,14 +6,14 @@ namespace TheDeep;
 /// The Harpoon's target when the camera doesn't frame it: a small pulsing chevron held inside the screen's edge,
 /// pointing at the ring the harpoon would fire at now (<see cref="Player.AnchorInSight"/>), so the pilgrim knows a
 /// zip is there to take. Shown only with the Harpoon and only while that ring is off screen (<see cref="EdgePointer"/>);
-/// eased in and out. Colored like the anchor's core.
+/// eased in and out. Colored like the ring (the Harpoon's gate color, <see cref="GateKinds"/>), so the two read as one thing.
 /// </summary>
 public partial class AnchorPointer : CanvasLayer
 {
     [Export] public Player Player { get; set; } = null!;
     [Export] public Camera3D Camera { get; set; } = null!;
 
-    [Export] public Color Tint { get; set; } = new(0.9f, 0.84f, 1f, 1f);
+    [Export] public Color Tint { get; set; } = GateKinds.ColorOf(Ability.Harpoon);
     [Export] public Color Backing { get; set; } = new(0.06f, 0.04f, 0.1f, 0.55f);
 
     /// <summary>How far inside the screen's edge the chevron sits, and its size (pixels at 1080 rows).</summary>
@@ -82,6 +82,7 @@ public partial class AnchorPointer : CanvasLayer
         // A dark disc under it so it reads on pale stone, a glow that breathes, then the chevron.
         Canvas.DrawCircle(_at, s * 1.55f, Backing with { A = Backing.A * _shown });
         Canvas.DrawCircle(_at, s * (1.25f + 0.55f * pulse), Tint with { A = 0.22f * a });
-        Canvas.DrawPolyline(_chevron, Tint with { A = a }, 4.5f * _scale, true);
+        Canvas.DrawColoredPolygon(_chevron, Tint with { A = a * 0.9f });
+        Canvas.DrawPolyline(_chevron, Tint.Lightened(0.35f) with { A = a }, 3f * _scale, true);
     }
 }
