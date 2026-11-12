@@ -19,22 +19,11 @@ Every task, rule and doc line answers to this goal. Before adding one, ask wheth
 5. Update the roadmap (its `docs/roadmap.md#status` included) and `docs/bricks.md` as `AGENTS.md#doc-rules` says.
 6. Hand over with **one command that reaches the new content with the abilities it needs**, and what to try there (`instructions/testing.md#playtest`). Never one that drops the owner somewhere they can't move.
 
-## Orchestrating <a id="orchestrate"></a>
-
-The main session plans and subagents build (owner), so the main session's context stays small across a long session.
-
-- **The main session splits the current item into small tasks itself** and gives each to a fresh subagent: one deliverable each, done in one short sitting. Each split pays a cold start, so related small changes travel together; a problem whose cause is unknown is split into measuring it, finding its cause and fixing one cause. A visual task is one fix judged on one or two rooms; a subagent that nears 100k tokens of context was given too much (owner). Handing a whole item to one subagent is not orchestrating (owner).
-- **A brief** names the task, the doc sections it needs (by id), the files in play, what done means, the captures to judge by and how many tries before it commits what is good and reports the rest. The subagent ends with the check its work needs (`AGENTS.md#checks`), commits only its own files as each step passes, and reports in a few lines: what changed, the commit, what is left, any question for the owner.
-- **A subagent cut off** (a usage limit, a crash) is resumed when it was near the end or its context is small; otherwise a fresh one takes over from the working tree with a short brief of what is left, since resuming reloads its whole context.
-- **Builders run one at a time.** Checks and captures see the whole tree, and captures need the GPU to themselves (`instructions/toolchain.md#gpu`). Read-only research may run beside a builder.
-- **Work quicker to do than to explain** (a small fix, a question) stays in the main session: a subagent starts cold and must rebuild the context first.
-- **The main session reads reports** and the docs it needs to decide, not code or logs. It looks at a capture only to judge a visual change.
-- **Decide, ask only what blocks.** The agent decides taste, tuning, look and scope within the roadmap, and builds on it. It asks the owner only for what nobody else can give: play, feel, sign-off, an account or a tool. When nothing else is left, it stops and hands over those questions, each answerable on its own, with where to look.
-- **Converge.** Work to the current item's done bar and stop there.
-
 ## Working principles <a id="working-principles"></a>
 
 - **Checks** <a id="checks"></a>. The **fast check** (`tools/check.sh --fast`: formats, lints, builds) ends every turn that changed files; the **full check** (`tools/check.sh`) runs once when a piece of work that changed code or content is finished (`instructions/testing.md#check`); work that changed only docs or comments ends with the fast check, which already holds the citations, the formatting and the build. Formatting is the formatter's job, never done by hand. Never make a check pass by disabling a rule or skipping a check without writing down why.
+- **Decide, ask only what blocks.** The agent decides taste, tuning, look and scope within the roadmap, and builds on it. It asks the owner only for what nobody else can give: play, feel, sign-off, an account or a tool. When nothing else is left, it stops and hands over those questions, each answerable on its own, with where to look.
+- **Converge.** Work to the current item's done bar and stop there.
 - **Code** follows [instructions/principles.md](instructions/principles.md): the rules in a pure core, the engine as a thin layer, worlds as data, types that tell the truth.
 - **Git** <a id="git"></a>. The agent commits each coherent, passing unit of work and pushes (`git@github.com:pmall/thedeep.git`). A commit message is plain git style (owner): a subject of 72 characters at most, in the imperative, naming what changes ("Add the hatch seam brick"); a blank line; then a short body saying why, as one or two short sentences or a short list. No line break inside a sentence or a list item (never wrap by hand: a wrapped body shows broken lines wherever it is read), and never one long narrative sentence. It never commits secrets and never rewrites pushed history.
 - **The owner's direction** is marked "(owner)" where it lives. The agent doesn't overturn it; when a request conflicts with it or with these principles, it says so and proposes a better way. Everything else is the agent's to change, the instructions included: a rule that costs the work more than it gives is rewritten, with the reason in the commit. When a technical choice touches the owner (cost, an account, a step only they can take), say so plainly.
