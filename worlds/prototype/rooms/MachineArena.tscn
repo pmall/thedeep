@@ -219,11 +219,11 @@ Material = ExtResource("5_wet")
 
 [node name="WallLeft" parent="Geometry" instance=ExtResource("2_block")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -1, 8, 0)
-Size = Vector3(2, 20, 4)
+Size = Vector3(2, 16, 4)
 
 [node name="WallRight" parent="Geometry" instance=ExtResource("2_block")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 57, 8, 0)
-Size = Vector3(2, 20, 4)
+Size = Vector3(2, 16, 4)
 
 [node name="Ceiling" parent="Geometry" instance=ExtResource("2_block")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 28, 17, 0)

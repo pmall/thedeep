@@ -244,8 +244,8 @@ Material = ExtResource("4_wet_stone")
 
 ; the well's west wall, under the ledge
 [node name="WallWest" parent="Geometry" instance=ExtResource("5_block")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -1.5, 13, 0)
-Size = Vector3(3, 30, 4)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -1.5, 14, 0)
+Size = Vector3(3, 28, 4)
 
 ; above the doorway from the Nave (West's Doorway frames Y 28 to 30 and 34 to 36, X -1.5 to 3.5)
 [node name="WallWestTop" parent="Geometry" instance=ExtResource("5_block")]

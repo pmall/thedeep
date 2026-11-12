@@ -194,13 +194,13 @@ Size = Vector3(36.5, 2, 4)
 Material = ExtResource("4_wet_stone")
 
 [node name="WallWest" parent="Geometry" instance=ExtResource("5_block")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 11, 0)
-Size = Vector3(4, 22, 4)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 9, 0)
+Size = Vector3(4, 18, 4)
 
 ; east wall above the doorway to the Cistern (East's Doorway frames Y -2 to 0 and 4 to 6, X 34.5 to 39.5)
 [node name="WallEast" parent="Geometry" instance=ExtResource("5_block")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 39.5, 14, 0)
-Size = Vector3(3, 16, 4)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 39.5, 12, 0)
+Size = Vector3(3, 12, 4)
 
 [node name="Ceiling" parent="Geometry" instance=ExtResource("5_block")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 19.5, 20, 0)

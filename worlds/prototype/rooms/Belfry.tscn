@@ -206,12 +206,12 @@ transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 42.75, -1, 0)
 Size = Vector3(6.5, 2, 4)
 
 [node name="WallWest" parent="Geometry" instance=ExtResource("4_block")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -2, 14, 0)
-Size = Vector3(4, 28, 4)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -2, 12, 0)
+Size = Vector3(4, 24, 4)
 
 [node name="WallEast" parent="Geometry" instance=ExtResource("4_block")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 44, 14, 0)
-Size = Vector3(4, 28, 4)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 44, 12, 0)
+Size = Vector3(4, 24, 4)
 
 [node name="Ceiling" parent="Geometry" instance=ExtResource("4_block")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 21, 26, 0)

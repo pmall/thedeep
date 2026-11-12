@@ -224,13 +224,13 @@ Material = ExtResource("4_wet_stone")
 
 ; west wall above the doorway to the Reliquary (West's Doorway frames Y -2 to 0 and 4 to 6, X -2.5 to 2.5)
 [node name="WallWest" parent="Geometry" instance=ExtResource("5_block")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -2, 19.5, 0)
-Size = Vector3(2, 27, 4)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -2, 17.25, 0)
+Size = Vector3(2, 22.5, 4)
 
 ; east wall above the doorway to the Sluice (East's Doorway frames Y -2 to 0 and 4 to 6, X 37 to 42)
 [node name="WallEast" parent="Geometry" instance=ExtResource("5_block")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 42, 19.5, 0)
-Size = Vector3(4, 27, 4)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 42, 17.25, 0)
+Size = Vector3(4, 22.5, 4)
 
 [node name="CeilingWest" parent="Geometry" instance=ExtResource("5_block")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 6.75, 30.75, 0)

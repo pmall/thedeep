@@ -106,8 +106,8 @@ transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -2, 0)
 Size = Vector3(6, 2, 4)
 
 [node name="WestWall" parent="Geometry" instance=ExtResource("1_block")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -1.5, 15.5, 0)
-Size = Vector3(3, 17, 4)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -1.5, 13.5, 0)
+Size = Vector3(3, 13, 4)
 
 [node name="EastWall" parent="Geometry" instance=ExtResource("1_block")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 63.5, 12, 0)

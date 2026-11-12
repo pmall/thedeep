@@ -229,8 +229,8 @@ Size = Vector3(6.5, 2, 4)
 
 ; over the west doorway
 [node name="WallWest" parent="Geometry" instance=ExtResource("1_block")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -1.5, 18, 0)
-Size = Vector3(3, 24, 4)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -1.5, 14.5, 0)
+Size = Vector3(3, 17, 4)
 
 ; what still stands of the dome, over the slope, up to the frame of the break the fall comes through
 [node name="DomeRim" parent="Geometry" instance=ExtResource("1_block")]

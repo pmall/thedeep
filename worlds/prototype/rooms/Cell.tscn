@@ -108,8 +108,8 @@ Size = Vector3(25, 2, 4)
 Material = ExtResource("1_wet_stone")
 
 [node name="WallWest" parent="Geometry" instance=ExtResource("2_block")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -1, 6, 0)
-Size = Vector3(4, 12, 4)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -1, 4, 0)
+Size = Vector3(4, 8, 4)
 
 [node name="Ceiling" parent="Geometry" instance=ExtResource("2_block")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 9.5, 10, 0)

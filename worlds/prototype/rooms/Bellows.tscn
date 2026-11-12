@@ -149,8 +149,8 @@ Size = Vector3(4.5, 0.5, 4)
 Material = ExtResource("3_rust")
 
 [node name="Gantry7" parent="Geometry" instance=ExtResource("2_block")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 13.75, 18.75, 0)
-Size = Vector3(4.5, 0.5, 4)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 13.25, 18.75, 0)
+Size = Vector3(3.5, 0.5, 4)
 Material = ExtResource("3_rust")
 
 ; the bellows' iron frame: Mag-grip climbs it

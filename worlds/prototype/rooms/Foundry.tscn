@@ -162,8 +162,8 @@ Material = ExtResource("1_basalt")
 
 ; the hood over the vent shaft, from its west lip to the east wall: the heat ends under it
 [node name="Hood" parent="Geometry" instance=ExtResource("2_block")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 55, 6.5, 0)
-Size = Vector3(8, 1, 4)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 54.75, 6.5, 0)
+Size = Vector3(7.5, 1, 4)
 Material = ExtResource("3_rust")
 
 ; the Founder's anvil

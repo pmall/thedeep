@@ -199,8 +199,8 @@ Size = Vector3(4, 20, 4)
 
 ; the doorway's head, deep enough to take the locked door's gate when it rises
 [node name="DoorHead" parent="Geometry" instance=ExtResource("8_block")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.75, 14, 0)
-Size = Vector3(1.5, 20, 4)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.75, 12, 0)
+Size = Vector3(1.5, 16, 4)
 
 [node name="Ceiling" parent="Geometry" instance=ExtResource("8_block")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 20, 22, 0)

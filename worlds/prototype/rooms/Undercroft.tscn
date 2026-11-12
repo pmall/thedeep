@@ -272,8 +272,8 @@ Size = Vector3(1, 18, 4)
 Surface = 1
 
 [node name="Ceiling" parent="Geometry" instance=ExtResource("2_block")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 32, 25.5, 0)
-Size = Vector3(54, 3, 4)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 30.5, 25.5, 0)
+Size = Vector3(51, 3, 4)
 
 ; the tall east wall, metal: climb it
 [node name="WallEast" parent="Geometry" instance=ExtResource("2_block")]

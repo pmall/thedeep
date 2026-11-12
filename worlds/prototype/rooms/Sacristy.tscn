@@ -145,8 +145,8 @@ Material = ExtResource("1_wet_stone")
 
 ; the west wall over the false stretch at its foot
 [node name="WallWest" parent="Geometry" instance=ExtResource("2_block")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -1, 11, 0)
-Size = Vector3(4, 14, 4)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -1, 9, 0)
+Size = Vector3(4, 10, 4)
 
 [node name="Props" type="Node3D" parent="."]
 

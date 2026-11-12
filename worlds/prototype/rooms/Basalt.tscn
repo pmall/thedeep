@@ -178,13 +178,13 @@ Size = Vector3(3, 3, 4)
 Cracked = true
 
 [node name="WallWest" parent="Geometry" instance=ExtResource("2_block")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -1, 13.5, 0)
-Size = Vector3(4, 27, 4)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -1, 14.25, 0)
+Size = Vector3(4, 25.5, 4)
 Material = ExtResource("1_basalt")
 
 [node name="WallEast" parent="Geometry" instance=ExtResource("2_block")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 40, 13.5, 0)
-Size = Vector3(4, 27, 4)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 40, 14, 0)
+Size = Vector3(4, 26, 4)
 Material = ExtResource("1_basalt")
 
 ; a wall of cracked crust splits the cavern: bored through

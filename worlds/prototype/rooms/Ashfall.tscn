@@ -107,8 +107,8 @@ Material = ExtResource("1_basalt")
 
 ; the ledge inside the Slag's door
 [node name="Entry" parent="Geometry" instance=ExtResource("2_block")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 7.5, -0.5, 0)
-Size = Vector3(9, 1, 4)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 7, -0.5, 0)
+Size = Vector3(8, 1, 4)
 Material = ExtResource("1_basalt")
 
 [node name="WallWest" parent="Geometry" instance=ExtResource("2_block")]
