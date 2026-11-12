@@ -29,17 +29,27 @@ public static class SaveFile
         }
     }
 
-    /// <summary>Writes <paramref name="data"/> as the save at <paramref name="path"/>, replacing the one there; a failure is
-    /// reported as an engine error.</summary>
+    /// <summary>Writes <paramref name="data"/> as the save at <paramref name="path"/>, replacing the one there: written to a
+    /// temporary file beside it first, then renamed over, so a crash mid-write never breaks the save; a failure is reported
+    /// as an engine error.</summary>
     public static void Write(string path, SaveData data)
     {
-        using FileAccess? file = FileAccess.Open(path, FileAccess.ModeFlags.Write);
-        if (file is null)
+        string temp = SaveData.TempPath(path);
+        using (FileAccess? file = FileAccess.Open(temp, FileAccess.ModeFlags.Write))
         {
-            GD.PushError($"could not write {path}: {FileAccess.GetOpenError()}");
-            return;
+            if (file is null)
+            {
+                GD.PushError($"could not write {temp}: {FileAccess.GetOpenError()}");
+                return;
+            }
+
+            file.StoreString(data.ToJson());
         }
 
-        file.StoreString(data.ToJson());
+        Error error = DirAccess.RenameAbsolute(ProjectSettings.GlobalizePath(temp), ProjectSettings.GlobalizePath(path));
+        if (error != Error.Ok)
+        {
+            GD.PushError($"could not move {temp} over {path}: {error}");
+        }
     }
 }

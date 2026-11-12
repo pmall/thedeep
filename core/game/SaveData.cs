@@ -56,6 +56,9 @@ public sealed class SaveData
 
     private static readonly JsonSerializerOptions Options = new() { WriteIndented = true, DefaultIgnoreCondition = JsonIgnoreCondition.Never };
 
+    /// <summary>Where a save is first written, beside <paramref name="path"/>, before it is renamed over it (a crash mid-write leaves the old save whole).</summary>
+    public static string TempPath(string path) => path + ".tmp";
+
     /// <summary>The save as indented JSON text, as written to the file.</summary>
     public string ToJson() => JsonSerializer.Serialize(this, Options);
 
