@@ -5,7 +5,7 @@ The owner's plan and the open items, in order, opened by where the work stands. 
 ## Now <a id="status"></a>
 
 - **Stage:** A, the prototype (`docs/roadmap.md#stage-prototype`).
-- **Current item:** the seam frames' look, then the standpipe (`docs/roadmap.md#seam-coherence`).
+- **Current item:** the standpipe (`docs/roadmap.md#seam-coherence`), then every brick ready (`docs/roadmap.md#bricks-ready`).
 - **Waiting on the owner:** nothing blocks. To play when they wish: `docs/roadmap.md#to-play`. The Blender MCP installed, needed only when the pilgrim starts (`docs/roadmap.md#pilgrim`), last of the stage.
 
 ## The plan <a id="direction"></a>
@@ -27,8 +27,7 @@ A room gets the attention its bricks need, no more. Bosses, machines and law bre
 
 The open items, in order (owner: the world, its bricks and its look are finished before the character):
 
-2. **Rooms that agree at their seams** <a id="seam-coherence"></a> (owner: the point is the code a far larger world reuses, never the prototype's rooms themselves): whatever crosses an exit continues on the other side (`docs/gameplay.md#seam-rule`), and every exit of both worlds is built by a seam brick from a definition both rooms share (`instructions/testing.md#seam-brick`). Left, each one task, fixed in the bricks rather than room by room:
-   - [ ] the frames' look, blunt where a frame meets a room's own wall: a step where a lintel meets an older one (the Narthex, the Chapterhouse's vestibules, the Undercroft's vault), a lintel or sill hanging into a room (the Drowned Hall, the Bellows, the Mantle's high door), a frame in another material than the room around it (the Scriptorium's metal in stone, the Rimefall's brick beside rime);
+2. **Rooms that agree at their seams** <a id="seam-coherence"></a> (owner: the point is the code a far larger world reuses, never the prototype's rooms themselves): whatever crosses an exit continues on the other side (`docs/gameplay.md#seam-rule`), and every exit of both worlds is built by a seam brick from a definition both rooms share (`instructions/testing.md#seam-brick`). Left, fixed in the brick rather than room by room:
    - [ ] a standpipe (water held from a flooded hatch down into the room's water, built by hand in the Quench and the Crucible) given by the hatch brick.
 3. **Readable law breaks and gates** <a id="law-readable"></a>: a law break says what to do and the player does it on purpose (not by mashing); the Pyre's litany door says what it needs and where to look. The real law breaks (stage D) are scenes where the player, as the pilgrim's conscience, makes it break the law (owner).
 4. **Feel and fight** <a id="feel-fight"></a>: moves chain and carry momentum (Mag-grip corners, harpoon, dive and swim flowing into each other), the camera eased, the fight's hits land and health reads (`docs/gameplay.md#fight`), tuned from the owner's play.
@@ -40,7 +39,7 @@ The open items, in order (owner: the world, its bricks and its look are finished
 
 **To play** <a id="to-play"></a>: what the owner's eye alone can judge, each line deleted once they have said. An item closes on what the agent can verify; the owner's word reopens it.
 
-- The transitions: `godot --path . -- --room Nave --abilities all` (west and east doorways, the hatch down to the Cistern); the Brink's leap, `--room Brink`.
+- The transitions: `godot --path . -- --room Nave --abilities all` (west and east doorways, the hatch down to the Cistern); the Brink's leap, `--room Brink`. Every doorway now stands in a wall its brick builds (most were never looked at): say where one reads wrong.
 - The volcanic layer, its slag, heat and light: `--room Slag` (walk off into the slag, plated and not), `--room Ashfall --abilities HeatPlating` and without (the heat before the Pyre's door).
 
 **Done when** <a id="sequel-test"></a> every brick in [bricks.md](bricks.md) is ready, the sequel world still loads, plays and passes the checks with no code change (whatever it would force into the code is a missing brick, built as one), and the owner plays the prototype from `godot --path . -- --new` to the end with no debug keys, always knowing what a gate needs, and signs it off.
