@@ -34,7 +34,7 @@ A check that crashes in `GodotObject.Finalize` (`gchandle.is_released`, "Handle 
 | Re-bake the materials' texture sets after changing a pattern (`SurfaceBake`), then import them | `godot --headless --path . -- --bake-surfaces && godot --headless --import` |
 | Print the map (built rooms and the network: ways, placements, orders) and draw it | `tools/map.sh` |
 | Where the geometry check's planner stops in a room | `godot --headless --path . -- --room MechanicsLab --validate-rooms --reach-report <Room>` (`--abilities …`, `--slack-report` for the clumsy pilgrim) |
-| The ground rules' findings per room (small steps, a solid in a seam frame's column, meshes across the play plane fail the room check; pockets under low ceilings and coplanar faces are only counted) | `godot --headless --path . -- --room MechanicsLab --validate-rooms 2>&1 \| grep GROUND` (`--world sequel --room Strongroom` for the sequel) |
+| The ground rules' findings per room, each failing the room check (small steps, a solid in a seam frame's column, meshes across the play plane, pockets under low ceilings, faces in one plane the camera sees) | `godot --headless --path . -- --room MechanicsLab --validate-rooms 2>&1 \| grep GROUND` (`--world sequel --room Strongroom` for the sequel) |
 | The Slag held in play: its routes, falls and edges, each snag an error | `godot --headless --path . --fixed-fps 60 --quit-after 15000 -- --room Slag --slag-check 2>&1 \| grep SLAG` |
 | Look-dev captures and frame times | `tools/capture.sh [label]` (`instructions/testing.md#lookdev`; `--world sequel` for another world's rooms) |
 | UI screens to PNGs (windowed) | `godot --path . --disable-vsync -- --room Undercroft --ui-shot <dir>` |

@@ -6,8 +6,8 @@ namespace TheDeep;
 
 /// <summary>
 /// A pocket: a stretch of ground from <see cref="MinX"/> to <see cref="MaxX"/> (the capsule's center) on solid <see cref="Ground"/>'s
-/// top at <see cref="Y"/> (and any ground flush with it), every place of which is under a solid lower than a full jump's reach, so no
-/// full jump can be made from it; <see cref="Ceiling"/> is the lowest unmarked solid over it, <see cref="Clearance"/> meters over the ground.
+/// top at <see cref="Y"/> (and any ground flush with it), every place of which is under a solid that cuts a jump short
+/// (<see cref="GroundRules.Headroom"/>); <see cref="Ceiling"/> is the lowest unmarked solid over it, <see cref="Clearance"/> meters over the ground.
 /// </summary>
 public readonly record struct LowCeiling(int Ground, int Ceiling, float Y, float MinX, float MaxX, float Clearance);
 
@@ -21,14 +21,17 @@ public enum SeamKind
     Coplanar,
 }
 
-/// <summary>A meeting of solids <see cref="A"/> and <see cref="B"/> at (<see cref="X"/>, <see cref="Y"/>): a step's height, or a shared face's length.</summary>
+/// <summary>
+/// A meeting of solids <see cref="A"/> and <see cref="B"/> at (<see cref="X"/>, <see cref="Y"/>): a step's height, or the length of a
+/// shared face seen (the area seen, square meters, for the face toward the camera).
+/// </summary>
 public readonly record struct Seam(SeamKind Kind, int A, int B, float X, float Y, float Size);
 
 /// <summary>
 /// Rules on a room's solids (play-plane boxes) that hold the ground it is walked on, pure, each catching a defect measured in play:
 /// pockets under low ceilings (<see cref="Headroom"/>), steps that stop a run and faces in one plane (<see cref="Seams"/>), a seam
 /// frame's column entered by another solid (<see cref="Intrusions"/>), and a mesh lying across the play plane where nothing solid is
-/// (<see cref="OpenSpans"/>). The room check fails on steps, intrusions and open meshes, and counts pockets and coplanar faces.
+/// (<see cref="OpenSpans"/>). The room check fails on every one.
 /// Tops meeting flush side by side are no rule: the capsule never lost a floor over such a seam in play.
 /// </summary>
 public static class GroundRules
@@ -40,15 +43,23 @@ public static class GroundRules
     private const float Least = 0.2f;
 
     /// <summary>
-    /// Every pocket among <paramref name="solids"/>: a stretch of ground (flush tops joined) whose every place lies under a solid lower
-    /// than <paramref name="reach"/> (a jump's head over its feet; the capsule's <paramref name="radius"/> widens what its head meets),
-    /// under at least one of which the pilgrim stands upright (<paramref name="height"/>). A jump from there always meets a solid before
-    /// its apex. Ground with a free place to step out to before jumping is no pocket: a ceiling over part of a floor is the room's shape,
-    /// not a defect. Solids in <paramref name="low"/> are low on purpose (a seam frame's, low by construction, or one a room marks):
-    /// they cover the ground but are never the finding. Ground outside <paramref name="bounds"/> (the room's) is left out.
+    /// How much of a jump's height a ceiling must leave: a jump clipped in its last tenth (shaft ledges stacked 4.5 m apart) is not
+    /// felt in play, one cut in its first eighth (a ledge 2 m over a walkway) is. A jump cut before three quarters of its height is the defect.
     /// </summary>
-    public static IEnumerable<LowCeiling> Headroom(IReadOnlyList<Box> solids, IReadOnlySet<int> low, float reach, float height, float radius, Box bounds)
+    private const float Cut = 0.75f;
+
+    /// <summary>
+    /// Every pocket among <paramref name="solids"/>: a stretch of ground (flush tops joined) whose every place lies under a solid lower
+    /// than the pilgrim's <paramref name="height"/> plus <see cref="Cut"/> of its <paramref name="jump"/> height (the capsule's
+    /// <paramref name="radius"/> widens what its head meets), under at least one of which the pilgrim stands upright. A jump from there
+    /// is always cut before three quarters of its height. Ground with a free place to step out to before jumping is no pocket: a ceiling
+    /// over part of a floor is the room's shape, not a defect. Solids in <paramref name="low"/> are low on purpose (a seam frame's, low
+    /// by construction, or one a room marks): they cover the ground but are never the finding. Ground outside <paramref name="bounds"/>
+    /// (the room's) is left out.
+    /// </summary>
+    public static IEnumerable<LowCeiling> Headroom(IReadOnlyList<Box> solids, IReadOnlySet<int> low, float jump, float height, float radius, Box bounds)
     {
+        float reach = height + Cut * jump;
         foreach ((int g, float y, float from, float to) in Walkways(solids, bounds))
         {
             var over = Enumerable.Range(0, solids.Count)
@@ -69,9 +80,13 @@ public static class GroundRules
     /// <summary>
     /// Every seam among <paramref name="solids"/>: tops meeting side by side on open ground a step lower than <paramref name="assist"/>
     /// (the ledge assist's lift, which works only in the air), unless the low side lies in <paramref name="unwalked"/> (water swum
-    /// through, a machine's body at rest filling the dip), and overlapping solids with a face in one plane.
+    /// through, a machine's body at rest filling the dip), and overlapping solids with a face in one plane where the camera sees it.
+    /// <paramref name="front"/> gives each solid's face toward the camera (its depth), or null for a solid that draws no faces. A face
+    /// across the play plane shows over a stretch facing open space inside <paramref name="view"/> (the area the room's camera may
+    /// show); a face toward the camera, where the overlap lies inside the view. Faces buried in another solid or facing out of the
+    /// view never show, so they never fight.
     /// </summary>
-    public static IEnumerable<Seam> Seams(IReadOnlyList<Box> solids, float assist, IReadOnlyList<Box> unwalked)
+    public static IEnumerable<Seam> Seams(IReadOnlyList<Box> solids, float assist, IReadOnlyList<Box> unwalked, Box view, IReadOnlyList<float?> front)
     {
         for (int i = 0; i < solids.Count; i++)
         {
@@ -93,7 +108,12 @@ public static class GroundRules
                     }
                 }
 
-                foreach (Seam face in SharedFaces(a, b, i, j))
+                if (front[i] is null || front[j] is null)
+                {
+                    continue;
+                }
+
+                foreach (Seam face in SharedFaces(solids, front, view, i, j))
                 {
                     yield return face;
                 }
@@ -171,34 +191,55 @@ public static class GroundRules
 
     private static bool Inside(IReadOnlyList<Box> boxes, float x, float y) => boxes.Any(s => s.MinX < x && x < s.MaxX && s.MinY < y && y < s.MaxY);
 
-    /// <summary>The faces of overlapping <paramref name="a"/> and <paramref name="b"/> that lie in one plane, facing the same way.</summary>
-    private static IEnumerable<Seam> SharedFaces(Box a, Box b, int i, int j)
+    /// <summary>
+    /// The faces of overlapping solids <paramref name="i"/> and <paramref name="j"/> that lie in one plane, facing the same way, and
+    /// show in <paramref name="view"/> (<see cref="Seen"/>), their faces toward the camera at depth <paramref name="front"/> included.
+    /// </summary>
+    private static IEnumerable<Seam> SharedFaces(IReadOnlyList<Box> solids, IReadOnlyList<float?> front, Box view, int i, int j)
     {
-        float alongX = Math.Min(a.MaxX, b.MaxX) - Math.Max(a.MinX, b.MinX), alongY = Math.Min(a.MaxY, b.MaxY) - Math.Max(a.MinY, b.MinY);
-        if (alongX <= Eps || alongY <= Eps)
+        Box a = solids[i], b = solids[j];
+        float fromX = Math.Max(a.MinX, b.MinX), toX = Math.Min(a.MaxX, b.MaxX), fromY = Math.Max(a.MinY, b.MinY), toY = Math.Min(a.MaxY, b.MaxY);
+        if (toX - fromX <= Eps || toY - fromY <= Eps)
         {
             yield break; // apart, or touching along an edge: faces back to back hide each other
         }
 
-        float midX = Math.Max(a.MinX, b.MinX) + 0.5f * alongX, midY = Math.Max(a.MinY, b.MinY) + 0.5f * alongY;
-        if (Math.Abs(a.MaxY - b.MaxY) <= Eps)
+        float midX = 0.5f * (fromX + toX), midY = 0.5f * (fromY + toY);
+        var faces = new List<(bool Same, float X, float Y, float Seen)>
         {
-            yield return new Seam(SeamKind.Coplanar, i, j, midX, a.MaxY, alongX);
+            (Math.Abs(a.MaxY - b.MaxY) <= Eps, midX, a.MaxY, Seen(solids, view, true, a.MaxY + Eps, fromX, toX)),
+            (Math.Abs(a.MinY - b.MinY) <= Eps, midX, a.MinY, Seen(solids, view, true, a.MinY - Eps, fromX, toX)),
+            (Math.Abs(a.MinX - b.MinX) <= Eps, a.MinX, midY, Seen(solids, view, false, a.MinX - Eps, fromY, toY)),
+            (Math.Abs(a.MaxX - b.MaxX) <= Eps, a.MaxX, midY, Seen(solids, view, false, a.MaxX + Eps, fromY, toY)),
+        };
+        foreach ((bool same, float x, float y, float seen) in faces.Where(f => f.Same && f.Seen > 0f))
+        {
+            yield return new Seam(SeamKind.Coplanar, i, j, x, y, seen);
         }
 
-        if (Math.Abs(a.MinY - b.MinY) <= Eps)
+        float seenX = Math.Min(toX, view.MaxX) - Math.Max(fromX, view.MinX), seenY = Math.Min(toY, view.MaxY) - Math.Max(fromY, view.MinY);
+        if (Math.Abs(front[i]!.Value - front[j]!.Value) <= Eps && seenX >= Least && seenY >= Least)
         {
-            yield return new Seam(SeamKind.Coplanar, i, j, midX, a.MinY, alongX);
+            yield return new Seam(SeamKind.Coplanar, i, j, midX, midY, seenX * seenY);
+        }
+    }
+
+    /// <summary>
+    /// How long a face from <paramref name="from"/> to <paramref name="to"/> shows: the stretches of it, each at least <see cref="Least"/>,
+    /// whose open side (the line at <paramref name="across"/>, just outside the face, along X when <paramref name="alongX"/>) lies in
+    /// <paramref name="view"/> and in no solid.
+    /// </summary>
+    private static float Seen(IReadOnlyList<Box> solids, Box view, bool alongX, float across, float from, float to)
+    {
+        (float lo, float hi, float viewFrom, float viewTo) = alongX ? (view.MinY, view.MaxY, view.MinX, view.MaxX) : (view.MinX, view.MaxX, view.MinY, view.MaxY);
+        if (across < lo || across > hi)
+        {
+            return 0f;
         }
 
-        if (Math.Abs(a.MinX - b.MinX) <= Eps)
-        {
-            yield return new Seam(SeamKind.Coplanar, i, j, a.MinX, midY, alongY);
-        }
-
-        if (Math.Abs(a.MaxX - b.MaxX) <= Eps)
-        {
-            yield return new Seam(SeamKind.Coplanar, i, j, a.MaxX, midY, alongY);
-        }
+        var cover = alongX
+            ? solids.Where(s => s.MinY < across && across < s.MaxY).Select(s => (s.MinX, s.MaxX))
+            : solids.Where(s => s.MinX < across && across < s.MaxX).Select(s => (s.MinY, s.MaxY));
+        return SlagBasin.Gaps(cover, Math.Max(from, viewFrom), Math.Min(to, viewTo)).Where(g => g.To - g.From >= Least).Sum(g => g.To - g.From);
     }
 }

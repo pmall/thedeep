@@ -5,27 +5,29 @@ using Xunit;
 namespace TheDeep.Tests;
 
 /// <summary>
-/// The ground rules (<see cref="GroundRules"/>) on a pilgrim 0.7 m wide and 1.6 m tall whose jump takes its head 4.8 m over its feet,
-/// with a 0.6 m ledge assist.
+/// The ground rules (<see cref="GroundRules"/>) on a pilgrim 0.7 m wide and 1.6 m tall who jumps 3.2 m (so a ceiling under 4 m over
+/// its feet cuts the jump before three quarters of its height), with a 0.6 m ledge assist.
 /// </summary>
 public class GroundRulesTests
 {
-    private const float Reach = 4.8f, Height = 1.6f, Radius = 0.35f, Assist = 0.6f;
+    private const float Jump = 3.2f, Height = 1.6f, Radius = 0.35f, Assist = 0.6f;
 
     private static readonly Box Bounds = new(-100f, -100f, 100f, 100f);
 
-    private static readonly Box[] None = System.Array.Empty<Box>();
+    /// <summary>The seams among <paramref name="solids"/>, each of whose faces toward the camera stands at its own depth.</summary>
+    private static List<Seam> Seams(List<Box> solids, Box view, params Box[] unwalked) =>
+        GroundRules.Seams(solids, Assist, unwalked, view, solids.Select((_, i) => (float?)i).ToList()).ToList();
 
     private static List<LowCeiling> Headroom(List<Box> solids, params int[] low) =>
-        GroundRules.Headroom(solids, new HashSet<int>(low), Reach, Height, Radius, Bounds).ToList();
+        GroundRules.Headroom(solids, new HashSet<int>(low), Jump, Height, Radius, Bounds).ToList();
 
     [Fact]
     public void ALedgeUnderALedgeIsAPocketOverItsWholeWidth()
     {
-        // A 4 m ledge under a wider ledge 4.5 m over it: no place on it to make a full jump from.
-        LowCeiling low = Assert.Single(Headroom(new() { new(4f, -1f, 8f, 0f), new(2f, 4.5f, 10f, 5f) }));
+        // A 4 m ledge under a wider ledge 3.5 m over it: no place on it to jump from without the jump cut short.
+        LowCeiling low = Assert.Single(Headroom(new() { new(4f, -1f, 8f, 0f), new(2f, 3.5f, 10f, 5f) }));
         Assert.Equal((0, 1), (low.Ground, low.Ceiling));
-        Assert.Equal(4.5f, low.Clearance, 3);
+        Assert.Equal(3.5f, low.Clearance, 3);
         Assert.Equal((4f, 8f), (low.MinX, low.MaxX));
     }
 
@@ -43,9 +45,10 @@ public class GroundRulesTests
     }
 
     [Fact]
-    public void ACeilingAFullJumpUpOrTooLowToStandUnderIsNoFinding()
+    public void ACeilingThreeQuartersOfAJumpUpOrTooLowToStandUnderIsNoFinding()
     {
-        Assert.Empty(Headroom(new() { new(4f, -1f, 8f, 0f), new(2f, 4.8f, 10f, 5f) }));
+        Assert.Empty(Headroom(new() { new(4f, -1f, 8f, 0f), new(2f, 4.5f, 10f, 5f) })); // clips the jump in its last 0.3 m
+        Assert.Empty(Headroom(new() { new(4f, -1f, 8f, 0f), new(2f, 4f, 10f, 5f) }));
         Assert.Empty(Headroom(new() { new(4f, -1f, 8f, 0f), new(2f, 1f, 10f, 5f) }));
     }
 
@@ -60,8 +63,8 @@ public class GroundRulesTests
     public void ACeilingLowOnPurposeIsNoFindingButStillCovers()
     {
         // A corridor under a marked lintel: no finding; the same lintel joined by an unmarked slab still leaves no free place.
-        Assert.Empty(Headroom(new() { new(4f, -1f, 8f, 0f), new(2f, 4f, 10f, 5f) }, 1));
-        LowCeiling low = Assert.Single(Headroom(new() { new(4f, -1f, 8f, 0f), new(2f, 4f, 6f, 5f), new(6f, 4.5f, 10f, 5f) }, 1));
+        Assert.Empty(Headroom(new() { new(4f, -1f, 8f, 0f), new(2f, 3f, 10f, 5f) }, 1));
+        LowCeiling low = Assert.Single(Headroom(new() { new(4f, -1f, 8f, 0f), new(2f, 3f, 6f, 5f), new(6f, 3.5f, 10f, 5f) }, 1));
         Assert.Equal(2, low.Ceiling);
     }
 
@@ -74,22 +77,22 @@ public class GroundRulesTests
     [Fact]
     public void ASmallStepIsASeamAndFlushOrTallStepsAreNot()
     {
-        Seam step = Assert.Single(GroundRules.Seams(new List<Box> { new(0f, -2f, 4f, 0f), new(4f, -2f, 7f, 0.5f) }, Assist, None));
+        Seam step = Assert.Single(Seams(new List<Box> { new(0f, -2f, 4f, 0f), new(4f, -2f, 7f, 0.5f) }, Bounds));
         Assert.Equal(SeamKind.Step, step.Kind);
         Assert.Equal(0.5f, step.Size, 3);
         Assert.Equal(4f, step.X, 3);
 
-        Assert.Empty(GroundRules.Seams(new List<Box> { new(0f, -2f, 4f, 0f), new(4f, -2f, 7f, 0f) }, Assist, None));
-        Assert.Empty(GroundRules.Seams(new List<Box> { new(0f, -2f, 4f, 0f), new(4f, -2f, 7f, 2.5f) }, Assist, None));
+        Assert.Empty(Seams(new List<Box> { new(0f, -2f, 4f, 0f), new(4f, -2f, 7f, 0f) }, Bounds));
+        Assert.Empty(Seams(new List<Box> { new(0f, -2f, 4f, 0f), new(4f, -2f, 7f, 2.5f) }, Bounds));
     }
 
     [Fact]
     public void AStepUnderASolidInWaterOrUnderAMachineAtRestIsNotOnARunningLine()
     {
         var step = new List<Box> { new(0f, -2f, 4f, 0f), new(4f, -2f, 7f, 0.5f) };
-        Assert.Empty(GroundRules.Seams(step.Append(new Box(3f, 0f, 5f, 3f)).ToList(), Assist, None));
-        Assert.Empty(GroundRules.Seams(step, Assist, new[] { new Box(-10f, -5f, 10f, 5f) }));
-        Assert.Empty(GroundRules.Seams(step, Assist, new[] { new Box(1f, -0.5f, 4f, 0.5f) }));
+        Assert.Empty(Seams(step.Append(new Box(3f, 0f, 5f, 3f)).ToList(), Bounds));
+        Assert.Empty(Seams(step, Bounds, new Box(-10f, -5f, 10f, 5f)));
+        Assert.Empty(Seams(step, Bounds, new Box(1f, -0.5f, 4f, 0.5f)));
     }
 
     [Fact]
@@ -105,10 +108,33 @@ public class GroundRulesTests
     [Fact]
     public void OverlappingSolidsWithATopInOnePlaneShareAFace()
     {
-        Seam face = Assert.Single(GroundRules.Seams(new List<Box> { new(0f, -2f, 6f, 0f), new(4f, -1f, 9f, 0f) }, Assist, None));
+        Seam face = Assert.Single(Seams(new List<Box> { new(0f, -2f, 6f, 0f), new(4f, -1f, 9f, 0f) }, Bounds));
         Assert.Equal(SeamKind.Coplanar, face.Kind);
         Assert.Equal(0f, face.Y, 3);
         Assert.Equal(2f, face.Size, 3);
+    }
+
+    [Fact]
+    public void AFaceInOnePlaneOnlyCountsWhereTheCameraSeesItOverOpenSpace()
+    {
+        // A roof laid over a wall's top corner: their outer faces are outside the view, the shared top is buried under a slab.
+        var corner = new List<Box> { new(-3f, -10f, 0f, 24f), new(-3f, 21f, 10f, 24f), new(-5f, 24f, 12f, 26f) };
+        Assert.Empty(Seams(corner, new Box(0f, -10f, 10f, 21f)));
+
+        // The same corner seen from outside: the west face shows over the 3 m both share.
+        Seam face = Assert.Single(Seams(corner, new Box(-6f, -10f, 10f, 30f)));
+        Assert.Equal((-3f, 3f), (face.X, face.Size));
+    }
+
+    [Fact]
+    public void OverlappingSolidsWithTheirFacesTowardTheCameraInOnePlaneShareAFaceWhereTheViewShowsIt()
+    {
+        // A wall's top hidden in a roof: no face across the play plane shared, but the two faces toward the camera fight over 3 x 3 m.
+        var corner = new List<Box> { new(-3f, -10f, 1f, 23f), new(-2f, 20f, 10f, 24f) };
+        Seam face = Assert.Single(GroundRules.Seams(corner, Assist, System.Array.Empty<Box>(), Bounds, new float?[] { 2f, 2f }));
+        Assert.Equal((-0.5f, 21.5f, 9f), (face.X, face.Y, face.Size));
+        Assert.Empty(GroundRules.Seams(corner, Assist, System.Array.Empty<Box>(), new Box(1f, -10f, 10f, 20f), new float?[] { 2f, 2f }));
+        Assert.Empty(GroundRules.Seams(corner, Assist, System.Array.Empty<Box>(), Bounds, new float?[] { 2f, null }));
     }
 
     [Fact]

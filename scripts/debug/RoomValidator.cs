@@ -30,9 +30,6 @@ public partial class RoomValidator : Node
 {
     private readonly List<string> _problems = new();
 
-    /// <summary>What the ground rules (<see cref="GroundRules"/>) find of the kinds counted, not failed, one line each.</summary>
-    private readonly List<string> _ground = new();
-
     /// <summary>Per room, how many findings of each kind the ground rules made (<see cref="GroundKinds"/>).</summary>
     private readonly List<(string Room, int[] Counts)> _groundCounts = new();
 
@@ -124,11 +121,6 @@ public partial class RoomValidator : Node
         {
             GD.Print($"ROOMS OK: {rooms} rooms, {exits} exits");
             GD.Print(map);
-        }
-
-        foreach (string line in _ground)
-        {
-            GD.Print(line);
         }
 
         GD.Print(GroundTotal());
@@ -274,18 +266,12 @@ public partial class RoomValidator : Node
         return exits.Count;
     }
 
-    /// <summary>The ground rules' kinds of finding, in the order of <see cref="_groundCounts"/>: those from <see cref="Counted"/> on are counted, the others fail.</summary>
+    /// <summary>The ground rules' kinds of finding, in the order of <see cref="_groundCounts"/>.</summary>
     private static readonly string[] GroundKinds = { "step", "intrusion", "open mesh", "headroom", "coplanar" };
 
     /// <summary>
-    /// The first kind the check counts without failing, each with too many findings to fix by hand yet (`docs/roadmap.md#bricks-ready`):
-    /// pockets (mostly shaft ledges stacked 4.5 m apart on one side), and walls and ceilings overlapping at room corners.
-    /// </summary>
-    private const int Counted = 3;
-
-    /// <summary>
     /// The ground rules (<see cref="GroundRules"/>) on the room's blocks and meshes, one `GROUND &lt;Room&gt; &lt;kind&gt;:` line per finding,
-    /// a problem but for the kinds counted (<see cref="Counted"/>). A seam frame's blocks (<see cref="SeamEnd"/>) and blocks marked <see cref="Block.Low"/> are low
+    /// each a problem. A seam frame's blocks (<see cref="SeamEnd"/>) and blocks marked <see cref="Block.Low"/> are low
     /// on purpose; machines' bodies at rest (an <see cref="AnimatableBody3D"/>'s boxes) fill the ground they rest in; swum water is no
     /// running line; pieces walked through by design (<see cref="IWalkedThrough"/>) are no open mesh.
     /// </summary>
@@ -296,7 +282,7 @@ public partial class RoomValidator : Node
         {
             counts[kind]++;
             string line = $"GROUND {name} {GroundKinds[kind]}: {what}";
-            (kind >= Counted ? _ground : _problems).Add(line);
+            _problems.Add(line);
         }
 
         List<Block> blocks = room.Blocks().ToList();
@@ -304,21 +290,21 @@ public partial class RoomValidator : Node
         var ends = new List<SeamEnd>();
         var frame = blocks.Select(b => Ancestors(b).OfType<SeamEnd>().FirstOrDefault() is { } end ? (int?)Index(ends, end) : null).ToList();
         var low = new HashSet<int>(Enumerable.Range(0, blocks.Count).Where(i => blocks[i].Low || frame[i] is not null));
-        float radius = 0.5f * Tuning.Move.Width, reach = Tuning.Move.JumpHeight + Tuning.Move.Height;
+        float radius = 0.5f * Tuning.Move.Width;
         var bounds = new Box(room.BoundsMin.X, room.BoundsMin.Y, room.BoundsMax.X, room.BoundsMax.Y);
-        foreach (LowCeiling c in GroundRules.Headroom(solids, low, reach, Tuning.Move.Height, radius, bounds))
+        foreach (LowCeiling c in GroundRules.Headroom(solids, low, Tuning.Move.JumpHeight, Tuning.Move.Height, radius, bounds))
         {
             Found(3, $"{blocks[c.Ground].Name}'s top at y {c.Y:0.##}, x {c.MinX:0.##}..{c.MaxX:0.##}: every place under a solid, {blocks[c.Ceiling].Name} " +
-                     $"{c.Clearance:0.##} m over it (a jump's head reaches {reach:0.##}; mark a passage low on purpose with Block.Low)");
+                     $"{c.Clearance:0.##} m over it, cutting the jump short (mark a passage low on purpose with Block.Low)");
         }
 
         var unwalked = room.All<WaterBody>().Where(w => w.Swim).Select(w => w.PlayRegion).Concat(Resting(room)).ToList();
-        foreach (Seam seam in GroundRules.Seams(solids, Tuning.Move.LedgeAssist, unwalked))
+        foreach (Seam seam in GroundRules.Seams(solids, Tuning.Move.LedgeAssist, unwalked, bounds, blocks.Select(Front).ToList()))
         {
             string where = $"{blocks[seam.A].Name} and {blocks[seam.B].Name} at x {seam.X:0.##}, y {seam.Y:0.##}";
             Found(seam.Kind == SeamKind.Step ? 0 : 4, seam.Kind == SeamKind.Step
                 ? $"{where}: a {seam.Size:0.##} m step on a walking surface (under the {Tuning.Move.LedgeAssist} m ledge assist)"
-                : $"{where}: overlapping, a face {seam.Size:0.##} m long in one plane (z-fighting)");
+                : $"{where}: overlapping, a face in one plane seen over {seam.Size:0.##} m or m² (z-fighting; trim one so they only touch)");
         }
 
         foreach ((int a, int b, Box o) in GroundRules.Intrusions(solids, frame))
@@ -375,10 +361,8 @@ public partial class RoomValidator : Node
     private string GroundTotal()
     {
         string kinds = string.Join(", ", GroundKinds.Select((k, i) => $"{k} {_groundCounts.Sum(r => r.Counts[i])}"));
-        string Most(int kind) => string.Join(", ", _groundCounts.Where(r => r.Counts[kind] > 0).OrderByDescending(r => r.Counts[kind]).Take(5)
-            .Select(r => $"{r.Room} {r.Counts[kind]}"));
-        return $"GROUND REPORT: {kinds} (headroom and coplanar counted, not failed: docs/roadmap.md#bricks-ready); " +
-               $"most headroom: {Most(3)}; most coplanar: {Most(4)}";
+        string most = string.Join(", ", _groundCounts.OrderByDescending(r => r.Counts.Sum()).Take(5).Select(r => $"{r.Room} {r.Counts.Sum()}"));
+        return $"GROUND REPORT: {kinds}; most: {most}";
     }
 
     private static IEnumerable<Node> Ancestors(Node node)
@@ -484,6 +468,9 @@ public partial class RoomValidator : Node
             world.Graph.AddGoal(name);
         }
     }
+
+    /// <summary>The depth of a block's face toward the camera, or null when it draws no faces (<see cref="Block.CollisionOnly"/>).</summary>
+    private static float? Front(Block b) => b.CollisionOnly ? null : b.GlobalPosition.Z + 0.5f * b.Size.Z;
 
     private static Box BoxOf(Block b) => Box.Around(b.GlobalPosition.Flat(), new NVector2(b.Size.X, b.Size.Y));
 
