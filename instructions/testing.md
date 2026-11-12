@@ -11,7 +11,7 @@ The headless checks are one driver each in `scripts/debug/`; each driver's docbl
 
 **It stays fast** <a id="check-fast"></a> (owner): about 45 s on the desktop. Each step prints its time; when it grows, cut the slowest step's cost, never a check.
 
-A check that prints its passing line and then crashes or reports a leak while Godot quits is a rare race between the .NET finalizers and the engine's shutdown (`Main._ExitTree` guards it): rerun once and keep the log. A failure that comes back is real.
+A check that crashes in `GodotObject.Finalize` (`gchandle.is_released`, "Handle is not initialized") is the finalizer race of `instructions/godot-csharp.md#finalizer-race`, not luck: find the engine object the main thread let go of and keep it or free it on the main thread. At quit, `Main._ExitTree` guards the same race.
 
 **Files no formatter covers** <a id="unformatted"></a>: Godot's own files (`.tscn`, `.tres`, `project.godot`, `.import`, `.uid`), which the engine rewrites in its own layout; the shaders, which have no standard formatter and are held by the headless import instead; the world tables (`.tsv`); the build files.
 

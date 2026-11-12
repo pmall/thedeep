@@ -22,9 +22,10 @@ public partial class World : Node3D
     private Room? _room;
 
     /// <summary>
-    /// Every room scene built so far, kept for the session (scenes, not rooms: small). Let go, a scene's C# wrapper is finalized by the
-    /// collection after its room is freed while the engine still holds the scene; built again later, the engine hands back that scene
-    /// with its handle released ("Handle is not initialized").
+    /// Every scene built so far, kept for the session (scenes, not rooms: small). Let go, a scene's C# wrapper is finalized on the GC's
+    /// thread while the main thread may be building from it again ("Handle is not initialized"), and the C# resources it held
+    /// (biomes, seam profiles, species) fall to their wrapper alone, whose finalizer then races the next room taking them from the
+    /// engine's cache (a FATAL gchandle.is_released). Every room a check or the game builds comes through <see cref="Scene"/>.
     /// </summary>
     private readonly Dictionary<string, PackedScene> _scenes = new();
 
@@ -94,7 +95,7 @@ public partial class World : Node3D
     /// <summary>The scene path of the world's room named <paramref name="name"/> (its file name without extension).</summary>
     public string RoomPath(string name) => Definition.RoomPath(name);
 
-    /// <summary>The room scene at <paramref name="path"/>, loaded once and kept for the session (see <see cref="_scenes"/>).</summary>
+    /// <summary>The scene at <paramref name="path"/> (a room's, or the main scene for the room check), loaded once and kept (see <see cref="_scenes"/>).</summary>
     public PackedScene Scene(string path)
     {
         if (!_scenes.TryGetValue(path, out PackedScene? scene))

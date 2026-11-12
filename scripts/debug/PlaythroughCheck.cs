@@ -52,7 +52,7 @@ public partial class PlaythroughCheck : Node
         var map = new MapGraph { Start = World.RoomName };
         foreach (string file in World.RoomScenes())
         {
-            var room = GD.Load<PackedScene>(file).Instantiate<Room>();
+            var room = World.Scene(file).Instantiate<Room>();
             string name = World.NameOf(file);
             if (room.InGame)
             {

@@ -16,6 +16,7 @@ The owner never opens the Godot editor. Every `.tscn`, `.tres`, `.cs` file and `
 - Every Godot script class is `public partial class`, and its name matches its file name exactly (`Player.cs` → `class Player`), or Godot can't attach it.
 - Custom resources are `[GlobalClass] public partial class X : Resource` with `[Export]` properties, and their `.tres` files use `script_class="X"`.
 - After adding or renaming a class, rebuild before referencing it from a scene.
+- **Never let the GC's finalizer thread release an engine object the main thread may take again** <a id="finalizer-race"></a>: Godot 4.7's C# binding races there and crashes (`FATAL: Condition "gchandle.is_released()"` in `GodotObject.Finalize`, or "Handle is not initialized"), often before the check's verdict line. Load a scene through `World.Scene`, which keeps it and so the C# resources it holds; free nodes yourself and collect on the main thread (`GC.Collect` then `GC.WaitForPendingFinalizers`) between rooms, as `World.Load` does.
 - Put `///` doc comments *before* all attributes (for example before `[ExportGroup]`), not between them.
 - Plain C# classes (states, pure logic) don't need `partial` and can be created with `new`. Godot script classes can also be created with `new` (`new SmokeDriver { ... }`).
 

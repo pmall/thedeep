@@ -82,7 +82,7 @@ public partial class RoomValidator : Node
         int rooms = 0, exits = 0;
         foreach (string path in World.RoomScenes())
         {
-            if (GD.Load<PackedScene>(path).Instantiate() is not Room room)
+            if (World.Scene(path).Instantiate() is not Room room)
             {
                 _problems.Add($"{path}: the root node is not a Room");
                 continue;
@@ -95,8 +95,8 @@ public partial class RoomValidator : Node
             RemoveChild(room);
             room.Free();
 
-            // Let the freed room's C# wrappers finalize now, while nothing else touches the engine: left to the
-            // finalizer thread during the next room's setup, they intermittently crashed Godot (gchandle.is_released).
+            // Let the freed room's C# wrappers finalize now, while nothing else touches the engine: left to the finalizer thread
+            // during the next room's setup, they intermittently crashed Godot (gchandle.is_released; the scenes too: World.Scene).
             System.GC.Collect();
             System.GC.WaitForPendingFinalizers();
         }
@@ -144,7 +144,7 @@ public partial class RoomValidator : Node
     private void CheckMainScene()
     {
         string path = GetTree().CurrentScene.SceneFilePath;
-        Node main = GD.Load<PackedScene>(path).Instantiate();
+        Node main = World.Scene(path).Instantiate();
         try
         {
             _problems.AddRange(_exports.Missing(main).Select(m => $"{path}: {m}"));
@@ -466,9 +466,9 @@ public partial class RoomValidator : Node
     private static Box BoxOf(Block b) => Box.Around(b.GlobalPosition.Flat(), new NVector2(b.Size.X, b.Size.Y));
 
     /// <summary>Where an exit sits in its room (the scene instanced but not run).</summary>
-    private static NVector2? ArrivalPosition(string scene, string exitName)
+    private NVector2? ArrivalPosition(string scene, string exitName)
     {
-        Node target = GD.Load<PackedScene>(scene).Instantiate();
+        Node target = World.Scene(scene).Instantiate();
         try
         {
             if (target.FindChild(exitName, recursive: true, owned: true) is not RoomExit arrival)
@@ -693,14 +693,14 @@ public partial class RoomValidator : Node
     private readonly record struct WayBack(string Requires, string? DoorItem);
 
     /// <summary>The exit an exit leads to, in its target room (the scene instanced, then freed), or null.</summary>
-    private static WayBack? ArrivalOf(RoomExit exit)
+    private WayBack? ArrivalOf(RoomExit exit)
     {
         if (exit.TargetRoom == "" || !ResourceLoader.Exists(exit.TargetRoom))
         {
             return null;
         }
 
-        Node target = GD.Load<PackedScene>(exit.TargetRoom).Instantiate();
+        Node target = World.Scene(exit.TargetRoom).Instantiate();
         try
         {
             if (target.FindChild(exit.TargetExit, recursive: true, owned: true) is not RoomExit arrival)
@@ -716,7 +716,7 @@ public partial class RoomValidator : Node
         }
     }
 
-    private static void CheckExit(RoomExit exit, string path, bool inside, System.Action<string> problem)
+    private void CheckExit(RoomExit exit, string path, bool inside, System.Action<string> problem)
     {
         string name = exit.Name;
         if (!inside)
@@ -750,7 +750,7 @@ public partial class RoomValidator : Node
             return;
         }
 
-        Node target = GD.Load<PackedScene>(exit.TargetRoom).Instantiate();
+        Node target = World.Scene(exit.TargetRoom).Instantiate();
         try
         {
             if (target.FindChild(exit.TargetExit, recursive: true, owned: true) is not RoomExit arrival)
