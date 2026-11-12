@@ -34,4 +34,23 @@ public class MotionTests
 
         Assert.Equal(10f, value, 3);
     }
+
+    [Fact]
+    public void SmoothDampSettlesWithoutOvershootAndIsFrameRateIndependent()
+    {
+        float a = 0f, va = 0f, b = 0f, vb = 0f;
+        for (int i = 0; i < 120; i++)
+        {
+            a = Motion.SmoothDamp(a, 10f, ref va, 0.2f, 1f / 60f);
+            Assert.True(a <= 10f + 1e-4f);
+        }
+
+        for (int i = 0; i < 240; i++)
+        {
+            b = Motion.SmoothDamp(b, 10f, ref vb, 0.2f, 1f / 120f);
+        }
+
+        Assert.Equal(10f, a, 2);
+        Assert.Equal(a, b, 2);
+    }
 }

@@ -1,10 +1,12 @@
 using Godot;
+using NVector2 = System.Numerics.Vector2;
 
 namespace TheDeep;
 
 /// <summary>
-/// Locked side-view camera looking down -Z at the play plane. Smoothly follows the player with a
-/// look-ahead in the direction of travel, and never shows outside the room's bounds.
+/// Locked side-view camera looking down -Z at the play plane. Follows the player by the core's <see cref="CameraFollow"/> (eased,
+/// looking ahead, steady through jumps, leading falls), never showing outside the room's bounds, and shakes on hard landings and
+/// on whatever calls <see cref="AddShake"/>.
 /// Narrow-FOV perspective (not orthographic) so the backdrop and foreground layers get parallax.
 /// </summary>
 public partial class SideCamera : Camera3D
@@ -24,16 +26,29 @@ public partial class SideCamera : Camera3D
     /// <summary>The body's center above its feet: the camera follows the center, so a pilgrim on a wall or ceiling stays framed.</summary>
     [Export] public float BodyCenter { get; set; } = 0.8f;
 
-    /// <summary>Follow speeds in 1/s; higher is tighter.</summary>
-    [Export] public float HorizontalSharpness { get; set; } = 5f;
-    [Export] public float VerticalSharpness { get; set; } = 3.5f;
+    /// <summary>The follow's eases, seconds: about how long the camera lags a body moving steadily (<see cref="CameraFollow"/>).</summary>
+    [Export] public float HorizontalTime { get; set; } = 0.2f;
+    [Export] public float VerticalTime { get; set; } = 0.24f;
 
-    /// <summary>How far ahead of the player (meters) the camera looks when moving.</summary>
+    /// <summary>How far ahead of the player (meters) the camera looks when moving, how fast it swings over (seconds), and the
+    /// horizontal speed (m/s) above which the look-ahead switches to the direction of travel.</summary>
     [Export] public float LookAhead { get; set; } = 2.5f;
-    [Export] public float LookAheadSharpness { get; set; } = 2f;
-
-    /// <summary>Horizontal speed above which the look-ahead switches to the direction of travel.</summary>
+    [Export] public float LookAheadTime { get; set; } = 0.45f;
     [Export] public float LookAheadMinSpeed { get; set; } = 1f;
+
+    /// <summary>How high (meters) a jump rises over the floor it left before the camera follows it up.</summary>
+    [Export] public float RiseBand { get; set; } = 2.2f;
+
+    /// <summary>How far below a fast fall the camera looks (meters), from the fall speed where it starts to the one where it is
+    /// full (m/s).</summary>
+    [Export] public float FallLead { get; set; } = 4.5f;
+    [Export] public float FallLeadFrom { get; set; } = 8f;
+    [Export] public float FallLeadFull { get; set; } = 18f;
+
+    /// <summary>The farthest the camera trails where it wants to be when the body runs from it, across and up or down
+    /// (meters): a dash or a long fall stays on screen.</summary>
+    [Export] public float LeashX { get; set; } = 4.5f;
+    [Export] public float LeashY { get; set; } = 2.5f;
 
     /// <summary>Landing speed (m/s) above which a landing shakes the camera, and the speed of the strongest shake.</summary>
     [Export] public float ShakeLandingSpeed { get; set; } = 13f;
@@ -43,11 +58,12 @@ public partial class SideCamera : Camera3D
     [Export] public float ShakeAmplitude { get; set; } = 0.12f;
     [Export] public float ShakeDecay { get; set; } = 2.5f;
 
-    private Vector2 _focus;
+    private CameraFollow? _follow;
+    private CameraFollow Follow => _follow ??= new CameraFollow(new FollowLimits(LookAhead, LookAheadMinSpeed, LookAheadTime,
+        HorizontalTime, VerticalTime, RiseBand, FallLead, FallLeadFrom, FallLeadFull, LeashX, LeashY));
+
     private bool _framingShot;
     private float _followFov;
-    private float _lookAhead;
-    private float _lookAheadTarget;
     private float _trauma;
     private float _shakeTime;
 
@@ -83,20 +99,9 @@ public partial class SideCamera : Camera3D
         float dt = (float)delta;
         _trauma = Mathf.Max(0f, _trauma - ShakeDecay * dt);
         _shakeTime += dt;
-        Vector3 target = Target.GetGlobalTransformInterpolated() * new Vector3(0f, BodyCenter, 0f) - new Vector3(0f, BodyCenter, 0f);
-
-        float vx = Target.Velocity.X;
-        if (Mathf.Abs(vx) > LookAheadMinSpeed)
-        {
-            _lookAheadTarget = Mathf.Sign(vx) * LookAhead;
-        }
-
-        _lookAhead = Motion.Damp(_lookAhead, _lookAheadTarget, LookAheadSharpness, dt);
-
-        Vector2 desired = ClampToRoom(new Vector2(target.X + _lookAhead, target.Y + VerticalOffset));
-        _focus = ClampToRoom(new Vector2(
-            Motion.Damp(_focus.X, desired.X, HorizontalSharpness, dt),
-            Motion.Damp(_focus.Y, desired.Y, VerticalSharpness, dt)));
+        Vector3 body = Target.GetGlobalTransformInterpolated() * new Vector3(0f, BodyCenter, 0f) - new Vector3(0f, BodyCenter, 0f);
+        CameraFooting footing = CameraFollow.FootingOf(Target.CurrentState.Motion, Target.IsOnFloor(), Target.IsUpright);
+        Follow.Step(dt, Framed(body), Target.Velocity.Flat(), footing, View());
         ApplyFocus();
     }
 
@@ -108,10 +113,8 @@ public partial class SideCamera : Camera3D
             return;
         }
 
-        Vector3 target = Target.GlobalTransform * new Vector3(0f, BodyCenter, 0f) - new Vector3(0f, BodyCenter, 0f);
-        _lookAheadTarget = Target.Facing * LookAhead;
-        _lookAhead = _lookAheadTarget;
-        _focus = ClampToRoom(new Vector2(target.X + _lookAhead, target.Y + VerticalOffset));
+        Vector3 body = Target.GlobalTransform * new Vector3(0f, BodyCenter, 0f) - new Vector3(0f, BodyCenter, 0f);
+        Follow.Snap(Framed(body), Target.Facing, View());
         ApplyFocus();
     }
 
@@ -152,7 +155,8 @@ public partial class SideCamera : Camera3D
         var offset = new Vector2(
             0.5f * Mathf.Sin(_shakeTime * 37f) * Mathf.Sin(_shakeTime * 13f),
             Mathf.Sin(_shakeTime * 43f + 1.3f) * Mathf.Cos(_shakeTime * 17f)) * shake;
-        GlobalPosition = new Vector3(_focus.X + offset.X, _focus.Y + offset.Y, Distance);
+        NVector2 focus = Follow.Focus;
+        GlobalPosition = new Vector3(focus.X + offset.X, focus.Y + offset.Y, Distance);
     }
 
     private void OnLanded(float impactSpeed)
@@ -163,13 +167,15 @@ public partial class SideCamera : Camera3D
         }
     }
 
-    private Vector2 ClampToRoom(Vector2 center)
+    /// <summary>The point the camera centers on for a body whose center is at <paramref name="body"/>: a little above it.</summary>
+    private NVector2 Framed(Vector3 body) => new(body.X, body.Y + VerticalOffset);
+
+    /// <summary>The room's bounds and the view's half size on the play plane.</summary>
+    private ViewBounds View()
     {
         float halfHeight = CameraMath.HalfHeightAtDistance(Distance, Fov);
         Vector2 viewport = GetViewport().GetVisibleRect().Size;
         float halfWidth = halfHeight * (viewport.Y > 0f ? viewport.X / viewport.Y : 16f / 9f);
-        return new Vector2(
-            CameraMath.ClampAxis(center.X, halfWidth, World.Room.BoundsMin.X, World.Room.BoundsMax.X),
-            CameraMath.ClampAxis(center.Y, halfHeight, World.Room.BoundsMin.Y, World.Room.BoundsMax.Y));
+        return new ViewBounds(World.Room.BoundsMin.ToCore(), World.Room.BoundsMax.ToCore(), new NVector2(halfWidth, halfHeight));
     }
 }

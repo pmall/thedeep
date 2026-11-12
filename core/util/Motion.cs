@@ -24,4 +24,20 @@ public static class Motion
     {
         return target + (current - target) * MathF.Exp(-sharpness * delta);
     }
+
+    /// <summary>
+    /// A critically damped spring toward <paramref name="target"/>: <paramref name="velocity"/> (units per second) is its own and
+    /// carried between calls, so the value eases out of rest and into the target with no jolt, even when the target jumps.
+    /// <paramref name="smoothTime"/> is roughly the seconds it lags a steadily moving target by.
+    /// </summary>
+    public static float SmoothDamp(float current, float target, ref float velocity, float smoothTime, float delta)
+    {
+        float omega = 2f / MathF.Max(1e-4f, smoothTime);
+        float x = omega * delta;
+        float decay = 1f / (1f + x + 0.48f * x * x + 0.235f * x * x * x);
+        float change = current - target;
+        float temp = (velocity + omega * change) * delta;
+        velocity = (velocity - omega * temp) * decay;
+        return target + (change + temp) * decay;
+    }
 }
