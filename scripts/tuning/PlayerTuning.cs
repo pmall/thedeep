@@ -15,8 +15,10 @@ public partial class PlayerTuning : Resource
     [Export] public float GroundDeceleration { get; set; } = 80f;
     [Export] public float AirAcceleration { get; set; } = 45f;
     [Export] public float AirDeceleration { get; set; } = 30f;
-    /// <summary>In the air, speed above a run (a harpoon's release) bleeds off at this rate (m/s²) unless the stick pulls against it.</summary>
+    /// <summary>In the air, speed above a run (a harpoon's release) bleeds off at this rate (m/s²) unless the stick pulls against it,
+    /// up to AirCarrySpeed (m/s): faster than that (a dash jumped out of), it brakes at AirDeceleration.</summary>
     [Export] public float AirDrag { get; set; } = 12f;
+    [Export] public float AirCarrySpeed { get; set; } = 11.5f;
 
     /// <summary>Apex height of a full (held) jump.</summary>
     [ExportGroup("Jump")]
@@ -145,7 +147,7 @@ public partial class PlayerTuning : Resource
         WaterAcceleration, SplashKeep, WaterEnterDepth, WaterJumpWindow);
 
     /// <summary>Running, falling, the grace windows, the air dashes and the blows, as <see cref="PilgrimControl"/> and <see cref="MoveRules"/> read them.</summary>
-    public ControlLimits Control => new(RunSpeed, GroundAcceleration, GroundDeceleration, AirAcceleration, AirDeceleration, AirDrag,
+    public ControlLimits Control => new(RunSpeed, GroundAcceleration, GroundDeceleration, AirAcceleration, AirDeceleration, AirDrag, AirCarrySpeed,
         Gravity, ApexHangThreshold, ApexGravityMultiplier, FallGravityMultiplier, MaxFallSpeed,
         CoyoteTime, JumpBufferTime, DashBufferTime, DashCooldown, HarpoonBufferTime, GripRegrabDelay,
         AirDashes, HurtKnockback, HurtLift, HurtStun);
@@ -163,7 +165,7 @@ public partial class PlayerTuning : Resource
     }
 
     /// <summary>The base moveset as the map's planner simulates it (<see cref="ReachPlanner"/>).</summary>
-    public MoveLimits Move => new(RunSpeed, AirAcceleration, AirDeceleration, AirDrag, JumpHeight, JumpTimeToApex, JumpCutFactor,
+    public MoveLimits Move => new(RunSpeed, AirAcceleration, AirDeceleration, AirDrag, AirCarrySpeed, JumpHeight, JumpTimeToApex, JumpCutFactor,
         FallGravityMultiplier, ApexHangThreshold, ApexGravityMultiplier, MaxFallSpeed, DashDistance, DashDuration, DashExitSpeedFactor,
         AirDashes, LedgeAssist: LedgeAssistHeight);
 

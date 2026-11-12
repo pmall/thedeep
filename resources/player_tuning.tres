@@ -66,6 +66,7 @@ GroundDeceleration = 80.0
 AirAcceleration = 45.0
 AirDeceleration = 30.0
 AirDrag = 12.0
+AirCarrySpeed = 11.5
 JumpHeight = 3.2
 JumpTimeToApex = 0.38
 JumpCutFactor = 0.45

@@ -36,6 +36,9 @@ public class MoveRulesTests
         Assert.Equal(10f - L.AirDrag * dt, MoveRules.Run(10f, 1, grounded: false, L, dt), 4);
         Assert.Equal(-10f + L.AirDrag * dt, MoveRules.Run(-10f, 0, grounded: false, L, dt), 4);
         Assert.Equal(10f - L.AirDeceleration * dt, MoveRules.Run(10f, -1, grounded: false, L, dt), 4);
+        // Faster than it carries (a dash jumped out of), it brakes as it would against the stick, down to the carry.
+        Assert.Equal(28f - L.AirDeceleration * dt, MoveRules.Run(28f, 1, grounded: false, L, dt), 4);
+        Assert.Equal(L.AirCarrySpeed, MoveRules.Run(L.AirCarrySpeed + 0.1f, 1, grounded: false, L, dt), 4);
         // It bleeds down to a run, never under it.
         Assert.Equal(L.RunSpeed, MoveRules.Run(L.RunSpeed + 0.01f, 1, grounded: false, L, dt), 4);
     }

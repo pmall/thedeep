@@ -6,7 +6,7 @@ public class PilgrimControlTests
 {
     // The live tuning (resources/player_tuning.tres).
     public static readonly ControlLimits Limits = new(
-        RunSpeed: 7f, GroundAcceleration: 70f, GroundDeceleration: 80f, AirAcceleration: 45f, AirDeceleration: 30f, AirDrag: 12f,
+        RunSpeed: 7f, GroundAcceleration: 70f, GroundDeceleration: 80f, AirAcceleration: 45f, AirDeceleration: 30f, AirDrag: 12f, AirCarrySpeed: 11.5f,
         Gravity: JumpMath.Gravity(3.2f, 0.38f), ApexHangThreshold: 1.5f, ApexGravityMultiplier: 0.55f, FallGravityMultiplier: 1.6f,
         MaxFallSpeed: 20f, CoyoteTime: 0.15f, JumpBufferTime: 0.15f, DashBufferTime: 0.1f, DashCooldown: 0.4f, HarpoonBufferTime: 0.1f,
         GripRegrabDelay: 0.25f, AirDashes: 1, HurtKnockback: 6f, HurtLift: 6f, HurtStun: 0.22f);
