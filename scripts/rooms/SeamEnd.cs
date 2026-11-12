@@ -84,6 +84,7 @@ public abstract partial class SeamEnd : Node3D
             AddChild(block);
         }
 
+        Hang(frame, exit, marker, look);
         bool hangs = !foot && frame.SillHangs(exit.Side, marker, wallBoxes);
         BuildTrim(frame.Trim(exit.Side, lined, hangs), look, blocks[0].MetalMaterial);
 
@@ -95,6 +96,15 @@ public abstract partial class SeamEnd : Node3D
                 ?? throw new InvalidOperationException($"{GetType().Name} on {exit.Name} is flooded, but no swum water of its room reaches the opening");
             water.Flood(passage);
         }
+    }
+
+    /// <summary>
+    /// What hangs from this kind of end into its room past the frame (a <see cref="Hatch"/>'s standpipe), built once the frame is,
+    /// before its trim (which keeps off any water surface) and its flooding (which asks the room's water to fill the passage).
+    /// <paramref name="look"/>: the frame's look.
+    /// </summary>
+    protected virtual void Hang(SeamFrame frame, RoomExit exit, System.Numerics.Vector2 marker, Material look)
+    {
     }
 
     /// <summary>Whether a doorway's frame is walled over its lintel and under its sill (<see cref="SeamFrame.Wall"/>); a hatch's never is.</summary>
@@ -232,6 +242,6 @@ public abstract partial class SeamEnd : Node3D
         node.GetChildren().SelectMany(child => child is Block block ? new[] { block } : Blocks(child));
 
     /// <summary>The water bodies under <paramref name="node"/>, at any depth.</summary>
-    private static IEnumerable<WaterBody> Waters(Node node) =>
+    protected static IEnumerable<WaterBody> Waters(Node node) =>
         node.GetChildren().SelectMany(child => child is WaterBody water ? new[] { water } : Waters(child));
 }

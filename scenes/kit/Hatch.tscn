@@ -2,7 +2,9 @@
 
 [ext_resource type="Script" path="res://scripts/rooms/Hatch.cs" id="1_hatch"]
 [ext_resource type="PackedScene" path="res://scenes/kit/Block.tscn" id="2_block"]
+[ext_resource type="Material" path="res://assets/materials/standpipe_section.tres" id="3_pipe_section"]
 
 [node name="Hatch" type="Node3D"]
 script = ExtResource("1_hatch")
 BlockScene = ExtResource("2_block")
+PipeSection = ExtResource("3_pipe_section")

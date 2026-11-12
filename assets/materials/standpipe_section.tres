@@ -1,0 +1,10 @@
+[gd_resource type="ShaderMaterial" format=3]
+
+[ext_resource type="Shader" path="res://assets/shaders/water_section.gdshader" id="1_shader"]
+
+; a standpipe's front: a thicker veil than a pool's, so the column reads as coolant in the hatch's light
+[resource]
+shader = ExtResource("1_shader")
+shader_parameter/veil = 0.5
+shader_parameter/veil_per_meter = 0.03
+shader_parameter/veil_max = 0.7

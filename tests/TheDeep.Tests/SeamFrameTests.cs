@@ -140,6 +140,35 @@ public class SeamFrameTests
     }
 
     [Fact]
+    public void AStandpipeHangsFromTheSlabIntoTheHighestWaterUnderTheWholeHole()
+    {
+        // The Quench's: a hatch at (14, 37.5) over a pool whose surface is at 24; a higher pool beside the hole and a narrow one under it don't count.
+        var waters = new[] { new Box(1f, -1f, 43f, 24f), new Box(20f, 30f, 30f, 34f), new Box(13f, 0f, 15f, 30f) };
+        Standpipe pipe = Hatch.Pipe(ExitSide.Up, new Vector2(14f, 37.5f), waters) ?? throw new InvalidOperationException("no pipe");
+
+        Assert.Equal(0, pipe.Pool);
+        Assert.Equal(new Box(12.5f, 22f, 15.5f, 38.5f), pipe.Column); // from the slab's top to a body's height under the surface
+        Assert.Equal(new Box(11.5f, 26f, 12.5f, 36.5f), pipe.West); // from the slab's underside to a body's height over it
+        Assert.Equal(new Box(15.5f, 26f, 16.5f, 36.5f), pipe.East);
+    }
+
+    [Fact]
+    public void AStandpipesColumnStopsAtAShallowWatersFloor()
+    {
+        Standpipe? pipe = Hatch.Pipe(ExitSide.Up, new Vector2(14f, 22f), new[] { new Box(9f, 2.5f, 19f, 3.5f) });
+
+        Assert.Equal(2.5f, pipe?.Column.MinY);
+    }
+
+    [Fact]
+    public void NoStandpipeHangsWithoutRoomForItsMouthOrOverNoWater()
+    {
+        Assert.Null(Hatch.Pipe(ExitSide.Up, new Vector2(14f, 22f), new[] { new Box(20f, 0f, 30f, 4f) }));
+        Assert.Throws<ArgumentException>(() => Hatch.Pipe(ExitSide.Up, new Vector2(14f, 22f), new[] { new Box(0f, 0f, 30f, 20f) }));
+        Assert.Throws<ArgumentException>(() => Hatch.Pipe(ExitSide.Down, new Vector2(14f, 22f), new[] { new Box(0f, 0f, 30f, 4f) }));
+    }
+
+    [Fact]
     public void TheTrimNeverEntersTheOpeningsPlayPlane()
     {
         foreach ((SeamFrame frame, ExitSide side) in new[] { (Door, ExitSide.West), (Door, ExitSide.East), (Hatch, ExitSide.Down), (Hatch, ExitSide.Up) })

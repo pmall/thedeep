@@ -26,14 +26,6 @@
 [ext_resource type="Script" path="res://scripts/rooms/dressing/WallDressing.cs" id="21_wall"]
 [ext_resource type="PackedScene" path="res://scenes/kit/Hatch.tscn" id="22_hatch"]
 [ext_resource type="Resource" path="res://resources/seams/hatch.tres" id="23_seam_hatch"]
-[ext_resource type="Shader" path="res://assets/shaders/water_section.gdshader" id="24_section_shader"]
-
-; the standpipe's front: a thicker veil than the pool's, so the column reads as coolant in the hatch's light
-[sub_resource type="ShaderMaterial" id="standpipe_section"]
-shader = ExtResource("24_section_shader")
-shader_parameter/veil = 0.5
-shader_parameter/veil_per_meter = 0.03
-shader_parameter/veil_max = 0.7
 
 [sub_resource type="PrimitiveMesh" id="blockmesh_1"]
 script = ExtResource("9_blockmesh")
@@ -144,16 +136,6 @@ transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 10.25, 32.25, 0)
 Size = Vector3(2.5, 0.5, 4)
 Material = ExtResource("3_rust")
 
-[node name="PipeWest" parent="Geometry" instance=ExtResource("2_block")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 12, 31.25, 0)
-Size = Vector3(1, 10.5, 4)
-Material = ExtResource("3_rust")
-
-[node name="PipeEast" parent="Geometry" instance=ExtResource("2_block")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 16, 31.25, 0)
-Size = Vector3(1, 10.5, 4)
-Material = ExtResource("3_rust")
-
 ; sunken quench tanks
 [node name="TankA" parent="Geometry" instance=ExtResource("2_block")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 11, 3.5, 0)
@@ -179,6 +161,8 @@ TargetExit = "Quench"
 Profile = ExtResource("23_seam_hatch")
 Material = ExtResource("1_basalt")
 Flooded = true
+Standpipe = true
+PipeMaterial = ExtResource("3_rust")
 
 ; the drain, a flooded hatch down into the Crucible: only sunk to (Ballast)
 [node name="Crucible" type="Marker3D" parent="Exits"]
@@ -206,18 +190,6 @@ Reflection = 0.35
 Swim = true
 SurfaceMaterial = ExtResource("6_water")
 SectionMaterial = ExtResource("8_water_section")
-
-; the standpipe's coolant, from the hatch down into the pool: one water with it, so a body under its mouth floats up it
-[node name="Standpipe" type="Node3D" parent="."]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 14, 38.5, 0)
-script = ExtResource("5_water_body")
-Size = Vector2(3, 4.1)
-Depth = 16.5
-Reflection = 0.35
-Swim = true
-Globals = false
-SurfaceMaterial = ExtResource("6_water")
-SectionMaterial = SubResource("standpipe_section")
 
 [node name="Kit" type="Node3D" parent="."]
 

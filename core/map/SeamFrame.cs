@@ -289,6 +289,57 @@ public sealed record SeamFrame(float Opening, float Approach, float HeadRise = 0
     }
 
     /// <summary>
+    /// How far a standpipe's walls stop over its water's surface, and how far its column dips under it, meters (<see cref="Pipe"/>): a
+    /// body's height, so a floater swims in under the mouth and floats up the column.
+    /// </summary>
+    public const float PipeMouth = 2f;
+
+    /// <summary>How thick a standpipe's walls are, meters.</summary>
+    public const float PipeWall = 1f;
+
+    /// <summary>
+    /// The standpipe hung from the hatch on <paramref name="side"/> at <paramref name="marker"/> (an up exit, a hole in the roof) into
+    /// the highest of the room's swum <paramref name="waters"/> that lies under the whole hole, or null when none does: its column as
+    /// wide as the hole, from the slab's top (where the flooded passage ends) down <see cref="PipeMouth"/> under that water's surface
+    /// (no deeper than its floor), so the two are one water; its walls <see cref="PipeWall"/> thick either side of the hole, from the
+    /// slab's underside down to <see cref="PipeMouth"/> over the surface.
+    /// </summary>
+    public Standpipe? Pipe(ExitSide side, Vector2 marker, IReadOnlyList<Box> waters)
+    {
+        if (side != ExitSide.Up)
+        {
+            throw new ArgumentException($"a standpipe hangs from a hatch in a roof, not from a {side} exit");
+        }
+
+        Box area = Exit(side, marker).Area;
+        int? pool = null;
+        for (int i = 0; i < waters.Count; i++)
+        {
+            Box w = waters[i];
+            if (w.MinX <= area.MinX && w.MaxX >= area.MaxX && w.MaxY <= area.MinY && (pool is not { } best || w.MaxY > waters[best].MaxY))
+            {
+                pool = i;
+            }
+        }
+
+        if (pool is not { } index)
+        {
+            return null;
+        }
+
+        Box water = waters[index];
+        float mouth = water.MaxY + PipeMouth;
+        if (mouth >= area.MinY)
+        {
+            throw new ArgumentException($"the water under the hatch at {marker} lies {area.MinY - water.MaxY} m under its slab: no room for a standpipe's mouth");
+        }
+
+        var column = new Box(area.MinX, MathF.Max(water.MaxY - PipeMouth, water.MinY), area.MaxX, area.MaxY);
+        return new Standpipe(
+            index, column, new Box(area.MinX - PipeWall, mouth, area.MinX, area.MinY), new Box(area.MaxX, mouth, area.MaxX + PipeWall, area.MinY));
+    }
+
+    /// <summary>
     /// A lift whose cage rides up through the hatch on <paramref name="side"/> at <paramref name="marker"/>: its lower stop (the cage
     /// floor's center) and how far it rises (docs/gameplay.md#seam-rule). Under an up exit, the lower room's lift stands in line with the
     /// hole at <paramref name="floor"/> and rises to the hand-off, the frame's top, where the crossing body arrives; over a down exit,
