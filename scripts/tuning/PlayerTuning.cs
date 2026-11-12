@@ -175,4 +175,10 @@ public partial class PlayerTuning : Resource
 
     /// <summary>The Mag-grip group, as the planner simulates it.</summary>
     public GripLimits Grip => new(GripLeapAwaySpeed, GripLeapUpFactor, GripRegrabDelay);
+
+    /// <summary>
+    /// Every group the planner simulates, an arrival up through a hatch keeping at least <paramref name="climbRise"/> of a jump's
+    /// take-off speed (<see cref="RoomTravel.ClimbRise"/>).
+    /// </summary>
+    public PlannerLimits Planner(float climbRise) => new(Move, Harpoon, Grip, Water, climbRise * JumpTakeOffSpeed);
 }

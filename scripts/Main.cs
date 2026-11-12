@@ -45,7 +45,7 @@ public partial class Main : Node3D
     /// <summary>`--items &lt;ids&gt;`: start holding these items (the world's item ids joined by commas: `SacristyKey,KilnLever`).</summary>
     private const string ItemsArgument = "--items";
 
-    /// <summary>`--shard K/N` with `--validate-travel`: cross only every Nth exit from the Kth (1-based), so the check can run in parts.</summary>
+    /// <summary>`--shard K/N` with `--validate-travel` or `--route-check`: only every Nth exit or room from the Kth (1-based), so the check can run in parts.</summary>
     private const string ShardArgument = "--shard";
 
     /// <summary>User argument that checks every room scene and quits (see RoomValidator), used by tools/check.sh.</summary>
@@ -77,6 +77,9 @@ public partial class Main : Node3D
 
     /// <summary>User argument that walks into every slag body and heat column of the world (see BurnProbe), used by tools/check.sh.</summary>
     private const string BurnProbeArgument = "--burn-probe";
+
+    /// <summary>User argument that plays every room's ground routes as the planner flies them (see RouteCheck), used by tools/check.sh.</summary>
+    private const string RouteCheckArgument = "--route-check";
 
     /// <summary>User argument that runs the fight moveset check (see FightCheck), used by tools/check.sh.</summary>
     private const string FightCheckArgument = "--fight-check";
@@ -138,7 +141,7 @@ public partial class Main : Node3D
     private static readonly string[] DriverArguments =
     {
         SmokeArgument, CaptureTestArgument, LookDevArgument, ValidateRoomsArgument, ValidateTravelArgument, ValidateSpeciesArgument,
-        UiShotArgument, PlaythroughCheckArgument, GripCheckArgument, CombatCheckArgument, HarpoonCheckArgument, EncounterCheckArgument, DrillCheckArgument, BallastCheckArgument, HeatCheckArgument, BurnProbeArgument, KeyCheckArgument, CodeCheckArgument, PowerUpCheckArgument, DialogueCheckArgument, AmbushCheckArgument, SecretCheckArgument, FightCheckArgument, BakeSurfacesArgument,
+        UiShotArgument, PlaythroughCheckArgument, GripCheckArgument, CombatCheckArgument, HarpoonCheckArgument, EncounterCheckArgument, DrillCheckArgument, BallastCheckArgument, HeatCheckArgument, BurnProbeArgument, RouteCheckArgument, KeyCheckArgument, CodeCheckArgument, PowerUpCheckArgument, DialogueCheckArgument, AmbushCheckArgument, SecretCheckArgument, FightCheckArgument, BakeSurfacesArgument,
     };
 
     private SaveData? _resume;
@@ -321,6 +324,18 @@ public partial class Main : Node3D
         else if (Array.IndexOf(args, BurnProbeArgument) >= 0)
         {
             AddChild(new BurnProbe { Player = Player, World = World });
+        }
+        else if (Array.IndexOf(args, RouteCheckArgument) >= 0)
+        {
+            AddChild(new RouteCheck
+            {
+                Player = Player,
+                World = World,
+                Machines = Machines,
+                PowerUps = PowerUps,
+                Limits = Player.Tuning.Planner(Travel.ClimbRise),
+                Shard = ParseShard(ArgumentValue(args, ShardArgument)),
+            });
         }
         else if (Array.IndexOf(args, CombatCheckArgument) >= 0)
         {

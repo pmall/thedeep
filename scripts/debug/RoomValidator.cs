@@ -74,7 +74,7 @@ public partial class RoomValidator : Node
 
         _done = true;
         _draft = LoadDraft();
-        var world = new WorldCheck(new PlannerLimits(Tuning.Move, Tuning.Harpoon, Tuning.Grip, Tuning.Water, ClimbRise * Tuning.JumpTakeOffSpeed));
+        var world = new WorldCheck(Tuning.Planner(ClimbRise));
         CheckMainScene();
         int rooms = 0, exits = 0;
         foreach (string path in World.RoomScenes())
@@ -424,34 +424,8 @@ public partial class RoomValidator : Node
     /// <summary>The room's part of the map: its exits (one edge each, for leaving through it), relics, items, goals and shape.</summary>
     private void Extract(Room room, string name, List<RoomExit> exits, WorldCheck world)
     {
-        var solids = room.Blocks().Select(BoxOf).ToList();
-        var sound = room.Blocks().Where(b => !b.Cracked).Select(BoxOf).ToList();
-        var exitShapes = exits.Where(e => e.TargetRoom == "" || ResourceLoader.Exists(e.TargetRoom))
-            .Select(e => new ExitShape(e.Name, e.Threshold, e.Requires, e.ArrivalSide, e.TargetRoom == "")).ToList();
-        var wakes = room.All<Shrine>().Select(s => s.GlobalPosition.Flat()).ToList();
-        if (World.RoomPath(name) == StartRoom)
-        {
-            wakes.Add(room.SpawnPoint.GlobalPosition.Flat());
-        }
-
-        var anchors = room.All<HarpoonAnchor>().Select(a => a.GlobalPosition.Flat()).ToList();
-        var waters = room.All<WaterBody>().Where(w => w.Swim).Select(w => w.PlayRegion).ToList();
-        var heat = room.All<HeatColumn>().Select(z => z.Region).ToList();
-        // Where walking takes a relic (its range from the feet) and reaches a goal (the feet inside its area), as trigger boxes.
-        var relics = room.All<AbilityRelic>()
-            .Select(r => (Box.Around(r.GlobalPosition.Flat() + new NVector2(0f, 0.1f), new NVector2(1.6f, 0.4f)), r.Ability)).ToList();
-        var items = room.All<ItemPickup>()
-            .Select(i => (Box.Around(i.GlobalPosition.Flat() + new NVector2(0f, 0.1f), new NVector2(1.6f, 0.4f)), i.Item.Id))
-            .Concat(room.All<Lever>().Select(l => (Box.Around(l.GlobalPosition.Flat() + new NVector2(0f, 0.1f), new NVector2(2f * l.Range, 0.4f)), l.Item.Id)))
-            .ToList();
-        var goals = room.All<MapGoal>().Where(g => g.Size != Vector2.Zero).Select(g => Box.Around(g.GlobalPosition.Flat(), g.Size.ToCore())).ToList();
-        var metal = room.Blocks().Where(b => b.Surface == SurfaceKind.Metal && !b.Cracked).Select(BoxOf).ToList();
-        world.AddRoom(name, room.BoundsMin.ToCore(), room.BoundsMax.ToCore(), new RoomShape(solids, exitShapes, wakes, anchors,
-            room.All<Lift>().Select(l => l.Path).ToList(), sound, waters, heat, relics, goals, metal, room.SpawnPoint.GlobalPosition.Flat())
-        {
-            Items = items,
-            Slag = room.All<SlagBody>().Select(s => s.PlayRegion).ToList(),
-        });
+        RoomShape shape = RoomShapes.Of(room, World.RoomPath(name) == StartRoom);
+        world.AddRoom(name, room.BoundsMin.ToCore(), room.BoundsMax.ToCore(), shape);
 
         foreach (RoomExit exit in exits.Where(e => e.TargetRoom != "" && ResourceLoader.Exists(e.TargetRoom)))
         {
@@ -467,7 +441,7 @@ public partial class RoomValidator : Node
             world.AddSealed(name, exit.Requirement);
         }
 
-        AddSeams(room, name, exits, solids);
+        AddSeams(room, name, exits, shape.Solids);
         _powerUps.AddRange(room.All<PowerUp>().Select(p => (name, p.Stat)));
 
         foreach (AbilityRelic relic in room.All<AbilityRelic>())
@@ -494,7 +468,7 @@ public partial class RoomValidator : Node
     /// <summary>The depth of a block's face toward the camera, or null when it draws no faces (<see cref="Block.CollisionOnly"/>).</summary>
     private static float? Front(Block b) => b.CollisionOnly ? null : b.GlobalPosition.Z + 0.5f * b.Size.Z;
 
-    private static Box BoxOf(Block b) => Box.Around(b.GlobalPosition.Flat(), new NVector2(b.Size.X, b.Size.Y));
+    private static Box BoxOf(Block b) => RoomShapes.BoxOf(b);
 
     /// <summary>Where an exit sits in its room (the scene instanced but not run).</summary>
     private NVector2? ArrivalPosition(string scene, string exitName)

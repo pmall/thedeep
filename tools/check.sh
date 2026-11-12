@@ -197,6 +197,8 @@ CHECKS=(
     "heat|HEAT OK|HEAT CHECK|1500|--room Basalt --heat-check"
     # BurnProbe: every slag body and heat column walked into, plated and not.
     "burn|BURN OK|BURN CHECK|20000|--burn-probe"
+    # RouteCheck: every room's ground routes, as the reach planner flies them, played with the real inputs.
+    "routes|ROUTES OK|ROUTE CHECK|20000|--route-check"
     # KeyCheck: the Sacristy key and its locked door, in place.
     "key|KEY OK|KEY CHECK|2000|--room Narthex --key-check"
     # KeyCheck's Pyre plan: the Pyre's litany (a code) and its seal on the Ashfall's low door, in place.
@@ -217,23 +219,28 @@ CHECKS=(
     "playthrough|PLAYTHROUGH OK|PLAYTHROUGH CHECK|60000|--playthrough-check"
     "species|SPECIES OK|SPECIES CHECK|9000|--room MachineArena --validate-species"
     # The sequel world (docs/roadmap.md#sequel-test), a fixture: its rooms and map (run from the Strongroom, its room without
-    # machines, as the prototype's are from the lab), every exit crossed, the whole run and its burns (none yet).
+    # machines, as the prototype's are from the lab), every exit crossed, the whole run, its burns (none yet) and its ground routes.
     "sequel_rooms|ROOMS OK|ROOM CHECK|600|--world sequel --room Strongroom --validate-rooms"
     "sequel_travel|TRAVEL OK|TRAVEL CHECK|20000|--world sequel --validate-travel"
     "sequel_playthrough|PLAYTHROUGH OK|PLAYTHROUGH CHECK|20000|--world sequel --playthrough-check"
     "sequel_burn|BURN OK|BURN CHECK|20000|--world sequel --burn-probe"
+    "sequel_routes|ROUTES OK|ROUTE CHECK|20000|--world sequel --route-check"
 )
 
 # Runs one check in the background: its log, then a status file with its exit code and how long it took.
+# The longest checks (FIRST) keep the processors they ask for; the others run nicer, filling what those leave (all at the same
+# priority, the longest were slowed down by a fifth, and the whole step with them).
+FIRST=" rooms routes "
 launch() {
-    local name="$1" frames="$2" args="$3" log="$LOG_DIR/$1.log"
+    local name="$1" frames="$2" args="$3" log="$LOG_DIR/$1.log" nice=10
+    [[ "$FIRST" == *" $name "* ]] && nice=0
     (
         local t0=$SECONDS code=0
         # shellcheck disable=SC2086 # the arguments are split on purpose
         if [ -n "$args" ]; then
-            "$GODOT" --headless --path . --fixed-fps 60 --quit-after "$frames" -- $args >"$log" 2>&1 || code=$?
+            nice -n "$nice" "$GODOT" --headless --path . --fixed-fps 60 --quit-after "$frames" -- $args >"$log" 2>&1 || code=$?
         else
-            "$GODOT" --headless --path . --fixed-fps 60 --quit-after "$frames" >"$log" 2>&1 || code=$?
+            nice -n "$nice" "$GODOT" --headless --path . --fixed-fps 60 --quit-after "$frames" >"$log" 2>&1 || code=$?
         fi
         echo "$code $((SECONDS - t0))" >"$LOG_DIR/$name.status"
     ) &

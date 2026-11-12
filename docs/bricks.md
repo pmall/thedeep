@@ -98,4 +98,4 @@ All working; brought to ready under `docs/roadmap.md#bricks-ready`.
 
 ## Proof <a id="bricks-proof"></a>
 
-All ready: the map solver (`MapSolver`), the reach planner (`ReachPlanner`), the room, travel, species and lab checks (`instructions/testing.md#check`), required exports (`RequiredExports`), the line check (`LineCheck`), the network and room table check (`MapDraft`, `RoomTable`, kinds in `RoomKind`) and its drawing (`MapDrawing`, written by `tools/map.sh`).
+All ready: the map solver (`MapSolver`), the reach planner (`ReachPlanner`), the room, travel, species and lab checks (`instructions/testing.md#check`), the route check playing every room's ground routes as the planner flies them (`RouteCheck`, over `GroundRoutes`), required exports (`RequiredExports`), the line check (`LineCheck`), the network and room table check (`MapDraft`, `RoomTable`, kinds in `RoomKind`) and its drawing (`MapDrawing`, written by `tools/map.sh`).

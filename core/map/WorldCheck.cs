@@ -223,14 +223,20 @@ public sealed class WorldCheck
     private ReachPlanner Planner(string room, Ability with, bool clumsy = false) =>
         _planners.GetOrAdd((room, with & _matters[room], clumsy), key => new Lazy<ReachPlanner>(() => NewPlanner(key.Room, key.With, key.Clumsy))).Value;
 
-    private ReachPlanner NewPlanner(string room, Ability g, bool clumsy)
+    private ReachPlanner NewPlanner(string room, Ability g, bool clumsy) => For(_shapes[room], clumsy ? _limits with { Move = _limits.Move.Clumsy() } : _limits, g);
+
+    /// <summary>
+    /// The planner for a room of <paramref name="shape"/> with the abilities <paramref name="g"/>, simulated with <paramref name="limits"/>:
+    /// Mag-grip walks its metal, the Harpoon zips between its anchors, the Drill bores what it reaches, Ballast sinks and rises in its
+    /// water, Heat plating walks through its heat (slag stays out of reach, plated or not).
+    /// </summary>
+    public static ReachPlanner For(RoomShape shape, PlannerLimits limits, Ability g)
     {
-        RoomShape shape = _shapes[room];
         bool grip = (g & Ability.MagGrip) != 0;
-        return new ReachPlanner(clumsy ? _limits.Move.Clumsy() : _limits.Move, (g & Ability.Drill) != 0 ? shape.Sound : shape.Solids,
-            (g & Ability.Harpoon) != 0 ? _limits.Harpoon : null, shape.Anchors, shape.Lifts, _limits.Water, shape.Waters,
+        return new ReachPlanner(limits.Move, (g & Ability.Drill) != 0 ? shape.Sound : shape.Solids,
+            (g & Ability.Harpoon) != 0 ? limits.Harpoon : null, shape.Anchors, shape.Lifts, limits.Water, shape.Waters,
             ballast: (g & Ability.Ballast) != 0, hazards: (g & Ability.HeatPlating) != 0 ? shape.Slag : shape.Heat.Concat(shape.Slag),
-            grip: grip ? _limits.Grip : null, metal: grip ? shape.Metal : null);
+            grip: grip ? limits.Grip : null, metal: grip ? shape.Metal : null);
     }
 
     /// <summary>
@@ -263,23 +269,13 @@ public sealed class WorldCheck
     /// </summary>
     private sealed record WayIn(string What, Vector2 At, Vector2 Velocity, int Steer, int Exit, bool Base, Ability Guaranteed);
 
-    /// <summary>
-    /// Arriving through an exit, placed as room travel places the body (<see cref="Threshold.Arrival"/>): through a doorway standing, up
-    /// through a hatch in a floor rising (carried toward its <see cref="ExitShape.ArrivalSide"/>), down through one in a roof falling.
-    /// </summary>
+    /// <summary>Arriving through an exit (<see cref="ExitShape.Entry"/>), by an edge needing <paramref name="requires"/>.</summary>
     private WayIn Arriving(RoomShape shape, int index, Requirement requires)
     {
         ExitShape x = shape.Exits[index];
-        Threshold t = x.Threshold;
-        Vector2 velocity = t.Side switch
-        {
-            ExitSide.Down => t.ArrivalVelocity(Vector2.Zero, _limits.Rise),
-            ExitSide.Up => new Vector2(0f, -5f),
-            _ => Vector2.Zero,
-        };
+        (Vector2 at, Vector2 velocity, int steer) = x.Entry(_limits, shape.Solids);
         Requirement body = requires.WithoutItems();
-        return new WayIn($"arriving through {x.Name}", t.Arrival(new Vector2(_limits.Move.Width, _limits.Move.Height), shape.Solids), velocity,
-            t.Side == ExitSide.Down ? x.ArrivalSide : 0, index, body.IsMetBy(Ability.None),
+        return new WayIn($"arriving through {x.Name}", at, velocity, steer, index, body.IsMetBy(Ability.None),
             body.Options.Aggregate(Simulated, (all, option) => all & option.Abilities));
     }
 

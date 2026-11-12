@@ -71,6 +71,21 @@ public readonly record struct LiftPath(Box Platform, float Rise);
 public readonly record struct Ledge(float Y, float MinX, float MaxX, bool Swim = false);
 
 /// <summary>
+/// One move tried from a take-off point (<see cref="ReachPlanner.GroundMoves"/>): held toward <see cref="Dir"/> (−1, 0, +1) from a run at
+/// that speed, a jump held for <see cref="JumpTicks"/> (−1: to the apex; 0: no jump, walking off the end), an air dash toward
+/// <see cref="Dir"/> (right when 0) at <see cref="DashTick"/> (−1: none), ticks counted from the take-off.
+/// </summary>
+public readonly record struct GroundMove(int Dir, int JumpTicks, int DashTick);
+
+/// <summary>
+/// One move as the planner flies it from a ledge (<see cref="ReachPlanner.Reach(IEnumerable{ValueTuple{Vector2, Vector2, int}}, IReadOnlyList{Box}, Action{Leap})"/>): the ledge it starts on (<see cref="From"/>), the
+/// take-off point, the move (its dash tick the one it came at), the feet tick by tick from the take-off (<see cref="Path"/>, walking
+/// to the edge first for a walk-off), the ledge it landed on (<see cref="Lands"/>, −1: none in time), and whether the flight was clean:
+/// landed on a floor touching no wall or ceiling on the way, no ledge assist, no water, no hazard.
+/// </summary>
+public sealed record Leap(int From, Vector2 TakeOff, GroundMove Move, IReadOnlyList<Vector2> Path, int Lands, bool Clean);
+
+/// <summary>
 /// What the base moveset can reach in one room, pure (the geometry sanity check, docs/long-term.md#any-order): the
 /// pilgrim's body as a box walks along ledges and is simulated tick by tick through jumps (full and cut),
 /// walk-offs and air dashes, with the real tuning numbers and collisions against the room's solids. From
@@ -116,6 +131,9 @@ public sealed class ReachPlanner
     [ThreadStatic]
     private static List<int>? _near;
     private readonly List<Ledge> _ledges;
+
+    /// <summary>For each ledge, whether another floor goes on level past its west and its east end (no edge to walk off there).</summary>
+    private readonly List<(bool West, bool East)> _goesOn;
     /// <summary>The Harpoon's numbers and the room's anchors, or null for a planner without it (or a room without anchors).</summary>
     private readonly Harpoon? _harpoon;
     private readonly List<LiftPath> _lifts;
@@ -167,6 +185,7 @@ public sealed class ReachPlanner
         _ballast = ballast && _water is not null;
         _ledges = FindLedges();
         _ledges.AddRange(FindSwimLedges());
+        _goesOn = _ledges.Select(l => (GoesOn(l, l.MinX - 0.01f), GoesOn(l, l.MaxX + 0.01f))).ToList();
         List<Vector2> anchorList = anchors?.ToList() ?? new List<Vector2>();
         _harpoon = harpoon is not null && anchorList.Count > 0 ? new Harpoon(harpoon, anchorList) : null;
         if (_ballast)
@@ -200,7 +219,17 @@ public sealed class ReachPlanner
     /// The trigger areas (by index into <paramref name="triggers"/>) the base moveset can enter starting at
     /// <paramref name="arrival"/> (feet) with <paramref name="velocity"/>, and the ledges it can stand on.
     /// </summary>
-    public (HashSet<int> Triggers, HashSet<int> Ledges) Reach(Vector2 arrival, Vector2 velocity, IReadOnlyList<Box> triggers, int steer = 0)
+    public (HashSet<int> Triggers, HashSet<int> Ledges) Reach(Vector2 arrival, Vector2 velocity, IReadOnlyList<Box> triggers, int steer = 0) =>
+        Reach(new[] { (arrival, velocity, steer) }, triggers);
+
+    /// <summary>
+    /// The same from several <paramref name="arrivals"/> at once (feet, velocity, steer: 0 tries every way), each moving as from
+    /// <see cref="Reach(Vector2, Vector2, IReadOnlyList{Box}, int)"/>. With <paramref name="leaps"/>, every move of
+    /// <see cref="GroundMoves"/> from every take-off point of a floor reached (not a float line) is also given as it flew
+    /// (<see cref="Leap"/>), but a move whose air dash never came (still on the floor at its tick): it is the same flight as the one without.
+    /// </summary>
+    public (HashSet<int> Triggers, HashSet<int> Ledges) Reach(IEnumerable<(Vector2 At, Vector2 Velocity, int Steer)> arrivals, IReadOnlyList<Box> triggers,
+        Action<Leap>? leaps = null)
     {
         var reachedTriggers = new HashSet<int>();
         var reachedLedges = new HashSet<int>();
@@ -289,9 +318,12 @@ public sealed class ReachPlanner
         }
 
         // The arrival itself: falling (or rising) from the marker, with and without steering.
-        foreach (int dir in steer != 0 ? new[] { steer } : new[] { -1, 0, 1 })
+        foreach ((Vector2 arrival, Vector2 velocity, int steer) in arrivals)
         {
-            Simulate(arrival, velocity, dir, jumpTicks: 0, dashTick: -1, triggers, reachedTriggers, Land, Sink, Grab);
+            foreach (int dir in steer != 0 ? new[] { steer } : new[] { -1, 0, 1 })
+            {
+                Simulate(arrival, velocity, dir, jumpTicks: 0, dashTick: -1, triggers, reachedTriggers, Land, Sink, Grab);
+            }
         }
 
         while (queue.Count > 0 || anchorQueue.Count > 0 || gripQueue.Count > 0)
@@ -319,8 +351,11 @@ public sealed class ReachPlanner
                 continue;
             }
 
-            Ledge l = _ledges[queue.Dequeue()];
-            foreach (float x in TakeOffs(l))
+            int ledge = queue.Dequeue();
+            Ledge l = _ledges[ledge];
+            List<float> takeOffs = TakeOffs(l).ToList();
+            float first = takeOffs.Min(), last = takeOffs.Max();
+            foreach (float x in takeOffs)
             {
                 var at = new Vector2(x, l.Y);
                 if (!l.Swim && Submerged(at))
@@ -334,23 +369,20 @@ public sealed class ReachPlanner
                     Fire(at + new Vector2(0f, _m.Height * 0.5f + _m.JumpHeight));
                 }
 
-                foreach (int dir in new[] { -1, 0, 1 })
+                foreach (GroundMove move in GroundMoves)
                 {
-                    var running = new Vector2(dir * (l.Swim && _water is { } wet ? wet.Limits.SwimSpeed : _m.RunSpeed), 0f);
-                    foreach (int jump in new[] { -1, 6, 12 })
+                    // A walk-off from the ends, outward, where the floor ends: from further in, it walks there first, and its dash (only
+                    // in the air) comes late.
+                    if (move.JumpTicks != 0
+                        || (!l.Swim && (move.Dir > 0 ? x == last && !_goesOn[ledge].East : x == first && !_goesOn[ledge].West)))
                     {
-                        foreach (int dash in new[] { -1, 6, 14, 22, 30 })
+                        var running = new Vector2(move.Dir * (l.Swim && _water is { } wet ? wet.Limits.SwimSpeed : _m.RunSpeed), 0f);
+                        Trace? trace = leaps is not null && !l.Swim ? new Trace() : null;
+                        Simulate(at, running, move.Dir, move.JumpTicks, move.DashTick, triggers, reachedTriggers, Land, Sink, Grab, trace: trace);
+                        if (leaps is not null && trace is not null && (move.DashTick < 0 || trace.DashedAt >= 0))
                         {
-                            Simulate(at, running, dir, jump, dash, triggers, reachedTriggers, Land, Sink, Grab);
-                        }
-                    }
-
-                    // Walking off the end instead of jumping (the sim starts with vy = 0 and gravity takes over past the edge).
-                    if (dir != 0 && !l.Swim)
-                    {
-                        foreach (int dash in new[] { -1, 4, 12, 20 })
-                        {
-                            Simulate(at, running, dir, jumpTicks: 0, dash, triggers, reachedTriggers, Land, Sink, Grab);
+                            leaps(new Leap(ledge, at, move with { DashTick = trace.DashedAt }, trace.Path, trace.Lands,
+                                trace is { Lands: >= 0, Touched: false, Wet: false, Burned: false, Assisted: false }));
                         }
                     }
                 }
@@ -358,6 +390,34 @@ public sealed class ReachPlanner
         }
 
         return (reachedTriggers, reachedLedges);
+    }
+
+    /// <summary>
+    /// The moves tried from every take-off point of a ledge, each way (−1, 0, +1): a jump held to the apex or cut after 6 or 12 ticks,
+    /// with no air dash or one 6, 14, 22 or 30 ticks in; or walking off the end (a jump of 0 ticks: the sim starts with vy = 0 and
+    /// gravity takes over past the edge; tried only outward from a ledge's ends where no floor goes on level, and not from a float line),
+    /// with no air dash or one 4, 12 or 20 ticks in.
+    /// </summary>
+    public static readonly IReadOnlyList<GroundMove> GroundMoves =
+    (
+        from dir in new[] { -1, 0, 1 }
+        from move in
+            (from jump in new[] { -1, 6, 12 } from dash in new[] { -1, 6, 14, 22, 30 } select new GroundMove(dir, jump, dash))
+            .Concat(dir == 0 ? Enumerable.Empty<GroundMove>() : new[] { -1, 4, 12, 20 }.Select(dash => new GroundMove(dir, 0, dash)))
+        select move
+    ).ToList();
+
+    /// <summary>What one flight met, for a <see cref="Leap"/>: the feet tick by tick and the ledge it ended on (−1: none).</summary>
+    private sealed class Trace
+    {
+        public List<Vector2> Path { get; } = new();
+        public int Lands { get; set; } = -1;
+        public int DashedAt { get; set; } = -1;
+        /// <summary>A wall or a ceiling met (not the landing).</summary>
+        public bool Touched { get; set; }
+        public bool Wet { get; set; }
+        public bool Burned { get; set; }
+        public bool Assisted { get; set; }
     }
 
     /// <summary>
@@ -596,13 +656,19 @@ public sealed class ReachPlanner
             return true;
         }
 
-        Vector2 dir = Vector2.Normalize(to - from);
+        Vector2 dir = Vector2.Normalize(to - from), end = from + dir * length;
+        List<int> near = _near ??= new List<int>();
+        _grid.Near(new Box(MathF.Min(from.X, end.X), MathF.Min(from.Y, end.Y), MathF.Max(from.X, end.X), MathF.Max(from.Y, end.Y)), near);
         for (float t = 0f; t <= length; t += 0.1f)
         {
             Vector2 p = from + dir * t;
-            if (_solids.Any(s => p.X > s.MinX && p.X < s.MaxX && p.Y > s.MinY && p.Y < s.MaxY))
+            foreach (int i in near)
             {
-                return false;
+                Box s = _solids[i];
+                if (p.X > s.MinX && p.X < s.MaxX && p.Y > s.MinY && p.Y < s.MaxY)
+                {
+                    return false;
+                }
             }
         }
 
@@ -643,9 +709,10 @@ public sealed class ReachPlanner
     /// </summary>
     private void Simulate(Vector2 start, Vector2 velocity, int dir, int jumpTicks, int dashTick, IReadOnlyList<Box> triggers,
         HashSet<int> reachedTriggers, Action<int> land, Action<Vector2> sink, Action<Vector2, Vector2> grab, bool airborne = false,
-        int gripFrom = 0)
+        int gripFrom = 0, Trace? trace = null)
     {
         Vector2 p = start, v = velocity;
+        trace?.Path.Add(start);
         bool jumping = jumpTicks != 0, cut = false;
         WaterHit? swimming = null;
         airborne |= jumping;
@@ -669,6 +736,11 @@ public sealed class ReachPlanner
                 }
 
                 swimming = water;
+                if (trace is not null)
+                {
+                    trace.Wet = true;
+                }
+
                 limit = tick + MaxSwimTicks; // floating up from deep water takes a while
                 dashLeft = 0;
                 v.Y = WaterMotion.Splash(v.Y, water.Limits);
@@ -695,6 +767,10 @@ public sealed class ReachPlanner
             {
                 dashed = true;
                 dashLeft = (int)MathF.Round(_m.DashDuration / Dt);
+                if (trace is not null)
+                {
+                    trace.DashedAt = tick;
+                }
             }
 
             if (dashLeft > 0)
@@ -715,7 +791,11 @@ public sealed class ReachPlanner
 
                 v.X = MoveRules.Air(v.X, dir, _m.RunSpeed, _m.AirCarrySpeed, _m.AirAcceleration, _m.AirDeceleration, _m.AirDrag, Dt);
                 float g = _m.Gravity;
-                if (held && jumping && MathF.Abs(v.Y) < _m.ApexHangThreshold)
+                if (jumping && tick == 0)
+                {
+                    g = 0f; // the take-off tick moves at the whole take-off speed, as the pilgrim's (JumpState.Enter, after gravity)
+                }
+                else if (held && jumping && MathF.Abs(v.Y) < _m.ApexHangThreshold)
                 {
                     g *= _m.ApexGravityMultiplier;
                 }
@@ -737,11 +817,19 @@ public sealed class ReachPlanner
                 p = lifted;
                 v = new Vector2(dir * TheDeep.LedgeAssist.Speed(pushX, _m.RunSpeed), 0f);
                 hitX = false;
+                if (trace is not null)
+                {
+                    trace.Assisted = true;
+                }
             }
 
             if (hitX)
             {
                 v.X = 0f;
+                if (trace is not null)
+                {
+                    trace.Touched = true;
+                }
                 if (grips && dir != 0 && MathF.Sign(pushX) == dir && _metal.Contains(solidX))
                 {
                     // Pushing into a metal wall: onto it, the body turning about its center (GripMath.OntoWall). The trajectory goes
@@ -751,7 +839,6 @@ public sealed class ReachPlanner
                 }
             }
 
-            float before = p.Y;
             float pushY = v.Y;
             p.Y = MoveAxis(p, v.Y * Dt, horizontal: false, out bool hitY, out int solidY);
             if (hitY && grips && pushY > 0f && _metal.Contains(solidY))
@@ -760,14 +847,19 @@ public sealed class ReachPlanner
                 grab(new Vector2(p.X, _solids[solidY].MinY), new Vector2(0f, -1f));
             }
 
-            if (MathF.Abs(p.Y - before) > 1e-5f)
+            if (!hitY || v.Y >= 0f)
             {
-                airborne = true;
+                airborne = true; // off the floor (standing, the feet ride a skin over it: their height alone can't tell)
             }
 
+            trace?.Path.Add(p);
             Touch(p, triggers, reachedTriggers);
             if (InHazard(p))
             {
+                if (trace is not null)
+                {
+                    trace.Burned = true;
+                }
                 return;
             }
 
@@ -777,6 +869,10 @@ public sealed class ReachPlanner
                 land(LedgeAt(p));
                 if (airborne || dir == 0 || hitX)
                 {
+                    if (trace is not null)
+                    {
+                        trace.Lands = LedgeAt(p);
+                    }
                     return;
                 }
 
@@ -785,6 +881,10 @@ public sealed class ReachPlanner
             else if (hitY)
             {
                 v.Y = 0f;
+                if (trace is not null)
+                {
+                    trace.Touched = true;
+                }
             }
         }
     }
@@ -856,7 +956,15 @@ public sealed class ReachPlanner
         }
 
         Box body = BodyAt(p);
-        return _hazards.Any(h => h.Overlaps(body));
+        foreach (Box h in _hazards)
+        {
+            if (h.Overlaps(body))
+            {
+                return true;
+            }
+        }
+
+        return false;
     }
 
     /// <summary>The water the feet at <paramref name="p"/> are in, or null; of overlapping bodies (one water), the one whose surface is highest.</summary>
@@ -965,6 +1073,9 @@ public sealed class ReachPlanner
 
         return (horizontal ? p.X : p.Y) + moved;
     }
+
+    /// <summary>Whether another floor than <paramref name="l"/>, at its height, holds feet at <paramref name="x"/>.</summary>
+    private bool GoesOn(Ledge l, float x) => _ledges.Any(o => o != l && !o.Swim && MathF.Abs(o.Y - l.Y) < 0.01f && x >= o.MinX && x <= o.MaxX);
 
     /// <summary>The ledge (or with <paramref name="swim"/>, the float line) whose range holds feet at <paramref name="p"/>, or −1.</summary>
     private int LedgeAt(Vector2 p, bool swim = false)
