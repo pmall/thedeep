@@ -165,16 +165,15 @@ transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 49.5, 15.75, 0)
 Size = Vector3(7, 0.5, 4)
 Material = ExtResource("1_basalt")
 
-; the east wall under the Foundry doorway's sill (Foundry's Doorway frames X 53 to 58, Y 14 to 16 and 20 to 22)
+; the east wall past the Foundry doorway's frame (X 53 to 58), under its sill and over its lintel: the brick walls its own span
 [node name="WallEastLow" parent="Geometry" instance=ExtResource("2_block")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 57.5, 7, 0)
-Size = Vector3(3, 14, 4)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 58.5, 7, 0)
+Size = Vector3(1, 14, 4)
 Material = ExtResource("1_basalt")
 
-; over the Foundry doorway, from its lintel's top to the roof and flush with its face
 [node name="WallEastHigh" parent="Geometry" instance=ExtResource("2_block")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 56, 22.5, 0)
-Size = Vector3(6, 1, 4)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 58.5, 22.5, 0)
+Size = Vector3(1, 1, 4)
 Material = ExtResource("1_basalt")
 
 [node name="Exits" type="Node3D" parent="."]
@@ -326,7 +325,7 @@ PlayerPosition = Vector3(14, 19, 0)
 
 ; the high doorway on to the Foundry: its sill, lintel and the wall around it (the seam's frame)
 [node name="FoundryDoor" type="Marker3D" parent="PhotoSpots"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 53, 19.5, 12)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 48.5, 18, 16)
 script = ExtResource("17_spot")
 PlayerPosition = Vector3(50, 16, 0)
 

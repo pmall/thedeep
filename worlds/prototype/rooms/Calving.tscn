@@ -177,10 +177,10 @@ Material = ExtResource("2_ice")
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -1.5, 17.5, 0)
 Size = Vector3(3, 23, 4)
 
-; over the east doorway
+; the east wall past the doorway's frame (the doorway brick walls its own span up to the ceiling)
 [node name="WallEast" parent="Geometry" instance=ExtResource("1_block")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 45.5, 25.5, 0)
-Size = Vector3(3, 7, 4)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 46.25, 25.5, 0)
+Size = Vector3(1.5, 7, 4)
 
 [node name="Ceiling" parent="Geometry" instance=ExtResource("1_block")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 22, 27.5, 0)
@@ -393,7 +393,7 @@ cast_shadow = 0
 
 ; the east doorway into the Coldstacks, on the cliff's top: its sill, lintel and the wall around it (the seam's frame)
 [node name="EastDoor" type="Marker3D" parent="PhotoSpots"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 41, 19.5, 12)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 36.5, 20, 16)
 script = ExtResource("19_spot")
 PlayerPosition = Vector3(40, 16, 0)
 

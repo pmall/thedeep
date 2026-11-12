@@ -13,6 +13,7 @@ namespace TheDeep;
 /// past the exit's area, within both rooms' camera bounds): what lies beyond is each room's own.
 /// A doorway's frame is a sill under the opening and a lintel over it, both running along the way. A hatch's is the slab either side of
 /// the hole, as thick as the exit's area: past the slab lie the two rooms' own spaces, each bounding its camera at the slab's far face.
+/// Past a doorway's frame stands the wall it is cut in (<see cref="Wall"/>), each room's own.
 /// </summary>
 /// <param name="Opening">How tall a doorway's opening is, or how wide a hatch's hole, meters.</param>
 /// <param name="Approach">How deep the exit's area runs along the way, meters: a doorway's stretch of floor, a hatch's slab.</param>
@@ -45,17 +46,15 @@ public sealed record SeamFrame(float Opening, float Approach, float HeadRise = 0
     }
 
     /// <summary>
-    /// The frame's trim around the exit on <paramref name="side"/>, centered on its marker (origin), on the play plane: what makes the
-    /// frame read as a portal built on purpose in any biome, the same at both ends of the way. Visual only (docs/art-direction.md#visuals-never-gameplay):
-    /// molding stands proud of the frame's front face, never in the play plane, and each piece runs into the next or into the frame,
-    /// never sharing a face's plane with it, so no two faces fight. A doorway's head is a cornice over a soffit band, a keystone
-    /// straddling the seam, and a post at each end of the lintel and the sill that hides the joint against whatever wall the frame
-    /// meets; its sill takes a threshold band under the walked line. A hatch's slab takes a collar
-    /// post at each edge of the hole, a band under its room-side face and a post at each outer end.
+    /// The frame's trim around the exit on <paramref name="side"/>, centered on its marker (origin), on the play plane: one quiet line,
+    /// the same at both ends of the way; the doorway reads as a hole in a wall by its <see cref="Wall"/>, not by ornament. Visual only
+    /// (docs/art-direction.md#visuals-never-gameplay): each piece stands proud of the frame's front face, never in the play plane, and
+    /// runs into the frame, never sharing a face's plane with it. A doorway's sill takes a threshold band under the walked line; a
+    /// hatch's slab, a plain curb at each edge of the hole.
     /// <paramref name="lined"/>: the frame is metal set in rock (a grip climb runs over it), so the faces the climb uses (a hatch's
-    /// hole, a doorway's room-side ends) are lined with metal through the whole depth and their posts are metal.
-    /// <paramref name="bracket"/>: a doorway's sill hangs free into the room (<see cref="SillHangs"/>), so a stepped corbel carries its
-    /// room-side end.
+    /// hole, a doorway's room-side ends) are lined with metal through the whole depth.
+    /// <paramref name="bracket"/>: a doorway's sill hangs free into the room (no wall under it, <see cref="SillHangs"/>), so a single
+    /// bracket carries its room-side end.
     /// </summary>
     public IReadOnlyList<TrimPiece> Trim(ExitSide side, bool lined, bool bracket = false)
     {
@@ -63,14 +62,12 @@ public sealed record SeamFrame(float Opening, float Approach, float HeadRise = 0
         var pieces = new List<TrimPiece>();
         if (side is ExitSide.Down or ExitSide.Up)
         {
-            float w = Opening * 0.5f, e = w + t, half = Approach * 0.5f;
+            float w = Opening * 0.5f, half = Approach * 0.5f;
             float room = side == ExitSide.Down ? half : -half, dir = MathF.Sign(room);
             float near = room - dir * 0.06f, far = -room - dir * 0.08f;
             foreach (float s in new[] { -1f, 1f })
             {
-                pieces.Add(new TrimPiece(Span(s, w - 0.08f, w + 0.4f, near, far), 0.22f, lined));
-                pieces.Add(new TrimPiece(Span(s, w + 0.2f, e + 0.04f, room - dir * 0.3f, near), 0.14f, false));
-                pieces.Add(new TrimPiece(Span(s, e - 0.4f, e + 0.08f, near, far), 0.18f, false));
+                pieces.Add(new TrimPiece(Span(s, w - 0.06f, w + 0.3f, near, far), 0.1f, lined));
                 if (lined)
                 {
                     pieces.Add(new TrimPiece(Span(s, w - 0.04f, w + 0.08f, -half - 0.02f, half + 0.02f), 0f, true, Through: true));
@@ -80,31 +77,122 @@ public sealed record SeamFrame(float Opening, float Approach, float HeadRise = 0
             return pieces;
         }
 
-        float h = Approach * 0.5f + t, top = Opening + t, inward = side == ExitSide.West ? 1f : -1f;
-        pieces.Add(new TrimPiece(new Box(-h - 0.15f, top - 0.3f, h + 0.15f, top + 0.06f), 0.22f, false));
-        pieces.Add(new TrimPiece(new Box(-h - 0.06f, Opening - 0.1f, h + 0.06f, Opening + 0.22f), 0.12f, false));
-        pieces.Add(new TrimPiece(new Box(-0.3f, Opening - 0.22f, 0.3f, top - 0.1f), 0.3f, false));
-        pieces.Add(new TrimPiece(new Box(-h - 0.15f, -0.3f, h + 0.15f, -0.06f), 0.2f, false));
+        float h = Approach * 0.5f + t, inward = side == ExitSide.West ? 1f : -1f;
+        pieces.Add(new TrimPiece(new Box(-h + 0.02f, -0.28f, h - 0.02f, -0.06f), 0.1f, false));
         foreach (float s in new[] { -1f, 1f })
         {
-            bool liner = lined && s == inward;
-            pieces.Add(new TrimPiece(Span(s, h - 0.4f, h + 0.08f, Opening - 0.16f, top - 0.2f), 0.16f, liner));
-            pieces.Add(new TrimPiece(Span(s, h - 0.4f, h + 0.08f, -t - 0.08f, -0.2f), 0.14f, liner));
             if (bracket && s == inward)
             {
-                pieces.Add(new TrimPiece(Span(s, h - 1.1f, h + 0.06f, -t - 0.3f, -t), 0.12f, false, Sink: 0.4f));
-                pieces.Add(new TrimPiece(Span(s, h - 0.7f, h + 0.06f, -t - 0.65f, -t - 0.2f), 0.1f, false, Sink: 0.35f));
-                pieces.Add(new TrimPiece(Span(s, h - 0.35f, h + 0.06f, -t - 1f, -t - 0.55f), 0.08f, false, Sink: 0.3f));
+                pieces.Add(new TrimPiece(Span(s, h - 0.9f, h - 0.02f, -t - 0.7f, -t + 0.1f), 0.08f, false, Sink: 0.5f));
             }
 
-            if (liner)
+            if (lined && s == inward)
             {
                 pieces.Add(new TrimPiece(Span(s, h - 0.08f, h + 0.04f, -t - 0.02f, 0.02f), 0f, true, Through: true));
-                pieces.Add(new TrimPiece(Span(s, h - 0.08f, h + 0.04f, Opening - 0.02f, top + 0.02f), 0f, true, Through: true));
+                pieces.Add(new TrimPiece(Span(s, h - 0.08f, h + 0.04f, Opening - 0.02f, Opening + t + 0.02f), 0f, true, Through: true));
             }
         }
 
         return pieces;
+    }
+
+    /// <summary>
+    /// The wall a doorway on <paramref name="side"/> at <paramref name="marker"/> stands in, past its frame, on the play plane: over the
+    /// lintel up to what is solid above it, under the sill down to what is solid under it, column by column across the frame's span,
+    /// each column stopping at the first of <paramref name="solids"/> (the room's own, its other exits' frames) or, with none, at the
+    /// camera's <paramref name="bounds"/>. So the lintel is the bottom of a wall and the sill the top of one: the doorway reads as a hole
+    /// in a wall by construction (docs/art-direction.md#look). Gameplay geometry, solid like the frame, outside what the seam check
+    /// compares. A column that would end at one of <paramref name="holes"/> (the room's hatches) is a shaft to it and stays open.
+    /// <paramref name="head"/> or <paramref name="foot"/> false leaves that side open, for a route that runs over the lintel or under
+    /// the sill. A hatch's frame stands in a floor or a ceiling: no wall.
+    /// </summary>
+    public IReadOnlyList<Box> Wall(
+        ExitSide side, Vector2 marker, IReadOnlyList<Box> solids, Box bounds, bool head = true, bool foot = true, IReadOnlyList<Box>? holes = null)
+    {
+        holes ??= Array.Empty<Box>();
+        solids = solids.Concat(holes).ToList();
+        if (side is ExitSide.Down or ExitSide.Up)
+        {
+            return Array.Empty<Box>();
+        }
+
+        IReadOnlyList<Box> frame = Solids(side, marker);
+        Box sill = frame[0], lintel = frame[1];
+        float[] cuts = solids.SelectMany(o => new[] { o.MinX, o.MaxX })
+            .Where(x => x > lintel.MinX + Joint && x < lintel.MaxX - Joint)
+            .Append(lintel.MinX).Append(lintel.MaxX).Distinct().Order().ToArray();
+        var wall = new List<Box>();
+        if (head)
+        {
+            wall.AddRange(Columns(cuts, lintel.MaxY, bounds.MaxY, solids));
+        }
+
+        if (foot)
+        {
+            wall.AddRange(Columns(cuts, sill.MinY, bounds.MinY, solids));
+        }
+
+        return wall.Where(w => !holes.Any(h => h.MinX < w.MaxX - Joint && w.MinX < h.MaxX - Joint
+            && (MathF.Abs(h.MinY - w.MaxY) < Joint || MathF.Abs(h.MaxY - w.MinY) < Joint))).ToList();
+    }
+
+    /// <summary>Two faces closer than this are one joint, meters (<see cref="Wall"/>).</summary>
+    private const float Joint = 0.05f;
+
+    /// <summary>
+    /// The columns between <paramref name="cuts"/> filled from <paramref name="from"/> toward <paramref name="limit"/> (up or down), each
+    /// stopped by the first of <paramref name="solids"/> over it; neighbours as tall merge into one.
+    /// </summary>
+    private static IEnumerable<Box> Columns(float[] cuts, float from, float limit, IReadOnlyList<Box> solids)
+    {
+        float dir = MathF.Sign(limit - from);
+        Box? run = null;
+        for (int i = 0; i + 1 < cuts.Length; i++)
+        {
+            float a = cuts[i], b = cuts[i + 1], end = limit;
+            foreach (Box o in solids.Where(o => o.MinX < b - Joint && o.MaxX > a + Joint))
+            {
+                if (dir > 0f && o.MaxY > from + Joint)
+                {
+                    end = MathF.Min(end, MathF.Max(o.MinY, from));
+                }
+                else if (dir < 0f && o.MinY < from - Joint)
+                {
+                    end = MathF.Max(end, MathF.Min(o.MaxY, from));
+                }
+            }
+
+            if ((end - from) * dir < Joint)
+            {
+                if (run is { } done)
+                {
+                    yield return done;
+                }
+
+                run = null;
+                continue;
+            }
+
+            Box column = new(a, MathF.Min(from, end), b, MathF.Max(from, end));
+            if (run is { } r && r.MinY == column.MinY && r.MaxY == column.MaxY)
+            {
+                run = r with { MaxX = b };
+            }
+            else
+            {
+                if (run is { } before)
+                {
+                    yield return before;
+                }
+
+                run = column;
+            }
+        }
+
+        if (run is { } last)
+        {
+            yield return last;
+        }
     }
 
     /// <summary>

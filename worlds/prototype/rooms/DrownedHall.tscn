@@ -279,11 +279,6 @@ transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 34.75, -1, 0)
 Size = Vector3(62.5, 2, 4)
 Material = ExtResource("9_wet")
 
-; the west wall over the gate, as thick as the gate's lintel under it, so the lintel never hangs bare into the hall
-[node name="WallLeft" parent="Geometry" instance=ExtResource("2_block")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.75, 19, 0)
-Size = Vector3(5.5, 26, 4)
-
 [node name="WallRight" parent="Geometry" instance=ExtResource("2_block")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 65, 11, 0)
 Size = Vector3(2, 26, 4)
@@ -651,7 +646,7 @@ cast_shadow = 0
 ; gameplay framing at the spawn point
 ; the west gate from the Narthex: its sill, lintel and the wall around it (the seam's frame)
 [node name="WestDoor" type="Marker3D" parent="PhotoSpots"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 2, 3.5, 12)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 6, 4, 16)
 script = ExtResource("7_spot")
 PlayerPosition = Vector3(4, 0, 0)
 PlayerFacing = -1

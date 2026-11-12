@@ -206,11 +206,6 @@ Size = Vector3(1.5, 20, 4)
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 20, 22, 0)
 Size = Vector3(40, 4, 4)
 
-; east wall above the doorway into the hall
-[node name="WallRight" parent="Geometry" instance=ExtResource("8_block")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 38, 13, 0)
-Size = Vector3(4, 14, 4)
-
 ; the shrine stands on a low dais
 [node name="Dais" parent="Geometry" instance=ExtResource("8_block")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 13, 0.25, 0)
@@ -381,7 +376,7 @@ lifetime = 1.95
 ; gameplay framing at the spawn point
 ; the east doorway into the Drowned Hall: its sill, lintel and the wall around it (the seam's frame)
 [node name="EastDoor" type="Marker3D" parent="PhotoSpots"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 35, 3.5, 12)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 30.5, 4, 16)
 script = ExtResource("19_spot")
 PlayerPosition = Vector3(33, 0, 0)
 

@@ -163,6 +163,19 @@ public class SeamFrameTests
     }
 
     [Fact]
+    public void ADoorwayStandsInAWallFilledColumnByColumnToWhatIsSolidPastIt()
+    {
+        // East door at x 37: the frame spans 34.5..39.5; a wall over the outer part from the lintel's top, a roof at 20, a floor at −6.
+        var solids = new[] { new Box(36f, 6f, 40f, 20f), new Box(0f, 20f, 40f, 24f), new Box(30f, -8f, 40f, -6f) };
+        var bounds = new Box(-2f, -10f, 39.5f, 22f);
+        IReadOnlyList<Box> wall = Door.Wall(ExitSide.East, new Vector2(37f, 0f), solids, bounds);
+        Assert.Equal(new[] { new Box(34.5f, 6f, 36f, 20f), new Box(34.5f, -6f, 39.5f, -2f) }, wall);
+        Assert.Equal(new[] { new Box(34.5f, 6f, 36f, 20f) }, Door.Wall(ExitSide.East, new Vector2(37f, 0f), solids, bounds, foot: false));
+        Assert.Equal(new[] { new Box(34.5f, 6f, 39.5f, 22f) }, Door.Wall(ExitSide.East, new Vector2(37f, 0f), Array.Empty<Box>(), bounds with { MinY = -2f }));
+        Assert.Empty(Hatch.Wall(ExitSide.Down, Vector2.Zero, solids, bounds));
+    }
+
+    [Fact]
     public void ASillHangsWhenNothingCarriesItsRoomSideEnd()
     {
         Assert.False(Door.SillHangs(ExitSide.West, Vector2.Zero, new[] { new Box(2.5f, -2f, 10f, 0f) }));

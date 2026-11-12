@@ -10,8 +10,9 @@ namespace TheDeep;
 /// <see cref="RoomExit"/> (as its child, where it stays), it sizes the exit and builds the frame around the opening as
 /// <see cref="Block"/>s. The room at the other end frames its exit with the same profile, so the seam agrees by construction
 /// (docs/gameplay.md#seam-rule): neither room places a block of its own there, and its own solids stop where the frame starts. The
-/// frame's blocks take the look of the room's wall they meet, and its trim (molding proud of the front face, visual only) makes the
-/// frame read as a portal built on purpose wherever it stands. A
+/// frame's blocks take the look of the room's wall they meet; a doorway's frame is walled over its lintel and under its sill out to the
+/// room's own solids (<see cref="SeamFrame.Wall"/>), so it reads as an opening cut in a wall, and one quiet line of trim (proud of the
+/// front face, visual only) marks it. A
 /// <see cref="Doorway"/> frames a west or east exit, a <see cref="Hatch"/> a down or up one.
 /// </summary>
 public abstract partial class SeamEnd : Node3D
@@ -68,18 +69,23 @@ public abstract partial class SeamEnd : Node3D
         }
 
         var marker = new System.Numerics.Vector2(exit.GlobalPosition.X, exit.GlobalPosition.Y);
-        List<Block> walls = Blocks(exit.Owner ?? exit)
-            .Where(b => !b.Cracked && !b.CollisionOnly && b.GetParent() is not SeamEnd && Mathf.Abs(b.GlobalPosition.Z) < b.Size.Z * 0.5f)
+        Node room = exit.Owner ?? exit;
+        List<Block> inPlane = Blocks(room)
+            .Where(b => !b.CollisionOnly && b.GetParent() is not SeamEnd && Mathf.Abs(b.GlobalPosition.Z) < b.Size.Z * 0.5f)
             .ToList();
+        List<Block> walls = inPlane.Where(b => !b.Cracked).ToList();
         List<Box> wallBoxes = walls.Select(PlayBox).ToList();
         (Material look, bool lined) = Look(frame.Solids(exit.Side, marker), walls, wallBoxes, blocks[0]);
+        (bool head, bool foot) = Walled;
+        BuildWall(frame, exit, marker, room, inPlane.Select(PlayBox), blocks, head, foot);
         foreach (Block block in blocks)
         {
             block.Material = look;
             AddChild(block);
         }
 
-        BuildTrim(frame.Trim(exit.Side, lined, frame.SillHangs(exit.Side, marker, wallBoxes)), look, blocks[0].MetalMaterial);
+        bool hangs = !foot && frame.SillHangs(exit.Side, marker, wallBoxes);
+        BuildTrim(frame.Trim(exit.Side, lined, hangs), look, blocks[0].MetalMaterial);
 
         if (Flooded)
         {
@@ -89,6 +95,67 @@ public abstract partial class SeamEnd : Node3D
                 ?? throw new InvalidOperationException($"{GetType().Name} on {exit.Name} is flooded, but no swum water of its room reaches the opening");
             water.Flood(passage);
         }
+    }
+
+    /// <summary>Whether a doorway's frame is walled over its lintel and under its sill (<see cref="SeamFrame.Wall"/>); a hatch's never is.</summary>
+    protected virtual (bool Head, bool Foot) Walled => (false, false);
+
+    /// <summary>
+    /// The wall the frame stands in (<see cref="SeamFrame.Wall"/>), as more of the frame's blocks: stopped by the room's own blocks in
+    /// the play plane and its other doorways' frames, else by the camera bounds, and left open under or over its hatches. A wall column as wide as the lintel or the sill joins it
+    /// into one block, so no joint line crosses the wall at the frame's edge.
+    /// </summary>
+    private void BuildWall(SeamFrame frame, RoomExit exit, System.Numerics.Vector2 marker, Node room, IEnumerable<Box> solids, List<Block> blocks, bool head, bool foot)
+    {
+        if (!head && !foot)
+        {
+            return;
+        }
+
+        List<RoomExit> others = Exits(room).Where(e => e != exit).ToList();
+        var stops = solids.Concat(others.SelectMany(e => OtherFrame(e, hole: false))).ToList();
+        var holes = others.Where(e => e.Threshold.IsHatch).SelectMany(e => OtherFrame(e, hole: true)).ToList();
+        Vector3 origin = room is Node3D r ? r.GlobalPosition : Vector3.Zero;
+        Box bounds = room is Room bounded
+            ? new Box(origin.X + bounded.BoundsMin.X, origin.Y + bounded.BoundsMin.Y, origin.X + bounded.BoundsMax.X, origin.Y + bounded.BoundsMax.Y)
+            : new Box(marker.X, marker.Y, marker.X, marker.Y);
+        int extra = 0;
+        foreach (Box w in frame.Wall(exit.Side, marker, stops, bounds, head, foot, holes))
+        {
+            Box local = new(w.MinX - marker.X, w.MinY - marker.Y, w.MaxX - marker.X, w.MaxY - marker.Y);
+            Block below = w.MinY >= marker.Y ? blocks[1] : blocks[0];
+            Box piece = PlayBox(below.Size, below.Position);
+            if (MathF.Abs(local.MinX - piece.MinX) < 0.01f && MathF.Abs(local.MaxX - piece.MaxX) < 0.01f)
+            {
+                Box joined = new(piece.MinX, MathF.Min(piece.MinY, local.MinY), piece.MaxX, MathF.Max(piece.MaxY, local.MaxY));
+                below.Size = new Vector3(joined.MaxX - joined.MinX, joined.MaxY - joined.MinY, Profile.Depth);
+                below.Position = new Vector3((joined.MinX + joined.MaxX) * 0.5f, (joined.MinY + joined.MaxY) * 0.5f, 0f);
+                continue;
+            }
+
+            var block = BlockScene.Instantiate<Block>();
+            block.Name = $"{(w.MinY >= marker.Y ? "Head" : "Foot")}{++extra}";
+            block.Size = new Vector3(local.MaxX - local.MinX, local.MaxY - local.MinY, Profile.Depth);
+            block.Position = new Vector3((local.MinX + local.MaxX) * 0.5f, (local.MinY + local.MaxY) * 0.5f, 0f);
+            block.Surface = Surface;
+            blocks.Add(block);
+        }
+    }
+
+    /// <summary>
+    /// The frame and opening of another seam end of the room, whose blocks may not be built yet: a wall stops there. With
+    /// <paramref name="hole"/>, a hatch's hole alone, through its slab.
+    /// </summary>
+    private static Box[] OtherFrame(RoomExit other, bool hole)
+    {
+        SeamEnd? end = other.GetChildren().OfType<SeamEnd>().FirstOrDefault();
+        if (end?.Profile is null)
+        {
+            return Array.Empty<Box>();
+        }
+
+        Box area = end.Profile.Frame.Exit(other.Side, new System.Numerics.Vector2(other.GlobalPosition.X, other.GlobalPosition.Y)).Area;
+        return new[] { hole ? area with { MinY = area.MinY - SeamCheck.Around, MaxY = area.MaxY + SeamCheck.Around } : area.Grown(SeamCheck.Around) };
     }
 
     /// <summary>
@@ -150,11 +217,15 @@ public abstract partial class SeamEnd : Node3D
     }
 
     /// <summary>A block's box on the play plane, in world meters.</summary>
-    private static Box PlayBox(Block b)
-    {
-        Vector3 c = b.GlobalPosition, s = b.Size;
-        return new Box(c.X - s.X * 0.5f, c.Y - s.Y * 0.5f, c.X + s.X * 0.5f, c.Y + s.Y * 0.5f);
-    }
+    private static Box PlayBox(Block b) => PlayBox(b.Size, b.GlobalPosition);
+
+    /// <summary>The box of a block of <paramref name="size"/> centered at <paramref name="c"/>, on the play plane.</summary>
+    private static Box PlayBox(Vector3 size, Vector3 c) =>
+        new(c.X - size.X * 0.5f, c.Y - size.Y * 0.5f, c.X + size.X * 0.5f, c.Y + size.Y * 0.5f);
+
+    /// <summary>The exits under <paramref name="node"/>, at any depth.</summary>
+    private static IEnumerable<RoomExit> Exits(Node node) =>
+        node.GetChildren().SelectMany(child => child is RoomExit exit ? new[] { exit } : Exits(child));
 
     /// <summary>The blocks under <paramref name="node"/>, at any depth.</summary>
     private static IEnumerable<Block> Blocks(Node node) =>

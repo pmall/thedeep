@@ -99,10 +99,10 @@ transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 47, 9.75, 0)
 Size = Vector3(30, 4.5, 4)
 Material = ExtResource("1_basalt")
 
-; over the door from the Slag
+; past the Slag door's frame, up to the roof (the doorway brick walls its own span)
 [node name="WallWestHigh" parent="Geometry" instance=ExtResource("2_block")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 6.75, 0)
-Size = Vector3(6, 1.5, 4)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -2.5, 6.75, 0)
+Size = Vector3(1, 1.5, 4)
 Material = ExtResource("1_basalt")
 
 ; the ledge inside the Slag's door
@@ -112,8 +112,8 @@ Size = Vector3(9, 1, 4)
 Material = ExtResource("1_basalt")
 
 [node name="WallWest" parent="Geometry" instance=ExtResource("2_block")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -1, -10, 0)
-Size = Vector3(4, 16, 4)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -2.5, -10, 0)
+Size = Vector3(1, 16, 4)
 Material = ExtResource("1_basalt")
 
 ; a stair of ledges down to the ash floor, 2 to 2.5 m apart
@@ -358,7 +358,7 @@ Density = 0.25
 
 ; the hatch down to the Bellows: the slab either side of its hole (the seam's frame)
 [node name="BellowsHatch" type="Marker3D" parent="PhotoSpots"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 40, -17, 12)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 40, -16, 16)
 script = ExtResource("17_spot")
 PlayerPosition = Vector3(34, -18, 0)
 
@@ -370,7 +370,7 @@ PlayerPosition = Vector3(50, -18, 0)
 
 ; the west doorway from the Slag: its sill, lintel and the wall around it (the seam's frame)
 [node name="WestDoor" type="Marker3D" parent="PhotoSpots"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 2, 3.5, 12)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 6.5, 4, 16)
 script = ExtResource("17_spot")
 PlayerPosition = Vector3(4, 0, 0)
 PlayerFacing = -1
