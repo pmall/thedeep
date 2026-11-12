@@ -4,7 +4,7 @@ using System.Numerics;
 namespace TheDeep;
 
 /// <summary>
-/// Where the side camera looks, pure (the follow of `docs/roadmap.md#feel-fight`): a point on the play plane that follows a target
+/// Where the side camera looks, pure: a point on the play plane that follows a target
 /// (the body, framed a little under the screen's middle) on critically damped springs, so it eases out of rest and into place and
 /// never jolts when the target jumps (a landing, a turn). Ahead of the way the body runs it looks a little farther. Vertically it
 /// reads the body's footing (<see cref="CameraFooting"/>): standing, it settles on the floor's height; in a jump it keeps the

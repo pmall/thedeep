@@ -5,7 +5,7 @@ The owner's plan and the open items, in order, opened by where the work stands. 
 ## Now <a id="status"></a>
 
 - **Stage:** A, the prototype (`docs/roadmap.md#stage-prototype`).
-- **Current item:** feel and fight (`docs/roadmap.md#feel-fight`), not started: it is tuned from the owner's play (`docs/roadmap.md#to-play`).
+- **Current item:** every brick ready (`docs/roadmap.md#bricks-ready`), not started.
 - **Waiting on the owner:** nothing blocks. To play when they wish: `docs/roadmap.md#to-play`. The Blender MCP installed, needed only when the pilgrim starts (`docs/roadmap.md#pilgrim`), last of the stage.
 
 ## The plan <a id="direction"></a>
@@ -27,9 +27,8 @@ A room gets the attention its bricks need, no more. Bosses, machines and law bre
 
 The open items, in order (owner: the world, its bricks and its look are finished before the character):
 
-1. **Feel and fight** <a id="feel-fight"></a>: moves chain and carry momentum (Mag-grip corners, harpoon, dive and swim flowing into each other), the camera eased, the fight's hits land and health reads (`docs/gameplay.md#fight`), tuned from the owner's play.
-2. **Every brick ready** <a id="bricks-ready"></a>: each brick of [bricks.md](bricks.md) still short of ready is brought there (look, feel, reuse), the pilgrim's own aside (`docs/roadmap.md#pilgrim`). No played check walks a room's own ground routes with the real inputs any more (the reach planner models them, the travel check crosses the exits): a generic one, driving the planner's routes, is the brick missing here.
-3. **The pilgrim, from zero** <a id="pilgrim"></a> (owner: last, once the world, its bricks and its look are finished). The current character, its procedural animation and its halo are thrown away. The bar is *Ori*'s animation (a 3D-rendered character) with *NieR: Automata*'s dynamism; the look is `docs/art-direction.md#character`. First the environment for top-quality animation, then the character: modeled and rigged in Blender (the owner installs the Blender MCP), animated from real motion capture (free libraries and Mixamo first), keyed by hand, blended in the game with its feet held to the ground. Every move and ability: run, jump, land, dash, air dash, ledge assist, grip and its corners, harpoon throw and zip, bore and dive, swim, sink and rise, the strikes, hurt, death, rest, taking a relic. Its secondary motion is stage D's. Done when every state reads at a glance in motion, in the reels and in the owner's play.
+1. **Every brick ready** <a id="bricks-ready"></a>: each brick of [bricks.md](bricks.md) still short of ready is brought there (look, feel, reuse), the pilgrim's own aside (`docs/roadmap.md#pilgrim`). No played check walks a room's own ground routes with the real inputs any more (the reach planner models them, the travel check crosses the exits): a generic one, driving the planner's routes, is the brick missing here.
+2. **The pilgrim, from zero** <a id="pilgrim"></a> (owner: last, once the world, its bricks and its look are finished). The current character, its procedural animation and its halo are thrown away. The bar is *Ori*'s animation (a 3D-rendered character) with *NieR: Automata*'s dynamism; the look is `docs/art-direction.md#character`. First the environment for top-quality animation, then the character: modeled and rigged in Blender (the owner installs the Blender MCP), animated from real motion capture (free libraries and Mixamo first), keyed by hand, blended in the game with its feet held to the ground. Every move and ability: run, jump, land, dash, air dash, ledge assist, grip and its corners, harpoon throw and zip, bore and dive, swim, sink and rise, the strikes, hurt, death, rest, taking a relic. Its secondary motion is stage D's. Done when every state reads at a glance in motion, in the reels and in the owner's play.
 
 **To play** <a id="to-play"></a>: what the owner's eye alone can judge, each line deleted once they have said. An item closes on what the agent can verify; the owner's word reopens it.
 
@@ -37,6 +36,9 @@ The open items, in order (owner: the world, its bricks and its look are finished
 - The gates that speak (`docs/gameplay.md#gate-says`): `--room Ashfall --abilities none` (the Pyre's door names its litany and the Belfry as soon as it is on screen, the heat's line read after it), `--room Narthex` (the Sacristy door), `--room Kiln` (its gate). Say whether the lines come too early, too late or too fast.
 - The law breaks (`docs/gameplay.md#law-act`): `--room Brink --abilities all`, walk into the law, then hold the prompt. Say whether the hold's length and the refusal read right.
 - The volcanic layer, its slag, heat and light: `--room Slag` (walk off into the slag, plated and not), `--room Ashfall --abilities HeatPlating` and without (the heat before the Pyre's door).
+- The moves flowing into each other: `godot --path . -- --room MechanicsLab --abilities all`. Jump up into a metal wall (the grip climbs on with the jump's speed), run the grip round corners, zip to the rings and let the release carry you, cancel a zip into a jump. Say where a move stops dead or pops.
+- The camera: `godot --path . -- --room DrownedHall --abilities all` (hop along the hall, climb and drop the shaft), `--room Brink` (the long fall). Say whether it lags, floats or rocks on a hop, and whether a fall shows where it lands.
+- The fight and health: `godot --path . -- --room MachineArena`. Strike the machines (each blow holds, kicks the view, sparks; the finisher most), let them hit you (the hold before the throw, the edges' flash), and go down to one hit (the last diamond beats). Say whether blows land, and whether the hold is too long or too short.
 
 **Done when** <a id="sequel-test"></a> every brick in [bricks.md](bricks.md) is ready, the sequel world still loads, plays and passes the checks with no code change (whatever it would force into the code is a missing brick, built as one), and the owner plays the prototype from `godot --path . -- --new` to the end with no debug keys, always knowing what a gate needs, and signs it off.
 

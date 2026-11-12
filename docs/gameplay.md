@@ -52,7 +52,7 @@ Room transitions as in the classics (Hollow Knight, Super Metroid), and never a 
 
 ## Fight <a id="fight"></a>
 
-A few moves, done well (`docs/roadmap.md#feel-fight`). No strike stops the pilgrim: momentum carries through. A press once a strike hits (its hit stop, its recovery) is kept for the next.
+A few moves, done well. No strike stops the pilgrim: momentum carries through. A press once a strike hits (its hit stop, its recovery) is kept for the next.
 
 - **The chain:** presses in rhythm give a swing, a second swing, then a **finisher** (wider, one more damage, it throws the machine far); a pause starts the chain over.
 - **Down strike:** in the air, holding down: a strike under the feet. What it hits **bounces** the pilgrim up, the air dash refilled, so it can strike again.

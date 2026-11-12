@@ -48,11 +48,11 @@ All working; brought to ready under `docs/roadmap.md#bricks-ready`.
 | Brick | Status | Item |
 | -- | -- | -- |
 | Body, look and animation | missing (the current ones are replaced from zero) | `docs/roadmap.md#pilgrim` |
-| Base moveset (`docs/gameplay.md#moveset`) | ready (rules), feel to tune | `docs/roadmap.md#feel-fight` |
-| Abilities (`docs/gameplay.md#abilities`) | ready (rules), feel to tune | `docs/roadmap.md#feel-fight` |
-| Fight moves (`PlayerAttack` over the core's `Combo`) | working (feel) | `docs/roadmap.md#feel-fight` |
+| Base moveset (`docs/gameplay.md#moveset`) | ready | — |
+| Abilities (`docs/gameplay.md#abilities`) | ready | — |
+| Fight moves (`PlayerAttack` over the core's `Combo` and `Swing`; each strike's numbers in `player_tuning.tres`) | ready (their look is the pilgrim's) | — |
 | Effects (`PlayerEffects`) | working | `docs/roadmap.md#pilgrim` |
-| Health and grace | working | `docs/roadmap.md#feel-fight` |
+| Health and grace (`Vitality`, shown by `HealthHud`) | ready | — |
 
 ## Encounters <a id="bricks-encounters"></a>
 
@@ -94,7 +94,7 @@ All working; brought to ready under `docs/roadmap.md#bricks-ready`.
 | Map screen (`MapScreen`) | working | `docs/roadmap.md#bricks-ready` |
 | Gate hints (`GateHints`; a locked door's line is the `Keyring`'s) | ready | — |
 | End card (`EndCard`) | working placeholder | `docs/roadmap.md#stage-polish` |
-| Camera (`SideCamera`) | working | `docs/roadmap.md#feel-fight` |
+| Camera (`SideCamera` over the core's `CameraFollow`) | ready | — |
 
 ## Proof <a id="bricks-proof"></a>
 
