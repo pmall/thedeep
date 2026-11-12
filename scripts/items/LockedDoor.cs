@@ -8,7 +8,7 @@ namespace TheDeep;
 /// (<see cref="RoomExit.Door"/>), whose requirement names the item, and so does the way back through it, unless that one is one-way
 /// (the room check holds them to it): the solver sees the door in the requirement, the planner walks up to it. Coming near holding
 /// the item opens it for good (<see cref="Keyring"/>): the lock turns, flares and dies, and the gate rises with it; without it, the
-/// pilgrim says what it sees. Like the portcullis, it is no <see cref="Block"/>: the geometry check treats the way as open to the body.
+/// pilgrim says what it needs as soon as the door is on screen. Like the portcullis, it is no <see cref="Block"/>: the geometry check treats the way as open to the body.
 /// </summary>
 public partial class LockedDoor : Node3D
 {
@@ -26,6 +26,9 @@ public partial class LockedDoor : Node3D
     [Export] public float Range { get; set; } = 2.2f;
 
     private DoorLock? _lock;
+
+    /// <summary>Where the door is looked at (its lock's height): on screen, the pilgrim sees it.</summary>
+    public Vector3 Sight => GlobalPosition + new Vector3(0f, 1.2f, 0f);
 
     /// <summary>Unlocked: the way through is open.</summary>
     public bool Opened { get; private set; }

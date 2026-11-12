@@ -308,11 +308,11 @@ public partial class Main : Node3D
         }
         else if (Array.IndexOf(args, KeyCheckArgument) >= 0)
         {
-            AddChild(new KeyCheck { Player = Player, World = World, Keyring = Keyring, Session = Session });
+            AddChild(new KeyCheck { Player = Player, World = World, Keyring = Keyring, Session = Session, Hint = Hint });
         }
         else if (Array.IndexOf(args, CodeCheckArgument) >= 0)
         {
-            AddChild(new KeyCheck { Player = Player, World = World, Keyring = Keyring, Session = Session, Checked = KeyCheck.Pyre });
+            AddChild(new KeyCheck { Player = Player, World = World, Keyring = Keyring, Session = Session, Hint = Hint, Checked = KeyCheck.Pyre });
         }
         else if (Array.IndexOf(args, HeatCheckArgument) >= 0)
         {

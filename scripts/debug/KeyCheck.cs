@@ -8,7 +8,8 @@ namespace TheDeep;
 /// <summary>
 /// An item and its door in place, through the real input actions (run by tools/check.sh): the Sacristy key
 /// (`-- --room Narthex --key-check`, <see cref="Sacristy"/>) and the Pyre's litany, a code (`-- --room Ashfall --code-check`,
-/// <see cref="Pyre"/>). Without the item, walking into the door is stopped by it, and the pilgrim says why; in the item's room,
+/// <see cref="Pyre"/>). Without the item, the pilgrim says what the door needs as soon as it is on screen, before coming near, and a
+/// second line said meanwhile is read after it; walking into the door is stopped by it; in the item's room,
 /// walking up to it takes it (held, remembered, in the save); back holding it, coming near the door opens it, and walking on crosses
 /// beyond; walking back out (where the room beyond lets one turn at once) the door stands open for good, and reloading its room finds
 /// it open. Each step has a time limit. Prints `KEY OK` (or `CODE OK`) or `KEY CHECK` (`CODE CHECK`) errors.
@@ -34,6 +35,8 @@ public partial class KeyCheck : Node
     public required Keyring Keyring { get; init; }
     /// <summary>The running game's session.</summary>
     public required Session Session { get; init; }
+    /// <summary>The running game's hint line, where the door's line is read.</summary>
+    public required HintLine Hint { get; init; }
     /// <summary>The plan this run checks.</summary>
     public Plan Checked { get; init; } = Sacristy;
 
@@ -74,10 +77,16 @@ public partial class KeyCheck : Node
         Vector3 before = doorFloor - new Vector3(3f * Checked.Toward, 0f, 0f);
         bool Shy(Player p) => Checked.Toward < 0 ? p.GlobalPosition.X > doorX : p.GlobalPosition.X < doorX;
 
-        _steps.Add(new("without the item, walking into its door is stopped by it", 2f,
-            () => { Player.Respawn(before, Checked.Toward); Input.ActionPress(Toward); },
+        StringName second = GateKinds.HintLine(Ability.MagGrip);
+        _steps.Add(new("without the item, the pilgrim says what the door in sight needs, standing out of its range", 0.5f,
+            () => Player.Respawn(before, Checked.Toward),
+            () => _refused && Door is { } door && !door.Near(Player.GlobalPosition) && Hint.Current == door.Item.LockedLine));
+        _steps.Add(new("a second line said meanwhile waits, and is read after it", 6f,
+            () => Hint.Show(second, GateKinds.ColorOf(Ability.MagGrip)),
+            () => Hint.Current == second && Hint.Waiting == 0));
+        _steps.Add(new("walking into the door is stopped by it", 2f,
+            () => Input.ActionPress(Toward),
             () => _ticks > 90 && Door is { Opened: false } && Shy(Player) && Mathf.Abs(Player.Velocity.X) < 0.1f));
-        _steps.Add(new("and the pilgrim says why", 0.5f, () => { }, () => _refused));
         _steps.Add(new($"in the {Checked.ItemRoom}, walking up to the item takes it, for good and in the save", 4f,
             () =>
             {
@@ -159,7 +168,7 @@ public partial class KeyCheck : Node
 
         if (_problems.Count == 0)
         {
-            GD.Print($"{Checked.Tag} OK: {_steps.Count} steps (stopped by the door, its line, the {Key} taken and saved, the door opened, " +
+            GD.Print($"{Checked.Tag} OK: {_steps.Count} steps (the door's line on sight, a second line read in turn, stopped by the door, the {Key} taken and saved, the door opened, " +
                      $"through to the {Checked.Beyond}, open behind, remembered)");
         }
 

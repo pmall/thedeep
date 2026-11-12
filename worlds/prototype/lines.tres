@@ -361,8 +361,8 @@ Notes = "Under the name when taken: where it goes, without a map marker."
 script = ExtResource("2_line")
 Id = &"item.sacristy_key.locked"
 Speaker = "Pilgrim"
-Text = "Locked. The key is somewhere in the cathedral."
-Notes = "The pilgrim, flat, at the Sacristy door without its key."
+Text = "Locked. The sacristy key lies in the Scriptorium."
+Notes = "The pilgrim, flat, seeing the Sacristy door without its key. Names the key and its room (the room check holds it to that)."
 
 [sub_resource type="Resource" id="item_pyre_litany_name"]
 script = ExtResource("2_line")
@@ -382,8 +382,8 @@ Notes = "Under the name when read: where it goes, without a map marker."
 script = ExtResource("2_line")
 Id = &"item.pyre_litany.locked"
 Speaker = "Pilgrim"
-Text = "Sealed. The script asks for words I have not read."
-Notes = "The pilgrim, flat, at the Pyre's sealed door without its litany."
+Text = "Sealed. It asks for the litany of the pyre, kept in the Belfry."
+Notes = "The pilgrim, flat, seeing the Pyre's sealed door without its litany. Names the litany and its room (the room check holds it to that)."
 
 [sub_resource type="Resource" id="plate_sacristy_title"]
 script = ExtResource("2_line")
@@ -431,8 +431,8 @@ Notes = "The mechanism's name (the map's legend shows its kind)."
 script = ExtResource("2_line")
 Id = &"item.kiln_lever.locked"
 Speaker = "Pilgrim"
-Text = "A gate on a mechanism. Its lever must be close."
-Notes = "The pilgrim at the Kiln gate before its lever is pulled."
+Text = "The kiln gate is down. Its lever stands here, in the Kiln."
+Notes = "The pilgrim seeing the Kiln gate before its lever is pulled. Names the gate and the lever's room (the room check holds it to that)."
 
 [sub_resource type="Resource" id="plate_cell_title"]
 script = ExtResource("2_line")

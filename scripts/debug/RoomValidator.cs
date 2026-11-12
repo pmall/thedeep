@@ -100,6 +100,7 @@ public partial class RoomValidator : Node
 
         _lines.Add(World.Definition);
         _problems.AddRange(_lines.Problems(World.Definition.Lines));
+        CheckLockedLines(world.Graph);
         string map = world.Check(World.NameOf(StartRoom), _draft?.Targets ?? MapTargets.None, Report);
         _problems.AddRange(world.Problems);
         if (ReachReport != "")
@@ -160,6 +161,27 @@ public partial class RoomValidator : Node
             else if (World.Definition.Items.Count(i => i.Id == id) > 1)
             {
                 _problems.Add($"world item {item.ResourcePath}: another of the world's items has the id {id}");
+            }
+        }
+    }
+
+    /// <summary>Each item's locked line names the item and the room it lies in (docs/gameplay.md#gate-says), wherever the rooms lay it.</summary>
+    private void CheckLockedLines(MapGraph graph)
+    {
+        foreach (ItemDefinition item in World.Definition.Items)
+        {
+            string? line = World.Definition.Lines.Find(item.LockedLine)?.Text, name = World.Definition.Lines.Find(item.NameLine)?.Text;
+            if (line is null || name is null)
+            {
+                continue; // a missing line is the line check's to report
+            }
+
+            foreach (MapItem lying in graph.Items.Where(i => i.Item == item.Id))
+            {
+                foreach (string missing in LockedLine.Unnamed(line, name, lying.Room))
+                {
+                    _problems.Add($"world item {item.Id}: its locked line {item.LockedLine} (\"{line}\") does not name \"{missing}\" (the item lies in {lying.Room})");
+                }
             }
         }
     }

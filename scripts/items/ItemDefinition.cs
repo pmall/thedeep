@@ -21,7 +21,7 @@ public partial class ItemDefinition : Resource, INamesLines
     /// <summary>Shown under the name when it is taken: what it is, where it might fit.</summary>
     [Export] public StringName TakenLine { get; set; } = "";
 
-    /// <summary>What the pilgrim says at its door without it.</summary>
+    /// <summary>What the pilgrim says seeing its door without it: it names the item and the room it lies in (<see cref="TheDeep.LockedLine"/>).</summary>
     [Export] public StringName LockedLine { get; set; } = "";
 
     /// <inheritdoc/>

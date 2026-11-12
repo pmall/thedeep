@@ -4,11 +4,21 @@ namespace TheDeep;
 
 /// <summary>
 /// One quiet line low on the screen, with a small mark in a gate's color: what the pilgrim says meeting a gate it can't pass yet
-/// (<see cref="GateHints"/>). Eased in, held, eased out; a new line replaces the one showing. Text comes from the line book.
+/// (<see cref="GateHints"/>, <see cref="Keyring"/>). Eased in, held, eased out; a line said while another shows is read after it
+/// (<see cref="LinesInTurn{T}"/>, docs/gameplay.md#gate-says), sooner than a line alone would leave. Text comes from the line book.
 /// </summary>
 public partial class HintLine : CanvasLayer
 {
     [Export] public float Hold { get; set; } = 3.2f;
+
+    /// <summary>Seconds a line holds when another waits behind it.</summary>
+    [Export] public float HoldWhenWaited { get; set; } = 2.4f;
+
+    /// <summary>How many lines may wait behind the one showing.</summary>
+    public const int Waits = 2;
+
+    private readonly LinesInTurn<(StringName Line, Color Color)> _queue = new(Waits);
+    private float _shown;
 
     private Label? _label;
     private Label Words => _label ??= new Label { MouseFilter = Control.MouseFilterEnum.Ignore };
@@ -38,24 +48,66 @@ public partial class HintLine : CanvasLayer
     }
 
     /// <summary>Whether a line is showing (or easing).</summary>
-    public bool Showing => _tween is not null && _tween.IsRunning();
+    public bool Showing => _queue.Showing;
 
-    /// <summary>Shows the line <paramref name="lineId"/> with a mark in <paramref name="color"/>.</summary>
+    /// <summary>The line showing, or null.</summary>
+    public StringName? Current => _queue.Showing ? _queue.Current.Line : null;
+
+    /// <summary>How many lines wait behind the one showing.</summary>
+    public int Waiting => _queue.Waiting;
+
+    /// <summary>Says the line <paramref name="lineId"/> with a mark in <paramref name="color"/>: now, or after the lines already said.</summary>
     public void Show(StringName lineId, Color color)
     {
-        Words.Text = LineBook.Shared.Find(lineId)?.Text ?? "";
+        if (_queue.Offer((lineId, color)))
+        {
+            Present();
+        }
+    }
+
+    /// <summary>The line showing leaves once it has been held long enough: sooner when another waits.</summary>
+    public override void _Process(double delta)
+    {
+        if (!_queue.Showing || _tween is not null)
+        {
+            return;
+        }
+
+        _shown += (float)delta;
+        if (_shown >= (_queue.Waiting > 0 ? HoldWhenWaited : Hold))
+        {
+            _tween = CreateTween();
+            _tween.TweenProperty(Box, "modulate:a", 0f, _queue.Waiting > 0 ? 0.35f : 0.9f).SetTrans(Tween.TransitionType.Sine);
+            _tween.TweenCallback(Callable.From(Left));
+        }
+    }
+
+    private void Present()
+    {
+        (StringName line, Color color) = _queue.Current;
+        Words.Text = LineBook.Shared.Find(line)?.Text ?? "";
         _color = color;
         Mark.QueueRedraw();
+        _shown = 0f;
         _tween?.Kill();
         _tween = CreateTween();
         _tween.TweenProperty(Box, "modulate:a", 1f, 0.45f).SetTrans(Tween.TransitionType.Sine);
-        _tween.TweenInterval(Hold);
-        _tween.TweenProperty(Box, "modulate:a", 0f, 0.9f).SetTrans(Tween.TransitionType.Sine);
+        _tween.TweenCallback(Callable.From(() => _tween = null));
+    }
+
+    private void Left()
+    {
+        _tween = null;
+        if (_queue.Next(out _))
+        {
+            Present();
+        }
     }
 
     /// <summary>Gone at once (a room left under the veil).</summary>
     public void Clear()
     {
+        _queue.Clear();
         if (!IsNodeReady())
         {
             return;

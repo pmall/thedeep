@@ -39,7 +39,7 @@ All working; brought to ready under `docs/roadmap.md#bricks-ready`.
 | `Portcullis` | working | `docs/roadmap.md#bricks-ready` |
 | `MapGoal` | ready | — |
 | `PhotoSpot` | ready | — |
-| `LockedDoor` (a key's lock or a code's seal, on an exit; `DoorLock`, one per kind) | ready | — |
+| `LockedDoor` (a key's lock or a code's seal, on an exit; `DoorLock`, one per kind; on screen it says its item and the room that lies in, the room check holding each item's line to both) | ready | — |
 | Hidden passage: `FalseWall` (found by walking in, played by `Secrets`) over a `RoomExit.Hidden` way | ready | — |
 | `Lever` (a switch: sets a mechanism, an item of kind Mechanism) and its gate (a `LockedDoor` for it) | ready | — |
 
@@ -69,8 +69,8 @@ All working; brought to ready under `docs/roadmap.md#bricks-ready`.
 | Brick | Status | Item |
 | -- | -- | -- |
 | Line book (`LineBook`: the game's own, `resources/lines.tres`, which each world's extends) | ready | — |
-| `Banner`, `HintLine` | working | `docs/roadmap.md#bricks-ready` |
-| `Proclamation` | working | `docs/roadmap.md#law-readable` |
+| `Banner`, `HintLine` (lines said together are read in turn) | working | `docs/roadmap.md#bricks-ready` |
+| `Proclamation` | working | `docs/roadmap.md#bricks-ready` |
 | `ScripturePlate` | working | `docs/roadmap.md#bricks-ready` |
 | `LawBreak` (broken by a held act on its `ActionPrompt`, never a push; the pilgrim's refusal on the `HintLine`; its lines per room) | working | `docs/roadmap.md#stage-polish` (the real law-break scenes) |
 | `ActionPrompt` (a verb and its button, pressed or held; the button a `ButtonGlyph` drawn by a `ButtonPainter`, as in the `ControlsManual`; `Reach` keeps it clear of what stands beside it) | working | `docs/roadmap.md#bricks-ready` |

@@ -67,7 +67,7 @@ Notes = "Under the name."
 script = ExtResource("2_line")
 Id = &"item.strongroom_key.locked"
 Speaker = "Pilgrim"
-Text = "A keeper's lock. The key is somewhere above."
+Text = "A keeper's lock. The strongroom key lies in the Hold."
 Notes = "Said at the Strongroom door without the key."
 
 [sub_resource type="Resource" id="item_weir_lever_name"]
@@ -81,7 +81,7 @@ Notes = "The mechanism, named on the map."
 script = ExtResource("2_line")
 Id = &"item.weir_lever.locked"
 Speaker = "Pilgrim"
-Text = "The sluice gate is down. Its lever stands close by."
+Text = "The sluice gate is down. Its lever stands here, on the Weir."
 Notes = "Said at the gate before the lever is pulled."
 
 [sub_resource type="Resource" id="plate_strongroom_title"]

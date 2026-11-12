@@ -7,8 +7,8 @@ namespace TheDeep;
 /// The items and the doors they open, in play: walking up to an <see cref="ItemPickup"/> takes its item (the pilgrim holds still
 /// while it flies in, then its name shows; held for good, saved at once); pulling a <see cref="Lever"/> (interact, no shrine or
 /// plate prompting) sets its mechanism for good; coming near a <see cref="LockedDoor"/> holding its item opens it for good (a
-/// mechanism's gate opens at once, wherever the pilgrim stands), and coming near without it, the pilgrim says what it sees there,
-/// once per room visit for each door. What is
+/// mechanism's gate opens at once, wherever the pilgrim stands), and as soon as a door it can't open is on screen, the pilgrim says
+/// what it needs and where that lies (docs/gameplay.md#gate-says), once per room visit for each door. What is
 /// done for good is the session's to keep (<see cref="Session.Remember"/>); the rules are the core's (<see cref="Inventory"/>,
 /// <see cref="Pilgrimage"/>).
 /// </summary>
@@ -35,7 +35,7 @@ public partial class Keyring : Node
     /// <summary>Raised when a door opens for its item.</summary>
     public event System.Action<LockedDoor>? Opened;
 
-    /// <summary>Raised when the pilgrim says what it sees at a door it can't open (no item for it).</summary>
+    /// <summary>Raised when the pilgrim says what a door in sight needs (it holds no item for it).</summary>
     public event System.Action<LockedDoor>? Refused;
 
     public override void _Ready()
@@ -98,19 +98,22 @@ public partial class Keyring : Node
         {
             LockedDoor door = doors[i];
             bool mechanism = door.Item.Kind == ItemKind.Mechanism;
-            if (door.Opened || (!mechanism && !door.Near(p)))
+            if (door.Opened)
             {
                 continue;
             }
 
             if (Player.Items.Holds(door.Item.Id))
             {
-                door.Open();
-                Session.Remember(door.Name);
-                Camera.AddShake(0.15f);
-                Opened?.Invoke(door);
+                if (mechanism || door.Near(p))
+                {
+                    door.Open();
+                    Session.Remember(door.Name);
+                    Camera.AddShake(0.15f);
+                    Opened?.Invoke(door);
+                }
             }
-            else if (door.Near(p) && _said.Add(door))
+            else if (!_said.Contains(door) && Camera.IsPositionInFrustum(door.Sight) && _said.Add(door))
             {
                 Hint.Show(door.Item.LockedLine, ItemKinds.ColorOf(door.Item.Kind));
                 Refused?.Invoke(door);

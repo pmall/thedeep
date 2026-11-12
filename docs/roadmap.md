@@ -5,7 +5,7 @@ The owner's plan and the open items, in order, opened by where the work stands. 
 ## Now <a id="status"></a>
 
 - **Stage:** A, the prototype (`docs/roadmap.md#stage-prototype`).
-- **Current item:** readable law breaks and gates (`docs/roadmap.md#law-readable`).
+- **Current item:** feel and fight (`docs/roadmap.md#feel-fight`), not started: it is tuned from the owner's play (`docs/roadmap.md#to-play`).
 - **Waiting on the owner:** nothing blocks. To play when they wish: `docs/roadmap.md#to-play`. The Blender MCP installed, needed only when the pilgrim starts (`docs/roadmap.md#pilgrim`), last of the stage.
 
 ## The plan <a id="direction"></a>
@@ -27,17 +27,15 @@ A room gets the attention its bricks need, no more. Bosses, machines and law bre
 
 The open items, in order (owner: the world, its bricks and its look are finished before the character):
 
-1. **Readable law breaks and gates** <a id="law-readable"></a>: `docs/gameplay.md#law-act` and `docs/gameplay.md#gate-says`, as bricks, each one task, in order. The real law breaks (stage D) are scenes where the player, as the pilgrim's conscience, makes it break the law (owner).
-   - [ ] an action prompt brick (the verb from the line book, the button's glyph, an optional hold that fills), adopted by the lever, the shrine, the scripture plate and the conversation;
-   - [ ] the law break as a deliberate hold on that prompt, in its three rooms, the checks proving that pushing or tapping never breaks one;
-   - [ ] a locked door that refuses on sight and names its item and place (the Pyre's litany door first, both worlds' lines checked), and the hint line reading two refusals in turn.
-2. **Feel and fight** <a id="feel-fight"></a>: moves chain and carry momentum (Mag-grip corners, harpoon, dive and swim flowing into each other), the camera eased, the fight's hits land and health reads (`docs/gameplay.md#fight`), tuned from the owner's play.
-3. **Every brick ready** <a id="bricks-ready"></a>: each brick of [bricks.md](bricks.md) still short of ready is brought there (look, feel, reuse), the pilgrim's own aside (`docs/roadmap.md#pilgrim`). No played check walks a room's own ground routes with the real inputs any more (the reach planner models them, the travel check crosses the exits): a generic one, driving the planner's routes, is the brick missing here.
-4. **The pilgrim, from zero** <a id="pilgrim"></a> (owner: last, once the world, its bricks and its look are finished). The current character, its procedural animation and its halo are thrown away. The bar is *Ori*'s animation (a 3D-rendered character) with *NieR: Automata*'s dynamism; the look is `docs/art-direction.md#character`. First the environment for top-quality animation, then the character: modeled and rigged in Blender (the owner installs the Blender MCP), animated from real motion capture (free libraries and Mixamo first), keyed by hand, blended in the game with its feet held to the ground. Every move and ability: run, jump, land, dash, air dash, ledge assist, grip and its corners, harpoon throw and zip, bore and dive, swim, sink and rise, the strikes, hurt, death, rest, taking a relic. Its secondary motion is stage D's. Done when every state reads at a glance in motion, in the reels and in the owner's play.
+1. **Feel and fight** <a id="feel-fight"></a>: moves chain and carry momentum (Mag-grip corners, harpoon, dive and swim flowing into each other), the camera eased, the fight's hits land and health reads (`docs/gameplay.md#fight`), tuned from the owner's play.
+2. **Every brick ready** <a id="bricks-ready"></a>: each brick of [bricks.md](bricks.md) still short of ready is brought there (look, feel, reuse), the pilgrim's own aside (`docs/roadmap.md#pilgrim`). No played check walks a room's own ground routes with the real inputs any more (the reach planner models them, the travel check crosses the exits): a generic one, driving the planner's routes, is the brick missing here.
+3. **The pilgrim, from zero** <a id="pilgrim"></a> (owner: last, once the world, its bricks and its look are finished). The current character, its procedural animation and its halo are thrown away. The bar is *Ori*'s animation (a 3D-rendered character) with *NieR: Automata*'s dynamism; the look is `docs/art-direction.md#character`. First the environment for top-quality animation, then the character: modeled and rigged in Blender (the owner installs the Blender MCP), animated from real motion capture (free libraries and Mixamo first), keyed by hand, blended in the game with its feet held to the ground. Every move and ability: run, jump, land, dash, air dash, ledge assist, grip and its corners, harpoon throw and zip, bore and dive, swim, sink and rise, the strikes, hurt, death, rest, taking a relic. Its secondary motion is stage D's. Done when every state reads at a glance in motion, in the reels and in the owner's play.
 
 **To play** <a id="to-play"></a>: what the owner's eye alone can judge, each line deleted once they have said. An item closes on what the agent can verify; the owner's word reopens it.
 
 - The transitions: `godot --path . -- --room Nave --abilities all` (west and east doorways, the hatch down to the Cistern); the Brink's leap, `--room Brink`. Every doorway now stands in a wall its brick builds (most were never looked at): say where one reads wrong.
+- The gates that speak (`docs/gameplay.md#gate-says`): `--room Ashfall --abilities none` (the Pyre's door names its litany and the Belfry as soon as it is on screen, the heat's line read after it), `--room Narthex` (the Sacristy door), `--room Kiln` (its gate). Say whether the lines come too early, too late or too fast.
+- The law breaks (`docs/gameplay.md#law-act`): `--room Brink --abilities all`, walk into the law, then hold the prompt. Say whether the hold's length and the refusal read right.
 - The volcanic layer, its slag, heat and light: `--room Slag` (walk off into the slag, plated and not), `--room Ashfall --abilities HeatPlating` and without (the heat before the Pyre's door).
 
 **Done when** <a id="sequel-test"></a> every brick in [bricks.md](bricks.md) is ready, the sequel world still loads, plays and passes the checks with no code change (whatever it would force into the code is a missing brick, built as one), and the owner plays the prototype from `godot --path . -- --new` to the end with no debug keys, always knowing what a gate needs, and signs it off.
@@ -64,7 +62,7 @@ Only once the real game plays from start to end:
 - **The pilgrim's secondary motion**: coat, braid, cables.
 - **The bestiary**: species grown toward 150–200 behaviorally distinct machines (`docs/long-term.md#machines-distinct`), the real bosses, NPCs.
 - **Every room made rich**: its secrets, its swarms, its secret passages, its enigma, the paths toward the end.
-- **Story**: the law breaks as real moments, the ending, dialogue, scripture and creeds written for real ([theme.md](theme.md)), cutscenes. All text stays data in the line books.
+- **Story**: the law breaks as real moments, scenes where the player, as the pilgrim's conscience, makes it break the law (owner), on the act of `docs/gameplay.md#law-act`; then the ending, dialogue, scripture and creeds written for real ([theme.md](theme.md)), cutscenes. All text stays data in the line books.
 - **Audio and voices** (`docs/roadmap.md#audio`).
 - **Release**: main menu, pause, settings (graphics quality tiers, audio, control remapping), save slots, a bestiary screen, controller polish, accessibility options, exported Linux and Windows builds.
 
