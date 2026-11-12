@@ -15,12 +15,46 @@ public partial class Portcullis : Node3D
 
     [Export] public CollisionShape3D Shape { get; set; } = null!;
 
+    /// <summary>The bars' grate (given a mesh of the gate's size, so instances never share one).</summary>
+    [Export] public MeshInstance3D Bars { get; set; } = null!;
+
+    /// <summary>The beam across the gate's top, the one along its foot and the one between them.</summary>
+    [Export] public MeshInstance3D Header { get; set; } = null!;
+    [Export] public MeshInstance3D Foot { get; set; } = null!;
+    [Export] public MeshInstance3D Middle { get; set; } = null!;
+
+    /// <summary>How wide the bars stand along the way, meters; the collision is half of it (<see cref="CollisionShare"/>).</summary>
+    [Export] public float Width { get; set; } = 1.2f;
+
+    /// <summary>How tall the gate is, meters; <see cref="Lift"/> should clear it.</summary>
+    [Export] public float Height { get; set; } = 5f;
+
+    /// <summary>How deep the collision reaches across the play plane, meters.</summary>
+    [Export] public float Depth { get; set; } = 4f;
+
+    /// <summary>The gate stops barring the way once it is this far open (0 shut, 1 raised): a hand's breadth off the floor is enough to lift its collision.</summary>
+    [Export] public float OpenFraction { get; set; } = 0.6f;
+
     /// <summary>How far above its closed place the gate hangs open, meters.</summary>
     [Export] public float Lift { get; set; } = 5.5f;
 
     /// <summary>Seconds to fall shut (a heavy drop) and to rise open (a slow winch).</summary>
     [Export] public float FallTime { get; set; } = 0.35f;
     [Export] public float RiseTime { get; set; } = 1.8f;
+
+    /// <summary>The collision's thickness along the way, as a share of <see cref="Width"/>: the bars' ends reach past what is solid.</summary>
+    private const float CollisionShare = 0.5f;
+
+    private const float BarsThickness = 0.3f;
+    private const float BarSpacing = 0.3f;
+    private const float BarWidth = 0.09f;
+    private const float RailHeight = 0.4f;
+    private const float RailDepth = 0.34f;
+    private const float MiddleShare = 0.62f;
+    private const float RailOverhang = 0.12f;
+
+    /// <summary>The bars and beams stand this far toward the camera from the collision's plane.</summary>
+    private const float FaceZ = 0.15f;
 
     private float _open = 1f;
     private float _target = 1f;
@@ -41,6 +75,7 @@ public partial class Portcullis : Node3D
     {
         Gate.CollisionLayer = PhysicsLayers.WorldRock;
         Gate.CollisionMask = 0;
+        Build();
         Place();
     }
 
@@ -74,11 +109,30 @@ public partial class Portcullis : Node3D
         }
     }
 
+    /// <summary>Sizes the collision, the bars and the three beams to <see cref="Width"/> and <see cref="Height"/>.</summary>
+    private void Build()
+    {
+        Shape.Shape = new BoxShape3D { Size = new Vector3(Width * CollisionShare, Height, Depth) };
+        Shape.Position = new Vector3(0f, Height / 2f, 0f);
+
+        // The grate's depth axis is turned to the vertical by the node's rotation in the scene.
+        Bars.Mesh = new GrateMesh { Size = new Vector3(Width, BarsThickness, Height), Spacing = BarSpacing, Bar = BarWidth };
+        Bars.Position = new Vector3(0f, Height / 2f, FaceZ);
+
+        var beam = new BlockMesh { Size = new Vector3(Width + RailOverhang, RailHeight, RailDepth), Bevel = 0.04f };
+        Header.Mesh = beam;
+        Header.Position = new Vector3(0f, Height - RailHeight / 2f, FaceZ);
+        Foot.Mesh = beam;
+        Foot.Position = new Vector3(0f, RailHeight / 2f, FaceZ);
+        Middle.Mesh = beam;
+        Middle.Position = new Vector3(0f, Height * MiddleShare, FaceZ);
+    }
+
     private void Place()
     {
         // Falling: accelerating like a dropped weight; rising: eased in and out like a winch.
         float t = _target < _open || _open <= 0f ? _open * _open : _open * _open * (3f - 2f * _open);
         Gate.Position = new Vector3(0f, Lift * t, 0f);
-        Shape.Disabled = _open > 0.6f;
+        Shape.Disabled = _open > OpenFraction;
     }
 }
