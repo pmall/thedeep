@@ -22,19 +22,14 @@ public partial class ControlsManual : Control
     private const float Pad = 10f;
     private const float RowHeight = 21f;
     private const float HeaderHeight = 22f;
-    private const float CapHeight = 18f;
     private const float CapGap = 4f;
     private const float Column = 10f;
     private const int CapFont = 12;
     private const int WordFont = 12;
     private const int HeaderFont = 11;
 
-    private static readonly Color Ink = new(0.78f, 0.86f, 0.88f);
-    private static readonly Color Dark = new(0.04f, 0.05f, 0.07f);
-    private static readonly Color[] FaceColors =
-    {
-        new(0.47f, 0.82f, 0.52f), new(0.92f, 0.46f, 0.42f), new(0.48f, 0.62f, 0.96f), new(0.95f, 0.82f, 0.42f),
-    };
+    private static readonly Color Ink = ButtonPainter.Ink;
+    private static readonly Color Dark = ButtonPainter.Dark;
 
     /// <summary>How a row's actions become buttons.</summary>
     public enum Kind
@@ -115,22 +110,11 @@ public partial class ControlsManual : Control
         public string Text { get; } = text;
     }
 
-    /// <summary>One button on screen: a key cap, or a pad glyph; lit while any of its actions is held.</summary>
-    private sealed class Glyph : Item
+    /// <summary>One button on screen, drawn by the <see cref="ButtonPainter"/>.</summary>
+    private sealed class Glyph(ButtonGlyph button) : Item
     {
-        /// <summary>The key's or button's name, written on its cap.</summary>
-        public string Text = "";
-        /// <summary>The pad button's shape, for a pad glyph.</summary>
-        public ButtonNames.PadShape? Shape;
-        /// <summary>Which face button it is, A, B, X, Y as 0–3 (their colors); -1 for any other.</summary>
-        public int Face = -1;
-        /// <summary>The input actions that light it while held.</summary>
-        public StringName[] Actions = System.Array.Empty<StringName>();
-        /// <summary>How lit it is now, 0–1.</summary>
-        public float Lit;
-
-        /// <summary>A stick pushed one way (a direction on the stick), or zero for the live stick.</summary>
-        public Vector2 Push;
+        /// <summary>The button and how lit it is.</summary>
+        public ButtonGlyph Button { get; } = button;
     }
 
     /// <summary>A row as drawn: its spec, its words, and for each device its buttons and the separators between them.</summary>
@@ -150,14 +134,12 @@ public partial class ControlsManual : Control
     private ButtonNames.Device _shown;
     private float _alpha = 1f;
     private Vector2 _stick;
-    private readonly StyleBoxFlat _cap = new() { AntiAliasing = true, CornerDetail = 5 };
+    private readonly ButtonPainter _painter = new();
     private readonly StyleBoxFlat _panel = new() { AntiAliasing = true, CornerDetail = 8 };
 
     public override void _Ready()
     {
         MouseFilter = MouseFilterEnum.Ignore;
-        _cap.SetCornerRadiusAll(5);
-        _cap.SetBorderWidthAll(1);
         _panel.SetCornerRadiusAll(10);
         _panel.BgColor = Dark with { A = 0.62f };
 
@@ -178,7 +160,7 @@ public partial class ControlsManual : Control
             _rows.Add(row);
         }
 
-        Device = _shown = Input.GetConnectedJoypads().Count > 0 && !BothDevices ? ButtonNames.Device.Gamepad : ButtonNames.Device.Keyboard;
+        Device = _shown = BothDevices ? ButtonNames.Device.Keyboard : ButtonGlyph.FirstDevice();
     }
 
     public override void _Input(InputEvent @event)
@@ -188,14 +170,7 @@ public partial class ControlsManual : Control
             return;
         }
 
-        Device = @event switch
-        {
-            InputEventKey { Pressed: true } => ButtonNames.Next(Device, ButtonNames.Source.Key),
-            InputEventMouseButton { Pressed: true } => ButtonNames.Next(Device, ButtonNames.Source.MouseButton),
-            InputEventJoypadButton { Pressed: true } => ButtonNames.Next(Device, ButtonNames.Source.PadButton),
-            InputEventJoypadMotion motion => ButtonNames.Next(Device, ButtonNames.Source.PadAxis, motion.AxisValue),
-            _ => Device,
-        };
+        Device = ButtonGlyph.DeviceAfter(Device, @event);
     }
 
     public override void _Process(double delta)
@@ -218,14 +193,7 @@ public partial class ControlsManual : Control
             {
                 if (item is Glyph glyph)
                 {
-                    bool held = false;
-                    foreach (StringName action in glyph.Actions)
-                    {
-                        held |= Input.IsActionPressed(action);
-                    }
-
-                    // Lit at once, fading after release.
-                    glyph.Lit = held ? Motion.Approach(glyph.Lit, 1f, dt * 24f) : Motion.Approach(glyph.Lit, 0f, dt * 5f);
+                    glyph.Button.Light(dt);
                 }
             }
         }
@@ -233,6 +201,14 @@ public partial class ControlsManual : Control
         Vector2 stick = Input.GetVector(InputActions.MoveLeft, InputActions.MoveRight, InputActions.MoveUp, InputActions.MoveDown);
         _stick = _stick.Lerp(stick, 1f - Mathf.Exp(-dt * 30f));
         QueueRedraw();
+    }
+
+    public override void _Notification(int what)
+    {
+        if (what == NotificationPredelete)
+        {
+            _painter.Dispose();
+        }
     }
 
     public override void _Draw()
@@ -283,7 +259,7 @@ public partial class ControlsManual : Control
                 switch (item)
                 {
                     case Glyph glyph:
-                        DrawGlyph(font, glyph, new Vector2(x + glyph.Width * 0.5f, mid + 1.5f * glyph.Lit), rowA);
+                        _painter.Draw(this, font, glyph.Button, new Vector2(x + glyph.Width * 0.5f, mid + 1.5f * glyph.Button.Lit), rowA, _stick);
                         break;
                     case Separator separator:
                         DrawString(font, new Vector2(x, mid + 4.5f), separator.Text, HorizontalAlignment.Left, -1f, CapFont, Ink with { A = 0.5f * rowA });
@@ -300,7 +276,7 @@ public partial class ControlsManual : Control
 
     // ---- building the rows ----
 
-    private static void Build(List<Item> items, Spec spec, bool pad, Font font)
+    private void Build(List<Item> items, Spec spec, bool pad, Font font)
     {
         switch (spec.Kind)
         {
@@ -340,7 +316,7 @@ public partial class ControlsManual : Control
             switch (item)
             {
                 case Glyph glyph:
-                    glyph.Width = GlyphWidth(font, glyph);
+                    glyph.Width = _painter.Width(font, glyph.Button);
                     break;
                 case Separator separator:
                     separator.Width = Width(font, separator.Text, CapFont);
@@ -372,16 +348,16 @@ public partial class ControlsManual : Control
                     continue;
                 }
 
-                if (glyph.Shape is ButtonNames.PadShape.Stick or ButtonNames.PadShape.Dpad)
+                if (glyph.Button.Shape is ButtonNames.PadShape.Stick or ButtonNames.PadShape.Dpad)
                 {
                     if (whole is null)
                     {
                         whole = glyph;
-                        whole.Push = Vector2.Zero;
+                        whole.Button.Push = Vector2.Zero;
                     }
                     else
                     {
-                        whole.Actions = [.. whole.Actions, actions[i]];
+                        whole.Button.Actions = [.. whole.Button.Actions, actions[i]];
                     }
                 }
                 else
@@ -413,48 +389,10 @@ public partial class ControlsManual : Control
         items.Add(glyph);
     }
 
-    private static Glyph? GlyphOf(InputEvent e, bool pad, StringName action)
-    {
-        switch (e)
-        {
-            case InputEventKey key when !pad:
-            {
-                // The layout's label for the physical key (headless has no layout: the physical key's US name).
-                Key code = key.PhysicalKeycode == Key.None ? key.Keycode
-                    : DisplayServer.GetName() == "headless" ? key.PhysicalKeycode
-                    : DisplayServer.KeyboardGetKeycodeFromPhysical(key.PhysicalKeycode);
-                return new Glyph { Text = ButtonNames.KeyCap(OS.GetKeycodeString(code)), Actions = new[] { action } };
-            }
-            case InputEventJoypadButton button when pad:
-                return Of(ButtonNames.PadButton((int)button.ButtonIndex), action);
-            case InputEventJoypadMotion motion when pad:
-            {
-                Glyph glyph = Of(ButtonNames.PadAxis((int)motion.Axis), action);
-                if (glyph.Shape == ButtonNames.PadShape.Stick)
-                {
-                    float sign = Mathf.Sign(motion.AxisValue);
-                    glyph.Push = (int)motion.Axis % 2 == 0 ? new Vector2(sign, 0f) : new Vector2(0f, sign);
-                }
-
-                return glyph;
-            }
-            default:
-                return null;
-        }
-    }
-
-    private static Glyph Of(ButtonNames.PadGlyph glyph, StringName action) =>
-        new() { Text = glyph.Name, Shape = glyph.Shape, Face = glyph.Face, Actions = new[] { action } };
+    private static Glyph? GlyphOf(InputEvent e, bool pad, StringName action) =>
+        ButtonGlyph.Of(e, pad, action) is { } button ? new Glyph(button) : null;
 
     // ---- drawing ----
-
-    private static float GlyphWidth(Font font, Glyph glyph) => glyph.Shape switch
-    {
-        ButtonNames.PadShape.Face or ButtonNames.PadShape.Stick or ButtonNames.PadShape.Dpad => CapHeight + 2f,
-        ButtonNames.PadShape.Shoulder or ButtonNames.PadShape.Trigger => 34f,
-        _ when ButtonNames.ArrowOf(glyph.Text) >= 0 => CapHeight + 3f,
-        _ => Mathf.Max(CapHeight + 3f, Width(font, glyph.Text, CapFont) + 12f),
-    };
 
     private static float ItemsWidth(List<Item> items)
     {
@@ -466,90 +404,6 @@ public partial class ControlsManual : Control
 
         return Mathf.Max(0f, w - CapGap);
     }
-
-    private void DrawGlyph(Font font, Glyph glyph, Vector2 mid, float a)
-    {
-        float lit = glyph.Lit;
-        switch (glyph.Shape)
-        {
-            case ButtonNames.PadShape.Face:
-            {
-                Color tint = FaceColors[glyph.Face];
-                float r = CapHeight * 0.5f + 1f;
-                DrawCircle(mid, r, Dark.Lerp(tint, lit * 0.9f) with { A = (0.5f + 0.4f * lit) * a });
-                DrawArc(mid, r, 0f, Mathf.Tau, 32, tint with { A = (0.7f + 0.3f * lit) * a }, 1.2f, true);
-                DrawString(font, new Vector2(mid.X - r, mid.Y + 4.5f), glyph.Text, HorizontalAlignment.Center, 2f * r, CapFont,
-                    tint.Lerp(Dark, lit) with { A = a });
-                break;
-            }
-            case ButtonNames.PadShape.Stick:
-            {
-                float r = CapHeight * 0.5f + 1f;
-                DrawCircle(mid, r, Dark with { A = 0.5f * a });
-                DrawArc(mid, r, 0f, Mathf.Tau, 32, Ink with { A = (0.55f + 0.4f * lit) * a }, 1.2f, true);
-                Vector2 knob = mid + (glyph.Push == Vector2.Zero ? _stick : glyph.Push) * 4f;
-                DrawCircle(knob, r - 4.5f, Ink with { A = (0.18f + 0.7f * lit) * a });
-                DrawString(font, new Vector2(knob.X - r, knob.Y + 4f), glyph.Text, HorizontalAlignment.Center, 2f * r, 11,
-                    Ink.Lerp(Dark, lit) with { A = 0.9f * a });
-                break;
-            }
-            case ButtonNames.PadShape.Dpad:
-            {
-                // A cross; each arm lights with its direction.
-                const float arm = 5.5f;
-                const float half = 3.2f;
-                DrawRect(new Rect2(mid - new Vector2(half, arm + half), new Vector2(2f * half, 2f * (arm + half))), Dark with { A = 0.5f * a });
-                DrawRect(new Rect2(mid - new Vector2(arm + half, half), new Vector2(2f * (arm + half), 2f * half)), Dark with { A = 0.5f * a });
-                foreach (StringName action in glyph.Actions)
-                {
-                    Vector2 dir = DirectionOf(action);
-                    bool held = Input.IsActionPressed(action);
-                    Vector2 c = mid + dir * (arm * 0.5f + half * 0.5f);
-                    Vector2 extent = dir.X != 0f ? new Vector2(arm, 2f * half) : new Vector2(2f * half, arm);
-                    DrawRect(new Rect2(c - extent * 0.5f, extent), Ink with { A = (held ? 0.95f : 0.45f) * a });
-                }
-
-                break;
-            }
-            case ButtonNames.PadShape.Trigger:
-                _cap.SetCornerRadiusAll(3);
-                _cap.CornerRadiusTopLeft = _cap.CornerRadiusTopRight = 9;
-                DrawCap(font, glyph.Text, mid, 34f, CapHeight + 2f, lit, a);
-                _cap.SetCornerRadiusAll(5);
-                break;
-            case ButtonNames.PadShape.Shoulder:
-                _cap.SetCornerRadiusAll(8);
-                DrawCap(font, glyph.Text, mid, 34f, CapHeight - 3f, lit, a);
-                _cap.SetCornerRadiusAll(5);
-                break;
-            default:
-                DrawCap(font, glyph.Text, mid, glyph.Width, CapHeight, lit, a);
-                break;
-        }
-    }
-
-    private void DrawCap(Font font, string text, Vector2 mid, float width, float height, float lit, float a)
-    {
-        Rect2 rect = new(mid - new Vector2(width, height) * 0.5f, new Vector2(width, height));
-        _cap.BgColor = Dark.Lerp(Ink, lit * 0.85f) with { A = (0.5f + 0.4f * lit) * a };
-        _cap.BorderColor = Ink with { A = (0.45f + 0.45f * lit) * a };
-        DrawStyleBox(_cap, rect);
-        Color ink = Ink.Lerp(Dark, lit) with { A = 0.95f * a };
-        int arrow = ButtonNames.ArrowOf(text);
-        if (arrow >= 0)
-        {
-            // Arrow keys: a small triangle, pointing its way (0 up, 1 left, 2 down, 3 right).
-            Vector2 dir = arrow switch { 0 => Vector2.Up, 1 => Vector2.Left, 2 => Vector2.Down, _ => Vector2.Right };
-            Vector2 side = new(-dir.Y, dir.X);
-            DrawColoredPolygon(new[] { mid + dir * 4f, mid - dir * 3f + side * 4f, mid - dir * 3f - side * 4f }, ink);
-            return;
-        }
-
-        DrawString(font, new Vector2(rect.Position.X, mid.Y + CapFont * 0.36f), text, HorizontalAlignment.Center, width, CapFont, ink);
-    }
-
-    private static Vector2 DirectionOf(StringName action) =>
-        action == InputActions.MoveUp ? Vector2.Up : action == InputActions.MoveDown ? Vector2.Down : action == InputActions.MoveLeft ? Vector2.Left : Vector2.Right;
 
     private static float Width(Font font, string text, int size) => font.GetStringSize(text, HorizontalAlignment.Left, -1f, size).X;
 }

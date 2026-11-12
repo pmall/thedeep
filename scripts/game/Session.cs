@@ -229,11 +229,11 @@ public partial class Session : Node
 
         if (_prompted is { } shown && IsInstanceValid(shown))
         {
-            shown.ShowPrompt(false);
+            shown.Prompt.Offer(false);
         }
 
         _prompted = shrine;
-        shrine?.ShowPrompt(true);
+        shrine?.Prompt.Offer(true);
     }
 
     private void PromptPlate(ScripturePlate? plate)
@@ -245,11 +245,11 @@ public partial class Session : Node
 
         if (_plate is { } shown && IsInstanceValid(shown))
         {
-            shown.ShowPrompt(false);
+            shown.Prompt.Offer(false);
         }
 
         _plate = plate;
-        plate?.ShowPrompt(true);
+        plate?.Prompt.Offer(true);
     }
 
     /// <summary>Resting: full health, the shrine flares, and the game is saved here.</summary>

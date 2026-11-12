@@ -7,7 +7,8 @@ namespace TheDeep;
 /// <summary>
 /// Renders the game's screens for a look (`-- --ui-shot &lt;dir&gt;`, windowed: headless renders nothing): a gate hint over the
 /// room with the gameplay controls for the keyboard, Jump held, and the debug keys (hint.png), the controls for the gamepad, Dash
-/// held (manual-pad.png), the dialogue box on a whole line (dialogue.png), then, after crossing a few open exits from the start room,
+/// held (manual-pad.png), the dialogue box on a whole line (dialogue.png), the pilgrim at the start room's first shrine, plate or
+/// lever with its prompt offered, keyboard then gamepad (prompt.png, prompt-pad.png), then, after crossing a few open exits from the start room,
 /// the map screen (map.png), then the end card
 /// (end.png). For judging UI as
 /// images, like the look-dev captures; not part of tools/check.sh.
@@ -95,8 +96,20 @@ public partial class UiShot : Node
         {
             Shot("dialogue.png");
             Dialogue?.Close();
+            StandAtProp();
         }
-        else if (_tick > 170 && _tick % 20 == 0 && _hops < Hops)
+        else if (_tick == 200)
+        {
+            Shot("prompt.png");
+            // A stick pushed past its wake (the right one: it moves nothing) puts the prompts on the pad.
+            Input.ParseInputEvent(new InputEventJoypadMotion { Axis = JoyAxis.RightX, AxisValue = 0.9f });
+            Input.ParseInputEvent(new InputEventJoypadMotion { Axis = JoyAxis.RightX, AxisValue = 0f });
+        }
+        else if (_tick == 215)
+        {
+            Shot("prompt-pad.png");
+        }
+        else if (_tick > 230 && _tick % 20 == 0 && _hops < Hops)
         {
             _visited.Add(World.RoomName);
             RoomExit? exit = World.Room.Exits().Where(e => e.Open && ResourceLoader.Exists(e.TargetRoom))
@@ -128,6 +141,18 @@ public partial class UiShot : Node
             GetTree().Quit();
         }
     }
+
+    /// <summary>Stands the pilgrim where the room's first prop that prompts is taken (a shrine, a plate, a lever), if it has one.</summary>
+    private void StandAtProp()
+    {
+        if ((First<Shrine>() ?? First<ScripturePlate>() ?? First<Lever>()) is { } prop)
+        {
+            Player.GlobalPosition = new Vector3(prop.GlobalPosition.X + 0.5f, prop.GlobalPosition.Y + 0.05f, 0f);
+            Player.ResetPhysicsInterpolation();
+        }
+    }
+
+    private Node3D? First<T>() where T : Node3D => World.Room.All<T>() is { Count: > 0 } all ? all[0] : null;
 
     private void SetDevice(ButtonNames.Device device)
     {

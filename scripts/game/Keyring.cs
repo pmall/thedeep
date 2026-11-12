@@ -141,11 +141,11 @@ public partial class Keyring : Node
 
         if (_prompted is { } shown && IsInstanceValid(shown))
         {
-            shown.ShowPrompt(false);
+            shown.Prompt.Offer(false);
         }
 
         _prompted = lever;
-        lever?.ShowPrompt(true);
+        lever?.Prompt.Offer(true);
     }
 
     /// <summary>Taking an item: the pilgrim stands still while it flies in, then it is held, saved, and its name shows.</summary>

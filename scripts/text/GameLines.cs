@@ -4,21 +4,13 @@ using Godot;
 namespace TheDeep;
 
 /// <summary>
-/// The line ids the code names itself, whatever the world: prompts, the map's legend, the end card, and those its kinds name
+/// The line ids the code names itself, whatever the world: the map's legend, the end card, and those its kinds name
 /// (<see cref="GateKinds"/>, <see cref="ItemKinds"/>, <see cref="PowerStats"/>, the <see cref="ControlsManual"/>). The room check
 /// holds every world's book to <see cref="Named"/> (<see cref="LineCheck"/>). The end card's lines are each world's to give; the
 /// others are in the game's own book.
 /// </summary>
 public static class GameLines
 {
-    /// <summary>The prompt beside someone to talk to.</summary>
-    public static readonly StringName Talk = "ui.talk";
-    /// <summary>The prompt beside a lever.</summary>
-    public static readonly StringName Pull = "ui.pull";
-    /// <summary>The prompt at a shrine.</summary>
-    public static readonly StringName Rest = "ui.rest";
-    /// <summary>The prompt beside a scripture plate.</summary>
-    public static readonly StringName Read = "ui.read";
     /// <summary>The map legend's word for the mark of an open way.</summary>
     public static readonly StringName MapWayOpen = "map.way.open";
     /// <summary>The map legend's word for the mark of a way to a room not built yet.</summary>
@@ -33,7 +25,7 @@ public static class GameLines
     /// <summary>Every line id the code names.</summary>
     public static IEnumerable<StringName> Named()
     {
-        foreach (StringName id in new[] { Talk, Pull, Rest, Read, MapWayOpen, MapWayUnbuilt, EndingTitle, EndingLine, EndingThanks })
+        foreach (StringName id in new[] { MapWayOpen, MapWayUnbuilt, EndingTitle, EndingLine, EndingThanks })
         {
             yield return id;
         }

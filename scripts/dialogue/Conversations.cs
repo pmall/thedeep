@@ -132,11 +132,11 @@ public partial class Conversations : Node
 
         if (_prompted is { } shown && IsInstanceValid(shown))
         {
-            shown.ShowPrompt(false);
+            shown.Prompt.Offer(false);
         }
 
         _prompted = conversation;
-        conversation?.ShowPrompt(true);
+        conversation?.Prompt.Offer(true);
     }
 
     private void OnRoomLoaded(Room room)

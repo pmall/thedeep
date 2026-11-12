@@ -73,6 +73,7 @@ All working; brought to ready under `docs/roadmap.md#bricks-ready`.
 | `Proclamation` | working | `docs/roadmap.md#law-readable` |
 | `ScripturePlate` | working | `docs/roadmap.md#bricks-ready` |
 | `LawBreak` | working | `docs/roadmap.md#law-readable` |
+| `ActionPrompt` (a verb and its button, pressed or held; the button a `ButtonGlyph` drawn by a `ButtonPainter`, as in the `ControlsManual`) | working | `docs/roadmap.md#law-readable` |
 | Dialogue: `Conversation`, `DialogueBox`, played by `Conversations` (over `DialogueFlow`) | working (look) | `docs/roadmap.md#bricks-ready` |
 
 ## Items and progress <a id="bricks-items"></a>

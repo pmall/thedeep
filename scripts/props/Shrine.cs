@@ -12,29 +12,15 @@ public partial class Shrine : Node3D
     /// <summary>The glyphs' light: takes the biome's glyph color (the room lists it in its GlyphLights).</summary>
     [Export] public OmniLight3D Light { get; set; } = null!;
 
-    /// <summary>The prompt shown when the pilgrim can rest (its text is the line ui.rest).</summary>
-    [Export] public Label3D Prompt { get; set; } = null!;
+    /// <summary>The prompt offered while the pilgrim can rest ("Rest").</summary>
+    [Export] public ActionPrompt Prompt { get; set; } = null!;
 
-    private float _promptShown;
-    private bool _promptWanted;
     private float _baseEnergy;
     private Tween? _flare;
 
     public override void _Ready()
     {
         _baseEnergy = Light.LightEnergy;
-        Prompt.Text = LineBook.Shared.Find(GameLines.Rest)?.Text ?? "";
-        Prompt.Modulate = Prompt.Modulate with { A = 0f };
-    }
-
-    /// <summary>Shows or hides the prompt (eased).</summary>
-    public void ShowPrompt(bool shown) => _promptWanted = shown;
-
-    public override void _Process(double delta)
-    {
-        _promptShown = Motion.Approach(_promptShown, _promptWanted ? 1f : 0f, (float)delta * 4f);
-        Prompt.Modulate = Prompt.Modulate with { A = _promptShown * _promptShown * (3f - 2f * _promptShown) * 0.85f };
-        Prompt.Position = Prompt.Position with { Y = 2.6f + 0.08f * _promptShown };
     }
 
     /// <summary>The glyphs flare and settle back: the pilgrim has rested.</summary>

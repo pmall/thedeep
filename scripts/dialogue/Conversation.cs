@@ -3,7 +3,7 @@ using Godot;
 namespace TheDeep;
 
 /// <summary>
-/// Someone to talk to (a dialogue brick): standing near shows "Talk"; talking (interact) plays <see cref="Lines"/> in turn in the
+/// Someone to talk to (a dialogue brick): standing near offers its prompt (an <see cref="ActionPrompt"/>, "Talk"); talking (interact) plays <see cref="Lines"/> in turn in the
 /// <see cref="DialogueBox"/>, each line's speaker its own (the line book's), advanced by the player (<see cref="Conversations"/>).
 /// Make it a child of whoever speaks (a machine), and it goes where they go. With <see cref="Once"/>, it is offered until it has been
 /// heard to its end, then never again (remembered in the save).
@@ -21,30 +21,12 @@ public partial class Conversation : Node3D, INamesLines
 
     [Export] public bool Once { get; set; }
 
-    /// <summary>"Talk", shown over the speaker while the pilgrim may talk.</summary>
-    [Export] public Label3D Prompt { get; set; } = null!;
-
-    private float _shown;
-    private bool _wanted;
+    /// <summary>"Talk", offered over the speaker while the pilgrim may talk.</summary>
+    [Export] public ActionPrompt Prompt { get; set; } = null!;
 
     /// <summary>Heard to its end, and <see cref="Once"/>: no longer offered.</summary>
     public bool Spent { get; set; }
 
-    public override void _Ready()
-    {
-        Prompt.Text = LineBook.Shared.Find(GameLines.Talk)?.Text ?? "";
-        Prompt.Modulate = Prompt.Modulate with { A = 0f };
-    }
-
-    /// <summary>Whether the talk prompt is wanted now; it fades in and out toward that.</summary>
-    public void ShowPrompt(bool shown) => _wanted = shown;
-
     /// <summary>Whether feet at <paramref name="feet"/> are near enough to talk.</summary>
     public bool Near(Vector3 feet) => new Vector2(feet.X - GlobalPosition.X, feet.Y - GlobalPosition.Y).Length() <= Range;
-
-    public override void _Process(double delta)
-    {
-        _shown = Motion.Approach(_shown, _wanted ? 1f : 0f, (float)delta * 4f);
-        Prompt.Modulate = Prompt.Modulate with { A = _shown * _shown * (3f - 2f * _shown) * 0.85f };
-    }
 }

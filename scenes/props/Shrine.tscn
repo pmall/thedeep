@@ -8,6 +8,7 @@
 [ext_resource type="Script" path="res://scripts/kit/ColumnMesh.cs" id="3_column"]
 [ext_resource type="Material" path="res://assets/materials/stone_mid.tres" id="4_stone_mid"]
 [ext_resource type="Material" path="res://assets/materials/glyphs.tres" id="5_glyphs"]
+[ext_resource type="Script" path="res://scripts/ui/ActionPrompt.cs" id="90_prompt"]
 
 [sub_resource type="PrimitiveMesh" id="Arch_niche"]
 script = ExtResource("2_arch")
@@ -62,11 +63,7 @@ light_volumetric_fog_energy = 0.0
 omni_range = 4.0
 
 ; "Rest", shown when the pilgrim stands close enough (text from the line ui.rest)
-[node name="Prompt" type="Label3D" parent="."]
+[node name="Prompt" type="Node3D" parent="."]
+script = ExtResource("90_prompt")
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 2.6, 0.6)
-pixel_size = 0.004
-billboard = 1
-modulate = Color(0.94, 0.92, 1, 0)
-outline_modulate = Color(0.05, 0.04, 0.08, 0.6)
-font_size = 48
-outline_size = 8
+Verb = &"ui.rest"
