@@ -12,7 +12,7 @@ namespace TheDeep;
 /// them, and the flowing chains. Behavior code (the pilgrim's animation, later the machines') poses the
 /// joints on physics ticks, so physics interpolation keeps rigid parts smooth, then calls
 /// <see cref="StepChains"/>. Chains are simulated on physics ticks too and drawn every frame between the
-/// last two ticks, so they stay smooth at any refresh rate.
+/// last two ticks, so they stay smooth at any refresh rate (headless, where nothing is drawn, not at all).
 /// </summary>
 public partial class PartBody : Node3D
 {
@@ -31,6 +31,8 @@ public partial class PartBody : Node3D
     public override void _Ready()
     {
         Build();
+        // Headless (the checks), nothing is drawn: rebuilding the chains' meshes every frame was half of a check's frame time.
+        SetProcess(DisplayServer.GetName() != "headless");
     }
 
     /// <summary>The joint named <paramref name="name"/>, or null.</summary>
