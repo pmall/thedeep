@@ -9,7 +9,8 @@ namespace TheDeep;
 /// room with the gameplay controls for the keyboard, Jump held, and the debug keys (hint.png), a blow that leaves one hit (hurt.png,
 /// the health a moment later: last-hit.png), the controls for the gamepad, Dash
 /// held (manual-pad.png), the dialogue box on a whole line (dialogue.png), the pilgrim at the start room's first shrine, plate or
-/// lever with its prompt offered, keyboard then gamepad (prompt.png, prompt-pad.png); where the room holds a law, the pilgrim first
+/// lever with its prompt offered, keyboard then gamepad (prompt.png, prompt-pad.png), an ability's banner once eased in
+/// (banner.png); where the room holds a law, the pilgrim first
 /// presses on at its lip until it refuses, then holds the act offered there to two-thirds (prompt-law.png: the refusal on the hint
 /// line, the hold's ring part-filled), then, after crossing a few open exits from the start room,
 /// the map screen (map.png), then the end card
@@ -30,6 +31,8 @@ public partial class UiShot : Node
     public required MapScreen Map { get; init; }
     /// <summary>The running game's end card.</summary>
     public required EndCard EndCard { get; init; }
+    /// <summary>The running game's banner.</summary>
+    public required Banner Banner { get; init; }
     /// <summary>The controls manual to shoot, if the game shows one.</summary>
     public ControlsManual? Manual { get; set; }
     /// <summary>The manual of the debug keys, shown for the hint shot only; null for none.</summary>
@@ -49,6 +52,7 @@ public partial class UiShot : Node
     private float _endTime;
     private readonly HashSet<string> _visited = new();
     private LawBreak? _law;
+    private double? _banner;
 
     public override void _Ready()
     {
@@ -62,6 +66,19 @@ public partial class UiShot : Node
         if (_law is { } law)
         {
             HoldLaw(law);
+            return;
+        }
+
+        if (_banner is { } since)
+        {
+            // Shot once eased in, timed in seconds: the banner's tween runs on time, not frames.
+            _banner = since + delta;
+            if (_banner >= 0.9)
+            {
+                Shot("banner.png");
+                _banner = null;
+            }
+
             return;
         }
 
@@ -137,6 +154,8 @@ public partial class UiShot : Node
         else if (_tick == 215)
         {
             Shot("prompt-pad.png");
+            _ = Banner.Show("ability.mag_grip.name", "ability.mag_grip.hint", 0.4f);
+            _banner = 0.0;
         }
         else if (_tick > 230 && _tick % 20 == 0 && _hops < Hops)
         {

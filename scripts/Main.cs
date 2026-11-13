@@ -376,7 +376,7 @@ public partial class Main : Node3D
         }
         else if (ArgumentValue(args, UiShotArgument) is { } shotDir)
         {
-            AddChild(new UiShot { World = World, Player = Player, Travel = Travel, Hint = Hint, Map = MapScreen, EndCard = Session.EndCard, Manual = Hud.Manual, DebugKeys = Hud.DebugKeys, Dialogue = DialogueBox, OutputDir = shotDir });
+            AddChild(new UiShot { World = World, Player = Player, Travel = Travel, Hint = Hint, Map = MapScreen, EndCard = Session.EndCard, Banner = Session.Banner, Manual = Hud.Manual, DebugKeys = Hud.DebugKeys, Dialogue = DialogueBox, OutputDir = shotDir });
         }
         else if (Array.IndexOf(args, BakeSurfacesArgument) >= 0)
         {
