@@ -116,7 +116,7 @@ cast_shadow = 0
 [node name="LeftSpin" type="Node3D" parent="Token/Strength"]
 transform = Transform3D(0.9135, -0.4067, 0, 0.4067, 0.9135, 0, 0, 0, 1, -0.14, -0.07, 0)
 script = ExtResource("9_spinner")
-Axis = Vector3(-0.4067, 0.9135, 0)
+Axis = Vector3(0, 1, 0)
 Speed = -1.7
 
 [node name="Left" type="MeshInstance3D" parent="Token/Strength/LeftSpin"]
@@ -127,7 +127,7 @@ cast_shadow = 0
 [node name="RightSpin" type="Node3D" parent="Token/Strength"]
 transform = Transform3D(0.9135, 0.4067, 0, -0.4067, 0.9135, 0, 0, 0, 1, 0.14, -0.07, 0)
 script = ExtResource("9_spinner")
-Axis = Vector3(0.4067, 0.9135, 0)
+Axis = Vector3(0, 1, 0)
 Speed = 1.7
 Phase = 0.8
 

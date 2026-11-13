@@ -3,6 +3,7 @@ using System.Globalization;
 using System.Linq;
 using Godot;
 using NVector2 = System.Numerics.Vector2;
+using NVector3 = System.Numerics.Vector3;
 
 namespace TheDeep;
 
@@ -295,7 +296,8 @@ public partial class RoomValidator : Node
     /// The ground rules (<see cref="GroundRules"/>) on the room's blocks and meshes, one `GROUND &lt;Room&gt; &lt;kind&gt;:` line per finding,
     /// each a problem. A seam frame's blocks (<see cref="SeamEnd"/>) and blocks marked <see cref="Block.Low"/> are low
     /// on purpose; machines' bodies at rest (an <see cref="AnimatableBody3D"/>'s boxes) fill the ground they rest in; swum water is no
-    /// running line; pieces walked through by design (<see cref="IWalkedThrough"/>) are no open mesh.
+    /// running line; pieces walked through by design (<see cref="IWalkedThrough"/>) are no open mesh. A mesh that turns
+    /// (under a <see cref="Spinner"/>) is held to the open-mesh rule by all it sweeps in a full turn (<see cref="Swept"/>).
     /// </summary>
     private void CheckGround(Room room, string name)
     {
@@ -342,16 +344,17 @@ public partial class RoomValidator : Node
                 continue;
             }
 
-            Aabb box = mesh.GlobalTransform * mesh.GetAabb();
-            if (box.Position.Z >= -radius || box.End.Z <= radius)
+            (NVector3 min, NVector3 max) = Swept(mesh, out bool turns);
+            if (min.Z >= -radius || max.Z <= radius)
             {
                 continue; // wholly in front of or behind the pilgrim's body
             }
 
-            var plane = new Box(box.Position.X, box.Position.Y, box.End.X, box.End.Y);
+            var plane = new Box(min.X, min.Y, max.X, max.Y);
+            string lies = turns ? "sweeps across the play plane as it turns" : "lies across the play plane";
             foreach ((float from, float to) in GroundRules.OpenSpans(plane, solids))
             {
-                Found(2, $"{room.GetPathTo(mesh)} lies across the play plane (y {plane.MinY:0.##}..{plane.MaxY:0.##}) with no solid from x {from:0.##} to {to:0.##}: the pilgrim passes through it");
+                Found(2, $"{room.GetPathTo(mesh)} {lies} (y {plane.MinY:0.##}..{plane.MaxY:0.##}) with no solid from x {from:0.##} to {to:0.##}: the pilgrim passes through it");
             }
         }
 
@@ -359,6 +362,26 @@ public partial class RoomValidator : Node
         {
             _groundCounts.Add((name, counts));
         }
+    }
+
+    /// <summary>
+    /// The world box a mesh fills, over a full turn of every <see cref="Spinner"/> it hangs from (<see cref="SpinSweep"/>, the innermost
+    /// first); <paramref name="turns"/> says whether any does. A still mesh's box is its box where the scene places it.
+    /// </summary>
+    private static (NVector3 Min, NVector3 Max) Swept(MeshInstance3D mesh, out bool turns)
+    {
+        Aabb local = mesh.GetAabb();
+        NVector3[] points = SpinSweep.Corners(local.Position.ToCore(), local.End.ToCore()).Select(c => (mesh.GlobalTransform * c.ToGodot()).ToCore()).ToArray();
+        (NVector3 Min, NVector3 Max) box = (points.Aggregate(NVector3.Min), points.Aggregate(NVector3.Max));
+        turns = false;
+        foreach (Spinner spinner in Ancestors(mesh).OfType<Spinner>())
+        {
+            box = SpinSweep.Bounds(points, spinner.GlobalPosition.ToCore(), spinner.GlobalAxis.ToCore());
+            points = SpinSweep.Corners(box.Min, box.Max);
+            turns = true;
+        }
+
+        return box;
     }
 
     /// <summary>Where <paramref name="item"/> stands in <paramref name="list"/>, added at the end if it isn't there yet.</summary>
