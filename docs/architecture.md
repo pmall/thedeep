@@ -23,7 +23,8 @@ docs/                  the docs: the game, its design, where code lives, the roa
 core/                  the core: TheDeep.Core.csproj, no Godot reference. Its folders are named after the adapters'
                        they serve (core/map/ for scripts/map/), namespace TheDeep
 scripts/               the adapters: Godot nodes and resources, one folder per system
-scenes/                shared scenes: the main scene, the player, the room stage, props, the kit block, camera, fx, UI
+scenes/                shared scenes: the main scene, the player, the room stage, props, the kit block, camera, fx, UI (its
+                       text written in the game's TextStyle, resources/ui/text_style.tres, its font in assets/fonts/)
 worlds/<name>/         one world's content: world.tres (its WorldDefinition), its network, its line book, rooms/
 resources/             the live tuning, biomes, part assemblies, machine species, the game's own line book (lines.tres)
 assets/                shaders (shared code in shaders/lib/), materials, particle materials, baked textures (textures/)

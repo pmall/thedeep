@@ -1,0 +1,36 @@
+[gd_resource type="Resource" script_class="TextStyle" format=3]
+; The game's text style (TextStyle): every world's on-screen text, unless a world gives its own.
+
+[ext_resource type="Script" path="res://scripts/ui/TextStyle.cs" id="1_style"]
+[ext_resource type="FontFile" path="res://assets/fonts/Jost.ttf" id="2_jost"]
+
+; Jost at a book weight: light and geometric, and still whole at the caption's size (2003265652 is the "wght" axis).
+[sub_resource type="FontVariation" id="jost_book"]
+base_font = ExtResource("2_jost")
+variation_opentype = {
+2003265652: 450
+}
+
+[resource]
+script = ExtResource("1_style")
+Font = SubResource("jost_book")
+Caption = 15
+Body = 22
+Title = 40
+Ink = Color(0.94, 0.92, 1, 1)
+Dim = Color(0.78, 0.77, 0.86, 1)
+AccentLift = 0.45
+Plate = Color(0.03, 0.03, 0.05, 1)
+PlateOpacity = 0.62
+CornerRadius = 6
+Padding = Vector2(20, 12)
+Outline = Color(0.94, 0.92, 1, 0.08)
+OutlineWidth = 1
+Rim = Color(0.01, 0.01, 0.03, 0.6)
+RimWidth = 2
+RimDrop = 2
+Appear = 0.5
+Leave = 0.9
+Hurried = 0.35
+Panel = 0.2
+Slow = 1.5

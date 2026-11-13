@@ -8,7 +8,8 @@ namespace TheDeep;
 /// Playtesting readouts. In debug builds, the room's name and where the pilgrim stands in it (meters, the room's own frame) sit in
 /// the top right corner at all times, so a remark (or an F12 screenshot) says where it was made, and the gameplay controls sit
 /// bottom left, lit while held, for the device in hand (<see cref="ControlsManual"/>; F8 hides them). F7 adds the movement
-/// state, velocity and abilities, and the debug keys. Release builds show nothing, nor does a headless run.
+/// state, velocity and abilities, and the debug keys. Release builds show nothing, nor does a headless run. Its words are captions in
+/// the shared <see cref="TextStyle"/>, dim, ringed for the world behind them.
 /// </summary>
 public partial class DebugHud : CanvasLayer
 {
@@ -32,6 +33,9 @@ public partial class DebugHud : CanvasLayer
     public override void _Ready()
     {
         Info.Visible = false;
+        TextStyle style = TextStyle.Shared;
+        style.Dress(Info, style.Caption, style.Dim, rim: true);
+        style.Dress(RoomLabel, style.Caption, style.Dim, rim: true);
         // Headless (the checks), nobody reads it: rewriting the position as the pilgrim moves was a sixth of a played check's time.
         Visible = OS.IsDebugBuild() && DisplayServer.GetName() != "headless";
         if (Visible)

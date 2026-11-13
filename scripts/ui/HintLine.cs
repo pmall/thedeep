@@ -5,7 +5,8 @@ namespace TheDeep;
 /// <summary>
 /// One quiet line low on the screen, with a small mark in a gate's color: what the pilgrim says meeting a gate it can't pass yet
 /// (<see cref="GateHints"/>, <see cref="Keyring"/>). Eased in, held, eased out; a line said while another shows is read after it
-/// (<see cref="LinesInTurn{T}"/>, docs/gameplay.md#gate-says), sooner than a line alone would leave. Text comes from the line book.
+/// (<see cref="LinesInTurn{T}"/>, docs/gameplay.md#gate-says), sooner than a line alone would leave. Text comes from the line book,
+/// written in the shared <see cref="TextStyle"/>.
 /// </summary>
 public partial class HintLine : CanvasLayer
 {
@@ -37,10 +38,7 @@ public partial class HintLine : CanvasLayer
         Box.OffsetBottom = -92f;
         Box.AddThemeConstantOverride("separation", 14);
         Mark.Draw += () => Mark.DrawCircle(Mark.Size * 0.5f, 5.5f, _color);
-        Words.AddThemeFontSizeOverride("font_size", 22);
-        Words.AddThemeColorOverride("font_color", new Color(0.9f, 0.88f, 0.95f));
-        Words.AddThemeColorOverride("font_shadow_color", new Color(0f, 0f, 0f, 0.65f));
-        Words.AddThemeConstantOverride("shadow_offset_y", 2);
+        TextStyle.Shared.Dress(Words, TextStyle.Shared.Body, TextStyle.Shared.Ink, rim: true);
         Box.AddChild(Mark);
         Box.AddChild(Words);
         Box.Modulate = Colors.White with { A = 0f };
@@ -77,7 +75,7 @@ public partial class HintLine : CanvasLayer
         if (_shown >= (_queue.Waiting > 0 ? HoldWhenWaited : Hold))
         {
             _tween = CreateTween();
-            _tween.TweenProperty(Box, "modulate:a", 0f, _queue.Waiting > 0 ? 0.35f : 0.9f).SetTrans(Tween.TransitionType.Sine);
+            _tween.TweenProperty(Box, "modulate:a", 0f, _queue.Waiting > 0 ? TextStyle.Shared.Hurried : TextStyle.Shared.Leave).SetTrans(Tween.TransitionType.Sine);
             _tween.TweenCallback(Callable.From(Left));
         }
     }
@@ -91,7 +89,7 @@ public partial class HintLine : CanvasLayer
         _shown = 0f;
         _tween?.Kill();
         _tween = CreateTween();
-        _tween.TweenProperty(Box, "modulate:a", 1f, 0.45f).SetTrans(Tween.TransitionType.Sine);
+        _tween.TweenProperty(Box, "modulate:a", 1f, TextStyle.Shared.Appear).SetTrans(Tween.TransitionType.Sine);
         _tween.TweenCallback(Callable.From(() => _tween = null));
     }
 

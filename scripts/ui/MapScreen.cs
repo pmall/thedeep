@@ -7,10 +7,11 @@ namespace TheDeep;
 /// <summary>
 /// The minimal map (the map action: M, Tab, LB): the rooms visited so far as thin outlines placed from the
 /// exits crossed (<see cref="World.Map"/>), the current room brighter, and the pilgrim as a soft pulsing
-/// dot. The ways not yet taken show where they leave their room: a dot for one the pilgrim can take now, small rings in
+/// dot, in the room's accent. The ways not yet taken show where they leave their room: a dot for one the pilgrim can take now, small rings in
 /// the gate's colors (<see cref="GateKinds"/>, <see cref="ItemKinds"/> for a locked door) for one it can't yet, a faint ring for one
 /// leading where nothing is built (a hidden way, a secret's, shows only once taken, as every taken way does: by the rooms it joins); a
-/// legend names what is shown, and the items held are listed small, bottom left. Opening it pauses the game and eases in over a dim veil; it closes the same way.
+/// legend names what is shown, and the items held are listed small, bottom left, both in the shared <see cref="TextStyle"/>. Opening it
+/// pauses the game and eases in over a dim veil; it closes the same way.
 /// </summary>
 public partial class MapScreen : CanvasLayer
 {
@@ -23,17 +24,16 @@ public partial class MapScreen : CanvasLayer
     /// <summary>Share of the screen the visited area may fill.</summary>
     [Export] public float Fill { get; set; } = 0.7f;
 
+    /// <summary>The rooms' outlines (and a way leading where nothing is built).</summary>
     [Export] public Color Line { get; set; } = new(0.86f, 0.86f, 0.95f, 0.55f);
-    [Export] public Color Here { get; set; } = new(0.8f, 0.62f, 1f, 0.95f);
-    [Export] public Color Veil { get; set; } = new(0.02f, 0.02f, 0.035f, 0.82f);
 
-    /// <summary>Seconds to ease in or out.</summary>
-    [Export] public float FadeTime { get; set; } = 0.22f;
+    /// <summary>The veil the map is drawn over.</summary>
+    [Export] public Color Veil { get; set; } = new(0.02f, 0.02f, 0.035f, 0.82f);
 
     private Control? _canvas;
     private Control Canvas => _canvas ??= new Control { MouseFilter = Control.MouseFilterEnum.Ignore };
     private readonly System.Collections.Generic.Dictionary<string, Requirement> _requirements = new();
-    private readonly Font _font = ThemeDB.FallbackFont;
+    private Color _here;
     private float _shown;
     private bool _open;
     private float _time;
@@ -72,7 +72,7 @@ public partial class MapScreen : CanvasLayer
     {
         float dt = (float)delta;
         _time += dt;
-        _shown = Motion.Approach(_shown, _open ? 1f : 0f, dt / FadeTime);
+        _shown = Motion.Approach(_shown, _open ? 1f : 0f, dt / TextStyle.Shared.Panel);
         Visible = _shown > 0f;
         if (Visible)
         {
@@ -99,6 +99,7 @@ public partial class MapScreen : CanvasLayer
         }
 
         float ui = size.Y / 1080f;
+        _here = TextStyle.Shared.Accent(World.Room.Biome);
         NVector2 extent = NVector2.Max(max - min, new NVector2(1f));
         float scale = Mathf.Min(MaxScale * ui, Mathf.Min(size.X * Fill / extent.X, size.Y * Fill / extent.Y));
         NVector2 center = (min + max) * 0.5f;
@@ -111,7 +112,7 @@ public partial class MapScreen : CanvasLayer
             bool here = room.Name == World.Map.Current;
             Vector2 a = Screen(new NVector2(room.MapMin.X, room.MapMax.Y)), b = Screen(new NVector2(room.MapMax.X, room.MapMin.Y));
             var rect = new Rect2(a, b - a);
-            Color line = here ? Here : Line;
+            Color line = here ? _here : Line;
             Canvas.DrawRect(rect, line with { A = (here ? 0.14f : 0.06f) * ease });
             Canvas.DrawRect(rect, line with { A = line.A * ease }, filled: false, width: width);
         }
@@ -123,8 +124,8 @@ public partial class MapScreen : CanvasLayer
             Vector3 p = Player.GlobalPosition;
             Vector2 dot = Screen(current.Offset + new NVector2(p.X, p.Y + 1f));
             float pulse = 0.5f + 0.5f * Mathf.Sin(_time * 3f);
-            Canvas.DrawCircle(dot, (6f + 4f * pulse) * ui, Here with { A = 0.18f * ease });
-            Canvas.DrawCircle(dot, 3.5f * ui, Here with { A = ease });
+            Canvas.DrawCircle(dot, (6f + 4f * pulse) * ui, _here with { A = 0.18f * ease });
+            Canvas.DrawCircle(dot, 3.5f * ui, _here with { A = ease });
         }
     }
 
@@ -195,9 +196,11 @@ public partial class MapScreen : CanvasLayer
             entries.Add((LineBook.Shared.Find(GameLines.MapWayUnbuilt)?.Text ?? "", Line, false));
         }
 
-        int size = Mathf.RoundToInt(17f * ui);
+        TextStyle style = TextStyle.Shared;
+        Font font = style.Font;
+        int size = style.Caption;
         float gap = 34f * ui, mark = 20f * ui;
-        float total = entries.Sum(e => mark + _font.GetStringSize(e.Text, HorizontalAlignment.Left, -1, size).X) + gap * Mathf.Max(0, entries.Count - 1);
+        float total = entries.Sum(e => mark + font.GetStringSize(e.Text, HorizontalAlignment.Left, -1, size).X) + gap * Mathf.Max(0, entries.Count - 1);
         Vector2 size2 = Canvas.Size;
         float x = 0.5f * (size2.X - total), y = size2.Y - 56f * ui;
         foreach ((string text, Color color, bool filled) in entries)
@@ -212,8 +215,8 @@ public partial class MapScreen : CanvasLayer
                 Canvas.DrawArc(c, 5f * ui, 0f, Mathf.Tau, 20, color with { A = ease }, Mathf.Max(1.5f, 2f * ui));
             }
 
-            Canvas.DrawString(_font, new Vector2(x + mark, y), text, HorizontalAlignment.Left, -1, size, new Color(0.86f, 0.86f, 0.95f, 0.8f * ease));
-            x += mark + _font.GetStringSize(text, HorizontalAlignment.Left, -1, size).X + gap;
+            Canvas.DrawString(font, new Vector2(x + mark, y), text, HorizontalAlignment.Left, -1, size, style.Dim with { A = ease });
+            x += mark + font.GetStringSize(text, HorizontalAlignment.Left, -1, size).X + gap;
         }
 
         DrawHeld(held, ui, ease, size);
@@ -230,7 +233,7 @@ public partial class MapScreen : CanvasLayer
             string name = item is null ? id : LineBook.Shared.Find(item.NameLine)?.Text ?? id;
             Color color = ItemKinds.ColorOf(item?.Kind ?? ItemKind.Key);
             Canvas.DrawRect(new Rect2(new Vector2(48f * ui, y - 0.33f * size - 4f * ui), new Vector2(8f * ui, 8f * ui)), color with { A = ease });
-            Canvas.DrawString(_font, new Vector2(64f * ui, y), name, HorizontalAlignment.Left, -1, size, new Color(0.86f, 0.86f, 0.95f, 0.8f * ease));
+            Canvas.DrawString(TextStyle.Shared.Font, new Vector2(64f * ui, y), name, HorizontalAlignment.Left, -1, size, TextStyle.Shared.Dim with { A = ease });
             y += 26f * ui;
         }
     }

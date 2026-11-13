@@ -43,8 +43,10 @@ public partial class World : Node3D
 
     public override void _EnterTree()
     {
-        // Before any node is ready: the props, banners and manuals of this world read their words from its line book.
+        // Before any node is ready: the props, banners and manuals of this world read their words from its line book, and write
+        // them in its text style.
         LineBook.Use(Definition.Lines);
+        TextStyle.Use(Definition.TextStyle);
     }
 
     public override void _Ready()

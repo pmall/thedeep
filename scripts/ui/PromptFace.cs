@@ -4,23 +4,27 @@ namespace TheDeep;
 
 /// <summary>
 /// What an <see cref="ActionPrompt"/> shows, drawn into its own small viewport: the button (a <see cref="ButtonGlyph"/>), then the
-/// verb, on a dark plate; for a hold, a ring around the button that fills as it is held. Sizes itself to fit, so the prompt stays centered.
+/// verb as body text, on the plate, in the shared <see cref="TextStyle"/>; for a hold, a ring around the button that fills as it is
+/// held. Sizes itself to fit, so the prompt stays centered.
 /// </summary>
 public partial class PromptFace : Control
 {
+    /// <summary>How many times larger than on screen the face is drawn, so its letters stay crisp as the camera nears.</summary>
+    private const float Supersample = 2.2f;
+
     /// <summary>The glyphs' size against the manual's: a cap about as tall as the verb's letters.</summary>
     private const float GlyphScale = 2.6f;
-    private const int VerbFont = 48;
-    private const int VerbOutline = 10;
     private const float Gap = 18f;
     private const float RingWidth = 7f;
-    private const float Margin = 16f;
-
-    private static readonly Color Verb = new(0.94f, 0.92f, 1f);
-    private static readonly Color Outline = new(0.05f, 0.04f, 0.08f, 0.6f);
 
     private readonly ButtonPainter _painter = new(GlyphScale);
-    private readonly StyleBoxFlat _plate = new() { AntiAliasing = true, CornerDetail = 8, BgColor = ButtonPainter.Dark with { A = 0.6f } };
+    private StyleBoxFlat? _plate;
+    private StyleBoxFlat Plate => _plate ??= Style.NewPlate(Supersample);
+
+    private static TextStyle Style => TextStyle.Shared;
+
+    /// <summary>The verb's size on the face, pixels.</summary>
+    private static int VerbFont => Mathf.RoundToInt(Style.Body * Supersample);
     private string _verb = "";
     private ButtonGlyph? _glyph;
     private bool _hold;
@@ -41,14 +45,15 @@ public partial class PromptFace : Control
 
         _verb = verb;
         _hold = hold;
-        Font font = GetThemeDefaultFont();
+        Font font = Style.Font;
         float textWidth = font.GetStringSize(verb, HorizontalAlignment.Left, -1f, VerbFont).X;
         _glyphWidth = glyph is null ? 0f : _painter.Width(font, glyph);
         float glyphHeight = _painter.CapHeight + 2f * GlyphScale;
         _ring = hold ? 0.5f * Mathf.Sqrt(_glyphWidth * _glyphWidth + glyphHeight * glyphHeight) + RingWidth : 0f;
         float glyphBox = glyph is null ? 0f : (hold ? 2f * _ring + RingWidth : _glyphWidth) + Gap;
         float height = Mathf.Max(VerbFont * 1.4f, hold ? 2f * _ring + RingWidth : glyphHeight);
-        var size = new Vector2I(Mathf.CeilToInt(2f * Margin + glyphBox + textWidth + VerbOutline), Mathf.CeilToInt(2f * Margin + height));
+        Vector2 margin = Style.Padding * Supersample;
+        var size = new Vector2I(Mathf.CeilToInt(2f * margin.X + glyphBox + textWidth), Mathf.CeilToInt(2f * margin.Y + height));
         Size = size;
         QueueRedraw();
         return size;
@@ -65,29 +70,28 @@ public partial class PromptFace : Control
         if (what == NotificationPredelete)
         {
             _painter.Dispose();
-            _plate.Dispose();
+            _plate?.Dispose();
         }
     }
 
     public override void _Draw()
     {
-        Font font = GetThemeDefaultFont();
+        Font font = Style.Font;
         float mid = Size.Y * 0.5f;
-        // A dark plate under it all, so it reads on bright walls and lit glyphs alike.
-        _plate.SetCornerRadiusAll(Mathf.RoundToInt(mid - 2f));
-        DrawStyleBox(_plate, new Rect2(new Vector2(2f, 2f), Size - new Vector2(4f, 4f)));
-        float x = Margin;
+        // The plate under it all, so it reads on bright walls and lit glyphs alike.
+        DrawStyleBox(Plate, new Rect2(new Vector2(2f, 2f), Size - new Vector2(4f, 4f)));
+        float x = Style.Padding.X * Supersample;
         if (_glyph is { } glyph)
         {
             float box = _hold ? 2f * _ring + RingWidth : _glyphWidth;
             Vector2 center = new(x + box * 0.5f, mid);
             if (_hold)
             {
-                DrawCircle(center, _ring, Outline);
+                DrawCircle(center, _ring, Style.Plate with { A = Style.PlateOpacity });
                 DrawArc(center, _ring, 0f, Mathf.Tau, 64, ButtonPainter.Ink with { A = 0.3f }, RingWidth, true);
                 if (Fill > 0f)
                 {
-                    DrawArc(center, _ring, -Mathf.Pi * 0.5f, -Mathf.Pi * 0.5f + Mathf.Tau * Fill, 64, Verb, RingWidth, true);
+                    DrawArc(center, _ring, -Mathf.Pi * 0.5f, -Mathf.Pi * 0.5f + Mathf.Tau * Fill, 64, Style.Ink, RingWidth, true);
                 }
             }
 
@@ -95,8 +99,12 @@ public partial class PromptFace : Control
             x += box + Gap;
         }
 
-        Vector2 baseline = new(x, mid + VerbFont * 0.36f);
-        DrawStringOutline(font, baseline, _verb, HorizontalAlignment.Left, -1f, VerbFont, VerbOutline, Outline);
-        DrawString(font, baseline, _verb, HorizontalAlignment.Left, -1f, VerbFont, Verb);
+        // Centered on the plate's middle line: half the font's ascent over its descent below the baseline.
+        int verbFont = VerbFont;
+        Vector2 baseline = new(x, mid + 0.5f * (font.GetAscent(verbFont) - font.GetDescent(verbFont)));
+        // The rim too, all round the letters: the plate is translucent, and a lit glyph behind it would wash them out.
+        int rim = Mathf.RoundToInt(2f * (Style.RimWidth + Style.RimDrop) * Supersample);
+        DrawStringOutline(font, baseline, _verb, HorizontalAlignment.Left, -1f, verbFont, rim, Style.Rim);
+        DrawString(font, baseline, _verb, HorizontalAlignment.Left, -1f, verbFont, Style.Ink);
     }
 }

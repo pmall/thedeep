@@ -5,14 +5,14 @@ namespace TheDeep;
 
 /// <summary>
 /// A title and a line in the lower third of the screen, eased in, held, eased out: an ability taken.
-/// Text always comes from the line book (ids), never from code.
+/// Text always comes from the line book (ids), never from code; it is written in the shared <see cref="TextStyle"/>.
 /// </summary>
 public partial class Banner : CanvasLayer
 {
     private Label? _title;
-    private Label TitleLabel => _title ??= MakeLabel(40, new Color(0.95f, 0.93f, 1f));
+    private Label TitleLabel => _title ??= MakeLabel(Style.Title, Style.Ink);
     private Label? _line;
-    private Label LineLabel => _line ??= MakeLabel(20, new Color(0.85f, 0.83f, 0.92f));
+    private Label LineLabel => _line ??= MakeLabel(Style.Body, Style.Ink);
     private Control? _box;
     private Control Box => _box ??= new VBoxContainer { MouseFilter = Control.MouseFilterEnum.Ignore, Alignment = BoxContainer.AlignmentMode.Center };
     private Tween? _tween;
@@ -28,13 +28,12 @@ public partial class Banner : CanvasLayer
         AddChild(Box);
     }
 
-    private static Label MakeLabel(int size, Color color)
+    private static TextStyle Style => TextStyle.Shared;
+
+    private static Label MakeLabel(int size, Color ink)
     {
         var label = new Label { HorizontalAlignment = HorizontalAlignment.Center, MouseFilter = Control.MouseFilterEnum.Ignore };
-        label.AddThemeFontSizeOverride("font_size", size);
-        label.AddThemeColorOverride("font_color", color);
-        label.AddThemeColorOverride("font_shadow_color", new Color(0f, 0f, 0f, 0.6f));
-        label.AddThemeConstantOverride("shadow_offset_y", 2);
+        Style.Dress(label, size, ink, rim: true);
         return label;
     }
 
@@ -46,9 +45,9 @@ public partial class Banner : CanvasLayer
         LineLabel.Text = book.Find(lineId)?.Text ?? "";
         _tween?.Kill();
         _tween = CreateTween();
-        _tween.TweenProperty(Box, "modulate:a", 1f, 0.7f).SetTrans(Tween.TransitionType.Sine);
+        _tween.TweenProperty(Box, "modulate:a", 1f, Style.Appear).SetTrans(Tween.TransitionType.Sine);
         _tween.TweenInterval(hold);
-        _tween.TweenProperty(Box, "modulate:a", 0f, 1.0f).SetTrans(Tween.TransitionType.Sine);
+        _tween.TweenProperty(Box, "modulate:a", 0f, Style.Leave).SetTrans(Tween.TransitionType.Sine);
         await ToSignal(_tween, Tween.SignalName.Finished);
     }
 }

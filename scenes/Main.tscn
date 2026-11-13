@@ -198,11 +198,13 @@ Camera = NodePath("../SideCamera")
 [node name="Banner" type="CanvasLayer" parent="."]
 script = ExtResource("19_banner")
 
-[node name="DialogueBox" type="CanvasLayer" parent="."]
+[node name="DialogueBox" type="CanvasLayer" parent="." node_paths=PackedStringArray("World")]
 script = ExtResource("32_dialogue_box")
+World = NodePath("../World")
 
-[node name="EndCard" type="CanvasLayer" parent="."]
+[node name="EndCard" type="CanvasLayer" parent="." node_paths=PackedStringArray("World")]
 script = ExtResource("24_end")
+World = NodePath("../World")
 
 [node name="HintLine" type="CanvasLayer" parent="."]
 script = ExtResource("23_hint")

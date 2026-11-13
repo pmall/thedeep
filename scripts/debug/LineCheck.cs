@@ -7,7 +7,8 @@ namespace TheDeep;
 /// <summary>
 /// Holds a world's line book to every line id named for it, so none shows blank: the ids the code names (<see cref="GameLines"/>)
 /// and those its content names (each <see cref="INamesLines"/> its rooms and its world reach, <see cref="ExportReach"/>), looked up
-/// as the game does (the world's book, then its base). Also finds an id given twice in one book. Run by the room check.
+/// as the game does (the world's book, then its base). Also finds an id given twice in one book, and a letter of a line the font of
+/// the world's <see cref="TextStyle"/> lacks (it would show as a box). Run by the room check.
 /// </summary>
 public sealed class LineCheck
 {
@@ -40,6 +41,28 @@ public sealed class LineCheck
         {
             string path = b.ResourcePath;
             problems.AddRange(b.Lines.GroupBy(l => l.Id).Where(g => g.Count() > 1).Select(g => $"{path}: {g.Count()} lines have the id {g.Key}"));
+        }
+
+        return problems;
+    }
+
+    /// <summary>Each letter of a line of <paramref name="book"/> or its bases (its speaker's name in capitals too) that <paramref name="font"/> lacks.</summary>
+    public static List<string> MissingLetters(LineBook book, Font font)
+    {
+        var problems = new List<string>();
+        var seen = new HashSet<char>();
+        for (LineBook? b = book; b is not null; b = b.Base)
+        {
+            foreach (TextLine line in b.Lines)
+            {
+                foreach (char c in line.Text + line.Speaker + line.Speaker.ToUpperInvariant())
+                {
+                    if (!char.IsWhiteSpace(c) && seen.Add(c) && !font.HasChar(c))
+                    {
+                        problems.Add($"{b.ResourcePath}: line {line.Id} has '{c}' (U+{(int)c:X4}), which the text style's font lacks");
+                    }
+                }
+            }
         }
 
         return problems;

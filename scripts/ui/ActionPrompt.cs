@@ -31,7 +31,7 @@ public partial class ActionPrompt : Node3D, INamesLines
     /// <summary>How far it rises as it fades in, meters.</summary>
     [Export] public float Rise { get; set; } = 0.08f;
 
-    /// <summary>Its size in the world, meters per pixel of its face (the verb's letters stand about 0.35 m).</summary>
+    /// <summary>Its size in the world, meters per pixel of its face (the verb's letters stand about 0.35 m at the style's body size).</summary>
     private const float PixelSize = 0.0075f;
 
     /// <summary>A hold prompt held full: the act is confirmed.</summary>
@@ -104,7 +104,7 @@ public partial class ActionPrompt : Node3D, INamesLines
     public override void _Process(double delta)
     {
         float dt = (float)delta;
-        _shown = Motion.Approach(_shown, Offered ? 1f : 0f, dt * 4f);
+        _shown = Motion.Approach(_shown, Offered ? 1f : 0f, dt / TextStyle.Shared.Panel);
         bool visible = _shown > 0f;
         Sprite.Visible = visible;
         Viewport.RenderTargetUpdateMode = visible ? SubViewport.UpdateMode.Always : SubViewport.UpdateMode.Disabled;

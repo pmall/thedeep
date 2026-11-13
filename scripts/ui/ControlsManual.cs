@@ -9,7 +9,8 @@ namespace TheDeep;
 /// buttons while on the pad, <see cref="ButtonNames.Next"/>, crossfading when the device changes; F8 hides it), and the debug keys,
 /// top left with the F7 readout (<see cref="Debug"/>: the keyboard key, then the pad button where there is one). Buttons are read
 /// from the input map, keys by the layout's own labels (on AZERTY the physical WASD reads Z Q S D), so the manual never drifts
-/// from the bindings. An ability's rows are faint until it is held. Words come from the line book.
+/// from the bindings. An ability's rows are faint until it is held. Words come from the line book, written on the plate in the shared
+/// <see cref="TextStyle"/>.
 /// </summary>
 public partial class ControlsManual : Control
 {
@@ -19,17 +20,19 @@ public partial class ControlsManual : Control
     /// <summary>The device shown; set by the last input, or forced (UiShot).</summary>
     public ButtonNames.Device Device { get; set; }
 
-    private const float Pad = 10f;
-    private const float RowHeight = 21f;
-    private const float HeaderHeight = 22f;
     private const float CapGap = 4f;
     private const float Column = 10f;
-    private const int CapFont = 12;
-    private const int WordFont = 12;
-    private const int HeaderFont = 11;
 
-    private static readonly Color Ink = ButtonPainter.Ink;
-    private static readonly Color Dark = ButtonPainter.Dark;
+    private static TextStyle Style => TextStyle.Shared;
+
+    /// <summary>A row's height: a key cap's, or the words' size, whichever is taller, and a little air.</summary>
+    private float RowHeight => Mathf.Max(_painter.CapHeight, Style.Caption) + 3f;
+
+    /// <summary>A header's height: a row's, and a little more air above.</summary>
+    private float HeaderHeight => RowHeight + 1f;
+
+    /// <summary>The size of the marks between the caps, as their own letters.</summary>
+    private int CapFont => _painter.CapFont;
 
     /// <summary>How a row's actions become buttons.</summary>
     public enum Kind
@@ -135,15 +138,13 @@ public partial class ControlsManual : Control
     private float _alpha = 1f;
     private Vector2 _stick;
     private readonly ButtonPainter _painter = new();
-    private readonly StyleBoxFlat _panel = new() { AntiAliasing = true, CornerDetail = 8 };
+    private StyleBoxFlat? _panel;
+    private StyleBoxFlat PanelBox => _panel ??= Style.NewPlate();
 
     public override void _Ready()
     {
         MouseFilter = MouseFilterEnum.Ignore;
-        _panel.SetCornerRadiusAll(10);
-        _panel.BgColor = Dark with { A = 0.62f };
-
-        Font font = GetThemeDefaultFont();
+        Font font = Style.Font;
         foreach (Spec spec in Specs)
         {
             var row = new Row(spec, LineBook.Shared.Find(spec.Line)?.Text ?? "", header: spec.Actions.Length == 0 && spec.Needs == Ability.None);
@@ -181,7 +182,7 @@ public partial class ControlsManual : Control
         }
 
         float dt = (float)delta;
-        _alpha = Motion.Approach(_alpha, Device == _shown ? 1f : 0f, dt * 8f);
+        _alpha = Motion.Approach(_alpha, Device == _shown ? 1f : 0f, dt / (0.5f * Style.Panel)); // out, then in, within a panel's ease
         if (_alpha <= 0f)
         {
             _shown = Device;
@@ -208,50 +209,59 @@ public partial class ControlsManual : Control
         if (what == NotificationPredelete)
         {
             _painter.Dispose();
+            _panel?.Dispose();
         }
     }
 
     public override void _Draw()
     {
-        Font font = GetThemeDefaultFont();
+        TextStyle style = Style;
+        Font font = style.Font;
+        int words = style.Caption;
+        float rowHeight = RowHeight, headerHeight = HeaderHeight;
+        // Text sits on a row's middle line: half the font's ascent over its descent below the baseline.
+        float centered = 0.5f * (font.GetAscent(words) - font.GetDescent(words));
+        float marks = 0.5f * (font.GetAscent(CapFont) - font.GetDescent(CapFont));
         int device = (int)_shown;
         float a = _alpha * _alpha * (3f - 2f * _alpha);
 
         float buttons = 0f;
-        float words = 0f;
+        float wordsWidth = 0f;
         float height = 0f;
         foreach (Row row in _rows)
         {
             buttons = Mathf.Max(buttons, ItemsWidth(row.Items[device]));
-            words = Mathf.Max(words, Width(font, row.Words, row.Header ? HeaderFont : WordFont));
-            height += row.Header ? HeaderHeight : RowHeight;
+            wordsWidth = Mathf.Max(wordsWidth, Width(font, row.Header ? row.Words.ToUpperInvariant() : row.Words, words));
+            height += row.Header ? headerHeight : rowHeight;
         }
 
-        Vector2 size = new(Pad * 2f + buttons + Column + words, Pad * 2f + height - 4f);
+        Vector2 pad = style.Padding;
+        Vector2 size = new(pad.X * 2f + buttons + Column + wordsWidth, pad.Y * 2f + height);
         Vector2 origin = new(16f, Top ? TopOffset : Size.Y - 16f - size.Y);
-        DrawStyleBox(_panel, new Rect2(origin, size));
+        DrawStyleBox(PanelBox, new Rect2(origin, size));
 
-        float y = origin.Y + Pad;
-        float wordsX = origin.X + Pad + buttons + Column;
+        float y = origin.Y + pad.Y;
+        float wordsX = origin.X + pad.X + buttons + Column;
         foreach (Row row in _rows)
         {
             if (row.Header)
             {
-                y += 4f;
-                DrawString(font, new Vector2(origin.X + Pad, y + 12f), row.Words.ToUpperInvariant(), HorizontalAlignment.Left, -1f, HeaderFont,
-                    Ink with { A = 0.45f * a });
-                DrawLine(new Vector2(wordsX, y + 8f), new Vector2(origin.X + size.X - Pad, y + 8f), Ink with { A = 0.12f * a }, 1f, true);
-                y += HeaderHeight - 4f;
+                float line = y + headerHeight * 0.5f + 1f;
+                DrawString(font, new Vector2(origin.X + pad.X, line + centered), row.Words.ToUpperInvariant(), HorizontalAlignment.Left, -1f, words,
+                    style.Dim with { A = 0.7f * a });
+                float after = origin.X + pad.X + Width(font, row.Words.ToUpperInvariant(), words) + Column;
+                DrawLine(new Vector2(Mathf.Max(wordsX, after), line), new Vector2(origin.X + size.X - pad.X, line), style.Dim with { A = 0.2f * a }, 1f, true);
+                y += headerHeight;
                 continue;
             }
 
             float rowA = a * (row.Spec.Needs == Ability.None || Player.Abilities.Has(row.Spec.Needs) ? 1f : 0.5f);
-            float mid = y + RowHeight * 0.5f - 1f;
-            float x = origin.X + Pad;
+            float mid = y + rowHeight * 0.5f;
+            float x = origin.X + pad.X;
             List<Item> items = row.Items[device];
             if (items.Count == 0)
             {
-                DrawString(font, new Vector2(x, mid + 4.5f), "—", HorizontalAlignment.Left, -1f, CapFont, Ink with { A = 0.35f * rowA });
+                DrawString(font, new Vector2(x, mid + marks), "—", HorizontalAlignment.Left, -1f, CapFont, style.Dim with { A = 0.6f * rowA });
             }
 
             foreach (Item item in items)
@@ -262,15 +272,15 @@ public partial class ControlsManual : Control
                         _painter.Draw(this, font, glyph.Button, new Vector2(x + glyph.Width * 0.5f, mid + 1.5f * glyph.Button.Lit), rowA, _stick);
                         break;
                     case Separator separator:
-                        DrawString(font, new Vector2(x, mid + 4.5f), separator.Text, HorizontalAlignment.Left, -1f, CapFont, Ink with { A = 0.5f * rowA });
+                        DrawString(font, new Vector2(x, mid + marks), separator.Text, HorizontalAlignment.Left, -1f, CapFont, style.Dim with { A = rowA });
                         break;
                 }
 
                 x += item.Width + CapGap;
             }
 
-            DrawString(font, new Vector2(wordsX, mid + 5f), row.Words, HorizontalAlignment.Left, -1f, WordFont, Ink with { A = 0.85f * rowA });
-            y += RowHeight;
+            DrawString(font, new Vector2(wordsX, mid + centered), row.Words, HorizontalAlignment.Left, -1f, words, style.Ink with { A = 0.9f * rowA });
+            y += rowHeight;
         }
     }
 
