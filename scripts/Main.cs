@@ -93,6 +93,15 @@ public partial class Main : Node3D
     /// <summary>User argument that runs the dialogue check (see DialogueCheck), used by tools/check.sh.</summary>
     private const string DialogueCheckArgument = "--dialogue-check";
 
+    /// <summary>User argument that names the save file for this run (<see cref="WorldDefinition.SaveName"/>); the save check's scratch save.</summary>
+    private const string SaveNameArgument = "--save-name";
+
+    /// <summary>User argument that runs the save check's writing run (see SaveCheck), used by tools/check.sh.</summary>
+    private const string SaveCheckWriteArgument = "--save-check-write";
+
+    /// <summary>User argument that runs the save check's reading run, a normal launch that resumes the scratch save (see SaveCheck), used by tools/check.sh.</summary>
+    private const string SaveCheckReadArgument = "--save-check-read";
+
     /// <summary>User argument that runs the power-up check (see PowerUpCheck), used by tools/check.sh.</summary>
     private const string PowerUpCheckArgument = "--powerup-check";
 
@@ -141,7 +150,7 @@ public partial class Main : Node3D
     private static readonly string[] DriverArguments =
     {
         SmokeArgument, CaptureTestArgument, LookDevArgument, ValidateRoomsArgument, ValidateTravelArgument, ValidateSpeciesArgument,
-        UiShotArgument, PlaythroughCheckArgument, GripCheckArgument, CombatCheckArgument, HarpoonCheckArgument, EncounterCheckArgument, DrillCheckArgument, BallastCheckArgument, HeatCheckArgument, BurnProbeArgument, RouteCheckArgument, KeyCheckArgument, CodeCheckArgument, PowerUpCheckArgument, DialogueCheckArgument, AmbushCheckArgument, SecretCheckArgument, FightCheckArgument, BakeSurfacesArgument,
+        UiShotArgument, PlaythroughCheckArgument, GripCheckArgument, CombatCheckArgument, HarpoonCheckArgument, EncounterCheckArgument, DrillCheckArgument, BallastCheckArgument, HeatCheckArgument, BurnProbeArgument, RouteCheckArgument, KeyCheckArgument, CodeCheckArgument, PowerUpCheckArgument, DialogueCheckArgument, AmbushCheckArgument, SecretCheckArgument, FightCheckArgument, BakeSurfacesArgument, SaveCheckWriteArgument,
     };
 
     private SaveData? _resume;
@@ -164,6 +173,11 @@ public partial class Main : Node3D
             }
         }
 
+        if (ArgumentValue(args, SaveNameArgument) is { } saveName)
+        {
+            World.Definition.SaveName = saveName;
+        }
+
         _gameStart = World.Definition.StartRoom.ResourcePath;
         bool driven = DriverArguments.Any(a => Array.IndexOf(args, a) >= 0);
         bool pickedRoom = Array.IndexOf(args, RoomArgument) >= 0;
@@ -176,7 +190,10 @@ public partial class Main : Node3D
             World.FirstRoom = GD.Load<PackedScene>(World.RoomPath(save.Room));
         }
 
-        Session.Persist = !driven && !pickedRoom;
+        // The save check's writing run saves too, but only on a scratch save name: a check never writes a real save.
+        bool scratchWrite = Array.IndexOf(args, SaveCheckWriteArgument) >= 0
+            && World.Definition.SaveName.StartsWith(SaveCheck.ScratchPrefix, StringComparison.Ordinal);
+        Session.Persist = (!driven && !pickedRoom) || scratchWrite;
 
         // Before the world is ready, so it loads the requested room instead of its start room.
         if (ArgumentValue(args, RoomArgument) is { } roomName)
@@ -304,6 +321,10 @@ public partial class Main : Node3D
                 Box = DialogueBox,
                 Session = Session,
             });
+        }
+        else if (Array.IndexOf(args, SaveCheckWriteArgument) >= 0 || Array.IndexOf(args, SaveCheckReadArgument) >= 0)
+        {
+            AddChild(new SaveCheck { Write = Array.IndexOf(args, SaveCheckWriteArgument) >= 0, Player = Player, World = World, Session = Session });
         }
         else if (Array.IndexOf(args, PowerUpCheckArgument) >= 0)
         {

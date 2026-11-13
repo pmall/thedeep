@@ -56,4 +56,53 @@ public class SaveTests
     [Fact]
     public void TheTemporaryFileSitsBesideTheSave() =>
         Assert.Equal("user://save.json.tmp", SaveData.TempPath("user://save.json"));
+
+    [Fact]
+    public void AnUnreadableSaveIsKeptBesideTheSave() =>
+        Assert.Equal("user://save.json.bad", SaveData.AsidePath("user://save.json"));
+
+    [Fact]
+    public void ANewerSaveIsReportedAsNewerWithItsVersion()
+    {
+        SaveReading reading = SaveData.Parse("{\"Version\":2,\"Room\":\"Hall\"}");
+
+        var newer = Assert.IsType<SaveReading.Newer>(reading);
+        Assert.Equal(2, newer.Found);
+        Assert.Equal(SaveData.CurrentVersion, newer.Known);
+        Assert.Contains("newer version", reading.Problem);
+        Assert.DoesNotContain("corrupt", reading.Problem);
+    }
+
+    [Fact]
+    public void ANewerSaveOfAnotherShapeIsStillReportedAsNewer()
+    {
+        SaveReading reading = SaveData.Parse("{\"Version\":9,\"Room\":\"Hall\",\"Items\":{\"a\":1}}");
+
+        Assert.IsType<SaveReading.Newer>(reading);
+    }
+
+    [Theory]
+    [InlineData("")]
+    [InlineData("{ not json")]
+    [InlineData("null")]
+    [InlineData("[1,2]")]
+    [InlineData("{\"Version\":1}")]
+    [InlineData("{\"Version\":1,\"Room\":\"Hall\",\"Abilities\":\"many\"}")]
+    public void ATextThatIsNoSaveIsReportedAsCorrupt(string text)
+    {
+        SaveReading reading = SaveData.Parse(text);
+
+        Assert.IsType<SaveReading.Corrupt>(reading);
+        Assert.Contains("corrupt", reading.Problem);
+        Assert.Null(SaveData.FromJson(text));
+    }
+
+    [Fact]
+    public void ASaveThisBuildReadsHasNoProblem()
+    {
+        SaveReading reading = SaveData.Parse(new SaveData { Room = "Hall" }.ToJson());
+
+        Assert.IsType<SaveReading.Loaded>(reading);
+        Assert.Equal("", reading.Problem);
+    }
 }

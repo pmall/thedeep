@@ -213,6 +213,8 @@ CHECKS=(
     "powerup|POWERUP OK|POWERUP CHECK|1500|--room Sacristy --powerup-check"
     # FightCheck: the fight moveset on the lab's Votary.
     "fight|FIGHT OK|FIGHT CHECK|1500|--room MechanicsLab --fight-check"
+    # SaveCheck: a game saved by resting, resumed in a fresh run (two runs, one after the other: launch), on a scratch save.
+    "save|SAVE OK|SAVE CHECK|1000|--save-check"
     # CombatCheck, EncounterCheck, PlaythroughCheck, SpeciesValidator.
     "combat|COMBAT OK|COMBAT CHECK|4000|--room MechanicsLab --combat-check"
     "encounter|ENCOUNTER OK|ENCOUNTER CHECK|9000|--room Chapterhouse --encounter-check"
@@ -237,7 +239,11 @@ launch() {
     (
         local t0=$SECONDS code=0
         # shellcheck disable=SC2086 # the arguments are split on purpose
-        if [ -n "$args" ]; then
+        if [ "$args" = "--save-check" ]; then
+            # Two fresh runs in turn, the second resuming what the first saved (SaveCheck).
+            nice -n "$nice" "$GODOT" --headless --path . --fixed-fps 60 --quit-after "$frames" -- --room Threshold --save-name savecheck --save-check-write >"$log" 2>&1 || code=$?
+            [ "$code" = 0 ] && { nice -n "$nice" "$GODOT" --headless --path . --fixed-fps 60 --quit-after "$frames" -- --save-name savecheck --save-check-read >>"$log" 2>&1 || code=$?; }
+        elif [ -n "$args" ]; then
             nice -n "$nice" "$GODOT" --headless --path . --fixed-fps 60 --quit-after "$frames" -- $args >"$log" 2>&1 || code=$?
         else
             nice -n "$nice" "$GODOT" --headless --path . --fixed-fps 60 --quit-after "$frames" >"$log" 2>&1 || code=$?

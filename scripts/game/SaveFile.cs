@@ -8,7 +8,11 @@ namespace TheDeep;
 /// </summary>
 public static class SaveFile
 {
-    /// <summary>The save at <paramref name="path"/>, or null when there is none (a new game) or it cannot be opened.</summary>
+    /// <summary>
+    /// The save at <paramref name="path"/>, or null when there is none (a new game) or it cannot be opened. A save that cannot be
+    /// read (corrupt, or from a newer version) is never overwritten: it is reported as an engine error naming the file and why, and
+    /// set aside by <see cref="SetAside"/>, so the new game that follows keeps it.
+    /// </summary>
     public static SaveData? Read(string path)
     {
         if (!FileAccess.FileExists(path))
@@ -17,7 +21,29 @@ public static class SaveFile
         }
 
         using FileAccess? file = FileAccess.Open(path, FileAccess.ModeFlags.Read);
-        return file is null ? null : SaveData.FromJson(file.GetAsText());
+        if (file is null)
+        {
+            return null;
+        }
+
+        SaveReading reading = SaveData.Parse(file.GetAsText());
+        if (reading is SaveReading.Loaded loaded)
+        {
+            return loaded.Data;
+        }
+
+        file.Close();
+        string? kept = SetAside(path);
+        GD.PushError($"the save {ProjectSettings.GlobalizePath(path)} was not read: {reading.Problem}; " +
+                     (kept is null ? "it could not be set aside either" : $"it is kept as {ProjectSettings.GlobalizePath(kept)}") + ", and a new game starts");
+        return null;
+    }
+
+    /// <summary>Renames the save at <paramref name="path"/> to <see cref="SaveData.AsidePath"/> (replacing an older one); the new path, or null on failure.</summary>
+    public static string? SetAside(string path)
+    {
+        string aside = SaveData.AsidePath(path);
+        return DirAccess.RenameAbsolute(ProjectSettings.GlobalizePath(path), ProjectSettings.GlobalizePath(aside)) == Error.Ok ? aside : null;
     }
 
     /// <summary>Forgets the save (the run ended): the next launch is a new game.</summary>
