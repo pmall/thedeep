@@ -8,7 +8,7 @@ namespace TheDeep;
 /// floating over a pedestal. Walking up to it takes it (<see cref="Session"/>): the core drifts into the
 /// pilgrim, the ability unlocks, the game saves, and it is gone for good. The node stands on the floor.
 /// </summary>
-public partial class AbilityRelic : Node3D, INamesLines, IWalkedThrough
+public partial class AbilityRelic : Node3D, IAnnounces, IWalkedThrough
 {
     [Export] public Ability Ability { get; set; } = Ability.MagGrip;
 
@@ -23,6 +23,12 @@ public partial class AbilityRelic : Node3D, INamesLines, IWalkedThrough
 
     /// <inheritdoc/>
     public System.Collections.Generic.IEnumerable<StringName> LineIds => new[] { NameLine, HintLine };
+
+    /// <summary>What the banner says as it is taken.</summary>
+    public Announcement Said => new(NameLine, HintLine);
+
+    /// <inheritdoc/>
+    public System.Collections.Generic.IEnumerable<Announcement> Announcements => new[] { Said };
 
     private Vector3 _coreRest;
     private float _time;

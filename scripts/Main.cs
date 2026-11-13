@@ -270,6 +270,7 @@ public partial class Main : Node3D
             AddChild(new RoomValidator
             {
                 World = World,
+                Banner = Session.Banner,
                 Tuning = Player.Tuning,
                 ClimbRise = Travel.ClimbRise,
                 StartRoom = _gameStart,
@@ -328,7 +329,7 @@ public partial class Main : Node3D
         }
         else if (Array.IndexOf(args, PowerUpCheckArgument) >= 0)
         {
-            AddChild(new PowerUpCheck { Player = Player, World = World, PowerUps = PowerUps, Session = Session });
+            AddChild(new PowerUpCheck { Player = Player, World = World, PowerUps = PowerUps, Session = Session, Banner = Session.Banner });
         }
         else if (Array.IndexOf(args, KeyCheckArgument) >= 0)
         {

@@ -154,7 +154,7 @@ public partial class UiShot : Node
         else if (_tick == 215)
         {
             Shot("prompt-pad.png");
-            _ = Banner.Show("ability.mag_grip.name", "ability.mag_grip.hint", 0.4f);
+            Banner.Show(new Announcement("ability.mag_grip.name", "ability.mag_grip.hint"));
             _banner = 0.0;
         }
         else if (_tick > 230 && _tick % 20 == 0 && _hops < Hops)

@@ -8,7 +8,7 @@ namespace TheDeep;
 /// fall when it breaks; once beaten, the boss is gone for good. The world's network names it by its boss's species
 /// (<c>boss &lt;Room&gt; &lt;DisplayName&gt;</c>).
 /// </summary>
-public partial class BossSeal : Arena, INamesLines
+public partial class BossSeal : Arena, IAnnounces
 {
     [Export] public Machine Boss { get; set; } = null!;
 
@@ -17,15 +17,20 @@ public partial class BossSeal : Arena, INamesLines
     [Export] public StringName FallenLine { get; set; } = "";
     [Export] public StringName FallenHintLine { get; set; } = "";
 
-    /// <summary>How long the boss's name stays on the banner, and its fall, seconds.</summary>
-    [Export] public float NameSeconds { get; set; } = 2.5f;
-    [Export] public float FallenSeconds { get; set; } = 4f;
-
     /// <summary>How hard the camera shakes as the boss breaks (<see cref="SideCamera.AddShake"/>).</summary>
     [Export] public float FallenShake { get; set; } = 0.5f;
 
     /// <inheritdoc/>
     public IEnumerable<StringName> LineIds => new[] { NameLine, FallenLine, FallenHintLine };
+
+    /// <summary>What the banner says as the fight begins: the boss's name alone.</summary>
+    public Announcement Named => new(NameLine, "");
+
+    /// <summary>What the banner says as the boss breaks.</summary>
+    public Announcement Fallen => new(FallenLine, FallenHintLine);
+
+    /// <inheritdoc/>
+    public IEnumerable<Announcement> Announcements => new[] { Named, Fallen };
 
     /// <inheritdoc/>
     public override IEnumerable<Machine> Foes => new[] { Boss };

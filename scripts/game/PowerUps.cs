@@ -63,7 +63,7 @@ public partial class PowerUps : Node
         Player.Frozen = false;
         _taking = false;
         Taken?.Invoke(power);
-        await Banner.Show(PowerStats.NameLine(power.Stat), PowerStats.HintLine(power.Stat));
+        Banner.Show(PowerStats.Said(power.Stat));
     }
 
     private void OnRoomLoaded(Room room)

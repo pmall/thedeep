@@ -21,7 +21,7 @@ namespace TheDeep;
 /// - no required export is left empty, in the room's nodes, the bricks it places and the resources they reach, nor in the main
 ///   scene and its world (<see cref="RequiredExports"/>).
 /// Then the world's line book: every line the code, the rooms and the world's items name is in it or its base, and every letter of
-/// its lines is in the text style's font (<see cref="LineCheck"/>).
+/// its lines is in the text style's font, and every banner said fits the banner's box (<see cref="LineCheck"/>).
 /// Then the map, extracted from the rooms in the game (<see cref="Room.InGame"/>) and proven by the core's <see cref="WorldCheck"/>:
 /// layout, reachability, softlocks, ability orders (`--map-report`: the whole graph), the geometry, the map from inside the rooms,
 /// room for error; the seams, every way's two ends held to each other (<see cref="SeamCheck"/>); and the world's network (<see cref="MapDraft"/>): its targets, its layers, its agreement with the built rooms (their arenas too), and its room
@@ -46,6 +46,9 @@ public partial class RoomValidator : Node
 
     /// <summary>The world whose rooms are checked.</summary>
     public required World World { get; init; }
+
+    /// <summary>The running game's banner, whose box every banner said must fit.</summary>
+    public required Banner Banner { get; init; }
 
     /// <summary>The numbers the planners simulate (the live tuning, the single source).</summary>
     public required PlayerTuning Tuning { get; init; }
@@ -104,6 +107,7 @@ public partial class RoomValidator : Node
         _lines.Add(World.Definition);
         _problems.AddRange(_lines.Problems(World.Definition.Lines));
         _problems.AddRange(LineCheck.MissingLetters(World.Definition.Lines, TextStyle.Shared.Font));
+        _problems.AddRange(_lines.Unfit(World.Definition.Lines, Banner));
         CheckLockedLines(world.Graph);
         string map = world.Check(World.NameOf(StartRoom), _draft?.Targets ?? MapTargets.None, Report);
         _problems.AddRange(world.Problems);

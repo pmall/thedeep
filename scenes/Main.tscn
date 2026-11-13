@@ -195,8 +195,10 @@ script = ExtResource("30_pointer")
 Player = NodePath("../Player")
 Camera = NodePath("../SideCamera")
 
-[node name="Banner" type="CanvasLayer" parent="."]
+[node name="Banner" type="CanvasLayer" parent="." node_paths=PackedStringArray("Player", "Camera")]
 script = ExtResource("19_banner")
+Player = NodePath("../Player")
+Camera = NodePath("../SideCamera")
 
 [node name="DialogueBox" type="CanvasLayer" parent="." node_paths=PackedStringArray("World")]
 script = ExtResource("32_dialogue_box")

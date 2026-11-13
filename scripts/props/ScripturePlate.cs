@@ -7,7 +7,7 @@ namespace TheDeep;
 /// shows its words in the banner (<see cref="Session"/>). Lore, nothing more. The node is where the pilgrim stands
 /// to read, on the floor in front of the lectern. Its words are lines in the line book.
 /// </summary>
-public partial class ScripturePlate : Node3D, INamesLines
+public partial class ScripturePlate : Node3D, IAnnounces
 {
     [Export] public OmniLight3D Light { get; set; } = null!;
     [Export] public ActionPrompt Prompt { get; set; } = null!;
@@ -18,6 +18,12 @@ public partial class ScripturePlate : Node3D, INamesLines
 
     /// <inheritdoc/>
     public System.Collections.Generic.IEnumerable<StringName> LineIds => new[] { TitleLine, TextLine };
+
+    /// <summary>What the banner says as it is read.</summary>
+    public Announcement Said => new(TitleLine, TextLine);
+
+    /// <inheritdoc/>
+    public System.Collections.Generic.IEnumerable<Announcement> Announcements => new[] { Said };
 
     private float _baseEnergy;
     private float _read;

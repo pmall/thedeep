@@ -15,7 +15,7 @@ namespace TheDeep;
 /// not a <see cref="Block"/>, and the map counts the way as open; the world's network names it as a <c>milestone</c>, which the
 /// draft check holds to story order.
 /// </summary>
-public partial class LawBreak : Node3D, INamesLines
+public partial class LawBreak : Node3D, IAnnounces
 {
     [Export] public StaticBody3D Fence { get; set; } = null!;
     [Export] public Label3D Words { get; set; } = null!;
@@ -38,6 +38,12 @@ public partial class LawBreak : Node3D, INamesLines
 
     /// <inheritdoc/>
     public System.Collections.Generic.IEnumerable<StringName> LineIds => new[] { LawLine, BrokenLine, BrokenHintLine, RefusalLine, ActLine };
+
+    /// <summary>What the banner says once it is broken.</summary>
+    public Announcement Said => new(BrokenLine, BrokenHintLine);
+
+    /// <inheritdoc/>
+    public System.Collections.Generic.IEnumerable<Announcement> Announcements => new[] { Said };
 
     /// <summary>The color of the law's words shown, and of the mark beside the pilgrim's refusal.</summary>
     public static readonly Color WordsColor = new(0.86f, 0.84f, 1f);

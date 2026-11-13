@@ -120,7 +120,7 @@ public partial class Session : Node
                     End();
                     return;
                 case GoalMoment.Shown:
-                    _ = Banner.Show(goal.TitleLine, goal.HintLine, 5f);
+                    Banner.Show(goal.Said);
                     break;
                 case GoalMoment.None:
                     break;
@@ -130,7 +130,7 @@ public partial class Session : Node
         if (Unspoken(room, p) is { } spoken)
         {
             _spoken.Add(spoken);
-            _ = Banner.Show(spoken.SpeakerLine, spoken.TextLine, 5f);
+            Banner.Show(spoken.Said);
             Spoke?.Invoke(spoken);
         }
 
@@ -150,7 +150,7 @@ public partial class Session : Node
         if (plate is not null && Input.IsActionJustPressed(InputActions.Interact))
         {
             plate.Read();
-            _ = Banner.Show(plate.TitleLine, plate.TextLine, 6f);
+            Banner.Show(plate.Said);
         }
 
         foreach (AbilityRelic relic in room.All<AbilityRelic>())
@@ -282,7 +282,7 @@ public partial class Session : Node
         Remember(relic.Name);
         Player.Frozen = false;
         _busy = false;
-        await Banner.Show(relic.NameLine, relic.HintLine);
+        Banner.Show(relic.Said);
     }
 
     /// <summary>
@@ -378,6 +378,7 @@ public partial class Session : Node
     {
         Prompt(null);
         PromptPlate(null);
+        Banner.Clear();
         _spoken.Clear();
         string name = World.NameOf(room.SceneFilePath);
         _pilgrimage.Enter(name);
@@ -447,7 +448,7 @@ public partial class Session : Node
         await ToSignal(GetTree().CreateTimer(0.9f, processAlways: false), SceneTreeTimer.SignalName.Timeout);
         Player.Frozen = false;
         _busy = false;
-        await Banner.Show(law.BrokenLine, law.BrokenHintLine, 4f);
+        Banner.Show(law.Said);
     }
 
     /// <summary>Whether the node <paramref name="node"/> of <paramref name="room"/> is done for good (taken, beaten, broken, opened).</summary>

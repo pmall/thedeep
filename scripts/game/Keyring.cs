@@ -162,7 +162,7 @@ public partial class Keyring : Node
         Session.Remember(pickup.Name);
         Player.Frozen = false;
         _taking = false;
-        await Banner.Show(pickup.Item.NameLine, pickup.Item.TakenLine);
+        Banner.Show(pickup.Item.Said);
     }
 
     private void OnRoomLoaded(Room room)

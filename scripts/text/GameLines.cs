@@ -22,6 +22,15 @@ public static class GameLines
     /// <summary>The end card's thanks.</summary>
     public static readonly StringName EndingThanks = "ending.thanks";
 
+    /// <summary>Every banner the code says itself (<see cref="PowerStats.Said"/>), held to the banner's box like the content's.</summary>
+    public static IEnumerable<Announcement> Announced()
+    {
+        foreach (PowerStat stat in System.Enum.GetValues<PowerStat>())
+        {
+            yield return PowerStats.Said(stat);
+        }
+    }
+
     /// <summary>Every line id the code names.</summary>
     public static IEnumerable<StringName> Named()
     {

@@ -50,7 +50,7 @@ public partial class Arenas : Node
     {
         if (arena is BossSeal seal)
         {
-            _ = Banner.Show(seal.NameLine, "", seal.NameSeconds);
+            Banner.Show(seal.Named);
         }
     }
 
@@ -62,7 +62,7 @@ public partial class Arenas : Node
         {
             case BossSeal seal:
                 Camera.AddShake(seal.FallenShake);
-                _ = Banner.Show(seal.FallenLine, seal.FallenHintLine, seal.FallenSeconds);
+                Banner.Show(seal.Fallen);
                 break;
             case Ambush ambush:
                 Camera.AddShake(ambush.ClearedShake);
