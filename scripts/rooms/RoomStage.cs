@@ -6,7 +6,7 @@ namespace TheDeep;
 /// <summary>
 /// The atmosphere stack every room repeats, as one shared piece (scenes/stage/RoomStage.tscn): the
 /// environment and key light, clear air in front of the play plane, the far backdrop (two skylines, the depth layer's
-/// own, and its architecture standing in the haze: <see cref="BackdropArchitecture"/>), the dark framing foreground above and below the play area, dust in the air,
+/// own as its profile names them, and its architecture standing in the haze: <see cref="BackdropArchitecture"/>), the dark framing foreground above and below the play area, dust in the air,
 /// and the visible beam of each of the room's light shafts (<see cref="LightShaft"/>).
 /// Everything is sized from the room's camera bounds when the room is ready (<see cref="Build"/>), so a
 /// room only states its layout and the few choices exported here. Deterministic for a given <see cref="Seed"/>.
@@ -27,13 +27,8 @@ public partial class RoomStage : Node3D
     [Export] public WorldEnvironment Environment { get; set; } = null!;
     [Export] public DirectionalLight3D KeyLight { get; set; } = null!;
 
-    /// <summary>The farthest skyline (a backdrop_silhouette material); null for none.</summary>
+    /// <summary>How far behind the play plane the far skyline and the nearer one stand (their looks are the biome's: <see cref="BiomeProfile.FarSkyline"/>).</summary>
     [ExportGroup("Backdrop")]
-    [Export] public Material? FarSkyline { get; set; }
-
-    /// <summary>The nearer skyline; null for none.</summary>
-    [Export] public Material? NearSkyline { get; set; }
-
     [Export] public float FarSkylineDepth { get; set; } = 70f;
     [Export] public float NearSkylineDepth { get; set; } = 48f;
 
@@ -86,8 +81,8 @@ public partial class RoomStage : Node3D
         Vector2 size = max - min;
         float centerX = (min.X + max.X) * 0.5f;
 
-        _farSkyline = AddSkyline("FarSkyline", FarSkyline, FarSkylineDepth, min.Y - 6f, size, centerX, 90f);
-        _nearSkyline = AddSkyline("NearSkyline", NearSkyline, NearSkylineDepth, min.Y - 4f, size, centerX, 60f);
+        _farSkyline = AddSkyline("FarSkyline", FarSkylineDepth, min.Y - 6f, size, centerX, 90f);
+        _nearSkyline = AddSkyline("NearSkyline", NearSkylineDepth, min.Y - 4f, size, centerX, 60f);
 
         float frameWidth = size.X + 8f;
         if (FrameBelow)
@@ -154,16 +149,9 @@ public partial class RoomStage : Node3D
     {
         Underglow(biome);
 
-        // The layer's skylines, where the room shows them.
-        if (_farSkyline is not null && biome.FarSkyline is not null)
-        {
-            _farSkyline.MaterialOverride = biome.FarSkyline;
-        }
-
-        if (_nearSkyline is not null && biome.NearSkyline is not null)
-        {
-            _nearSkyline.MaterialOverride = biome.NearSkyline;
-        }
+        // The layer's skylines, or none where it names none.
+        ShowSkyline(_farSkyline, biome.FarSkyline);
+        ShowSkyline(_nearSkyline, biome.NearSkyline);
 
         if (_architecture is not null && (_architecture.Style == biome.Architecture || PillarDensity <= 0f))
         {
@@ -194,6 +182,17 @@ public partial class RoomStage : Node3D
     }
 
     private MeshInstance3D? _farSkyline, _nearSkyline;
+
+    private static void ShowSkyline(MeshInstance3D? skyline, Material? look)
+    {
+        if (skyline is null)
+        {
+            return;
+        }
+
+        skyline.MaterialOverride = look;
+        skyline.Visible = look is not null;
+    }
     private DirectionalLight3D? _underglow;
 
     /// <summary>The layer's light from below (<see cref="BiomeProfile.UnderglowEnergy"/>), made when first needed.</summary>
@@ -227,13 +226,9 @@ public partial class RoomStage : Node3D
         _underglow.LightEnergy = biome.UnderglowEnergy;
     }
 
-    private MeshInstance3D? AddSkyline(string name, Material? material, float depth, float bottom, Vector2 roomSize, float centerX, float minHeight)
+    /// <summary>A skyline's sheet, hidden until the biome gives it a look (<see cref="Restyle"/>).</summary>
+    private MeshInstance3D AddSkyline(string name, float depth, float bottom, Vector2 roomSize, float centerX, float minHeight)
     {
-        if (material is null)
-        {
-            return null;
-        }
-
         float viewDistance = CameraDistance + depth;
         float width = roomSize.X + 2f * viewDistance * ViewHalfWidthPerMeter;
         float height = Mathf.Max(minHeight, roomSize.Y + minHeight * 0.6f);
@@ -241,9 +236,9 @@ public partial class RoomStage : Node3D
         {
             Name = name,
             Mesh = new QuadMesh { Size = new Vector2(width, height), CenterOffset = new Vector3(0f, height * 0.5f, 0f) },
-            MaterialOverride = material,
             CastShadow = GeometryInstance3D.ShadowCastingSetting.Off,
             Position = new Vector3(centerX, bottom, -depth),
+            Visible = false,
         };
         AddChild(skyline);
         return skyline;

@@ -1,13 +1,15 @@
 // The plume of a HeatColumn: one sheet exactly as wide and tall as the column that burns (its QuadMesh is sized from the
 // column's region), unshaded: heat is its own light. Premultiplied: it dims what lies behind it by its coverage and adds its own
-// glow, so it keeps its colour on any backdrop (pure addition turns pink on blue stone). Its colour is heat's own ramp, deep red
-// through orange to white-hot, never the biome's accent. Tongues of heat rise through it, broad and white-hot at the vent,
+// glow, so it keeps its colour on any backdrop (pure addition turns pink on blue stone). Its colour is heat's own ramp, the
+// biome's molten colours from dull red through its glow to white-hot (BiomeProfile.Molten), never its decor accent. Tongues of heat rise through it, broad and white-hot at the vent,
 // thinning and reddening toward the top; a soft bright rim at each side keeps its true edges legible, and heat pools a little
 // under the hood or roof that ends it. The tongues are a baked, seamless noise texture with mipmaps, scrolled up, stretched tall
 // and swayed sideways by a slower sample of the same texture, never noise computed per pixel (docs/art-direction.md#stable-image).
 // The rims are kept a few pixels wide on screen and anti-aliased.
 shader_type spatial;
 render_mode blend_premul_alpha, depth_draw_never, cull_disabled, unshaded, shadows_disabled;
+
+#include "res://assets/shaders/lib/palette.gdshaderinc"
 
 /// The column's width and height (meters), set by the HeatColumn so the texture keeps its scale on any column.
 instance uniform vec2 size = vec2(2.0, 6.0);
@@ -30,14 +32,12 @@ uniform float edge_strength : hint_range(0.0, 4.0) = 1.0;
 /// The white-hot core over the vent, and the heat pooled under its top (meters).
 uniform float foot_band : hint_range(0.0, 3.0) = 0.5;
 uniform float top_band : hint_range(0.0, 2.0) = 0.3;
-/// Heat's ramp, coolest to hottest.
-uniform vec4 dull_red : source_color = vec4(0.5, 0.06, 0.02, 1.0);
-uniform vec4 flame : source_color = vec4(1.0, 0.4, 0.08, 1.0);
-uniform vec4 white_hot : source_color = vec4(1.0, 0.85, 0.55, 1.0);
-
+// Heat's ramp, coolest to hottest, linear.
 vec3 ramp(float t) {
 	t = clamp(t, 0.0, 1.0);
-	return t < 0.5 ? mix(dull_red.rgb, flame.rgb, t * 2.0) : mix(flame.rgb, white_hot.rgb, t * 2.0 - 1.0);
+	vec3 molten = srgb_to_linear(biome_molten.rgb);
+	return t < 0.5 ? mix(srgb_to_linear(biome_molten_cool.rgb), molten, t * 2.0)
+			: mix(molten, srgb_to_linear(biome_molten_hot.rgb), t * 2.0 - 1.0);
 }
 
 void fragment() {

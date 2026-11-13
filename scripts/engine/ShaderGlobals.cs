@@ -20,7 +20,7 @@ public static class ShaderGlobals
     public static readonly StringName BiomeBackdropAccent = "biome_backdrop_accent";
     /// <summary>The color of the foreground silhouettes framing the screen (<see cref="BiomeProfile.Foreground"/>).</summary>
     public static readonly StringName BiomeForeground = "biome_foreground";
-    /// <summary>The biome's accent hue for emissive decor (<see cref="BiomeProfile.Accent"/>).</summary>
+    /// <summary>The biome's decor accent, for emissive decor, never a hazard (<see cref="BiomeProfile.Accent"/>).</summary>
     public static readonly StringName BiomeAccent = "biome_accent";
     /// <summary>The tint of the room's ambient particles (<see cref="BiomeProfile.ParticleTint"/>).</summary>
     public static readonly StringName BiomeParticle = "biome_particle";
@@ -34,6 +34,18 @@ public static class ShaderGlobals
     public static readonly StringName BiomeMasonry = "biome_masonry";
     /// <summary>The rime's color (<see cref="BiomeProfile.FrostColor"/>).</summary>
     public static readonly StringName BiomeFrostColor = "biome_frost_color";
+    /// <summary>What the rime turns to in the shade of crevices (<see cref="BiomeProfile.FrostShade"/>).</summary>
+    public static readonly StringName BiomeFrostShade = "biome_frost_shade";
+    /// <summary>The ice's body seen straight on (<see cref="BiomeProfile.IceTint"/>).</summary>
+    public static readonly StringName BiomeIce = "biome_ice";
+    /// <summary>The dull red the hazards' heat cools to (<see cref="BiomeProfile.MoltenCool"/>).</summary>
+    public static readonly StringName BiomeMoltenCool = "biome_molten_cool";
+    /// <summary>The hazards' own glow (<see cref="BiomeProfile.Molten"/>).</summary>
+    public static readonly StringName BiomeMolten = "biome_molten";
+    /// <summary>The hazards' white-hot (<see cref="BiomeProfile.MoltenHot"/>).</summary>
+    public static readonly StringName BiomeMoltenHot = "biome_molten_hot";
+    /// <summary>How far the faith glyphs take the accent toward white (<see cref="BiomeProfile.GlyphWhiten"/>, its one source).</summary>
+    public static readonly StringName GlyphWhiten = "glyph_whiten";
 
     /// <summary>The baked frost set (<see cref="FrostSurface"/>) every material that frosts samples; project.godot sets it once.</summary>
     public static readonly StringName FrostSurfaceMap = "frost_surface";

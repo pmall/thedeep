@@ -1,7 +1,8 @@
 [gd_resource type="Resource" script_class="BiomeProfile" format=3]
-; Layer 4, the core: what the machines call paradise. Ancient machinery, older than the foundry, dark bronze and black
-; iron in a crimson haze; the accent is ember red, the glow of the heart they descend toward (docs/art-direction.md#look: the
-; palette warms with depth, to dark amber and ember at the core).
+; Layer 4, the core: what the machines call paradise. Ancient machinery, older than the foundry: warm grey stone, dark bronze
+; and black iron in a dim maroon murk; the decor accent is ember red, the glow of the heart they descend toward
+; (docs/art-direction.md#look: the palette warms with depth, to dark amber and ember at the core). Heat stays in the molten
+; ember-gold, apart from the red, the only saturated marks on the play plane.
 
 [ext_resource type="Script" path="res://scripts/biome/BiomeProfile.cs" id="1_biome"]
 [ext_resource type="Material" path="res://assets/materials/backdrop_machinery_far.tres" id="2_far"]
@@ -10,44 +11,47 @@
 [resource]
 script = ExtResource("1_biome")
 DisplayName = "Core"
-Rock = Color(0.36, 0.32, 0.32, 1)
-Metal = Color(0.82, 0.7, 0.52, 1)
-Backdrop = Color(0.06, 0.035, 0.035, 1)
-BackdropAccent = Color(1, 0.3, 0.16, 1)
-Rust = Color(0.36, 0.17, 0.12, 1)
+Rock = Color(0.35, 0.34, 0.335, 1)
+Metal = Color(0.76, 0.71, 0.62, 1)
+Backdrop = Color(0.07, 0.06, 0.06, 1)
+BackdropAccent = Color(0.5, 0.2, 0.16, 1)
+Rust = Color(0.36, 0.27, 0.23, 1)
 Silt = Color(0.3, 0.27, 0.27, 1)
 Foreground = Color(0.025, 0.012, 0.012, 1)
-Accent = Color(1, 0.3, 0.14, 1)
-Background = Color(0.11, 0.03, 0.025, 1)
-AmbientColor = Color(0.64, 0.42, 0.3, 1)
-AmbientEnergy = 0.5
-KeyColor = Color(1, 0.88, 0.8, 1)
-KeyEnergy = 1.6
-LampColor = Color(1, 0.36, 0.18, 1)
-ShaftColor = Color(1, 0.5, 0.34, 1)
-FogColor = Color(0.17, 0.03, 0.02, 1)
+Accent = Color(1, 0.28, 0.2, 1)
+Background = Color(0.06, 0.04, 0.04, 1)
+AmbientColor = Color(0.62, 0.6, 0.6, 1)
+AmbientEnergy = 0.85
+KeyColor = Color(1, 0.96, 0.93, 1)
+KeyEnergy = 2.7
+LampColor = Color(1, 0.74, 0.58, 1)
+ShaftColor = Color(1, 0.85, 0.74, 1)
+FogColor = Color(0.14, 0.1, 0.1, 1)
 FogDensity = 0.72
 FogDepthBegin = 1.5
 FogDepthEnd = 73.0
 FogDepthCurve = 0.7
-HazeColor = Color(0.36, 0.16, 0.13, 1)
+HazeColor = Color(0.32, 0.24, 0.23, 1)
 Exposure = 1.0
 Brightness = 1.0
-Contrast = 1.2
-Saturation = 1.1
-Lift = Color(0.05, 0.006, 0.005, 1)
+Contrast = 1.18
+Saturation = 0.78
+Lift = Color(0.03, 0.025, 0.025, 1)
 Gain = Color(1, 0.95, 0.92, 1)
 GlowIntensity = 1.0
-WaterTint = Color(0.5, 0.18, 0.1, 1)
-WaterDeep = Color(0.12, 0.03, 0.02, 1)
-CausticColor = Color(1, 0.45, 0.25, 1)
+WaterTint = Color(0.4, 0.3, 0.26, 1)
+WaterDeep = Color(0.08, 0.05, 0.045, 1)
+CausticColor = Color(1, 0.8, 0.66, 1)
 CausticStrength = 1.8
 Vignette = 0.75
-VignetteColor = Color(0.06, 0.015, 0.015, 1)
-ParticleTint = Color(1, 0.42, 0.25, 1)
+VignetteColor = Color(0.05, 0.035, 0.035, 1)
+ParticleTint = Color(1, 0.86, 0.76, 1)
 Architecture = 3
 FarSkyline = ExtResource("2_far")
 NearSkyline = ExtResource("3_near")
 Masonry = 0.8
-UnderglowColor = Color(1, 0.3, 0.18, 1)
-UnderglowEnergy = 0.55
+UnderglowColor = Color(1, 0.52, 0.36, 1)
+UnderglowEnergy = 0.4
+MoltenCool = Color(0.55, 0.1, 0.03, 1)
+Molten = Color(1, 0.5, 0.12, 1)
+MoltenHot = Color(1, 0.9, 0.62, 1)

@@ -1,6 +1,7 @@
 [gd_resource type="Resource" script_class="BiomeProfile" format=3]
-; Layer 3, the foundry: dark basalt and iron silhouetted against amber light and haze (the NieR furnace,
-; docs/references/nier-factory-furnace.png); the accent is the molten orange of slag and vents.
+; Layer 3, the foundry: near-neutral basalt and iron under a plain key light, a warm haze far behind, lit up close by what
+; burns in it (the NieR furnace, docs/references/nier-factory-furnace.png): slag and heat in the molten ember-gold, the only
+; saturated marks; the decor accent warmed from the frozen rose to coral.
 
 [ext_resource type="Script" path="res://scripts/biome/BiomeProfile.cs" id="1_biome"]
 [ext_resource type="Material" path="res://assets/materials/backdrop_foundry_far.tres" id="2_far"]
@@ -9,44 +10,47 @@
 [resource]
 script = ExtResource("1_biome")
 DisplayName = "Volcanic"
-Rock = Color(0.22, 0.205, 0.205, 1)
+Rock = Color(0.27, 0.265, 0.27, 1)
 Metal = Color(0.56, 0.61, 0.68, 1)
-Backdrop = Color(0.1, 0.085, 0.085, 1)
-BackdropAccent = Color(1, 0.55, 0.2, 1)
-Rust = Color(0.42, 0.24, 0.15, 1)
+Backdrop = Color(0.09, 0.088, 0.095, 1)
+BackdropAccent = Color(0.55, 0.38, 0.22, 1)
+Rust = Color(0.4, 0.31, 0.25, 1)
 Silt = Color(0.25, 0.24, 0.24, 1)
 Foreground = Color(0.03, 0.025, 0.025, 1)
-Accent = Color(1, 0.55, 0.18, 1)
-Background = Color(0.1, 0.05, 0.03, 1)
-AmbientColor = Color(0.52, 0.57, 0.66, 1)
-AmbientEnergy = 0.85
-KeyColor = Color(0.82, 0.84, 0.88, 1)
-KeyEnergy = 1.5
-LampColor = Color(1, 0.5, 0.2, 1)
-ShaftColor = Color(1, 0.66, 0.36, 1)
-FogColor = Color(0.17, 0.095, 0.06, 1)
+Accent = Color(1, 0.45, 0.36, 1)
+Background = Color(0.05, 0.05, 0.055, 1)
+AmbientColor = Color(0.58, 0.61, 0.66, 1)
+AmbientEnergy = 1.1
+KeyColor = Color(0.88, 0.89, 0.92, 1)
+KeyEnergy = 2.7
+LampColor = Color(1, 0.74, 0.5, 1)
+ShaftColor = Color(1, 0.88, 0.74, 1)
+FogColor = Color(0.15, 0.125, 0.11, 1)
 FogDensity = 0.55
 FogDepthBegin = 1.5
 FogDepthEnd = 73.0
 FogDepthCurve = 0.7
-HazeColor = Color(0.48, 0.28, 0.16, 1)
-Exposure = 1.0
+HazeColor = Color(0.38, 0.31, 0.25, 1)
+Exposure = 1.12
 Brightness = 1.0
-Contrast = 1.2
-Saturation = 0.95
-Lift = Color(0.008, 0.008, 0.012, 1)
+Contrast = 1.25
+Saturation = 0.85
+Lift = Color(0.03, 0.03, 0.035, 1)
 Gain = Color(1, 0.97, 0.92, 1)
 GlowIntensity = 0.9
-WaterTint = Color(0.3, 0.18, 0.12, 1)
-WaterDeep = Color(0.08, 0.04, 0.02, 1)
-CausticColor = Color(1, 0.6, 0.3, 1)
-CausticStrength = 1.5
+WaterTint = Color(0.34, 0.32, 0.3, 1)
+WaterDeep = Color(0.09, 0.085, 0.08, 1)
+CausticColor = Color(1, 0.86, 0.7, 1)
+CausticStrength = 1.8
 Vignette = 0.7
-VignetteColor = Color(0.05, 0.03, 0.025, 1)
-ParticleTint = Color(1, 0.62, 0.3, 1)
+VignetteColor = Color(0.05, 0.045, 0.045, 1)
+ParticleTint = Color(1, 0.9, 0.78, 1)
 Architecture = 2
 FarSkyline = ExtResource("2_far")
 NearSkyline = ExtResource("3_near")
 Masonry = 0.0
-UnderglowColor = Color(1, 0.48, 0.2, 1)
-UnderglowEnergy = 1.2
+UnderglowColor = Color(1, 0.6, 0.36, 1)
+UnderglowEnergy = 0.6
+MoltenCool = Color(0.55, 0.08, 0.02, 1)
+Molten = Color(1, 0.46, 0.1, 1)
+MoltenHot = Color(1, 0.88, 0.6, 1)

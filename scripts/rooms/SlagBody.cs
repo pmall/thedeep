@@ -9,7 +9,7 @@ namespace TheDeep;
 /// check holds (<see cref="SlagBasin"/>); rock standing in it is a pillar from the bed. Built here: the surface, carrying a
 /// drifting crust (<see cref="SurfaceMaterial"/>); its front on the play plane from surface to bed (<see cref="SectionMaterial"/>,
 /// brightest at the surface, darkening with depth, the bed and the banks' feet dark through it); a row of small shadowless lights
-/// just over it and ahead of the front, in the biome's accent, from bank to bank (<see cref="GlowSpacing"/>), so every bank and
+/// just over it and ahead of the front, in the biome's molten color (<see cref="Glow"/>), from bank to bank (<see cref="GlowSpacing"/>), so every bank and
 /// pillar standing in it is lit from below, the light falling off up the rock.
 /// Touching it burns, plated or not (<see cref="Burn"/>, <see cref="Player.Scorch"/>: one health unless in the grace, the
 /// pilgrim set back on its <see cref="Player.Footing"/>); ground within <see cref="FootingMargin"/> beside it and
@@ -46,7 +46,7 @@ public partial class SlagBody : Node3D
     /// <summary>The front's world Z on the play plane (the blocks' front faces are at 2: kept off them, so no face shares its plane).</summary>
     [Export] public float SectionFront { get; set; } = 2.05f;
 
-    /// <summary>Each light over the surface: its energy (its color is the biome's accent).</summary>
+    /// <summary>Each light over the surface: its energy (its color is the biome's: <see cref="Glow"/>).</summary>
     [Export] public float GlowEnergy { get; set; } = 10f;
 
     /// <summary>How far each light reaches, meters: small, so the light stays on the rock near the slag and costs little.</summary>
@@ -72,6 +72,8 @@ public partial class SlagBody : Node3D
 
     /// <summary>The pilgrim, set by the session when the room loads.</summary>
     public Player? Player { get; set; }
+
+    private readonly System.Collections.Generic.List<OmniLight3D> _glows = [];
 
     /// <summary>The surface's height.</summary>
     public float SurfaceY => GlobalPosition.Y;
@@ -100,30 +102,30 @@ public partial class SlagBody : Node3D
         front.SetInstanceShaderParameter(HalfWidthParameter, 0.5f * Size.X);
         AddChild(front);
 
-        Color color = Colors.OrangeRed;
-        for (Node? n = GetParent(); n is not null; n = n.GetParent())
-        {
-            if (n is Room { Biome: { } biome })
-            {
-                color = biome.Accent;
-                break;
-            }
-        }
-
         float half = 0.5f * Size.X - 0.15f;
         int gaps = Mathf.Max(1, Mathf.CeilToInt(2f * half / GlowSpacing));
         for (int i = 0; i <= gaps; i++)
         {
-            AddChild(new OmniLight3D
+            var glow = new OmniLight3D
             {
                 Name = $"Glow{i}",
                 Position = new Vector3(-half + 2f * half * i / gaps, GlowHeight, SectionFront + GlowAhead - GlobalPosition.Z),
-                LightColor = color,
                 LightEnergy = GlowEnergy,
                 OmniAttenuation = 1.3f,
                 OmniRange = GlowRange,
                 ShadowEnabled = false,
-            });
+            };
+            _glows.Add(glow);
+            AddChild(glow);
+        }
+    }
+
+    /// <summary>Gives its lights the biome's molten color (<see cref="BiomeProfile.Molten"/>); the room calls it with its biome.</summary>
+    public void Glow(BiomeProfile biome)
+    {
+        foreach (OmniLight3D glow in _glows)
+        {
+            glow.LightColor = biome.Molten;
         }
     }
 

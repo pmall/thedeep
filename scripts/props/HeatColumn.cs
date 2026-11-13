@@ -14,8 +14,8 @@ namespace TheDeep;
 /// burn never disagree: a plume of one sheet exactly its size (<see cref="Plume"/>), just behind the play plane so its edges show at their true x from any
 /// camera angle, dimmed to
 /// <see cref="PlatedStrength"/> once the pilgrim is plated; embers carried up inside it; at its foot the vent it rises from, a
-/// grate as wide as the column between two posts at its edges (<see cref="Source"/>); a row of shadowless lights in its own colour
-/// up its height (<see cref="GlowSpacing"/>), from the vent to the hood, lighting the floor, the hood and the pilgrim beside it,
+/// grate as wide as the column between two posts at its edges (<see cref="Source"/>); a row of shadowless lights in the biome's
+/// molten colour (<see cref="Glow"/>) up its height (<see cref="GlowSpacing"/>), from the vent to the hood, lighting the floor, the hood and the pilgrim beside it,
 /// dimmed with the plume once the pilgrim is plated.
 /// </para>
 /// <para>
@@ -46,10 +46,8 @@ public partial class HeatColumn : Node3D
     /// <summary>Embers per square meter of the column's face.</summary>
     [Export] public float EmberDensity { get; set; } = 1.2f;
 
-    /// <summary>Each light up the column: its energy and colour (the plume's flame).</summary>
+    /// <summary>Each light up the column: its energy (its colour is the biome's: <see cref="Glow"/>).</summary>
     [Export] public float GlowEnergy { get; set; } = 2.5f;
-
-    [Export] public Color GlowColor { get; set; } = new(1f, 0.46f, 0.14f);
 
     /// <summary>The most room between two of its lights up the column, meters: one just over the vent, one under its end.</summary>
     [Export] public float GlowSpacing { get; set; } = 3f;
@@ -132,7 +130,6 @@ public partial class HeatColumn : Node3D
             {
                 Name = $"Glow{i}",
                 Position = new Vector3(0f, low + (high - low) * i / gaps, GlowAhead),
-                LightColor = GlowColor,
                 LightEnergy = GlowEnergy,
                 OmniAttenuation = 1.3f,
                 OmniRange = range,
@@ -140,6 +137,15 @@ public partial class HeatColumn : Node3D
             };
             _glows.Add(glow);
             AddChild(glow);
+        }
+    }
+
+    /// <summary>Gives its lights the biome's molten colour, the plume's own glow (<see cref="BiomeProfile.Molten"/>); the room calls it with its biome.</summary>
+    public void Glow(BiomeProfile biome)
+    {
+        foreach (OmniLight3D glow in _glows)
+        {
+            glow.LightColor = biome.Molten;
         }
     }
 

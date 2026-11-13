@@ -9,6 +9,11 @@ global uniform vec4 biome_foreground;
 global uniform vec4 biome_accent;
 global uniform vec4 biome_rust;
 global uniform vec4 biome_silt;
+// The hazards' heat, coolest to hottest (BiomeProfile.MoltenCool, Molten, MoltenHot): slag, magma and heat take these, never the
+// decor accent.
+global uniform vec4 biome_molten_cool;
+global uniform vec4 biome_molten;
+global uniform vec4 biome_molten_hot;
 
 // Palette colors are written in sRGB, like any color picker; global uniforms arrive unconverted.
 vec3 srgb_to_linear(vec3 c) {

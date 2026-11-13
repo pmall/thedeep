@@ -226,6 +226,30 @@ biome_frost_color={
 "type": "color",
 "value": Color(0.88, 0.92, 0.98, 1)
 }
+biome_frost_shade={
+"type": "color",
+"value": Color(0.9163, 0.9547, 1, 1)
+}
+biome_ice={
+"type": "color",
+"value": Color(0.68, 0.7484, 0.8434, 1)
+}
+biome_molten_cool={
+"type": "color",
+"value": Color(0.5, 0.06, 0.02, 1)
+}
+biome_molten={
+"type": "color",
+"value": Color(1, 0.4, 0.08, 1)
+}
+biome_molten_hot={
+"type": "color",
+"value": Color(1, 0.85, 0.55, 1)
+}
+glyph_whiten={
+"type": "float",
+"value": 0.0
+}
 frost_surface={
 "type": "sampler2D",
 "value": "res://assets/textures/surfaces/frost_surface.png"

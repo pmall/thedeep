@@ -6,7 +6,8 @@ namespace TheDeep;
 /// The look of one depth layer (Flooded, Frozen, Volcanic, Core): palette, light, fog, grading and
 /// particle tint. Rooms reference one (<see cref="Room.Biome"/>); swapping it re-themes the room
 /// without touching geometry. The palette reaches materials through global shader uniforms
-/// (<see cref="ShaderGlobals"/>), so any material can follow the biome.
+/// (<see cref="ShaderGlobals"/>), so any material can follow the biome. The room check holds every profile of a world to
+/// <see cref="BiomeRules"/> (<see cref="Palette"/>).
 /// </summary>
 [GlobalClass]
 public partial class BiomeProfile : Resource
@@ -16,7 +17,7 @@ public partial class BiomeProfile : Resource
 
     [Export] public string DisplayName { get; set; } = "";
 
-    /// <summary>Rock surfaces on the play plane (not grippable). Must read apart from metal at a glance.</summary>
+    /// <summary>Rock surfaces on the play plane (not grippable): darker than <see cref="Metal"/> by <see cref="BiomeRules.MetalOverRock"/> in value at least, so the two read apart at a glance.</summary>
     [ExportGroup("Palette")]
     [Export] public Color Rock { get; set; } = new(0.5f, 0.5f, 0.5f);
 
@@ -32,10 +33,13 @@ public partial class BiomeProfile : Resource
     /// <summary>Foreground silhouettes framing the screen.</summary>
     [Export] public Color Foreground { get; set; } = new(0.03f, 0.03f, 0.04f);
 
-    /// <summary>The layer's accent hue for emissive decor (faith glyphs).</summary>
+    /// <summary>
+    /// The layer's decor accent: emissive decor (faith glyphs, glow strips) and the few backdrop pieces that carry it. Never a
+    /// hazard's color, which is <see cref="Molten"/>'s (color means gameplay, `docs/art-direction.md#ambiance`).
+    /// </summary>
     [Export] public Color Accent { get; set; } = new(0.8f, 0.3f, 0.8f);
 
-    /// <summary>Corrosion on metal (creases, bottoms, the rust material). Keep it muted: color means gameplay.</summary>
+    /// <summary>Corrosion on metal (creases, bottoms, the rust material). Muted (<see cref="BiomeRules.RustChroma"/>): color means gameplay.</summary>
     [Export] public Color Rust { get; set; } = new(0.42f, 0.3f, 0.26f);
 
     /// <summary>Silt or moss settled in rock crevices and on ledges.</summary>
@@ -55,6 +59,25 @@ public partial class BiomeProfile : Resource
 
     /// <summary>The rime's color.</summary>
     [Export] public Color FrostColor { get; set; } = new(0.88f, 0.92f, 0.98f);
+
+    /// <summary>What the rime turns to in the shade of crevices and creases, multiplied into <see cref="FrostColor"/> (white keeps it).</summary>
+    [Export] public Color FrostShade { get; set; } = new(0.9163f, 0.9547f, 1f);
+
+    /// <summary>The ice's body seen straight on, multiplied into <see cref="FrostColor"/> before it sinks into <see cref="WaterDeep"/> (ice.gdshader).</summary>
+    [Export] public Color IceTint { get; set; } = new(0.68f, 0.7484f, 0.8434f);
+
+    /// <summary>
+    /// The hazards' heat (slag, magma, heat columns: `docs/art-direction.md#volcanic-look`), coolest to hottest: the dull red
+    /// it cools to (<see cref="MoltenCool"/>), its own glow and the color of the light it casts (<see cref="Molten"/>), and
+    /// white-hot (<see cref="MoltenHot"/>). Apart from the decor <see cref="Accent"/>, and the most saturated color of the
+    /// layer's light, so a hazard reads as one at a glance on any layer (<see cref="BiomeRules"/>).
+    /// </summary>
+    [ExportGroup("Molten")]
+    [Export] public Color MoltenCool { get; set; } = new(0.5f, 0.06f, 0.02f);
+
+    [Export] public Color Molten { get; set; } = new(1f, 0.4f, 0.08f);
+
+    [Export] public Color MoltenHot { get; set; } = new(1f, 0.85f, 0.55f);
 
     /// <summary>The void behind everything.</summary>
     [ExportGroup("Light")]
@@ -157,7 +180,7 @@ public partial class BiomeProfile : Resource
     [ExportGroup("Backdrop")]
     [Export] public BackdropStyle Architecture { get; set; }
 
-    /// <summary>The far skyline and the nearer one (backdrop_silhouette materials); null keeps the room stage's own.</summary>
+    /// <summary>The far skyline and the nearer one (backdrop_silhouette materials); null shows none.</summary>
     [Export] public Material? FarSkyline { get; set; }
 
     [Export] public Material? NearSkyline { get; set; }
@@ -189,6 +212,12 @@ public partial class BiomeProfile : Resource
         RenderingServer.GlobalShaderParameterSet(ShaderGlobals.BiomeFrost, Frost);
         RenderingServer.GlobalShaderParameterSet(ShaderGlobals.BiomeMasonry, Masonry);
         RenderingServer.GlobalShaderParameterSet(ShaderGlobals.BiomeFrostColor, FrostColor);
+        RenderingServer.GlobalShaderParameterSet(ShaderGlobals.BiomeFrostShade, FrostShade);
+        RenderingServer.GlobalShaderParameterSet(ShaderGlobals.BiomeIce, IceTint);
+        RenderingServer.GlobalShaderParameterSet(ShaderGlobals.BiomeMoltenCool, MoltenCool);
+        RenderingServer.GlobalShaderParameterSet(ShaderGlobals.BiomeMolten, Molten);
+        RenderingServer.GlobalShaderParameterSet(ShaderGlobals.BiomeMoltenHot, MoltenHot);
+        RenderingServer.GlobalShaderParameterSet(ShaderGlobals.GlyphWhiten, GlyphWhiten);
         RenderingServer.GlobalShaderParameterSet(ShaderGlobals.BiomeHaze, HazeColor);
         RenderingServer.GlobalShaderParameterSet(ShaderGlobals.BiomeShaft, ShaftColor);
         RenderingServer.GlobalShaderParameterSet(ShaderGlobals.BiomeWater, WaterTint);
@@ -253,8 +282,38 @@ public partial class BiomeProfile : Resource
         }
     }
 
-    /// <summary>The faith glyphs' light: the accent toward white, as the glyph shader draws it (its `whiten`).</summary>
-    public Color GlyphLightColor => Accent.Lerp(Colors.White, 0.35f);
+    /// <summary>
+    /// How far the faith glyphs take the accent toward white, so it never saturates decor (color means gameplay); the glyph
+    /// shader reads it as a global (<see cref="ShaderGlobals.GlyphWhiten"/>), their lights through <see cref="GlyphLightColor"/>.
+    /// </summary>
+    public const float GlyphWhiten = 0.35f;
+
+    /// <summary>The faith glyphs' light: the accent toward white, as the glyph shader draws it.</summary>
+    public Color GlyphLightColor => Accent.Lerp(Colors.White, GlyphWhiten);
+
+    /// <summary>What <see cref="BiomeRules"/> reads of this profile.</summary>
+    public BiomePalette Palette() => new()
+    {
+        Rock = Rock.ToCore(),
+        Metal = Metal.ToCore(),
+        Rust = Rust.ToCore(),
+        MoltenCool = MoltenCool.ToCore(),
+        Molten = Molten.ToCore(),
+        MoltenHot = MoltenHot.ToCore(),
+        Light =
+        [
+            (nameof(AmbientColor), AmbientColor.ToCore()),
+            (nameof(KeyColor), KeyColor.ToCore()),
+            (nameof(LampColor), LampColor.ToCore()),
+            (nameof(ShaftColor), ShaftColor.ToCore()),
+            (nameof(FogColor), FogColor.ToCore()),
+            (nameof(HazeColor), HazeColor.ToCore()),
+            (nameof(Background), Background.ToCore()),
+            (nameof(ParticleTint), ParticleTint.ToCore()),
+            (nameof(CausticColor), CausticColor.ToCore()),
+        ],
+        Shares = [(nameof(Frost), Frost), (nameof(Masonry), Masonry), (nameof(ShaftLight), ShaftLight), (nameof(Vignette), Vignette)],
+    };
 
     /// <summary>A 1D lookup from <see cref="Lift"/> to <see cref="Gain"/>: a per-channel lift/gain grade.</summary>
     private GradientTexture1D GradeLookup() => new()

@@ -47,6 +47,15 @@ public partial class Room : Node3D
         Biome = biome;
         Stage.Restyle(biome);
         biome.Apply(Stage.Environment.Environment, BoundsMin.Y, _cameraDistance, Stage.KeyLight, Lamps, Shafts, GlyphLights);
+        foreach (SlagBody slag in All<SlagBody>())
+        {
+            slag.Glow(biome);
+        }
+
+        foreach (HeatColumn heat in All<HeatColumn>())
+        {
+            heat.Glow(biome);
+        }
     }
 
     /// <summary>

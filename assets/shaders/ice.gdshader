@@ -33,6 +33,9 @@ uniform float frost_share : hint_range(0.0, 1.0) = 0.5;
 /// How much of the rime's translucent film (lib/frost) lies on the ice, against other materials.
 uniform float film_share : hint_range(0.0, 1.0) = 0.5;
 
+// The ice's body seen straight on (BiomeProfile.IceTint).
+global uniform vec4 biome_ice;
+
 // The baked set's tile (IceSurface.TileMeters); the mirrored layer's scale against it and where it starts (meters).
 const float ICE_TILE = 4.0;
 const float MIRROR_SCALE = 1.17;
@@ -82,7 +85,7 @@ void fragment() {
 	float graze = pow(1.0 - facing, 2.0);
 	// A pale rind along the edges, where the ice is thin.
 	float rind = 1.0 - smoothstep(0.0, 0.18, f.edge);
-	vec3 body = mix(rime * vec3(0.42, 0.52, 0.68), deep * 1.6 + rime * 0.04, depth);
+	vec3 body = mix(rime * srgb_to_linear(biome_ice.rgb), deep * 1.6 + rime * 0.04, depth);
 	body = mix(body, rime * 0.75, clamp(graze * 0.8 + rind * 0.5, 0.0, 1.0));
 	// Cloudy depths, a meter and more across.
 	float cloud = fbm3(p * 0.45 + v_seed * 7.0, 2);

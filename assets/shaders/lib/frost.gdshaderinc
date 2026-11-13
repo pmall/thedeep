@@ -10,6 +10,7 @@
 
 global uniform float biome_frost;
 global uniform vec4 biome_frost_color;
+global uniform vec4 biome_frost_shade;
 // The baked frost set, global (project.godot sets it) so every material that frosts shares it without a slot of its own.
 global uniform sampler2D frost_surface : repeat_enable, filter_linear_mipmap_anisotropic;
 global uniform sampler2D frost_normal : repeat_enable, filter_linear_mipmap_anisotropic;
@@ -101,10 +102,10 @@ Frost frost_at(vec3 p, vec3 face_n, vec3 world_n, float cavity, float edge, floa
 	return fr;
 }
 
-// The rime's own color, linear: the biome's frost color, a touch bluer in the shade of crevices.
+// The rime's own color, linear: the biome's frost color, turned by its shade in crevices.
 vec3 frost_color(float cavity) {
 	vec3 c = srgb_to_linear(biome_frost_color.rgb);
-	return mix(c, c * vec3(0.82, 0.9, 1.0), cavity);
+	return mix(c, c * srgb_to_linear(biome_frost_shade.rgb), cavity);
 }
 
 // The view-space normal `n` tilted by the coat's relief where it lies (`view` the VIEW_MATRIX).

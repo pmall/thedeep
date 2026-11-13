@@ -20,6 +20,7 @@ namespace TheDeep;
 /// - the room has at least one photo spot;
 /// - no required export is left empty, in the room's nodes, the bricks it places and the resources they reach, nor in the main
 ///   scene and its world (<see cref="RequiredExports"/>).
+/// Then every biome profile the world's rooms and layers wear, held to <see cref="BiomeRules"/>.
 /// Then the world's line book: every line the code, the rooms and the world's items name is in it or its base, and every letter of
 /// its lines is in the text style's font, and every banner said fits the banner's box (<see cref="LineCheck"/>).
 /// Then the map, extracted from the rooms in the game (<see cref="Room.InGame"/>) and proven by the core's <see cref="WorldCheck"/>:
@@ -39,6 +40,9 @@ public partial class RoomValidator : Node
     private readonly RequiredExports _exports = new();
     private readonly LineCheck _lines = new();
     private readonly SeamCheck _seams = new();
+
+    /// <summary>The biome profiles the rooms wear, each once.</summary>
+    private readonly HashSet<BiomeProfile> _biomes = new();
     private bool _done;
 
     /// <summary>The world's network (its `map` blocks), or null if it doesn't parse (a problem then).</summary>
@@ -98,6 +102,7 @@ public partial class RoomValidator : Node
             rooms++;
             exits += Check(room, path, world);
             _lines.Add(room, path);
+            _biomes.Add(room.Biome);
             RemoveChild(room);
             room.Free();
 
@@ -107,6 +112,7 @@ public partial class RoomValidator : Node
             System.GC.WaitForPendingFinalizers();
         }
 
+        CheckBiomes();
         _lines.Add(World.Definition);
         _problems.AddRange(_lines.Problems(World.Definition.Lines));
         _problems.AddRange(LineCheck.MissingLetters(World.Definition.Lines, TextStyle.Shared.Font));
@@ -174,6 +180,20 @@ public partial class RoomValidator : Node
             {
                 _problems.Add($"world item {item.ResourcePath}: another of the world's items has the id {id}");
             }
+        }
+    }
+
+    /// <summary>Every profile the rooms wear and the world's layers name, held to <see cref="BiomeRules"/>.</summary>
+    private void CheckBiomes()
+    {
+        foreach (WorldLayer layer in World.Definition.Layers)
+        {
+            _biomes.Add(layer.Biome);
+        }
+
+        foreach (BiomeProfile biome in _biomes)
+        {
+            _problems.AddRange(BiomeRules.Problems(biome.Palette()).Select(p => $"biome {biome.ResourcePath}: {p}"));
         }
     }
 

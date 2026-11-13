@@ -23,6 +23,9 @@ public static class Numerics
     /// <summary>The engine's 4D vector as the core's.</summary>
     public static System.Numerics.Vector4 ToCore(this Vector4 v) => new(v.X, v.Y, v.Z, v.W);
 
+    /// <summary>The engine's color as the core's, its red, green and blue as they are written (sRGB), alpha dropped.</summary>
+    public static NVector3 ToCore(this Color c) => new(c.R, c.G, c.B);
+
     /// <summary>The engine's quaternion as the core's.</summary>
     public static System.Numerics.Quaternion ToCore(this Quaternion q) => new(q.X, q.Y, q.Z, q.W);
 

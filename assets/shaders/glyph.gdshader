@@ -19,8 +19,9 @@ uniform float glow : hint_range(0.0, 0.5) = 0.12;
 uniform float pulse_speed : hint_range(0.0, 2.0) = 0.35;
 /// Share of grid cells left empty (word gaps).
 uniform float gaps : hint_range(0.0, 0.9) = 0.15;
-/// Mix toward white: keeps the accent from saturating decor (color means gameplay).
-uniform float whiten : hint_range(0.0, 1.0) = 0.35;
+// Mix toward white: keeps the accent from saturating decor (color means gameplay); BiomeProfile.GlyphWhiten, whose light
+// the glyph lights take.
+global uniform float glyph_whiten;
 uniform int seed = 0;
 
 varying vec2 v_local;
@@ -52,7 +53,7 @@ void fragment() {
 		light = (core + halo) * breath;
 	}
 
-	vec3 color = mix(srgb_to_linear(biome_accent.rgb), vec3(1.0), whiten);
+	vec3 color = mix(srgb_to_linear(biome_accent.rgb), vec3(1.0), glyph_whiten);
 	// Added light is ALBEDO × ALPHA: the albedo carries only what the alpha can't, so an edge pixel half covered adds
 	// half the light (light × light would cut the edge hard, to the pixel).
 	ALPHA = clamp(light, 0.0, 1.0);

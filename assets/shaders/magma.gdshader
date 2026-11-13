@@ -1,5 +1,5 @@
 // Magma and slag (a slag river's surface, a pool in a kiln's floor): plates of dark crust drifting slowly on a molten
-// web that glows in the biome's accent, brightest and yellowest at the heart of each crack, breathing. Projected from the
+// web that glows in the biome's molten color, white-hot at the heart of each crack, breathing. Projected from the
 // world (top faces from above, side faces from the front), so it needs no UVs. Pair it with a HeatColumn over the pool.
 shader_type spatial;
 render_mode cull_back;
@@ -31,11 +31,11 @@ void fragment() {
 	float crack = 1.0 - smoothstep(crack_width * 0.2, crack_width, border);
 	float core = 1.0 - smoothstep(0.0, crack_width * 0.35, border);
 	float breathe = 0.75 + 0.25 * sin(t * 0.9 + value_noise2(q * 0.3) * 6.2832);
-	vec3 accent = srgb_to_linear(biome_accent.rgb);
-	vec3 hot = mix(accent, vec3(1.0, 0.85, 0.45), core * 0.7);
+	vec3 molten = srgb_to_linear(biome_molten.rgb);
+	vec3 hot = mix(molten, srgb_to_linear(biome_molten_hot.rgb), core * 0.7);
 	vec3 crust = srgb_to_linear(biome_rock.rgb) * (0.22 + 0.12 * fbm2(q * 2.3, 3));
 	ALBEDO = crust * (1.0 - crack);
-	EMISSION = hot * heat * crack * breathe + accent * 0.18 * heat * 0.1 * (1.0 - crack);
+	EMISSION = hot * heat * crack * breathe + molten * 0.18 * heat * 0.1 * (1.0 - crack);
 	ROUGHNESS = mix(0.85, 0.4, crack);
 	SPECULAR = 0.3;
 }

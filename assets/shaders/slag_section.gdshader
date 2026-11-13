@@ -1,11 +1,11 @@
 // The front of a SlagBody on the play plane, seen from the side: the cut through the molten slag from its surface down to its
 // bed. A deep orange-gold just under the surface (never white: only the surface line runs hotter), cooling through the biome's
-// accent to a red-black at the bed. Slow convection rolls along it in broad cells, their folds soft darker bands of cooling melt
+// molten color to a red-black at the bed. Slow convection rolls along it in broad cells, their folds soft darker bands of cooling melt
 // near the surface that turn into dim glowing seams in the dark depths; every shape is smooth noise tens of centimeters wide and
 // anti-aliased, never per-pixel detail (docs/art-direction.md#stable-image). The bed (a rubble line) and the banks' feet
 // (talus widening toward the bed) show through it as dark silhouettes, drawn here since nothing stands behind the cut. A bright
 // incandescent line marks the surface (a few pixels wide, anti-aliased). Unshaded, nearly opaque: slag is its own light.
-// Colors follow the biome's accent, so it fits any layer that holds slag.
+// Colors follow the biome's molten ramp (BiomeProfile.Molten), never its decor accent, so it reads as a hazard on any layer.
 shader_type spatial;
 render_mode blend_premul_alpha, depth_draw_never, cull_back, unshaded, fog_disabled;
 
@@ -59,12 +59,13 @@ void fragment() {
 	float down = clamp(depth / span, 0.0, 1.0);
 
 	// The melt's colour by depth, in meters (a deep body is dark long before its bed) and toward the bed: gold under the
-	// surface, the accent, a red-black below.
-	vec3 accent = srgb_to_linear(biome_accent.rgb);
-	vec3 gold = vec3(1.0, 0.4, 0.06);
-	vec3 ember = vec3(0.16, 0.018, 0.004);
+	// surface (the molten color halfway to white-hot), the molten color, a red-black below.
+	vec3 molten = srgb_to_linear(biome_molten.rgb);
+	vec3 white_hot = srgb_to_linear(biome_molten_hot.rgb);
+	vec3 gold = mix(molten, white_hot, 0.45);
+	vec3 ember = srgb_to_linear(biome_molten_cool.rgb) * 0.75;
 	float cool = max(1.0 - exp(-depth / falloff), down);
-	vec3 hot = mix(gold, accent, smoothstep(0.0, 0.4, cool));
+	vec3 hot = mix(gold, molten, smoothstep(0.0, 0.4, cool));
 	hot = mix(hot, ember, smoothstep(0.35, 1.0, cool));
 	float glow = mix(1.0, bed_glow, pow(cool, 0.9));
 
@@ -83,7 +84,7 @@ void fragment() {
 	vec3 color = hot * heat * glow;
 	float seam = smoothstep(0.3, 0.7, cool);
 	color = mix(color, color * (1.0 - vein_strength), vein * (1.0 - seam));
-	color += accent * heat * 0.25 * vein * seam * (1.0 - smoothstep(0.85, 1.0, down));
+	color += molten * heat * 0.25 * vein * seam * (1.0 - smoothstep(0.85, 1.0, down));
 
 	// The bed's rubble and the banks' feet, dark through the melt.
 	float x = v_world_pos.x;
@@ -100,7 +101,7 @@ void fragment() {
 	float line_y = 0.03 * (value_noise2(vec2(v_world_pos.x * 0.7 + t * 0.2, 0.0)) - 0.5);
 	float width = max(line_width, line_pixels * fwidth(v_world_pos.y));
 	float line = 1.0 - smoothstep(0.0, width, abs(depth - line_y));
-	color += vec3(1.0, 0.62, 0.22) * line_strength * line;
+	color += white_hot * line_strength * line;
 
 	ALBEDO = color * cover;
 	ALPHA = cover;
