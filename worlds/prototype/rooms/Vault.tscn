@@ -4,7 +4,7 @@
 ; the Archivist keeps everything that was ever copied. Two ways in, both from above or below the pool at its east end:
 ; breaking the Coldstacks' ice plug (the Drill) drops the pilgrim through the roof into the pool, one way; or it rises
 ; from the Underice through a low door at the pool's bottom (Ballast both ways). West of the pool, the arena: stepping
-; in drops the gates; the Archivist drifts high over the stacks and dives (a boss placeholder). West, the Sanctum.
+; in drops the gates (the west one in the doorway, the east one under the pier at the pool's lip); the Archivist drifts high over the stacks and dives (a boss placeholder). West, the Sanctum.
 
 [ext_resource type="PackedScene" path="res://scenes/kit/Block.tscn" id="1_block"]
 [ext_resource type="Script" path="res://scripts/rooms/RoomExit.cs" id="2_exit"]
@@ -146,6 +146,11 @@ Size = Vector3(54, 3, 4)
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 59, 22.5, 0)
 Size = Vector3(2, 3, 4)
 
+; the pier from the roof down over the east gate: the gate shut, no way over it into the pool
+[node name="PoolPier" parent="Geometry" instance=ExtResource("1_block")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 44, 13.25, 0)
+Size = Vector3(2, 15.5, 4)
+
 ; shelves of the stacks, to dodge onto
 [node name="ShelfWest" parent="Geometry" instance=ExtResource("1_block")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 16, 4.25, 0)
@@ -213,10 +218,11 @@ StartFacing = 1
 
 [node name="Props" type="Node3D" parent="."]
 
+; in the west doorway: shut, it meets the lintel; raised, it hangs in the wall over it
 [node name="GateWest" parent="Props" instance=ExtResource("9_portcullis")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 4, 0, 0)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 2.25, 0, 0)
 
-; at the pool's lip
+; at the pool's lip, under the pier that seals the hall from the pool over it and takes it raised
 [node name="GateEast" parent="Props" instance=ExtResource("9_portcullis")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 44, 0, 0)
 

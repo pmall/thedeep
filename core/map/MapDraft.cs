@@ -346,33 +346,7 @@ public sealed class MapDraft
     {
         var problems = new List<string>();
         static string Way(string to, Requirement r) => r.ToString() == "" ? to : $"{to} : {r}";
-        static List<string> Missing(IEnumerable<string> want, IEnumerable<string> have)
-        {
-            var left = have.ToList();
-            var missing = new List<string>();
-            foreach (string w in want)
-            {
-                if (!left.Remove(w))
-                {
-                    missing.Add(w);
-                }
-            }
-
-            return missing;
-        }
-
-        void Compare(string room, string what, List<string> scene, List<string> draft)
-        {
-            foreach (string w in Missing(scene, draft))
-            {
-                problems.Add($"{room}: the scene has {what} {w}, the draft doesn't");
-            }
-
-            foreach (string w in Missing(draft, scene))
-            {
-                problems.Add($"{room}: the draft has {what} {w}, the scene doesn't");
-            }
-        }
+        void Compare(string room, string what, List<string> scene, List<string> draft) => problems.AddRange(Disagreements(room, what, scene, draft));
 
         foreach (string room in built.Rooms)
         {
@@ -398,6 +372,58 @@ public sealed class MapDraft
         }
 
         return problems;
+    }
+
+    /// <summary>
+    /// Where the draft's <c>boss</c> and <c>ambush</c> lines disagree with the sealed arenas of the rooms already built
+    /// (<paramref name="built"/>): each line is one arena in that room's scene (a boss by its name), and each arena there is one line.
+    /// </summary>
+    /// <param name="bosses">The built rooms' bosses' arenas, by room and the boss's name.</param>
+    /// <param name="ambushes">The built rooms' ambushes, one entry per ambush.</param>
+    public List<string> ArenaDifferences(IReadOnlyCollection<string> built, IEnumerable<(string Room, string Name)> bosses, IEnumerable<string> ambushes)
+    {
+        var problems = new List<string>();
+        List<(string Room, string Name)> sceneBosses = bosses.ToList();
+        List<string> sceneAmbushes = ambushes.ToList();
+        foreach (string room in built.Where(Layers.ContainsKey))
+        {
+            problems.AddRange(Disagreements(room, "a boss",
+                sceneBosses.Where(b => b.Room == room).Select(b => b.Name).ToList(), Bosses.Where(b => b.Room == room).Select(b => b.Name).ToList()));
+            problems.AddRange(Disagreements(room, "an ambush",
+                sceneAmbushes.Where(a => a == room).Select(_ => "here").ToList(), Ambushes.Where(a => a == room).Select(_ => "here").ToList()));
+        }
+
+        return problems;
+    }
+
+    /// <summary>What a built room's scene and the draft list differently for it (<paramref name="what"/>: "a relic"), each way.</summary>
+    private static IEnumerable<string> Disagreements(string room, string what, List<string> scene, List<string> draft)
+    {
+        foreach (string w in Missing(scene, draft))
+        {
+            yield return $"{room}: the scene has {what} {w}, the draft doesn't";
+        }
+
+        foreach (string w in Missing(draft, scene))
+        {
+            yield return $"{room}: the draft has {what} {w}, the scene doesn't";
+        }
+    }
+
+    /// <summary>What of <paramref name="want"/> is not in <paramref name="have"/>, counting repeats.</summary>
+    private static List<string> Missing(IEnumerable<string> want, IEnumerable<string> have)
+    {
+        var left = have.ToList();
+        var missing = new List<string>();
+        foreach (string w in want)
+        {
+            if (!left.Remove(w))
+            {
+                missing.Add(w);
+            }
+        }
+
+        return missing;
     }
 
     /// <summary>One line: rooms per layer, bosses, milestones, orders and each ability's positions.</summary>

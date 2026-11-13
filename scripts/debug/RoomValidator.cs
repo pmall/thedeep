@@ -16,13 +16,14 @@ namespace TheDeep;
 /// - exits have unique names, a valid requirement, an existing target room and exit facing the other way, and a target that leads
 ///   back unless they are one-way; each exit's trigger covers its whole opening and an arrival through it fits (<see cref="Threshold.Problems"/>);
 /// - no mesh's top lies on a water surface over it (<see cref="WaterClearance"/>);
+/// - each sealed arena holds its foes, lies inside the camera bounds and, its gates shut, leaves no way out (<see cref="CheckArenas"/>);
 /// - the room has at least one photo spot;
 /// - no required export is left empty, in the room's nodes, the bricks it places and the resources they reach, nor in the main
 ///   scene and its world (<see cref="RequiredExports"/>).
 /// Then the world's line book: every line the code, the rooms and the world's items name is in it or its base (<see cref="LineCheck"/>).
 /// Then the map, extracted from the rooms in the game (<see cref="Room.InGame"/>) and proven by the core's <see cref="WorldCheck"/>:
 /// layout, reachability, softlocks, ability orders (`--map-report`: the whole graph), the geometry, the map from inside the rooms,
-/// room for error; the seams, every way's two ends held to each other (<see cref="SeamCheck"/>); and the world's network (<see cref="MapDraft"/>): its targets, its layers, its agreement with the built rooms, and its room
+/// room for error; the seams, every way's two ends held to each other (<see cref="SeamCheck"/>); and the world's network (<see cref="MapDraft"/>): its targets, its layers, its agreement with the built rooms (their arenas too), and its room
 /// table held to it (<see cref="RoomTable.Check"/>; `--map-report`: each room's kinds).
 /// The ground rules' findings per room (`GROUND`, <see cref="CheckGround"/>), failing but for the kinds only counted. Run alone:
 /// `godot --headless --path . -- --room MechanicsLab --validate-rooms | grep GROUND` (`--world sequel --room Strongroom` for the sequel).
@@ -275,6 +276,7 @@ public partial class RoomValidator : Node
         }
 
         CheckGround(room, World.NameOf(path));
+        CheckArenas(room, bounds, Problem);
 
         if (!room.PhotoSpots().Any())
         {
@@ -287,6 +289,31 @@ public partial class RoomValidator : Node
         }
 
         return exits.Count;
+    }
+
+    /// <summary>
+    /// Each sealed arena held to its room (<see cref="SealedArena.Problems"/>): its foes inside its area, the area inside the camera
+    /// bounds, and, its gates shut, no way out of the room the pilgrim reaches from inside it with every ability the map knows.
+    /// </summary>
+    private void CheckArenas(Room room, Box bounds, System.Action<string> problem)
+    {
+        IReadOnlyList<Arena> arenas = room.All<Arena>();
+        if (arenas.Count == 0)
+        {
+            return;
+        }
+
+        RoomShape shape = RoomShapes.Of(room, start: false);
+        var waysOut = room.Exits().Where(e => !e.ArrivalOnly).Select(e => (e.Name.ToString(), e.Threshold.Trigger)).ToList();
+        foreach (Arena arena in arenas)
+        {
+            var sealedArena = new SealedArena(arena.Name, arena.Area, arena.Gates.Select(g => g.ShutBox).ToList(),
+                arena.Foes.Select(f => (f.Name.ToString(), f.PlanePosition.ToCore())).ToList());
+            foreach (string what in sealedArena.Problems(shape, bounds, waysOut, Tuning.Planner(ClimbRise), WorldCheck.Simulated))
+            {
+                problem(what);
+            }
+        }
     }
 
     /// <summary>The ground rules' kinds of finding, in the order of <see cref="_groundCounts"/>.</summary>
@@ -466,6 +493,8 @@ public partial class RoomValidator : Node
 
         AddSeams(room, name, exits, shape.Solids);
         _powerUps.AddRange(room.All<PowerUp>().Select(p => (name, p.Stat)));
+        _bosses.AddRange(room.All<BossSeal>().Select(s => (name, s.Boss.Species.DisplayName)));
+        _ambushes.AddRange(room.All<Ambush>().Select(_ => name));
 
         foreach (AbilityRelic relic in room.All<AbilityRelic>())
         {
@@ -580,6 +609,10 @@ public partial class RoomValidator : Node
     /// <summary>The built rooms' power-ups, as the room and the stat, gathered by <see cref="Extract"/>.</summary>
     private readonly List<(string Room, PowerStat Stat)> _powerUps = new();
 
+    /// <summary>The built rooms' bosses' arenas (the room and the boss's species' name) and ambushes (the room), gathered by <see cref="Extract"/>.</summary>
+    private readonly List<(string Room, string Name)> _bosses = new();
+    private readonly List<string> _ambushes = new();
+
     /// <summary>Where the network's <c>powerup</c> lines and the built rooms' <see cref="PowerUp"/> nodes disagree, room by room.</summary>
     private IEnumerable<string> PowerUpDifferences(MapDraft draft)
     {
@@ -611,6 +644,7 @@ public partial class RoomValidator : Node
         _problems.AddRange(problems.Select(p => $"map draft: {p}"));
         _problems.AddRange(draft.Differences(world.Graph, world.Sealed).Select(p => $"map draft differs from the rooms: {p}"));
         _problems.AddRange(PowerUpDifferences(draft).Select(p => $"map draft differs from the rooms: {p}"));
+        _problems.AddRange(draft.ArenaDifferences(world.Graph.Rooms, _bosses, _ambushes).Select(p => $"map draft differs from the rooms: {p}"));
         _problems.AddRange(draft.LayerOrder.Where(l => World.Definition.Layer(l) is null)
             .Select(l => $"map draft: layer {l} is not one of the world's layers ({string.Join(", ", World.Definition.Layers.Select(w => w.Name))})"));
 

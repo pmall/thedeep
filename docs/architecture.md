@@ -44,7 +44,7 @@ The type to open first for each system; its docblock leads on.
 | Items (keys, codes, mechanisms) and their doors, levers | `ItemDefinition`, `Keyring` (over `Inventory`); in the requirement language, `Requirement` |
 | Power-ups | `PowerUp`, `PowerUps` (over `Prowess`) |
 | Conversations | `Conversation`, `Conversations` (over `DialogueFlow`), `DialogueBox` |
-| Sealed arenas (bosses, ambushes) | `Arenas`, `BossSeal`, `Ambush` (over `ArenaFight`) |
+| Sealed arenas (bosses, ambushes) | `Arena` (its kinds `BossSeal`, `Ambush`; over `ArenaFight`), played by `Arenas`; held to the room by `SealedArena` |
 | Hidden passages | `FalseWall`, `Secrets` |
 | Machines | `Machine`, `MachineSpecies`, `MachineDirector`; brains in `core/machines/brains/` |
 | The map and its proof | `MapGraph`, `MapSolver`, `ReachPlanner`, `MapDraft`, `WorldCheck`, `SeamCheck`; fed by `RoomValidator` |

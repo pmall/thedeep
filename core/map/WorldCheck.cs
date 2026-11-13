@@ -25,7 +25,7 @@ public sealed class WorldCheck
     public const float DoorwayOverlap = 6f;
 
     /// <summary>The abilities the geometry check simulates (all five).</summary>
-    private const Ability Simulated = Ability.MagGrip | Ability.Harpoon | Ability.Drill | Ability.Ballast | Ability.HeatPlating;
+    public const Ability Simulated = Ability.MagGrip | Ability.Harpoon | Ability.Drill | Ability.Ballast | Ability.HeatPlating;
 
     /// <summary>Each simulated ability on its own.</summary>
     private static readonly Ability[] Singles = { Ability.MagGrip, Ability.Harpoon, Ability.Drill, Ability.Ballast, Ability.HeatPlating };

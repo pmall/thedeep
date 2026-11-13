@@ -68,6 +68,10 @@ public partial class Portcullis : Node3D
     /// <summary>All the way up.</summary>
     public bool Raised => _open >= 1f;
 
+    /// <summary>The box its collision fills on the play plane when shut (global positions: room positions in a room at the origin).</summary>
+    public Box ShutBox => Box.Around(GlobalPosition.Flat() + new System.Numerics.Vector2(0f, Height / 2f),
+        new System.Numerics.Vector2(Width * CollisionShare, Height));
+
     /// <summary>Raised when the gate hits the floor (for a shake, dust).</summary>
     public event System.Action<Portcullis>? Slammed;
 

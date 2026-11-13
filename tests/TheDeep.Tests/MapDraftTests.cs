@@ -113,6 +113,26 @@ public class MapDraftTests
         Assert.Contains("D is built but not in the draft", d.Differences(built, sealedB));
     }
 
+    [Fact]
+    public void EachBossAndAmbushLineIsOneArenaOfItsBuiltRoom()
+    {
+        MapDraft d = MapDraft.Parse(Small + "\nambush A");
+        string[] built = { "A", "C" };
+        Assert.Empty(d.ArenaDifferences(built, new[] { ("C", "Warden") }, new[] { "A" }));
+
+        // Only built rooms are compared: B is not built, so its arena is the network's alone.
+        Assert.Empty(MapDraft.Parse(Small + "\nambush B").ArenaDifferences(new[] { "A", "C" }, new[] { ("C", "Warden") }, Array.Empty<string>()));
+
+        Assert.Equal(new[] { "C: the draft has a boss Warden, the scene doesn't", "A: the draft has an ambush here, the scene doesn't" },
+            d.ArenaDifferences(built, Array.Empty<(string, string)>(), Array.Empty<string>()).OrderByDescending(p => p[0]));
+        Assert.Equal(new[] { "C: the scene has a boss Precentor, the draft doesn't", "C: the draft has a boss Warden, the scene doesn't" },
+            d.ArenaDifferences(built, new[] { ("C", "Precentor") }, new[] { "A" }));
+        Assert.Equal(new[] { "A: the scene has an ambush here, the draft doesn't" },
+            d.ArenaDifferences(built, new[] { ("C", "Warden") }, new[] { "A", "A" }));
+        Assert.Equal(new[] { "C: the scene has a boss Warden, the draft doesn't" },
+            d.ArenaDifferences(built, new[] { ("C", "Warden"), ("C", "Warden") }, new[] { "A" }));
+    }
+
     /// <summary>The prototype world's draft (worlds/prototype/map-draft.md) meets every target it names.</summary>
     [Fact]
     public void TheWholeGameDraftHoldsUp()
