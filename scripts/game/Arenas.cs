@@ -1,11 +1,13 @@
+using System;
 using Godot;
 
 namespace TheDeep;
 
 /// <summary>
-/// Sealed arenas in play: a boss's (<see cref="BossSeal"/>: its name when the fight begins, its fall when it breaks) and an
-/// ambush's (<see cref="Ambush"/>). Each is handed the pilgrim when its room loads, settled if it was won before, and remembered
-/// for good the moment it is won (the session keeps it); a gate slamming shakes the camera.
+/// Sealed arenas in play (<see cref="Arena"/>): each is handed the pilgrim when its room loads, settled if it was won before, and
+/// remembered for good the moment it is won (the session keeps it); a gate slamming shakes the camera, as an arena won does. A boss's
+/// (<see cref="BossSeal"/>) shows its name on the banner when the fight begins and its fall when it breaks. How hard and how long
+/// are each arena's own exports.
 /// </summary>
 public partial class Arenas : Node
 {
@@ -26,51 +28,47 @@ public partial class Arenas : Node
     private void OnRoomLoaded(Room room)
     {
         string name = World.NameOf(room.SceneFilePath);
-        foreach (BossSeal seal in room.All<BossSeal>())
+        foreach (Arena arena in room.All<Arena>())
         {
-            seal.Player = Player;
-            if (Session.Done(name, seal.Name))
+            arena.Player = Player;
+            if (Session.Done(name, arena.Name))
             {
-                seal.Settle();
+                arena.Settle();
                 continue;
             }
 
-            seal.Began += s => _ = Banner.Show(s.NameLine, "", 2.5f);
-            seal.Defeated += OnBossDefeated;
-            Shake(seal.Gates);
-        }
-
-        foreach (Ambush ambush in room.All<Ambush>())
-        {
-            ambush.Player = Player;
-            if (Session.Done(name, ambush.Name))
+            arena.Began += OnBegan;
+            arena.Cleared += OnCleared;
+            foreach (Portcullis gate in arena.Gates)
             {
-                ambush.Settle();
-                continue;
+                gate.Slammed += _ => Camera.AddShake(arena.SlamShake);
             }
-
-            ambush.Won += a =>
-            {
-                Session.Remember(a.Name);
-                Camera.AddShake(0.35f);
-            };
-            Shake(ambush.Gates);
         }
     }
 
-    /// <summary>A boss broken: remembered (and saved) at once, so it never stands again.</summary>
-    private void OnBossDefeated(BossSeal seal)
+    private void OnBegan(Arena arena)
     {
-        Session.Remember(seal.Name);
-        Camera.AddShake(0.5f);
-        _ = Banner.Show(seal.FallenLine, seal.FallenHintLine, 4f);
+        if (arena is BossSeal seal)
+        {
+            _ = Banner.Show(seal.NameLine, "", seal.NameSeconds);
+        }
     }
 
-    private void Shake(Portcullis[] gates)
+    /// <summary>An arena won: remembered (and saved) at once, so its foes never stand again.</summary>
+    private void OnCleared(Arena arena)
     {
-        foreach (Portcullis gate in gates)
+        Session.Remember(arena.Name);
+        switch (arena)
         {
-            gate.Slammed += _ => Camera.AddShake(0.3f);
+            case BossSeal seal:
+                Camera.AddShake(seal.FallenShake);
+                _ = Banner.Show(seal.FallenLine, seal.FallenHintLine, seal.FallenSeconds);
+                break;
+            case Ambush ambush:
+                Camera.AddShake(ambush.ClearedShake);
+                break;
+            default:
+                throw new InvalidOperationException($"arena {arena.Name} is of no kind Arenas knows ({arena.GetType().Name})");
         }
     }
 }

@@ -48,7 +48,7 @@ public partial class AmbushCheck : Node
             return;
         }
 
-        trap.Sprang += _ => _sprang = true;
+        trap.Began += _ => _sprang = true;
         Portcullis gate = trap.Gates[0];
         float gateX = gate.GlobalPosition.X;
         _steps.Add(new("before it springs, the wave is not there and the gate is up", 0.5f,
@@ -74,10 +74,10 @@ public partial class AmbushCheck : Node
                     machine.TakeHit(999, machine.PlanePosition.X - 1f, 0f);
                 }
             },
-            () => trap.Cleared && gate.Raised && Session.Save.Collected.Contains($"Pyre/{trap.Name}")));
+            () => trap.Won && gate.Raised && Session.Save.Collected.Contains($"Pyre/{trap.Name}")));
         _steps.Add(new("the room loaded again holds no trap, its gate up", 1f,
             () => World.Load(GD.Load<PackedScene>(World.RoomPath("Pyre"))),
-            () => Trap is { Cleared: true } again && again.Gates.All(g => g.Raised) && again.Wave.All(m => !m.Visible)));
+            () => Trap is { Won: true } again && again.Gates.All(g => g.Raised) && again.Wave.All(m => !m.Visible)));
         Next();
     }
 
@@ -111,7 +111,7 @@ public partial class AmbushCheck : Node
         else if (_ticks > step.Seconds * 60f)
         {
             _problems.Add($"step {_index + 1} \"{step.What}\" failed in {step.Seconds} s (at {Player.GlobalPosition}, sprang {_sprang}, " +
-                          $"fighting {Trap?.Fighting}, cleared {Trap?.Cleared})");
+                          $"fighting {Trap?.Fighting}, won {Trap?.Won})");
             Finish();
         }
     }

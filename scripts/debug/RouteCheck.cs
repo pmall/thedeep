@@ -96,7 +96,7 @@ public partial class RouteCheck : Node
             }
 
             _roomName = World.RoomName;
-            foreach (Node arena in room.All<BossSeal>().Cast<Node>().Concat(room.All<Ambush>()))
+            foreach (Arena arena in room.All<Arena>())
             {
                 arena.ProcessMode = ProcessModeEnum.Disabled; // never sealed: its gates stay up, as the planner sees the room
             }

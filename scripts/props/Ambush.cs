@@ -1,42 +1,24 @@
 using System;
+using System.Collections.Generic;
 using Godot;
 
 namespace TheDeep;
 
 /// <summary>
-/// A trap room's arena (a room kind, docs/vision.md#game-systems): its machines (<see cref="Wave"/>) are not there until the pilgrim
-/// steps inside the arena; then the gates fall behind and ahead and the wave stands up at its places; when the last of it breaks,
-/// the gates rise and stay up (the core's <see cref="ArenaFight"/>). Cleared, it is cleared for good (<see cref="Arenas"/> remembers
-/// it and calls <see cref="Settle"/>); dying in it reloads the room, the trap set again. The gates are not part of the map: the ways
-/// stay open on paper, as a boss's arena's do.
+/// A trap room's arena (a room kind, docs/vision.md#game-systems; an <see cref="Arena"/> whose foes are a wave of machines,
+/// <see cref="Wave"/>): the wave is not there until the pilgrim steps inside, then it stands up at its places as the gates fall.
+/// The world's network names it by its room (<c>ambush &lt;Room&gt;</c>).
 /// </summary>
-public partial class Ambush : Node3D
+public partial class Ambush : Arena
 {
     /// <summary>The machines that spring the trap, placed where they stand up.</summary>
     [Export] public Machine[] Wave { get; set; } = Array.Empty<Machine>();
 
-    [Export] public Portcullis[] Gates { get; set; } = Array.Empty<Portcullis>();
+    /// <summary>How hard the camera shakes as the last of the wave breaks (<see cref="SideCamera.AddShake"/>).</summary>
+    [Export] public float ClearedShake { get; set; } = 0.35f;
 
-    /// <summary>The arena on the play plane, room-local: the trap springs when the pilgrim's feet are inside.</summary>
-    [Export] public Vector2 ArenaMin { get; set; }
-    [Export] public Vector2 ArenaMax { get; set; }
-
-    private readonly ArenaFight _fight = new();
-
-    /// <summary>The pilgrim, set when the room loads (it lives outside the room's scene).</summary>
-    public Player? Player { get; set; }
-
-    /// <summary>The fight is on, not won yet.</summary>
-    public bool Fighting => _fight.Phase == ArenaPhase.Fighting;
-
-    /// <summary>The fight is won.</summary>
-    public bool Cleared => _fight.Phase == ArenaPhase.Won;
-
-    /// <summary>The trap sprang: the gates are falling, the wave standing up.</summary>
-    public event Action<Ambush>? Sprang;
-
-    /// <summary>The last of the wave broke: the gates are rising.</summary>
-    public event Action<Ambush>? Won;
+    /// <inheritdoc/>
+    public override IEnumerable<Machine> Foes => Wave;
 
     public override void _Ready()
     {
@@ -46,44 +28,15 @@ public partial class Ambush : Node3D
         }
     }
 
-    /// <summary>Cleared before: the wave never comes, the gates up.</summary>
-    public void Settle() => _fight.Settle();
+    /// <inheritdoc/>
+    protected override bool FoesStand(bool waiting) => waiting ? Wave.Length > 0 : Array.Exists(Wave, m => !m.Broken);
 
-    public override void _PhysicsProcess(double delta)
+    /// <summary>The wave stands up at its places.</summary>
+    protected override void OnBegan()
     {
-        bool pilgrimIn = Player is { InControl: true } player && Inside(player);
-        bool standing = _fight.Phase == ArenaPhase.Waiting ? Wave.Length > 0 : Array.Exists(Wave, m => !m.Broken);
-        switch (_fight.Step(pilgrimIn, standing))
+        foreach (Machine machine in Wave)
         {
-            case ArenaChange.Began:
-                foreach (Portcullis gate in Gates)
-                {
-                    gate.Close();
-                }
-
-                foreach (Machine machine in Wave)
-                {
-                    machine.Reset(); // stands up at its place
-                }
-
-                Sprang?.Invoke(this);
-                break;
-            case ArenaChange.Cleared:
-                foreach (Portcullis gate in Gates)
-                {
-                    gate.Open();
-                }
-
-                Won?.Invoke(this);
-                break;
-            case ArenaChange.None:
-                break;
+            machine.Reset();
         }
-    }
-
-    private bool Inside(Player player)
-    {
-        Vector3 feet = player.GlobalPosition;
-        return feet.X >= ArenaMin.X && feet.X <= ArenaMax.X && feet.Y >= ArenaMin.Y && feet.Y <= ArenaMax.Y;
     }
 }
