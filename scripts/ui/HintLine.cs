@@ -7,16 +7,26 @@ namespace TheDeep;
 /// color beside it, large enough to tell the color at a glance: what the pilgrim says meeting a gate it can't pass yet
 /// (<see cref="GateHints"/>, <see cref="Keyring"/>). Eased in, held, eased out; a line said while another shows is read after it
 /// (<see cref="LinesInTurn{T}"/>, docs/gameplay.md#gate-says), sooner than a line alone would leave; a line whose reason is gone
-/// (a law's refusal, the law broken) is withdrawn at once (<see cref="Withdraw"/>). It stands one row tall where the style's layout
-/// puts it, under the banner's low place (<see cref="TextStyle.Places"/>). Text comes from the line book, written in the shared
-/// <see cref="TextStyle"/>.
+/// (a law's refusal, the law broken) is withdrawn at once (<see cref="Withdraw"/>). Each is held as long as its words take to read
+/// (<see cref="ReadingTime"/>), never less than <see cref="Hold"/>. It stands one row tall where the style's layout puts it, under the
+/// banner's low place (<see cref="TextStyle.Places"/>), within <see cref="MaxWidth"/> (the room check holds every line it can say to
+/// that, <see cref="Fits"/>). Text comes from the line book, written in the shared <see cref="TextStyle"/>.
 /// </summary>
 public partial class HintLine : CanvasLayer
 {
+    /// <summary>The reading pace a line is held for, letters per second.</summary>
+    [ExportGroup("Hold")]
+    [Export] public float LettersPerSecond { get; set; } = 16f;
+
+    /// <summary>The least a line is held, seconds.</summary>
     [Export] public float Hold { get; set; } = 3.2f;
 
-    /// <summary>Seconds a line holds when another waits behind it.</summary>
+    /// <summary>The least a line is held when another waits behind it, seconds.</summary>
     [Export] public float HoldWhenWaited { get; set; } = 2.4f;
+
+    /// <summary>The widest the plate stands, its padding and the mark included, pixels on the game's 1600-wide canvas.</summary>
+    [ExportGroup("Box")]
+    [Export] public float MaxWidth { get; set; } = 1100f;
 
     /// <summary>The gate's mark: its width across, pixels (a disc, at most the row's height).</summary>
     [Export] public float MarkSize { get; set; } = 16f;
@@ -26,6 +36,7 @@ public partial class HintLine : CanvasLayer
 
     private readonly LinesInTurn<(StringName Line, Color Color)> _queue = new(Waits);
     private float _shown;
+    private int _letters;
     private bool _withdrawn;
 
     private Label? _label;
@@ -67,6 +78,10 @@ public partial class HintLine : CanvasLayer
 
     /// <summary>How many lines wait behind the one showing.</summary>
     public int Waiting => _queue.Waiting;
+
+    /// <summary>Whether <paramref name="text"/> stands on one row on the plate, its mark beside it, within <see cref="MaxWidth"/>.</summary>
+    public bool Fits(string text) =>
+        Style.Font.GetStringSize(text, HorizontalAlignment.Left, -1f, Style.Body).X + MarkSize + Style.Padding.Y + 2f * Style.Padding.X <= MaxWidth;
 
     /// <summary>Says the line <paramref name="lineId"/> with a mark in <paramref name="color"/>: now, or after the lines already said.</summary>
     public void Show(StringName lineId, Color color)
@@ -112,7 +127,7 @@ public partial class HintLine : CanvasLayer
         }
 
         _shown += (float)delta;
-        if (_shown >= (_queue.Waiting > 0 ? HoldWhenWaited : Hold))
+        if (_shown >= ReadingTime.Seconds(_letters, LettersPerSecond, _queue.Waiting > 0 ? HoldWhenWaited : Hold))
         {
             _tween = CreateTween();
             _tween.TweenProperty(Row, "modulate:a", 0f, _queue.Waiting > 0 ? Style.Hurried : Style.Leave).SetTrans(Tween.TransitionType.Sine);
@@ -124,6 +139,7 @@ public partial class HintLine : CanvasLayer
     {
         (StringName line, Color color) = _queue.Current;
         Words.Text = LineBook.Shared.Find(line)?.Text ?? "";
+        _letters = Words.Text.Length;
         _color = color;
         Mark.QueueRedraw();
         float row = Style.RowPlate(Style.Body);

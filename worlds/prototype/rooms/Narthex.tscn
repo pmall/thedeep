@@ -30,6 +30,7 @@
 [ext_resource type="PackedScene" path="res://scenes/props/LockedDoor.tscn" id="23_door"]
 [ext_resource type="Resource" path="res://worlds/prototype/items/sacristy_key.tres" id="24_sacristy_key"]
 [ext_resource type="PackedScene" path="res://scenes/props/Conversation.tscn" id="25_conversation"]
+[ext_resource type="Script" path="res://scripts/dialogue/DialogueLine.cs" id="90_dialogue_line"]
 [ext_resource type="Script" path="res://scripts/rooms/dressing/WallDressing.cs" id="26_walldressing"]
 [ext_resource type="Material" path="res://assets/materials/wall_stone.tres" id="27_wall_stone"]
 [ext_resource type="Material" path="res://assets/materials/foreground.tres" id="28_foreground"]
@@ -166,6 +167,21 @@ Shafts = 4
 Plinth = 0
 Capital = 0
 
+[sub_resource type="Resource" id="Said_wake"]
+script = ExtResource("90_dialogue_line")
+Speaker = &"speaker.lamplighter"
+Line = &"dialogue.lamplighter.wake"
+
+[sub_resource type="Resource" id="Said_where"]
+script = ExtResource("90_dialogue_line")
+Speaker = &"speaker.pilgrim"
+Line = &"dialogue.lamplighter.where"
+
+[sub_resource type="Resource" id="Said_light"]
+script = ExtResource("90_dialogue_line")
+Speaker = &"speaker.lamplighter"
+Line = &"dialogue.lamplighter.light"
+
 [node name="Narthex" type="Node3D" node_paths=PackedStringArray("SpawnPoint", "Stage", "Shafts", "GlyphLights")]
 script = ExtResource("20_room")
 SpawnPoint = NodePath("SpawnPoint")
@@ -282,7 +298,7 @@ StartFacing = -1
 
 ; the Lamplighter's welcome, heard once (it follows the pilgrim, 4 m off: talked to from there)
 [node name="Conversation" parent="Machines/Lamplighter" instance=ExtResource("25_conversation")]
-Lines = Array[StringName]([&"dialogue.lamplighter.wake", &"dialogue.lamplighter.where", &"dialogue.lamplighter.light"])
+Lines = Array[ExtResource("90_dialogue_line")]([SubResource("Said_wake"), SubResource("Said_where"), SubResource("Said_light")])
 Range = 4.6
 Once = true
 

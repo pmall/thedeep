@@ -10,7 +10,8 @@ namespace TheDeep;
 /// as the game does (the world's book, then its base). Also finds an id given twice in one book, and a letter of a line the font of
 /// the world's <see cref="TextStyle"/> lacks (it would show as a box), and every banner the code and the content can say
 /// (<see cref="GameLines.Announced"/>, each <see cref="IAnnounces"/>) whose words would not fit the <see cref="Banner"/>'s box
-/// (<see cref="Banner.Fits"/>). Run by the room check.
+/// (<see cref="Banner.Fits"/>), and every line the code and the content can have the hint line say (<see cref="GameLines.Hinted"/>,
+/// each <see cref="IHints"/>) that would not stand on its one row (<see cref="HintLine.Fits"/>). Run by the room check.
 /// </summary>
 public sealed class LineCheck
 {
@@ -21,6 +22,9 @@ public sealed class LineCheck
 
     /// <summary>Each banner said, with where it was first named.</summary>
     private readonly Dictionary<Announcement, string> _announced = new();
+
+    /// <summary>Each hint said, with where it was first named.</summary>
+    private readonly Dictionary<StringName, string> _hinted = new();
 
     /// <summary>Starts with the ids and the banners the code names (<see cref="GameLines"/>).</summary>
     public LineCheck()
@@ -33,6 +37,11 @@ public sealed class LineCheck
         foreach (Announcement said in GameLines.Announced())
         {
             _announced.TryAdd(said, "the code (GameLines)");
+        }
+
+        foreach (StringName id in GameLines.Hinted())
+        {
+            _hinted.TryAdd(id, "the code (GameLines)");
         }
     }
 
@@ -97,7 +106,40 @@ public sealed class LineCheck
         return problems;
     }
 
-    /// <summary>Each letter of a line of <paramref name="book"/> or its bases (its speaker's name in capitals too) that <paramref name="font"/> lacks.</summary>
+    /// <summary>
+    /// Each hint said whose words, as <paramref name="book"/> gives them, would not stand on <paramref name="hint"/>'s one row. The rule
+    /// is proven blind-free first: the longest line of the book said twice over must not fit.
+    /// </summary>
+    public List<string> Overlong(LineBook book, HintLine hint)
+    {
+        var problems = new List<string>();
+        string longest = "";
+        for (LineBook? b = book; b is not null; b = b.Base)
+        {
+            foreach (TextLine line in b.Lines)
+            {
+                longest = line.Text.Length > longest.Length ? line.Text : longest;
+            }
+        }
+
+        if (longest.Length > 0 && hint.Fits(longest + " " + longest))
+        {
+            problems.Add($"the hint line holds a line of {2 * longest.Length + 1} letters on one row: its fit rule cannot tell a line too long");
+        }
+
+        foreach ((StringName id, string where) in _hinted)
+        {
+            string text = book.Find(id)?.Text ?? "";
+            if (!hint.Fits(text))
+            {
+                problems.Add($"the hint {id} (said by {where}) does not stand on one row within {hint.MaxWidth} px (\"{text}\")");
+            }
+        }
+
+        return problems;
+    }
+
+    /// <summary>Each letter of a line of <paramref name="book"/> or its bases (in capitals too, as a speaker's name shows) that <paramref name="font"/> lacks.</summary>
     public static List<string> MissingLetters(LineBook book, Font font)
     {
         var problems = new List<string>();
@@ -106,7 +148,7 @@ public sealed class LineCheck
         {
             foreach (TextLine line in b.Lines)
             {
-                foreach (char c in line.Text + line.Speaker + line.Speaker.ToUpperInvariant())
+                foreach (char c in line.Text + line.Text.ToUpperInvariant())
                 {
                     if (!char.IsWhiteSpace(c) && seen.Add(c) && !font.HasChar(c))
                     {
@@ -129,6 +171,17 @@ public sealed class LineCheck
                 foreach (Announcement said in announces.Announcements)
                 {
                     _announced.TryAdd(said, target is Node ? scene + where : where);
+                }
+            }
+
+            if (target is IHints hints)
+            {
+                foreach (StringName id in hints.HintLines)
+                {
+                    if (id != "")
+                    {
+                        _hinted.TryAdd(id, target is Node ? scene + where : where);
+                    }
                 }
             }
 

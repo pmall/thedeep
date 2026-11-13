@@ -5,7 +5,7 @@ namespace TheDeep;
 /// <summary>
 /// How the game's on-screen text looks, as data: one family for every text brick (the banner, the hint line, the dialogue box, the
 /// action prompts, the controls manual, the map's words, the end card, the debug readout), so none keeps a look of its own. It holds
-/// the font (Jost, assets/fonts, under the OFL beside it), three sizes (<see cref="Caption"/>, <see cref="Body"/>, <see cref="Title"/>),
+/// the font (Jost, assets/fonts, under the OFL beside it; <see cref="WorldFont"/> for words in the world), three sizes (<see cref="Caption"/>, <see cref="Body"/>, <see cref="Title"/>),
 /// the inks (<see cref="Ink"/>, <see cref="Dim"/>, and the accent, which is the biome's own (<see cref="BiomeProfile.Accent"/>,
 /// docs/art-direction.md#look) lifted toward the ink so it reads as text), the dark plate text sits on where it needs one, the rim
 /// that keeps text without a plate legible on a pale wall, the fade times, and where the lines said stand on screen
@@ -30,6 +30,10 @@ public partial class TextStyle : Resource
 
     /// <summary>The one font every text brick writes in.</summary>
     [Export] public Font Font { get; set; } = null!;
+
+    /// <summary>The same face for words standing in the world (a law's words): a distance-field import with mipmaps, so it stays crisp
+    /// at any distance and never shimmers (docs/art-direction.md#stable-image).</summary>
+    [Export] public Font WorldFont { get; set; } = null!;
 
     /// <summary>Small words: a speaker's name, a legend, the manual's rows, the debug readout.</summary>
     [ExportGroup("Sizes")]

@@ -8,9 +8,10 @@ namespace TheDeep;
 /// Renders the game's screens for a look (`-- --ui-shot &lt;dir&gt;`, windowed: headless renders nothing): a gate hint over the
 /// room with the gameplay controls for the keyboard, Jump held, and the debug keys (hint.png), a blow that leaves one hit (hurt.png,
 /// the health a moment later: last-hit.png), the controls for the gamepad, Dash
-/// held (manual-pad.png), the dialogue box on a whole line (dialogue.png), the pilgrim at the start room's first shrine, plate or
-/// lever with its prompt offered, keyboard then gamepad (prompt.png, prompt-pad.png), an ability's banner once eased in
-/// (banner.png), and where the start room holds a <see cref="Proclamation"/>, the pilgrim back there stood in it, its words
+/// held (manual-pad.png); where the room holds a <see cref="Conversation"/>, the pilgrim stood by it, "Talk" offered (talk.png), then
+/// talking through the real Interact, the dialogue box on its first line whole (dialogue.png); the pilgrim at the start room's first shrine, plate or
+/// lever with its prompt offered, keyboard then gamepad (prompt.png, prompt-pad.png), an ability's banner once eased in, or stood at
+/// a plate, its words read (banner.png), and where the start room holds a <see cref="Proclamation"/>, the pilgrim back there stood in it, its words
 /// spoken (proclamation.png); where the room holds a law, the pilgrim first
 /// presses on at its lip until it refuses, then holds the act offered there to two-thirds (prompt-law.png: the refusal on the hint
 /// line, the hold's ring part-filled), then, after crossing a few open exits from the start room,
@@ -38,8 +39,8 @@ public partial class UiShot : Node
     public ControlsManual? Manual { get; set; }
     /// <summary>The manual of the debug keys, shown for the hint shot only; null for none.</summary>
     public ControlsManual? DebugKeys { get; set; }
-    /// <summary>The dialogue box to shoot; null skips that shot's box.</summary>
-    public DialogueBox? Dialogue { get; set; }
+    /// <summary>The running game's conversations.</summary>
+    public required Conversations Conversations { get; init; }
     /// <summary>The folder the images are written to.</summary>
     public string OutputDir { get; set; } = "";
 
@@ -53,9 +54,14 @@ public partial class UiShot : Node
     private float _endTime;
     private readonly HashSet<string> _visited = new();
     private LawBreak? _law;
+    private Node3D? _stood;
     private double? _banner;
     private string _bannerShot = "banner.png";
     private string _start = "";
+    private Conversation? _talk;
+    private int _talkTick;
+    private int _talkShot;
+    private int _offered;
 
     public override void _Ready()
     {
@@ -65,8 +71,54 @@ public partial class UiShot : Node
         Hint.Show(GateKinds.HintLine(Ability.MagGrip), GateKinds.ColorOf(Ability.MagGrip));
     }
 
+    /// <summary>Runs before the conversations each physics tick, so what it presses is read the same tick.</summary>
+    public UiShot()
+    {
+        ProcessPhysicsPriority = -100;
+    }
+
+    /// <summary>Stood by the conversation: "Talk" shot once offered, then talked to, its first line completed and shot, then heard out.</summary>
+    public override void _PhysicsProcess(double delta)
+    {
+        if (_talk is not { } talk)
+        {
+            return;
+        }
+
+        _talkTick++;
+        Input.ActionRelease(InputActions.Interact);
+        _offered = Conversations.Offered == talk ? _offered + 1 : 0;
+        if (_talkShot == 0 && _offered > 30)
+        {
+            Shot("talk.png");
+            Input.ActionPress(InputActions.Interact);
+            _talkShot = _talkTick;
+        }
+        else if (_talkShot > 0 && _talkTick == _talkShot + 20)
+        {
+            Input.ActionPress(InputActions.Interact);
+        }
+        else if (_talkShot > 0 && _talkTick == _talkShot + 50)
+        {
+            Shot("dialogue.png");
+        }
+        else if (_talkShot > 0 && _talkTick > _talkShot + 50 && _talkTick % 6 == 0 && Conversations.Talking)
+        {
+            Input.ActionPress(InputActions.Interact);
+        }
+        else if ((_talkShot > 0 && _talkTick > _talkShot + 50 && !Conversations.Talking) || _talkTick > 900)
+        {
+            _talk = null;
+        }
+    }
+
     public override void _Process(double delta)
     {
+        if (_talk is not null)
+        {
+            return;
+        }
+
         if (_law is { } law)
         {
             HoldLaw(law);
@@ -144,15 +196,14 @@ public partial class UiShot : Node
             Shot("manual-pad.png");
             Input.ActionRelease(InputActions.Dash);
             SetDevice(ButtonNames.Device.Keyboard);
-            if (LineBook.Shared.Find("dialogue.lamplighter.light") is { } line)
+            if (First<Conversation>() is Conversation conversation)
             {
-                Dialogue?.Show(line.Speaker, line.Text, line.Text.Length, whole: true);
+                _talk = conversation;
+                Player.Respawn(DialogueCheck.Porch(conversation), 1);
             }
         }
         else if (_tick == 150)
         {
-            Shot("dialogue.png");
-            Dialogue?.Close();
             if (!StandAtLaw())
             {
                 StandAtProp();
@@ -168,7 +219,8 @@ public partial class UiShot : Node
         else if (_tick == 215)
         {
             Shot("prompt-pad.png");
-            Banner.Show(new Announcement("ability.mag_grip.name", "ability.mag_grip.hint"));
+            // Stood at a plate, its words read (its glyphs glow while they show); elsewhere, an ability's banner.
+            Banner.Show(_stood is ScripturePlate plate ? plate.Said : new Announcement("ability.mag_grip.name", "ability.mag_grip.hint"));
             _banner = 0.0;
         }
         else if (_tick > 230 && _tick % 20 == 0 && _hops < Hops)
@@ -209,6 +261,7 @@ public partial class UiShot : Node
     {
         if ((First<Shrine>() ?? First<ScripturePlate>() ?? First<Lever>()) is { } prop)
         {
+            _stood = prop;
             Player.GlobalPosition = new Vector3(prop.GlobalPosition.X + 0.5f, prop.GlobalPosition.Y + 0.05f, 0f);
             Player.ResetPhysicsInterpolation();
         }

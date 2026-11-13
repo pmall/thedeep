@@ -31,6 +31,18 @@ public static class GameLines
         }
     }
 
+    /// <summary>Every line the code has the hint line say (a gate's, <see cref="GateHints"/>), held to its one row like the content's.</summary>
+    public static IEnumerable<StringName> Hinted()
+    {
+        foreach (Ability ability in System.Enum.GetValues<Ability>())
+        {
+            if (ability != Ability.None)
+            {
+                yield return GateKinds.HintLine(ability);
+            }
+        }
+    }
+
     /// <summary>Every line id the code names.</summary>
     public static IEnumerable<StringName> Named()
     {

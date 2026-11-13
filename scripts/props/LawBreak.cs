@@ -5,7 +5,8 @@ namespace TheDeep;
 
 /// <summary>
 /// One of the three laws holding the pilgrim back (docs/theme.md#law-per-act): at the lip of a lethal drop (the third law), the
-/// pilgrim's own refusal stands as a veil of glyphs it cannot walk through, and the law's words rise as it nears. Breaking it is
+/// pilgrim's own refusal stands as a veil of glyphs it cannot walk through, and the law's words rise as it nears, in the style's
+/// <see cref="TextStyle.WorldFont"/>, drawn over whatever stands before them, so no solid of the room ever hides them. Breaking it is
 /// an act, never a push (docs/gameplay.md#law-act): pressing on only strains the veil (up to <see cref="PushStrain"/>, never
 /// breaking it), and the first time the pilgrim says why it may not (<see cref="RefusalLine"/>, raised as <see cref="Refused"/>
 /// for the hint line). From then on, standing at the lip offers the act (<see cref="Prompt"/>, a hold naming it,
@@ -15,7 +16,7 @@ namespace TheDeep;
 /// not a <see cref="Block"/>, and the map counts the way as open; the world's network names it as a <c>milestone</c>, which the
 /// draft check holds to story order.
 /// </summary>
-public partial class LawBreak : Node3D, IAnnounces
+public partial class LawBreak : Node3D, IAnnounces, IHints
 {
     [Export] public StaticBody3D Fence { get; set; } = null!;
     [Export] public Label3D Words { get; set; } = null!;
@@ -38,6 +39,9 @@ public partial class LawBreak : Node3D, IAnnounces
 
     /// <inheritdoc/>
     public System.Collections.Generic.IEnumerable<StringName> LineIds => new[] { LawLine, BrokenLine, BrokenHintLine, RefusalLine, ActLine };
+
+    /// <inheritdoc/>
+    public System.Collections.Generic.IEnumerable<StringName> HintLines => new[] { RefusalLine };
 
     /// <summary>What the banner says once it is broken.</summary>
     public Announcement Said => new(BrokenLine, BrokenHintLine);
@@ -97,7 +101,9 @@ public partial class LawBreak : Node3D, IAnnounces
         Fence.CollisionLayer = PhysicsLayers.WorldRock;
         Fence.CollisionMask = 0;
         Fence.Position = new Vector3(Toward * 0.25f, 0f, 0f);
+        Words.Font = TextStyle.Shared.WorldFont;
         Words.Text = LineBook.Shared.Find(LawLine)?.Text ?? "";
+        Words.Position = Words.Position with { X = -Toward * Mathf.Abs(Words.Position.X) };
         _wordsAt = Words.Position;
         _baseEnergy = Light.LightEnergy;
         Prompt.Position = Prompt.Position with { X = -Toward * Mathf.Abs(Prompt.Position.X) };
@@ -175,7 +181,7 @@ public partial class LawBreak : Node3D, IAnnounces
         float shown = _shown * _shown * (3f - 2f * _shown) * (1f - gone);
         float tremble = s * 0.05f;
         Words.Position = _wordsAt + new Vector3(Mathf.Sin(_time * 41f) * tremble, Mathf.Sin(_time * 29f) * tremble + gone * 1.5f, 0f);
-        // The words write depth (alpha-discarded, so depth of field keeps them sharp): they fade in by color instead.
+        // They fade in by color, from the dark of the room, so their outline never shows before them.
         Words.Visible = shown > 0.02f;
         Words.Modulate = Dark.Lerp(WordsColor.Lerp(Colors.White, s), shown);
         Veil.Visible = gone < 1f;

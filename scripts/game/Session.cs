@@ -149,7 +149,6 @@ public partial class Session : Node
 
         if (plate is not null && Input.IsActionJustPressed(InputActions.Interact))
         {
-            plate.Read();
             Banner.Show(plate.Said);
         }
 
@@ -415,6 +414,11 @@ public partial class Session : Node
         {
             lift.Player = Player;
             lift.Released += _ => Camera.AddShake(0.12f);
+        }
+
+        foreach (ScripturePlate plate in room.All<ScripturePlate>())
+        {
+            plate.Banner = Banner;
         }
 
         foreach (LawBreak law in room.All<LawBreak>())

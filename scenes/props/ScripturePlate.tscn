@@ -1,7 +1,8 @@
 [gd_scene format=3]
 ; A plate of scripture on a lectern (scripts/props/ScripturePlate.cs): a slim stone post behind the play plane,
 ; a slanted metal plate on it with glowing glyphs, their light, and the "Read" prompt. Place the origin on the
-; floor where the pilgrim stands to read. List Light in the room's GlyphLights.
+; floor where the pilgrim stands to read. List Light in the room's GlyphLights. PostMaterial, PlateMaterial and
+; GlyphMaterial on a placement replace the materials below.
 
 [ext_resource type="Script" path="res://scripts/props/ScripturePlate.cs" id="1_plate"]
 [ext_resource type="Script" path="res://scripts/kit/ColumnMesh.cs" id="2_column"]
@@ -28,10 +29,13 @@ Bevel = 0.02
 [sub_resource type="QuadMesh" id="Glyphs"]
 size = Vector2(0.8, 0.5)
 
-[node name="ScripturePlate" type="Node3D" node_paths=PackedStringArray("Light", "Prompt")]
+[node name="ScripturePlate" type="Node3D" node_paths=PackedStringArray("Light", "Prompt", "Post", "Plate", "Glyphs")]
 script = ExtResource("1_plate")
 Light = NodePath("Light")
 Prompt = NodePath("Prompt")
+Post = NodePath("Post")
+Plate = NodePath("Plate")
+Glyphs = NodePath("Glyphs")
 
 [node name="Post" type="MeshInstance3D" parent="."]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, -1)

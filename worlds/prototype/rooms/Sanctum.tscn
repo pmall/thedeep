@@ -365,6 +365,13 @@ script = ExtResource("15_spot")
 PlayerPosition = Vector3(25, 0, 0)
 PlayerFacing = -1
 
+; the second law at the lip of the forbidden door's drop: its veil and its words over it, the pilgrim near
+[node name="Law" type="Marker3D" parent="PhotoSpots"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 8, 4.5, 14)
+script = ExtResource("15_spot")
+PlayerPosition = Vector3(9, 0, 0)
+PlayerFacing = -1
+
 ; the east door, the shrine, the plate
 [node name="Shrine" type="Marker3D" parent="PhotoSpots"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 36, 4, 22)

@@ -13,6 +13,7 @@
 [ext_resource type="Script" path="res://scripts/machines/Machine.cs" id="7_machine"]
 [ext_resource type="Resource" path="res://resources/machines/lamplighter.tres" id="8_lamplighter"]
 [ext_resource type="PackedScene" path="res://scenes/props/Conversation.tscn" id="9_conversation"]
+[ext_resource type="Script" path="res://scripts/dialogue/DialogueLine.cs" id="90_dialogue_line"]
 [ext_resource type="Material" path="res://assets/materials/glyphs.tres" id="10_glyphs"]
 [ext_resource type="PackedScene" path="res://scenes/fx/Drips.tscn" id="11_drips"]
 [ext_resource type="Script" path="res://scripts/rooms/PhotoSpot.cs" id="12_spot"]
@@ -22,6 +23,21 @@
 
 [sub_resource type="QuadMesh" id="QuadMesh_1"]
 size = Vector2(5, 0.3)
+
+[sub_resource type="Resource" id="Said_wake"]
+script = ExtResource("90_dialogue_line")
+Speaker = &"speaker.lamplighter"
+Line = &"dialogue.quay_lamplighter.wake"
+
+[sub_resource type="Resource" id="Said_sea"]
+script = ExtResource("90_dialogue_line")
+Speaker = &"speaker.lamplighter"
+Line = &"dialogue.quay_lamplighter.sea"
+
+[sub_resource type="Resource" id="Said_down"]
+script = ExtResource("90_dialogue_line")
+Speaker = &"speaker.lamplighter"
+Line = &"dialogue.quay_lamplighter.down"
 
 [node name="Quay" type="Node3D" node_paths=PackedStringArray("SpawnPoint", "Stage", "Lamps", "Shafts", "GlyphLights")]
 script = ExtResource("13_room")
@@ -123,7 +139,7 @@ StartFacing = -1
 
 ; the Lamplighter's welcome, heard once (it follows the pilgrim, 4 m off: talked to from there)
 [node name="Conversation" parent="Machines/Lamplighter" instance=ExtResource("9_conversation")]
-Lines = Array[StringName]([&"dialogue.quay_lamplighter.wake", &"dialogue.quay_lamplighter.sea", &"dialogue.quay_lamplighter.down"])
+Lines = Array[ExtResource("90_dialogue_line")]([SubResource("Said_wake"), SubResource("Said_sea"), SubResource("Said_down")])
 Range = 4.6
 Once = true
 

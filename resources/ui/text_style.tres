@@ -3,6 +3,7 @@
 
 [ext_resource type="Script" path="res://scripts/ui/TextStyle.cs" id="1_style"]
 [ext_resource type="FontFile" path="res://assets/fonts/Jost.ttf" id="2_jost"]
+[ext_resource type="FontFile" path="res://assets/fonts/Jost-world.ttf" id="3_jost_world"]
 
 ; Jost at a book weight: light and geometric, and still whole at the caption's size (2003265652 is the "wght" axis).
 [sub_resource type="FontVariation" id="jost_book"]
@@ -11,9 +12,17 @@ variation_opentype = {
 2003265652: 450
 }
 
+; The same face and weight for words standing in the world: a distance-field import with mipmaps (Jost-world.ttf).
+[sub_resource type="FontVariation" id="jost_world_book"]
+base_font = ExtResource("3_jost_world")
+variation_opentype = {
+2003265652: 450
+}
+
 [resource]
 script = ExtResource("1_style")
 Font = SubResource("jost_book")
+WorldFont = SubResource("jost_world_book")
 Caption = 15
 Body = 22
 Title = 40

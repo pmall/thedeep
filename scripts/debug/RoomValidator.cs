@@ -50,6 +50,9 @@ public partial class RoomValidator : Node
     /// <summary>The running game's banner, whose box every banner said must fit.</summary>
     public required Banner Banner { get; init; }
 
+    /// <summary>The running game's hint line, whose one row every hint said must fit.</summary>
+    public required HintLine Hint { get; init; }
+
     /// <summary>The numbers the planners simulate (the live tuning, the single source).</summary>
     public required PlayerTuning Tuning { get; init; }
 
@@ -108,6 +111,7 @@ public partial class RoomValidator : Node
         _problems.AddRange(_lines.Problems(World.Definition.Lines));
         _problems.AddRange(LineCheck.MissingLetters(World.Definition.Lines, TextStyle.Shared.Font));
         _problems.AddRange(_lines.Unfit(World.Definition.Lines, Banner));
+        _problems.AddRange(_lines.Overlong(World.Definition.Lines, Hint));
         CheckLockedLines(world.Graph);
         string map = world.Check(World.NameOf(StartRoom), _draft?.Targets ?? MapTargets.None, Report);
         _problems.AddRange(world.Problems);

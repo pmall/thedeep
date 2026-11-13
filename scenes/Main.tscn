@@ -146,12 +146,13 @@ Session = NodePath("../Session")
 Banner = NodePath("../Banner")
 
 ; The conversations (Conversations): talking to someone, their lines in the dialogue box.
-[node name="Conversations" type="Node" parent="." node_paths=PackedStringArray("World", "Player", "Session", "Box")]
+[node name="Conversations" type="Node" parent="." node_paths=PackedStringArray("World", "Player", "Session", "Box", "Banner")]
 script = ExtResource("31_conversations")
 World = NodePath("../World")
 Player = NodePath("../Player")
 Session = NodePath("../Session")
 Box = NodePath("../DialogueBox")
+Banner = NodePath("../Banner")
 
 ; The sealed arenas (Arenas): a boss's and an ambush's, handed the pilgrim, settled, remembered.
 [node name="Arenas" type="Node" parent="." node_paths=PackedStringArray("World", "Player", "Session", "Banner", "Camera")]
@@ -201,9 +202,11 @@ Player = NodePath("../Player")
 Camera = NodePath("../SideCamera")
 World = NodePath("../World")
 
-[node name="DialogueBox" type="CanvasLayer" parent="." node_paths=PackedStringArray("World")]
+[node name="DialogueBox" type="CanvasLayer" parent="." node_paths=PackedStringArray("World", "Player", "Camera")]
 script = ExtResource("32_dialogue_box")
 World = NodePath("../World")
+Player = NodePath("../Player")
+Camera = NodePath("../SideCamera")
 
 [node name="EndCard" type="CanvasLayer" parent="." node_paths=PackedStringArray("World")]
 script = ExtResource("24_end")

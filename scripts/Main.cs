@@ -93,6 +93,9 @@ public partial class Main : Node3D
     /// <summary>User argument that runs the dialogue check (see DialogueCheck), used by tools/check.sh.</summary>
     private const string DialogueCheckArgument = "--dialogue-check";
 
+    /// <summary>User argument that runs the scripture plate check (see PlateCheck), used by tools/check.sh.</summary>
+    private const string PlateCheckArgument = "--plate-check";
+
     /// <summary>User argument that names the save file for this run (<see cref="WorldDefinition.SaveName"/>); the save check's scratch save.</summary>
     private const string SaveNameArgument = "--save-name";
 
@@ -150,7 +153,7 @@ public partial class Main : Node3D
     private static readonly string[] DriverArguments =
     {
         SmokeArgument, CaptureTestArgument, LookDevArgument, ValidateRoomsArgument, ValidateTravelArgument, ValidateSpeciesArgument,
-        UiShotArgument, PlaythroughCheckArgument, GripCheckArgument, CombatCheckArgument, HarpoonCheckArgument, EncounterCheckArgument, DrillCheckArgument, BallastCheckArgument, HeatCheckArgument, BurnProbeArgument, RouteCheckArgument, KeyCheckArgument, CodeCheckArgument, PowerUpCheckArgument, DialogueCheckArgument, AmbushCheckArgument, SecretCheckArgument, FightCheckArgument, BakeSurfacesArgument, SaveCheckWriteArgument,
+        UiShotArgument, PlaythroughCheckArgument, GripCheckArgument, CombatCheckArgument, HarpoonCheckArgument, EncounterCheckArgument, DrillCheckArgument, BallastCheckArgument, HeatCheckArgument, BurnProbeArgument, RouteCheckArgument, KeyCheckArgument, CodeCheckArgument, PowerUpCheckArgument, DialogueCheckArgument, PlateCheckArgument, AmbushCheckArgument, SecretCheckArgument, FightCheckArgument, BakeSurfacesArgument, SaveCheckWriteArgument,
     };
 
     private SaveData? _resume;
@@ -271,6 +274,7 @@ public partial class Main : Node3D
             {
                 World = World,
                 Banner = Session.Banner,
+                Hint = Hint,
                 Tuning = Player.Tuning,
                 ClimbRise = Travel.ClimbRise,
                 StartRoom = _gameStart,
@@ -321,7 +325,12 @@ public partial class Main : Node3D
                 Conversations = Conversations,
                 Box = DialogueBox,
                 Session = Session,
+                Banner = Session.Banner,
             });
+        }
+        else if (Array.IndexOf(args, PlateCheckArgument) >= 0)
+        {
+            AddChild(new PlateCheck { Player = Player, World = World, Banner = Session.Banner });
         }
         else if (Array.IndexOf(args, SaveCheckWriteArgument) >= 0 || Array.IndexOf(args, SaveCheckReadArgument) >= 0)
         {
@@ -377,7 +386,7 @@ public partial class Main : Node3D
         }
         else if (ArgumentValue(args, UiShotArgument) is { } shotDir)
         {
-            AddChild(new UiShot { World = World, Player = Player, Travel = Travel, Hint = Hint, Map = MapScreen, EndCard = Session.EndCard, Banner = Session.Banner, Manual = Hud.Manual, DebugKeys = Hud.DebugKeys, Dialogue = DialogueBox, OutputDir = shotDir });
+            AddChild(new UiShot { World = World, Player = Player, Travel = Travel, Hint = Hint, Map = MapScreen, EndCard = Session.EndCard, Banner = Session.Banner, Manual = Hud.Manual, DebugKeys = Hud.DebugKeys, Conversations = Conversations, OutputDir = shotDir });
         }
         else if (Array.IndexOf(args, BakeSurfacesArgument) >= 0)
         {

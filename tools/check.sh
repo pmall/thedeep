@@ -209,6 +209,8 @@ CHECKS=(
     "ambush|AMBUSH OK|AMBUSH CHECK|1500|--room Pyre --ambush-check"
     # DialogueCheck: the Lamplighter's conversation, in the Narthex.
     "dialogue|DIALOGUE OK|DIALOGUE CHECK|1500|--room Narthex --dialogue-check"
+    # PlateCheck: a scripture plate read, in the Sanctum.
+    "plate|PLATE OK|PLATE CHECK|1500|--room Sanctum --plate-check"
     # PowerUpCheck: power-ups taken, in the Sacristy.
     "powerup|POWERUP OK|POWERUP CHECK|1500|--room Sacristy --powerup-check"
     # FightCheck: the fight moveset on the lab's Votary.
@@ -227,6 +229,7 @@ CHECKS=(
     "sequel_playthrough|PLAYTHROUGH OK|PLAYTHROUGH CHECK|20000|--world sequel --playthrough-check"
     "sequel_burn|BURN OK|BURN CHECK|20000|--world sequel --burn-probe"
     "sequel_routes|ROUTES OK|ROUTE CHECK|20000|--world sequel --route-check"
+    "sequel_dialogue|DIALOGUE OK|DIALOGUE CHECK|1500|--world sequel --room Quay --dialogue-check"
 )
 
 # Runs one check in the background: its log, then a status file with its exit code and how long it took.

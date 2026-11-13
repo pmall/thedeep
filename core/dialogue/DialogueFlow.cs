@@ -17,18 +17,20 @@ public enum DialoguePress
 }
 
 /// <summary>
-/// A conversation in play, pure: its lines in turn, each revealed letter by letter (<see cref="LettersPerSecond"/>). A press shows the
+/// A conversation in play, pure: its lines in turn, each revealed letter by letter at its <see cref="RevealPace"/>. A press shows the
 /// line being revealed whole at once, or, once it is whole, moves on to the next; after the last, the conversation is over. The texts
 /// come from the line book; who speaks each is the adapter's to show.
 /// </summary>
 public sealed class DialogueFlow
 {
     private readonly IReadOnlyList<string> _texts;
-    private float _revealed;
+
+    /// <summary>Seconds of revealing not yet spent on a letter.</summary>
+    private float _owed;
 
     /// <summary>A conversation of <paramref name="texts"/> (at least one line), starting on the first with no letter
     /// shown.</summary>
-    public DialogueFlow(IReadOnlyList<string> texts, float lettersPerSecond)
+    public DialogueFlow(IReadOnlyList<string> texts, RevealPace pace)
     {
         if (texts.Count == 0)
         {
@@ -36,11 +38,11 @@ public sealed class DialogueFlow
         }
 
         _texts = texts;
-        LettersPerSecond = Math.Max(1f, lettersPerSecond);
+        Pace = pace;
     }
 
-    /// <summary>How fast a line is revealed, in letters per second; at least 1.</summary>
-    public float LettersPerSecond { get; }
+    /// <summary>How fast a line is revealed, and where it pauses.</summary>
+    public RevealPace Pace { get; }
 
     /// <summary>The line being spoken (0-based).</summary>
     public int Index { get; private set; }
@@ -52,7 +54,7 @@ public sealed class DialogueFlow
     public string Text => _texts[Index];
 
     /// <summary>How many of the line's letters show.</summary>
-    public int Shown => Math.Min(Text.Length, (int)_revealed);
+    public int Shown { get; private set; }
 
     /// <summary>The whole line shows: a press moves on.</summary>
     public bool Whole => Shown >= Text.Length;
@@ -63,9 +65,16 @@ public sealed class DialogueFlow
     /// <summary>Reveals more of the line, <paramref name="seconds"/> later.</summary>
     public void Tick(float seconds)
     {
-        if (!Over)
+        if (Over || Whole)
         {
-            _revealed = Math.Min(Text.Length, _revealed + seconds * LettersPerSecond);
+            return;
+        }
+
+        _owed += seconds;
+        while (Shown < Text.Length && _owed >= Pace.SecondsFor(Text, Shown))
+        {
+            _owed -= Pace.SecondsFor(Text, Shown);
+            Shown++;
         }
     }
 
@@ -80,7 +89,7 @@ public sealed class DialogueFlow
 
         if (!Whole)
         {
-            _revealed = Text.Length;
+            Shown = Text.Length;
             return DialoguePress.Completed;
         }
 
@@ -91,7 +100,8 @@ public sealed class DialogueFlow
         }
 
         Index++;
-        _revealed = 0f;
+        Shown = 0;
+        _owed = 0f;
         return DialoguePress.Next;
     }
 }

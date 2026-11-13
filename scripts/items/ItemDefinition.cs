@@ -8,7 +8,7 @@ namespace TheDeep;
 /// <see cref="ItemPickup"/> lays one in a room and a <see cref="LockedDoor"/> opens for it.
 /// </summary>
 [GlobalClass]
-public partial class ItemDefinition : Resource, IAnnounces
+public partial class ItemDefinition : Resource, IAnnounces, IHints
 {
     /// <summary>The id requirements name: a word starting with a letter, not an ability's name (the room check holds it to that).</summary>
     [Export] public string Id { get; set; } = "";
@@ -26,6 +26,9 @@ public partial class ItemDefinition : Resource, IAnnounces
 
     /// <inheritdoc/>
     public System.Collections.Generic.IEnumerable<StringName> LineIds => new[] { NameLine, TakenLine, LockedLine };
+
+    /// <inheritdoc/>
+    public System.Collections.Generic.IEnumerable<StringName> HintLines => new[] { LockedLine };
 
     /// <summary>What the banner says as it is taken.</summary>
     public Announcement Said => new(NameLine, TakenLine);

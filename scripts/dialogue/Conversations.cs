@@ -8,7 +8,8 @@ namespace TheDeep;
 /// Conversations in play: standing near a <see cref="Conversation"/> (and no shrine or plate prompting) shows "Talk"; talking
 /// (interact) holds the pilgrim still and plays its lines in the <see cref="DialogueBox"/> (the core's <see cref="DialogueFlow"/>):
 /// interact or jump completes the line being revealed, then moves on; after the last line the pilgrim is free again, and a
-/// conversation heard <see cref="Conversation.Once"/> is remembered (the session keeps it).
+/// conversation heard <see cref="Conversation.Once"/> is remembered (the session keeps it). Talking dismisses the banner, so the two
+/// never stand on screen together. Each line is revealed at the pace these exports set (<see cref="RevealPace"/>).
 /// </summary>
 public partial class Conversations : Node
 {
@@ -16,14 +17,20 @@ public partial class Conversations : Node
     [Export] public Player Player { get; set; } = null!;
     [Export] public Session Session { get; set; } = null!;
     [Export] public DialogueBox Box { get; set; } = null!;
+    [Export] public Banner Banner { get; set; } = null!;
 
-    /// <summary>How fast a line reveals, letters per second.</summary>
+    /// <summary>How fast a line reveals, letters per second, and how long it rests after a sentence's end and a comma, seconds.</summary>
+    [ExportGroup("Reveal")]
     [Export] public float LettersPerSecond { get; set; } = 45f;
+
+    [Export] public float SentencePause { get; set; } = 0.32f;
+
+    [Export] public float CommaPause { get; set; } = 0.14f;
 
     private Conversation? _prompted;
     private Conversation? _talking;
     private DialogueFlow? _flow;
-    private IReadOnlyList<TextLine?> _lines = System.Array.Empty<TextLine?>();
+    private IReadOnlyList<string> _speakers = System.Array.Empty<string>();
 
     /// <summary>A conversation is being played (the pilgrim held still).</summary>
     public bool Talking => _talking is not null;
@@ -57,6 +64,7 @@ public partial class Conversations : Node
 
         Conversation? near = Player.InControl && Player.IsUpright && Player.IsOnFloor() && !Session.Prompting ? Nearest() : null;
         Prompt(near);
+        near?.Place(Player.GlobalPosition);
         if (near is not null && Input.IsActionJustPressed(InputActions.Interact))
         {
             Begin(near);
@@ -82,11 +90,14 @@ public partial class Conversations : Node
     {
         Prompt(null);
         LineBook book = LineBook.Shared;
-        _lines = conversation.Lines.Select(id => book.Find(id)).ToList();
-        _flow = new DialogueFlow(_lines.Select(l => l?.Text ?? "").ToList(), LettersPerSecond);
+        _speakers = conversation.Lines.Select(l => book.Find(l.Speaker)?.Text ?? "").ToList();
+        List<string> texts = conversation.Lines.Select(l => book.Find(l.Line)?.Text ?? "").ToList();
+        _flow = new DialogueFlow(texts, new RevealPace(LettersPerSecond, SentencePause, CommaPause));
         _talking = conversation;
         Player.Velocity = Vector3.Zero;
         Player.Frozen = true;
+        Banner.Clear();
+        Box.Open(conversation, _speakers, texts);
         Show(_flow);
         Began?.Invoke(conversation);
     }
@@ -106,7 +117,7 @@ public partial class Conversations : Node
         Show(flow);
     }
 
-    private void Show(DialogueFlow flow) => Box.Show(_lines[flow.Index]?.Speaker ?? "", flow.Text, flow.Shown, flow.Whole);
+    private void Show(DialogueFlow flow) => Box.Show(_speakers[flow.Index], flow.Text, flow.Shown, flow.Whole);
 
     private void End(Conversation conversation)
     {
