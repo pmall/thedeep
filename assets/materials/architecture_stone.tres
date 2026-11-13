@@ -1,10 +1,8 @@
 [gd_resource type="ShaderMaterial" format=3]
-; Masonry of the architecture behind a room (BackdropArchitecture): the backdrop's color, hazed by distance.
+; Masonry of the architecture behind a room (BackdropArchitecture): the backdrop's color, veiled with its row.
 
 [ext_resource type="Shader" path="res://assets/shaders/architecture.gdshader" id="1_shader"]
 
 [resource]
 shader = ExtResource("1_shader")
 shader_parameter/slot = 2
-shader_parameter/haze_per_meter = 0.024
-shader_parameter/haze_max = 0.88

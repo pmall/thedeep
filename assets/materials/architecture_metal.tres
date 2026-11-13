@@ -1,0 +1,10 @@
+[gd_resource type="ShaderMaterial" format=3]
+; Iron and plating of the architecture behind a room (stacks, foundries, machinery): the backdrop's color, dull, veiled with its row, so it reads as structure in the murk and never as grippable metal.
+
+[ext_resource type="Shader" path="res://assets/shaders/architecture.gdshader" id="1_shader"]
+
+[resource]
+shader = ExtResource("1_shader")
+shader_parameter/slot = 2
+shader_parameter/roughness = 0.6
+shader_parameter/metallic = 0.3

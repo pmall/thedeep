@@ -8,8 +8,8 @@
 [ext_resource type="Material" path="res://assets/materials/architecture_stone.tres" id="6_stone"]
 [ext_resource type="Material" path="res://assets/materials/foreground.tres" id="7_fore"]
 [ext_resource type="PackedScene" path="res://scenes/fx/Dust.tscn" id="8_dust"]
-[ext_resource type="Material" path="res://assets/materials/backdrop_metal.tres" id="9_metal"]
-[ext_resource type="Material" path="res://assets/materials/architecture_accent.tres" id="10_accent"]
+[ext_resource type="Material" path="res://assets/materials/architecture_metal.tres" id="9_metal"]
+[ext_resource type="Material" path="res://assets/materials/architecture_glow.tres" id="10_glow"]
 [ext_resource type="Material" path="res://assets/materials/architecture_ice.tres" id="11_ice"]
 [ext_resource type="Material" path="res://assets/materials/light_shaft.tres" id="12_shaft"]
 
@@ -19,7 +19,7 @@ Environment = NodePath("WorldEnvironment")
 KeyLight = NodePath("Sun")
 PillarMaterial = ExtResource("6_stone")
 ArchitectureMetal = ExtResource("9_metal")
-ArchitectureAccent = ExtResource("10_accent")
+ArchitectureGlow = ExtResource("10_glow")
 ArchitectureIce = ExtResource("11_ice")
 FrameMaterial = ExtResource("7_fore")
 Dust = ExtResource("8_dust")

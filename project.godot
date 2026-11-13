@@ -262,6 +262,10 @@ biome_haze={
 "type": "color",
 "value": Color(0.3, 0.3, 0.38, 1)
 }
+biome_backdrop_veil={
+"type": "color",
+"value": Color(0.2, 0.2, 0.25, 1)
+}
 biome_shaft={
 "type": "color",
 "value": Color(1, 1, 1, 1)

@@ -38,17 +38,20 @@ public partial class RoomStage : Node3D
     /// <summary>Iron and plating of that architecture.</summary>
     [Export] public Material ArchitectureMetal { get; set; } = null!;
 
-    /// <summary>Its sparse accent pieces.</summary>
-    [Export] public Material ArchitectureAccent { get; set; } = null!;
+    /// <summary>Its furnace mouths' light.</summary>
+    [Export] public Material ArchitectureGlow { get; set; } = null!;
 
     /// <summary>Its ice.</summary>
     [Export] public Material ArchitectureIce { get; set; } = null!;
 
     /// <summary>
-    /// How much architecture stands behind the room: 0 for none (a closed shaft), under 2 for the two far rows, else all
-    /// three (the name is older than the architecture: it once counted boxes per 10 m).
+    /// How much architecture stands behind the room: 0 for none (a closed shaft), under 2 for all its rows but the nearest,
+    /// else all of them (the name is older than the architecture: it once counted boxes per 10 m).
     /// </summary>
     [Export] public float PillarDensity { get; set; } = 3.8f;
+
+    /// <summary>This room's rows of architecture, nearest first; empty for its layer's (<see cref="BiomeProfile.ArchitectureRows"/>).</summary>
+    [Export] public BackdropRowData[] ArchitectureRows { get; set; } = [];
 
     /// <summary>Dark blurred silhouettes framing the screen, in front of the play plane (foreground.tres).</summary>
     [ExportGroup("Frame")]
@@ -153,7 +156,8 @@ public partial class RoomStage : Node3D
         ShowSkyline(_farSkyline, biome.FarSkyline);
         ShowSkyline(_nearSkyline, biome.NearSkyline);
 
-        if (_architecture is not null && (_architecture.Style == biome.Architecture || PillarDensity <= 0f))
+        BackdropRowData[] rows = ArchitectureRows.Length > 0 ? ArchitectureRows : biome.ArchitectureRows;
+        if (_architecture is not null && ((_architecture.Style == biome.Architecture && _architecture.Rows == rows) || PillarDensity <= 0f))
         {
             return;
         }
@@ -171,11 +175,12 @@ public partial class RoomStage : Node3D
             Style = biome.Architecture,
             Stone = PillarMaterial,
             Metal = ArchitectureMetal,
-            Accent = ArchitectureAccent,
+            Glow = ArchitectureGlow,
             Ice = ArchitectureIce,
             BoundsMin = _min,
             BoundsMax = _max,
-            Rows = PillarDensity < 2f ? 2 : 3,
+            Rows = rows,
+            OmitNearest = PillarDensity < 2f,
             Seed = Seed * 7 + 11,
         };
         AddChild(_architecture);

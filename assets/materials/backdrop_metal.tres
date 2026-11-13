@@ -1,5 +1,5 @@
 [gd_resource type="ShaderMaterial" format=3]
-; Iron and plating of the architecture far behind a room (stacks, foundries, machinery, the core's wall machinery): the backdrop's color, dull, hazed, so it reads as structure in the haze and never as grippable metal.
+; Iron and plating of the machinery on the walls behind a room (WallDressing): the backdrop's color, dull, hazed, so it reads as structure in the haze and never as grippable metal.
 
 [ext_resource type="Shader" path="res://assets/shaders/architecture.gdshader" id="1_shader"]
 

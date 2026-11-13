@@ -7,13 +7,15 @@ namespace TheDeep;
 /// <summary>The architecture standing behind a room, by depth layer (a <see cref="BiomeProfile"/> choice).</summary>
 public enum BackdropStyle
 {
-    /// <summary>Cathedral naves: clustered piers carrying pointed arches, slimmer arcaded tiers above (the flooded layer).</summary>
+    /// <summary>Cathedral naves: clustered piers carrying pointed arches, slimmer arcaded tiers above, a few shafts running
+    /// up the piers' faces (the flooded layer).</summary>
     Nave,
 
     /// <summary>Archive stacks: towers of racks, walkways between them fringed with icicles (the frozen layer).</summary>
     Stacks,
 
-    /// <summary>A foundry: chimney stacks, trusses between them, chains hanging from the trusses (the volcanic layer).</summary>
+    /// <summary>A foundry: furnaces with their stacks, gantries and ducts between the stacks, tanks on the gantries, chains
+    /// hanging from them, a few furnace mouths glowing in the farthest row (the volcanic layer).</summary>
     Foundry,
 
     /// <summary>Ancient machinery: great rings on hubs, spokes, pistons between them (the core).</summary>
@@ -28,11 +30,30 @@ public enum BackdropPiece
     PointedArch,
     UpperArch,
     Course,
-    Rib,
+
+    /// <summary>A slender shaft running up a nave pier's face from its springing to its top tier.</summary>
+    Shaft,
     Tower,
     Walkway,
     Icicles,
-    Chimney,
+
+    /// <summary>A furnace's body, from the row's foot up past the room's floor.</summary>
+    Furnace,
+
+    /// <summary>The narrower hood on a furnace that its stack rises from.</summary>
+    Hood,
+
+    /// <summary>A furnace's mouth on its front face: the only light of the foundry's backdrop.</summary>
+    FurnaceMouth,
+
+    /// <summary>A banded stack rising from a hood.</summary>
+    Stack,
+
+    /// <summary>A horizontal duct from one stack to the next.</summary>
+    Duct,
+
+    /// <summary>A banded tank lying on a gantry.</summary>
+    Tank,
     Chord,
     Brace,
     Chain,
@@ -50,10 +71,12 @@ public readonly record struct BackdropPlacement(BackdropPiece Piece, Vector3 Pos
 
 /// <summary>
 /// A row of backdrop architecture: the pieces' sizes for one depth (<see cref="Scale"/> grows with distance, so far rows
-/// read as larger structures), the bay <see cref="Pitch"/>, and the span to fill: X from <see cref="MinX"/> to
-/// <see cref="MaxX"/>, Y from <see cref="BaseY"/> (hidden in the mist) up past <see cref="TopY"/> (out of frame).
+/// read as larger structures), the bay <see cref="Pitch"/>, the span to fill (X from <see cref="MinX"/> to
+/// <see cref="MaxX"/>, Y from its foot <see cref="BaseY"/> to its top <see cref="TopY"/>, both off screen) and the band the
+/// room's camera bounds span (<see cref="FloorY"/> to <see cref="RoofY"/>), where a style puts what should be seen. Its
+/// furnace mouths glow only where <see cref="Glows"/> (the farthest row). Made by <see cref="BackdropRowSpec.Behind"/>.
 /// </summary>
-public readonly record struct BackdropRow(float MinX, float MaxX, float BaseY, float TopY, float Pitch, float Scale, int Seed);
+public readonly record struct BackdropRow(float MinX, float MaxX, float BaseY, float TopY, float FloorY, float RoofY, float Pitch, float Scale, int Seed, bool Glows = false);
 
 /// <summary>
 /// Pure, deterministic layouts of the architecture behind a room (<see cref="BackdropArchitecture"/> turns them into meshes):
@@ -66,10 +89,11 @@ public static class BackdropLayout
     /// pieces.</summary>
     public static List<BackdropPlacement> Build(BackdropStyle style, BackdropRow row) => style switch
     {
+        BackdropStyle.Nave => Nave(row),
         BackdropStyle.Stacks => Stacks(row),
         BackdropStyle.Foundry => Foundry(row),
         BackdropStyle.Machinery => Machinery(row),
-        _ => Nave(row),
+        _ => throw new ArgumentOutOfRangeException(nameof(style), style, "no layout for this backdrop style"),
     };
 
     /// <summary>The bay lines of a row: X of each pier, a seeded phase so rows don't line up.</summary>
@@ -86,6 +110,9 @@ public static class BackdropLayout
     }
 
     private static float H(BackdropRow row, int a, int b) => DressingLayout.Hash01(row.Seed + a * 7919, b);
+
+    /// <summary>The band a style places its features in: the room's bounds, at least a few bays' worth tall.</summary>
+    private static float Band(BackdropRow row) => MathF.Max(row.RoofY - row.FloorY, 10f * row.Scale);
 
     private static List<BackdropPlacement> Nave(BackdropRow row)
     {
@@ -115,6 +142,14 @@ public static class BackdropLayout
             {
                 list.Add(new BackdropPlacement(j == 0 ? BackdropPiece.Pier : BackdropPiece.UpperPier, new Vector3(xs[k], tiers[j], 0f)));
             }
+
+            if (height[k] > 1 && H(row, 40, k) < 0.2f)
+            {
+                // A shaft up the pier's face, from the first arches' springing to its top: upright, few, in the stone.
+                float from = tiers[0] + d.PierHeight;
+                float to = tiers[height[k] - 1] + d.UpperHeight;
+                list.Add(new BackdropPlacement(BackdropPiece.Shaft, new Vector3(xs[k], (from + to) * 0.5f, d.PierRadius + d.ShaftSection * 0.5f), Length: to - from));
+            }
         }
 
         for (int k = 0; k + 1 < xs.Count; k++)
@@ -133,11 +168,6 @@ public static class BackdropLayout
                 list.Add(new BackdropPlacement(first ? BackdropPiece.PointedArch : BackdropPiece.UpperArch, new Vector3(mid, spring, 0f)));
                 float course = spring + (first ? d.PointedRise : d.UpperRise) + d.CourseHeight * 0.5f;
                 list.Add(new BackdropPlacement(BackdropPiece.Course, new Vector3(mid, course, 0f)));
-                if (first && H(row, 40, k) < 0.14f)
-                {
-                    // An iron rib in front of the arch: the accent, sparse.
-                    list.Add(new BackdropPlacement(BackdropPiece.Rib, new Vector3(mid, spring, d.ArchDepth * 0.5f + 0.2f * row.Scale)));
-                }
             }
         }
 
@@ -159,7 +189,7 @@ public static class BackdropLayout
                 continue;
             }
 
-            float top = row.TopY - (row.TopY - row.BaseY) * 0.45f * H(row, 2, k);
+            float top = row.TopY - (row.TopY - row.FloorY) * 0.45f * H(row, 2, k);
             int n = Math.Max(1, (int)MathF.Ceiling((top - row.BaseY) / d.TowerHeight));
             floors[k] = n;
             for (int j = 0; j < n; j++)
@@ -193,19 +223,35 @@ public static class BackdropLayout
         var d = BackdropDims.For(row);
         var list = new List<BackdropPlacement>();
         List<float> xs = Bays(row);
+        float band = Band(row);
         var stack = new bool[xs.Count];
+        var hoodTop = new float[xs.Count];
         for (int k = 0; k < xs.Count; k++)
         {
-            // Every other bay at least: a chimney, some broken short.
-            stack[k] = k % 2 == 0 || H(row, 1, k) < 0.3f;
-            if (stack[k])
+            // A furnace on every other bay line at least, its stack rising from its hood, some stacks shorter.
+            stack[k] = k % 2 == 0 || H(row, 1, k) < 0.25f;
+            if (!stack[k])
             {
-                float top = H(row, 2, k) < 0.25f ? row.BaseY + (row.TopY - row.BaseY) * (0.45f + 0.3f * H(row, 3, k)) : row.TopY + 6f * row.Scale;
-                list.Add(new BackdropPlacement(BackdropPiece.Chimney, new Vector3(xs[k], row.BaseY, 0f), Length: top - row.BaseY));
+                continue;
+            }
+
+            // Built in whole steps of length, so each piece's mesh is made at the length it is placed at.
+            int steps = Math.Max(1, (int)MathF.Round((row.FloorY + d.FurnaceHeight * (0.6f + 0.8f * H(row, 2, k)) - row.BaseY) / d.LengthStep));
+            float top = row.BaseY + steps * d.LengthStep;
+            list.Add(new BackdropPlacement(BackdropPiece.Furnace, new Vector3(xs[k], (row.BaseY + top) * 0.5f, 0f), Length: steps * d.LengthStep));
+            list.Add(new BackdropPlacement(BackdropPiece.Hood, new Vector3(xs[k], top + d.HoodHeight * 0.5f, 0f)));
+            hoodTop[k] = top + d.HoodHeight;
+            float end = H(row, 3, k) < 0.25f ? hoodTop[k] + band * (0.5f + 0.4f * H(row, 4, k)) : row.TopY;
+            int stackSteps = Math.Max(1, (int)MathF.Round((end - hoodTop[k]) / d.LengthStep));
+            list.Add(new BackdropPlacement(BackdropPiece.Stack, new Vector3(xs[k], hoodTop[k], 0f), Length: stackSteps * d.LengthStep));
+            if (row.Glows && H(row, 6, k) < 0.4f)
+            {
+                list.Add(new BackdropPlacement(BackdropPiece.FurnaceMouth, new Vector3(xs[k], top - d.FurnaceHeight * 0.4f, d.FurnaceDepth * 0.5f)));
             }
         }
 
-        // Trusses between neighbouring chimneys at one or two heights, chains hanging from them.
+        // Gantries between neighbouring stacks over their hoods, at one or two heights: a tank on some, chains hanging from
+        // them, a duct above.
         for (int k = 0; k < xs.Count; k++)
         {
             int next = k + 1;
@@ -219,38 +265,61 @@ public static class BackdropLayout
                 continue;
             }
 
-            float from = xs[k] + d.ChimneyRadius, to = xs[next] - d.ChimneyRadius;
+            float from = xs[k] + d.StackRadius, to = xs[next] - d.StackRadius;
             float span = to - from;
             float mid = (from + to) * 0.5f;
+            float low = MathF.Max(hoodTop[k], hoodTop[next]) + (2f + 4f * H(row, 5, k)) * row.Scale;
             int levels = H(row, 4, k) < 0.5f ? 1 : 2;
+            float high = low;
             for (int level = 0; level < levels; level++)
             {
-                float low = row.BaseY + (row.TopY - row.BaseY) * (0.3f + 0.3f * level + 0.1f * H(row, 5 + level, k));
-                float high = low + d.TrussDepth;
-                list.Add(new BackdropPlacement(BackdropPiece.Chord, new Vector3(mid, low, 0f), Length: span));
-                list.Add(new BackdropPlacement(BackdropPiece.Chord, new Vector3(mid, high, 0f), Length: span));
-                int panels = Math.Max(1, (int)MathF.Round(span / d.TrussDepth));
-                float w = span / panels;
-                float angle = MathF.Atan2(d.TrussDepth, w);
-                float length = MathF.Sqrt(w * w + d.TrussDepth * d.TrussDepth);
-                for (int p = 0; p < panels; p++)
+                low = level == 0 ? low : high + d.TankRadius * 2f + d.TrussDepth;
+                high = low + d.TrussDepth;
+                Truss(list, d, from, span, low, high);
+                if (level == 0 && span > d.TankLength * 1.4f && H(row, 7, k) < 0.6f)
                 {
-                    float cx = from + (p + 0.5f) * w;
-                    list.Add(new BackdropPlacement(BackdropPiece.Brace, new Vector3(cx, (low + high) * 0.5f, 0f), RollZ: p % 2 == 0 ? angle : -angle, Length: length));
+                    float x = mid + (H(row, 8, k) - 0.5f) * (span - d.TankLength * 1.2f);
+                    list.Add(new BackdropPlacement(BackdropPiece.Tank, new Vector3(x, high + d.BeamSection * 0.5f + d.TankRadius, 0f)));
                 }
 
+                int panels = Math.Max(1, (int)MathF.Round(span / d.TrussDepth));
+                float w = span / panels;
                 for (int c = 0; c < panels; c++)
                 {
-                    if (H(row, 20 + level, k * 31 + c) < 0.22f)
+                    if (H(row, 20 + level, k * 31 + c) < 0.12f)
                     {
-                        float chain = (low - row.BaseY) * (0.25f + 0.5f * H(row, 30 + level, k * 31 + c));
+                        float chain = (low - row.FloorY) * (0.2f + 0.4f * H(row, 30 + level, k * 31 + c));
                         list.Add(new BackdropPlacement(BackdropPiece.Chain, new Vector3(from + (c + 0.5f) * w, low, 0f), Length: chain));
                     }
                 }
             }
+
+            if (H(row, 9, k) < 0.5f)
+            {
+                // From one stack's axis to the next, its ends inside them.
+                float duct = high + d.DuctRadius * 2f + (3f + 3f * H(row, 10, k)) * row.Scale;
+                list.Add(new BackdropPlacement(BackdropPiece.Duct, new Vector3((xs[k] + xs[next]) * 0.5f, duct, 0f), Length: xs[next] - xs[k]));
+            }
         }
 
         return list;
+    }
+
+    /// <summary>A truss from <paramref name="from"/> along <paramref name="span"/>: two chords and braces zigzagging between.</summary>
+    private static void Truss(List<BackdropPlacement> list, BackdropDims d, float from, float span, float low, float high)
+    {
+        float mid = from + span * 0.5f;
+        list.Add(new BackdropPlacement(BackdropPiece.Chord, new Vector3(mid, low, 0f), Length: span));
+        list.Add(new BackdropPlacement(BackdropPiece.Chord, new Vector3(mid, high, 0f), Length: span));
+        int panels = Math.Max(1, (int)MathF.Round(span / d.TrussDepth));
+        float w = span / panels;
+        float angle = MathF.Atan2(d.TrussDepth, w);
+        float length = MathF.Sqrt(w * w + d.TrussDepth * d.TrussDepth);
+        for (int p = 0; p < panels; p++)
+        {
+            float cx = from + (p + 0.5f) * w;
+            list.Add(new BackdropPlacement(BackdropPiece.Brace, new Vector3(cx, (low + high) * 0.5f, 0f), RollZ: p % 2 == 0 ? angle : -angle, Length: length));
+        }
     }
 
     private static List<BackdropPlacement> Machinery(BackdropRow row)
@@ -258,17 +327,18 @@ public static class BackdropLayout
         var d = BackdropDims.For(row);
         var list = new List<BackdropPlacement>();
         List<float> xs = Bays(row);
+        float band = Band(row);
         for (int k = 0; k < xs.Count; k++)
         {
             // A piston column on every bay line; a great ring on a hub every other bay, at an uneven height.
-            list.Add(new BackdropPlacement(BackdropPiece.Piston, new Vector3(xs[k], row.BaseY, 0f), Length: row.TopY + 6f * row.Scale - row.BaseY));
+            list.Add(new BackdropPlacement(BackdropPiece.Piston, new Vector3(xs[k], row.BaseY, 0f), Length: row.TopY - row.BaseY));
             if (k % 2 == 1 || k + 1 >= xs.Count)
             {
                 continue;
             }
 
             float cx = (xs[k] + xs[k + 1]) * 0.5f;
-            float cy = row.BaseY + (row.TopY - row.BaseY) * (0.35f + 0.35f * H(row, 1, k));
+            float cy = row.FloorY + band * (0.3f + 0.4f * H(row, 1, k));
             float radius = d.RingRadius * (0.75f + 0.4f * H(row, 2, k));
             // In front of the pistons, so they pass behind the wheel.
             float z = 2f * row.Scale;
@@ -293,6 +363,10 @@ public readonly record struct BackdropDims(float Pitch, float Scale)
     /// <summary>The sizes of the pieces of <paramref name="row"/>.</summary>
     public static BackdropDims For(BackdropRow row) => new(row.Pitch, row.Scale);
 
+    /// <summary>The step, meters, that the pieces built at their length (stacks, furnaces, ducts, pistons) are made in:
+    /// one mesh serves every piece of a length.</summary>
+    public float LengthStep => 2f * Scale;
+
     /// <summary>A nave pier's height, from the row's base to where its arch springs, meters.</summary>
     public float PierHeight => 9f * Scale;
     /// <summary>A nave pier's radius, meters.</summary>
@@ -311,6 +385,8 @@ public readonly record struct BackdropDims(float Pitch, float Scale)
     public float ArchThickness => 0.8f * Scale;
     /// <summary>An arch's depth toward the camera, meters.</summary>
     public float ArchDepth => 1.6f * Scale;
+    /// <summary>The side of a shaft's square section up a pier's face, meters.</summary>
+    public float ShaftSection => 0.4f * Scale;
 
     /// <summary>The height of one tier of an archive tower, meters; tiers stack up out of frame.</summary>
     public float TowerHeight => 6f * Scale;
@@ -321,8 +397,26 @@ public readonly record struct BackdropDims(float Pitch, float Scale)
     /// <summary>A walkway's depth toward the camera, meters.</summary>
     public float WalkwayDepth => 2f * Scale;
 
-    /// <summary>A foundry chimney's radius, meters; a truss runs between two chimneys' sides.</summary>
-    public float ChimneyRadius => 1.3f * Scale;
+    /// <summary>A furnace's width along the row, meters.</summary>
+    public float FurnaceWidth => 0.6f * Pitch;
+    /// <summary>A furnace's depth toward the camera, meters.</summary>
+    public float FurnaceDepth => 4f * Scale;
+    /// <summary>How far a furnace rises over the room's floor, meters: each between 0.6 and 1.4 times it.</summary>
+    public float FurnaceHeight => 6f * Scale;
+    /// <summary>A furnace hood's width, meters.</summary>
+    public float HoodWidth => 0.36f * Pitch;
+    /// <summary>A furnace hood's height, meters.</summary>
+    public float HoodHeight => 2.4f * Scale;
+    /// <summary>A furnace mouth's width and height, meters: small, far back.</summary>
+    public float MouthWidth => 1.4f * Scale;
+    public float MouthHeight => 0.8f * Scale;
+    /// <summary>A stack's radius, meters; a gantry runs between two stacks' sides.</summary>
+    public float StackRadius => 1.1f * Scale;
+    /// <summary>A duct's radius, meters.</summary>
+    public float DuctRadius => 0.5f * Scale;
+    /// <summary>A tank's radius and length, meters.</summary>
+    public float TankRadius => 1.5f * Scale;
+    public float TankLength => 0.5f * Pitch;
     /// <summary>A truss's height from its lower chord to its upper one, meters; its panels are about as long.</summary>
     public float TrussDepth => 1.8f * Scale;
     /// <summary>The side of a truss chord's square section, meters; a brace is thinner.</summary>

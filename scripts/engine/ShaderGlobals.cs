@@ -54,6 +54,8 @@ public static class ShaderGlobals
     public static readonly StringName FrostNormalMap = "frost_normal";
     /// <summary>The far distance's color, which backdrop skylines sink into (<see cref="BiomeProfile.HazeColor"/>).</summary>
     public static readonly StringName BiomeHaze = "biome_haze";
+    /// <summary>The murk the architecture behind a room sinks into (<see cref="BiomeProfile.BackdropVeilColor"/>).</summary>
+    public static readonly StringName BiomeBackdropVeil = "biome_backdrop_veil";
     /// <summary>The color of the room's light shafts (<see cref="BiomeProfile.ShaftColor"/>).</summary>
     public static readonly StringName BiomeShaft = "biome_shaft";
     /// <summary>The water's tint near its surface (<see cref="BiomeProfile.WaterTint"/>).</summary>

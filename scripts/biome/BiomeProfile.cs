@@ -180,6 +180,9 @@ public partial class BiomeProfile : Resource
     [ExportGroup("Backdrop")]
     [Export] public BackdropStyle Architecture { get; set; }
 
+    /// <summary>Its rows, nearest first; empty for <see cref="BackdropRowSpec.Defaults"/>. A room may state its own (<see cref="RoomStage.ArchitectureRows"/>).</summary>
+    [Export] public BackdropRowData[] ArchitectureRows { get; set; } = [];
+
     /// <summary>The far skyline and the nearer one (backdrop_silhouette materials); null shows none.</summary>
     [Export] public Material? FarSkyline { get; set; }
 
@@ -219,6 +222,7 @@ public partial class BiomeProfile : Resource
         RenderingServer.GlobalShaderParameterSet(ShaderGlobals.BiomeMoltenHot, MoltenHot);
         RenderingServer.GlobalShaderParameterSet(ShaderGlobals.GlyphWhiten, GlyphWhiten);
         RenderingServer.GlobalShaderParameterSet(ShaderGlobals.BiomeHaze, HazeColor);
+        RenderingServer.GlobalShaderParameterSet(ShaderGlobals.BiomeBackdropVeil, BackdropVeilColor);
         RenderingServer.GlobalShaderParameterSet(ShaderGlobals.BiomeShaft, ShaftColor);
         RenderingServer.GlobalShaderParameterSet(ShaderGlobals.BiomeWater, WaterTint);
         RenderingServer.GlobalShaderParameterSet(ShaderGlobals.BiomeWaterDeep, WaterDeep);
@@ -290,6 +294,16 @@ public partial class BiomeProfile : Resource
 
     /// <summary>The faith glyphs' light: the accent toward white, as the glyph shader draws it.</summary>
     public Color GlyphLightColor => Accent.Lerp(Colors.White, GlyphWhiten);
+
+    /// <summary>The murk the architecture behind a room sinks into (<see cref="BackdropVeil.Color"/>): the haze, darker than the rock.</summary>
+    public Color BackdropVeilColor
+    {
+        get
+        {
+            System.Numerics.Vector3 veil = BackdropVeil.Color(HazeColor.ToCore(), Rock.ToCore());
+            return new Color(veil.X, veil.Y, veil.Z);
+        }
+    }
 
     /// <summary>What <see cref="BiomeRules"/> reads of this profile.</summary>
     public BiomePalette Palette() => new()

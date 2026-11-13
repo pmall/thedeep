@@ -1,0 +1,9 @@
+[gd_resource type="ShaderMaterial" format=3]
+; The furnace mouths of the architecture behind a room (the foundry's farthest row): a dark face lit by its own glow in the layer's molten color, veiled with its row.
+
+[ext_resource type="Shader" path="res://assets/shaders/architecture.gdshader" id="1_shader"]
+
+[resource]
+shader = ExtResource("1_shader")
+shader_parameter/slot = 4
+shader_parameter/glow = 4.0
