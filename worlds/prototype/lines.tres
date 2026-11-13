@@ -145,7 +145,7 @@ script = ExtResource("2_line")
 Id = &"speaker.hierarch"
 Speaker = "Hierarch"
 Text = "The Hierarch"
-Notes = "Banner title over its command at the forbidden door."
+Notes = "Who speaks the command at the forbidden door: the caption over its words."
 
 [sub_resource type="Resource" id="order_hierarch"]
 script = ExtResource("2_line")

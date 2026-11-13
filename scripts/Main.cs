@@ -365,7 +365,7 @@ public partial class Main : Node3D
         }
         else if (Array.IndexOf(args, EncounterCheckArgument) >= 0)
         {
-            AddChild(new EncounterCheck { Player = Player, World = World, Session = Session });
+            AddChild(new EncounterCheck { Player = Player, World = World, Session = Session, Banner = Session.Banner, Hint = Hint });
         }
         else if (Array.IndexOf(args, PlaythroughCheckArgument) >= 0)
         {

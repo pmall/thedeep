@@ -21,8 +21,9 @@ namespace TheDeep;
 /// wall, rising in the shaft beyond, out onto the east hall. In the Mere: sunk through a lead to the lake bed and down its
 /// shaft into the Underice; the tanks blown, back up into the Mere. In the Coldstacks: a dive through the ice plug drops
 /// into the Vault's pool; out of it and into the arena, both gates fall; the Archivist dives at the pilgrim below it; swings
-/// break it while it hangs low; the gates rise, remembered. In the Sanctum: the Hierarch's order is heard coming near; the
-/// second law holds the pilgrim at the forbidden door; holding the act breaks it (remembered). Prints `ENCOUNTER OK` or
+/// break it while it hangs low; the gates rise, remembered. In the Sanctum: the Hierarch's order is heard coming near, spoken
+/// (the banner names its speaker over the words, no title); the second law holds the pilgrim at the forbidden door, and the hint
+/// line says why; holding the act breaks it (remembered), and the refusal leaves the hint line at once. Prints `ENCOUNTER OK` or
 /// `ENCOUNTER CHECK` errors.
 /// </summary>
 public partial class EncounterCheck : Node
@@ -33,6 +34,10 @@ public partial class EncounterCheck : Node
     public required World World { get; init; }
     /// <summary>The running game's session.</summary>
     public required Session Session { get; init; }
+    /// <summary>The running game's banner.</summary>
+    public required Banner Banner { get; init; }
+    /// <summary>The running game's hint line.</summary>
+    public required HintLine Hint { get; init; }
 
     private readonly List<Step> _steps = new();
     private readonly List<string> _problems = new();
@@ -375,15 +380,43 @@ public partial class EncounterCheck : Node
             () => _ordered));
         _steps.Add(new("the second law holds the pilgrim at the forbidden door, and it says why", 4f,
             () => { },
-            () => _ticks >= 90 && X > 7f && Player.IsOnFloor() && !Law.Broken && Law.Strain > 0.1f && Law.Refused));
-        _steps.Add(new("holding the act breaks it, and it is remembered; past it, the end of what is built", 6f,
-            () => { },
+            () => _ticks >= 90 && X > 7f && Player.IsOnFloor() && !Law.Broken && Law.Strain > 0.1f && Law.Refused
+                  && Hint.Current == Law.RefusalLine));
+        _steps.Add(new("holding the act breaks it, remembered, the refusal withdrawn at once; past it, the end of what is built", 6f,
+            () => _brokeAt = -1,
             () => Law.Broken && Session.Save.Collected.Contains("Sanctum/Law") && X < 6f,
-            () => Hold(InputActions.Interact, Law.Prompt.Offered && !Law.Broken)));
+            () =>
+            {
+                Hold(InputActions.Interact, Law.Prompt.Offered && !Law.Broken);
+                if (_brokeAt < 0 && Law.Broken)
+                {
+                    _brokeAt = _ticks;
+                    if (Hint.Current == Law.RefusalLine)
+                    {
+                        _problems.Add($"the law broken, the hint line still says the refusal {Law.RefusalLine}");
+                    }
+                }
+            }));
         Next();
     }
 
-    private void OnSpoke(Proclamation proclamation) => _ordered |= proclamation.Name == "Order";
+    /// <summary>The Hierarch's order heard: the banner speaks it, its speaker named over the words, no title.</summary>
+    private void OnSpoke(Proclamation proclamation)
+    {
+        if (proclamation.Name != "Order")
+        {
+            return;
+        }
+
+        _ordered = true;
+        string speaker = LineBook.Shared.Find(proclamation.SpeakerLine)?.Text ?? "";
+        if (Banner.Current != proclamation.Said || proclamation.Said.Voice != Voice.Spoken || Banner.ShownSpeaker != speaker || speaker == ""
+            || Banner.ShownTitle != "")
+        {
+            _problems.Add($"the order was not spoken: the banner shows {Banner.Current?.ToString() ?? "nothing"}, speaker \"{Banner.ShownSpeaker}\", " +
+                          $"title \"{Banner.ShownTitle}\" (the speaker {proclamation.SpeakerLine} is \"{speaker}\")");
+        }
+    }
 
     private void Next()
     {
@@ -439,7 +472,7 @@ public partial class EncounterCheck : Node
 
         if (_problems.Count == 0)
         {
-            GD.Print($"ENCOUNTER OK: {_steps.Count} steps (arena gates, the Precentor struck and broken, remembered; the third law held, refused, never pushed or tapped through, broken by the full hold, the fall into Rimefall; the Choir asleep, woken; the Counterweight's ride up; the Calving's girder; the Bore's relic, its cracked wall, its steps; the Sounding's relic, under its wall; the Mere's lake bed down into the Underice and back; the ice plug into the Vault, its gates, the Archivist broken, remembered; the Hierarch's order, the second law held, broken by the hold)");
+            GD.Print($"ENCOUNTER OK: {_steps.Count} steps (arena gates, the Precentor struck and broken, remembered; the third law held, refused, never pushed or tapped through, broken by the full hold, the fall into Rimefall; the Choir asleep, woken; the Counterweight's ride up; the Calving's girder; the Bore's relic, its cracked wall, its steps; the Sounding's relic, under its wall; the Mere's lake bed down into the Underice and back; the ice plug into the Vault, its gates, the Archivist broken, remembered; the Hierarch's order spoken, the second law held and refused, broken by the hold, the refusal withdrawn)");
         }
 
         GetTree().Quit(_problems.Count == 0 ? 0 : 1);

@@ -39,4 +39,20 @@ public class BannerTests
         Assert.True(BannerPlace.Low(pilgrimTop: 280f, highBottom: 260f, clearance: 48f, low: true));
         Assert.False(BannerPlace.Low(pilgrimTop: 320f, highBottom: 260f, clearance: 48f, low: true));
     }
+
+    [Fact]
+    public void TheHintStandsItsHeightAboveItsBottom() =>
+        Assert.Equal(780f, new TextPlaces(96f, 64f, 16f).HintTop(canvasHeight: 900f, hintHeight: 56f), 3);
+
+    [Fact]
+    public void TheBannerGoneLowEndsAboveTheHintByTheGap()
+    {
+        var places = new TextPlaces(96f, 64f, 16f);
+        Assert.Equal(764f, places.BannerLowBottom(900f, 56f), 3);
+        Assert.True(places.BannerLowBottom(900f, 56f) < places.HintTop(900f, 56f));
+    }
+
+    [Fact]
+    public void ANegativeGapNeverLaysTheBannerOverTheHint() =>
+        Assert.Equal(780f, new TextPlaces(96f, 64f, -20f).BannerLowBottom(900f, 56f), 3);
 }

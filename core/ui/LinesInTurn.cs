@@ -59,6 +59,22 @@ public sealed class LinesInTurn<T>
         return _lines.Count > 0;
     }
 
+    /// <summary>
+    /// Withdraws <paramref name="line"/>, its reason gone (a law's refusal once the law is broken): true when it was the line showing,
+    /// which leaves now, the next waiting showing after it; false when it only waited (it is dropped) or was not said.
+    /// </summary>
+    public bool Withdraw(T line)
+    {
+        int at = _lines.IndexOf(line);
+        if (at < 0)
+        {
+            return false;
+        }
+
+        _lines.RemoveAt(at);
+        return at == 0;
+    }
+
     /// <summary>Nothing shows and nothing waits (a room left).</summary>
     public void Clear() => _lines.Clear();
 }

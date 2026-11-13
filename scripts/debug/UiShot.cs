@@ -10,7 +10,8 @@ namespace TheDeep;
 /// the health a moment later: last-hit.png), the controls for the gamepad, Dash
 /// held (manual-pad.png), the dialogue box on a whole line (dialogue.png), the pilgrim at the start room's first shrine, plate or
 /// lever with its prompt offered, keyboard then gamepad (prompt.png, prompt-pad.png), an ability's banner once eased in
-/// (banner.png); where the room holds a law, the pilgrim first
+/// (banner.png), and where the start room holds a <see cref="Proclamation"/>, the pilgrim back there stood in it, its words
+/// spoken (proclamation.png); where the room holds a law, the pilgrim first
 /// presses on at its lip until it refuses, then holds the act offered there to two-thirds (prompt-law.png: the refusal on the hint
 /// line, the hold's ring part-filled), then, after crossing a few open exits from the start room,
 /// the map screen (map.png), then the end card
@@ -53,10 +54,13 @@ public partial class UiShot : Node
     private readonly HashSet<string> _visited = new();
     private LawBreak? _law;
     private double? _banner;
+    private string _bannerShot = "banner.png";
+    private string _start = "";
 
     public override void _Ready()
     {
         DirAccess.MakeDirRecursiveAbsolute(OutputDir);
+        _start = World.RoomName;
         ProcessMode = ProcessModeEnum.Always;
         Hint.Show(GateKinds.HintLine(Ability.MagGrip), GateKinds.ColorOf(Ability.MagGrip));
     }
@@ -73,10 +77,20 @@ public partial class UiShot : Node
         {
             // Shot once eased in, timed in seconds: the banner's tween runs on time, not frames.
             _banner = since + delta;
-            if (_banner >= 0.9)
+            if (_banner >= (_bannerShot == "banner.png" ? 0.9 : 1.5))
             {
-                Shot("banner.png");
+                Shot(_bannerShot);
                 _banner = null;
+                if (_bannerShot == "banner.png" && Proclaimed() is Proclamation spoken)
+                {
+                    // Stood in it, so the speaker is in view; the session says it too, which the banner reads as the same words.
+                    Banner.Clear();
+                    Player.GlobalPosition = new Vector3(spoken.GlobalPosition.X, spoken.GlobalPosition.Y, 0f);
+                    Player.ResetPhysicsInterpolation();
+                    Banner.Show(spoken.Said);
+                    _bannerShot = "proclamation.png";
+                    _banner = 0.0;
+                }
             }
 
             return;
@@ -230,6 +244,17 @@ public partial class UiShot : Node
             Input.ActionRelease(InputActions.Interact);
             _law = null;
         }
+    }
+
+    /// <summary>The start room's first proclamation, the room loaded again if the pilgrim has left it (a dash out of it); null for none.</summary>
+    private Proclamation? Proclaimed()
+    {
+        if (World.RoomName != _start)
+        {
+            World.Load(GD.Load<PackedScene>(World.RoomPath(_start)));
+        }
+
+        return First<Proclamation>() as Proclamation;
     }
 
     private Node3D? First<T>() where T : Node3D => World.Room.All<T>() is { Count: > 0 } all ? all[0] : null;

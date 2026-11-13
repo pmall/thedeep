@@ -57,7 +57,7 @@ public sealed class LineCheck
     }
 
     /// <summary>
-    /// Each banner said whose words, as <paramref name="book"/> gives them, <paramref name="banner"/> could not fit (the title on one
+    /// Each banner said whose words, as <paramref name="book"/> gives them, <paramref name="banner"/> could not fit (the head on one
     /// row, the line within its rows). The rule is proven blind-free first: the longest line of the book said over and over must not fit.
     /// </summary>
     public List<string> Unfit(LineBook book, Banner banner)
@@ -78,19 +78,19 @@ public sealed class LineCheck
             tooLong += " " + longest;
         }
 
-        if (banner.Fits("", tooLong))
+        if (banner.Fits("", tooLong, Voice.Announced))
         {
             problems.Add($"the banner's box holds a line of {tooLong.Length} letters: its fit rule cannot tell a line too long");
         }
 
         foreach ((Announcement said, string where) in _announced)
         {
-            string title = book.Find(said.Title)?.Text ?? "";
+            string head = book.Find(said.Head)?.Text ?? "";
             string line = book.Find(said.Line)?.Text ?? "";
-            if (!banner.Fits(title, line))
+            if (!banner.Fits(head, line, said.Voice))
             {
-                problems.Add($"the banner {said.Title} / {said.Line} (said by {where}) does not fit its box: the title on one row, " +
-                             $"the line in {banner.Rows} rows within {banner.MaxWidth} px (\"{title}\" / \"{line}\")");
+                problems.Add($"the banner {said.Head} / {said.Line} (said by {where}, {said.Voice}) does not fit its box: the head on one row, " +
+                             $"the line in {banner.Rows} rows within {banner.MaxWidth} px (\"{head}\" / \"{line}\")");
             }
         }
 

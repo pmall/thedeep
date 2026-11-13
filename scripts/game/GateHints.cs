@@ -9,7 +9,7 @@ namespace TheDeep;
 /// in sight without the Harpoon, against cracked rock without the Drill, pressing down in deep water without Ballast, thrown
 /// back by heat without Heat plating. Meeting one for a moment shows the pilgrim's line about it (<see cref="GateKinds"/>) in
 /// the <see cref="HintLine"/>, once per room visit for each kind. A law pressed on says why the pilgrim may not, the same way
-/// (<see cref="LawBreak.Refusal"/>).
+/// (<see cref="LawBreak.Refusal"/>), and the refusal is withdrawn the moment the law breaks: its reason is gone.
 /// </summary>
 public partial class GateHints : Node
 {
@@ -116,11 +116,14 @@ public partial class GateHints : Node
 
     private void OnRefusal(LawBreak law) => Hint.Show(law.RefusalLine, LawBreak.WordsColor);
 
+    private void OnBroke(LawBreak law) => Hint.Withdraw(law.RefusalLine, LawBreak.WordsColor);
+
     private void OnRoomLoaded(Room room)
     {
         foreach (LawBreak law in room.All<LawBreak>())
         {
             law.Refusal += OnRefusal;
+            law.Broke += OnBroke;
         }
 
         _met.Clear();

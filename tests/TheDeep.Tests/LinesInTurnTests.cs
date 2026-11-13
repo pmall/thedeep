@@ -62,4 +62,35 @@ public class LinesInTurnTests
         Assert.False(queue.Showing);
         Assert.True(queue.Offer("metal"));
     }
+
+    [Fact]
+    public void ALineWithdrawnWhileShowingLeavesAndTheNextShows()
+    {
+        var queue = new LinesInTurn<string>(2);
+        queue.Offer("refusal");
+        queue.Offer("heat");
+        Assert.True(queue.Withdraw("refusal"));
+        Assert.Equal("heat", queue.Current);
+        Assert.Equal(0, queue.Waiting);
+    }
+
+    [Fact]
+    public void ALineWithdrawnWhileWaitingIsNeverRead()
+    {
+        var queue = new LinesInTurn<string>(2);
+        queue.Offer("seal");
+        queue.Offer("refusal");
+        Assert.False(queue.Withdraw("refusal"));
+        Assert.Equal("seal", queue.Current);
+        Assert.False(queue.Next(out _));
+    }
+
+    [Fact]
+    public void ALineNeverSaidWithdrawsNothing()
+    {
+        var queue = new LinesInTurn<string>(2);
+        queue.Offer("seal");
+        Assert.False(queue.Withdraw("refusal"));
+        Assert.Equal("seal", queue.Current);
+    }
 }

@@ -72,7 +72,7 @@ public partial class PowerUpCheck : Node
         Vector3 onDais = dais.GlobalPosition + new Vector3(2.5f, 0f, 0f);
 
         Announcement strong = PowerStats.Said(PowerStat.Strength), defended = PowerStats.Said(PowerStat.Defense);
-        string strongTitle = LineBook.Shared.Find(strong.Title)?.Text ?? "";
+        string strongTitle = LineBook.Shared.Find(strong.Head)?.Text ?? "";
         _steps.Add(new($"walking up to a strength power-up takes it: a blow strikes {StrengthAmount} harder, and the banner says \"{strongTitle}\"", 4f,
             () => { Player.Respawn(new Vector3(StrengthX + 3f, 0f, 0f), -1); Input.ActionPress(InputActions.MoveLeft); },
             () => _taken.Any(p => p.Stat == PowerStat.Strength) && Player.AttackDamage == _damage + StrengthAmount && Player.InControl
@@ -125,8 +125,8 @@ public partial class PowerUpCheck : Node
         {
             _problems.Add($"step {_index + 1} \"{step.What}\" failed in {step.Seconds} s (at {Player.GlobalPosition}, damage " +
                           $"{Player.AttackDamage}, health {Player.Vitality.Current}/{Player.Vitality.Max}, taken {_taken.Count}, banner " +
-                          $"{Banner.Current?.Title ?? "none"} at {Banner.Opacity:0.00}, {Banner.Waiting} waiting, read " +
-                          $"{string.Join(", ", _read.Select(r => $"{r.Said.Title} {r.Seconds:0.00} s"))})");
+                          $"{Banner.Current?.Head ?? "none"} at {Banner.Opacity:0.00}, {Banner.Waiting} waiting, read " +
+                          $"{string.Join(", ", _read.Select(r => $"{r.Said.Head} {r.Seconds:0.00} s"))})");
             Finish();
         }
     }
@@ -149,7 +149,7 @@ public partial class PowerUpCheck : Node
 
     /// <summary>How long the banner holds <paramref name="said"/> whole, by its own reading pace.</summary>
     private float Hold(Announcement said) =>
-        ReadingTime.Seconds((LineBook.Shared.Find(said.Title)?.Text.Length ?? 0) + (LineBook.Shared.Find(said.Line)?.Text.Length ?? 0),
+        ReadingTime.Seconds((LineBook.Shared.Find(said.Head)?.Text.Length ?? 0) + (LineBook.Shared.Find(said.Line)?.Text.Length ?? 0),
             Banner.LettersPerSecond, Banner.MinimumSeconds);
 
     private void Finish()

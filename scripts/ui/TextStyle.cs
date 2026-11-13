@@ -8,7 +8,8 @@ namespace TheDeep;
 /// the font (Jost, assets/fonts, under the OFL beside it), three sizes (<see cref="Caption"/>, <see cref="Body"/>, <see cref="Title"/>),
 /// the inks (<see cref="Ink"/>, <see cref="Dim"/>, and the accent, which is the biome's own (<see cref="BiomeProfile.Accent"/>,
 /// docs/art-direction.md#look) lifted toward the ink so it reads as text), the dark plate text sits on where it needs one, the rim
-/// that keeps text without a plate legible on a pale wall, and the fade times.
+/// that keeps text without a plate legible on a pale wall, the fade times, and where the lines said stand on screen
+/// (<see cref="Places"/>).
 /// <para>The game's own is resources/ui/text_style.tres; a world may give its own in its place (<see cref="WorldDefinition.TextStyle"/>),
 /// made the shared one by the <see cref="World"/> as it enters the tree, before any text brick is ready. Sizes are pixels on the
 /// game's canvas (1600 × 900, stretched to the window).</para>
@@ -79,6 +80,16 @@ public partial class TextStyle : Resource
     /// <summary>How far down the rim is cast, pixels.</summary>
     [Export] public int RimDrop { get; set; } = 2;
 
+    /// <summary>The top of the banner's plate in its high place, pixels below the canvas's top: under the health and the room's name.</summary>
+    [ExportGroup("Places")]
+    [Export] public float BannerTop { get; set; } = 96f;
+
+    /// <summary>The bottom of the hint line's plate, pixels above the canvas's bottom.</summary>
+    [Export] public float HintBottom { get; set; } = 64f;
+
+    /// <summary>Between the hint line's plate and a banner's gone low over it, pixels: two plates, never one block.</summary>
+    [Export] public float PlaceGap { get; set; } = 18f;
+
     /// <summary>Seconds for a line to ease in (a banner, a hint).</summary>
     [ExportGroup("Fades")]
     [Export] public float Appear { get; set; } = 0.5f;
@@ -94,6 +105,12 @@ public partial class TextStyle : Resource
 
     /// <summary>Seconds for the end card's lines to ease in or out.</summary>
     [Export] public float Slow { get; set; } = 1.5f;
+
+    /// <summary>Where the banner and the hint line stand, one layout for both.</summary>
+    public TextPlaces Places => new(BannerTop, HintBottom, PlaceGap);
+
+    /// <summary>How tall a plate holding one row of text at <paramref name="size"/> stands, its padding included, pixels.</summary>
+    public float RowPlate(int size) => Font.GetHeight(size) + 2f * Padding.Y;
 
     /// <summary>The accent of <paramref name="biome"/> as text and marks wear it.</summary>
     public Color Accent(BiomeProfile biome) => biome.Accent.Lerp(Ink, AccentLift) with { A = 1f };
@@ -115,6 +132,16 @@ public partial class TextStyle : Resource
         box.SetCornerRadiusAll(Mathf.RoundToInt(CornerRadius * scale));
         box.SetBorderWidthAll(Mathf.RoundToInt(OutlineWidth * scale));
         return box;
+    }
+
+    /// <summary>
+    /// Dresses <paramref name="label"/> as a speaker's name over words spoken: a caption in capitals, in <paramref name="accent"/> (the
+    /// room's, <see cref="Accent"/>).
+    /// </summary>
+    public void DressSpeaker(Label label, Color accent)
+    {
+        Dress(label, Caption, accent);
+        label.Uppercase = true;
     }
 
     /// <summary>Dresses <paramref name="label"/> in the font at <paramref name="size"/> in <paramref name="ink"/>; with <paramref name="rim"/>, ringed for the world behind it.</summary>

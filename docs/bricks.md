@@ -69,8 +69,8 @@ All working; brought to ready under `docs/roadmap.md#bricks-ready`.
 | Brick | Status | Item |
 | -- | -- | -- |
 | Line book (`LineBook`: the game's own, `resources/lines.tres`, which each world's extends) | ready | — |
-| `Banner`, `HintLine` (lines said together are read in turn) | working | `docs/roadmap.md#bricks-ready` |
-| `Proclamation` | working | `docs/roadmap.md#bricks-ready` |
+| `Banner`, `HintLine` (lines said together are read in turn; both on the style's plate, placed by one layout, `TextStyle.Places`; a hint whose reason is gone is withdrawn) | working | `docs/roadmap.md#bricks-ready` |
+| `Proclamation` (spoken: the banner's `Voice.Spoken`, its speaker a line id) | working | `docs/roadmap.md#bricks-ready` |
 | `ScripturePlate` | working | `docs/roadmap.md#bricks-ready` |
 | `LawBreak` (broken by a held act on its `ActionPrompt`, never a push; the pilgrim's refusal on the `HintLine`; its lines per room) | working | `docs/roadmap.md#stage-polish` (the real law-break scenes) |
 | `ActionPrompt` (a verb and its button, pressed or held; the button a `ButtonGlyph` drawn by a `ButtonPainter`, as in the `ControlsManual`; `Reach` keeps it clear of what stands beside it) | working | `docs/roadmap.md#bricks-ready` |
