@@ -7,7 +7,7 @@
 // sampling contract): the panel lines are the panel set's seam, the glyph bands the glyph set; what is
 // drawn here is held to a few pixels wide on screen or fades to its average (docs/art-direction.md#stable-image).
 // Per machine (instance uniforms, set by Machine from its species and its brain): wear, tone, a seed,
-// how roused and how alert it is (eyes go from calm to the hazard color: color means gameplay), and
+// how roused and how alert it is (eyes go from calm to the biome's molten color, the hazards': color means gameplay), and
 // how far its treads have rolled.
 shader_type spatial;
 
@@ -51,7 +51,6 @@ group_uniforms glow;
 uniform int glow_pattern : hint_enum("None", "Whole", "Slit", "Glyph bands") = 0;
 /// Calm glow: the biome accent mixed toward white by this much.
 uniform float calm_whiteness : hint_range(0.0, 1.0) = 0.7;
-uniform vec3 hazard_color : source_color = vec3(1.0, 0.24, 0.1);
 uniform float glow_energy : hint_range(0.0, 16.0) = 3.0;
 /// Slit: its width, meters; drawn at least a few pixels wide on screen, its light spread over them.
 uniform float glow_width : hint_range(0.0, 0.05) = 0.01;
@@ -203,7 +202,7 @@ void fragment() {
 	}
 
 	vec3 calm = mix(palette_color(7), vec3(1.0), calm_whiteness);
-	vec3 glow_color = mix(calm, hazard_color, smoothstep(0.15, 0.85, alert));
+	vec3 glow_color = mix(calm, srgb_to_linear(biome_molten.rgb), smoothstep(0.15, 0.85, alert));
 	float glow = 0.0;
 	if (glow_pattern == 1) {
 		glow = 1.0;

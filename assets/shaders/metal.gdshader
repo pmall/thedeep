@@ -30,6 +30,9 @@ uniform sampler2D coating_surface : hint_default_black, repeat_enable, filter_li
 group_uniforms wear;
 /// 0 = clean coating, 1 = mostly rust.
 uniform float corrosion : hint_range(0.0, 1.0) = 0.25;
+/// How much of the coating still shows where the rust leaves it: 1 all of it, 0 none (iron long given up, rust from end to
+/// end, with no bare patch to catch the light).
+uniform float coating_left : hint_range(0.0, 1.0) = 1.0;
 /// Width of chipped coating along the edges, meters.
 uniform float edge_chip : hint_range(0.0, 0.3) = 0.07;
 uniform float streaks : hint_range(0.0, 1.0) = 0.5;
@@ -44,6 +47,8 @@ uniform float rim : hint_range(0.0, 1.0) = 0.25;
 /// Albedo multiplier. Below 1 pushes a piece back behind the play plane (midground), so grippable
 /// metal on the play plane stays the brightest metal on screen.
 uniform float shade : hint_range(0.0, 1.0) = 1.0;
+/// How much of its color it loses toward its own grey: a piece behind the play plane stays dull under warm light.
+uniform float dull : hint_range(0.0, 1.0) = 0.0;
 /// Share of the biome's rime this material takes (lib/frost): low, so grippable metal keeps its gloss.
 uniform float frost_share : hint_range(0.0, 1.0) = 0.45;
 group_uniforms;
@@ -150,7 +155,7 @@ void fragment() {
 	}
 	rust_field = max(rust_field, drip * corrosion - 0.1);
 	float rust = smoothstep(0.0, 0.25, rust_field) * (0.35 + 0.65 * corrosion + 0.3 * crease);
-	rust = clamp(rust, 0.0, 1.0);
+	rust = max(clamp(rust, 0.0, 1.0), 1.0 - coating_left);
 	vec3 rust_color = srgb_to_linear(biome_rust.rgb) * (0.75 + 0.5 * fbm3(p * 6.0, 2));
 
 	// Coating chipped along the edges shows bare, darker metal: a ragged band, its border smoothed over a pixel.
@@ -196,6 +201,7 @@ void fragment() {
 
 	// Deep in a hollow (a pipe's mouth): dark, whatever the ambient light.
 	albedo *= 1.0 - 0.9 * f.cavity;
+	albedo = mix(albedo, vec3(dot(albedo, vec3(0.2126, 0.7152, 0.0722))), dull);
 	ALBEDO = albedo * shade;
 	EMISSION = ALBEDO * caustics_at(v_world_pos, view_to_world(f.normal, INV_VIEW_MATRIX), TIME);
 	ROUGHNESS = clamp(rough, 0.05, 1.0);

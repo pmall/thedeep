@@ -10,7 +10,7 @@ All working; brought to ready under `docs/roadmap.md#bricks-ready`.
 
 - `BiomeProfile` (flooded, frozen, volcanic, core; brine, the sequel world's variant of frozen)
 - Material library (`assets/materials/`, `assets/shaders/`)
-- Baked surface sets (`SurfaceSet`, in `assets/textures/surfaces/`): strata, masonry, ice, cracks, the metal's panels and coating, the machines' glyph bands, the frozen layer's rime (frost, one global set every material that frosts shares)
+- Baked surface sets (`SurfaceSet`, in `assets/textures/surfaces/`): strata, the volcanic layer's basalt columns, masonry, ice, cracks, the metal's panels and coating, the machines' glyph bands, the frozen layer's rime (frost, one global set every material that frosts shares)
 - `RoomStage`
 - Skylines (`backdrop_silhouette.gdshader`)
 - `BackdropArchitecture`

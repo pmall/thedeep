@@ -1,9 +1,10 @@
 [gd_resource type="ParticleProcessMaterial" format=3]
-; Embers: sparks rising on the hot air, wavering, fading as they cool. Over vents, slag and fires.
+; Embers: sparks rising on the hot air, wavering, fading as they cool. Over vents, slag and fires. The ramp's red is their
+; heat (the particle shader's `molten`): white-hot, then the molten glow, cooling as they fade.
 
 [sub_resource type="Gradient" id="Gradient_cool"]
 offsets = PackedFloat32Array(0, 0.08, 0.6, 1)
-colors = PackedColorArray(1, 0.9, 0.6, 0, 1, 0.9, 0.6, 1, 1, 0.55, 0.25, 0.8, 0.6, 0.2, 0.1, 0)
+colors = PackedColorArray(0.9, 0.9, 0.9, 0, 0.9, 0.9, 0.9, 1, 0.5, 0.5, 0.5, 0.8, 0.15, 0.15, 0.15, 0)
 
 [sub_resource type="GradientTexture1D" id="GradientTexture1D_cool"]
 gradient = SubResource("Gradient_cool")

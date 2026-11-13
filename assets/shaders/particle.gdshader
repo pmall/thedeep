@@ -3,7 +3,8 @@
 // so a QuadMesh facing +Z needs no billboard. Lit from every side alike (they are tiny and translucent),
 // with no ambient light and only a share of the key light: motes vanish in the dark and glow inside light
 // shafts and near lamps. `glow` is the only light they keep in the dark.
-// Color: the biome's particle tint times the particle's own color (alpha fades from the color ramp).
+// Color: the biome's particle tint times the particle's own color (alpha fades from the color ramp); or, `molten`
+// (embers), the biome's molten colors by the heat the ramp gives it.
 shader_type spatial;
 render_mode blend_mix, depth_draw_never, cull_disabled, specular_disabled, ambient_light_disabled;
 
@@ -15,6 +16,9 @@ global uniform vec4 biome_particle;
 
 uniform int shape : hint_enum("Mote", "Streak", "Bubble", "Spark") = 0;
 uniform float opacity : hint_range(0.0, 1.0) = 0.6;
+/// Takes the biome's molten colors (the hazards' heat) instead of its particle tint: the color ramp's red is the particle's
+/// heat, 1 white-hot (MoltenHot), 0.5 its glow (Molten), 0 cooled (MoltenCool).
+uniform bool molten = false;
 /// Light the particle gives off by itself, so it never goes fully black in shadow.
 uniform float glow : hint_range(0.0, 4.0) = 0.05;
 /// Share of the room's key (directional) light they catch; shafts and lamps light them fully.
@@ -41,6 +45,13 @@ void fragment() {
 		a = 1.0 - smoothstep(0.25, 1.0, r);
 	}
 	vec3 tint = srgb_to_linear(biome_particle.rgb) * COLOR.rgb;
+	if (molten) {
+		float heat = COLOR.r;
+		vec3 cool = srgb_to_linear(biome_molten_cool.rgb);
+		vec3 molten_glow = srgb_to_linear(biome_molten.rgb);
+		vec3 hot = srgb_to_linear(biome_molten_hot.rgb);
+		tint = heat < 0.5 ? mix(cool, molten_glow, heat * 2.0) : mix(molten_glow, hot, heat * 2.0 - 1.0);
+	}
 	ALBEDO = tint;
 	EMISSION = tint * glow;
 	ALPHA = clamp(a * opacity * COLOR.a, 0.0, 1.0);

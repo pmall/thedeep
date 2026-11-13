@@ -1,10 +1,12 @@
-// Rock: layered strata or courses of cut stone, silt settled on ledges, chipped edges, grime near the
+// Rock: layered strata, columnar basalt or courses of cut stone, silt settled on ledges, chipped edges, grime near the
 // ground. With `wetness` it becomes wet stone (darker, glossy, puddles on top faces). Matte and warm
 // so it never reads as metal (mag-grip). The beds and the blocks with their fine detail are baked sets
 // (SurfaceMaps has the sampling contract), laid in world meters on each face so they run on across
-// neighbouring pieces; faults cut the strata into columns a few meters wide, each showing its own part
-// of the tile, and each course of masonry is a course of the tile picked at random and slid along, so
-// neither tile repeats along a wall. Where the biome built (biome_masonry), whole blocks stand over the
+// neighbouring pieces; faults cut the strata into columns a few meters wide, their pitch and lean
+// changing over the face, each showing its own part of the tile, and each course of masonry is a course of the tile picked at random and slid along, so
+// neither tile repeats along a wall. Columnar rock (`columnar`, basalt) has no beds: the face splits
+// into upright columns of uneven width, each cut across by joints at its own heights, every piece its
+// own two facets and tone over its own part of the baked basalt set. Where the biome built (biome_masonry), whole blocks stand over the
 // rock, more of them the more it built, and where they are missing the rock shows, recessed. Cracked
 // rock lays a baked web of fissures over it all (CracksSurface), as baked in some regions and mirrored and
 // a little larger in others, so the web never shows twice along a wall. The shader adds only what is broad: the beds' bend, each block's tone, stains, silt, grime, wetness,
@@ -33,6 +35,17 @@ uniform float strata_frequency : hint_range(0.1, 4.0) = 1.5;
 uniform float strata_warp : hint_range(0.0, 2.0) = 0.4;
 /// Tone difference between beds (the set's own is 0.2).
 uniform float strata_contrast : hint_range(0.0, 0.5) = 0.2;
+
+group_uniforms columns;
+/// Columnar jointing in place of the strata (basalt): upright columns of uneven width, each cut across at its own heights.
+uniform bool columnar = false;
+/// The baked basalt set (assets/textures/surfaces/, SurfaceMaps): the face of a column, set by every columnar material.
+uniform sampler2D basalt_normal : hint_normal, repeat_enable, filter_linear_mipmap_anisotropic;
+uniform sampler2D basalt_surface : hint_default_black, repeat_enable, filter_linear_mipmap_anisotropic;
+/// Tone difference between pieces of column.
+uniform float column_contrast : hint_range(0.0, 0.3) = 0.14;
+/// How far a column's two facets turn from the face (the normal's slope): the light picks out each prism.
+uniform float column_facet : hint_range(0.0, 0.6) = 0.12;
 
 group_uniforms masonry;
 /// The baked masonry set (assets/textures/surfaces/, SurfaceMaps): every rock material sets both.
@@ -81,17 +94,35 @@ group_uniforms;
 const float STRATA_TILE = 4.0;
 const float STRATA_BEDS = 1.5;
 // Faults: the columns' mean width, in tiles (under one, so a column seldom shows the same part of the tile twice), how far
-// their edges stray from even spacing (a share of that width), how far every edge leans (a set of faults runs one way), how
-// far that lean changes over a few meters and how far an edge jags (tiles). Columns come in blocks of FAULT_BLOCK: inside a
+// their edges stray from even spacing (a share of that width), the lean every edge shares, how far a broad bend of the
+// faults reaches (tiles: over some ten meters it turns their lean one way or the other and draws them closer or apart, never
+// enough to fold them), a finer lean and how far an edge jags (tiles). Columns come in blocks of FAULT_BLOCK: inside a
 // block the beds run on, dropping a little at each fault (up to FAULT_THROW tiles); between blocks they break, each block
 // with its own beds, a little thicker or thinner.
 const float FAULT_PITCH = 0.85;
-const float FAULT_JITTER = 0.18;
-const float FAULT_SHEAR = 0.35;
-const float FAULT_LEAN = 0.25;
+const float FAULT_JITTER = 0.3;
+const float FAULT_SHEAR = 0.12;
+const float FAULT_BEND = 1.3;
+const float FAULT_LEAN = 0.2;
 const float FAULT_JAG = 0.012;
 const float FAULT_BLOCK = 3.0;
 const float FAULT_THROW = 0.05;
+
+// The baked basalt set's tile (BasaltSurface.TileMeters). Columns: their mean width (meters), how far an edge strays from
+// even spacing (a share of it), their lean and how far they wander over a few meters (meters); a piece's height at least and
+// at most (meters), how far a cross joint strays and how far it bows (meters, a ball-and-socket joint); the joints' half
+// widths, meters (widened to JOINT_PIXELS on screen).
+const float BASALT_TILE = 4.0;
+const float COLUMN_WIDTH = 1.4;
+const float COLUMN_JITTER = 0.3;
+const float COLUMN_LEAN = 0.06;
+const float COLUMN_SWAY = 0.35;
+const float DRUM_MIN = 1.6;
+const float DRUM_MAX = 4.0;
+const float DRUM_JITTER = 0.3;
+const float DRUM_BOW = 0.1;
+const float COLUMN_JOINT = 0.05;
+const float DRUM_JOINT = 0.03;
 
 // The baked masonry set's tile (MasonrySurface.TileMeters), its courses, and the cells its alpha tells apart (SurfaceMaps).
 const float MASONRY_TILE = 4.0;
@@ -168,10 +199,72 @@ float fault_edge(float k) {
 	return k + (hash12(vec2(k, 7.3)) - 0.5) * 2.0 * FAULT_JITTER;
 }
 
-Rock rock_at(vec3 p, vec3 t, vec3 b, float up) {
+// The span of an uneven lattice (edge k at k, strayed by up to `jitter` either way) that holds `x`: its index and its edges.
+vec3 uneven_span(float x, float seed, float jitter) {
+	float cell = floor(x);
+	float edge = cell + (hash12(vec2(cell, seed)) - 0.5) * 2.0 * jitter;
+	if (x < edge) {
+		return vec3(cell - 1.0, cell - 1.0 + (hash12(vec2(cell - 1.0, seed)) - 0.5) * 2.0 * jitter, edge);
+	}
+	return vec3(cell, edge, cell + 1.0 + (hash12(vec2(cell + 1.0, seed)) - 0.5) * 2.0 * jitter);
+}
+
+// A joint's groove at `to_joint` meters from it: `half_width` wide, widened (and faded to match) where it would span fewer
+// than FAULT_JOINT_PIXELS, so it never thins to a shimmering line far off.
+float joint_at(float to_joint, float half_width) {
+	float width = max(half_width, FAULT_JOINT_PIXELS * fwidth(to_joint));
+	return (1.0 - smoothstep(0.0, width, to_joint)) * half_width / width;
+}
+
+// Columnar basalt on a face: `q` along and up it (meters), `up` how far it faces up (a column's top shows no joints).
+Rock basalt_at(vec2 q, float warp, float up) {
 	Rock r;
-	vec2 q = vec2(dot(p, t), dot(p, b));
-	float warp = fbm3(p * 0.3 + 11.0, 3);
+	// The column: uneven widths, a slight lean, wandering over a few meters.
+	float sway = (value_noise2(vec2(q.x * 0.08, q.y * 0.1)) - 0.5) * 2.0 * COLUMN_SWAY;
+	float x = (q.x + q.y * COLUMN_LEAN + sway) / COLUMN_WIDTH;
+	vec3 col = uneven_span(x, 2.9, COLUMN_JITTER);
+	float width = (col.z - col.y) * COLUMN_WIDTH;
+	float across = (x - col.y) / (col.z - col.y);
+	float to_side = min(across, 1.0 - across) * width;
+
+	// The piece of it: each column its own heights and offset; the cross joint bows and tilts a little.
+	float drum_height = mix(DRUM_MIN, DRUM_MAX, hash12(vec2(col.x, 4.1)));
+	float bow = (across - 0.5) * (across - 0.5) * 4.0 * DRUM_BOW;
+	float tilt = (hash12(vec2(col.x, 8.3)) - 0.5) * 0.3 * (across - 0.5) * width;
+	float y = (q.y + hash12(vec2(col.x, 5.7)) * DRUM_MAX - bow + tilt) / drum_height;
+	vec3 drum = uneven_span(y, col.x * 1.37 + 0.5, DRUM_JITTER);
+	float to_top = (drum.z - y) * drum_height;
+	float to_bottom = (y - drum.y) * drum_height;
+	float id = hash12(vec2(col.x * 7.1, drum.x + 0.37));
+
+	// Its fine face: its own part of the basalt set, the mip from the unbroken position.
+	vec2 dx = dFdx(q) * vec2(1.0, -1.0) / BASALT_TILE;
+	vec2 dy = dFdy(q) * vec2(1.0, -1.0) / BASALT_TILE;
+	vec2 uv = vec2(q.x, -q.y) / BASALT_TILE + vec2(hash12(vec2(id, 1.3)), hash12(vec2(id, 2.9)));
+	vec3 surface = textureGrad(basalt_surface, uv, dx, dy).rgb;
+	r.slope = detail ? textureGrad(basalt_normal, uv, dx, dy).rg * 2.0 - 1.0 : vec2(0.0);
+
+	// The prism: two facets turning from the face, meeting on an arris somewhere across it, softened over a few centimeters
+	// (and at least a pixel or two); its ends rounded into the cross joints.
+	float split = 0.3 + 0.4 * hash12(vec2(col.x, 9.7));
+	float soft = max(0.04 / width, 2.0 * fwidth(across));
+	float facet = mix(-1.0, 1.0, smoothstep(split - soft, split + soft, across)) * column_facet;
+	float round_ends = 0.2 * (1.0 - smoothstep(0.0, 0.04, to_top)) - 0.2 * (1.0 - smoothstep(0.0, 0.04, to_bottom));
+	float face = 1.0 - up;
+	r.slope = (r.slope + vec2(facet, round_ends + (id - 0.5) * 0.12)) * (detail ? 1.0 : 0.0) * mix(0.5, 1.0, face);
+
+	float joint = max(joint_at(to_side, COLUMN_JOINT), joint_at(min(to_top, to_bottom), DRUM_JOINT)) * face;
+	float contrast = column_contrast * (detail ? 1.0 : 0.6) * (1.0 - 0.5 * up);
+	r.tone = (surface.r * 2.0) * (1.0 + (id - 0.5) * 2.0 * contrast) + (warp - 0.5) * 0.15;
+	r.cavity = max(surface.g, joint * 0.9) * (detail ? 1.0 : 0.5);
+	r.rough = surface.b;
+	r.built = 0.0;
+	return r;
+}
+
+// Layered strata on a face: `q` along and up it (meters).
+Rock strata_at(vec2 q, float warp, float up) {
+	Rock r;
 
 	// The face in tiles of the set, the beds bent over a few meters.
 	float scale = strata_frequency / STRATA_BEDS;
@@ -179,9 +272,10 @@ Rock rock_at(vec3 p, vec3 t, vec3 b, float up) {
 
 	// Faults: columns of uneven width, their edges leaning and jagged; each column takes its own part of the tile along the
 	// face, so no part shows twice side by side.
+	float bend = (value_noise2(vec2(m.x * 0.12, m.y * 0.3) + 31.0) - 0.5) * 2.0 * FAULT_BEND;
 	float lean = (value_noise2(vec2(m.x * 0.25, m.y * 0.35)) - 0.5) * 2.0 * FAULT_LEAN;
 	float jag = (value_noise2(vec2(m.x * 2.0, m.y * 6.0)) - 0.5) * 2.0 * FAULT_JAG;
-	float x = (m.x + m.y * FAULT_SHEAR + lean + jag) / FAULT_PITCH;
+	float x = (m.x + m.y * FAULT_SHEAR + bend + lean + jag) / FAULT_PITCH;
 	float cell = floor(x);
 	float edge = fault_edge(cell);
 	float column = x < edge ? cell - 1.0 : cell;
@@ -203,11 +297,9 @@ Rock rock_at(vec3 p, vec3 t, vec3 b, float up) {
 	r.slope = detail ? textureGrad(strata_normal, uv, dx, dy).rg * 2.0 - 1.0 : vec2(0.0);
 
 	// A fault shows a dark joint a few centimeters wide: always where the beds break, coming and going where they run on.
-	// None on what faces up, where it would read as paving. A soft groove with no hard core, widened (and faded to match)
-	// where it would span fewer than FAULT_JOINT_PIXELS, so it never thins to a shimmering line far off.
+	// None on what faces up, where it would read as paving. A soft groove with no hard core (joint_at).
 	float opens = breaks ? 1.0 : 0.6 * smoothstep(0.45, 0.75, value_noise2(vec2(column * 3.7, m.y * 3.0)));
-	float joint_width = max(FAULT_JOINT, FAULT_JOINT_PIXELS * fwidth(to_fault));
-	float fault_joint = (1.0 - smoothstep(0.0, joint_width, to_fault)) * FAULT_JOINT / joint_width * opens * (1.0 - up);
+	float fault_joint = joint_at(to_fault, FAULT_JOINT) * opens * (1.0 - up);
 
 	// Tone: the set's beds, at this material's contrast, over a broad drift. What faces up is a bedding plane, the beds faint.
 	float contrast = strata_contrast / 0.2 * (detail ? 1.0 : 0.6) * (1.0 - 0.5 * up);
@@ -216,6 +308,13 @@ Rock rock_at(vec3 p, vec3 t, vec3 b, float up) {
 	r.cavity = max(surface.g, fault_joint * 0.8) * (detail ? 1.0 : 0.5);
 	r.rough = surface.b;
 	r.built = 0.0;
+	return r;
+}
+
+Rock rock_at(vec3 p, vec3 t, vec3 b, float up) {
+	vec2 q = vec2(dot(p, t), dot(p, b));
+	float warp = fbm3(p * 0.3 + 11.0, 3);
+	Rock r = columnar ? basalt_at(q, warp, up) : strata_at(q, warp, up);
 
 	// Masonry: courses along a wall, flagstones on what faces up, over the strata where a block stands; where one is missing,
 	// the rock behind shows, in its shadow.
@@ -292,9 +391,10 @@ void fragment() {
 	vec3 albedo = base * r.tone;
 	albedo = mix(albedo, base * 1.25, chipped * 0.6);
 
-	// Silt settles in crevices and on whatever faces up.
+	// Silt settles in crevices and on whatever faces up; columns' joints are open cracks, dark, with ash only on their ledges.
 	float settle = smoothstep(0.35, 0.9, world_n.y) * smoothstep(0.35, 0.65, fbm3(p * 1.7 + 4.0, 2));
-	float silt = detail ? clamp(max(r.cavity * 0.8, settle) * silt_amount, 0.0, 1.0) : 0.0;
+	float crevice = columnar ? 0.0 : r.cavity * 0.8;
+	float silt = detail ? clamp(max(crevice, settle) * silt_amount, 0.0, 1.0) : 0.0;
 	albedo = mix(albedo, srgb_to_linear(biome_silt.rgb), silt * 0.75);
 
 	// Grime by height: dirt and water stains near the bottom of each piece's sides.

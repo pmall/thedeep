@@ -14,6 +14,7 @@ public sealed record SurfaceSet(string Name, ISurfacePattern Pattern, int Size)
     public static IReadOnlyList<SurfaceSet> All { get; } = new[]
     {
         new SurfaceSet("strata", new StrataSurface(), 1024),
+        new SurfaceSet("basalt", new BasaltSurface(), 1024),
         new SurfaceSet("masonry", new MasonrySurface(), 1024),
         new SurfaceSet("ice", new IceSurface(), 1024),
         new SurfaceSet("cracks", new CracksSurface(), 1024),

@@ -47,10 +47,10 @@ public partial class SlagBody : Node3D
     [Export] public float SectionFront { get; set; } = 2.05f;
 
     /// <summary>Each light over the surface: its energy (its color is the biome's: <see cref="Glow"/>).</summary>
-    [Export] public float GlowEnergy { get; set; } = 10f;
+    [Export] public float GlowEnergy { get; set; } = 14f;
 
-    /// <summary>How far each light reaches, meters: small, so the light stays on the rock near the slag and costs little.</summary>
-    [Export] public float GlowRange { get; set; } = 5f;
+    /// <summary>How far each light reaches, meters: up the banks and pillars over it, as far as a fire lights a wall, and no further, so it costs little.</summary>
+    [Export] public float GlowRange { get; set; } = 9f;
 
     /// <summary>
     /// The most room between two lights along the surface, meters. One stands at each bank (just inside it) and the rest are spread
@@ -111,7 +111,7 @@ public partial class SlagBody : Node3D
                 Name = $"Glow{i}",
                 Position = new Vector3(-half + 2f * half * i / gaps, GlowHeight, SectionFront + GlowAhead - GlobalPosition.Z),
                 LightEnergy = GlowEnergy,
-                OmniAttenuation = 1.3f,
+                OmniAttenuation = 1.6f,
                 OmniRange = GlowRange,
                 ShadowEnabled = false,
             };

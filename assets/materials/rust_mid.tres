@@ -6,13 +6,15 @@
 [ext_resource type="Texture2D" uid="uid://c5007l1afd5cs" path="res://assets/textures/surfaces/coating_normal.png" id="4_coating_normal"]
 [ext_resource type="Texture2D" uid="uid://bgkpcowsa62j3" path="res://assets/textures/surfaces/coating_surface.png" id="5_coating_surface"]
 
-; Rusted metal behind the play plane (pipes, wrecks).
+; Rusted iron behind the play plane (pipes, wrecks): rust all over, dark and dull, so it sits back from the play plane.
 [resource]
 shader = ExtResource("1_shader")
 shader_parameter/panels_normal = ExtResource("2_panels_normal")
 shader_parameter/panels_surface = ExtResource("3_panels_surface")
 shader_parameter/coating_normal = ExtResource("4_coating_normal")
 shader_parameter/coating_surface = ExtResource("5_coating_surface")
-shader_parameter/shade = 0.7
+shader_parameter/shade = 0.35
+shader_parameter/dull = 0.6
 shader_parameter/corrosion = 0.95
+shader_parameter/coating_left = 0.0
 shader_parameter/streaks = 0.8
