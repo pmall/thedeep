@@ -321,7 +321,7 @@ public partial class Main : Node3D
         }
         else if (Array.IndexOf(args, ArenaCheckArgument) >= 0)
         {
-            AddChild(new ArenaCheck { Player = Player, World = World, Session = Session });
+            AddChild(new ArenaCheck { Player = Player, World = World, Session = Session, Banner = Session.Banner, Camera = Camera });
         }
         else if (Array.IndexOf(args, DialogueCheckArgument) >= 0)
         {

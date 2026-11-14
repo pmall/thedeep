@@ -24,4 +24,13 @@ public static class CameraMath
     {
         return distance * MathF.Tan(verticalFovDegrees * MathF.PI / 360f);
     }
+
+    /// <summary>
+    /// Whether a point on the play plane is on screen: within a view of half-size (<paramref name="halfWidth"/>, <paramref name="halfHeight"/>)
+    /// centered on (<paramref name="centerX"/>, <paramref name="centerY"/>), its edges drawn in by <paramref name="margin"/> meters.
+    /// </summary>
+    public static bool Frames(float centerX, float centerY, float halfWidth, float halfHeight, float pointX, float pointY, float margin)
+    {
+        return MathF.Abs(pointX - centerX) <= halfWidth - margin && MathF.Abs(pointY - centerY) <= halfHeight - margin;
+    }
 }

@@ -9,8 +9,8 @@ namespace TheDeep;
 /// The sealed arena of the room it starts in, in place (`-- --room Pyre --arena-check`, run by tools/check.sh on every world's ambush and
 /// boss seal), through the real input actions where they matter: an <see cref="Ambush"/> or a <see cref="BossSeal"/>, entered through its
 /// first gate from the side away from the arena. Before the fight, its foes stand only if it is a boss's (an ambush's wave is not there)
-/// and the gates are up; walking in past the gate begins it (every gate falls, the foes stand); walking back is barred by the gate; when
-/// the foes are broken (struck down directly: the fight itself is the combat check's and the playthrough's) the gates rise and the arena
+/// and the gates are up; walking in past the gate begins it (every gate falls, the foes stand); walking back is barred by the gate; a boss's name
+/// shows only with the boss on screen; when the foes are broken (struck down directly: the fight itself is the combat check's and the playthrough's) the gates rise and the arena
 /// is remembered; the room loaded again holds no foe, its gates up. The pilgrim holds the abilities a route to the room needs (the
 /// world's network and its solver, as `--room` alone gives: the Pyre's heat stands inside its doorway). Each step has a time limit.
 /// Prints `ARENA OK` or `ARENA CHECK` errors.
@@ -23,6 +23,11 @@ public partial class ArenaCheck : Node
     public required World World { get; init; }
     /// <summary>The running game's session.</summary>
     public required Session Session { get; init; }
+
+    /// <summary>The running game's banner.</summary>
+    public required Banner Banner { get; init; }
+    /// <summary>The running game's camera.</summary>
+    public required SideCamera Camera { get; init; }
 
     private readonly List<Step> _steps = new();
     private readonly List<string> _problems = new();
@@ -78,6 +83,26 @@ public partial class ArenaCheck : Node
                 Input.ActionPress(walkIn);
             },
             () => _began && arena.Fighting && arena.Gates.All(g => g.Shut) && arena.Foes.All(m => !m.Broken && m.Visible)));
+        if (arena is BossSeal seal)
+        {
+            _steps.Add(new("the boss's name shows only with the boss on screen", 8f,
+                () => { },
+                () =>
+                {
+                    if (Banner.Current != seal.Named)
+                    {
+                        return false;
+                    }
+
+                    if (!Camera.Frames(seal.Boss.PlanePosition, 0f))
+                    {
+                        _problems.Add($"{_room}: the boss's name shows with the boss off screen (boss {seal.Boss.PlanePosition}, camera {Camera.GlobalPosition})");
+                    }
+
+                    return true;
+                }));
+        }
+
         _steps.Add(new("walking back, the gate bars the way out", 1.5f,
             () => { Input.ActionRelease(walkIn); Input.ActionPress(walkOut); },
             () => _ticks > 60 && (Player.GlobalPosition.X - gateX) * inward > 0f && World.RoomName == _room));
