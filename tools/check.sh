@@ -242,6 +242,9 @@ CHECKS=(
 # The longest checks (FIRST) keep the processors they ask for; the others run nicer, filling what those leave (all at the same
 # priority, the longest were slowed down by a fifth, and the whole step with them).
 FIRST=" rooms routes "
+# The save check's scratch save, this run's own: user:// is one folder for every copy of the project (worktrees too), so two
+# checks at once on one name read each other's save.
+SAVE_NAME="savecheck-$$"
 launch() {
     local name="$1" frames="$2" args="$3" log="$LOG_DIR/$1.log" nice=10
     [[ "$FIRST" == *" $name "* ]] && nice=0
@@ -250,8 +253,8 @@ launch() {
         # shellcheck disable=SC2086 # the arguments are split on purpose
         if [ "$args" = "--save-check" ]; then
             # Two fresh runs in turn, the second resuming what the first saved (SaveCheck).
-            nice -n "$nice" "$GODOT" --headless --path . --fixed-fps 60 --quit-after "$frames" -- --room Threshold --save-name savecheck --save-check-write >"$log" 2>&1 || code=$?
-            [ "$code" = 0 ] && { nice -n "$nice" "$GODOT" --headless --path . --fixed-fps 60 --quit-after "$frames" -- --save-name savecheck --save-check-read >>"$log" 2>&1 || code=$?; }
+            nice -n "$nice" "$GODOT" --headless --path . --fixed-fps 60 --quit-after "$frames" -- --room Threshold --save-name "$SAVE_NAME" --save-check-write >"$log" 2>&1 || code=$?
+            [ "$code" = 0 ] && { nice -n "$nice" "$GODOT" --headless --path . --fixed-fps 60 --quit-after "$frames" -- --save-name "$SAVE_NAME" --save-check-read >>"$log" 2>&1 || code=$?; }
         elif [ -n "$args" ]; then
             nice -n "$nice" "$GODOT" --headless --path . --fixed-fps 60 --quit-after "$frames" -- $args >"$log" 2>&1 || code=$?
         else
