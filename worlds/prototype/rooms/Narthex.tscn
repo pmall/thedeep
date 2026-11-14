@@ -232,11 +232,6 @@ Size = Vector3(6, 0.5, 4)
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 23.75, 0.75, 0)
 Size = Vector3(3.5, 1.5, 4)
 
-; a stone lintel over the way to the doorway
-[node name="Lintel" parent="Geometry" instance=ExtResource("8_block")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 32.25, 4.5, 0)
-Size = Vector3(4.5, 1, 4)
-
 [node name="Exits" type="Node3D" parent="."]
 
 ; east doorway into the Drowned Hall
