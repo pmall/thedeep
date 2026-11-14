@@ -24,10 +24,13 @@ public partial class AmbientParticles : GpuParticles3D
 
     private const int MaxAmount = 4096;
 
+    private ParticleProcessMaterial? _effect;
+
     public override void _Ready()
     {
         if (ProcessMaterial is ParticleProcessMaterial process)
         {
+            _effect = process;
             var own = (ParticleProcessMaterial)process.Duplicate();
             own.EmissionShape = ParticleProcessMaterial.EmissionShapeEnum.Box;
             own.EmissionBoxExtents = Extents;
@@ -44,6 +47,25 @@ public partial class AmbientParticles : GpuParticles3D
         UseFixedSeed = true;
         Seed = (uint)GD.Hash(GlobalPosition);
         Preprocess = Lifetime;
+        Restart();
+    }
+
+    /// <summary>
+    /// Varies the effect's own look, always from the scene's values: particles <paramref name="size"/> times as big,
+    /// their color times <paramref name="color"/> (its alpha their opacity), pulled up by <paramref name="lift"/> m/s².
+    /// Call it once ready; the particles restart so the whole box already shows the new look.
+    /// </summary>
+    public void Vary(float size, Color color, float lift)
+    {
+        if (_effect is null || ProcessMaterial is not ParticleProcessMaterial own)
+        {
+            return;
+        }
+
+        own.ScaleMin = _effect.ScaleMin * size;
+        own.ScaleMax = _effect.ScaleMax * size;
+        own.Color = _effect.Color * color;
+        own.Gravity = _effect.Gravity + (Vector3.Up * lift);
         Restart();
     }
 }
