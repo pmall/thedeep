@@ -20,6 +20,8 @@
 [ext_resource type="Script" path="res://scripts/rooms/Room.cs" id="13_room"]
 [ext_resource type="Resource" path="res://resources/biomes/brine.tres" id="14_brine"]
 [ext_resource type="PackedScene" path="res://scenes/stage/RoomStage.tscn" id="15_stage"]
+[ext_resource type="PackedScene" path="res://scenes/kit/Doorway.tscn" id="90_doorway"]
+[ext_resource type="Resource" path="res://resources/seams/doorway.tres" id="91_seam"]
 
 [sub_resource type="QuadMesh" id="QuadMesh_1"]
 size = Vector2(5, 0.3)
@@ -63,27 +65,12 @@ PillarDensity = 3
 
 [node name="Floor" parent="Geometry" instance=ExtResource("2_block")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 18, -2, 0)
-Size = Vector3(42, 4, 4)
+Size = Vector3(33, 4, 4)
 Material = ExtResource("1_wet_stone")
 
 [node name="Ceiling" parent="Geometry" instance=ExtResource("2_block")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 18, 15.5, 0)
-Size = Vector3(42, 3, 4)
-
-; the west wall over the doorway
-[node name="WallWest" parent="Geometry" instance=ExtResource("2_block")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -1.5, 9, 0)
-Size = Vector3(3, 10, 4)
-
-; the doorway's head, deep enough to take the locked door's gate when it rises
-[node name="DoorHead" parent="Geometry" instance=ExtResource("2_block")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.75, 9, 0)
-Size = Vector3(1.5, 10, 4)
-
-; the east wall over the doorway
-[node name="WallEast" parent="Geometry" instance=ExtResource("2_block")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 37.5, 9, 0)
-Size = Vector3(3, 10, 4)
+Size = Vector3(44, 3, 4)
 
 ; an iron bollard frozen to the quay: a hop
 [node name="Bollard" parent="Geometry" instance=ExtResource("2_block")]
@@ -106,7 +93,9 @@ TargetRoom = "res://worlds/sequel/rooms/Strongroom.tscn"
 TargetExit = "East"
 Requires = "StrongroomKey"
 Door = NodePath("../../Props/StrongroomDoor")
-Size = Vector2(1, 4)
+
+[node name="Doorway" parent="Exits/West" instance=ExtResource("90_doorway")]
+Profile = ExtResource("91_seam")
 
 ; east doorway into the Locks
 [node name="East" type="Marker3D" parent="Exits"]
@@ -115,7 +104,9 @@ script = ExtResource("3_exit")
 Side = 1
 TargetRoom = "res://worlds/sequel/rooms/Locks.tscn"
 TargetExit = "West"
-Size = Vector2(1, 4)
+
+[node name="Doorway" parent="Exits/East" instance=ExtResource("90_doorway")]
+Profile = ExtResource("91_seam")
 
 [node name="Props" type="Node3D" parent="."]
 
@@ -201,3 +192,16 @@ transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 3, 2.4, 9)
 script = ExtResource("12_spot")
 PlayerPosition = Vector3(3.5, 0, 0)
 PlayerFacing = -1
+
+; the Strongroom's doorway west, its frame and the wall around it
+[node name="WestDoor" type="Marker3D" parent="PhotoSpots"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 6, 4, 16)
+script = ExtResource("12_spot")
+PlayerPosition = Vector3(4, 0, 0)
+PlayerFacing = -1
+
+; the doorway east into the Locks, its frame and the wall around it
+[node name="EastDoor" type="Marker3D" parent="PhotoSpots"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 30.5, 4, 16)
+script = ExtResource("12_spot")
+PlayerPosition = Vector3(33, 0, 0)

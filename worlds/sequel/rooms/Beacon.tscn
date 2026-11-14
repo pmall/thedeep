@@ -11,6 +11,8 @@
 [ext_resource type="Script" path="res://scripts/rooms/Room.cs" id="6_room"]
 [ext_resource type="Resource" path="res://resources/biomes/brine.tres" id="7_brine"]
 [ext_resource type="PackedScene" path="res://scenes/stage/RoomStage.tscn" id="8_stage"]
+[ext_resource type="PackedScene" path="res://scenes/kit/Doorway.tscn" id="90_doorway"]
+[ext_resource type="Resource" path="res://resources/seams/doorway.tres" id="91_seam"]
 
 [node name="Beacon" type="Node3D" node_paths=PackedStringArray("SpawnPoint", "Stage", "Lamps", "Shafts")]
 script = ExtResource("6_room")
@@ -34,18 +36,13 @@ PillarDensity = 3
 [node name="Geometry" type="Node3D" parent="."]
 
 [node name="Floor" parent="Geometry" instance=ExtResource("2_block")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 15, -2, 0)
-Size = Vector3(36, 4, 4)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 17.25, -2, 0)
+Size = Vector3(31.5, 4, 4)
 Material = ExtResource("1_wet_stone")
 
 [node name="Ceiling" parent="Geometry" instance=ExtResource("2_block")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 15, 17.5, 0)
-Size = Vector3(36, 3, 4)
-
-; the west wall over the doorway
-[node name="WallWest" parent="Geometry" instance=ExtResource("2_block")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -1.5, 10, 0)
-Size = Vector3(3, 12, 4)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 14.5, 17.5, 0)
+Size = Vector3(37, 3, 4)
 
 [node name="WallEast" parent="Geometry" instance=ExtResource("2_block")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 31.5, 8, 0)
@@ -66,7 +63,9 @@ Side = 0
 TargetRoom = "res://worlds/sequel/rooms/Weir.tscn"
 TargetExit = "East"
 Requires = "WeirLever"
-Size = Vector2(1, 4)
+
+[node name="Doorway" parent="Exits/West" instance=ExtResource("90_doorway")]
+Profile = ExtResource("91_seam")
 
 ; the cold lamp: reaching it ends the run
 [node name="Lamp" type="Marker3D" parent="Exits"]
@@ -106,3 +105,10 @@ shadow_enabled = true
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 16, 4, 18)
 script = ExtResource("5_spot")
 PlayerPosition = Vector3(14, 0, 0)
+
+; the doorway west back into the Weir, its frame and the wall around it
+[node name="WestDoor" type="Marker3D" parent="PhotoSpots"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 6, 4, 16)
+script = ExtResource("5_spot")
+PlayerPosition = Vector3(4, 0, 0)
+PlayerFacing = -1

@@ -16,6 +16,8 @@
 [ext_resource type="Script" path="res://scripts/rooms/Room.cs" id="12_room"]
 [ext_resource type="Resource" path="res://resources/biomes/brine.tres" id="13_brine"]
 [ext_resource type="PackedScene" path="res://scenes/stage/RoomStage.tscn" id="14_stage"]
+[ext_resource type="PackedScene" path="res://scenes/kit/Doorway.tscn" id="90_doorway"]
+[ext_resource type="Resource" path="res://resources/seams/doorway.tres" id="91_seam"]
 
 [node name="Weir" type="Node3D" node_paths=PackedStringArray("SpawnPoint", "Stage", "Lamps", "Shafts")]
 script = ExtResource("12_room")
@@ -39,8 +41,8 @@ PillarDensity = 3
 [node name="Geometry" type="Node3D" parent="."]
 
 [node name="FloorWest" parent="Geometry" instance=ExtResource("2_block")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 4.5, -2, 0)
-Size = Vector3(15, 4, 4)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 6.75, -2, 0)
+Size = Vector3(10.5, 4, 4)
 Material = ExtResource("1_wet_stone")
 
 ; the bed of the open pool, 4 m down
@@ -49,28 +51,13 @@ transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 15.5, -5, 0)
 Size = Vector3(7, 2, 4)
 
 [node name="FloorEast" parent="Geometry" instance=ExtResource("2_block")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 31, -2, 0)
-Size = Vector3(24, 4, 4)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 28.75, -2, 0)
+Size = Vector3(19.5, 4, 4)
 Material = ExtResource("1_wet_stone")
 
 [node name="Ceiling" parent="Geometry" instance=ExtResource("2_block")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 20, 15.5, 0)
-Size = Vector3(46, 3, 4)
-
-; the west wall over the doorway
-[node name="WallWest" parent="Geometry" instance=ExtResource("2_block")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -1.5, 9, 0)
-Size = Vector3(3, 10, 4)
-
-; the doorway's head, deep enough to take the gate when it rises
-[node name="DoorHead" parent="Geometry" instance=ExtResource("2_block")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 39.25, 9, 0)
-Size = Vector3(1.5, 10, 4)
-
-; the east wall over the doorway
-[node name="WallEast" parent="Geometry" instance=ExtResource("2_block")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 41.5, 9, 0)
-Size = Vector3(3, 10, 4)
+Size = Vector3(48, 3, 4)
 
 [node name="Exits" type="Node3D" parent="."]
 
@@ -81,7 +68,9 @@ script = ExtResource("3_exit")
 Side = 0
 TargetRoom = "res://worlds/sequel/rooms/Hold.tscn"
 TargetExit = "East"
-Size = Vector2(1, 4)
+
+[node name="Doorway" parent="Exits/West" instance=ExtResource("90_doorway")]
+Profile = ExtResource("91_seam")
 
 ; east doorway on to the Beacon, barred by the sluice gate
 [node name="East" type="Marker3D" parent="Exits" node_paths=PackedStringArray("Door")]
@@ -92,7 +81,9 @@ TargetRoom = "res://worlds/sequel/rooms/Beacon.tscn"
 TargetExit = "West"
 Requires = "WeirLever"
 Door = NodePath("../../Props/SluiceGate")
-Size = Vector2(1, 4)
+
+[node name="Doorway" parent="Exits/East" instance=ExtResource("90_doorway")]
+Profile = ExtResource("91_seam")
 
 [node name="Props" type="Node3D" parent="."]
 
@@ -151,3 +142,16 @@ PlayerPosition = Vector3(31, 0, 0)
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 15, 4, 20)
 script = ExtResource("11_spot")
 PlayerPosition = Vector3(8, 0, 0)
+
+; the doorway west back into the Hold, its frame and the wall around it
+[node name="WestDoor" type="Marker3D" parent="PhotoSpots"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 6, 4, 16)
+script = ExtResource("11_spot")
+PlayerPosition = Vector3(4, 0, 0)
+PlayerFacing = -1
+
+; the sluice gate in the east doorway, its frame and the wall around it
+[node name="EastDoor" type="Marker3D" parent="PhotoSpots"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 34.5, 4, 16)
+script = ExtResource("11_spot")
+PlayerPosition = Vector3(36, 0, 0)

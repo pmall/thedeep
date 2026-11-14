@@ -12,6 +12,8 @@
 [ext_resource type="Script" path="res://scripts/rooms/Room.cs" id="7_room"]
 [ext_resource type="Resource" path="res://resources/biomes/brine.tres" id="8_brine"]
 [ext_resource type="PackedScene" path="res://scenes/stage/RoomStage.tscn" id="9_stage"]
+[ext_resource type="PackedScene" path="res://scenes/kit/Doorway.tscn" id="90_doorway"]
+[ext_resource type="Resource" path="res://resources/seams/doorway.tres" id="91_seam"]
 
 [node name="Strongroom" type="Node3D" node_paths=PackedStringArray("SpawnPoint", "Stage", "Shafts", "GlyphLights")]
 script = ExtResource("7_room")
@@ -35,22 +37,17 @@ PillarDensity = 2.5
 [node name="Geometry" type="Node3D" parent="."]
 
 [node name="Floor" parent="Geometry" instance=ExtResource("2_block")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 10, -2, 0)
-Size = Vector3(26, 4, 4)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 7.75, -2, 0)
+Size = Vector3(21.5, 4, 4)
 Material = ExtResource("1_wet_stone")
 
 [node name="Ceiling" parent="Geometry" instance=ExtResource("2_block")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 10, 10.5, 0)
-Size = Vector3(26, 3, 4)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 10.5, 10.5, 0)
+Size = Vector3(27, 3, 4)
 
 [node name="WallWest" parent="Geometry" instance=ExtResource("2_block")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -1.5, 4.5, 0)
 Size = Vector3(3, 9, 4)
-
-; the east wall over the doorway
-[node name="WallEast" parent="Geometry" instance=ExtResource("2_block")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 21.5, 6.5, 0)
-Size = Vector3(3, 5, 4)
 
 ; the dais of the power-up
 [node name="Dais" parent="Geometry" instance=ExtResource("2_block")]
@@ -67,7 +64,9 @@ Side = 1
 TargetRoom = "res://worlds/sequel/rooms/Quay.tscn"
 TargetExit = "West"
 Requires = "StrongroomKey"
-Size = Vector2(1, 4)
+
+[node name="Doorway" parent="Exits/East" instance=ExtResource("90_doorway")]
+Profile = ExtResource("91_seam")
 
 [node name="Props" type="Node3D" parent="."]
 
@@ -103,3 +102,9 @@ transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 9, 3, 14)
 script = ExtResource("6_spot")
 PlayerPosition = Vector3(11, 0, 0)
 PlayerFacing = -1
+
+; the doorway east back onto the Quay, its frame and the wall around it
+[node name="EastDoor" type="Marker3D" parent="PhotoSpots"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 14.5, 4, 16)
+script = ExtResource("6_spot")
+PlayerPosition = Vector3(17, 0, 0)
