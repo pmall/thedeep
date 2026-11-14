@@ -36,20 +36,15 @@ PillarDensity = 2.5
 
 [node name="Geometry" type="Node3D" parent="."]
 
-; the floor, from the west doorway's sill (West's Doorway frames X -3.5 to 1.5, Y -2 to 0 and 4 to 6)
+; the floor, between the sills of the west and east doorways
 [node name="Floor" parent="Geometry" instance=ExtResource("2_block")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 12.25, -2, 0)
-Size = Vector3(21.5, 4, 4)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 10, -2, 0)
+Size = Vector3(17, 4, 4)
 Material = ExtResource("1_wet_stone")
 
 [node name="Ceiling" parent="Geometry" instance=ExtResource("2_block")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 10, 10.5, 0)
-Size = Vector3(26, 3, 4)
-
-; the east wall over the doorway
-[node name="WallEast" parent="Geometry" instance=ExtResource("2_block")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 21.5, 6.5, 0)
-Size = Vector3(3, 5, 4)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 10.5, 10.5, 0)
+Size = Vector3(27, 3, 4)
 
 ; the dais of the power-up
 [node name="Dais" parent="Geometry" instance=ExtResource("2_block")]
@@ -77,7 +72,9 @@ Side = 1
 TargetRoom = "res://worlds/sequel/rooms/Quay.tscn"
 TargetExit = "West"
 Requires = "StrongroomKey"
-Size = Vector2(1, 4)
+
+[node name="Doorway" parent="Exits/East" instance=ExtResource("90_doorway")]
+Profile = ExtResource("91_seam")
 
 [node name="Props" type="Node3D" parent="."]
 
@@ -113,3 +110,9 @@ transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 9, 3, 14)
 script = ExtResource("6_spot")
 PlayerPosition = Vector3(11, 0, 0)
 PlayerFacing = -1
+
+; the doorway east back onto the Quay, its frame and the wall around it
+[node name="EastDoor" type="Marker3D" parent="PhotoSpots"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 14.5, 4, 16)
+script = ExtResource("6_spot")
+PlayerPosition = Vector3(17, 0, 0)

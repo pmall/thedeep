@@ -17,6 +17,8 @@
 [ext_resource type="Script" path="res://scripts/rooms/Room.cs" id="12_room"]
 [ext_resource type="Resource" path="res://resources/biomes/brine.tres" id="13_brine"]
 [ext_resource type="PackedScene" path="res://scenes/stage/RoomStage.tscn" id="14_stage"]
+[ext_resource type="PackedScene" path="res://scenes/kit/Doorway.tscn" id="90_doorway"]
+[ext_resource type="Resource" path="res://resources/seams/doorway.tres" id="91_seam"]
 
 [node name="Locks" type="Node3D" node_paths=PackedStringArray("SpawnPoint", "Stage", "Lamps", "Shafts", "GlyphLights")]
 script = ExtResource("12_room")
@@ -41,8 +43,8 @@ PillarDensity = 3.4
 [node name="Geometry" type="Node3D" parent="."]
 
 [node name="FloorWest" parent="Geometry" instance=ExtResource("2_block")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 8.5, -2, 0)
-Size = Vector3(23, 4, 4)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 10.75, -2, 0)
+Size = Vector3(18.5, 4, 4)
 Material = ExtResource("1_wet_stone")
 
 ; the bed of the open pool, 4 m down
@@ -51,29 +53,19 @@ transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 24, -5, 0)
 Size = Vector3(8, 2, 4)
 
 [node name="FloorEast" parent="Geometry" instance=ExtResource("2_block")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 43.5, -2, 0)
-Size = Vector3(31, 4, 4)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 41.25, -2, 0)
+Size = Vector3(26.5, 4, 4)
 Material = ExtResource("1_wet_stone")
 
 [node name="Ceiling" parent="Geometry" instance=ExtResource("2_block")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 28, 23.5, 0)
-Size = Vector3(62, 3, 4)
+Size = Vector3(64, 3, 4)
 
-; the west wall over the doorway
-[node name="WallWest" parent="Geometry" instance=ExtResource("2_block")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -1.5, 13, 0)
-Size = Vector3(3, 18, 4)
-
-; the east wall over the low doorway: iron, climbed with Mag-grip
+; the east wall between the two doorways, iron and flush with their frames' face: climbed with Mag-grip
 [node name="WallEast" parent="Geometry" instance=ExtResource("2_block")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 57.5, 9.25, 0)
-Size = Vector3(3, 10.5, 4)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 56.75, 9.25, 0)
+Size = Vector3(4.5, 6.5, 4)
 Surface = 1
-
-; over the high doorway to the Hold
-[node name="WallEastTop" parent="Geometry" instance=ExtResource("2_block")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 57.5, 20.25, 0)
-Size = Vector3(3, 3.5, 4)
 
 ; a seized capstan: a hop
 [node name="Capstan" parent="Geometry" instance=ExtResource("2_block")]
@@ -89,7 +81,9 @@ script = ExtResource("3_exit")
 Side = 0
 TargetRoom = "res://worlds/sequel/rooms/Quay.tscn"
 TargetExit = "East"
-Size = Vector2(1, 4)
+
+[node name="Doorway" parent="Exits/West" instance=ExtResource("90_doorway")]
+Profile = ExtResource("91_seam")
 
 ; east doorway into the Chantry
 [node name="East" type="Marker3D" parent="Exits"]
@@ -98,7 +92,10 @@ script = ExtResource("3_exit")
 Side = 1
 TargetRoom = "res://worlds/sequel/rooms/Chantry.tscn"
 TargetExit = "West"
-Size = Vector2(1, 4)
+
+[node name="Doorway" parent="Exits/East" instance=ExtResource("90_doorway")]
+Profile = ExtResource("91_seam")
+Surface = 1
 
 ; the high doorway on to the Hold, on top of the iron wall (coming back is a drop)
 [node name="Hold" type="Marker3D" parent="Exits"]
@@ -108,7 +105,10 @@ Side = 1
 TargetRoom = "res://worlds/sequel/rooms/Hold.tscn"
 TargetExit = "West"
 Requires = "MagGrip"
-Size = Vector2(1, 4)
+
+[node name="Doorway" parent="Exits/Hold" instance=ExtResource("90_doorway")]
+Profile = ExtResource("91_seam")
+Surface = 1
 
 ; the open pool: brine swum on the play plane
 [node name="Water" type="Node3D" parent="."]
@@ -182,3 +182,22 @@ PlayerPosition = Vector3(8, 0, 0)
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 48, 9, 26)
 script = ExtResource("11_spot")
 PlayerPosition = Vector3(52, 0, 0)
+
+; the doorway west back onto the Quay, its frame and the wall around it
+[node name="WestDoor" type="Marker3D" parent="PhotoSpots"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 6, 4, 16)
+script = ExtResource("11_spot")
+PlayerPosition = Vector3(4, 0, 0)
+PlayerFacing = -1
+
+; the low doorway east into the Chantry, its frame and the iron wall over it
+[node name="EastDoor" type="Marker3D" parent="PhotoSpots"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 50.5, 4, 16)
+script = ExtResource("11_spot")
+PlayerPosition = Vector3(52, 0, 0)
+
+; the high doorway on to the Hold, on top of the iron wall
+[node name="HoldDoor" type="Marker3D" parent="PhotoSpots"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 50.5, 18.5, 16)
+script = ExtResource("11_spot")
+PlayerPosition = Vector3(56.5, 14.5, 0)

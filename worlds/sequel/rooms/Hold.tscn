@@ -16,6 +16,8 @@
 [ext_resource type="Script" path="res://scripts/rooms/Room.cs" id="10_room"]
 [ext_resource type="Resource" path="res://resources/biomes/brine.tres" id="11_brine"]
 [ext_resource type="PackedScene" path="res://scenes/stage/RoomStage.tscn" id="12_stage"]
+[ext_resource type="PackedScene" path="res://scenes/kit/Doorway.tscn" id="90_doorway"]
+[ext_resource type="Resource" path="res://resources/seams/doorway.tres" id="91_seam"]
 
 [node name="Hold" type="Node3D" node_paths=PackedStringArray("SpawnPoint", "Stage", "Lamps", "Shafts", "GlyphLights")]
 script = ExtResource("10_room")
@@ -40,33 +42,18 @@ PillarDensity = 3.6
 [node name="Geometry" type="Node3D" parent="."]
 
 [node name="Floor" parent="Geometry" instance=ExtResource("2_block")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 28, -2, 0)
-Size = Vector3(62, 4, 4)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 30.75, -2, 0)
+Size = Vector3(58.5, 4, 4)
 Material = ExtResource("1_wet_stone")
 
 [node name="Ceiling" parent="Geometry" instance=ExtResource("2_block")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 28, 25.5, 0)
-Size = Vector3(62, 3, 4)
-
-; the west wall over the doorway
-[node name="WallWest" parent="Geometry" instance=ExtResource("2_block")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -1.5, 14, 0)
-Size = Vector3(3, 20, 4)
-
-; the east wall: rock, not gripped
-[node name="WallEast" parent="Geometry" instance=ExtResource("2_block")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 57.5, 7.25, 0)
-Size = Vector3(3, 14.5, 4)
-
-; over the high doorway to the Weir
-[node name="WallEastTop" parent="Geometry" instance=ExtResource("2_block")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 57.5, 21.25, 0)
-Size = Vector3(3, 5.5, 4)
+Size = Vector3(64, 3, 4)
 
 ; the ledge before the high doorway
 [node name="Ledge" parent="Geometry" instance=ExtResource("2_block")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 53, 14, 0)
-Size = Vector3(6, 1, 4)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 52.25, 14, 0)
+Size = Vector3(4.5, 1, 4)
 
 ; the Harpoon's cradle
 [node name="Cradle" parent="Geometry" instance=ExtResource("2_block")]
@@ -87,7 +74,9 @@ script = ExtResource("3_exit")
 Side = 0
 TargetRoom = "res://worlds/sequel/rooms/Locks.tscn"
 TargetExit = "Hold"
-Size = Vector2(1, 4)
+
+[node name="Doorway" parent="Exits/West" instance=ExtResource("90_doorway")]
+Profile = ExtResource("91_seam")
 
 ; the high doorway on to the Weir, past the ledge
 [node name="East" type="Marker3D" parent="Exits"]
@@ -97,7 +86,9 @@ Side = 1
 TargetRoom = "res://worlds/sequel/rooms/Weir.tscn"
 TargetExit = "West"
 Requires = "Harpoon"
-Size = Vector2(1, 4)
+
+[node name="Doorway" parent="Exits/East" instance=ExtResource("90_doorway")]
+Profile = ExtResource("91_seam")
 
 [node name="Props" type="Node3D" parent="."]
 
@@ -167,3 +158,16 @@ PlayerPosition = Vector3(44, 0, 0)
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 51.5, 16.4, 9)
 script = ExtResource("9_spot")
 PlayerPosition = Vector3(51, 14.5, 0)
+
+; the doorway west back out onto the Locks' wall, its frame and the wall around it
+[node name="WestDoor" type="Marker3D" parent="PhotoSpots"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 6, 4, 16)
+script = ExtResource("9_spot")
+PlayerPosition = Vector3(4, 0, 0)
+PlayerFacing = -1
+
+; the high doorway on to the Weir, past the ledge
+[node name="EastDoor" type="Marker3D" parent="PhotoSpots"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 50.5, 18.5, 16)
+script = ExtResource("9_spot")
+PlayerPosition = Vector3(52, 14.5, 0)
