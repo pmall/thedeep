@@ -56,7 +56,17 @@ Bevel = 0.25
 
 [sub_resource type="PrimitiveMesh" id="blockmesh_4"]
 script = ExtResource("13_blockmesh")
-Size = Vector3(56, 0.6, 2.5)
+Size = Vector3(56, 0.6, 1)
+Bevel = 0.15
+
+[sub_resource type="PrimitiveMesh" id="blockmesh_9"]
+script = ExtResource("13_blockmesh")
+Size = Vector3(56, 1.5, 3)
+Bevel = 0.15
+
+[sub_resource type="PrimitiveMesh" id="blockmesh_10"]
+script = ExtResource("13_blockmesh")
+Size = Vector3(56, 1.5, 1.5)
 Bevel = 0.15
 
 [sub_resource type="PrimitiveMesh" id="pod_5"]
@@ -307,9 +317,19 @@ transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 48, 10, -10)
 mesh = SubResource("arch_2")
 material_override = ExtResource("14_stone_mid")
 
-; a channel of molten metal along the back of the arcade
+; the arcade's ground, with a channel of molten metal sunk between its two lips
+[node name="GroundFront" type="MeshInstance3D" parent="Kit"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 28, -0.85, -10.5)
+mesh = SubResource("blockmesh_9")
+material_override = ExtResource("14_stone_mid")
+
+[node name="GroundBack" type="MeshInstance3D" parent="Kit"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 28, -0.85, -13.75)
+mesh = SubResource("blockmesh_10")
+material_override = ExtResource("14_stone_mid")
+
 [node name="Channel" type="MeshInstance3D" parent="Kit"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 28, 0, -12.5)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 28, -0.7, -12.5)
 mesh = SubResource("blockmesh_4")
 material_override = ExtResource("16_magma")
 
