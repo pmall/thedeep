@@ -56,14 +56,14 @@ public partial class LightShaft : MeshInstance3D
             shape[i] = strip.Shape.ToGodot();
         }
 
-        using var arrays = new Godot.Collections.Array();
+        var arrays = new Godot.Collections.Array();
         arrays.Resize((int)Mesh.ArrayType.Max);
         arrays[(int)Mesh.ArrayType.Vertex] = vertices;
         arrays[(int)Mesh.ArrayType.TexUV] = uvs;
         arrays[(int)Mesh.ArrayType.TexUV2] = shape;
         arrays[(int)Mesh.ArrayType.Index] = strip.Indices;
         var mesh = new ArrayMesh();
-        KitMesh.AddSurface(mesh, arrays);
+        mesh.AddSurfaceFromArrays(Mesh.PrimitiveType.Triangles, arrays);
         Mesh = mesh;
         MaterialOverride = Material;
         CastShadow = ShadowCastingSetting.Off;

@@ -72,8 +72,6 @@ public sealed unsafe class NativeMeshArrays : IDisposable
         godot_variant* item = NativeFuncs.godotsharp_array_ptrw(ref *_native) + (int)slot;
         item->Dispose();
         *item = value;
-        // The finalizer frees the native reference: this must stay reachable until the write is done.
-        GC.KeepAlive(this);
     }
 
     private void Release()

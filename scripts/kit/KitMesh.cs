@@ -17,36 +17,12 @@ public partial class KitMesh : PrimitiveMesh
     /// <summary>Heights are stored in 8-bit vertex color, over this range in meters (about 3 cm steps).</summary>
     public const float HeightRange = 8f;
 
-    /// <summary>
-    /// The arrays last handed to the engine, kept referenced until the next build. The binding that returns them reads
-    /// their engine array and then copies it in native code, holding no managed reference: a throwaway array could be
-    /// collected in that window and its finalizer free the engine array mid-copy (a crash on the finalizer thread).
-    /// </summary>
-    private Array? _built;
-
     public override Array _CreateMeshArray()
     {
         var builder = new MeshBuilder();
         Build(builder);
-        Array arrays = ToArrays(builder.Finish());
-        System.Threading.Interlocked.Exchange(ref _built, arrays)?.Dispose();
-        return arrays;
+        return ToArrays(builder.Finish());
     }
-
-    /// <summary>
-    /// Adds <paramref name="arrays"/> to <paramref name="mesh"/> as a triangle surface, the only way game code adds one.
-    /// The engine call only borrows its arrays, so each must stay referenced through it: <paramref name="arrays"/> is kept
-    /// alive here, and the empty blend shapes and LODs are kept ones (left out, the binding passes new ones that nothing
-    /// references, which the garbage collector may free while the engine reads them).
-    /// </summary>
-    public static void AddSurface(ArrayMesh mesh, Array arrays)
-    {
-        mesh.AddSurfaceFromArrays(Mesh.PrimitiveType.Triangles, arrays, NoBlendShapes, NoLods);
-        System.GC.KeepAlive(arrays);
-    }
-
-    private static readonly Array<Array> NoBlendShapes = new();
-    private static readonly Dictionary NoLods = new();
 
     /// <summary>Godot mesh arrays for <paramref name="mesh"/>, with the surface frame the materials read.</summary>
     public static Array ToArrays(MeshData mesh) => ToArrays(mesh, new Buffers());

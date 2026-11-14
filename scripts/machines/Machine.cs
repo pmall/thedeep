@@ -398,18 +398,14 @@ public partial class Machine : CharacterBody3D
     private bool FaceIsFree(Block perch, Vector3 center, Vector3 size)
     {
         using var box = new BoxShape3D { Size = size };
-        // Kept referenced through the query: the property setter only borrows it (see KitMesh.AddSurface).
-        var exclude = new Godot.Collections.Array<Rid> { perch.GetRid() };
         using var query = new PhysicsShapeQueryParameters3D
         {
             Shape = box,
             Transform = new Transform3D(Basis.Identity, center),
             CollisionMask = PhysicsLayers.Solid,
-            Exclude = exclude,
+            Exclude = new Godot.Collections.Array<Rid> { perch.GetRid() },
         };
-        bool free = GetWorld3D().DirectSpaceState.IntersectShape(query, 1).Count == 0;
-        GC.KeepAlive(exclude);
-        return free;
+        return GetWorld3D().DirectSpaceState.IntersectShape(query, 1).Count == 0;
     }
 
     private Room? FindRoom()

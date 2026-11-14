@@ -217,7 +217,8 @@ public partial class PartBody : Node3D
         m.Builder.Sweep(m.Path, m.Profile, scales: m.Scales);
         var mesh = (ArrayMesh)chain.Skin.Mesh;
         mesh.ClearSurfaces();
-        KitMesh.AddSurface(mesh, KitMesh.ToArrays(m.Builder.Finish(), m.Arrays));
+        // The empty blend shapes and LODs are passed kept: left out, the binding makes a new engine array and dictionary each call.
+        mesh.AddSurfaceFromArrays(Mesh.PrimitiveType.Triangles, KitMesh.ToArrays(m.Builder.Finish(), m.Arrays), NoBlendShapes, NoLods);
 
         // The pendant hangs along the last link.
         NVector3 tip = points[^1];
@@ -231,6 +232,9 @@ public partial class PartBody : Node3D
 
         chain.End.GlobalTransform = new Transform3D(new Basis(y.Cross(z), y, z), tip.ToGodot());
     }
+
+    private static readonly Godot.Collections.Array<Godot.Collections.Array> NoBlendShapes = new();
+    private static readonly Godot.Collections.Dictionary NoLods = new();
 
     private sealed record Chain(PartChain Spec, Node3D Joint, VerletChain Sim, MeshInstance3D Skin, Node3D End, NVector3[] Previous, ChainMesh Mesh);
 
