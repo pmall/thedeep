@@ -57,7 +57,7 @@ public class SurfaceBakeTests
         Assert.Equal(first.Surface, second.Surface);
     }
 
-    public static TheoryData<string> Patterns => new() { "strata", "basalt", "masonry", "ice", "cracks", "panels", "coating", "glyphs", "frost" };
+    public static TheoryData<string> Patterns => new() { "strata", "basalt", "masonry", "ice", "cracks", "panels", "coating", "glyphs", "frost", "flames" };
 
     /// <summary>Half a tile on, the bake is the same image rolled by half: its edges meet as its middle does, so it has no seam.</summary>
     [Theory]

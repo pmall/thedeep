@@ -90,7 +90,7 @@ public partial class WallDressing : Node3D
                 break;
             case WallPiece.Mouth:
                 // A grate stood up over the glow, in a frame: a lintel and two jambs.
-                Add(new GrateMesh { Size = new Vector3(w, 0.12f, h), Spacing = 0.35f, Bar = 0.07f }, looks.Iron,
+                Add(new GrateMesh { Size = new Vector3(w, 0.12f, h), Spacing = 0.45f, Bar = 0.12f }, looks.Iron,
                     at + new Vector3(0f, h * 0.5f, 0f), new Basis(Vector3.Right, -Mathf.Pi * 0.5f));
                 Add(new BlockMesh { Size = new Vector3(w + 1f, 0.6f, 0.7f), Bevel = 0.06f }, looks.Iron, at + new Vector3(0f, h + 0.3f, 0.1f));
                 Add(new BlockMesh { Size = new Vector3(0.5f, h, 0.7f), Bevel = 0.05f }, looks.Iron, at + new Vector3(-w * 0.5f - 0.25f, h * 0.5f, 0.1f));
