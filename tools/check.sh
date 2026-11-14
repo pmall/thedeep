@@ -307,7 +307,7 @@ for entry in "${CHECKS[@]}"; do
         continue
     fi
     if [ -n "$ok" ]; then
-        # With the report-only lines: the ground rules' totals (docs/roadmap.md#bricks-ready).
+        # With the report-only lines: the ground rules' totals.
         grep -E "^$ok|^(MAP|INSIDE|DRAFT) OK|^GROUND REPORT" "$log" | cut -c1-240 | sed "s/\$/  ($name, ${secs}s)/" | head -12
     else
         echo "$name: ok (${secs}s)"
