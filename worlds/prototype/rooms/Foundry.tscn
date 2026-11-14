@@ -319,17 +319,17 @@ material_override = ExtResource("14_stone_mid")
 
 ; the arcade's ground, with a channel of molten metal sunk between its two lips
 [node name="GroundFront" type="MeshInstance3D" parent="Kit"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 28, -0.85, -10.5)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 28, -1, -10.5)
 mesh = SubResource("blockmesh_9")
 material_override = ExtResource("14_stone_mid")
 
 [node name="GroundBack" type="MeshInstance3D" parent="Kit"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 28, -0.85, -13.75)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 28, -1, -13.75)
 mesh = SubResource("blockmesh_10")
 material_override = ExtResource("14_stone_mid")
 
 [node name="Channel" type="MeshInstance3D" parent="Kit"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 28, -0.7, -12.5)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 28, -0.75, -12.5)
 mesh = SubResource("blockmesh_4")
 material_override = ExtResource("16_magma")
 
