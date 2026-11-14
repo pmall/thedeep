@@ -15,7 +15,6 @@
 [ext_resource type="Material" path="res://assets/materials/stone_mid.tres" id="11_stone_mid"]
 [ext_resource type="Script" path="res://scripts/kit/PipeMesh.cs" id="12_pipe"]
 [ext_resource type="Material" path="res://assets/materials/rust_mid.tres" id="13_rust_mid"]
-[ext_resource type="Script" path="res://scripts/kit/GrateMesh.cs" id="14_grate"]
 [ext_resource type="Script" path="res://scripts/kit/WreckMesh.cs" id="15_wreck"]
 [ext_resource type="PackedScene" path="res://scenes/fx/Dust.tscn" id="16_dust"]
 [ext_resource type="Script" path="res://scripts/rooms/PhotoSpot.cs" id="17_spot"]
@@ -55,11 +54,6 @@ Radius = 2.4
 BendRadius = 1
 FlangeSpacing = 8
 
-[sub_resource type="PrimitiveMesh" id="grate_6"]
-script = ExtResource("14_grate")
-Size = Vector3(3, 0.2, 2)
-Spacing = 0.35
-Bar = 0.07
 
 [sub_resource type="PrimitiveMesh" id="wreck_7"]
 script = ExtResource("15_wreck")
@@ -301,12 +295,6 @@ material_override = ExtResource("13_rust_mid")
 [node name="FallenFlue" type="MeshInstance3D" parent="Kit"]
 transform = Transform3D(0.9703, -0.2419, 0, 0.2419, 0.9703, 0, 0, 0, 1, 30, -15.5, -7)
 mesh = SubResource("pipe_4")
-material_override = ExtResource("13_rust_mid")
-
-; the hatch, its grate rusted open: hung down by its west hinge against the hole's wall
-[node name="Hatch" type="MeshInstance3D" parent="Kit"]
-transform = Transform3D(0, 1, 0, -1, 0, 0, 0, 0, 1, 36.8, -19.75, -1.25)
-mesh = SubResource("grate_6")
 material_override = ExtResource("13_rust_mid")
 
 ; a machine fallen in the ash
