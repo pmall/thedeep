@@ -4,9 +4,10 @@
 // (SurfaceMaps has the sampling contract), laid in world meters on each face so they run on across
 // neighbouring pieces; faults cut the strata into columns a few meters wide, their pitch and lean
 // changing over the face, each showing its own part of the tile, and each course of masonry is a course of the tile picked at random and slid along, so
-// neither tile repeats along a wall. Columnar rock (`columnar`, basalt) has no beds: the face splits
-// into upright columns of uneven width, each cut across by joints at its own heights, every piece its
-// own two facets and tone over its own part of the baked basalt set. Where the biome built (biome_masonry), whole blocks stand over the
+// neither tile repeats along a wall. Columnar rock (`columnar`, basalt) has no beds: it is upright prisms,
+// the cells of a near-hexagonal net in plan, so a wall shows them side by side, each with the facets it
+// turns to the face and cut across by joints at its own heights, and a top or an underside their polygonal
+// ends; every piece its own tone over its own part of the baked basalt set. Where the biome built (biome_masonry), whole blocks stand over the
 // rock, more of them the more it built, and where they are missing the rock shows, recessed. Cracked
 // rock lays a baked web of fissures over it all (CracksSurface), as baked in some regions and mirrored and
 // a little larger in others, so the web never shows twice along a wall. The shader adds only what is broad: the beds' bend, each block's tone, stains, silt, grime, wetness,
@@ -37,14 +38,14 @@ uniform float strata_warp : hint_range(0.0, 2.0) = 0.4;
 uniform float strata_contrast : hint_range(0.0, 0.5) = 0.2;
 
 group_uniforms columns;
-/// Columnar jointing in place of the strata (basalt): upright columns of uneven width, each cut across at its own heights.
+/// Columnar jointing in place of the strata (basalt): upright prisms, side by side on a wall, their ends on a top or an underside.
 uniform bool columnar = false;
 /// The baked basalt set (assets/textures/surfaces/, SurfaceMaps): the face of a column, set by every columnar material.
 uniform sampler2D basalt_normal : hint_normal, repeat_enable, filter_linear_mipmap_anisotropic;
 uniform sampler2D basalt_surface : hint_default_black, repeat_enable, filter_linear_mipmap_anisotropic;
-/// Tone difference between pieces of column.
+/// Tone difference between columns (and, a little, between the pieces of one).
 uniform float column_contrast : hint_range(0.0, 0.3) = 0.14;
-/// How far a column's two facets turn from the face (the normal's slope): the light picks out each prism.
+/// How much of its facets' turn from the face a prism shows (1 the true prism): the light picks out each column.
 uniform float column_facet : hint_range(0.0, 0.6) = 0.12;
 
 group_uniforms masonry;
@@ -108,21 +109,28 @@ const float FAULT_JAG = 0.012;
 const float FAULT_BLOCK = 3.0;
 const float FAULT_THROW = 0.05;
 
-// The baked basalt set's tile (BasaltSurface.TileMeters). Columns: their mean width (meters), how far an edge strays from
-// even spacing (a share of it), their lean and how far they wander over a few meters (meters); a piece's height at least and
-// at most (meters), how far a cross joint strays and how far it bows (meters, a ball-and-socket joint); the joints' half
-// widths, meters (widened to JOINT_PIXELS on screen).
+// The baked basalt set's tile (BasaltSurface.TileMeters). The columns are upright prisms whose sections are the cells of a
+// near-hexagonal net in the horizontal plane (rows staggered, each site strayed by COLUMN_JITTER of the spacing), so every
+// face of a piece cuts the same prisms: a wall shows them side by side, a top or an underside their polygonal ends, and two
+// pieces side by side carry them on. The net's spacing (meters); how far it is turned (radians), so no wall runs along a row
+// of it; how far it drifts (meters) over regions COLUMN_REGION meters across, so its rhythm never repeats along a wall. A
+// piece of column's height at least and at most (meters), how far a cross joint strays (a share of it) and bows (meters, a
+// ball-and-socket joint); the joints' half widths (meters, widened on screen by joint_at); how far a column's end domes or
+// dishes (the normal's slope per spacing from its middle) and how far a column's sides round off (the slope at its edges).
 const float BASALT_TILE = 4.0;
-const float COLUMN_WIDTH = 1.4;
-const float COLUMN_JITTER = 0.3;
-const float COLUMN_LEAN = 0.06;
-const float COLUMN_SWAY = 0.35;
-const float DRUM_MIN = 1.6;
-const float DRUM_MAX = 4.0;
+const float COLUMN_SPACING = 2.5;
+const float COLUMN_JITTER = 0.22;
+const float COLUMN_TURN = 0.38;
+const float COLUMN_DRIFT = 1.0;
+const float COLUMN_REGION = 24.0;
+const float DRUM_MIN = 3.0;
+const float DRUM_MAX = 7.5;
 const float DRUM_JITTER = 0.3;
-const float DRUM_BOW = 0.1;
-const float COLUMN_JOINT = 0.05;
-const float DRUM_JOINT = 0.03;
+const float DRUM_BOW = 0.08;
+const float COLUMN_JOINT = 0.07;
+const float DRUM_JOINT = 0.06;
+const float CAP_DOME = 0.25;
+const float COLUMN_ROUND = 0.08;
 
 // The baked masonry set's tile (MasonrySurface.TileMeters), its courses, and the cells its alpha tells apart (SurfaceMaps).
 const float MASONRY_TILE = 4.0;
@@ -216,47 +224,133 @@ float joint_at(float to_joint, float half_width) {
 	return (1.0 - smoothstep(0.0, width, to_joint)) * half_width / width;
 }
 
-// Columnar basalt on a face: `q` along and up it (meters), `up` how far it faces up (a column's top shows no joints).
-Rock basalt_at(vec2 q, float warp, float up) {
+// The site of the columns' net at lattice cell `c`, in spacings: rows 0.866 apart, every other one slid by half.
+vec2 column_site(vec2 c) {
+	return vec2(c.x + 0.5 * mod(c.y, 2.0), c.y * 0.866) + (hash22(c + vec2(17.0, 31.0)) - 0.5) * 2.0 * COLUMN_JITTER;
+}
+
+// Columnar basalt at `p` (world, meters) on a face along `t` and up `b`, its normal `n` (world), `up` how far it faces up.
+Rock basalt_at(vec3 p, vec3 t, vec3 b, vec3 n, float warp, float up) {
 	Rock r;
-	// The column: uneven widths, a slight lean, wandering over a few meters.
-	float sway = (value_noise2(vec2(q.x * 0.08, q.y * 0.1)) - 0.5) * 2.0 * COLUMN_SWAY;
-	float x = (q.x + q.y * COLUMN_LEAN + sway) / COLUMN_WIDTH;
-	vec3 col = uneven_span(x, 2.9, COLUMN_JITTER);
-	float width = (col.z - col.y) * COLUMN_WIDTH;
-	float across = (x - col.y) / (col.z - col.y);
-	float to_side = min(across, 1.0 - across) * width;
+	// Into the net: turned, and drifted by region.
+	mat2 turn = mat2(vec2(cos(COLUMN_TURN), sin(COLUMN_TURN)), vec2(-sin(COLUMN_TURN), cos(COLUMN_TURN)));
+	vec2 region = p.xz / COLUMN_REGION;
+	vec2 drift = (vec2(value_noise2(region), value_noise2(region + 7.3)) - 0.5) * 2.0 * COLUMN_DRIFT;
+	vec2 l = turn * (p.xz + drift) / COLUMN_SPACING;
+
+	// The column: the nearest site.
+	float row = floor(l.y / 0.866 + 0.5);
+	float first = floor(l.x - 0.5 * mod(row, 2.0) + 0.5);
+	vec2 cell = vec2(0.0);
+	vec2 site = vec2(0.0);
+	float best = 1e9;
+	for (int j = -1; j <= 1; j++) {
+		for (int i = -1; i <= 1; i++) {
+			vec2 g = vec2(first + float(i), row + float(j));
+			vec2 s = column_site(g);
+			float d = dot(s - l, s - l);
+			if (d < best) {
+				best = d;
+				cell = g;
+				site = s;
+			}
+		}
+	}
+
+	// Its borders with the columns round it. Out of the face (`out_`) and along it (`along`), in the net: how far the border
+	// nearest every way (its end's joint), the nearest ahead and behind along the face (the column's width there, its joints
+	// on the face), and the two first met going out of the face (the prism's facets the face shows, meeting on an arris).
+	vec2 flat_n = length(n.xz) > 1e-3 ? normalize(n.xz) : vec2(0.0, 1.0);
+	vec2 out_ = turn * flat_n;
+	vec2 along = turn * vec2(-flat_n.y, flat_n.x);
+	float border = 1e9;
+	float ahead = 1e9;
+	float behind = 1e9;
+	float hit = 1e9;
+	float next_hit = 1e9;
+	vec2 facet = out_;
+	vec2 next_facet = out_;
+	for (int j = -1; j <= 1; j++) {
+		for (int i = -1; i <= 1; i++) {
+			vec2 g = cell + vec2(float(i), float(j));
+			if (i == 0 && j == 0) {
+				continue;
+			}
+			vec2 s = column_site(g);
+			vec2 e = normalize(s - site);
+			float gap = dot(0.5 * (site + s) - l, e);
+			border = min(border, gap);
+			float a = dot(along, e);
+			if (a > 1e-3) {
+				ahead = min(ahead, gap / a);
+			} else if (a < -1e-3) {
+				behind = min(behind, gap / -a);
+			}
+			float o = dot(out_, e);
+			if (o > 1e-3) {
+				float h = gap / o;
+				if (h < hit) {
+					next_hit = hit;
+					next_facet = facet;
+					hit = h;
+					facet = e;
+				} else if (h < next_hit) {
+					next_hit = h;
+					next_facet = e;
+				}
+			}
+		}
+	}
+	float width = (ahead + behind) * COLUMN_SPACING;
+	float across = behind / (ahead + behind);
+	float to_side = min(ahead, behind) * COLUMN_SPACING;
+	float cap = smoothstep(0.6, 0.85, up);
 
 	// The piece of it: each column its own heights and offset; the cross joint bows and tilts a little.
-	float drum_height = mix(DRUM_MIN, DRUM_MAX, hash12(vec2(col.x, 4.1)));
-	float bow = (across - 0.5) * (across - 0.5) * 4.0 * DRUM_BOW;
-	float tilt = (hash12(vec2(col.x, 8.3)) - 0.5) * 0.3 * (across - 0.5) * width;
-	float y = (q.y + hash12(vec2(col.x, 5.7)) * DRUM_MAX - bow + tilt) / drum_height;
-	vec3 drum = uneven_span(y, col.x * 1.37 + 0.5, DRUM_JITTER);
+	float column_id = hash12(cell * vec2(1.31, 0.77) + 4.7);
+	float drum_height = mix(DRUM_MIN, DRUM_MAX, hash12(cell + 9.1));
+	float centred = mix(across - 0.5, 0.0, cap);
+	float bow = centred * centred * 4.0 * DRUM_BOW;
+	float tilt = (hash12(cell + 8.3) - 0.5) * 0.3 * centred * width;
+	float y = (p.y + column_id * DRUM_MAX - bow + tilt) / drum_height;
+	vec3 drum = uneven_span(y, dot(cell, vec2(1.37, 2.11)) + 0.5, DRUM_JITTER);
 	float to_top = (drum.z - y) * drum_height;
 	float to_bottom = (y - drum.y) * drum_height;
-	float id = hash12(vec2(col.x * 7.1, drum.x + 0.37));
+	float id = hash12(vec2(column_id * 7.1, drum.x + 0.37));
 
 	// Its fine face: its own part of the basalt set, the mip from the unbroken position.
+	vec2 q = vec2(dot(p, t), dot(p, b));
 	vec2 dx = dFdx(q) * vec2(1.0, -1.0) / BASALT_TILE;
 	vec2 dy = dFdy(q) * vec2(1.0, -1.0) / BASALT_TILE;
 	vec2 uv = vec2(q.x, -q.y) / BASALT_TILE + vec2(hash12(vec2(id, 1.3)), hash12(vec2(id, 2.9)));
 	vec3 surface = textureGrad(basalt_surface, uv, dx, dy).rgb;
-	r.slope = detail ? textureGrad(basalt_normal, uv, dx, dy).rg * 2.0 - 1.0 : vec2(0.0);
+	vec2 fine = detail ? textureGrad(basalt_normal, uv, dx, dy).rg * 2.0 - 1.0 : vec2(0.0);
 
-	// The prism: two facets turning from the face, meeting on an arris somewhere across it, softened over a few centimeters
-	// (and at least a pixel or two); its ends rounded into the cross joints.
-	float split = 0.3 + 0.4 * hash12(vec2(col.x, 9.7));
-	float soft = max(0.04 / width, 2.0 * fwidth(across));
-	float facet = mix(-1.0, 1.0, smoothstep(split - soft, split + soft, across)) * column_facet;
-	float round_ends = 0.2 * (1.0 - smoothstep(0.0, 0.04, to_top)) - 0.2 * (1.0 - smoothstep(0.0, 0.04, to_bottom));
-	float face = 1.0 - up;
-	r.slope = (r.slope + vec2(facet, round_ends + (id - 0.5) * 0.12)) * (detail ? 1.0 : 0.0) * mix(0.5, 1.0, face);
+	// On a wall, the prism: the facet the face meets first going out, blended into the next over its arris (a few
+	// centimeters, at least a pixel or two), its ends rounded into the cross joints. On a top or an underside, the column's end,
+	// a shallow dome or dish of its own.
+	float soft = max(0.012, 1.5 * fwidth(next_hit - hit));
+	vec2 shown = mix(facet, next_facet, 0.5 * (1.0 - smoothstep(0.0, soft, next_hit - hit)));
+	shown = shown * turn;
+	vec3 facet_n = vec3(shown.x, 0.0, shown.y);
+	float end_width = max(0.05, 2.0 * fwidth(y) * drum_height);
+	float round_ends = 0.2 * (1.0 - smoothstep(0.0, end_width, to_top)) - 0.2 * (1.0 - smoothstep(0.0, end_width, to_bottom));
+	float rounded = (across - 0.5) * 2.0 * COLUMN_ROUND;
+	// Far off, where the arrises would crowd the joints into stripes, the facets flatten: each column reads whole.
+	float far = smoothstep(0.02, 0.07, length(fwidth(p)));
+	vec2 side_slope = vec2(dot(facet_n, t), dot(facet_n, b)) * column_facet * (1.0 - 0.3 * far) + vec2(rounded, round_ends);
+	vec2 dome = ((l - site) * turn) * (hash12(cell + 2.3) < 0.5 ? CAP_DOME : -CAP_DOME);
+	vec3 dome_n = vec3(dome.x, 0.0, dome.y);
+	vec2 cap_slope = vec2(dot(dome_n, t), dot(dome_n, b));
+	r.slope = (fine + mix(side_slope, cap_slope, cap)) * (detail ? 1.0 : 0.0);
 
-	float joint = max(joint_at(to_side, COLUMN_JOINT), joint_at(min(to_top, to_bottom), DRUM_JOINT)) * face;
-	float contrast = column_contrast * (detail ? 1.0 : 0.6) * (1.0 - 0.5 * up);
-	r.tone = (surface.r * 2.0) * (1.0 + (id - 0.5) * 2.0 * contrast) + (warp - 0.5) * 0.15;
-	r.cavity = max(surface.g, joint * 0.9) * (detail ? 1.0 : 0.5);
+	float side_joint = max(joint_at(to_side, COLUMN_JOINT), joint_at(min(to_top, to_bottom), DRUM_JOINT));
+	float joint = mix(side_joint, joint_at(border * COLUMN_SPACING, COLUMN_JOINT), cap);
+	float contrast = column_contrast * (detail ? 1.0 : 0.6);
+	// A sliver of column between two wider ones stands back from the face, in their shadow.
+	float set_back = mix(1.0 - 0.35 * (1.0 - smoothstep(0.15, 0.7, width)), 1.0, cap);
+	r.tone = (surface.r * 2.0) * (1.0 + ((column_id - 0.5) + (id - 0.5) * 0.6) * 2.0 * contrast) * set_back + (warp - 0.5) * 0.15;
+	r.cavity = max(surface.g, joint) * (detail ? 1.0 : 0.5);
 	r.rough = surface.b;
 	r.built = 0.0;
 	return r;
@@ -311,10 +405,10 @@ Rock strata_at(vec2 q, float warp, float up) {
 	return r;
 }
 
-Rock rock_at(vec3 p, vec3 t, vec3 b, float up) {
+Rock rock_at(vec3 p, vec3 t, vec3 b, vec3 n, float up) {
 	vec2 q = vec2(dot(p, t), dot(p, b));
 	float warp = fbm3(p * 0.3 + 11.0, 3);
-	Rock r = columnar ? basalt_at(q, warp, up) : strata_at(q, warp, up);
+	Rock r = columnar ? basalt_at(p, t, b, n, warp, up) : strata_at(q, warp, up);
 
 	// Masonry: courses along a wall, flagstones on what faces up, over the strata where a block stands; where one is missing,
 	// the rock behind shows, in its shadow.
@@ -363,7 +457,7 @@ void fragment() {
 
 	vec3 face_up_n = view_to_world(f.normal, INV_VIEW_MATRIX);
 	float up = abs(face_up_n.y);
-	Rock r = rock_at(p, t, b, up);
+	Rock r = rock_at(p, t, b, face_up_n, up);
 	vec3 n = f.normal;
 	float chipped = 0.0;
 	if (detail) {
