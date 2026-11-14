@@ -7,6 +7,9 @@
 # The headless checks run in parallel, one Godot each (their logs in .godot/check/); each prints its OK line when it
 # passes, or its problems when it doesn't. C# layout and code style are verified by the build itself (the .editorconfig
 # rules, enforced through Directory.Build.props), so the full check never runs dotnet format.
+# Godot's stderr is in each log (2>&1), so a native crash backtrace ("received signal", frames) is kept there. A failed
+# headless check or the unit tests also leaves a copy of its log in .godot/check/failed/<step>-<timestamp>.log (the last 10
+# kept), named on its failure line, since the next run overwrites the logs.
 set -euo pipefail
 
 cd "$(dirname "$0")/.."
@@ -57,12 +60,24 @@ fail() {
     exit 1
 }
 
+# Copies a failed step's log to .godot/check/failed/<step>-<timestamp>.log, keeps the last 10, prints the copy's path.
+keep_failed() {
+    local dest stamp
+    stamp="$(date +%Y%m%d-%H%M%S)"
+    dest="$LOG_DIR/failed/$1-$stamp.log"
+    mkdir -p "$LOG_DIR/failed"
+    cp "$2" "$dest"
+    # shellcheck disable=SC2012 # names are ours: no spaces
+    ls -t "$LOG_DIR"/failed/*.log | tail -n +11 | xargs -r rm -f
+    echo "$dest"
+}
+
 # Fails if a Godot log contains an error line; prints the offending lines.
 scan_log() {
     local log="$1" what="$2"
     if grep -E "$FAIL_PATTERN" "$log" >/dev/null; then
         grep -n -E -A3 "$FAIL_PATTERN" "$log" | head -40
-        fail "$what printed errors (full log: $log)"
+        fail "$what printed errors (full log: $(keep_failed "$what" "$log"))"
     fi
 }
 
@@ -131,7 +146,7 @@ if [ "$FAST" = 1 ]; then
         fi
         build || {
             build_errors
-            fail "dotnet build (full log: $LOG_DIR/build.log)"
+            fail "dotnet build (full log: $(keep_failed build "$LOG_DIR/build.log"))"
         }
     fi
     echo "ok"
@@ -156,7 +171,7 @@ took
 step "3 build (warnings are errors, C# layout and code style included)"
 build || {
     build_errors
-    fail "dotnet build (full log: $LOG_DIR/build.log; tools/check.sh --fast formats the C#)"
+    fail "dotnet build (full log: $(keep_failed build "$LOG_DIR/build.log"); tools/check.sh --fast formats the C#)"
 }
 echo "ok"
 took
@@ -165,7 +180,7 @@ step "4 headless import"
 tools/glsl_includes.sh
 "$GODOT" --headless --import >"$LOG_DIR/import.log" 2>&1 || {
     tail -20 "$LOG_DIR/import.log"
-    fail "godot --import exited non-zero"
+    fail "godot --import exited non-zero (full log: $(keep_failed import "$LOG_DIR/import.log"))"
 }
 scan_log "$LOG_DIR/import.log" "import"
 echo "ok"
@@ -286,7 +301,7 @@ for entry in "${CHECKS[@]}"; do
     log="$LOG_DIR/$name.log"
     read -r code secs <"$LOG_DIR/$name.status"
     if [ "$code" != 0 ] || grep -E "$FAIL_PATTERN" "$log" >/dev/null || { [ -n "$ok" ] && ! grep -q "$ok" "$log"; }; then
-        printf '\033[31m%s FAILED\033[0m (exit %s, %ss; full log: %s)\n' "$name" "$code" "$secs" "$log"
+        printf '\033[31m%s FAILED\033[0m (exit %s, %ss; full log: %s)\n' "$name" "$code" "$secs" "$(keep_failed "$name" "$log")"
         { grep -n -E -A3 "$problem|$FAIL_PATTERN" "$log" || tail -20 "$log"; } | head -40
         failed+=("$name")
         continue
@@ -303,6 +318,7 @@ if [ -f "$TESTS" ]; then
     read -r code secs <"$LOG_DIR/unit.status"
     if [ "$code" != 0 ]; then
         tail -40 "$LOG_DIR/unit.log"
+        echo "unit tests failed; full log: $(keep_failed unit "$LOG_DIR/unit.log")"
         failed+=("unit tests")
     else
         grep -E 'Passed!|Failed!' "$LOG_DIR/unit.log" | sed "s/\$/  (unit tests, ${secs}s)/"
