@@ -26,7 +26,7 @@ ______________________________________________________________________
 
 A room gets the attention its bricks need, no more. Bosses, machines and law breaks stay working placeholders (their richness is stage D), with the systems behind them ready.
 
-The open item (owner: the world, its bricks and its look are finished before the character; the world's are done):
+The open item (owner: the world, its bricks and its look are finished before the character):
 
 1. **The pilgrim, from zero** <a id="pilgrim"></a> (owner: last, once the world, its bricks and its look are finished). The current character, its procedural animation and its halo are thrown away. The bar is *Ori*'s animation (a 3D-rendered character) with *NieR: Automata*'s dynamism; the look is `docs/art-direction.md#character`. First the environment for top-quality animation, then the character: modeled and rigged in Blender (the owner installs the Blender MCP), animated from real motion capture (free libraries and Mixamo first), keyed by hand, blended in the game with its feet held to the ground. Every move and ability: run, jump, land, dash, air dash, ledge assist, grip and its corners, harpoon throw and zip, bore and dive, swim, sink and rise, the strikes, hurt, death, rest, taking a relic. Its secondary motion is stage D's. Done when every state reads at a glance in motion, in the reels and in the owner's play.
 
