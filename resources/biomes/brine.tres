@@ -6,6 +6,20 @@
 [ext_resource type="Script" path="res://scripts/biome/BiomeProfile.cs" id="1_biome"]
 [ext_resource type="Material" path="res://assets/materials/backdrop_crags.tres" id="2_far"]
 [ext_resource type="Material" path="res://assets/materials/backdrop_cathedral.tres" id="3_near"]
+[ext_resource type="Script" path="res://scripts/rooms/dressing/BackdropRowData.cs" id="4_row"]
+
+; Two rows, the second far behind the first, so they read as rows receding and not one lattice.
+[sub_resource type="Resource" id="Resource_row_near"]
+script = ExtResource("4_row")
+Depth = 16.0
+Pitch = 10.0
+Scale = 1.0
+
+[sub_resource type="Resource" id="Resource_row_far"]
+script = ExtResource("4_row")
+Depth = 40.0
+Pitch = 18.0
+Scale = 2.0
 
 [resource]
 script = ExtResource("1_biome")
@@ -27,7 +41,7 @@ KeyColor = Color(0.78, 0.98, 0.92, 1)
 KeyEnergy = 1.8
 LampColor = Color(1, 0.76, 0.48, 1)
 ShaftColor = Color(0.86, 1, 0.95, 1)
-FogColor = Color(0.16, 0.3, 0.28, 1)
+FogColor = Color(0.34, 0.54, 0.5, 1)
 FogDensity = 1.0
 FogDepthBegin = 1.5
 FogDepthEnd = 50.0
@@ -48,6 +62,7 @@ Vignette = 0.8
 VignetteColor = Color(0.08, 0.18, 0.16, 1)
 ParticleTint = Color(0.88, 1, 0.95, 1)
 Architecture = 0
+ArchitectureRows = [SubResource("Resource_row_near"), SubResource("Resource_row_far")]
 FarSkyline = ExtResource("2_far")
 NearSkyline = ExtResource("3_near")
 Masonry = 0.7
