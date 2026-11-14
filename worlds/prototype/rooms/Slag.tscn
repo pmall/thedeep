@@ -18,6 +18,7 @@
 [ext_resource type="Material" path="res://assets/materials/stone_mid.tres" id="15_stone_mid"]
 [ext_resource type="Script" path="res://scripts/kit/PipeMesh.cs" id="16_pipe"]
 [ext_resource type="Material" path="res://assets/materials/rust_mid.tres" id="17_rust_mid"]
+[ext_resource type="Material" path="res://assets/materials/iron_collar.tres" id="99_collar"]
 [ext_resource type="Script" path="res://scripts/kit/CableMesh.cs" id="18_cables"]
 [ext_resource type="Material" path="res://assets/materials/glyphs.tres" id="19_glyphs"]
 [ext_resource type="Script" path="res://scripts/rooms/PhotoSpot.cs" id="20_spot"]
@@ -356,7 +357,7 @@ material_override = ExtResource("15_stone_mid")
 [node name="Throat" type="MeshInstance3D" parent="Kit"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 45.5, 9.5, -3)
 mesh = SubResource("pipe_5")
-material_override = ExtResource("17_rust_mid")
+material_override = ExtResource("99_collar")
 
 ; chains of an old crane
 [node name="Chains" type="MeshInstance3D" parent="Kit"]
