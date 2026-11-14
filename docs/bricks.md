@@ -69,12 +69,12 @@ All working; brought to ready under `docs/roadmap.md#bricks-ready`.
 | Brick | Status | Item |
 | -- | -- | -- |
 | Line book (`LineBook`: the game's own, `resources/lines.tres`, which each world's extends) | ready | — |
-| `Banner`, `HintLine` (lines said together are read in turn, each held for its reading time, `ReadingTime`; both on the style's plate, placed by one layout, `TextStyle.Places`; the line check holds every line each can say to its box; a hint whose reason is gone is withdrawn) | working | `docs/roadmap.md#bricks-ready` |
-| `Proclamation` (spoken: the banner's `Voice.Spoken`, its speaker a line id) | working | `docs/roadmap.md#bricks-ready` |
-| `ScripturePlate` (its glyphs glow while its words are on screen; its post, plate and glyphs take a placement's own materials; read by `PlateCheck`) | working | `docs/roadmap.md#bricks-ready` |
+| `Banner`, `HintLine` (lines said together are read in turn, each held for its reading time, `ReadingTime`; both on the style's plate, placed by one layout, `TextStyle.Places`; the line check holds every line each can say to its box; a hint whose reason is gone is withdrawn) | ready | — |
+| `Proclamation` (spoken: the banner's `Voice.Spoken`, its speaker a line id) | ready | — |
+| `ScripturePlate` (its glyphs glow while its words are on screen; its post, plate and glyphs take a placement's own materials; read by `PlateCheck`) | ready | — |
 | `LawBreak` (broken by a held act on its `ActionPrompt`, never a push; the pilgrim's refusal on the `HintLine`; its lines per room; its words in the style's `WorldFont`, drawn over the room's solids) | working | `docs/roadmap.md#stage-polish` (the real law-break scenes) |
-| `ActionPrompt` (a verb and its button, pressed or held; the button a `ButtonGlyph` drawn by a `ButtonPainter`, as in the `ControlsManual`; `Reach` keeps it clear of what stands beside it) | working | `docs/roadmap.md#bricks-ready` |
-| Dialogue: `Conversation` (its lines `DialogueLine`s, each naming its speaker by a line id; its "Talk" placed by `TalkPrompt`), `DialogueBox` (in the banner's places, `DialoguePlace`), played by `Conversations` (over `DialogueFlow`, revealed at a `RevealPace`) | working (look) | `docs/roadmap.md#bricks-ready` |
+| `ActionPrompt` (a verb and its button, pressed or held; the button a `ButtonGlyph` drawn by a `ButtonPainter`, as in the `ControlsManual`; `Reach` keeps it clear of what stands beside it) | ready | — |
+| Dialogue: `Conversation` (its lines `DialogueLine`s, each naming its speaker by a line id; its "Talk" placed by `TalkPrompt`), `DialogueBox` (in the banner's places, `DialoguePlace`), played by `Conversations` (over `DialogueFlow`, revealed at a `RevealPace`) | ready | — |
 
 ## Items and progress <a id="bricks-items"></a>
 
@@ -89,9 +89,9 @@ All working; brought to ready under `docs/roadmap.md#bricks-ready`.
 | Brick | Status | Item |
 | -- | -- | -- |
 | World (`WorldDefinition`: its network and room table) | ready | — |
-| `Session`, `Shrine`, save | working | `docs/roadmap.md#bricks-ready` |
+| `Session`, `Shrine`, save | ready | — |
 | Room travel (`RoomTravel`) | ready | — |
-| Map screen (`MapScreen`) | working | `docs/roadmap.md#bricks-ready` |
+| Map screen (`MapScreen`) | ready | — |
 | Gate hints (`GateHints`; a locked door's line is the `Keyring`'s) | ready | — |
 | End card (`EndCard`) | working placeholder | `docs/roadmap.md#stage-polish` |
 | Camera (`SideCamera` over the core's `CameraFollow`) | ready | — |
