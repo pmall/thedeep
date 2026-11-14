@@ -1,6 +1,6 @@
 # Network — the sequel world
 
-The sequel world's network file (`Network` in [world.tres](world.tres)): the sequel test's world (`docs/roadmap.md#sequel-test`), 9 rooms on one layer, Brine (`resources/biomes/brine.tres`, a variant of the frozen layer), built from the prototype's bricks and nothing else. It stays as a fixture the check loads (`instructions/testing.md#check`). The `map` blocks below are parsed by `MapDraft` (its docblock has the format) and held to the built rooms like the prototype's network (`worlds/prototype/map-draft.md#draft-markers`): the rooms' markers are the truth, and this file follows them. Names and text are placeholders.
+The sequel world's network file (`Network` in [world.tres](world.tres)): the sequel test's world (`docs/roadmap.md#sequel-test`), 10 rooms on one layer, Brine (`resources/biomes/brine.tres`, a variant of the frozen layer), built from the prototype's bricks and nothing else. It stays as a fixture the check loads (`instructions/testing.md#check`). The `map` blocks below are parsed by `MapDraft` (its docblock has the format) and held to the built rooms like the prototype's network (`worlds/prototype/map-draft.md#draft-markers`): the rooms' markers are the truth, and this file follows them. Names and text are placeholders.
 
 ```map
 start Quay
@@ -18,6 +18,8 @@ target rooms 5 10
                                          Hold[H] (key) ─(H)→ Weir (lever) ─(gate)─ Beacon goal
                                           ↑(M)  ↓ drop          ↓ back onto the ledge
 Breakwater ✦ ─ Drydock ! ─ Strongroom ─(key)─ Quay ─ Locks ─ Chantry[M]
+                                                                ↕ hatch (a drop down, ledges up)
+                                                                 Sump
 ```
 
 M Mag-grip, H Harpoon; (key) the Strongroom key, on the Hold's ledge; (gate) the sluice gate the Weir's lever raises; `✦` a boss, `!` an ambush.
@@ -31,6 +33,7 @@ room Drydock Brine
 room Breakwater Brine
 room Locks Brine
 room Chantry Brine
+room Sump Brine
 room Hold Brine
 room Weir Brine
 room Beacon Brine
@@ -44,6 +47,7 @@ boss Breakwater Founder                          # the gate falls behind until i
 way Quay <-> Locks
 way Locks <-> Chantry
 relic Chantry MagGrip
+way Chantry <-> Sump                             # the hatch in the floor; back up a ladder of ledges
 way Locks -> Hold : MagGrip                      # up the iron wall to the high doorway
 way Hold -> Locks                                # back out onto the wall's top, and the drop
 relic Hold Harpoon

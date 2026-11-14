@@ -194,3 +194,10 @@ Fov = 50
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 27, 4, 16)
 script = ExtResource("13_spot")
 PlayerPosition = Vector3(25, 0, 0)
+
+; the doorway west on to the Breakwater, its frame and the wall around it
+[node name="WestDoor" type="Marker3D" parent="PhotoSpots"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 6, 4, 16)
+script = ExtResource("13_spot")
+PlayerPosition = Vector3(4, 0, 0)
+PlayerFacing = -1

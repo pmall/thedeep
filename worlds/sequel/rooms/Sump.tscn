@@ -1,0 +1,149 @@
+[gd_scene format=3]
+
+; The Sump, under the Chantry's floor (the sequel world's Hatch, worlds/sequel/network.md): where the chapel's meltwater drained,
+; a tall dry shaft of a room. The hatch in its roof is the way back up to the Chantry, climbed by a ladder of three ledges (no ability);
+; coming down is a drop. A dead end.
+
+[ext_resource type="Material" path="res://assets/materials/wet_stone.tres" id="1_wet_stone"]
+[ext_resource type="PackedScene" path="res://scenes/kit/Block.tscn" id="2_block"]
+[ext_resource type="Script" path="res://scripts/rooms/RoomExit.cs" id="3_exit"]
+[ext_resource type="Material" path="res://assets/materials/glyphs.tres" id="4_glyphs"]
+[ext_resource type="PackedScene" path="res://scenes/fx/Drips.tscn" id="5_drips"]
+[ext_resource type="Script" path="res://scripts/rooms/PhotoSpot.cs" id="6_spot"]
+[ext_resource type="Script" path="res://scripts/rooms/Room.cs" id="7_room"]
+[ext_resource type="Resource" path="res://resources/biomes/brine.tres" id="8_brine"]
+[ext_resource type="PackedScene" path="res://scenes/stage/RoomStage.tscn" id="9_stage"]
+[ext_resource type="PackedScene" path="res://scenes/kit/Hatch.tscn" id="90_hatch"]
+[ext_resource type="Resource" path="res://resources/seams/hatch.tres" id="91_seam_hatch"]
+
+[sub_resource type="QuadMesh" id="QuadMesh_1"]
+size = Vector2(4, 0.3)
+
+[node name="Sump" type="Node3D" node_paths=PackedStringArray("SpawnPoint", "Stage", "Lamps", "Shafts", "GlyphLights")]
+script = ExtResource("7_room")
+SpawnPoint = NodePath("SpawnPoint")
+Stage = NodePath("Stage")
+Biome = ExtResource("8_brine")
+Lamps = [NodePath("Lamps/Ledge")]
+Shafts = [NodePath("Shafts/Hatch")]
+GlyphLights = [NodePath("Glyphs/FloorLight")]
+BoundsMin = Vector2(-1.5, -2)
+BoundsMax = Vector2(29.5, 12)
+
+[node name="SpawnPoint" type="Marker3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 12, 0, 0)
+
+; The shared atmosphere stack (environment, key light, clear front air, skylines, far pillars, frame, dust).
+[node name="Stage" parent="." instance=ExtResource("9_stage")]
+Seed = 26
+DustDensity = 1.6
+PillarDensity = 2.8
+
+[node name="Geometry" type="Node3D" parent="."]
+
+[node name="Floor" parent="Geometry" instance=ExtResource("2_block")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 14, -1, 0)
+Size = Vector3(34, 2, 4)
+Material = ExtResource("1_wet_stone")
+
+[node name="WallWest" parent="Geometry" instance=ExtResource("2_block")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -1.5, 5, 0)
+Size = Vector3(3, 10, 4)
+
+[node name="WallEast" parent="Geometry" instance=ExtResource("2_block")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 26.5, 5, 0)
+Size = Vector3(3, 10, 4)
+
+; the roof stops at the hatch's frame (x 18 to 25), framed by the brick on Exits/Chantry
+[node name="CeilingWest" parent="Geometry" instance=ExtResource("2_block")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 7.5, 11, 0)
+Size = Vector3(21, 2, 4)
+
+[node name="CeilingEast" parent="Geometry" instance=ExtResource("2_block")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 28, 11, 0)
+Size = Vector3(6, 2, 4)
+
+; the ladder of ledges up to the hatch, 2.5 m apart
+[node name="LedgeLow" parent="Geometry" instance=ExtResource("2_block")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 3.5, 2.25, 0)
+Size = Vector3(7, 0.5, 4)
+
+[node name="LedgeMid" parent="Geometry" instance=ExtResource("2_block")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 12.5, 4.75, 0)
+Size = Vector3(7, 0.5, 4)
+
+[node name="LedgeHigh" parent="Geometry" instance=ExtResource("2_block")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 21.5, 7.25, 0)
+Size = Vector3(7, 0.5, 4)
+
+[node name="Exits" type="Node3D" parent="."]
+
+; the hatch up to the Chantry, in the middle of the roof's slab (coming back down is a drop)
+[node name="Chantry" type="Marker3D" parent="Exits"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 21.5, 11, 0)
+script = ExtResource("3_exit")
+Side = 3
+TargetRoom = "res://worlds/sequel/rooms/Chantry.tscn"
+TargetExit = "Sump"
+
+[node name="Hatch" parent="Exits/Chantry" instance=ExtResource("90_hatch")]
+Profile = ExtResource("91_seam_hatch")
+
+[node name="Shafts" type="Node3D" parent="."]
+
+; down the hatch onto the ledges
+[node name="Hatch" type="SpotLight3D" parent="Shafts"]
+transform = Transform3D(-1, 0, 0, 0, 0.1414, 0.9899, 0, 0.9899, -0.1414, 14, 30, -2.5)
+light_energy = 5
+light_volumetric_fog_energy = 12
+shadow_enabled = true
+spot_range = 80
+spot_attenuation = 0.25
+spot_angle = 10
+spot_angle_attenuation = 2
+
+[node name="Lamps" type="Node3D" parent="."]
+
+; a sodium lamp over the middle ledge
+[node name="Ledge" type="OmniLight3D" parent="Lamps"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 12.5, 7.5, 1.2)
+light_energy = 2
+omni_range = 8
+shadow_enabled = true
+
+[node name="Glyphs" type="Node3D" parent="."]
+
+; faith glyphs along the floor
+[node name="Floor" type="MeshInstance3D" parent="Glyphs"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 14, 0.15, 2.01)
+mesh = SubResource("QuadMesh_1")
+material_override = ExtResource("4_glyphs")
+cast_shadow = 0
+
+[node name="FloorLight" type="OmniLight3D" parent="Glyphs"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 14, 0.15, 2.71)
+light_energy = 0.4
+light_volumetric_fog_energy = 0
+omni_range = 2
+
+[node name="Particles" type="Node3D" parent="."]
+
+; brine dripping from the roof
+[node name="Drips" parent="Particles" instance=ExtResource("5_drips")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 8, 9.5, -1)
+Extents = Vector3(6, 0.05, 0.8)
+
+[node name="PhotoSpots" type="Node3D" parent="."]
+
+; the room, wide
+[node name="Room" type="Marker3D" parent="PhotoSpots"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 13, 5, 28)
+script = ExtResource("6_spot")
+PlayerPosition = Vector3(12, 0, 0)
+Fov = 55
+
+; the hatch in the roof, from the top ledge
+[node name="Hatch" type="Marker3D" parent="PhotoSpots"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 21.5, 7, 17)
+script = ExtResource("6_spot")
+PlayerPosition = Vector3(21.5, 7.5, 0)
