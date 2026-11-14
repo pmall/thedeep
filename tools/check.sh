@@ -77,7 +77,7 @@ scan_log() {
     local log="$1" what="$2"
     if grep -E "$FAIL_PATTERN" "$log" >/dev/null; then
         grep -n -E -A3 "$FAIL_PATTERN" "$log" | head -40
-        fail "$what printed errors (full log: $log)"
+        fail "$what printed errors (full log: $(keep_failed "$what" "$log"))"
     fi
 }
 
@@ -146,7 +146,7 @@ if [ "$FAST" = 1 ]; then
         fi
         build || {
             build_errors
-            fail "dotnet build (full log: $LOG_DIR/build.log)"
+            fail "dotnet build (full log: $(keep_failed build "$LOG_DIR/build.log"))"
         }
     fi
     echo "ok"
@@ -171,7 +171,7 @@ took
 step "3 build (warnings are errors, C# layout and code style included)"
 build || {
     build_errors
-    fail "dotnet build (full log: $LOG_DIR/build.log; tools/check.sh --fast formats the C#)"
+    fail "dotnet build (full log: $(keep_failed build "$LOG_DIR/build.log"); tools/check.sh --fast formats the C#)"
 }
 echo "ok"
 took
@@ -180,7 +180,7 @@ step "4 headless import"
 tools/glsl_includes.sh
 "$GODOT" --headless --import >"$LOG_DIR/import.log" 2>&1 || {
     tail -20 "$LOG_DIR/import.log"
-    fail "godot --import exited non-zero"
+    fail "godot --import exited non-zero (full log: $(keep_failed import "$LOG_DIR/import.log"))"
 }
 scan_log "$LOG_DIR/import.log" "import"
 echo "ok"
