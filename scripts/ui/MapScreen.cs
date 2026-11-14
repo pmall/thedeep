@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using System.Linq;
 using Godot;
 using NVector2 = System.Numerics.Vector2;
@@ -5,26 +6,46 @@ using NVector2 = System.Numerics.Vector2;
 namespace TheDeep;
 
 /// <summary>
-/// The minimal map (the map action: M, Tab, LB): the rooms visited so far as thin outlines placed from the
-/// exits crossed (<see cref="World.Map"/>), the current room brighter, and the pilgrim as a soft pulsing
-/// dot, in the room's accent. The ways not yet taken show where they leave their room: a dot for one the pilgrim can take now, small rings in
-/// the gate's colors (<see cref="GateKinds"/>, <see cref="ItemKinds"/> for a locked door) for one it can't yet, a faint ring for one
-/// leading where nothing is built (a hidden way, a secret's, shows only once taken, as every taken way does: by the rooms it joins); a
-/// legend names what is shown, and the items held are listed small, bottom left, both in the shared <see cref="TextStyle"/>. Opening it
-/// pauses the game and eases in over a dim veil; it closes the same way.
+/// The minimal map (the map action: M, Tab, LB), laid out by the core's <see cref="MapSheet"/> as it opens: each room visited so far a
+/// tile placed from the exits crossed (<see cref="World.Map"/>), the current room's in the room's accent with the pilgrim a soft
+/// pulsing dot in it; each way taken a short bridge across the gap to the room it joins; each way not taken yet a mark on its tile's
+/// edge: a dot for one the pilgrim can take now, small rings in the gate's colors (<see cref="GateKinds"/>, <see cref="ItemKinds"/> for
+/// a locked door) for one it can't yet, a faint ring for one leading where nothing is built. A legend names the marks shown, bottom
+/// center, and the items held are listed bottom left, each on the shared <see cref="TextStyle"/>'s plate. Opening it pauses the game
+/// and eases in over a dim veil; it closes the same way.
 /// </summary>
 public partial class MapScreen : CanvasLayer
 {
     [Export] public World World { get; set; } = null!;
     [Export] public Player Player { get; set; } = null!;
 
-    /// <summary>Largest scale, pixels per meter at 1080p; smaller when the visited area is large.</summary>
-    [Export] public float MaxScale { get; set; } = 7f;
+    /// <summary>Largest scale, pixels per meter on the game's canvas; smaller when the visited area is large.</summary>
+    [Export] public float MaxScale { get; set; } = 6f;
 
-    /// <summary>Share of the screen the visited area may fill.</summary>
-    [Export] public float Fill { get; set; } = 0.7f;
+    /// <summary>The margin the map keeps from the canvas's sides and top, pixels (clear of the health and the room's name).</summary>
+    [Export] public float Margin { get; set; } = 96f;
 
-    /// <summary>The rooms' outlines (and a way leading where nothing is built).</summary>
+    /// <summary>The legend's baseline, pixels above the canvas's bottom.</summary>
+    [Export] public float Baseline { get; set; } = 80f;
+
+    /// <summary>Between two rows of the items held, pixels.</summary>
+    [Export] public float Row { get; set; } = 24f;
+
+    /// <summary>Room kept between the map and the words under it, pixels (their plate included).</summary>
+    [Export] public float Clear { get; set; } = 48f;
+
+    /// <summary>The gap between two rooms' tiles, which a way taken bridges, pixels.</summary>
+    [Export] public float Gap { get; set; } = 8f;
+
+    /// <summary>A legend entry's mark: its width before the words, pixels; and the spacing between two entries.</summary>
+    [Export] public float Mark { get; set; } = 18f;
+
+    [Export] public float Spacing { get; set; } = 30f;
+
+    /// <summary>The radius of a way's mark, pixels (a gate's ring a little larger).</summary>
+    [Export] public float MarkRadius { get; set; } = 4f;
+
+    /// <summary>The rooms' outlines, the bridges of the ways taken (and a way leading where nothing is built).</summary>
     [Export] public Color Line { get; set; } = new(0.86f, 0.86f, 0.95f, 0.55f);
 
     /// <summary>The veil the map is drawn over.</summary>
@@ -32,7 +53,13 @@ public partial class MapScreen : CanvasLayer
 
     private Control? _canvas;
     private Control Canvas => _canvas ??= new Control { MouseFilter = Control.MouseFilterEnum.Ignore };
-    private readonly System.Collections.Generic.Dictionary<string, Requirement> _requirements = new();
+    private StyleBoxFlat? _plate;
+    private readonly List<(string Text, Color Color, LegendKey Key)> _legend = new();
+    private readonly List<(string Name, Color Color)> _held = new();
+    private float[] _legendWidths = System.Array.Empty<float>();
+    private IReadOnlyList<float> _legendStarts = System.Array.Empty<float>();
+    private Rect2? _legendPlate;
+    private Rect2? _heldPlate;
     private Color _here;
     private float _shown;
     private bool _open;
@@ -41,10 +68,20 @@ public partial class MapScreen : CanvasLayer
     /// <summary>The map is on screen and the game paused.</summary>
     public bool IsOpen => _open;
 
+    /// <summary>How far the map has eased in, 0 (gone) to 1 (shown).</summary>
+    public float Shown => _shown;
+
+    /// <summary>The map laid out as it last opened; null before it first opens.</summary>
+    public MapSheet? Sheet { get; private set; }
+
+    /// <summary>The legend's words' widths as the map last opened, pixels, one per entry of <see cref="MapSheet.Legend"/>.</summary>
+    public IReadOnlyList<float> LegendWidths => _legendWidths;
+
     public override void _Ready()
     {
         Layer = 80;
         ProcessMode = ProcessModeEnum.Always;
+        _plate = TextStyle.Shared.NewPlate();
         Canvas.SetAnchorsPreset(Control.LayoutPreset.FullRect);
         Canvas.Draw += DrawMap;
         AddChild(Canvas);
@@ -60,10 +97,15 @@ public partial class MapScreen : CanvasLayer
         }
     }
 
-    /// <summary>Opens the map and pauses the game, or closes it and resumes.</summary>
+    /// <summary>Opens the map (laid out anew) and pauses the game, or closes it and resumes.</summary>
     public void Toggle()
     {
         _open = !_open;
+        if (_open)
+        {
+            Lay();
+        }
+
         GetTree().Paused = _open;
         Visible = true;
     }
@@ -76,176 +118,198 @@ public partial class MapScreen : CanvasLayer
         Visible = _shown > 0f;
         if (Visible)
         {
+            // Eases in rising a little into place.
+            float ease = _shown * _shown * (3f - 2f * _shown);
+            Canvas.Modulate = Colors.White with { A = ease };
+            Canvas.Position = new Vector2(0f, (1f - ease) * 12f);
             Canvas.QueueRedraw();
         }
     }
 
+    /// <summary>Lays the map out for what the pilgrim knows, owns and holds now (the map doesn't change while it shows).</summary>
+    private void Lay()
+    {
+        TextStyle style = TextStyle.Shared;
+        _here = style.Accent(World.Room.Biome);
+        ItemSet held = Player.Items.Held;
+        _held.Clear();
+        foreach (string id in held.Ids)
+        {
+            ItemDefinition? item = World.Definition.Item(id);
+            if (ItemKinds.Carried(item?.Kind ?? ItemKind.Key))
+            {
+                _held.Add((item is null ? id : Words(item.NameLine), ItemKinds.ColorOf(item?.Kind ?? ItemKind.Key)));
+            }
+        }
+
+        var places = new MapPlaces(MaxScale, Margin, Baseline, Row, Clear, Gap, Mark, Spacing);
+        Vector2 canvas = GetViewport().GetVisibleRect().Size;
+        MapSheet sheet = MapSheet.Lay(World.Map, canvas.ToCore(), places, _held.Count, Player.Abilities.Unlocked, held,
+            id => World.Definition.Item(id)?.Kind ?? ItemKind.Key);
+        Sheet = sheet;
+
+        _legend.Clear();
+        foreach (LegendKey key in sheet.Legend)
+        {
+            _legend.Add(key switch
+            {
+                LegendKey.Open => (Words(GameLines.MapWayOpen), style.Ink, key),
+                LegendKey.Gate g => (Words(GateKinds.MapWord(g.Ability)), GateKinds.ColorOf(g.Ability), key),
+                LegendKey.Lock l => (Words(ItemKinds.MapWord(l.Kind)), ItemKinds.ColorOf(l.Kind), key),
+                LegendKey.Unbuilt => (Words(GameLines.MapWayUnbuilt), Line, key),
+                _ => throw new System.ArgumentOutOfRangeException(nameof(key), key, null),
+            });
+        }
+
+        _legendWidths = _legend.Select(e => TextWidth(e.Text)).ToArray();
+        _legendStarts = sheet.LegendRow(_legendWidths);
+        _legendPlate = _legend.Count == 0 ? null
+            : PlateAround(_legendStarts[0], _legendStarts[^1] + Mark + _legendWidths[^1], sheet.LegendBaseline, sheet.LegendBaseline);
+        _heldPlate = _held.Count == 0 ? null
+            : PlateAround(Margin, Margin + Mark + _held.Max(h => TextWidth(h.Name)), sheet.HeldBaseline(0), sheet.HeldBaseline(_held.Count - 1));
+    }
+
+    private static string Words(StringName line) => LineBook.Shared.Find(line)?.Text ?? "";
+
+    private static float TextWidth(string text) =>
+        TextStyle.Shared.Font.GetStringSize(text, HorizontalAlignment.Left, -1, TextStyle.Shared.Caption).X;
+
+    /// <summary>The style's plate around rows of caption words from <paramref name="left"/> to <paramref name="right"/>, their baselines from <paramref name="first"/> to <paramref name="last"/>.</summary>
+    private static Rect2 PlateAround(float left, float right, float first, float last)
+    {
+        TextStyle style = TextStyle.Shared;
+        Font font = style.Font;
+        float top = first - font.GetAscent(style.Caption) - style.Padding.Y, bottom = last + font.GetDescent(style.Caption) + style.Padding.Y;
+        return new Rect2(left - style.Padding.X, top, right - left + 2f * style.Padding.X, bottom - top);
+    }
+
     private void DrawMap()
     {
-        float ease = _shown * _shown * (3f - 2f * _shown);
-        Vector2 size = Canvas.Size;
-        Canvas.DrawRect(new Rect2(Vector2.Zero, size), Veil with { A = Veil.A * ease });
-        if (World.Map.Rooms.Count == 0)
+        Canvas.DrawRect(new Rect2(-Canvas.Position, Canvas.Size), Veil);
+        if (Sheet is not { } sheet)
         {
             return;
         }
 
-        // Fit the visited area on screen, the map's up being the world's up.
-        NVector2 min = new(float.MaxValue), max = new(float.MinValue);
-        foreach (MapRoom room in World.Map.Rooms)
+        IReadOnlyList<MapTile> tiles = sheet.Tiles;
+        for (int i = 0; i < tiles.Count; i++)
         {
-            min = NVector2.Min(min, room.MapMin);
-            max = NVector2.Max(max, room.MapMax);
+            MapTile tile = tiles[i];
+            Color line = tile.Here ? _here : Line;
+            var rect = new Rect2(tile.Rect.MinX, tile.Rect.MinY, tile.Rect.MaxX - tile.Rect.MinX, tile.Rect.MaxY - tile.Rect.MinY);
+            Canvas.DrawRect(rect, line with { A = tile.Here ? 0.16f : 0.07f });
+            Canvas.DrawRect(rect, line, filled: false, width: 1.5f);
         }
 
-        float ui = size.Y / 1080f;
-        _here = TextStyle.Shared.Accent(World.Room.Biome);
-        NVector2 extent = NVector2.Max(max - min, new NVector2(1f));
-        float scale = Mathf.Min(MaxScale * ui, Mathf.Min(size.X * Fill / extent.X, size.Y * Fill / extent.Y));
-        NVector2 center = (min + max) * 0.5f;
-        Vector2 Screen(NVector2 p) => size * 0.5f + new Vector2(p.X - center.X, center.Y - p.Y) * scale
-                                      + new Vector2(0f, (1f - ease) * 12f * ui);
-
-        float width = Mathf.Max(1f, 1.5f * ui);
-        foreach (MapRoom room in World.Map.Rooms)
+        float pulse = 0.75f + 0.25f * Mathf.Sin(_time * 2.2f);
+        IReadOnlyList<WayMark> marks = sheet.Marks;
+        for (int i = 0; i < marks.Count; i++)
         {
-            bool here = room.Name == World.Map.Current;
-            Vector2 a = Screen(new NVector2(room.MapMin.X, room.MapMax.Y)), b = Screen(new NVector2(room.MapMax.X, room.MapMin.Y));
-            var rect = new Rect2(a, b - a);
-            Color line = here ? _here : Line;
-            Canvas.DrawRect(rect, line with { A = (here ? 0.14f : 0.06f) * ease });
-            Canvas.DrawRect(rect, line with { A = line.A * ease }, filled: false, width: width);
+            DrawWay(marks[i], pulse);
         }
 
-        DrawWays(Screen, ui, ease);
-
-        if (World.Map.Find(World.Map.Current) is { } current)
+        Vector3 p = Player.GlobalPosition;
+        if (sheet.Pilgrim(new NVector2(p.X, p.Y + 1f), 2f * MarkRadius) is { } at)
         {
-            Vector3 p = Player.GlobalPosition;
-            Vector2 dot = Screen(current.Offset + new NVector2(p.X, p.Y + 1f));
-            float pulse = 0.5f + 0.5f * Mathf.Sin(_time * 3f);
-            Canvas.DrawCircle(dot, (6f + 4f * pulse) * ui, _here with { A = 0.18f * ease });
-            Canvas.DrawCircle(dot, 3.5f * ui, _here with { A = ease });
+            float beat = 0.5f + 0.5f * Mathf.Sin(_time * 3f);
+            Canvas.DrawCircle(at.ToGodot(), (2f + beat) * MarkRadius, _here with { A = 0.22f });
+            Canvas.DrawCircle(at.ToGodot(), 1.2f * MarkRadius, _here);
+        }
+
+        DrawLegend(sheet);
+        DrawHeld(sheet);
+    }
+
+    /// <summary>A way's mark on its tile's edge (<see cref="WayMark"/>), on a spot of the veil so it reads over the outline.</summary>
+    private void DrawWay(WayMark mark, float pulse)
+    {
+        Vector2 at = mark.At.ToGodot();
+        Vector2 outward = mark.Side switch
+        {
+            ExitSide.West => Vector2.Left,
+            ExitSide.East => Vector2.Right,
+            ExitSide.Down => Vector2.Down,
+            _ => Vector2.Up,
+        };
+        float ring = 1.25f * MarkRadius;
+        switch (mark)
+        {
+            case WayMark.Taken:
+                // Half the bridge, from just inside the edge to the gap's middle: the room behind draws the other half.
+                Vector2 across = new(outward.Y, outward.X);
+                Vector2 a = at - outward * 1.5f - across * MarkRadius, b = at + outward * (0.5f * Gap) + across * MarkRadius;
+                Vector2 min = new(Mathf.Min(a.X, b.X), Mathf.Min(a.Y, b.Y)), max = new(Mathf.Max(a.X, b.X), Mathf.Max(a.Y, b.Y));
+                Canvas.DrawRect(new Rect2(min, max - min), Line);
+                break;
+            case WayMark.Open:
+                Color ink = TextStyle.Shared.Ink;
+                Canvas.DrawCircle(at, ring + 1f, Veil);
+                Canvas.DrawCircle(at, 2f * MarkRadius, ink with { A = 0.14f * pulse });
+                Canvas.DrawCircle(at, MarkRadius, ink with { A = 0.95f * pulse });
+                break;
+            case WayMark.Gated gated:
+                // The rings along the edge, centered on the way.
+                Vector2 along = new(Mathf.Abs(outward.Y), Mathf.Abs(outward.X));
+                int count = gated.Abilities.Count + gated.Locks.Count;
+                for (int i = 0; i < count; i++)
+                {
+                    Color color = i < gated.Abilities.Count ? GateKinds.ColorOf(gated.Abilities[i]) : ItemKinds.ColorOf(gated.Locks[i - gated.Abilities.Count]);
+                    Vector2 c = at + along * ((i - 0.5f * (count - 1)) * 2.6f * ring);
+                    Canvas.DrawCircle(c, ring + 1f, Veil);
+                    Canvas.DrawArc(c, ring, 0f, Mathf.Tau, 20, color with { A = 0.95f }, 2f);
+                }
+
+                break;
+            case WayMark.Unbuilt:
+                Canvas.DrawCircle(at, ring + 1f, Veil);
+                Canvas.DrawArc(at, ring, 0f, Mathf.Tau, 20, Line with { A = 0.4f }, 1.5f);
+                break;
         }
     }
 
-    /// <summary>The ways not yet taken, at their exits, and the legend of what is shown.</summary>
-    private void DrawWays(System.Func<NVector2, Vector2> screen, float ui, float ease)
+    /// <summary>The legend, bottom center on its plate: what each mark is.</summary>
+    private void DrawLegend(MapSheet sheet)
     {
-        Ability owned = Player.Abilities.Unlocked;
-        ItemSet held = Player.Items.Held;
-        var shown = new System.Collections.Generic.SortedSet<Ability>();
-        var locks = new System.Collections.Generic.SortedSet<ItemKind>();
-        bool open = false, unbuilt = false;
-        float pulse = 0.75f + 0.25f * Mathf.Sin(_time * 2.2f);
-        foreach (MapWay way in World.Map.Ways)
+        if (_legendPlate is { } plate && _plate is { } box)
         {
-            if (World.Map.Taken(way.Room, way.Exit) || way.Hidden || World.Map.Find(way.Room) is not { } room)
-            {
-                continue;
-            }
-
-            Vector2 at = screen(room.Offset + way.Position);
-            Requirement need = RequirementOf(way.Requires);
-            if (!way.Built)
-            {
-                unbuilt = true;
-                Canvas.DrawArc(at, 4.5f * ui, 0f, Mathf.Tau, 20, Line with { A = 0.35f * ease }, Mathf.Max(1f, 1.4f * ui));
-            }
-            else if (need.IsMetBy(owned, held))
-            {
-                open = true;
-                Canvas.DrawCircle(at, 8f * ui, Colors.White with { A = 0.12f * ease * pulse });
-                Canvas.DrawCircle(at, 4f * ui, Colors.White with { A = 0.92f * ease * pulse });
-            }
-            else
-            {
-                Ability[] kinds = AbilitySet.All.Where(a => need.Options.Any(o => o.Abilities.HasFlag(a)) && !owned.HasFlag(a)).ToArray();
-                ItemKind[] items = need.Items.Ids.Where(id => !held.Contains(id))
-                    .Select(id => World.Definition.Item(id)?.Kind ?? ItemKind.Key).Distinct().ToArray();
-                var colors = kinds.Select(GateKinds.ColorOf).Concat(items.Select(ItemKinds.ColorOf)).ToArray();
-                shown.UnionWith(kinds);
-                locks.UnionWith(items);
-                for (int i = 0; i < colors.Length; i++)
-                {
-                    Vector2 c = at + new Vector2((i - 0.5f * (colors.Length - 1)) * 13f * ui, 0f);
-                    Canvas.DrawArc(c, 5f * ui, 0f, Mathf.Tau, 20, colors[i] with { A = 0.95f * ease }, Mathf.Max(1.5f, 2f * ui));
-                }
-            }
-        }
-
-        // The legend, bottom center: what each mark is.
-        var entries = new System.Collections.Generic.List<(string Text, Color Color, bool Filled)>();
-        if (open)
-        {
-            entries.Add((LineBook.Shared.Find(GameLines.MapWayOpen)?.Text ?? "", Colors.White, true));
-        }
-
-        foreach (Ability a in shown)
-        {
-            entries.Add((LineBook.Shared.Find(GateKinds.MapWord(a))?.Text ?? "", GateKinds.ColorOf(a), false));
-        }
-
-        foreach (ItemKind k in locks)
-        {
-            entries.Add((LineBook.Shared.Find(ItemKinds.MapWord(k))?.Text ?? "", ItemKinds.ColorOf(k), false));
-        }
-
-        if (unbuilt)
-        {
-            entries.Add((LineBook.Shared.Find(GameLines.MapWayUnbuilt)?.Text ?? "", Line, false));
+            Canvas.DrawStyleBox(box, plate);
         }
 
         TextStyle style = TextStyle.Shared;
-        Font font = style.Font;
-        int size = style.Caption;
-        float gap = 34f * ui, mark = 20f * ui;
-        float total = entries.Sum(e => mark + font.GetStringSize(e.Text, HorizontalAlignment.Left, -1, size).X) + gap * Mathf.Max(0, entries.Count - 1);
-        Vector2 size2 = Canvas.Size;
-        float x = 0.5f * (size2.X - total), y = size2.Y - 56f * ui;
-        foreach ((string text, Color color, bool filled) in entries)
+        float y = sheet.LegendBaseline, ring = 1.25f * MarkRadius;
+        for (int i = 0; i < _legend.Count && i < _legendStarts.Count; i++)
         {
-            var c = new Vector2(x + 6f * ui, y - 0.33f * size);
-            if (filled)
+            (string text, Color color, LegendKey key) = _legend[i];
+            float x = _legendStarts[i];
+            var c = new Vector2(x + ring, y - 0.33f * style.Caption);
+            if (key is LegendKey.Open)
             {
-                Canvas.DrawCircle(c, 4f * ui, color with { A = ease });
+                Canvas.DrawCircle(c, MarkRadius, color);
             }
             else
             {
-                Canvas.DrawArc(c, 5f * ui, 0f, Mathf.Tau, 20, color with { A = ease }, Mathf.Max(1.5f, 2f * ui));
+                Canvas.DrawArc(c, ring, 0f, Mathf.Tau, 20, color, 2f);
             }
 
-            Canvas.DrawString(font, new Vector2(x + mark, y), text, HorizontalAlignment.Left, -1, size, style.Dim with { A = ease });
-            x += mark + font.GetStringSize(text, HorizontalAlignment.Left, -1, size).X + gap;
-        }
-
-        DrawHeld(held, ui, ease, size);
-    }
-
-    /// <summary>The items held, bottom left: a filled mark in the kind's color and the item's name, one per line.</summary>
-    private void DrawHeld(ItemSet held, float ui, float ease, int size)
-    {
-        var carried = held.Ids.Where(id => ItemKinds.Carried(World.Definition.Item(id)?.Kind ?? ItemKind.Key)).ToList();
-        float y = Canvas.Size.Y - 56f * ui - (carried.Count - 1) * 26f * ui;
-        foreach (string id in carried)
-        {
-            ItemDefinition? item = World.Definition.Item(id);
-            string name = item is null ? id : LineBook.Shared.Find(item.NameLine)?.Text ?? id;
-            Color color = ItemKinds.ColorOf(item?.Kind ?? ItemKind.Key);
-            Canvas.DrawRect(new Rect2(new Vector2(48f * ui, y - 0.33f * size - 4f * ui), new Vector2(8f * ui, 8f * ui)), color with { A = ease });
-            Canvas.DrawString(TextStyle.Shared.Font, new Vector2(64f * ui, y), name, HorizontalAlignment.Left, -1, size, TextStyle.Shared.Dim with { A = ease });
-            y += 26f * ui;
+            Canvas.DrawString(style.Font, new Vector2(x + Mark, y), text, HorizontalAlignment.Left, -1, style.Caption, style.Dim);
         }
     }
 
-    private Requirement RequirementOf(string text)
+    /// <summary>The items held, bottom left on their plate: a filled mark in the kind's color and the item's name, one per row.</summary>
+    private void DrawHeld(MapSheet sheet)
     {
-        if (!_requirements.TryGetValue(text, out Requirement? r))
+        if (_heldPlate is { } plate && _plate is { } box)
         {
-            r = Requirement.TryParse(text, out Requirement parsed, out _) ? parsed : Requirement.None;
-            _requirements[text] = r;
+            Canvas.DrawStyleBox(box, plate);
         }
 
-        return r;
+        TextStyle style = TextStyle.Shared;
+        for (int i = 0; i < _held.Count; i++)
+        {
+            float y = sheet.HeldBaseline(i);
+            (string name, Color color) = _held[i];
+            Canvas.DrawRect(new Rect2(Margin, y - 0.33f * style.Caption - MarkRadius, 2f * MarkRadius, 2f * MarkRadius), color);
+            Canvas.DrawString(style.Font, new Vector2(Margin + Mark, y), name, HorizontalAlignment.Left, -1, style.Caption, style.Dim);
+        }
     }
 }

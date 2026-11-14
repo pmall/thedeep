@@ -96,6 +96,9 @@ public partial class Main : Node3D
     /// <summary>User argument that runs the scripture plate check (see PlateCheck), used by tools/check.sh.</summary>
     private const string PlateCheckArgument = "--plate-check";
 
+    /// <summary>User argument that runs the map screen check (see MapScreenCheck), used by tools/check.sh.</summary>
+    private const string MapScreenCheckArgument = "--map-screen-check";
+
     /// <summary>User argument that names the save file for this run (<see cref="WorldDefinition.SaveName"/>); the save check's scratch save.</summary>
     private const string SaveNameArgument = "--save-name";
 
@@ -143,6 +146,9 @@ public partial class Main : Node3D
     /// <summary>`--ui-shot &lt;dir&gt;`: renders a gate hint and the map screen to PNGs (see UiShot; windowed).</summary>
     private const string UiShotArgument = "--ui-shot";
 
+    /// <summary>`--hops &lt;n&gt;` with `--ui-shot`: how many exits it crosses before showing the map (<see cref="UiShot.Hops"/>).</summary>
+    private const string HopsArgument = "--hops";
+
     /// <summary>`--bake-surfaces`: bakes the materials' texture sets to PNGs and quits (see SurfaceBake; headless is fine).</summary>
     private const string BakeSurfacesArgument = "--bake-surfaces";
 
@@ -153,7 +159,7 @@ public partial class Main : Node3D
     private static readonly string[] DriverArguments =
     {
         SmokeArgument, CaptureTestArgument, LookDevArgument, ValidateRoomsArgument, ValidateTravelArgument, ValidateSpeciesArgument,
-        UiShotArgument, PlaythroughCheckArgument, GripCheckArgument, CombatCheckArgument, HarpoonCheckArgument, EncounterCheckArgument, DrillCheckArgument, BallastCheckArgument, HeatCheckArgument, BurnProbeArgument, RouteCheckArgument, KeyCheckArgument, CodeCheckArgument, PowerUpCheckArgument, DialogueCheckArgument, PlateCheckArgument, AmbushCheckArgument, SecretCheckArgument, FightCheckArgument, BakeSurfacesArgument, SaveCheckWriteArgument,
+        UiShotArgument, PlaythroughCheckArgument, GripCheckArgument, CombatCheckArgument, HarpoonCheckArgument, EncounterCheckArgument, DrillCheckArgument, BallastCheckArgument, HeatCheckArgument, BurnProbeArgument, RouteCheckArgument, KeyCheckArgument, CodeCheckArgument, PowerUpCheckArgument, DialogueCheckArgument, PlateCheckArgument, MapScreenCheckArgument, AmbushCheckArgument, SecretCheckArgument, FightCheckArgument, BakeSurfacesArgument, SaveCheckWriteArgument,
     };
 
     private SaveData? _resume;
@@ -332,6 +338,10 @@ public partial class Main : Node3D
         {
             AddChild(new PlateCheck { Player = Player, World = World, Banner = Session.Banner });
         }
+        else if (Array.IndexOf(args, MapScreenCheckArgument) >= 0)
+        {
+            AddChild(new MapScreenCheck { World = World, Travel = Travel, Map = MapScreen });
+        }
         else if (Array.IndexOf(args, SaveCheckWriteArgument) >= 0 || Array.IndexOf(args, SaveCheckReadArgument) >= 0)
         {
             AddChild(new SaveCheck { Write = Array.IndexOf(args, SaveCheckWriteArgument) >= 0, Player = Player, World = World, Session = Session });
@@ -386,7 +396,13 @@ public partial class Main : Node3D
         }
         else if (ArgumentValue(args, UiShotArgument) is { } shotDir)
         {
-            AddChild(new UiShot { World = World, Player = Player, Travel = Travel, Hint = Hint, Map = MapScreen, EndCard = Session.EndCard, Banner = Session.Banner, Manual = Hud.Manual, DebugKeys = Hud.DebugKeys, Conversations = Conversations, OutputDir = shotDir });
+            var shot = new UiShot { World = World, Player = Player, Travel = Travel, Hint = Hint, Map = MapScreen, EndCard = Session.EndCard, Banner = Session.Banner, Manual = Hud.Manual, DebugKeys = Hud.DebugKeys, Conversations = Conversations, OutputDir = shotDir };
+            if (int.TryParse(ArgumentValue(args, HopsArgument), NumberStyles.Integer, CultureInfo.InvariantCulture, out int hops))
+            {
+                shot.Hops = hops;
+            }
+
+            AddChild(shot);
         }
         else if (Array.IndexOf(args, BakeSurfacesArgument) >= 0)
         {

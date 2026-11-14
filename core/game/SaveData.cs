@@ -7,8 +7,11 @@ namespace TheDeep;
 /// <summary>A visited room on the saved map.</summary>
 public sealed record SavedRoom(string Name, float X, float Y, float MinX, float MinY, float MaxX, float MaxY);
 
-/// <summary>A way out of a visited room on the saved map (<see cref="MapWay"/>).</summary>
-public sealed record SavedWay(string Room, string Exit, float X, float Y, string Requires, bool Built, bool Hidden = false);
+/// <summary>
+/// A way out of a visited room on the saved map (<see cref="MapWay"/>). Its side is missing from a save written before it was kept
+/// (<see cref="SaveData.MapWays"/>).
+/// </summary>
+public sealed record SavedWay(string Room, string Exit, float X, float Y, string Requires, bool Built, bool Hidden = false, ExitSide? Side = null);
 
 /// <summary>What reading a save's text gives: the save, or why it cannot be one (<see cref="SaveData.Parse"/>).</summary>
 public abstract record SaveReading
@@ -156,19 +159,25 @@ public sealed class SaveData
         Ways.Clear();
         foreach (MapWay w in map.Ways)
         {
-            Ways.Add(new SavedWay(w.Room, w.Exit, w.Position.X, w.Position.Y, w.Requires, w.Built, w.Hidden));
+            Ways.Add(new SavedWay(w.Room, w.Exit, w.Position.X, w.Position.Y, w.Requires, w.Built, w.Hidden, w.Side));
         }
 
         Taken = new List<string>(map.TakenWays);
         Taken.Sort(System.StringComparer.Ordinal);
     }
 
-    /// <summary>The saved ways out as the map keeps them.</summary>
+    /// <summary>
+    /// The saved ways out as the map keeps them. A way saved without its side (an older save) is left out, so the map never marks it
+    /// on the wrong edge: entering its room records it anew.
+    /// </summary>
     public IEnumerable<MapWay> MapWays()
     {
         foreach (SavedWay w in Ways)
         {
-            yield return new MapWay(w.Room, w.Exit, new System.Numerics.Vector2(w.X, w.Y), w.Requires, w.Built, w.Hidden);
+            if (w.Side is { } side)
+            {
+                yield return new MapWay(w.Room, w.Exit, new System.Numerics.Vector2(w.X, w.Y), side, w.Requires, w.Built, w.Hidden);
+            }
         }
     }
 

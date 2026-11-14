@@ -38,7 +38,7 @@ A check that crashes in `GodotObject.Finalize` (`gchandle.is_released`, "Handle 
 | Every room's ground routes as the reach planner flies them, played through the real inputs; each must land where the planner said along its path | `godot --headless --path . --fixed-fps 60 --quit-after 20000 -- --route-check 2>&1 \| grep ROUTE` (`--world sequel` for the sequel; `--shard K/N` plays every Nth room) |
 | Every slag body and heat column walked into, plated and not (burned once, set back on rock, in control; plated, through heat unharmed), each fault an error | `godot --headless --path . --fixed-fps 60 --quit-after 20000 -- --burn-probe 2>&1 \| grep BURN` (`--world sequel` for the sequel) |
 | Look-dev captures and frame times | `tools/capture.sh [label]` (`instructions/testing.md#lookdev`; `--world sequel` for another world's rooms) |
-| UI screens to PNGs (windowed) | `godot --path . --disable-vsync -- --room Undercroft --ui-shot <dir>` |
+| UI screens to PNGs (windowed) | `godot --path . --disable-vsync -- --room Undercroft --ui-shot <dir>` (`--hops 18` shows the map after more rooms) |
 | Windowed capture check (needs a GPU; after touching capture code) | `godot --path . -- --capture-test` (add `--disable-vsync` before `--` for the raw cost) |
 
 The full list of arguments is in `Main`; each tool's options are in its header.

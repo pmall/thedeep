@@ -91,7 +91,7 @@ public partial class World : Node3D
         string name = NameOf(room.SceneFilePath);
         Map.Enter(name, offset, room.BoundsMin.ToCore(), room.BoundsMax.ToCore());
         Map.SetWays(name, room.Exits().Where(e => !e.ArrivalOnly)
-            .Select(e => new MapWay(name, e.Name, e.RoomPosition.ToCore(), e.Requires, e.Open, e.Hidden)));
+            .Select(e => new MapWay(name, e.Name, e.RoomPosition.ToCore(), e.Side, e.Requires, e.Open, e.Hidden)));
     }
 
     /// <summary>The scene path of the world's room named <paramref name="name"/> (its file name without extension).</summary>
