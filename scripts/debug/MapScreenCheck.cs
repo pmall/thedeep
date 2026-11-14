@@ -104,7 +104,8 @@ public partial class MapScreenCheck : Node
             return true;
         }
 
-        if (_ticks % HopTicks == 0)
+        // A crossing the pilgrim started itself (standing in an exit it arrived on) is finished before the next is forced.
+        if (_ticks % HopTicks == 0 && !Travel.Travelling)
         {
             _visits[World.RoomName] = _visits.GetValueOrDefault(World.RoomName) + 1;
             RoomExit? exit = World.Room.Exits().Where(e => e.Open && ResourceLoader.Exists(e.TargetRoom))

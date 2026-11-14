@@ -116,3 +116,10 @@ PlayerFacing = -1
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 14.5, 4, 16)
 script = ExtResource("6_spot")
 PlayerPosition = Vector3(17, 0, 0)
+
+; the doorway west on to the Drydock, its frame and the wall around it
+[node name="WestDoor" type="Marker3D" parent="PhotoSpots"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 6, 4, 16)
+script = ExtResource("6_spot")
+PlayerPosition = Vector3(4, 0, 0)
+PlayerFacing = -1
