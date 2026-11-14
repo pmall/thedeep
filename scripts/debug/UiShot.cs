@@ -5,13 +5,17 @@ using Godot;
 namespace TheDeep;
 
 /// <summary>
-/// Renders the game's screens for a look (`-- --ui-shot &lt;dir&gt;`, windowed: headless renders nothing): a gate hint over the
+/// Renders the game's screens for a look (`-- --ui-shot &lt;dir&gt;`, windowed: headless renders nothing), the pilgrim holding the
+/// abilities and items a route to the room needs (as `--room` alone gives): where the room holds an <see cref="Arena"/>, first the
+/// pilgrim walked in past its first gate, the arena sealed, its gates down and a boss's name on the banner (arena.png), then its foes
+/// broken and the pilgrim back at the room's start; a gate hint over the
 /// room with the gameplay controls for the keyboard, Jump held, and the debug keys (hint.png), a blow that leaves one hit (hurt.png,
 /// the health a moment later: last-hit.png), the controls for the gamepad, Dash
 /// held (manual-pad.png); where the room holds a <see cref="Conversation"/>, the pilgrim stood by it, "Talk" offered (talk.png), then
-/// talking through the real Interact, the dialogue box on its first line whole (dialogue.png); the pilgrim at the start room's first shrine, plate or
-/// lever with its prompt offered, keyboard then gamepad (prompt.png, prompt-pad.png), an ability's banner once eased in, or stood at
-/// a plate, its words read (banner.png), and where the start room holds a <see cref="Proclamation"/>, the pilgrim back there stood in it, its words
+/// talking through the real Interact, the dialogue box on its first line whole (dialogue.png) and on its longest whole
+/// (dialogue-long.png); the pilgrim at the start room's first shrine, plate or
+/// lever with its prompt offered, keyboard then gamepad (prompt.png, prompt-pad.png), an ability's banner once eased in, or, where
+/// the room holds a plate, stood at its first, its words read (banner.png), and where the start room holds a <see cref="Proclamation"/>, the pilgrim back there stood in it, its words
 /// spoken (proclamation.png); where the room holds a law, the pilgrim first
 /// presses on at its lip until it refuses, then holds the act offered there to two-thirds (prompt-law.png: the refusal on the hint
 /// line, the hold's ring part-filled), then, after crossing a few open exits from the start room,
@@ -62,14 +66,30 @@ public partial class UiShot : Node
     private int _talkTick;
     private int _talkShot;
     private int _offered;
+    private bool _talkLong;
+    private Arena? _arena;
+    private double _sealing = -1.0;
+    private double _sealed = -1.0;
+    private double _breaking = -1.0;
 
     public override void _Ready()
     {
         DirAccess.MakeDirRecursiveAbsolute(OutputDir);
         _start = World.RoomName;
         ProcessMode = ProcessModeEnum.Always;
-        Hint.Show(GateKinds.HintLine(Ability.MagGrip), GateKinds.ColorOf(Ability.MagGrip));
+        if (World.Room.First<Arena>() is { Won: false, Gates.Length: > 0 } arena)
+        {
+            // Outside its first gate before the first tick: a room may start inside its arena (the Pyre).
+            _arena = arena;
+            Player.Respawn(new Vector3(arena.Gates[0].GlobalPosition.X - Inward(arena) * 1.2f, arena.Gates[0].GlobalPosition.Y, 0f), Inward(arena));
+        }
+        else
+        {
+            ShowHint();
+        }
     }
+
+    private void ShowHint() => Hint.Show(GateKinds.HintLine(Ability.MagGrip), GateKinds.ColorOf(Ability.MagGrip));
 
     /// <summary>Runs before the conversations each physics tick, so what it presses is read the same tick.</summary>
     public UiShot()
@@ -104,6 +124,13 @@ public partial class UiShot : Node
         }
         else if (_talkShot > 0 && _talkTick > _talkShot + 50 && _talkTick % 6 == 0 && Conversations.Talking)
         {
+            if (!_talkLong && Conversations.Flow is { Whole: true } flow && flow.Text.Length >= Longest(talk))
+            {
+                // Its longest line whole: the box at its fullest.
+                _talkLong = true;
+                Shot("dialogue-long.png");
+            }
+
             Input.ActionPress(InputActions.Interact);
         }
         else if ((_talkShot > 0 && _talkTick > _talkShot + 50 && !Conversations.Talking) || _talkTick > 900)
@@ -116,6 +143,12 @@ public partial class UiShot : Node
     {
         if (_talk is not null)
         {
+            return;
+        }
+
+        if (_arena is { } arena)
+        {
+            Seal(arena, delta);
             return;
         }
 
@@ -186,6 +219,8 @@ public partial class UiShot : Node
         else if (_tick == 118)
         {
             Player.Vitality.Restore();
+            // The dash toward the room's middle, so it never carries the pilgrim out of the room.
+            Player.SetWorldFacing(Player.GlobalPosition.X < (World.Room.BoundsMin.X + World.Room.BoundsMax.X) * 0.5f ? 1 : -1);
         }
         else if (_tick == 120)
         {
@@ -219,8 +254,13 @@ public partial class UiShot : Node
         else if (_tick == 215)
         {
             Shot("prompt-pad.png");
-            // Stood at a plate, its words read (its glyphs glow while they show); elsewhere, an ability's banner.
-            Banner.Show(_stood is ScripturePlate plate ? plate.Said : new Announcement("ability.mag_grip.name", "ability.mag_grip.hint"));
+            // Stood at the room's first plate, its words read (its glyphs glow while they show); elsewhere, an ability's banner.
+            if (First<ScripturePlate>() is ScripturePlate plate)
+            {
+                Stand(plate);
+            }
+
+            Banner.Show(_stood is ScripturePlate read ? read.Said : new Announcement("ability.mag_grip.name", "ability.mag_grip.hint"));
             _banner = 0.0;
         }
         else if (_tick > 230 && _tick % 20 == 0 && _hops < Hops)
@@ -261,11 +301,79 @@ public partial class UiShot : Node
     {
         if ((First<Shrine>() ?? First<ScripturePlate>() ?? First<Lever>()) is { } prop)
         {
-            _stood = prop;
-            Player.GlobalPosition = new Vector3(prop.GlobalPosition.X + 0.5f, prop.GlobalPosition.Y + 0.05f, 0f);
-            Player.ResetPhysicsInterpolation();
+            Stand(prop);
         }
     }
+
+    private void Stand(Node3D prop)
+    {
+        _stood = prop;
+        Player.GlobalPosition = new Vector3(prop.GlobalPosition.X + 0.5f, prop.GlobalPosition.Y + 0.05f, 0f);
+        Player.ResetPhysicsInterpolation();
+    }
+
+    /// <summary>
+    /// Walks in past the arena's first gate from the side away from it; once every gate is down, shot (a boss's name eased in on the
+    /// banner), then its foes broken and the pilgrim back at the room's start, the rest of the shots to follow.
+    /// </summary>
+    private void Seal(Arena arena, double delta)
+    {
+        Player.Vitality.Restore();
+        StringName walkIn = Inward(arena) > 0 ? InputActions.MoveRight : InputActions.MoveLeft;
+        if (_sealing < 0.0)
+        {
+            Input.ActionPress(walkIn);
+            _sealing = 0.0;
+            return;
+        }
+
+        _sealing += delta;
+        if (_sealed < 0.0 && arena.Fighting && arena.Gates.All(g => g.Shut))
+        {
+            Input.ActionRelease(walkIn);
+            _sealed = 0.0;
+            // The arena as play shows it: the debug builds' controls would stand over a gate at the screen's edge.
+            SetManual(false);
+        }
+        else if (_sealed >= 0.0 && _breaking < 0.0 && (_sealed += delta) >= 1.2)
+        {
+            Shot("arena.png");
+            SetManual(true);
+            foreach (Machine machine in arena.Foes)
+            {
+                machine.TakeHit(999, machine.PlanePosition.X - 1f, 0f);
+            }
+
+            _breaking = 0.0;
+        }
+        else if ((_breaking >= 0.0 && ((_breaking += delta) >= 3.0 || arena.Won)) || _sealing > 8.0)
+        {
+            if (_breaking < 0.0)
+            {
+                GD.PushError($"[ui-shot] {World.RoomName}'s arena did not seal (fighting {arena.Fighting}, gates shut {arena.Gates.Count(g => g.Shut)} of {arena.Gates.Length})");
+            }
+
+            Input.ActionRelease(walkIn);
+            Banner.Clear();
+            Player.Respawn(World.Room.SpawnPoint.GlobalPosition);
+            _arena = null;
+            ShowHint();
+        }
+    }
+
+    /// <summary>Which way <paramref name="arena"/>'s first gate is walked through into it: +1 east, −1 west.</summary>
+    private static int Inward(Arena arena) => arena.Gates[0].GlobalPosition.X < (arena.ArenaMin.X + arena.ArenaMax.X) * 0.5f ? 1 : -1;
+
+    private void SetManual(bool visible)
+    {
+        if (Manual is not null)
+        {
+            Manual.Visible = visible;
+        }
+    }
+
+    /// <summary>The length of <paramref name="talk"/>'s longest line, as the book gives it.</summary>
+    private static int Longest(Conversation talk) => talk.Lines.Max(l => LineBook.Shared.Find(l.Line)?.Text.Length ?? 0);
 
     /// <summary>Stands the pilgrim before the room's first law, if it has one, pressing on toward it; false for none.</summary>
     private bool StandAtLaw()
