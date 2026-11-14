@@ -3,28 +3,25 @@ using Godot;
 namespace TheDeep;
 
 /// <summary>
-/// What an <see cref="ActionPrompt"/> shows, drawn into its own small viewport: the button (a <see cref="ButtonGlyph"/>), then the
-/// verb as body text, on the plate, in the shared <see cref="TextStyle"/>; for a hold, a ring around the button that fills as it is
-/// held. Sizes itself to fit, so the prompt stays centered.
+/// What an <see cref="ActionPrompt"/> shows, drawn on the screen like every other text brick: the button (a
+/// <see cref="ButtonGlyph"/>), then the verb as body text, on the plate, in the shared <see cref="TextStyle"/>; for a hold, a ring
+/// around the button that fills as it is held. Sizes itself to fit, so the prompt stays centered.
 /// </summary>
 public partial class PromptFace : Control
 {
-    /// <summary>How many times larger than on screen the face is drawn, so its letters stay crisp as the camera nears.</summary>
-    private const float Supersample = 2.2f;
-
     /// <summary>The glyphs' size against the manual's: a cap about as tall as the verb's letters.</summary>
-    private const float GlyphScale = 2.6f;
-    private const float Gap = 18f;
-    private const float RingWidth = 7f;
+    private const float GlyphScale = 1.2f;
+    private const float Gap = 8f;
+    private const float RingWidth = 3f;
 
     private readonly ButtonPainter _painter = new(GlyphScale);
     private StyleBoxFlat? _plate;
-    private StyleBoxFlat Plate => _plate ??= Style.NewPlate(Supersample);
+    private StyleBoxFlat Plate => _plate ??= Style.NewPlate();
 
     private static TextStyle Style => TextStyle.Shared;
 
-    /// <summary>The verb's size on the face, pixels.</summary>
-    private static int VerbFont => Mathf.RoundToInt(Style.Body * Supersample);
+    /// <summary>The verb's size, pixels.</summary>
+    private static int VerbFont => Style.Body;
     private string _verb = "";
     private ButtonGlyph? _glyph;
     private bool _hold;
@@ -34,8 +31,8 @@ public partial class PromptFace : Control
     /// <summary>How full the hold's ring is, 0–1 (a hold only).</summary>
     public float Fill { get; set; }
 
-    /// <summary>Shows <paramref name="glyph"/> (none: the verb alone) and <paramref name="verb"/>, with a ring when <paramref name="hold"/>; the size it needs, pixels.</summary>
-    public Vector2I Show(ButtonGlyph? glyph, string verb, bool hold)
+    /// <summary>Shows <paramref name="glyph"/> (none: the verb alone) and <paramref name="verb"/>, with a ring when <paramref name="hold"/>, sized to fit.</summary>
+    public void Show(ButtonGlyph? glyph, string verb, bool hold)
     {
         _glyph = glyph;
         if (glyph is not null)
@@ -51,12 +48,11 @@ public partial class PromptFace : Control
         float glyphHeight = _painter.CapHeight + 2f * GlyphScale;
         _ring = hold ? 0.5f * Mathf.Sqrt(_glyphWidth * _glyphWidth + glyphHeight * glyphHeight) + RingWidth : 0f;
         float glyphBox = glyph is null ? 0f : (hold ? 2f * _ring + RingWidth : _glyphWidth) + Gap;
-        float height = Mathf.Max(VerbFont * 1.4f, hold ? 2f * _ring + RingWidth : glyphHeight);
-        Vector2 margin = Style.Padding * Supersample;
-        var size = new Vector2I(Mathf.CeilToInt(2f * margin.X + glyphBox + textWidth), Mathf.CeilToInt(2f * margin.Y + height));
-        Size = size;
+        // A row as tall as the hint line's, unless the button or its ring stands taller.
+        float height = Mathf.Max(font.GetHeight(VerbFont), hold ? 2f * _ring + RingWidth : glyphHeight);
+        Vector2 margin = Style.Padding;
+        Size = new Vector2(Mathf.Ceil(2f * margin.X + glyphBox + textWidth), Mathf.Ceil(2f * margin.Y + height));
         QueueRedraw();
-        return size;
     }
 
     /// <summary>How lit the button stands unheld: a pale cap with dark letters reads on any ground.</summary>
@@ -79,8 +75,8 @@ public partial class PromptFace : Control
         Font font = Style.Font;
         float mid = Size.Y * 0.5f;
         // The plate under it all, so it reads on bright walls and lit glyphs alike.
-        DrawStyleBox(Plate, new Rect2(new Vector2(2f, 2f), Size - new Vector2(4f, 4f)));
-        float x = Style.Padding.X * Supersample;
+        DrawStyleBox(Plate, new Rect2(Vector2.Zero, Size));
+        float x = Style.Padding.X;
         if (_glyph is { } glyph)
         {
             float box = _hold ? 2f * _ring + RingWidth : _glyphWidth;
@@ -103,7 +99,7 @@ public partial class PromptFace : Control
         int verbFont = VerbFont;
         Vector2 baseline = new(x, mid + 0.5f * (font.GetAscent(verbFont) - font.GetDescent(verbFont)));
         // The rim too, all round the letters: the plate is translucent, and a lit glyph behind it would wash them out.
-        int rim = Mathf.RoundToInt(2f * (Style.RimWidth + Style.RimDrop) * Supersample);
+        int rim = 2 * (Style.RimWidth + Style.RimDrop);
         DrawStringOutline(font, baseline, _verb, HorizontalAlignment.Left, -1f, verbFont, rim, Style.Rim);
         DrawString(font, baseline, _verb, HorizontalAlignment.Left, -1f, verbFont, Style.Ink);
     }

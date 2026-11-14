@@ -8,7 +8,7 @@ namespace TheDeep;
 /// the speaker's name stands over them as a caption in the room's accent (<see cref="TextStyle.DressSpeaker"/>), so they never read as
 /// a name announced. It stands clear of the play around the pilgrim, and goes low, over the hint line, while the pilgrim is high on
 /// the screen, so the pilgrim is never under it (<see cref="BannerPlace"/>; both places: <see cref="TextStyle.Places"/>). A long line
-/// wraps within <see cref="MaxWidth"/>, the head on one row and the line in at most <see cref="Rows"/> (the room check holds every
+/// wraps within <see cref="MaxWidth"/> into rows of even length (<see cref="EvenRows"/>), the head on one row and the line in at most <see cref="Rows"/> (the room check holds every
 /// line a banner can say to that, <see cref="Fits"/>).
 /// Each is held as long as its words take to read (<see cref="ReadingTime"/>); what is said while another shows is read after it,
 /// each for its whole time (<see cref="LinesInTurn{T}"/>); a room left drops what shows and what waits (<see cref="Clear"/>).
@@ -150,15 +150,15 @@ public partial class Banner : CanvasLayer
 
     private static int HeadSize(Voice voice) => voice == Voice.Spoken ? Style.Caption : Style.Title;
 
-    /// <summary>How many rows <paramref name="text"/> takes at <paramref name="size"/> within the plate's widest text.</summary>
-    private int RowsOf(string text, int size)
+    /// <summary>How many rows <paramref name="text"/> takes at <paramref name="size"/> within <paramref name="width"/> (none: the plate's widest text).</summary>
+    private int RowsOf(string text, int size, float? width = null)
     {
         if (text.Length == 0)
         {
             return 0;
         }
 
-        Vector2 measured = Style.Font.GetMultilineStringSize(text, HorizontalAlignment.Center, TextWidth, size, -1, Breaks);
+        Vector2 measured = Style.Font.GetMultilineStringSize(text, HorizontalAlignment.Center, width ?? TextWidth, size, -1, Breaks);
         return Mathf.RoundToInt(measured.Y / Style.Font.GetHeight(size));
     }
 
@@ -222,9 +222,10 @@ public partial class Banner : CanvasLayer
         LineLabel.Text = line;
         LineLabel.Visible = line.Length > 0;
 
-        // The labels as wide as the longer of the two, up to the plate's widest: a short banner keeps a small plate.
-        float natural = Mathf.Max(Style.Font.GetStringSize(HeadText(head, said.Voice), HorizontalAlignment.Left, -1, HeadSize(said.Voice)).X,
-            Style.Font.GetStringSize(line, HorizontalAlignment.Left, -1, Style.Body).X);
+        // The labels as wide as the longer of the two, up to the plate's widest: a short banner keeps a small plate, and a line that
+        // wraps is as wide as its rows come out even (EvenRows).
+        float lineWidth = EvenRows.Width(w => RowsOf(line, Style.Body, w), Style.Font.GetStringSize(line, HorizontalAlignment.Left, -1, Style.Body).X, TextWidth);
+        float natural = Mathf.Max(Style.Font.GetStringSize(HeadText(head, said.Voice), HorizontalAlignment.Left, -1, HeadSize(said.Voice)).X, lineWidth);
         float width = Mathf.Min(Mathf.Ceil(natural) + 2f, TextWidth);
         headLabel.CustomMinimumSize = new Vector2(width, 0f);
         LineLabel.CustomMinimumSize = new Vector2(width, 0f);

@@ -251,7 +251,8 @@ public partial class Main : Node3D
         }
 
         string[] args = OS.GetCmdlineUserArgs();
-        if (!DriverArguments.Any(a => Array.IndexOf(args, a) >= 0))
+        // The UI shots see a room as a player comes to it (the Pyre's heat stands at its door).
+        if (!DriverArguments.Any(a => Array.IndexOf(args, a) >= 0) || Array.IndexOf(args, UiShotArgument) >= 0)
         {
             GrantStartAbilities(args);
         }
