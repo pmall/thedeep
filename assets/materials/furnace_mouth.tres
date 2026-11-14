@@ -1,25 +1,12 @@
 [gd_resource type="ShaderMaterial" format=3]
-; The fire seen through a furnace mouth's grate on a foundry wall (WallDressing): its flames are this seamless noise, baked
-; once with mipmaps; hazed like the wall's other pieces.
+; Molten metal seen through a furnace mouth's grate on a foundry wall (WallDressing): the magma shader, larger plates,
+; cooler than a pool the pilgrim can step in, so it stays decor.
 
-[ext_resource type="Shader" path="res://assets/shaders/furnace_mouth.gdshader" id="1_shader"]
-
-[sub_resource type="FastNoiseLite" id="FastNoiseLite_flames"]
-noise_type = 3
-seed = 11
-frequency = 0.025
-fractal_octaves = 3
-
-[sub_resource type="NoiseTexture2D" id="NoiseTexture2D_flames"]
-width = 256
-height = 256
-seamless = true
-seamless_blend_skirt = 0.3
-generate_mipmaps = true
-noise = SubResource("FastNoiseLite_flames")
+[ext_resource type="Shader" path="res://assets/shaders/magma.gdshader" id="1_shader"]
 
 [resource]
 shader = ExtResource("1_shader")
-shader_parameter/flames = SubResource("NoiseTexture2D_flames")
-shader_parameter/haze_per_meter = 0.024
-shader_parameter/haze_max = 0.88
+shader_parameter/scale = 1.1
+shader_parameter/drift = 0.03
+shader_parameter/heat = 2.2
+shader_parameter/crack_width = 0.18
