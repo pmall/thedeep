@@ -131,8 +131,8 @@ public partial class BackdropArchitecture : Node3D
         Vector3 scale = p.Piece switch
         {
             BackdropPiece.Chain or BackdropPiece.Shaft => new Vector3(1f, p.Length, 1f),
-            BackdropPiece.Chord or BackdropPiece.Brace or BackdropPiece.Spoke => new Vector3(p.Length, 1f, 1f),
-            BackdropPiece.Ring => new Vector3(p.Length, 1f, p.Length),
+            BackdropPiece.Chord or BackdropPiece.Brace => new Vector3(p.Length, 1f, 1f),
+            BackdropPiece.Gear => new Vector3(p.Length, p.Length, 1f),
             _ => Vector3.One,
         };
         Basis basis = new Basis(Vector3.Back, p.RollZ) * new Basis(Vector3.Right, p.PitchX) * Basis.FromScale(scale);
@@ -151,7 +151,7 @@ public partial class BackdropArchitecture : Node3D
         BackdropPiece.FurnaceMouth => Glow,
         BackdropPiece.Tower or BackdropPiece.Walkway or BackdropPiece.Furnace or BackdropPiece.Hood or BackdropPiece.Stack
             or BackdropPiece.Duct or BackdropPiece.Tank or BackdropPiece.Chord or BackdropPiece.Brace or BackdropPiece.Chain
-            or BackdropPiece.Ring or BackdropPiece.Hub or BackdropPiece.Spoke or BackdropPiece.Piston => Metal,
+            or BackdropPiece.Gear or BackdropPiece.Hub or BackdropPiece.Piston => Metal,
         _ => throw new ArgumentOutOfRangeException(nameof(piece), piece, "no material for this backdrop piece"),
     };
 
@@ -178,9 +178,8 @@ public partial class BackdropArchitecture : Node3D
             BackdropPiece.Chord => new BlockMesh { Size = new Vector3(1f, d.BeamSection, d.BeamSection), Bevel = 0.02f },
             BackdropPiece.Brace => new BlockMesh { Size = new Vector3(1f, d.BeamSection * 0.7f, d.BeamSection * 0.7f), Bevel = 0.02f },
             BackdropPiece.Chain => new CableMesh { End = new Vector3(0f, -1f, 0f), Sag = 0f, Radius = 0.08f * s, Strands = 1, Seed = seed },
-            BackdropPiece.Ring => new RingMesh { RadiusX = 1f, RadiusZ = 1f, Height = 0.7f * s, Thickness = 0.07f, Segments = 48 },
+            BackdropPiece.Gear => new CogMesh { Radius = 1f, Teeth = 28, Depth = 0.5f * s },
             BackdropPiece.Hub => new ColumnMesh { Height = 1.2f * s, Radius = 1.1f * s, Sides = 12, Shafts = 1, Plinth = 0.3f * s, Capital = 0.3f * s },
-            BackdropPiece.Spoke => new BlockMesh { Size = new Vector3(1f, 0.4f * s, 0.4f * s), Bevel = 0.03f },
             BackdropPiece.Piston => new ColumnMesh { Height = length, Radius = d.PistonRadius, Sides = 10, Shafts = 1, Plinth = 0.8f * s, Capital = 0.5f * s },
             _ => throw new ArgumentOutOfRangeException(nameof(piece), piece, "no mesh for this backdrop piece"),
         };

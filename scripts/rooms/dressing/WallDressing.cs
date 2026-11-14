@@ -7,7 +7,8 @@ namespace TheDeep;
 /// the node stands at the middle of the wall's foot, on its face; <see cref="Size"/> is the area dressed (X along the
 /// wall, Y up). Visual only, built when ready from kit meshes and swappable materials, deterministic for a <see cref="Seed"/>.
 /// Pieces stay within <see cref="Size"/> and about a meter out from the wall, so keep the node a meter behind the blocks'
-/// back faces (Z −3 against blocks 4 deep).
+/// back faces (Z −3 against blocks 4 deep). A machinery wall casts no shadows: its works stand in the haze as midground, and
+/// their hard shadows on the wall just behind them flattened them into cut-outs (`docs/art-direction.md#midground`).
 /// </summary>
 public partial class WallDressing : Node3D
 {
@@ -17,12 +18,12 @@ public partial class WallDressing : Node3D
 
     [Export] public int Seed { get; set; } = 1;
 
-    /// <summary>Iron (pilasters, girders, pipes, chains); rust_mid.tres when unset.</summary>
+    /// <summary>Iron (pilasters, girders, pipes, chains, gears and their axles); rust_mid.tres when unset.</summary>
     [Export] public Material? Iron { get; set; }
 
     /// <summary>
-    /// Plating (panels, wheels, pistons, racks); when unset, backdrop_metal.tres for machinery (dark, hazed: in the core's pale
-    /// bronze the midground plating outshone the play plane and its grippable metal), metal_mid.tres otherwise.
+    /// Plating (banks of pipes, pistons, racks); when unset, machinery_mid.tres for machinery (dark, dull and hazed: in the core's
+    /// pale bronze, metal_mid's plating outshone the play plane and its grippable metal), metal_mid.tres otherwise.
     /// </summary>
     [Export] public Material? Plate { get; set; }
 
@@ -54,7 +55,7 @@ public partial class WallDressing : Node3D
     {
         var looks = new Looks(
             Iron ?? GD.Load<Material>("res://assets/materials/rust_mid.tres"),
-            Plate ?? GD.Load<Material>(Style == WallStyle.Machinery ? "res://assets/materials/backdrop_metal.tres" : "res://assets/materials/metal_mid.tres"),
+            Plate ?? GD.Load<Material>(Style == WallStyle.Machinery ? "res://assets/materials/machinery_mid.tres" : "res://assets/materials/metal_mid.tres"),
             Molten ?? GD.Load<Material>("res://assets/materials/furnace_mouth.tres"),
             Glow ?? GD.Load<Material>("res://assets/materials/glow_strip.tres"),
             Stone ?? GD.Load<Material>("res://assets/materials/stone_mid.tres"),
@@ -102,24 +103,18 @@ public partial class WallDressing : Node3D
                 Add(new CableMesh { End = new Vector3(0f, -h, 0f), Sag = 0f, Radius = w, Strands = 1, Seed = Seed + index }, looks.Iron, at, shadow: false);
                 Add(new BlockMesh { Size = new Vector3(0.45f, 0.6f, 0.45f), Bevel = 0.08f }, looks.Iron, at + new Vector3(0f, -h - 0.3f, 0f));
                 break;
-            case WallPiece.Panel:
-                Add(new BlockMesh { Size = new Vector3(w, h, 0.25f), Bevel = 0.08f }, looks.Plate, at);
+            case WallPiece.Bank:
+                Add(new BankMesh { Size = new Vector3(w, h, WallLayout.BankDepth), Chest = WallLayout.BankChest(h), Seed = Seed + index }, looks.Plate,
+                    at + new Vector3(0f, 0f, WallLayout.BankDepth * 0.5f));
                 break;
             case WallPiece.Slit:
-                Add(new QuadMesh { Size = new Vector2(w, h) }, looks.Glow, at, shadow: false);
+                Add(new QuadMesh { Size = new Vector2(w, h) }, looks.Glow, at);
                 break;
             case WallPiece.Piston:
                 Add(new ColumnMesh { Height = h, Radius = w, Sides = 10, Shafts = 1, Plinth = 0.6f, Capital = 0.5f }, looks.Plate, at);
                 break;
-            case WallPiece.Wheel:
-                Add(new RingMesh { RadiusX = w, RadiusZ = w, Height = 0.45f, Thickness = w * 0.12f, Segments = 48 }, looks.Plate, at,
-                    new Basis(Vector3.Right, Mathf.Pi * 0.5f));
-                for (int s = 0; s < 6; s++)
-                {
-                    float a = p.Roll + Mathf.Pi * s / 6f;
-                    Add(new BlockMesh { Size = new Vector3(w * 2f * 0.94f, 0.22f, 0.22f), Bevel = 0.03f }, looks.Plate, at, new Basis(Vector3.Back, a));
-                }
-
+            case WallPiece.Gear:
+                Add(new CogMesh { Radius = w, Teeth = WallLayout.GearTeeth(w), Depth = 0.25f }, looks.Iron, at, new Basis(Vector3.Back, p.Roll));
                 break;
             case WallPiece.Pier:
                 Add(new ColumnMesh { Height = h, Radius = w * 0.4f, Sides = 8, Shafts = 1, Plinth = 0.5f, Capital = 0.4f }, looks.Stone, at);
@@ -175,7 +170,7 @@ public partial class WallDressing : Node3D
 
                 break;
             case WallPiece.Hub:
-                Add(new ColumnMesh { Height = 0.7f, Radius = w, Sides = 12, Shafts = 1, Plinth = 0.15f, Capital = 0.15f }, looks.Plate, at,
+                Add(new ColumnMesh { Height = 0.7f, Radius = w, Sides = 12, Shafts = 1, Plinth = 0.15f, Capital = 0.15f }, looks.Iron, at,
                     new Basis(Vector3.Right, Mathf.Pi * 0.5f));
                 break;
         }
@@ -200,7 +195,7 @@ public partial class WallDressing : Node3D
             Mesh = mesh,
             MaterialOverride = material,
             Transform = new Transform3D(basis ?? Basis.Identity, position),
-            CastShadow = shadow ? GeometryInstance3D.ShadowCastingSetting.On : GeometryInstance3D.ShadowCastingSetting.Off,
+            CastShadow = shadow && Style != WallStyle.Machinery ? GeometryInstance3D.ShadowCastingSetting.On : GeometryInstance3D.ShadowCastingSetting.Off,
         });
     }
 }

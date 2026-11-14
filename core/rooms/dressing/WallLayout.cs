@@ -10,7 +10,10 @@ public enum WallStyle
     /// <summary>A foundry's wall: iron pilasters, girders, grated furnace mouths glowing, pipes, chains hanging (volcanic).</summary>
     Foundry,
 
-    /// <summary>Ancient machinery set in the wall: pistons, bands, wheels on hubs, panels of uneven height, glowing slits (the core).</summary>
+    /// <summary>
+    /// The deep works of the machine's cathedral: pistons on the bay lines, bands across, trains of meshed gears on their axles,
+    /// banks of organ pipes stacked up the bays, glowing slits (the core).
+    /// </summary>
     Machinery,
 
     /// <summary>An archive's wall: stone piers, iron shelves of server racks with gaps, icicles under the shelves (frozen).</summary>
@@ -32,8 +35,14 @@ public enum WallPiece
     MouthGlow,
     Pipe,
     Chain,
-    Panel,
-    Wheel,
+
+    /// <summary>A bank of organ pipes on a wind chest, standing on its foot (Size: width, height; Position its foot's middle, on its back).</summary>
+    Bank,
+
+    /// <summary>A toothed gear on the wall (Size: its radius, twice; Position its middle, on its back; Roll its turn).</summary>
+    Gear,
+
+    /// <summary>An axle's end standing out of a gear (Size: its radius, twice; Position its middle, on its back).</summary>
     Hub,
     Piston,
     Slit,
@@ -307,6 +316,21 @@ public static class WallLayout
         return list;
     }
 
+    /// <summary>A gear's teeth stand this far apart along its pitch circle, meters, so meshed gears share their teeth's size.</summary>
+    public const float ToothPitch = 0.5f;
+
+    /// <summary>Two gears mesh with their middles this share of their radii's sum apart (their pitch circles touching).</summary>
+    public const float GearMesh = 0.92f;
+
+    /// <summary>How deep a machinery wall's bank stands out from its back, meters.</summary>
+    public const float BankDepth = 0.7f;
+
+    /// <summary>The wind chest's height under a bank <paramref name="height"/> meters tall, meters.</summary>
+    public static float BankChest(float height) => Math.Clamp(height * 0.16f, 0.35f, 0.7f);
+
+    /// <summary>How many teeth a gear of <paramref name="radius"/> meters has.</summary>
+    public static int GearTeeth(float radius) => Math.Max(10, (int)MathF.Round(MathF.Tau * GearMesh * radius / ToothPitch));
+
     private static List<WallPlacement> Machinery(float width, float height, int seed)
     {
         var list = new List<WallPlacement>();
@@ -332,38 +356,80 @@ public static class WallLayout
             float mid = (a + b) * 0.5f, span = b - a;
             if (H(seed, 2, i) < 0.5f)
             {
-                // A wheel on a hub, above the band; a glowing slit under it.
-                float r = MathF.Min(span * 0.45f, (height - band) * 0.32f) * (0.75f + 0.25f * H(seed, 3, i));
-                float y = band + 0.5f + r + (height - band - 1f - 2f * r) * H(seed, 4, i);
-                list.Add(new WallPlacement(WallPiece.Wheel, new Vector3(mid, y, 0.5f), new Vector2(r, r), H(seed, 5, i) * MathF.PI));
-                list.Add(new WallPlacement(WallPiece.Hub, new Vector3(mid, y, 0.3f), new Vector2(r * 0.2f, r * 0.2f)));
-                list.Add(new WallPlacement(WallPiece.Slit, new Vector3(mid, band - 1f, 0.25f), new Vector2(span * 0.6f, 0.14f)));
+                GearTrain(list, seed, i, mid, span, band, height);
+                // Under the band, a low bank now and then, and a slit of light.
+                if (H(seed, 6, i) < 0.6f && band > 2.4f)
+                {
+                    float w = span * (0.5f + 0.35f * H(seed, 9, i));
+                    list.Add(new WallPlacement(WallPiece.Bank, new Vector3(mid, 0.3f, 0.05f), new Vector2(w, band - 0.9f)));
+                }
+                else
+                {
+                    list.Add(new WallPlacement(WallPiece.Slit, new Vector3(mid, band - 1f, 0.25f), new Vector2(span * 0.6f, 0.14f)));
+                }
             }
             else
             {
-                // Panels of uneven height stacked up the bay, gaps of bare wall between; a slit along some.
-                float y = 0.6f;
+                // Banks of uneven height stacked up the bay, gaps of bare wall between; a slit of light along some wind chests.
+                float y = 0.3f;
                 int n = 0;
-                while (y < height - 1.5f && n < 6)
+                while (y < height - 1.8f && n < 6)
                 {
-                    float h = 1.6f + 3.4f * H(seed, 10 + n, i);
-                    h = MathF.Min(h, height - 0.8f - y);
-                    float w = span * (0.55f + 0.4f * H(seed, 20 + n, i));
-                    if (H(seed, 30 + n, i) > 0.25f)
+                    float h = 2.2f + 3.2f * H(seed, 10 + n, i);
+                    h = MathF.Min(h, height - 0.6f - y);
+                    float w = span * (0.6f + 0.35f * H(seed, 20 + n, i));
+                    if (H(seed, 30 + n, i) > 0.2f && h > 1.4f)
                     {
-                        list.Add(new WallPlacement(WallPiece.Panel, new Vector3(mid, y + h * 0.5f, 0.1f), new Vector2(w, h)));
+                        list.Add(new WallPlacement(WallPiece.Bank, new Vector3(mid, y, 0.05f), new Vector2(w, h)));
                         if (H(seed, 40 + n, i) < 0.35f)
                         {
-                            list.Add(new WallPlacement(WallPiece.Slit, new Vector3(mid, y + h * 0.5f, 0.25f), new Vector2(w * 0.8f, 0.12f)));
+                            list.Add(new WallPlacement(WallPiece.Slit, new Vector3(mid, y + BankChest(h) * 0.5f, 0.05f + BankDepth + 0.03f), new Vector2(w * 0.7f, 0.1f)));
                         }
                     }
 
-                    y += h + 0.4f + 1.2f * H(seed, 50 + n, i);
+                    y += h + 0.5f + 1.2f * H(seed, 50 + n, i);
                     n++;
                 }
             }
         }
 
         return list;
+    }
+
+    /// <summary>
+    /// A great gear over the band, its axle's end at its middle, and a smaller one meshed with it above or below, turned so
+    /// their teeth interleave; the smaller is left out where neither side has room in the bay.
+    /// </summary>
+    private static void GearTrain(List<WallPlacement> list, int seed, int bay, float mid, float span, float band, float height)
+    {
+        float r = MathF.Min(span * 0.45f, (height - band) * 0.32f) * (0.75f + 0.25f * H(seed, 3, bay));
+        float y = band + 0.5f + r + (height - band - 1f - 2f * r) * H(seed, 4, bay);
+        float rp = r * (0.38f + 0.17f * H(seed, 11, bay));
+        float d = GearMesh * (r + rp);
+        float lean = (0.12f + 0.2f * H(seed, 12, bay)) * MathF.PI * (H(seed, 13, bay) < 0.5f ? -1f : 1f);
+        float? toward = null;
+        foreach (float up in H(seed, 14, bay) < 0.5f ? new[] { 1f, -1f } : new[] { -1f, 1f })
+        {
+            float angle = up * MathF.PI * 0.5f + lean;
+            var c = new Vector2(mid + d * MathF.Cos(angle), y + d * MathF.Sin(angle));
+            if (MathF.Abs(c.X - mid) + rp <= span * 0.5f + 0.3f && c.Y - rp >= band + 0.6f && c.Y + rp <= height - 0.3f)
+            {
+                toward = angle;
+                break;
+            }
+        }
+
+        // A tooth of the great gear on the line between the middles, a gap of the small one facing it.
+        float step = MathF.Tau / GearTeeth(r);
+        float theta = toward ?? H(seed, 5, bay) * MathF.Tau;
+        list.Add(new WallPlacement(WallPiece.Gear, new Vector3(mid, y, 0.3f), new Vector2(r, r), theta - 0.27f * step));
+        list.Add(new WallPlacement(WallPiece.Hub, new Vector3(mid, y, 0.3f), new Vector2(r * 0.12f, r * 0.12f)));
+        if (toward is float angle2)
+        {
+            float pstep = MathF.Tau / GearTeeth(rp);
+            var at = new Vector3(mid + d * MathF.Cos(angle2), y + d * MathF.Sin(angle2), 0.38f);
+            list.Add(new WallPlacement(WallPiece.Gear, at, new Vector2(rp, rp), angle2 + MathF.PI - 0.77f * pstep));
+            list.Add(new WallPlacement(WallPiece.Hub, at, new Vector2(rp * 0.15f, rp * 0.15f)));
+        }
     }
 }

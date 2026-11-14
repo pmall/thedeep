@@ -213,6 +213,57 @@ public static class KitShapes
     }
 
     /// <summary>
+    /// A bank of the old machine's pipes of <paramref name="size"/> standing on the origin, front facing +Z: a wind chest
+    /// <paramref name="chest"/> meters tall across its foot, a post up each side, and between them a rank of organ pipes
+    /// (<see cref="OrganPipeShape"/>) standing on the chest, their heights graded in a flat that rises to its middle, falls
+    /// to it, or climbs to one side, by <paramref name="seed"/>. Organ pipes, so a wall of banks reads as the works of the
+    /// machine's cathedral, never as shelves or windows.
+    /// </summary>
+    public static void Bank(MeshBuilder b, Vector3 size, float chest, int seed)
+    {
+        var random = new Random(seed);
+        float hx = size.X * 0.5f;
+        float post = MathF.Min(0.2f, size.X * 0.06f), cap = post * 0.8f;
+        b.Variation = 0f;
+        b.Box(new Vector3(0f, chest * 0.5f, 0f), new Vector3(size.X, chest, size.Z), chest * 0.08f);
+        // A moulding along the chest's top, standing a little proud of its front.
+        b.Box(new Vector3(0f, chest - 0.05f, 0.04f), new Vector3(size.X + 0.08f, 0.1f, size.Z + 0.08f), 0.02f);
+        foreach (float s in new[] { -1f, 1f })
+        {
+            float x = s * (hx - post * 0.5f);
+            b.Variation = 0.5f;
+            b.Box(new Vector3(x, chest + (size.Y - chest - cap) * 0.5f, -0.04f), new Vector3(post, size.Y - chest - cap, size.Z * 0.8f), post * 0.1f);
+            b.Box(new Vector3(x, size.Y - cap * 0.5f, -0.04f), new Vector3(post * 1.5f, cap, size.Z * 0.9f), cap * 0.15f);
+        }
+
+        float inner = size.X - 2f * post - 0.1f;
+        int count = Math.Max(3, (int)MathF.Round(inner / 0.42f));
+        float spacing = inner / count;
+        float reach = size.Y - chest - 0.05f;
+        int flat = random.Next(3);
+        bool rising = random.NextDouble() < 0.5;
+        var heights = new float[count];
+        for (int i = 0; i < count; i++)
+        {
+            float t = count > 1 ? i / (count - 1f) : 0.5f;
+            float grade = flat switch
+            {
+                0 => 1f - MathF.Abs(2f * t - 1f), // a mitre: tallest in the middle
+                1 => MathF.Abs(2f * t - 1f), // a vee: tallest at the posts
+                _ => rising ? t : 1f - t,
+            };
+            heights[i] = reach * (0.55f + 0.45f * grade);
+        }
+
+        Matrix4x4 placement = b.Transform;
+        b.Transform = Matrix4x4.CreateTranslation(0f, chest, 0f) * placement;
+        // As wide as the spacing allows, but never so wide that the shortest pipe has no room for its foot and mouth.
+        float radius = MathF.Min(spacing * 0.4f, reach * 0.55f / 8f);
+        OrganPipeShape.Rank(b, heights, spacing, radius);
+        b.Transform = placement;
+    }
+
+    /// <summary>
     /// A server rack of <paramref name="size"/> standing on the origin, front facing +Z: a frame, a back
     /// panel and <paramref name="units"/> drive bays, some pulled out or missing (drowned and looted).
     /// </summary>

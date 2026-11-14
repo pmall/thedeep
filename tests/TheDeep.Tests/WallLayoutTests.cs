@@ -72,4 +72,35 @@ public class WallLayoutTests
         Assert.DoesNotContain(wall, p => p.Piece == WallPiece.Icicles);
         Assert.Contains(WallLayout.Build(WallStyle.Nave, 44f, 24f, 4, frost: 1f), p => p.Piece == WallPiece.Icicles);
     }
+
+    [Fact]
+    public void MachineryGearsMeshWithoutClippingAndBanksStandOnTheWall()
+    {
+        int meshed = 0;
+        for (int seed = 1; seed <= 6; seed++)
+        {
+            var wall = WallLayout.Build(WallStyle.Machinery, 50f, 24f, seed);
+            var gears = wall.Where(p => p.Piece == WallPiece.Gear).ToList();
+            Assert.DoesNotContain(wall, p => p.Piece == WallPiece.Hub && !gears.Any(g => g.Position.X == p.Position.X && g.Position.Y == p.Position.Y));
+            for (int i = 0; i < gears.Count; i++)
+            {
+                for (int j = i + 1; j < gears.Count; j++)
+                {
+                    // Two gears' pitch circles touch (meshed) or keep apart; never one through the other.
+                    float gap = new System.Numerics.Vector2(gears[i].Position.X - gears[j].Position.X, gears[i].Position.Y - gears[j].Position.Y).Length()
+                        - WallLayout.GearMesh * (gears[i].Size.X + gears[j].Size.X);
+                    Assert.True(gap > -1e-3f, $"seed {seed}: two gears overlap by {-gap} m");
+                    meshed += gap < 1e-3f ? 1 : 0;
+                }
+            }
+
+            foreach (var bank in wall.Where(p => p.Piece == WallPiece.Bank))
+            {
+                Assert.True(bank.Size.Y > 2f * WallLayout.BankChest(bank.Size.Y), "a bank's pipes rise well over its chest");
+                Assert.True(bank.Position.Y + bank.Size.Y <= 24f);
+            }
+        }
+
+        Assert.True(meshed > 0, "no gear train meshes");
+    }
 }

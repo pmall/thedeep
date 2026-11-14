@@ -234,7 +234,7 @@ public class KitGeometryTests
     }
 
     public static IEnumerable<object[]> Pieces() =>
-        new[] { "column", "cluster", "pipe", "cables", "arch", "rib", "grate", "rack", "wreck", "icicles", "organ", "curtain",
+        new[] { "column", "cluster", "pipe", "cables", "arch", "rib", "grate", "rack", "wreck", "icicles", "organ", "bank", "curtain",
             "key", "crystal", "boss", "keyhole", "seal", "cog", "lever", "handle", "cradle", "mooring", "hoop", "sight" }.Select(n => new object[] { n });
 
     [Fact]
@@ -249,7 +249,7 @@ public class KitGeometryTests
     [Fact]
     public void StandingPiecesRestOnTheFloor()
     {
-        foreach (string name in new[] { "column", "cluster", "grate", "rack", "arch" })
+        foreach (string name in new[] { "column", "cluster", "grate", "rack", "arch", "bank" })
         {
             (Vector3 min, _) = BuildPiece(name, seed: 1).Bounds();
             Assert.True(MathF.Abs(min.Y) < 0.05f, $"{name} bottom is at {min.Y}");
@@ -264,6 +264,19 @@ public class KitGeometryTests
         Assert.True(max.Y < 0.05f, $"icicles rise above their root to {max.Y}");
         Assert.True(min.Y < -0.2f && min.Y >= -1.5f - 0.01f, $"the longest reaches {min.Y}");
         Assert.NotEqual(a.Positions[10], other.Positions[10]);
+    }
+
+    [Fact]
+    public void BanksOfPipesStandOnTheirChestWithinTheirSizeHoweverLow()
+    {
+        foreach (float height in new[] { 1.4f, 2.5f, 5.4f })
+        {
+            var b = new MeshBuilder();
+            KitShapes.Bank(b, new Vector3(3f, height, 0.7f), WallLayout.BankChest(height), 2);
+            (Vector3 min, Vector3 max) = b.Finish().Bounds();
+            Assert.True(MathF.Abs(min.Y) < 1e-3f && max.Y <= height + 1e-3f, $"a bank {height} m tall spans {min.Y}..{max.Y}");
+            Assert.True(min.X >= -1.5f - 0.05f && max.X <= 1.5f + 0.05f);
+        }
     }
 
     [Fact]
@@ -427,6 +440,7 @@ public class KitGeometryTests
             case "wreck": KitShapes.Wreck(b, 3f, seed); break;
             case "icicles": KitShapes.Icicles(b, 3f, 1.5f, 9, seed); break;
             case "organ": OrganPipeShape.Rank(b, new[] { 4f, 6f, 5f }, 0.8f, 0.3f); break;
+            case "bank": KitShapes.Bank(b, new Vector3(3f, 4f, 0.7f), 0.6f, seed); break;
             case "curtain": IceCurtainShape.Build(b, 4f, 6f, 0.8f, seed); break;
             case "key": PropShapes.Key(b, 0.6f, 0.13f, 0.04f); break;
             case "crystal": PropShapes.Crystal(b, 0.15f, 6, 0.1f, 0.3f, 0.2f); break;

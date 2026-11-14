@@ -1,0 +1,27 @@
+[gd_resource type="ShaderMaterial" format=3]
+
+[ext_resource type="Shader" path="res://assets/shaders/metal.gdshader" id="1_shader"]
+[ext_resource type="Texture2D" uid="uid://dtskp5h7tj8qy" path="res://assets/textures/surfaces/panels_normal.png" id="2_panels_normal"]
+[ext_resource type="Texture2D" uid="uid://cbdkgpfpxgqev" path="res://assets/textures/surfaces/panels_surface.png" id="3_panels_surface"]
+[ext_resource type="Texture2D" uid="uid://c5007l1afd5cs" path="res://assets/textures/surfaces/coating_normal.png" id="4_coating_normal"]
+[ext_resource type="Texture2D" uid="uid://bgkpcowsa62j3" path="res://assets/textures/surfaces/coating_surface.png" id="5_coating_surface"]
+
+; The plating of the machinery on the walls behind a room (WallDressing: banks of pipes, pistons): the metal's color, far
+; darker and duller than grippable metal, worn and hazed by its depth, so its forms read in the murk as midground and it
+; never reads as metal the pilgrim could grip.
+[resource]
+shader = ExtResource("1_shader")
+shader_parameter/panels_normal = ExtResource("2_panels_normal")
+shader_parameter/panels_surface = ExtResource("3_panels_surface")
+shader_parameter/coating_normal = ExtResource("4_coating_normal")
+shader_parameter/coating_surface = ExtResource("5_coating_surface")
+shader_parameter/panel_size = Vector2(6, 6)
+shader_parameter/rivet_share = 0.2
+shader_parameter/shade = 0.3
+shader_parameter/dull = 0.7
+shader_parameter/corrosion = 0.45
+shader_parameter/clearcoat = 0.0
+shader_parameter/rim = 0.0
+shader_parameter/streaks = 0.6
+shader_parameter/haze_per_meter = 0.024
+shader_parameter/haze_max = 0.6

@@ -1,5 +1,6 @@
 // A strip of light set in old machinery (a slit in a core wall): the biome's accent, mixed a little toward white at its
-// middle line, breathing slowly with a flicker running along it. Unshaded; decor, so kept dim beside gameplay glows.
+// middle line, breathing slowly with a flicker running along it. Unshaded, so its light is its albedo (an unshaded material
+// draws no emission); decor, so kept dim beside gameplay glows.
 shader_type spatial;
 render_mode unshaded, cull_back, shadows_disabled;
 
@@ -20,6 +21,5 @@ void fragment() {
 	float run = 0.75 + 0.25 * value_noise2(vec2(v_world_pos.x * 0.8 - TIME * 0.6, v_world_pos.y));
 	float breathe = 0.85 + 0.15 * sin(TIME * 0.7 + v_world_pos.x * 0.3);
 	vec3 accent = srgb_to_linear(biome_accent.rgb);
-	ALBEDO = vec3(0.0);
-	EMISSION = mix(accent, vec3(1.0, 0.9, 0.8), core * 0.35) * energy * core * run * breathe;
+	ALBEDO = mix(accent, vec3(1.0, 0.9, 0.8), core * 0.35) * energy * core * run * breathe;
 }
