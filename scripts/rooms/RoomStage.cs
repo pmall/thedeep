@@ -129,6 +129,7 @@ public partial class RoomStage : Node3D
             dust.Extents = new Vector3(size.X * 0.5f, size.Y * 0.4f, 6.5f);
             dust.Density = DustDensity;
             AddChild(dust);
+            _dust = dust;
         }
 
         List<SolidBox> solids = room.SolidBoxes();
@@ -142,6 +143,7 @@ public partial class RoomStage : Node3D
     }
 
     private BackdropArchitecture? _architecture;
+    private AmbientParticles? _dust;
     private Vector2 _min, _max;
 
     /// <summary>
@@ -151,6 +153,7 @@ public partial class RoomStage : Node3D
     public void Restyle(BiomeProfile biome)
     {
         Underglow(biome);
+        _dust?.Vary(biome.AirMoteSize, biome.AirMoteColor, biome.AirMoteLift);
 
         // The layer's skylines, or none where it names none.
         ShowSkyline(_farSkyline, biome.FarSkyline);

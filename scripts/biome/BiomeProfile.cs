@@ -168,6 +168,18 @@ public partial class BiomeProfile : Resource
     [Export] public Color ParticleTint { get; set; } = Colors.White;
 
     /// <summary>
+    /// Size of the motes filling every room's air (the stage's dust, <see cref="RoomStage.Dust"/>), times the effect's own;
+    /// the motes a room places in its light shafts keep theirs.
+    /// </summary>
+    [Export] public float AirMoteSize { get; set; } = 1f;
+
+    /// <summary>Those motes' color, times <see cref="ParticleTint"/>; its alpha is their opacity.</summary>
+    [Export] public Color AirMoteColor { get; set; } = Colors.White;
+
+    /// <summary>Upward pull on those motes, m/s², against the effect's own faint fall: past it they hang or rise like silt in still water.</summary>
+    [Export] public float AirMoteLift { get; set; }
+
+    /// <summary>
     /// Light rising from below and in front (the glow of magma, of the heart), shadowless: it lights undersides and the
     /// walls behind the play plane that the key light leaves black. Energy 0 for none.
     /// </summary>
