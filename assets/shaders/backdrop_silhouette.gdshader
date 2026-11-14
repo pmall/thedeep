@@ -37,6 +37,9 @@ uniform float lit_share : hint_range(0.0, 1.0) = 0.35;
 /// Share of the biome haze mixed into the light itself: an opening far behind the play plane is a dim glow in the haze, never
 /// brighter than the play plane (docs/art-direction.md#midground).
 uniform float light_haze : hint_range(0.0, 1.0) = 0.0;
+/// Value of the whole plane, solids, light and smoke: a layer whose haze is bright sinks its skyline under the play plane with it
+/// (docs/art-direction.md#midground).
+uniform float shade : hint_range(0.0, 1.0) = 1.0;
 
 varying vec2 v_local;
 
@@ -242,7 +245,7 @@ void fragment() {
 	vec3 light = mix(srgb_to_linear(biome_shaft.rgb), haze_color, light_haze) * window_light * lit;
 	vec3 color = mix(body, mix(body, light, 1.0 - m * 0.7), opening * lit);
 	// Smoke is the haze thickened: it veils what stands behind and fades into the sky.
-	color = mix(color, haze_color * 0.9, smoke * (1.0 - solid));
+	color = mix(color, haze_color * 0.9, smoke * (1.0 - solid)) * shade;
 	// Seen through a room's water, it sinks into it (lib/water).
 	vec3 uw_color;
 	float uw_light;
