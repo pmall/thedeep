@@ -64,7 +64,7 @@ script = ExtResource("21_room")
 SpawnPoint = NodePath("SpawnPoint")
 Stage = NodePath("Stage")
 Biome = ExtResource("22_volcanic")
-Lamps = [NodePath("Lamps/River"), NodePath("Lamps/Shrine")]
+Lamps = [NodePath("Lamps/River"), NodePath("Lamps/Shrine"), NodePath("Lamps/EastDoor")]
 Shafts = [NodePath("Shafts/Vent")]
 GlyphLights = [NodePath("Props/Shrine/Light"), NodePath("Glyphs/ShrineLight")]
 BoundsMin = Vector2(-1, -30)
@@ -403,6 +403,14 @@ shadow_enabled = false
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 38.75, 2.25, 1.2)
 light_energy = 0.9
 omni_range = 5
+shadow_enabled = false
+
+; a dim ember-warm glow before the east doorway so the way out reads
+[node name="EastDoor" type="OmniLight3D" parent="Lamps"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 91, 2.5, 4)
+light_color = Color(1, 0.55, 0.28, 1)
+light_energy = 3
+omni_range = 14
 shadow_enabled = false
 
 [node name="Particles" type="Node3D" parent="."]
