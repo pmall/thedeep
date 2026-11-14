@@ -52,9 +52,14 @@ script = ExtResource("10_blockmesh")
 Size = Vector3(70, 4, 22)
 Bevel = 0.5
 
-[sub_resource type="PrimitiveMesh" id="blockmesh_5"]
+[sub_resource type="PrimitiveMesh" id="blockmesh_10"]
 script = ExtResource("10_blockmesh")
-Size = Vector3(48, 3, 20)
+Size = Vector3(23.5, 3, 20)
+Bevel = 0.6
+
+[sub_resource type="PrimitiveMesh" id="blockmesh_11"]
+script = ExtResource("10_blockmesh")
+Size = Vector3(21.5, 3, 20)
 Bevel = 0.6
 
 [sub_resource type="PrimitiveMesh" id="wreck_6"]
@@ -265,10 +270,15 @@ transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 31, 12, -11)
 mesh = SubResource("blockmesh_4")
 material_override = ExtResource("12_stone_mid")
 
-; the lake bed going back under the water
-[node name="BedBack" type="MeshInstance3D" parent="Kit"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 31, -19.5, -12.5)
-mesh = SubResource("blockmesh_5")
+; the lake bed going back under the water, split by the shaft: behind the hatch it falls away, so the hole reads as a way down
+[node name="BedBackWest" type="MeshInstance3D" parent="Kit"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 18.75, -19.5, -12.5)
+mesh = SubResource("blockmesh_10")
+material_override = ExtResource("12_stone_mid")
+
+[node name="BedBackEast" type="MeshInstance3D" parent="Kit"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 44.25, -19.5, -12.5)
+mesh = SubResource("blockmesh_11")
 material_override = ExtResource("12_stone_mid")
 
 ; a machine that went through the ice
@@ -320,9 +330,9 @@ spot_angle_attenuation = 2
 
 [node name="Lamps" type="Node3D" parent="."]
 
-; a cold glow rising from the shaft in the lake bed
+; a cold glow rising from the shaft in the lake bed: under the slab, so it lights the hole's sides from below, never the bed
 [node name="Shaft" type="OmniLight3D" parent="Lamps"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 32, -16, 1)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 32, -20.5, 0)
 light_energy = 1.2
 omni_range = 7
 shadow_enabled = false
