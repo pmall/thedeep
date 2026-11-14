@@ -18,7 +18,7 @@ public enum BackdropStyle
     /// hanging from them, a few furnace mouths glowing in the farthest row (the volcanic layer).</summary>
     Foundry,
 
-    /// <summary>Ancient machinery: great rings on hubs, spokes, pistons between them (the core).</summary>
+    /// <summary>Ancient machinery: great gears on their axles, pistons between them (the core).</summary>
     Machinery,
 }
 
@@ -57,9 +57,10 @@ public enum BackdropPiece
     Chord,
     Brace,
     Chain,
-    Ring,
+
+    /// <summary>A great toothed gear facing the camera, its back on its origin's plane; its length is its radius.</summary>
+    Gear,
     Hub,
-    Spoke,
     Piston,
 }
 
@@ -330,7 +331,7 @@ public static class BackdropLayout
         float band = Band(row);
         for (int k = 0; k < xs.Count; k++)
         {
-            // A piston column on every bay line; a great ring on a hub every other bay, at an uneven height.
+            // A piston column on every bay line; a great gear on its axle every other bay, at an uneven height.
             list.Add(new BackdropPlacement(BackdropPiece.Piston, new Vector3(xs[k], row.BaseY, 0f), Length: row.TopY - row.BaseY));
             if (k % 2 == 1 || k + 1 >= xs.Count)
             {
@@ -339,18 +340,11 @@ public static class BackdropLayout
 
             float cx = (xs[k] + xs[k + 1]) * 0.5f;
             float cy = row.FloorY + band * (0.3f + 0.4f * H(row, 1, k));
-            float radius = d.RingRadius * (0.75f + 0.4f * H(row, 2, k));
-            // In front of the pistons, so they pass behind the wheel.
+            float radius = d.GearRadius * (0.75f + 0.4f * H(row, 2, k));
+            // In front of the pistons, so they pass behind the gear.
             float z = 2f * row.Scale;
-            list.Add(new BackdropPlacement(BackdropPiece.Ring, new Vector3(cx, cy, z), PitchX: MathF.PI * 0.5f, Length: radius));
+            list.Add(new BackdropPlacement(BackdropPiece.Gear, new Vector3(cx, cy, z), RollZ: H(row, 4, k) * MathF.PI, Length: radius));
             list.Add(new BackdropPlacement(BackdropPiece.Hub, new Vector3(cx, cy, z - 0.6f * row.Scale), PitchX: MathF.PI * 0.5f));
-            int spokes = 4 + (int)(H(row, 3, k) * 3f);
-            float turn = H(row, 4, k) * MathF.PI;
-            for (int s = 0; s < spokes; s++)
-            {
-                float a = turn + MathF.PI * s / spokes;
-                list.Add(new BackdropPlacement(BackdropPiece.Spoke, new Vector3(cx, cy, z), RollZ: a, Length: radius * 2f));
-            }
         }
 
         return list;
@@ -422,8 +416,8 @@ public readonly record struct BackdropDims(float Pitch, float Scale)
     /// <summary>The side of a truss chord's square section, meters; a brace is thinner.</summary>
     public float BeamSection => 0.3f * Scale;
 
-    /// <summary>A machinery ring's mean radius, meters; each ring takes between 0.75 and 1.15 times it.</summary>
-    public float RingRadius => 0.85f * Pitch;
+    /// <summary>A machinery gear's mean radius, meters; each gear takes between 0.75 and 1.15 times it.</summary>
+    public float GearRadius => 0.85f * Pitch;
     /// <summary>A piston's radius, meters.</summary>
     public float PistonRadius => 0.45f * Scale;
 }
