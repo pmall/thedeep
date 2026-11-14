@@ -20,4 +20,15 @@ public class CameraMathTests
         // 90° vertical FOV: half height equals distance.
         Assert.Equal(10f, CameraMath.HalfHeightAtDistance(10f, 90f), 4);
     }
+
+    [Theory]
+    [InlineData(0f, 0f, true)]      // dead center
+    [InlineData(13f, 0f, true)]     // inside the margin
+    [InlineData(17f, 0f, false)]    // in the margin: not framed
+    [InlineData(0f, -9f, false)]    // below the view
+    [InlineData(40f, 0f, false)]    // far off
+    public void FramesAPointOnlyWellInsideTheView(float x, float y, bool framed)
+    {
+        Assert.Equal(framed, CameraMath.Frames(0f, 0f, 16f, 8f, x, y, 2f));
+    }
 }

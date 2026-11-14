@@ -87,6 +87,13 @@ public partial class SideCamera : Camera3D
         Target.Landed -= OnLanded;
     }
 
+    /// <summary>Whether a point on the play plane is on screen, <paramref name="margin"/> meters in from the view's edges.</summary>
+    public bool Frames(Vector2 point, float margin)
+    {
+        ViewBounds view = View();
+        return CameraMath.Frames(GlobalPosition.X, GlobalPosition.Y, view.Half.X, view.Half.Y, point.X, point.Y, margin);
+    }
+
     /// <summary>Adds shake (0 to 1); the offset grows with its square, so small amounts stay subtle.</summary>
     public void AddShake(float amount) => _trauma = Mathf.Clamp(_trauma + amount, 0f, 1f);
 
