@@ -4,10 +4,12 @@ using Godot;
 namespace TheDeep;
 
 /// <summary>
-/// A prompt in the world naming what the player may do here and the button that does it: the button's glyph (keyboard or pad,
-/// following the device last used) then the verb (<see cref="Verb"/>, a line), facing the camera, fading in while offered and out
-/// when not, rising a little as it comes. The prop that places it (a child node, where the prompt floats) offers it each time that
-/// changes (<see cref="Offer"/>); who offers keeps two prompts from showing at once (<see cref="Session.Prompting"/>).
+/// A prompt naming what the player may do at a place in the world and the button that does it: the button's glyph (keyboard or pad,
+/// following the device last used) then the verb (<see cref="Verb"/>, a line), fading in while offered and out when not, rising a
+/// little as it comes. The prop that places it (a child node, where the prompt floats) offers it each time that changes
+/// (<see cref="Offer"/>); who offers keeps two prompts from showing at once (<see cref="Session.Prompting"/>).
+/// <para>It is drawn on the screen over the place (<see cref="PromptPlace"/>), never in the world, so like every other text brick it
+/// keeps the style's size, ink and plate in every room: the room's grade, fog and bloom never reach it, and nothing stands before it.</para>
 /// <para>A press prompt (<see cref="HoldSeconds"/> zero) only shows: the prop takes the press itself. A hold prompt rings its
 /// button; while offered and held, the ring fills over <see cref="HoldSeconds"/> and the prompt raises <see cref="Completed"/>;
 /// letting go empties it at once, and taps never add up (<see cref="HoldProgress"/>). The hold counts physics ticks, like the rules it
@@ -31,8 +33,11 @@ public partial class ActionPrompt : Node3D, INamesLines
     /// <summary>How far it rises as it fades in, meters.</summary>
     [Export] public float Rise { get; set; } = 0.08f;
 
-    /// <summary>Its size in the world, meters per pixel of its face (the verb's letters stand about 0.35 m at the style's body size).</summary>
-    private const float PixelSize = 0.0075f;
+    /// <summary>The canvas layer it is drawn on: over the health, under the hint line, the banner and the dialogue.</summary>
+    private const int ScreenLayer = 72;
+
+    /// <summary>How far inside the canvas's edges it is kept, pixels.</summary>
+    private const float Margin = 16f;
 
     /// <summary>A hold prompt held full: the act is confirmed.</summary>
     public event System.Action? Completed;
@@ -46,36 +51,17 @@ public partial class ActionPrompt : Node3D, INamesLines
     /// <summary>How full the hold is, 0–1 (zero for a press prompt).</summary>
     public float Fill => _hold?.Fraction ?? 0f;
 
-    private SubViewport? _viewport;
+    private CanvasLayer? _layer;
     private PromptFace? _face;
-    private Sprite3D? _sprite;
     private HoldProgress? _hold;
     private ButtonNames.Device _device;
     private ButtonNames.Device _drawn;
     private StringName _drawnVerb = "";
     private float _shown;
 
-    private SubViewport Viewport => _viewport ??= new SubViewport
-    {
-        TransparentBg = true,
-        Disable3D = true,
-        GuiDisableInput = true,
-        RenderTargetUpdateMode = SubViewport.UpdateMode.Disabled,
-    };
+    private CanvasLayer Screen => _layer ??= new CanvasLayer { Layer = ScreenLayer, Visible = false };
 
-    private PromptFace Face => _face ??= new PromptFace();
-
-    private Sprite3D Sprite => _sprite ??= new Sprite3D
-    {
-        PixelSize = PixelSize,
-        Billboard = BaseMaterial3D.BillboardModeEnum.Enabled,
-        TextureFilter = BaseMaterial3D.TextureFilterEnum.Linear,
-        Shaded = false,
-        // Over its own prop and whatever stands before it: a prompt is never hidden.
-        NoDepthTest = true,
-        RenderPriority = 10,
-        Visible = false,
-    };
+    private PromptFace Face => _face ??= new PromptFace { MouseFilter = Control.MouseFilterEnum.Ignore };
 
     /// <summary>Offers the act, or takes the offer back; it fades toward that.</summary>
     public void Offer(bool offered) => Offered = offered;
@@ -84,11 +70,9 @@ public partial class ActionPrompt : Node3D, INamesLines
     {
         _hold = HoldSeconds > 0f ? new HoldProgress(HoldSeconds) : null;
         _device = _drawn = ButtonGlyph.FirstDevice();
-        Viewport.AddChild(Face);
-        AddChild(Viewport);
-        AddChild(Sprite);
+        Screen.AddChild(Face);
+        AddChild(Screen);
         Draw();
-        Sprite.Texture = Viewport.GetTexture();
     }
 
     public override void _Input(InputEvent @event) => _device = ButtonGlyph.DeviceAfter(_device, @event);
@@ -105,9 +89,10 @@ public partial class ActionPrompt : Node3D, INamesLines
     {
         float dt = (float)delta;
         _shown = Motion.Approach(_shown, Offered ? 1f : 0f, dt / TextStyle.Shared.Panel);
-        bool visible = _shown > 0f;
-        Sprite.Visible = visible;
-        Viewport.RenderTargetUpdateMode = visible ? SubViewport.UpdateMode.Always : SubViewport.UpdateMode.Disabled;
+        Camera3D? camera = GetViewport().GetCamera3D();
+        Vector3 place = GlobalPosition + Vector3.Up * Rise * _shown;
+        bool visible = _shown > 0f && IsVisibleInTree() && camera is not null && !camera.IsPositionBehind(place);
+        Screen.Visible = visible;
         if (!visible)
         {
             return;
@@ -122,15 +107,18 @@ public partial class ActionPrompt : Node3D, INamesLines
         Face.Light(dt);
         Face.Fill = Fill;
         Face.QueueRedraw();
-        Sprite.Modulate = Sprite.Modulate with { A = _shown * _shown * (3f - 2f * _shown) };
-        Sprite.Position = Sprite.Position with { Y = Rise * _shown };
-        Sprite.Offset = new Vector2(Reach * Viewport.Size.X * 0.5f, 0f);
+        Face.Modulate = Colors.White with { A = _shown * _shown * (3f - 2f * _shown) };
+        Vector2 at = camera!.UnprojectPosition(place);
+        Vector2 canvas = GetViewport().GetVisibleRect().Size;
+        System.Numerics.Vector2 corner = PromptPlace.TopLeft(new(at.X, at.Y), new(Face.Size.X, Face.Size.Y), Reach, new(canvas.X, canvas.Y), Margin);
+        // On whole pixels, so its letters stay crisp as the camera glides.
+        Face.Position = new Vector2(Mathf.Round(corner.X), Mathf.Round(corner.Y));
     }
 
     /// <summary>Draws the face for the device and the verb shown, sized to fit.</summary>
     private void Draw()
     {
         _drawnVerb = Verb;
-        Viewport.Size = Face.Show(ButtonGlyph.Main(Action, _drawn), LineBook.Shared.Find(Verb)?.Text ?? "", _hold is not null);
+        Face.Show(ButtonGlyph.Main(Action, _drawn), LineBook.Shared.Find(Verb)?.Text ?? "", _hold is not null);
     }
 }
