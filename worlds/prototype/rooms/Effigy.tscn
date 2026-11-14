@@ -12,6 +12,7 @@
 [ext_resource type="PackedScene" path="res://scenes/props/LawBreak.tscn" id="6_law"]
 [ext_resource type="Script" path="res://scripts/kit/BlockMesh.cs" id="7_blockmesh"]
 [ext_resource type="Material" path="res://assets/materials/stone_mid.tres" id="8_stone_mid"]
+[ext_resource type="Material" path="res://assets/materials/wall_far.tres" id="17_wall_far"]
 [ext_resource type="Script" path="res://scripts/parts/PodMesh.cs" id="9_pod"]
 [ext_resource type="Material" path="res://assets/materials/glyphs.tres" id="10_glyphs"]
 [ext_resource type="PackedScene" path="res://scenes/fx/Dust.tscn" id="11_dust"]
@@ -172,7 +173,7 @@ ActLine = &"law.first.act"
 [node name="Back" type="MeshInstance3D" parent="Kit"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 22, 10, -18)
 mesh = SubResource("blockmesh_1")
-material_override = ExtResource("8_stone_mid")
+material_override = ExtResource("17_wall_far")
 
 ; the back wall dressed: a machinery's wall at 2.0x (WallDressing)
 [node name="WallDressing" type="Node3D" parent="Kit"]

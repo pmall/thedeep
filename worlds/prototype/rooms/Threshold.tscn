@@ -14,7 +14,7 @@
 [ext_resource type="PackedScene" path="res://scenes/fx/Embers.tscn" id="7_embers"]
 [ext_resource type="PackedScene" path="res://scenes/props/Shrine.tscn" id="8_shrine"]
 [ext_resource type="Script" path="res://scripts/kit/BlockMesh.cs" id="9_blockmesh"]
-[ext_resource type="Material" path="res://assets/materials/stone_mid.tres" id="10_stone_mid"]
+[ext_resource type="Material" path="res://assets/materials/wall_far.tres" id="10_wall_far"]
 [ext_resource type="Script" path="res://scripts/parts/RingMesh.cs" id="11_ring"]
 [ext_resource type="Script" path="res://scripts/rooms/dressing/Spinner.cs" id="12_spinner"]
 [ext_resource type="Material" path="res://assets/materials/metal_mid.tres" id="13_metal_mid"]
@@ -195,7 +195,7 @@ transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 38, 0.5, 0)
 [node name="Back" type="MeshInstance3D" parent="Kit"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 25, 7, -18)
 mesh = SubResource("blockmesh_1")
-material_override = ExtResource("10_stone_mid")
+material_override = ExtResource("10_wall_far")
 
 ; the back wall dressed: a machinery's wall at 2.0x (WallDressing)
 [node name="WallDressing" type="Node3D" parent="Kit"]

@@ -12,7 +12,7 @@
 [ext_resource type="Material" path="res://assets/materials/water.tres" id="5_water"]
 [ext_resource type="Material" path="res://assets/materials/water_section.tres" id="7_water_section"]
 [ext_resource type="Script" path="res://scripts/kit/BlockMesh.cs" id="8_blockmesh"]
-[ext_resource type="Material" path="res://assets/materials/stone_mid.tres" id="9_stone_mid"]
+[ext_resource type="Material" path="res://assets/materials/wall_far.tres" id="9_wall_far"]
 [ext_resource type="Material" path="res://assets/materials/magma.tres" id="10_magma"]
 [ext_resource type="Script" path="res://scripts/parts/RingMesh.cs" id="11_ring"]
 [ext_resource type="Script" path="res://scripts/rooms/dressing/Spinner.cs" id="12_spinner"]
@@ -156,7 +156,7 @@ SectionMaterial = ExtResource("7_water_section")
 [node name="Back" type="MeshInstance3D" parent="Kit"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 25, 8, -16)
 mesh = SubResource("blockmesh_1")
-material_override = ExtResource("9_stone_mid")
+material_override = ExtResource("9_wall_far")
 
 ; the back wall dressed: a machinery's wall at 1.75x (WallDressing)
 [node name="WallDressing" type="Node3D" parent="Kit"]

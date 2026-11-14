@@ -13,7 +13,7 @@
 [ext_resource type="Material" path="res://assets/materials/water_section.tres" id="7_water_section"]
 [ext_resource type="PackedScene" path="res://scenes/props/HarpoonAnchor.tscn" id="8_anchor"]
 [ext_resource type="Script" path="res://scripts/kit/BlockMesh.cs" id="9_blockmesh"]
-[ext_resource type="Material" path="res://assets/materials/stone_mid.tres" id="10_stone_mid"]
+[ext_resource type="Material" path="res://assets/materials/wall_far.tres" id="10_wall_far"]
 [ext_resource type="Script" path="res://scripts/parts/PodMesh.cs" id="11_pod"]
 [ext_resource type="Material" path="res://assets/materials/magma.tres" id="12_magma"]
 [ext_resource type="Script" path="res://scripts/parts/RingMesh.cs" id="13_ring"]
@@ -247,7 +247,7 @@ transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 40, -12, 0)
 [node name="Back" type="MeshInstance3D" parent="Kit"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 25, 0, -22)
 mesh = SubResource("blockmesh_1")
-material_override = ExtResource("10_stone_mid")
+material_override = ExtResource("10_wall_far")
 
 ; the back wall dressed: a machinery's wall at 2.25x (WallDressing)
 [node name="WallDressing" type="Node3D" parent="Kit"]
