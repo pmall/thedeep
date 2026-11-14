@@ -1,10 +1,12 @@
 [gd_resource type="ShaderMaterial" format=3]
 
 ; A back wall's masonry behind a dressed wall (WallDressing): stone_mid's value on the cheap architecture shader,
-; since the wall covers much of the screen and its dressing hides most of it.
+; since the wall covers much of the screen and its dressing hides most of it. Its rime is dimmer than the architecture's
+; own (frost_value), so a frosted back wall stays a step behind the play plane.
 [ext_resource type="Shader" path="res://assets/shaders/architecture.gdshader" id="1_shader"]
 
 [resource]
 shader = ExtResource("1_shader")
 shader_parameter/slot = 0
 shader_parameter/shade = 0.6
+shader_parameter/frost_value = 0.35
