@@ -11,8 +11,6 @@ namespace TheDeep;
 /// </summary>
 public partial class SlashTrail : MeshInstance3D
 {
-    private static readonly Godot.Collections.Array<Godot.Collections.Array> NoBlendShapes = new();
-    private static readonly Godot.Collections.Dictionary NoLods = new();
 
     /// <summary>How long the slash lasts behind the blade, seconds: it fades fast.</summary>
     [Export] public float Lifetime { get; set; } = 0.11f;
@@ -137,7 +135,7 @@ public partial class SlashTrail : MeshInstance3D
         _arrays.Set(Mesh.ArrayType.TexUV, _uvs.AsSpan(0, count * 2));
         _arrays.Set(Mesh.ArrayType.Index, _indices.AsSpan(0, (count - 1) * 6));
         _mesh.ClearSurfaces();
-        _mesh.AddSurfaceFromArrays(Mesh.PrimitiveType.Triangles, _arrays.Managed, NoBlendShapes, NoLods);
+        KitMesh.AddSurface(_mesh, _arrays.Managed);
         _drawn = true;
     }
 }
