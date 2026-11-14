@@ -1,0 +1,21 @@
+[gd_resource type="Resource" script_class="WallPalette" format=3]
+; The materials a back wall is dressed in (WallDressing), the mid-distance set.
+
+[ext_resource type="Script" path="res://scripts/rooms/dressing/WallPalette.cs" id="1_palette"]
+[ext_resource type="Material" path="res://assets/materials/rust_mid.tres" id="2_iron"]
+[ext_resource type="Material" path="res://assets/materials/metal_mid.tres" id="3_plate"]
+[ext_resource type="Material" path="res://assets/materials/furnace_mouth.tres" id="4_molten"]
+[ext_resource type="Material" path="res://assets/materials/glow_strip.tres" id="5_glow"]
+[ext_resource type="Material" path="res://assets/materials/stone_mid.tres" id="6_stone"]
+[ext_resource type="Material" path="res://assets/materials/ice_mid.tres" id="7_ice"]
+[ext_resource type="Material" path="res://assets/materials/stone_recess.tres" id="8_recess"]
+
+[resource]
+script = ExtResource("1_palette")
+Iron = ExtResource("2_iron")
+Plate = ExtResource("3_plate")
+Molten = ExtResource("4_molten")
+Glow = ExtResource("5_glow")
+Stone = ExtResource("6_stone")
+Ice = ExtResource("7_ice")
+Recess = ExtResource("8_recess")

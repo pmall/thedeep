@@ -25,6 +25,7 @@
 [ext_resource type="Resource" path="res://resources/biomes/frozen.tres" id="17_frozen"]
 [ext_resource type="PackedScene" path="res://scenes/stage/RoomStage.tscn" id="18_stage"]
 [ext_resource type="Script" path="res://scripts/rooms/dressing/WallDressing.cs" id="19_walldressing"]
+[ext_resource type="Resource" path="res://resources/stage/wall_palette.tres" id="pal_wall"]
 [ext_resource type="Material" path="res://assets/materials/wall_stone.tres" id="20_wall_stone"]
 [ext_resource type="PackedScene" path="res://scenes/kit/Doorway.tscn" id="90_doorway"]
 [ext_resource type="Resource" path="res://resources/seams/doorway.tres" id="91_seam"]
@@ -197,6 +198,7 @@ ActLine = &"law.second.act"
 transform = Transform3D(1.25, 0, 0, 0, 1.25, 0, 0, 0, 1.25, 21, -0.5, -8.25)
 script = ExtResource("19_walldressing")
 Style = 3
+Palette = ExtResource("pal_wall")
 Size = Vector2(41.6, 18.4)
 Seed = 611
 Frost = 0.15

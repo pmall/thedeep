@@ -2,7 +2,10 @@ using Godot;
 
 namespace TheDeep;
 
-/// <summary>Prop piece: a flat band round a circle facing the camera, a harpoon anchor's lit hoop (<see cref="AnchorShapes.Hoop"/>).</summary>
+/// <summary>
+/// Prop piece: a flat band round a circle facing the camera, a harpoon anchor's lit hoop, set inside the iron ring's bar.
+/// <see cref="Radius"/> is to the band's middle, <see cref="Width"/> its width and <see cref="Depth"/> its thickness; give it an emissive material (<see cref="AnchorShapes.Hoop"/>).
+/// </summary>
 [GlobalClass]
 public partial class HoopMesh : KitMesh
 {

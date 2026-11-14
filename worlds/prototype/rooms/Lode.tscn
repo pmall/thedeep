@@ -23,6 +23,7 @@
 [ext_resource type="Resource" path="res://resources/biomes/core.tres" id="17_core"]
 [ext_resource type="PackedScene" path="res://scenes/stage/RoomStage.tscn" id="18_stage"]
 [ext_resource type="Script" path="res://scripts/rooms/dressing/WallDressing.cs" id="19_wall"]
+[ext_resource type="Resource" path="res://resources/stage/wall_palette_machinery.tres" id="pal_machinery"]
 [ext_resource type="PackedScene" path="res://scenes/kit/Doorway.tscn" id="90_doorway"]
 [ext_resource type="Resource" path="res://resources/seams/doorway.tres" id="91_seam"]
 [ext_resource type="PackedScene" path="res://scenes/kit/Hatch.tscn" id="92_hatch"]
@@ -163,6 +164,7 @@ material_override = ExtResource("9_wall_far")
 transform = Transform3D(1.75, 0, 0, 0, 1.75, 0, 0, 0, 1.75, 25, -12, -15.25)
 script = ExtResource("19_wall")
 Style = 1
+Palette = ExtResource("pal_machinery")
 Size = Vector2(45.7143, 22.8571)
 Seed = 23
 

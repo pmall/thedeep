@@ -25,6 +25,7 @@
 [ext_resource type="Resource" path="res://resources/biomes/flooded.tres" id="17_flooded"]
 [ext_resource type="PackedScene" path="res://scenes/stage/RoomStage.tscn" id="18_stage"]
 [ext_resource type="Script" path="res://scripts/rooms/dressing/WallDressing.cs" id="19_walldressing"]
+[ext_resource type="Resource" path="res://resources/stage/wall_palette.tres" id="pal_wall"]
 [ext_resource type="Material" path="res://assets/materials/wall_stone.tres" id="20_wall_stone"]
 [ext_resource type="Script" path="res://scripts/kit/CableMesh.cs" id="21_cables"]
 [ext_resource type="Material" path="res://assets/materials/foreground.tres" id="22_foreground"]
@@ -258,6 +259,7 @@ Seed = 22
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 12.5, 0, -8.75)
 script = ExtResource("19_walldressing")
 Style = 3
+Palette = ExtResource("pal_wall")
 Size = Vector2(29, 13.5)
 Seed = 141
 

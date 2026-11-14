@@ -17,6 +17,7 @@
 [ext_resource type="Resource" path="res://resources/biomes/volcanic.tres" id="11_volcanic"]
 [ext_resource type="PackedScene" path="res://scenes/stage/RoomStage.tscn" id="12_stage"]
 [ext_resource type="Script" path="res://scripts/rooms/dressing/WallDressing.cs" id="13_wall"]
+[ext_resource type="Resource" path="res://resources/stage/wall_palette.tres" id="pal_wall"]
 [ext_resource type="PackedScene" path="res://scenes/kit/Hatch.tscn" id="92_hatch"]
 [ext_resource type="Resource" path="res://resources/seams/hatch.tres" id="93_seam_hatch"]
 
@@ -184,6 +185,7 @@ material_override = ExtResource("8_stone_mid")
 transform = Transform3D(1.0, 0, 0, 0, 1.0, 0, 0, 0, 1.0, 3.25, -3, -2.25)
 script = ExtResource("13_wall")
 Style = 0
+Palette = ExtResource("pal_wall")
 Size = Vector2(10, 40)
 Seed = 526
 

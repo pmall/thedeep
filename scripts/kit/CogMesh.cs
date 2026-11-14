@@ -2,7 +2,11 @@ using Godot;
 
 namespace TheDeep;
 
-/// <summary>Prop piece: a cog facing the camera, its back on the origin's plane, turning about its middle (<see cref="PropShapes.Cog"/>).</summary>
+/// <summary>
+/// Prop piece: a cog facing the camera, its back on the origin's plane, for a machine's gear or a mechanism's dial.
+/// <see cref="Radius"/> is out to the tooth tips, <see cref="Teeth"/> their count, <see cref="Depth"/> how thick it is (a hub stands proud of it, spokes leave windows).
+/// Spin it with a <see cref="Spinner"/> about the camera axis (<see cref="PropShapes.Cog"/>).
+/// </summary>
 [GlobalClass]
 public partial class CogMesh : KitMesh
 {

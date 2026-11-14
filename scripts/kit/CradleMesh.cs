@@ -2,7 +2,10 @@ using Godot;
 
 namespace TheDeep;
 
-/// <summary>Prop piece: the prongs of a reliquary's cradle on a pedestal's top, an item floating between them (<see cref="PropShapes.Cradle"/>).</summary>
+/// <summary>
+/// Prop piece: the claws of a reliquary's cradle, standing on the origin (a pedestal's top) with an item floating between them.
+/// <see cref="Radius"/> is the collar's width, <see cref="Height"/> where the prongs turn back in, <see cref="Prongs"/> how many (one points away from the camera) (<see cref="PropShapes.Cradle"/>).
+/// </summary>
 [GlobalClass]
 public partial class CradleMesh : KitMesh
 {

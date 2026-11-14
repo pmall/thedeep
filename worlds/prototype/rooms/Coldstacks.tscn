@@ -36,6 +36,7 @@
 [ext_resource type="Resource" path="res://resources/biomes/frozen.tres" id="23_frozen"]
 [ext_resource type="PackedScene" path="res://scenes/stage/RoomStage.tscn" id="24_stage"]
 [ext_resource type="Script" path="res://scripts/rooms/dressing/WallDressing.cs" id="44_walldressing"]
+[ext_resource type="Resource" path="res://resources/stage/wall_palette.tres" id="pal_wall"]
 [ext_resource type="Material" path="res://assets/materials/wall_stone.tres" id="45_wall_stone"]
 [ext_resource type="PackedScene" path="res://scenes/kit/Doorway.tscn" id="90_doorway"]
 [ext_resource type="Resource" path="res://resources/seams/doorway.tres" id="91_seam"]
@@ -482,6 +483,7 @@ material_override = ExtResource("45_wall_stone")
 transform = Transform3D(1.75, 0, 0, 0, 1.75, 0, 0, 0, 1.75, 37.5, -1, -13.75)
 script = ExtResource("44_walldressing")
 Style = 2
+Palette = ExtResource("pal_wall")
 Size = Vector2(53.1429, 20.5714)
 Seed = 204
 

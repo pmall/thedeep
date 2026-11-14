@@ -2,7 +2,11 @@ using Godot;
 
 namespace TheDeep;
 
-/// <summary>Prop piece: the Harpoon's sight, wedges round a ring pointing at its middle (<see cref="AnchorShapes.Sight"/>).</summary>
+/// <summary>
+/// Prop piece: the Harpoon's sight, wedges round a ring each pointing at its middle, about the origin and facing the camera.
+/// <see cref="Radius"/> is how far each tip sits from the middle, <see cref="Marks"/> how many wedges (the first at the top-right diagonal),
+/// <see cref="Size"/> how long each is, <see cref="Depth"/> how far it stands toward the camera; scale the node about its middle to close the sight on its ring (<see cref="AnchorShapes.Sight"/>).
+/// </summary>
 [GlobalClass]
 public partial class SightMesh : KitMesh
 {
