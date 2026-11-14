@@ -5,4 +5,4 @@
 
 [resource]
 shader = ExtResource("1_shader")
-shader_parameter/energy = 1.6
+shader_parameter/energy = 1.0
