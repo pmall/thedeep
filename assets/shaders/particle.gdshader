@@ -27,6 +27,10 @@ uniform float key_light : hint_range(0.0, 1.0) = 0.1;
 /// must outshine the lit fog around them.
 uniform float light_gain : hint_range(0.0, 8.0) = 5.0;
 
+/// How far a mote's soft edge reaches into its quad, 0 the shader's crisp disc, 1 a gaussian puff with no edge and no bright core:
+/// a mote that reads as a speck of mist, never a point.
+uniform float haze : hint_range(0.0, 1.0) = 0.0;
+
 void fragment() {
 	vec2 p = UV * 2.0 - 1.0;
 	float r = length(p);
@@ -42,7 +46,7 @@ void fragment() {
 		// A spark aligned with its velocity (+Y): a hot head and a fading tail.
 		a = (1.0 - smoothstep(0.1, 0.9, abs(p.x))) * (1.0 - UV.y) * (1.0 - UV.y);
 	} else {
-		a = 1.0 - smoothstep(0.25, 1.0, r);
+		a = mix(1.0 - smoothstep(0.25, 1.0, r), exp(-r * r * 3.5) * (1.0 - smoothstep(0.7, 1.0, r)), haze);
 	}
 	vec3 tint = srgb_to_linear(biome_particle.rgb) * COLOR.rgb;
 	if (molten) {

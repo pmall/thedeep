@@ -7,7 +7,7 @@
 
 [sub_resource type="QuadMesh" id="QuadMesh_mote"]
 material = ExtResource("3_material")
-size = Vector2(0.06, 0.06)
+size = Vector2(0.32, 0.32)
 
 [node name="Dust" type="GPUParticles3D"]
 cast_shadow = 0
