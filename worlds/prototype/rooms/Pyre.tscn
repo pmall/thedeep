@@ -71,7 +71,7 @@ BoundsMin = Vector2(-1, -2)
 BoundsMax = Vector2(27, 20)
 
 [node name="SpawnPoint" type="Marker3D" parent="."]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 4, 0, 0)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 2.5, 0, 0)
 
 ; The shared atmosphere stack (environment, key light, clear front air, skylines, far pillars, frame, dust).
 [node name="Stage" parent="." instance=ExtResource("20_stage")]
