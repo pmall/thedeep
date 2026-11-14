@@ -260,7 +260,8 @@ public partial class WaterBody : Node3D
     /// <summary>
     /// Where the room's light from above dies in the water: a sheet <see cref="LightReach"/> under the surface that only
     /// casts shadows, over the water behind the play plane, so a wall or a floor deep behind it never takes a lamp's or
-    /// the key light's crisp patch through a gap in the room (a bright shape hanging in dark water); what lies deep in the
+    /// the key light's crisp patch through a gap in the room (a bright shape hanging in dark water). It reaches past the water's
+    /// sides as far as the water is deep, so a slanting light can't slip in under it from beside the water. What lies deep in the
     /// water is lit by the room's ambient light alone, which the murk dims (lib/water.gdshaderinc). It stops at the play
     /// plane's back, so the play plane keeps its light at any depth (a ray from it toward a light leaves the sheet's side).
     /// Null for shallow water (<see cref="ShallowDepth"/>), or water lying wholly on the play plane.
@@ -276,7 +277,7 @@ public partial class WaterBody : Node3D
 
         return new MeshInstance3D
         {
-            Mesh = new BoxMesh { Size = new Vector3(Size.X, 0.1f, back - extent.Position.Y) },
+            Mesh = new BoxMesh { Size = new Vector3(Size.X + 2f * Depth, 0.1f, back - extent.Position.Y) },
             CastShadow = GeometryInstance3D.ShadowCastingSetting.ShadowsOnly,
             Position = new Vector3(0f, -LightReach, 0.5f * (back + extent.Position.Y) - GlobalPosition.Z),
         };
