@@ -1,12 +1,14 @@
 // Rime and hoarfrost from the biome (BiomeProfile.Frost, FrostColor): 0 outside the frozen layer, so nothing changes there;
 // in it, a coat of rime lies over every material that frosts. Its fine texture is the baked frost set (FrostSurface; the
 // sampling contract is SurfaceMaps), projected on the world's three planes and blended by the face's normal, so it runs on
-// across pieces of every material alike: blotches pale and dark, small gaps where it is thin, crusts, hoarfrost fronds, and
-// crystals that glint through the specular. Broad masks only say how much rime a place takes: a cap on what faces up and
-// feathers out of crevices and along edges, solid where they are full and down to the coat's thickest parts where they
-// thin out; and over everything a translucent film, pale where the coat is thick and dark in its gaps, so it mottles the
-// surface under it without making it paler as a whole. Include after noise.gdshaderinc and palette.gdshaderinc; each material passes its own share: metal
-// takes less, so grippable metal keeps its panels and gloss and never reads as frosted stone.
+// across pieces of every material alike: blotches, small gaps where it is thin, crusts, hoarfrost fronds, and crystals that
+// glint through the specular. Broad masks only say how much rime a place takes: a cap on what faces up and feathers out of
+// crevices and along edges, solid where they are full and down to the coat's thickest parts where they thin out; and a
+// translucent film of the same pale rime, gathered on what faces up, in crevices and along edges and thinner on open side faces,
+// which only ever pales the surface under it: the coat's gaps thin it, they never darken it, so they never read as dark
+// spots. The coat's fine pattern fades to its mean where a pixel covers more than a few centimeters, so far pieces take
+// an even veil of rime instead of a speckle. Include after noise.gdshaderinc and palette.gdshaderinc; each material passes
+// its own share: metal takes less, so grippable metal keeps its panels and gloss and never reads as frosted stone.
 
 global uniform float biome_frost;
 global uniform vec4 biome_frost_color;
@@ -17,13 +19,17 @@ global uniform sampler2D frost_normal : repeat_enable, filter_linear_mipmap_anis
 
 // The set's tile (FrostSurface.TileMeters).
 const float FROST_TILE = 4.0;
-// The film: the cells per meter of its patches, how opaque it is at least and at most, and its tone against the rime's
-// in the coat's gaps and where it is thickest.
+// The film: the cells per meter of its patches, how opaque it is at least and at most where it gathers, the share of that
+// it keeps on open side faces, its tone against the rime's, and how much of its opacity the coat's gaps take away.
 const float FROST_FILM_FREQUENCY = 0.35;
-const float FROST_FILM_MIN = 0.35;
-const float FROST_FILM_MAX = 0.6;
-const float FROST_FILM_DARK = 0.24;
-const float FROST_FILM_PALE = 0.62;
+const float FROST_FILM_MIN = 0.4;
+const float FROST_FILM_MAX = 0.55;
+const float FROST_FILM_OPEN = 0.7;
+const float FROST_FILM_TONE = 0.9;
+const float FROST_FILM_GAPS = 0.35;
+// Meters per pixel where the coat's fine pattern starts to fade to its mean, and where it is gone.
+const float FROST_DETAIL_NEAR = 0.012;
+const float FROST_DETAIL_FAR = 0.04;
 
 struct Frost {
 	float cover; // 0 bare, 1 under rime
@@ -80,7 +86,7 @@ Frost frost_at(vec3 p, vec3 face_n, vec3 world_n, float cavity, float edge, floa
 	float drift = fbm3(p * vec3(0.9, 2.5, 0.9) + 7.0, 3);
 	float up = smoothstep(0.45, 0.85, world_n.y);
 	float cap = up * smoothstep(0.3, 0.6, drift + amount * 0.22);
-	// The film, thicker and thinner in wide patches.
+	// The film, thicker and thinner in wide patches, gathered where the rime settles and thin on open side faces.
 	float film = mix(FROST_FILM_MIN, FROST_FILM_MAX, smoothstep(0.25, 0.75, value_noise3(p * FROST_FILM_FREQUENCY + 5.3)));
 	// Hoarfrost feathering out of crevices and along the edges of side faces, in patches.
 	float patches = fbm3(p * 2.2 + 3.1, 3);
@@ -89,16 +95,22 @@ Frost frost_at(vec3 p, vec3 face_n, vec3 world_n, float cavity, float edge, floa
 	// Side faces take less than the faces the rime falls on.
 	rime *= mix(0.7, 1.0, smoothstep(-0.2, 0.5, face_n.y));
 	// A full cap takes more than the coat's thickest, so it covers even the gaps.
-	float take = clamp(max(cap * 1.25, rime * 0.85) * amount, 0.0, 1.25);
+	float take = clamp(max(cap * 1.5, rime * 0.85) * amount, 0.0, 1.25);
+	float gather = max(max(smoothstep(0.2, 0.8, world_n.y), cavity), 1.0 - smoothstep(0.0, 0.3, edge));
+
+	// Far off, the fine pattern gives way to its mean: thickness a half, tone the rime's own.
+	float fine = 1.0 - smoothstep(FROST_DETAIL_NEAR, FROST_DETAIL_FAR, max(length(dpdx), length(dpdy)));
+	thick = mix(0.5, thick, fine);
+	float grain = mix(1.0, surface.r * 2.0, fine);
 
 	// The coat shows solid where it is thicker than the place leaves bare, and as the film elsewhere.
 	float solid = smoothstep(0.0, 0.22, thick + take - 1.0) * smoothstep(0.0, 0.15, take);
+	film *= mix(FROST_FILM_OPEN, 1.0, gather) * (1.0 - FROST_FILM_GAPS * (1.0 - smoothstep(0.1, 0.6, thick)));
 	fr.cover = max(solid, film * amount);
 	fr.solid = solid;
-	float film_tone = mix(FROST_FILM_DARK, FROST_FILM_PALE, smoothstep(0.1, 0.75, thick));
-	fr.tone = surface.r * 2.0 * mix(film_tone, 1.0, solid);
+	fr.tone = grain * mix(FROST_FILM_TONE, 1.0, solid);
 	fr.rough = surface.b;
-	fr.bend = bend;
+	fr.bend = bend * fine;
 	return fr;
 }
 
