@@ -22,6 +22,9 @@ uniform float shade : hint_range(0.0, 2.0) = 1.0;
 uniform float rim : hint_range(0.0, 1.0) = 0.0;
 /// Share of the biome's rime this material takes (lib/frost).
 uniform float frost_share : hint_range(0.0, 1.0) = 1.0;
+/// How bright its rime is, a share of the biome's: below 1, since everything here stands behind the play plane, which
+/// stays the brightest layer (`docs/art-direction.md#midground`).
+uniform float frost_value : hint_range(0.0, 1.0) = 0.8;
 /// Light of its own in the layer's molten color (a furnace mouth), times this; 0 none.
 uniform float glow : hint_range(0.0, 8.0) = 0.0;
 
@@ -47,9 +50,9 @@ void fragment() {
 	float up = abs(n.y) > 0.6 ? p.z : p.y;
 	float tone = 0.85 + 0.3 * v_seed + 0.15 * (value_noise2(vec2(along, up) * 0.15) - 0.5);
 	vec3 albedo = palette_color(slot) * tone;
-	// Rime, when the layer is frosted: a little duller than on the play plane, which stays the brightest layer.
+	// Rime, when the layer is frosted: duller than on the play plane (frost_value).
 	Frost fr = frost_at(p, n, n, 0.0, 1e3, frost_share);
-	albedo = mix(albedo, frost_color(0.0) * 0.8 * fr.tone, fr.cover);
+	albedo = mix(albedo, frost_color(0.0) * frost_value * fr.tone, fr.cover);
 	ALBEDO = albedo * shade;
 	EMISSION = srgb_to_linear(biome_molten.rgb) * glow;
 	ROUGHNESS = mix(roughness, fr.rough, fr.cover);
