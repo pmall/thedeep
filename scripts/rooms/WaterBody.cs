@@ -38,6 +38,17 @@ public partial class WaterBody : Node3D
     /// <summary>How high above the surface the reflection probe takes its picture, meters.</summary>
     private const float ReflectionEye = 1.5f;
 
+    /// <summary>
+    /// How deep the room's light from above reaches into deep water behind the play plane, meters (<see cref="LightCutoff"/>).
+    /// </summary>
+    private const float LightReach = 1f;
+
+    /// <summary>Water no deeper than this keeps the room's light down to its floor: a lit floor reads through shallow water.</summary>
+    private const float ShallowDepth = 3f;
+
+    /// <summary>The play plane's back, world Z: its blocks run from here to their front faces at 2.</summary>
+    private const float PlayPlaneBack = -2f;
+
     /// <summary>Surface size: X across the room, Y into the scene (world Z).</summary>
     [Export] public Vector2 Size { get; set; } = new(10f, 10f);
 
@@ -204,6 +215,11 @@ public partial class WaterBody : Node3D
         surface.SetInstanceShaderParameter(BoundsParameter, rect);
         AddChild(surface);
         AddChild(ReflectionOfRoom());
+        if (LightCutoff() is { } cutoff)
+        {
+            AddChild(cutoff);
+        }
+
         if (!Globals)
         {
             return;
@@ -238,6 +254,32 @@ public partial class WaterBody : Node3D
             UpdateMode = ReflectionProbe.UpdateModeEnum.Once,
             CullMask = ~WaterRenderLayer & 0xFFFFF,
             ReflectionMask = WaterRenderLayer,
+        };
+    }
+
+    /// <summary>
+    /// Where the room's light from above dies in the water: a sheet <see cref="LightReach"/> under the surface that only
+    /// casts shadows, over the water behind the play plane, so a wall or a floor deep behind it never takes a lamp's or
+    /// the key light's crisp patch through a gap in the room (a bright shape hanging in dark water). It reaches past the water's
+    /// sides as far as the water is deep, so a slanting light can't slip in under it from beside the water. What lies deep in the
+    /// water is lit by the room's ambient light alone, which the murk dims (lib/water.gdshaderinc). It stops at the play
+    /// plane's back, so the play plane keeps its light at any depth (a ray from it toward a light leaves the sheet's side).
+    /// Null for shallow water (<see cref="ShallowDepth"/>), or water lying wholly on the play plane.
+    /// </summary>
+    private MeshInstance3D? LightCutoff()
+    {
+        Rect2 extent = Area;
+        float back = Mathf.Min(extent.End.Y, PlayPlaneBack);
+        if (Depth <= ShallowDepth || back <= extent.Position.Y)
+        {
+            return null;
+        }
+
+        return new MeshInstance3D
+        {
+            Mesh = new BoxMesh { Size = new Vector3(Size.X + 2f * Depth, 0.1f, back - extent.Position.Y) },
+            CastShadow = GeometryInstance3D.ShadowCastingSetting.ShadowsOnly,
+            Position = new Vector3(0f, -LightReach, 0.5f * (back + extent.Position.Y) - GlobalPosition.Z),
         };
     }
 
