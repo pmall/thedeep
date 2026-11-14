@@ -9,7 +9,7 @@ namespace TheDeep;
 /// the prompts draw it (<see cref="ButtonGlyph"/>, following the device last used). It stands in the banner's places
 /// (<see cref="TextStyle.Places"/>): high by default, low while the high place would cover the pilgrim or the one speaking
 /// (<see cref="DialoguePlace"/>). It keeps one size for a whole conversation, the size of its widest name and its longest line
-/// (<see cref="Open"/>), up to <see cref="MaxWidth"/>. Eased in and out. It only shows what it is given (<see cref="Conversations"/>
+/// (<see cref="Open"/>), up to <see cref="MaxWidth"/>, a line that wraps taken as wide as its rows come out even (<see cref="EvenRows"/>). Eased in and out. It only shows what it is given (<see cref="Conversations"/>
 /// plays the conversation); text comes from the line book, written in the shared <see cref="TextStyle"/>.
 /// </summary>
 public partial class DialogueBox : CanvasLayer
@@ -118,15 +118,16 @@ public partial class DialogueBox : CanvasLayer
 
         foreach (string text in texts)
         {
-            widest = Mathf.Max(widest, font.GetStringSize(text, HorizontalAlignment.Left, -1f, Style.Body).X);
+            // A line that wraps, as wide as its rows come out even (EvenRows): no word left alone on the last.
+            float natural = font.GetStringSize(text, HorizontalAlignment.Left, -1f, Style.Body).X;
+            widest = Mathf.Max(widest, EvenRows.Width(w => RowsOf(text, w), natural, TextWidth));
         }
 
         float width = Mathf.Min(Mathf.Ceil(widest) + 2f, TextWidth);
         int rows = 1;
         foreach (string text in texts)
         {
-            float tall = font.GetMultilineStringSize(text, HorizontalAlignment.Left, width, Style.Body, -1, Breaks).Y;
-            rows = Mathf.Max(rows, Mathf.RoundToInt(tall / font.GetHeight(Style.Body)));
+            rows = Mathf.Max(rows, RowsOf(text, width));
         }
 
         // As tall as the label stands with its longest line: its rows and the spacing between them.
@@ -139,6 +140,14 @@ public partial class DialogueBox : CanvasLayer
 
     /// <summary>The widest the text stands within the plate, pixels.</summary>
     private float TextWidth => MaxWidth - 2f * Style.Padding.X;
+
+    /// <summary>How many rows <paramref name="text"/> takes as the label wraps it at <paramref name="width"/>.</summary>
+    private static int RowsOf(string text, float width)
+    {
+        Font font = Style.Font;
+        float tall = font.GetMultilineStringSize(text, HorizontalAlignment.Left, width, Style.Body, -1, Breaks).Y;
+        return Mathf.RoundToInt(tall / font.GetHeight(Style.Body));
+    }
 
     /// <summary>Shows <paramref name="speaker"/>'s <paramref name="text"/>, its first <paramref name="shown"/> letters.</summary>
     public void Show(string speaker, string text, int shown, bool whole)
