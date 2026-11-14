@@ -87,8 +87,8 @@ public partial class Main : Node3D
     /// <summary>User argument that runs the hidden passage check (see SecretCheck), used by tools/check.sh.</summary>
     private const string SecretCheckArgument = "--secret-check";
 
-    /// <summary>User argument that runs the ambush check (see AmbushCheck), used by tools/check.sh.</summary>
-    private const string AmbushCheckArgument = "--ambush-check";
+    /// <summary>User argument that runs the sealed arena check (see ArenaCheck), used by tools/check.sh.</summary>
+    private const string ArenaCheckArgument = "--arena-check";
 
     /// <summary>User argument that runs the dialogue check (see DialogueCheck), used by tools/check.sh.</summary>
     private const string DialogueCheckArgument = "--dialogue-check";
@@ -153,7 +153,7 @@ public partial class Main : Node3D
     private static readonly string[] DriverArguments =
     {
         SmokeArgument, CaptureTestArgument, LookDevArgument, ValidateRoomsArgument, ValidateTravelArgument, ValidateSpeciesArgument,
-        UiShotArgument, PlaythroughCheckArgument, GripCheckArgument, CombatCheckArgument, HarpoonCheckArgument, EncounterCheckArgument, DrillCheckArgument, BallastCheckArgument, HeatCheckArgument, BurnProbeArgument, RouteCheckArgument, KeyCheckArgument, CodeCheckArgument, PowerUpCheckArgument, DialogueCheckArgument, PlateCheckArgument, AmbushCheckArgument, SecretCheckArgument, FightCheckArgument, BakeSurfacesArgument, SaveCheckWriteArgument,
+        UiShotArgument, PlaythroughCheckArgument, GripCheckArgument, CombatCheckArgument, HarpoonCheckArgument, EncounterCheckArgument, DrillCheckArgument, BallastCheckArgument, HeatCheckArgument, BurnProbeArgument, RouteCheckArgument, KeyCheckArgument, CodeCheckArgument, PowerUpCheckArgument, DialogueCheckArgument, PlateCheckArgument, ArenaCheckArgument, SecretCheckArgument, FightCheckArgument, BakeSurfacesArgument, SaveCheckWriteArgument,
     };
 
     private SaveData? _resume;
@@ -312,9 +312,9 @@ public partial class Main : Node3D
         {
             AddChild(new SecretCheck { Player = Player, World = World, Secrets = Secrets, Session = Session });
         }
-        else if (Array.IndexOf(args, AmbushCheckArgument) >= 0)
+        else if (Array.IndexOf(args, ArenaCheckArgument) >= 0)
         {
-            AddChild(new AmbushCheck { Player = Player, World = World, Session = Session });
+            AddChild(new ArenaCheck { Player = Player, World = World, Session = Session });
         }
         else if (Array.IndexOf(args, DialogueCheckArgument) >= 0)
         {

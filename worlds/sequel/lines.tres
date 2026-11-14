@@ -98,7 +98,28 @@ Speaker = "Scripture"
 Text = "We kept the wall against the sea, and the sea came in as ice. Keep what we kept: the light at the end."
 Notes = "Read slowly; a duty passed on."
 
+[sub_resource type="Resource" id="boss_founder_name"]
+script = ExtResource("2_line")
+Id = &"boss.founder.name"
+Speaker = "UI"
+Text = "The Founder"
+Notes = "Banner title when the fight in the Breakwater begins (boss placeholder)."
+
+[sub_resource type="Resource" id="boss_founder_fallen"]
+script = ExtResource("2_line")
+Id = &"boss.founder.fallen"
+Speaker = "UI"
+Text = "The pier stands unguarded"
+Notes = "Banner title when the Founder breaks."
+
+[sub_resource type="Resource" id="boss_founder_fallen_hint"]
+script = ExtResource("2_line")
+Id = &"boss.founder.fallen.hint"
+Speaker = "UI"
+Text = "The way back to the Drydock is open."
+Notes = "Banner line under it."
+
 [resource]
 script = ExtResource("1_book")
 Base = ExtResource("3_game")
-Lines = [SubResource("ending_title"), SubResource("ending_line"), SubResource("ending_thanks"), SubResource("dialogue_quay_lamplighter_wake"), SubResource("dialogue_quay_lamplighter_sea"), SubResource("dialogue_quay_lamplighter_down"), SubResource("item_strongroom_key_name"), SubResource("item_strongroom_key_taken"), SubResource("item_strongroom_key_locked"), SubResource("item_weir_lever_name"), SubResource("item_weir_lever_locked"), SubResource("plate_strongroom_title"), SubResource("plate_strongroom_text")]
+Lines = [SubResource("ending_title"), SubResource("ending_line"), SubResource("ending_thanks"), SubResource("dialogue_quay_lamplighter_wake"), SubResource("dialogue_quay_lamplighter_sea"), SubResource("dialogue_quay_lamplighter_down"), SubResource("item_strongroom_key_name"), SubResource("item_strongroom_key_taken"), SubResource("item_strongroom_key_locked"), SubResource("item_weir_lever_name"), SubResource("item_weir_lever_locked"), SubResource("plate_strongroom_title"), SubResource("plate_strongroom_text"), SubResource("boss_founder_name"), SubResource("boss_founder_fallen"), SubResource("boss_founder_fallen_hint")]

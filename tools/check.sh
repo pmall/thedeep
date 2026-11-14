@@ -205,8 +205,8 @@ CHECKS=(
     "code|CODE OK|CODE CHECK|2000|--room Ashfall --code-check"
     # SecretCheck: the Sacristy's hidden passage into the Cell.
     "secret|SECRET OK|SECRET CHECK|1500|--room Sacristy --secret-check"
-    # AmbushCheck: the Pyre's trap.
-    "ambush|AMBUSH OK|AMBUSH CHECK|1500|--room Pyre --ambush-check"
+    # ArenaCheck: a sealed arena's gates, foes and memory, in place: the Pyre's trap.
+    "arena|ARENA OK|ARENA CHECK|1500|--room Pyre --arena-check"
     # DialogueCheck: the Lamplighter's conversation, in the Narthex.
     "dialogue|DIALOGUE OK|DIALOGUE CHECK|1500|--room Narthex --dialogue-check"
     # PlateCheck: a scripture plate read, in the Sanctum.
@@ -230,6 +230,9 @@ CHECKS=(
     "sequel_burn|BURN OK|BURN CHECK|20000|--world sequel --burn-probe"
     "sequel_routes|ROUTES OK|ROUTE CHECK|20000|--world sequel --route-check"
     "sequel_dialogue|DIALOGUE OK|DIALOGUE CHECK|1500|--world sequel --room Quay --dialogue-check"
+    # ArenaCheck on the sequel's ambush and boss seal.
+    "sequel_ambush|ARENA OK|ARENA CHECK|1500|--world sequel --room Drydock --arena-check"
+    "sequel_boss|ARENA OK|ARENA CHECK|1500|--world sequel --room Breakwater --arena-check"
 )
 
 # Runs one check in the background: its log, then a status file with its exit code and how long it took.

@@ -1,5 +1,5 @@
 [gd_resource type="Resource" script_class="WorldDefinition" format=3]
-; The sequel world (docs/roadmap.md#sequel-test): a second, small world built from the prototype's bricks and content alone, 7 rooms
+; The sequel world (docs/roadmap.md#sequel-test): a second, small world built from the prototype's bricks and content alone, 9 rooms
 ; on one layer (Brine, a variant of the frozen layer). Its network is network.md beside this file. Played with `-- --world sequel`.
 
 [ext_resource type="Script" path="res://scripts/world/WorldDefinition.cs" id="1_world"]

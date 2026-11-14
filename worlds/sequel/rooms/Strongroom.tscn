@@ -1,7 +1,7 @@
 [gd_scene format=3]
 
 ; The Strongroom, off the Quay's west end behind its locked door (the key on the Hold's high ledge): a vault of the sea-wall's
-; keepers, a strength power-up on a dais, a scripture plate. A dead end.
+; keepers, a strength power-up on a dais, a scripture plate. West: on to the Drydock.
 
 [ext_resource type="Material" path="res://assets/materials/wet_stone.tres" id="1_wet_stone"]
 [ext_resource type="PackedScene" path="res://scenes/kit/Block.tscn" id="2_block"]
@@ -12,6 +12,8 @@
 [ext_resource type="Script" path="res://scripts/rooms/Room.cs" id="7_room"]
 [ext_resource type="Resource" path="res://resources/biomes/brine.tres" id="8_brine"]
 [ext_resource type="PackedScene" path="res://scenes/stage/RoomStage.tscn" id="9_stage"]
+[ext_resource type="PackedScene" path="res://scenes/kit/Doorway.tscn" id="90_doorway"]
+[ext_resource type="Resource" path="res://resources/seams/doorway.tres" id="91_seam"]
 
 [node name="Strongroom" type="Node3D" node_paths=PackedStringArray("SpawnPoint", "Stage", "Shafts", "GlyphLights")]
 script = ExtResource("7_room")
@@ -34,18 +36,15 @@ PillarDensity = 2.5
 
 [node name="Geometry" type="Node3D" parent="."]
 
+; the floor, from the west doorway's sill (West's Doorway frames X -3.5 to 1.5, Y -2 to 0 and 4 to 6)
 [node name="Floor" parent="Geometry" instance=ExtResource("2_block")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 10, -2, 0)
-Size = Vector3(26, 4, 4)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 12.25, -2, 0)
+Size = Vector3(21.5, 4, 4)
 Material = ExtResource("1_wet_stone")
 
 [node name="Ceiling" parent="Geometry" instance=ExtResource("2_block")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 10, 10.5, 0)
 Size = Vector3(26, 3, 4)
-
-[node name="WallWest" parent="Geometry" instance=ExtResource("2_block")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -1.5, 4.5, 0)
-Size = Vector3(3, 9, 4)
 
 ; the east wall over the doorway
 [node name="WallEast" parent="Geometry" instance=ExtResource("2_block")]
@@ -58,6 +57,17 @@ transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 7, 0.25, 0)
 Size = Vector3(4, 0.5, 4)
 
 [node name="Exits" type="Node3D" parent="."]
+
+; west doorway on to the Drydock
+[node name="West" type="Marker3D" parent="Exits"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -1, 0, 0)
+script = ExtResource("3_exit")
+Side = 0
+TargetRoom = "res://worlds/sequel/rooms/Drydock.tscn"
+TargetExit = "East"
+
+[node name="Doorway" parent="Exits/West" instance=ExtResource("90_doorway")]
+Profile = ExtResource("91_seam")
 
 ; east doorway back onto the Quay, through its locked door
 [node name="East" type="Marker3D" parent="Exits"]

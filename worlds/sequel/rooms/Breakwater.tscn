@@ -1,0 +1,148 @@
+[gd_scene format=3]
+
+; The Breakwater, west of the Drydock: the hall inside the sea-wall's last pier, where the keepers' forge-master still stands
+; guard over the dock. Stepping inside drops the gate in the doorway behind (BossSeal) until the Founder (a boss placeholder)
+; breaks. A dead end: the way out is the east doorway.
+
+[ext_resource type="Material" path="res://assets/materials/wet_stone.tres" id="1_wet_stone"]
+[ext_resource type="PackedScene" path="res://scenes/kit/Block.tscn" id="2_block"]
+[ext_resource type="Script" path="res://scripts/rooms/RoomExit.cs" id="3_exit"]
+[ext_resource type="PackedScene" path="res://scenes/props/Portcullis.tscn" id="4_portcullis"]
+[ext_resource type="Script" path="res://scripts/props/BossSeal.cs" id="5_bossseal"]
+[ext_resource type="Script" path="res://scripts/machines/Machine.cs" id="6_machine"]
+[ext_resource type="Resource" path="res://resources/machines/founder.tres" id="7_founder"]
+[ext_resource type="Script" path="res://scripts/kit/BlockMesh.cs" id="8_blockmesh"]
+[ext_resource type="Material" path="res://assets/materials/stone_mid.tres" id="9_stone_mid"]
+[ext_resource type="Script" path="res://scripts/rooms/PhotoSpot.cs" id="10_spot"]
+[ext_resource type="Script" path="res://scripts/rooms/Room.cs" id="11_room"]
+[ext_resource type="Resource" path="res://resources/biomes/brine.tres" id="12_brine"]
+[ext_resource type="PackedScene" path="res://scenes/stage/RoomStage.tscn" id="13_stage"]
+[ext_resource type="PackedScene" path="res://scenes/kit/Doorway.tscn" id="90_doorway"]
+[ext_resource type="Resource" path="res://resources/seams/doorway.tres" id="91_seam"]
+
+[sub_resource type="PrimitiveMesh" id="blockmesh_1"]
+script = ExtResource("8_blockmesh")
+Size = Vector3(60, 40, 1.2)
+Bevel = 0.3
+
+[node name="Breakwater" type="Node3D" node_paths=PackedStringArray("SpawnPoint", "Stage", "Lamps", "Shafts")]
+script = ExtResource("11_room")
+SpawnPoint = NodePath("SpawnPoint")
+Stage = NodePath("Stage")
+Biome = ExtResource("12_brine")
+Lamps = [NodePath("Lamps/Pier")]
+Shafts = [NodePath("Shafts/Pier")]
+BoundsMin = Vector2(-1.5, -2)
+BoundsMax = Vector2(37.5, 18)
+
+[node name="SpawnPoint" type="Marker3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 34, 0, 0)
+
+; The shared atmosphere stack (environment, key light, clear front air, skylines, far pillars, frame, dust).
+[node name="Stage" parent="." instance=ExtResource("13_stage")]
+Seed = 33
+DustDensity = 1.8
+PillarDensity = 3
+
+[node name="Geometry" type="Node3D" parent="."]
+
+; the hall's floor, up to the east doorway's sill (East's Doorway frames X 34.5 to 39.5, Y -2 to 0 and 4 to 6)
+[node name="Floor" parent="Geometry" instance=ExtResource("2_block")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 15.75, -2, 0)
+Size = Vector3(37.5, 4, 4)
+Material = ExtResource("1_wet_stone")
+
+; the roof, wall to wall: the doorway's wall rises to it, deep enough to take the gate when it rises
+[node name="Ceiling" parent="Geometry" instance=ExtResource("2_block")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 18.25, 19.5, 0)
+Size = Vector3(42.5, 3, 4)
+
+; the pier's west face, the sea beyond it
+[node name="WallWest" parent="Geometry" instance=ExtResource("2_block")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -1.5, 9, 0)
+Size = Vector3(3, 18, 4)
+
+[node name="Exits" type="Node3D" parent="."]
+
+; east, back into the Drydock
+[node name="East" type="Marker3D" parent="Exits"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 37, 0, 0)
+script = ExtResource("3_exit")
+Side = 1
+TargetRoom = "res://worlds/sequel/rooms/Drydock.tscn"
+TargetExit = "West"
+
+[node name="Doorway" parent="Exits/East" instance=ExtResource("90_doorway")]
+Profile = ExtResource("91_seam")
+
+[node name="Props" type="Node3D" parent="."]
+
+; drops behind the pilgrim when the fight starts, in the doorway under its wall
+[node name="Gate" parent="Props" instance=ExtResource("4_portcullis")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 35.25, 0, 0)
+
+[node name="Machines" type="Node3D" parent="."]
+
+; the keepers' forge-master, facing the door
+[node name="Founder" type="CharacterBody3D" parent="Machines"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 14, 0, 0)
+script = ExtResource("6_machine")
+Species = ExtResource("7_founder")
+StartFacing = 1
+
+; the arena: stepping inside drops the gate until the Founder breaks
+[node name="Fight" type="Node3D" parent="." node_paths=PackedStringArray("Boss", "Gates")]
+script = ExtResource("5_bossseal")
+Boss = NodePath("../Machines/Founder")
+Gates = [NodePath("../Props/Gate")]
+ArenaMin = Vector2(0.5, -1)
+ArenaMax = Vector2(33.5, 16)
+NameLine = &"boss.founder.name"
+FallenLine = &"boss.founder.fallen"
+FallenHintLine = &"boss.founder.fallen.hint"
+
+[node name="Kit" type="Node3D" parent="."]
+
+; the pier's back wall
+[node name="Back" type="MeshInstance3D" parent="Kit"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 18, 9, -14)
+mesh = SubResource("blockmesh_1")
+material_override = ExtResource("9_stone_mid")
+
+[node name="Shafts" type="Node3D" parent="."]
+
+; straight down onto the Founder's floor
+[node name="Pier" type="SpotLight3D" parent="Shafts"]
+transform = Transform3D(-1, 0, 0, 0, 0.1414, 0.9899, 0, 0.9899, -0.1414, 14, 34, -2.5)
+light_energy = 6
+light_volumetric_fog_energy = 12
+shadow_enabled = true
+spot_range = 80
+spot_attenuation = 0.25
+spot_angle = 10
+spot_angle_attenuation = 2
+
+[node name="Lamps" type="Node3D" parent="."]
+
+; a lamp over the hall
+[node name="Pier" type="OmniLight3D" parent="Lamps"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 20, 8, 2)
+light_energy = 2.5
+omni_range = 18
+shadow_enabled = true
+
+[node name="PhotoSpots" type="Node3D" parent="."]
+
+; the hall, the Founder and the gate in the east doorway
+[node name="Hall" type="Marker3D" parent="PhotoSpots"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 20, 7, 32)
+script = ExtResource("10_spot")
+PlayerPosition = Vector3(31, 0, 0)
+PlayerFacing = -1
+Fov = 50
+
+; the east doorway from the Drydock: its sill, lintel and the wall around it (the seam's frame)
+[node name="EastDoor" type="Marker3D" parent="PhotoSpots"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 31, 4, 16)
+script = ExtResource("10_spot")
+PlayerPosition = Vector3(29, 0, 0)

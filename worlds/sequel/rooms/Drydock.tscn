@@ -1,0 +1,196 @@
+[gd_scene format=3]
+
+; The Drydock, west of the Strongroom: the keepers' dock under the sea-wall, drained and frozen, where their machines were
+; laid up in the cradles. A trap (an Ambush): two of the laid-up machines stand as the pilgrim steps past either doorway,
+; the gates falling behind and ahead, until both are broken. East: back into the Strongroom. West: on to the Breakwater.
+
+[ext_resource type="Material" path="res://assets/materials/wet_stone.tres" id="1_wet_stone"]
+[ext_resource type="PackedScene" path="res://scenes/kit/Block.tscn" id="2_block"]
+[ext_resource type="Script" path="res://scripts/rooms/RoomExit.cs" id="3_exit"]
+[ext_resource type="PackedScene" path="res://scenes/props/Portcullis.tscn" id="4_portcullis"]
+[ext_resource type="Script" path="res://scripts/props/Ambush.cs" id="5_ambush"]
+[ext_resource type="Script" path="res://scripts/machines/Machine.cs" id="6_machine"]
+[ext_resource type="Resource" path="res://resources/machines/votary.tres" id="7_votary"]
+[ext_resource type="Resource" path="res://resources/machines/gleaner.tres" id="8_gleaner"]
+[ext_resource type="Script" path="res://scripts/kit/BlockMesh.cs" id="9_blockmesh"]
+[ext_resource type="Material" path="res://assets/materials/stone_mid.tres" id="10_stone_mid"]
+[ext_resource type="Script" path="res://scripts/kit/WreckMesh.cs" id="11_wreck"]
+[ext_resource type="Material" path="res://assets/materials/rust_mid.tres" id="12_rust_mid"]
+[ext_resource type="Script" path="res://scripts/rooms/PhotoSpot.cs" id="13_spot"]
+[ext_resource type="Script" path="res://scripts/rooms/Room.cs" id="14_room"]
+[ext_resource type="Resource" path="res://resources/biomes/brine.tres" id="15_brine"]
+[ext_resource type="PackedScene" path="res://scenes/stage/RoomStage.tscn" id="16_stage"]
+[ext_resource type="PackedScene" path="res://scenes/kit/Doorway.tscn" id="90_doorway"]
+[ext_resource type="Resource" path="res://resources/seams/doorway.tres" id="91_seam"]
+
+[sub_resource type="PrimitiveMesh" id="blockmesh_1"]
+script = ExtResource("9_blockmesh")
+Size = Vector3(60, 36, 1.2)
+Bevel = 0.3
+
+[sub_resource type="PrimitiveMesh" id="wreck_2"]
+script = ExtResource("11_wreck")
+Size = 1.8
+Seed = 701
+
+[sub_resource type="PrimitiveMesh" id="wreck_3"]
+script = ExtResource("11_wreck")
+Size = 2.4
+Seed = 702
+
+[sub_resource type="PrimitiveMesh" id="wreck_4"]
+script = ExtResource("11_wreck")
+Size = 1.6
+Seed = 703
+
+[node name="Drydock" type="Node3D" node_paths=PackedStringArray("SpawnPoint", "Stage", "Lamps", "Shafts")]
+script = ExtResource("14_room")
+SpawnPoint = NodePath("SpawnPoint")
+Stage = NodePath("Stage")
+Biome = ExtResource("15_brine")
+Lamps = [NodePath("Lamps/Cradles")]
+Shafts = [NodePath("Shafts/Dock")]
+BoundsMin = Vector2(-1.5, -2)
+BoundsMax = Vector2(33.5, 14)
+
+[node name="SpawnPoint" type="Marker3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 30, 0, 0)
+
+; The shared atmosphere stack (environment, key light, clear front air, skylines, far pillars, frame, dust).
+[node name="Stage" parent="." instance=ExtResource("16_stage")]
+Seed = 31
+DustDensity = 1.6
+PillarDensity = 2.5
+
+[node name="Geometry" type="Node3D" parent="."]
+
+; the dock's floor, between the two doorways' sills (each Doorway frames X marker ± 2.5, Y -2 to 0 and 4 to 6)
+[node name="Floor" parent="Geometry" instance=ExtResource("2_block")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 16, -2, 0)
+Size = Vector3(29, 4, 4)
+Material = ExtResource("1_wet_stone")
+
+; the roof, wall to wall: the doorways' walls rise to it, deep enough to take each gate when it rises
+[node name="Ceiling" parent="Geometry" instance=ExtResource("2_block")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 16, 15.5, 0)
+Size = Vector3(39, 3, 4)
+
+[node name="Exits" type="Node3D" parent="."]
+
+; west, on to the Breakwater
+[node name="West" type="Marker3D" parent="Exits"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -1, 0, 0)
+script = ExtResource("3_exit")
+Side = 0
+TargetRoom = "res://worlds/sequel/rooms/Breakwater.tscn"
+TargetExit = "East"
+
+[node name="Doorway" parent="Exits/West" instance=ExtResource("90_doorway")]
+Profile = ExtResource("91_seam")
+
+; east, back into the Strongroom
+[node name="East" type="Marker3D" parent="Exits"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 33, 0, 0)
+script = ExtResource("3_exit")
+Side = 1
+TargetRoom = "res://worlds/sequel/rooms/Strongroom.tscn"
+TargetExit = "West"
+
+[node name="Doorway" parent="Exits/East" instance=ExtResource("90_doorway")]
+Profile = ExtResource("91_seam")
+
+[node name="Props" type="Node3D" parent="."]
+
+; the trap's gates, in the doorways under their walls: they fall behind and ahead when the laid-up machines stand
+[node name="GateWest" parent="Props" instance=ExtResource("4_portcullis")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.75, 0, 0)
+
+[node name="GateEast" parent="Props" instance=ExtResource("4_portcullis")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 31.25, 0, 0)
+
+[node name="Machines" type="Node3D" parent="."]
+
+; two machines laid up in the cradles, stood up by the trap (not there until it springs)
+[node name="LaidUpWest" type="CharacterBody3D" parent="Machines"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 9, 0, 0)
+script = ExtResource("6_machine")
+Species = ExtResource("7_votary")
+StartFacing = 1
+
+[node name="LaidUpEast" type="CharacterBody3D" parent="Machines"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 20, 0, 0)
+script = ExtResource("6_machine")
+Species = ExtResource("8_gleaner")
+StartFacing = 1
+
+; the trap: stepping past either doorway springs it
+[node name="Ambush" type="Node3D" parent="." node_paths=PackedStringArray("Wave", "Gates")]
+script = ExtResource("5_ambush")
+Wave = [NodePath("../Machines/LaidUpWest"), NodePath("../Machines/LaidUpEast")]
+Gates = [NodePath("../Props/GateEast"), NodePath("../Props/GateWest")]
+ArenaMin = Vector2(2.5, -1)
+ArenaMax = Vector2(29.5, 12)
+
+[node name="Kit" type="Node3D" parent="."]
+
+; the dock's back wall
+[node name="Back" type="MeshInstance3D" parent="Kit"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 16, 8, -14)
+mesh = SubResource("blockmesh_1")
+material_override = ExtResource("10_stone_mid")
+
+[node name="Wrecks" type="Node3D" parent="Kit"]
+
+; machines still laid up in the cradles, behind the play plane
+[node name="W0" type="MeshInstance3D" parent="Kit/Wrecks"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 6, 0, -3)
+mesh = SubResource("wreck_2")
+material_override = ExtResource("12_rust_mid")
+
+[node name="W1" type="MeshInstance3D" parent="Kit/Wrecks"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 14.5, 0, -3.5)
+mesh = SubResource("wreck_3")
+material_override = ExtResource("12_rust_mid")
+
+[node name="W2" type="MeshInstance3D" parent="Kit/Wrecks"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 25, 0, -2.75)
+mesh = SubResource("wreck_4")
+material_override = ExtResource("12_rust_mid")
+
+[node name="Shafts" type="Node3D" parent="."]
+
+; down through a crack in the sea-wall onto the cradles
+[node name="Dock" type="SpotLight3D" parent="Shafts"]
+transform = Transform3D(-1, 0, 0, 0, 0.1414, 0.9899, 0, 0.9899, -0.1414, 15, 30, -2.5)
+light_energy = 5
+light_volumetric_fog_energy = 12
+shadow_enabled = true
+spot_range = 80
+spot_attenuation = 0.25
+spot_angle = 10
+spot_angle_attenuation = 2
+
+[node name="Lamps" type="Node3D" parent="."]
+
+; a work lamp left burning over the cradles
+[node name="Cradles" type="OmniLight3D" parent="Lamps"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 16, 6, 2)
+light_energy = 2
+omni_range = 16
+shadow_enabled = true
+
+[node name="PhotoSpots" type="Node3D" parent="."]
+
+; the cradles, the laid-up machines and both gates' doorways
+[node name="Dock" type="Marker3D" parent="PhotoSpots"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 16, 6, 30)
+script = ExtResource("13_spot")
+PlayerPosition = Vector3(27, 0, 0)
+PlayerFacing = -1
+Fov = 50
+
+; the east doorway from the Strongroom: its sill, lintel and the wall around it (the seam's frame), the gate in it
+[node name="EastDoor" type="Marker3D" parent="PhotoSpots"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 27, 4, 16)
+script = ExtResource("13_spot")
+PlayerPosition = Vector3(25, 0, 0)
