@@ -1,3 +1,4 @@
+using System.Linq;
 using Xunit;
 
 namespace TheDeep.Tests;
@@ -18,7 +19,7 @@ public class SaveTests
         save.Items.Add("CryptKey");
         save.Collected.Add(SaveData.RelicId("Hall", "Relic"));
         save.Map.Add(new SavedRoom("Hall", 1, 2, -3, -4, 5, 6));
-        save.Ways.Add(new SavedWay("Hall", "East", 7, 8, "Dash", true, true));
+        save.Ways.Add(new SavedWay("Hall", "East", 7, 8, "Dash", true, true, ExitSide.East));
         save.Taken.Add("Hall/East");
 
         SaveData? back = SaveData.FromJson(save.ToJson());
@@ -34,6 +35,21 @@ public class SaveTests
         Assert.Equal(save.Map, back.Map);
         Assert.Equal(save.Ways, back.Ways);
         Assert.Equal(save.Taken, back.Taken);
+    }
+
+    [Fact]
+    public void AWaySavedWithoutItsSideIsLeftOffTheMap()
+    {
+        const string old = "{\"Version\":1,\"Room\":\"Hall\",\"Map\":[{\"Name\":\"Hall\",\"X\":0,\"Y\":0,\"MinX\":-2,\"MinY\":-2,\"MaxX\":60,\"MaxY\":30}],"
+                           + "\"Ways\":[{\"Room\":\"Hall\",\"Exit\":\"East\",\"X\":57,\"Y\":0,\"Requires\":\"\",\"Built\":true},"
+                           + "{\"Room\":\"Hall\",\"Exit\":\"Hatch\",\"X\":20,\"Y\":-1,\"Requires\":\"\",\"Built\":true,\"Side\":2}]}";
+
+        SaveData? save = SaveData.FromJson(old);
+
+        Assert.NotNull(save);
+        Assert.Equal(2, save.Ways.Count);
+        Assert.Equal("Hatch", Assert.Single(save.MapWays()).Exit);
+        Assert.Equal(ExitSide.Down, save.MapWays().Single().Side);
     }
 
     [Fact]

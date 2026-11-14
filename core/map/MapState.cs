@@ -13,11 +13,11 @@ public sealed record MapRoom(string Name, Vector2 Offset, Vector2 BoundsMin, Vec
 }
 
 /// <summary>
-/// A way out of a visited room as the map knows it: the exit's name and where it sits in its room, what it needs
-/// (a <see cref="Requirement"/> expression), whether the room behind it is built, and whether it is hidden (a secret's way in: the map
-/// shows it only once taken).
+/// A way out of a visited room as the map knows it: the exit's name, where it sits in its room and which way it leads out of it, what
+/// it needs (a <see cref="Requirement"/> expression), whether the room behind it is built, and whether it is hidden (a secret's way in:
+/// the map shows it only once taken).
 /// </summary>
-public sealed record MapWay(string Room, string Exit, Vector2 Position, string Requires, bool Built, bool Hidden = false);
+public sealed record MapWay(string Room, string Exit, Vector2 Position, ExitSide Side, string Requires, bool Built, bool Hidden = false);
 
 /// <summary>
 /// The rooms the player has visited and where they sit relative to each other. Nothing is listed by hand:

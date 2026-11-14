@@ -211,6 +211,8 @@ CHECKS=(
     "dialogue|DIALOGUE OK|DIALOGUE CHECK|1500|--room Narthex --dialogue-check"
     # PlateCheck: a scripture plate read, in the Sanctum.
     "plate|PLATE OK|PLATE CHECK|1500|--room Sanctum --plate-check"
+    # MapScreenCheck: the map screen opened and closed over the start room, then over many rooms.
+    "mapscreen|MAPSCREEN OK|MAPSCREEN CHECK|3000|--map-screen-check"
     # PowerUpCheck: power-ups taken, in the Sacristy.
     "powerup|POWERUP OK|POWERUP CHECK|1500|--room Sacristy --powerup-check"
     # FightCheck: the fight moveset on the lab's Votary.
@@ -233,6 +235,7 @@ CHECKS=(
     # ArenaCheck on the sequel's ambush and boss seal.
     "sequel_ambush|ARENA OK|ARENA CHECK|1500|--world sequel --room Drydock --arena-check"
     "sequel_boss|ARENA OK|ARENA CHECK|1500|--world sequel --room Breakwater --arena-check"
+    "sequel_mapscreen|MAPSCREEN OK|MAPSCREEN CHECK|3000|--world sequel --map-screen-check"
 )
 
 # Runs one check in the background: its log, then a status file with its exit code and how long it took.
