@@ -5,7 +5,8 @@ The owner's plan and the open items, in order, opened by where the work stands. 
 ## Now <a id="status"></a>
 
 - **Stage:** A, the prototype (`docs/roadmap.md#stage-prototype`).
-- **Current item:** every brick ready (`docs/roadmap.md#bricks-ready`), under way.
+- **Current item:** every brick ready (`docs/roadmap.md#bricks-ready`), under way. Left: 15 bricks short of ready in [bricks.md](bricks.md): `Doorway` and `Hatch` (their look judged), and the 13 bricks of the look of a place (`docs/bricks.md#bricks-stage`).
+- **Next step:** one look review of every layer in both worlds. Each look brick it passes becomes ready at once; the rest get one fixed list of blocking defects, and the item closes when that list is done (finer things go to `docs/roadmap.md#stage-polish`).
 - **Waiting on the owner:** nothing blocks. To play when they wish: `docs/roadmap.md#to-play`. The Blender MCP installed, needed only when the pilgrim starts (`docs/roadmap.md#pilgrim`), last of the stage.
 
 ## The plan <a id="direction"></a>
