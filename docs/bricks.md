@@ -61,8 +61,8 @@ All working; brought to ready under `docs/roadmap.md#bricks-ready`.
 | `Machine` + `MachineSpecies` | ready (framework) | — |
 | Brains (`core/machines/brains/`) | working placeholders | `docs/roadmap.md#stage-polish` (the bestiary) |
 | Species (`resources/machines/`, 10 placeholders) | working placeholders | `docs/roadmap.md#stage-polish` |
-| `BossSeal` | working | `docs/roadmap.md#bricks-ready` |
-| `Ambush` (with `BossSeal`, over the core's `ArenaFight`, played by `Arenas`) | working | `docs/roadmap.md#bricks-ready` |
+| `BossSeal` | ready | — |
+| `Ambush` (with `BossSeal`, over the core's `ArenaFight`, played by `Arenas`) | ready | — |
 
 ## Story and text <a id="bricks-text"></a>
 
