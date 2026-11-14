@@ -2,7 +2,10 @@ using Godot;
 
 namespace TheDeep;
 
-/// <summary>Prop piece: a code's seal, a square plate with cut corners facing the camera, its back on the origin's plane (<see cref="PropShapes.Seal"/>).</summary>
+/// <summary>
+/// Prop piece: a code's seal, a square plate with cut corners facing the camera, its back on the origin's plane, with a raised frame and a stud at each cut corner.
+/// <see cref="Size"/> is the plate's width, <see cref="Depth"/> its thickness (<see cref="PropShapes.Seal"/>).
+/// </summary>
 [GlobalClass]
 public partial class SealMesh : KitMesh
 {

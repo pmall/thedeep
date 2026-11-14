@@ -30,6 +30,7 @@
 [ext_resource type="Resource" path="res://resources/biomes/frozen.tres" id="23_frozen"]
 [ext_resource type="PackedScene" path="res://scenes/stage/RoomStage.tscn" id="24_stage"]
 [ext_resource type="Script" path="res://scripts/rooms/dressing/WallDressing.cs" id="25_walldressing"]
+[ext_resource type="Resource" path="res://resources/stage/wall_palette.tres" id="pal_wall"]
 [ext_resource type="Material" path="res://assets/materials/wall_stone.tres" id="26_wall_stone"]
 [ext_resource type="PackedScene" path="res://scenes/kit/Doorway.tscn" id="90_doorway"]
 [ext_resource type="Resource" path="res://resources/seams/doorway.tres" id="91_seam"]
@@ -244,6 +245,7 @@ FallenHintLine = &"boss.archivist.fallen.hint"
 transform = Transform3D(1.5, 0, 0, 0, 1.5, 0, 0, 0, 1.5, 29, 0, -11.25)
 script = ExtResource("25_walldressing")
 Style = 2
+Palette = ExtResource("pal_wall")
 Size = Vector2(42.6667, 14.6667)
 Seed = 515
 

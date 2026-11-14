@@ -18,29 +18,8 @@ public partial class WallDressing : Node3D
 
     [Export] public int Seed { get; set; } = 1;
 
-    /// <summary>Iron (pilasters, girders, pipes, chains, gears and their axles); rust_mid.tres when unset.</summary>
-    [Export] public Material? Iron { get; set; }
-
-    /// <summary>
-    /// Plating (banks of pipes, pistons, racks); when unset, machinery_mid.tres for machinery (dark, dull and hazed: in the core's
-    /// pale bronze, metal_mid's plating outshone the play plane and its grippable metal), metal_mid.tres otherwise.
-    /// </summary>
-    [Export] public Material? Plate { get; set; }
-
-    /// <summary>What glows in a furnace mouth; furnace_mouth.tres when unset.</summary>
-    [Export] public Material? Molten { get; set; }
-
-    /// <summary>A slit's light; glow_strip.tres when unset.</summary>
-    [Export] public Material? Glow { get; set; }
-
-    /// <summary>Masonry (an archive's piers, a nave's arcades); stone_mid.tres when unset.</summary>
-    [Export] public Material? Stone { get; set; }
-
-    /// <summary>Ice (icicles under shelves); ice_mid.tres when unset.</summary>
-    [Export] public Material? Ice { get; set; }
-
-    /// <summary>The shadowed backs of a nave's niches and blind arches; stone_recess.tres when unset.</summary>
-    [Export] public Material? Recess { get; set; }
+    /// <summary>The materials the wall is built with (a <see cref="WallPalette"/>); the room must set it.</summary>
+    [Export] public WallPalette Palette { get; set; } = null!;
 
     /// <summary>A nave's share of bays with icicles under their courses (0 to 1): a chapel of the frozen layer.</summary>
     [Export(PropertyHint.Range, "0,1,0.05")] public float Frost { get; set; }
@@ -53,14 +32,7 @@ public partial class WallDressing : Node3D
 
     public override void _Ready()
     {
-        var looks = new Looks(
-            Iron ?? GD.Load<Material>("res://assets/materials/rust_mid.tres"),
-            Plate ?? GD.Load<Material>(Style == WallStyle.Machinery ? "res://assets/materials/machinery_mid.tres" : "res://assets/materials/metal_mid.tres"),
-            Molten ?? GD.Load<Material>("res://assets/materials/furnace_mouth.tres"),
-            Glow ?? GD.Load<Material>("res://assets/materials/glow_strip.tres"),
-            Stone ?? GD.Load<Material>("res://assets/materials/stone_mid.tres"),
-            Ice ?? GD.Load<Material>("res://assets/materials/ice_mid.tres"),
-            Recess ?? GD.Load<Material>("res://assets/materials/stone_recess.tres"));
+        WallPalette looks = Palette;
         int i = 0;
         foreach (WallPlacement p in WallLayout.Build(Style, Size.X, Size.Y, Seed, Frost))
         {
@@ -68,10 +40,7 @@ public partial class WallDressing : Node3D
         }
     }
 
-    /// <summary>The materials the wall is built with: each export, or its default when unset.</summary>
-    private readonly record struct Looks(Material Iron, Material Plate, Material Molten, Material Glow, Material Stone, Material Ice, Material Recess);
-
-    private void Build(WallPlacement p, int index, in Looks looks)
+    private void Build(WallPlacement p, int index, WallPalette looks)
     {
         Vector3 at = p.Position.ToGodot();
         float w = p.Size.X, h = p.Size.Y;

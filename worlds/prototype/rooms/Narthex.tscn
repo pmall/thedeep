@@ -32,6 +32,7 @@
 [ext_resource type="PackedScene" path="res://scenes/props/Conversation.tscn" id="25_conversation"]
 [ext_resource type="Script" path="res://scripts/dialogue/DialogueLine.cs" id="90_dialogue_line"]
 [ext_resource type="Script" path="res://scripts/rooms/dressing/WallDressing.cs" id="26_walldressing"]
+[ext_resource type="Resource" path="res://resources/stage/wall_palette.tres" id="pal_wall"]
 [ext_resource type="Material" path="res://assets/materials/wall_stone.tres" id="27_wall_stone"]
 [ext_resource type="Material" path="res://assets/materials/foreground.tres" id="28_foreground"]
 [ext_resource type="PackedScene" path="res://scenes/kit/Doorway.tscn" id="90_doorway"]
@@ -339,6 +340,7 @@ material_override = ExtResource("14_stone_mid")
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 18, 0, -8.75)
 script = ExtResource("26_walldressing")
 Style = 3
+Palette = ExtResource("pal_wall")
 Size = Vector2(43, 19)
 Seed = 131
 

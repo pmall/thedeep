@@ -3,7 +3,7 @@ using Godot;
 namespace TheDeep;
 
 /// <summary>
-/// The look of one depth layer (Flooded, Frozen, Volcanic, Core): palette, light, fog, grading and
+/// The look of one depth layer (the prototype's Flooded, Frozen, Volcanic and Core, and a world's own such as the sequel's Brine): palette, light, fog, grading and
 /// particle tint. Rooms reference one (<see cref="Room.Biome"/>); swapping it re-themes the room
 /// without touching geometry. The palette reaches materials through global shader uniforms
 /// (<see cref="ShaderGlobals"/>), so any material can follow the biome. The room check holds every profile of a world to

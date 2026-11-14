@@ -2,7 +2,10 @@ using Godot;
 
 namespace TheDeep;
 
-/// <summary>Kit piece: a heap of broken machinery about <see cref="Size"/> meters across, one per <see cref="Seed"/>.</summary>
+/// <summary>
+/// Kit piece: a heap of broken machinery (a fallen tank, a gear, tilted plates, snapped pipe stubs) about <see cref="Size"/> meters across;
+/// each <see cref="Seed"/> gives a different heap, so a room's wrecks differ (<see cref="KitShapes.Wreck"/>).
+/// </summary>
 [GlobalClass]
 public partial class WreckMesh : KitMesh
 {

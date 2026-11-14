@@ -2,7 +2,10 @@ using Godot;
 
 namespace TheDeep;
 
-/// <summary>Prop piece: a keyhole facing the camera, its eye's middle at the origin (<see cref="PropShapes.Keyhole"/>).</summary>
+/// <summary>
+/// Prop piece: a keyhole facing the camera, its back on the origin's plane and the eye's middle at the origin, a locked door's mark.
+/// <see cref="Height"/> is the whole shape's height, <see cref="Depth"/> its thickness (<see cref="PropShapes.Keyhole"/>).
+/// </summary>
 [GlobalClass]
 public partial class KeyholeMesh : KitMesh
 {

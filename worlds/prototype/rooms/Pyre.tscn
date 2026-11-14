@@ -26,6 +26,7 @@
 [ext_resource type="Resource" path="res://resources/biomes/volcanic.tres" id="19_volcanic"]
 [ext_resource type="PackedScene" path="res://scenes/stage/RoomStage.tscn" id="20_stage"]
 [ext_resource type="Script" path="res://scripts/rooms/dressing/WallDressing.cs" id="21_wall"]
+[ext_resource type="Resource" path="res://resources/stage/wall_palette.tres" id="pal_wall"]
 [ext_resource type="PackedScene" path="res://scenes/props/Portcullis.tscn" id="22_portcullis"]
 [ext_resource type="Script" path="res://scripts/props/Ambush.cs" id="23_ambush"]
 [ext_resource type="Script" path="res://scripts/machines/Machine.cs" id="24_machine"]
@@ -219,6 +220,7 @@ material_override = ExtResource("11_stone_mid")
 transform = Transform3D(1.75, 0, 0, 0, 1.75, 0, 0, 0, 1.75, 13, -13, -15.25)
 script = ExtResource("21_wall")
 Style = 0
+Palette = ExtResource("pal_wall")
 Size = Vector2(34.2857, 25.1429)
 Seed = 219
 

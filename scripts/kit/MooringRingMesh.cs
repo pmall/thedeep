@@ -2,7 +2,11 @@ using Godot;
 
 namespace TheDeep;
 
-/// <summary>Prop piece: a harpoon anchor's iron ring facing the camera, its collars and the shackle it hangs by (<see cref="AnchorShapes.Ring"/>).</summary>
+/// <summary>
+/// Prop piece: a harpoon anchor's iron ring facing the camera, with the collars clamped round it and the shackle it hangs by.
+/// <see cref="Radius"/> is to the bar's middle, <see cref="Thickness"/> the bar's width, <see cref="Collars"/> how many collars sit on its diagonals;
+/// the shackle's top is <see cref="AnchorShapes.ShackleTop"/> above the middle, where a rod or cable starts (<see cref="AnchorShapes.Ring"/>).
+/// </summary>
 [GlobalClass]
 public partial class MooringRingMesh : KitMesh
 {
