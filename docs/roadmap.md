@@ -5,8 +5,8 @@ The owner's plan and the open items, in order, opened by where the work stands. 
 ## Now <a id="status"></a>
 
 - **Stage:** A, the prototype (`docs/roadmap.md#stage-prototype`).
-- **Current item:** no crash (`docs/roadmap.md#no-crash`); then the pilgrim (`docs/roadmap.md#pilgrim`).
-- **Next step:** make each crash reproducible on demand and prove its cause.
+- **Current item:** the pilgrim (`docs/roadmap.md#pilgrim`).
+- **Next step:** the environment for top-quality animation, before the character.
 - **Waiting on the owner:** the Blender MCP installed (needed to model and rig the pilgrim), and the stage's sign-off play: `docs/roadmap.md#to-play`.
 
 ## The plan <a id="direction"></a>
@@ -28,8 +28,7 @@ A room gets the attention its bricks need, no more. Bosses, machines and law bre
 
 The open items, in order (owner: the world, its bricks and its look are finished before the character):
 
-1. **No crash** <a id="no-crash"></a> (owner: no crash is tolerated, in the game or the checks). The checks crash intermittently: a headless travel shard (SIGSEGV on the .NET finalizer thread, in a Godot array's release), the headless import at editor shutdown, and once "attempted to call a UnmanagedCallersOnly method from managed code". Each is made reproducible on demand, its cause proven by its stack, and fixed at the root; then the code is audited for the whole class of bug (engine objects and collections owned by C# and released by the finalizer, tool scripts alive at editor shutdown) and a check holds it. Never a retry or a skipped step. Done when the full check passes many runs in a row under load, and the stress mode that once made each crash appear no longer does.
-2. **The pilgrim, from zero** <a id="pilgrim"></a> (owner: last, once the world, its bricks and its look are finished). The current character, its procedural animation and its halo are thrown away. The bar is *Ori*'s animation (a 3D-rendered character) with *NieR: Automata*'s dynamism; the look is `docs/art-direction.md#character`. First the environment for top-quality animation, then the character: modeled and rigged in Blender (the owner installs the Blender MCP), animated from real motion capture (free libraries and Mixamo first), keyed by hand, blended in the game with its feet held to the ground. Every move and ability: run, jump, land, dash, air dash, ledge assist, grip and its corners, harpoon throw and zip, bore and dive, swim, sink and rise, the strikes, hurt, death, rest, taking a relic. Its secondary motion is stage D's. Done when every state reads at a glance in motion, in the reels and in the owner's play.
+1. **The pilgrim, from zero** <a id="pilgrim"></a> (owner: last, once the world, its bricks and its look are finished). The current character, its procedural animation and its halo are thrown away. The bar is *Ori*'s animation (a 3D-rendered character) with *NieR: Automata*'s dynamism; the look is `docs/art-direction.md#character`. First the environment for top-quality animation, then the character: modeled and rigged in Blender (the owner installs the Blender MCP), animated from real motion capture (free libraries and Mixamo first), keyed by hand, blended in the game with its feet held to the ground. Every move and ability: run, jump, land, dash, air dash, ledge assist, grip and its corners, harpoon throw and zip, bore and dive, swim, sink and rise, the strikes, hurt, death, rest, taking a relic. Its secondary motion is stage D's. Done when every state reads at a glance in motion, in the reels and in the owner's play.
 
 **To play** <a id="to-play"></a>: what the owner's eye alone can judge, each line deleted once they have said. An item closes on what the agent can verify; the owner's word reopens it.
 

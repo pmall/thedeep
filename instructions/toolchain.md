@@ -4,7 +4,7 @@
 
 | Tool | Version | Location |
 | -- | -- | -- |
-| Godot Engine .NET | **4.7.2.stable.mono** (official, `ed1daf0bf`) | `~/.local/opt/godot/Godot_v4.7.2-stable_mono_linux_x86_64/` |
+| Godot Engine .NET <a id="official-engine"></a> | **4.7.2.stable.mono** (official, `ed1daf0bf`), used as released, never patched or rebuilt (owner): a crash from Godot's own bug waits for an official release that fixes it (`instructions/toolchain.md#engine-bugs`) | `~/.local/opt/godot/Godot_v4.7.2-stable_mono_linux_x86_64/` |
 | `godot` command | wrapper script | `~/.local/bin/godot`: sets `DOTNET_ROOT=~/.dotnet` if unset, then execs the binary above |
 | .NET SDK | **10.0.402** (plus .NET 8.0 runtime, used by the tests) | `~/.dotnet` (installed with `dotnet-install.sh`, no sudo) |
 | ffmpeg | distro package (`/usr/bin/ffmpeg`), with `h264_nvenc` | needed by F10 video capture and by the encoder unit tests; found on `PATH` |
@@ -42,6 +42,15 @@ To upgrade one, change its pin (and the date `uvx` resolves dependencies at, bes
   - In ad-hoc commands, use `~/.dotnet/dotnet`, or first export `DOTNET_ROOT=$HOME/.dotnet PATH=$HOME/.dotnet:$PATH`.
 - Without `DOTNET_ROOT`, Godot looks in `/usr/share/dotnet`, fails to load .NET, and a windowed run can appear to hang.
 - Every shell command runs in a fresh shell, so environment variables don't carry over between commands.
+
+## Known engine crashes <a id="engine-bugs"></a>
+
+Godot 4.7.2's C# glue (GodotSharp) has two crash bugs that using it correctly (`instructions/godot-csharp.md#no-finalizer`) makes rare but can't remove:
+
+- It hands native code unpinned pointers into managed objects, so a collection on another thread can move one mid-call: a rare SIGSEGV or "not registered" abort in a headless check, its stack in GodotSharp (a collection's or name's release, often on the finalizer thread).
+- At editor shutdown, wrapper finalizers still pending run after the bindings are gone: the headless import can segfault on exit after a complete import (`!rc_owner` or `mono_gc_handle.cpp`).
+
+A check that crashes this way is rerun; a crash whose stack reaches the project's code is the project's to fix. On an upgrade, rerun the full check several times to see whether they are gone, and drop this section when they are.
 
 ## Upgrading Godot <a id="upgrading-godot"></a>
 
