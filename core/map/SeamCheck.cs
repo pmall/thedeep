@@ -242,6 +242,17 @@ public sealed class SeamCheck
     /// </summary>
     private IEnumerable<SeamProblem> Water(string name, SeamRoom room)
     {
+        // The holes in the floor and the seams beyond them are looked up once for the room, not for every sample.
+        var holes = new List<(string Exit, Box Trigger)>();
+        foreach ((string exit, Threshold at) in room.Exits)
+        {
+            if (at.Side == ExitSide.Down)
+            {
+                holes.Add((exit, at.Trigger));
+            }
+        }
+
+        var beyonds = new Dictionary<string, Seam?>();
         foreach ((string water, Box region) in room.Waters)
         {
             var bare = new Dictionary<string, List<Vector2>>();
@@ -253,9 +264,16 @@ public sealed class SeamCheck
                 }
 
                 string seam = name;
-                if (room.Exits.FirstOrDefault(x => x.Value.Side == ExitSide.Down && Inside(x.Value.Trigger, under)) is { Key: { } exit })
+                int hole = holes.FindIndex(h => Inside(h.Trigger, under));
+                if (hole >= 0)
                 {
-                    if (Beyond(name, exit) is not { } beyond)
+                    string exit = holes[hole].Exit;
+                    if (!beyonds.TryGetValue(exit, out Seam? found))
+                    {
+                        beyonds[exit] = found = Beyond(name, exit);
+                    }
+
+                    if (found is not { } beyond)
                     {
                         continue; // a hole to a room not built yet
                     }

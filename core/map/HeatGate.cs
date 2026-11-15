@@ -107,7 +107,7 @@ public static class HeatGate
                 return true;
             }
 
-            foreach ((int di, int dj) in new[] { (1, 0), (-1, 0), (0, 1), (0, -1) })
+            foreach ((int di, int dj) in Neighbours)
             {
                 int a = i + di, b = j + dj;
                 if (a >= 0 && a < nx && b >= 0 && b < ny && !seen[a, b] && !blocked[a, b])
@@ -120,6 +120,8 @@ public static class HeatGate
 
         return false;
     }
+
+    private static readonly (int, int)[] Neighbours = { (1, 0), (-1, 0), (0, 1), (0, -1) };
 
     private static int Index(float v, float min, int n) => Math.Clamp((int)MathF.Floor((v - min) / Cell), 0, n - 1);
 
