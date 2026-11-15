@@ -155,29 +155,11 @@ public partial class HarpoonRig : Node3D
 
     private AnchorLook LookOf(HarpoonAnchor anchor, HarpoonAnchor? target, bool armed)
     {
-        if (!armed)
-        {
-            return AnchorLook.Dormant;
-        }
-
-        if (Player.CurrentState is HarpoonState { Anchor: { } fired } harpoon && fired == anchor)
-        {
-            return harpoon.Bitten ? AnchorLook.Bitten : AnchorLook.Sighted;
-        }
-
-        if (anchor == target)
-        {
-            return AnchorLook.Sighted;
-        }
-
-        if (anchor == Player.LastAnchor)
-        {
-            return AnchorLook.Spent;
-        }
-
         PlayerTuning t = Player.Tuning;
+        bool fired = Player.CurrentState is HarpoonState { Anchor: { } shot } && shot == anchor;
+        bool bitten = Player.CurrentState is HarpoonState { Bitten: true };
         float distance = (anchor.Point - Player.Center).Length();
-        return HarpoonAim.InReach(distance, t.HarpoonRange, t.HarpoonMinDistance) ? AnchorLook.Ready : AnchorLook.Far;
+        return AnchorLooks.Of(armed, fired, bitten, anchor == target, anchor == Player.LastAnchor, distance, t.HarpoonRange, t.HarpoonMinDistance);
     }
 
     private bool InSight(NVector2 from, NVector2 to)

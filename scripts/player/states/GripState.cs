@@ -16,8 +16,7 @@ namespace TheDeep.States;
 public sealed class GripState : PlayerState
 {
     private float _speed;
-    private NVector2? _lockedInput;
-    private float _lockedAlong;
+    private readonly GripSteer _steer = new();
     private GripPose _attach;
 
     /// <summary>The grip state of <paramref name="player"/>, made once by <see cref="PlayerStateSet"/>.</summary>
@@ -34,7 +33,7 @@ public sealed class GripState : PlayerState
 
     public override void Enter()
     {
-        _lockedInput = null;
+        _steer.Clear();
         NVector2 v = Player.Velocity.Flat();
         float into = -NVector2.Dot(v, _attach.Up);
 
@@ -86,22 +85,13 @@ public sealed class GripState : PlayerState
         }
 
         // After a corner, the input that led there keeps meaning "keep going" (even if it now points away) until it changes.
-        float along = GripMath.Along(input, up);
-        if (_lockedInput is { } locked && locked == input)
+        if (_steer.Along(input, up, Tuning.GripPullAway) is not { } along)
         {
-            along = _lockedAlong;
-        }
-        else
-        {
-            _lockedInput = null;
-            if (GripMath.PullsAway(input, up, Tuning.GripPullAway))
-            {
-                return LetGo();
-            }
+            return LetGo();
         }
 
         float target = along * Tuning.GripSpeed;
-        float rate = target != 0f && (_speed == 0f || Mathf.Sign(target) == Mathf.Sign(_speed)) ? Tuning.GripAcceleration : Tuning.GripDeceleration;
+        float rate = GripMath.SpeedRate(target, _speed, Tuning.GripAcceleration, Tuning.GripDeceleration);
         _speed = TheDeep.Motion.Approach(_speed, target, rate * delta);
         if (along != 0f)
         {
@@ -165,8 +155,7 @@ public sealed class GripState : PlayerState
         Player.Visual.Land(Tuning.GripCornerKick);
         float sign = NVector2.Dot(travel, GripMath.Tangent(pose.Up)) < 0f ? -1f : 1f;
         _speed = speed * sign;
-        _lockedInput = new NVector2(Player.CurrentInput.MoveX, Player.CurrentInput.MoveY);
-        _lockedAlong = sign;
+        _steer.Lock(new NVector2(Player.CurrentInput.MoveX, Player.CurrentInput.MoveY), sign);
         Player.SetFacing((int)sign);
         return null;
     }

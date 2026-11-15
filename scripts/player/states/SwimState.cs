@@ -34,17 +34,10 @@ public sealed class SwimState : PlayerState
         }
 
         PlayerInput input = Player.CurrentInput;
-        if (!Player.Abilities.Has(Ability.Ballast))
+        BallastStep tanks = BallastTanks.Step(Player.Abilities.Has(Ability.Ballast), Player.Sunk, input.MoveY, Player.JumpPressed);
+        Player.Sunk = tanks.Sunk;
+        if (tanks.SpentJump)
         {
-            Player.Sunk = false;
-        }
-        else if (input.MoveY < 0)
-        {
-            Player.Sunk = true;
-        }
-        else if (Player.Sunk && (input.MoveY > 0 || Player.JumpPressed))
-        {
-            Player.Sunk = false;
             Player.ConsumeJump();
         }
 

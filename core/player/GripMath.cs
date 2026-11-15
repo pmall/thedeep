@@ -38,6 +38,13 @@ public static class GripMath
     /// </summary>
     public static bool Drowned(float centerY, float surface, WaterLimits w) => surface - centerY > w.EnterDepth;
 
+    /// <summary>
+    /// The rate (m/s²) at which the speed along the surface changes toward <paramref name="target"/>: <paramref name="acceleration"/>
+    /// when it asks to move the way it already goes (or from rest), <paramref name="deceleration"/> to slow or turn round.
+    /// </summary>
+    public static float SpeedRate(float target, float speed, float acceleration, float deceleration) =>
+        target != 0f && (speed == 0f || MathF.Sign(target) == MathF.Sign(speed)) ? acceleration : deceleration;
+
     /// <summary>Whether held input pulls away from the surface (letting go): its component along <paramref name="up"/> is above
     /// <paramref name="threshold"/> (0 to 1).</summary>
     public static bool PullsAway(Vector2 input, Vector2 up, float threshold) => Vector2.Dot(input, up) > threshold;

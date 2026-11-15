@@ -64,8 +64,7 @@ public partial class SideCamera : Camera3D
 
     private bool _framingShot;
     private float _followFov;
-    private float _trauma;
-    private float _shakeTime;
+    private readonly CameraShake _shake = new();
 
     public override void _Ready()
     {
@@ -92,7 +91,7 @@ public partial class SideCamera : Camera3D
     }
 
     /// <summary>Adds shake (0 to 1); the offset grows with its square, so small amounts stay subtle.</summary>
-    public void AddShake(float amount) => _trauma = Mathf.Clamp(_trauma + amount, 0f, 1f);
+    public void AddShake(float amount) => _shake.Add(amount);
 
     /// <summary>A blow lands: the view is thrown <paramref name="offset"/> meters along it and eases back (the strongest under way wins).</summary>
     public void Kick(NVector2 offset) => Follow.Kick(offset);
@@ -107,8 +106,7 @@ public partial class SideCamera : Camera3D
         }
 
         float dt = (float)delta;
-        _trauma = Mathf.Max(0f, _trauma - ShakeDecay * dt);
-        _shakeTime += dt;
+        _shake.Tick(dt, ShakeDecay);
         var center = new Vector3(0f, Target.CenterHeight, 0f); // the camera follows the body's center, so a pilgrim on a wall or ceiling stays framed
         Vector3 body = Target.GetGlobalTransformInterpolated() * center - center;
         CameraFooting footing = CameraFollow.FootingOf(Target.CurrentState.Motion, Target.IsOnFloor(), Target.IsUpright);
@@ -162,21 +160,14 @@ public partial class SideCamera : Camera3D
 
     private void ApplyFocus()
     {
-        // Smooth, mostly vertical shake from a few incommensurate sines: a jolt, never a rattle.
-        float shake = _trauma * _trauma * ShakeAmplitude;
-        var offset = new Vector2(
-            0.5f * Mathf.Sin(_shakeTime * 37f) * Mathf.Sin(_shakeTime * 13f),
-            Mathf.Sin(_shakeTime * 43f + 1.3f) * Mathf.Cos(_shakeTime * 17f)) * shake;
+        NVector2 offset = _shake.Offset(ShakeAmplitude);
         NVector2 focus = Follow.Focus + Follow.KickOffset;
         GlobalPosition = new Vector3(focus.X + offset.X, focus.Y + offset.Y, Distance);
     }
 
     private void OnLanded(float impactSpeed)
     {
-        if (impactSpeed > ShakeLandingSpeed)
-        {
-            AddShake(0.75f * Mathf.Clamp((impactSpeed - ShakeLandingSpeed) / (ShakeLandingMax - ShakeLandingSpeed), 0.25f, 1f));
-        }
+        _shake.AddLanding(impactSpeed, ShakeLandingSpeed, ShakeLandingMax);
     }
 
     /// <summary>The point the camera centers on for a body whose center is at <paramref name="body"/>: a little above it.</summary>

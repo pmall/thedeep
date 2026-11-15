@@ -1,8 +1,8 @@
 namespace TheDeep;
 
 /// <summary>
-/// What a harpoon anchor shows of its state to the pilgrim (<see cref="HarpoonAnchor.Look"/>, set each tick by <see cref="HarpoonRig"/>):
-/// how lit its hoop is and whether the sight closes on it. A look only: what the Harpoon can fire at is the rig's.
+/// What a harpoon anchor shows of its state to the pilgrim (chosen each tick by <see cref="AnchorLooks"/>):
+/// how lit its hoop is and whether the sight closes on it. A look only: what the Harpoon can fire at is the harpoon rig's.
 /// </summary>
 public enum AnchorLook
 {
