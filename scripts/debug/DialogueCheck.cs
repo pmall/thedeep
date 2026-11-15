@@ -36,6 +36,8 @@ public partial class DialogueCheck : Node
     private int _index = -1;
     private int _ticks;
     private int _tapAt = -1;
+    private bool _reloaded;
+    private bool _cutOff;
 
     private sealed record Step(string What, float Seconds, Action Start, Func<bool> Done);
 
@@ -55,18 +57,40 @@ public partial class DialogueCheck : Node
 
     public override void _Ready()
     {
-        Conversation? lamplighter = World.Room.First<Conversation>();
-        if (lamplighter is null)
+        Conversation? first = World.Room.First<Conversation>();
+        if (first is null)
         {
             _problems.Add($"the {World.RoomName} has no conversation");
             Finish();
             return;
         }
 
+        Conversation lamplighter = first;
         int lines = lamplighter.Lines.Length;
         _steps.Add(new("standing in the porch, the Lamplighter comes near and offers to talk, its prompt on screen by the pilgrim", 8f,
             () => Player.Respawn(Porch(lamplighter), 1),
             () => Conversations.Offered == lamplighter && lamplighter.Prompt.Offered && PromptInSight(lamplighter.Prompt)));
+        _steps.Add(new("leaving the room mid-conversation ends it: the pilgrim free, the box closed, not remembered as heard", 2f,
+            () =>
+            {
+                Tap();
+                Conversations.Ended += _ => _cutOff = true;
+            },
+            () =>
+            {
+                if (Conversations.Talking && !_reloaded)
+                {
+                    _reloaded = true;
+                    World.Load(GD.Load<PackedScene>(World.RoomPath(World.RoomName)));
+                    lamplighter = World.Room.First<Conversation>() ?? lamplighter;
+                    return false;
+                }
+
+                return _reloaded && !Conversations.Talking && Player.InControl && !Box.IsOpen && _cutOff && !lamplighter.Spent;
+            }));
+        _steps.Add(new("standing in the porch again, it is offered again", 8f,
+            () => Player.Respawn(Porch(lamplighter), 1),
+            () => Conversations.Offered == lamplighter));
         _steps.Add(new("a banner said, interact begins it: the banner gone, the pilgrim held still, the box open on the first line", 1f,
             () =>
             {

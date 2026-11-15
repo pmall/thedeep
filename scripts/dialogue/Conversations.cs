@@ -41,9 +41,9 @@ public partial class Conversations : Node
     /// <summary>The conversation being played, as the core sees it.</summary>
     public DialogueFlow? Flow => _flow;
 
-    /// <summary>Raised when a conversation begins, and when it has been heard to its end.</summary>
+    /// <summary>Raised when a conversation begins.</summary>
     public event System.Action<Conversation>? Began;
-    /// <summary>Raised when a conversation has been heard to its end.</summary>
+    /// <summary>Raised when a conversation ends: heard to its end, or cut off by a room change.</summary>
     public event System.Action<Conversation>? Ended;
 
     public override void _Ready()
@@ -119,18 +119,24 @@ public partial class Conversations : Node
 
     private void Show(DialogueFlow flow) => Box.Show(_speakers[flow.Index], flow.Text, flow.Shown, flow.Whole);
 
+    /// <summary>Heard to its end: closed, and remembered when it is <see cref="Conversation.Once"/>.</summary>
     private void End(Conversation conversation)
     {
-        Box.Close();
-        _talking = null;
-        _flow = null;
-        Player.Frozen = false;
+        Close(conversation);
         if (conversation.Once)
         {
             conversation.Spent = true;
             Session.Remember(conversation.NameText());
         }
+    }
 
+    /// <summary>Stops the one being played, however it ends: the box shut, the pilgrim free, <see cref="Ended"/> raised.</summary>
+    private void Close(Conversation conversation)
+    {
+        Box.Close();
+        _talking = null;
+        _flow = null;
+        Player.Frozen = false;
         Ended?.Invoke(conversation);
     }
 
@@ -153,11 +159,9 @@ public partial class Conversations : Node
     private void OnRoomLoaded(Room room)
     {
         _prompted = null;
-        if (_talking is not null)
+        if (_talking is { } leaving)
         {
-            Box.Close();
-            _talking = null;
-            _flow = null;
+            Close(leaving);
         }
 
         string name = World.NameOf(room.SceneFilePath);
