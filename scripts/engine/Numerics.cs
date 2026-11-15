@@ -20,6 +20,9 @@ public static class Numerics
     /// <summary>A point or direction in the world, seen on the play plane (its X and Y).</summary>
     public static NVector2 Flat(this Vector3 v) => new(v.X, v.Y);
 
+    /// <summary>Whether <paramref name="a"/> and <paramref name="b"/> are within <paramref name="range"/> meters of each other on the play plane (Z ignored).</summary>
+    public static bool WithinOnPlane(this Vector3 a, Vector3 b, float range) => (a.Flat() - b.Flat()).Length() <= range;
+
     /// <summary>The engine's 4D vector as the core's.</summary>
     public static System.Numerics.Vector4 ToCore(this Vector4 v) => new(v.X, v.Y, v.Z, v.W);
 

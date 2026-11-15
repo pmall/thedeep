@@ -154,7 +154,7 @@ public partial class Session : Node
 
         foreach (AbilityRelic relic in room.All<AbilityRelic>())
         {
-            if (!relic.Taken && Flat(relic.GlobalPosition).DistanceTo(Flat(p)) <= RelicRange)
+            if (!relic.Taken && relic.GlobalPosition.WithinOnPlane(p, RelicRange))
             {
                 Take(relic);
                 break;
@@ -168,7 +168,7 @@ public partial class Session : Node
     {
         for (int i = 0; i < nodes.Count; i++)
         {
-            if (Flat(nodes[i].GlobalPosition).DistanceTo(Flat(p)) <= range)
+            if (nodes[i].GlobalPosition.WithinOnPlane(p, range))
             {
                 return nodes[i];
             }
@@ -482,6 +482,4 @@ public partial class Session : Node
             SaveFile.Write(World.Definition.SavePath, Save);
         }
     }
-
-    private static Vector2 Flat(Vector3 v) => new(v.X, v.Y);
 }

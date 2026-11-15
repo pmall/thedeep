@@ -51,7 +51,7 @@ public partial class LockedDoor : Node3D
     }
 
     /// <summary>Whether a body with its feet at <paramref name="feet"/> is near enough.</summary>
-    public bool Near(Vector3 feet) => new Vector2(feet.X - GlobalPosition.X, feet.Y - GlobalPosition.Y).Length() <= Range;
+    public bool Near(Vector3 feet) => feet.WithinOnPlane(GlobalPosition, Range);
 
     /// <summary>The lock turns and the gate rises.</summary>
     public void Open()

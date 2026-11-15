@@ -43,7 +43,7 @@ public partial class Lever : Node3D
     }
 
     /// <summary>Whether feet at <paramref name="feet"/> are near enough to pull it.</summary>
-    public bool Near(Vector3 feet) => new Vector2(feet.X - GlobalPosition.X, feet.Y - GlobalPosition.Y).Length() <= Range;
+    public bool Near(Vector3 feet) => feet.WithinOnPlane(GlobalPosition, Range);
 
     /// <summary>Thrown: the handle swings down across the quadrant and bounces on its stop, the glow flares and dies.</summary>
     public void Pull()
