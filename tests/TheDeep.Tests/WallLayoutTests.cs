@@ -10,6 +10,7 @@ public class WallLayoutTests
     [InlineData(WallStyle.Foundry)]
     [InlineData(WallStyle.Machinery)]
     [InlineData(WallStyle.Nave)]
+    [InlineData(WallStyle.Archive)]
     public void DressingStaysOnTheWallAndRepeats(WallStyle style)
     {
         var a = WallLayout.Build(style, 44f, 24f, 5);

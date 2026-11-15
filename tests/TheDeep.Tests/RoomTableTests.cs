@@ -83,51 +83,13 @@ public class RoomTableTests
         Assert.Contains(problems, p => p.StartsWith(problem, StringComparison.Ordinal));
     }
 
-    [Fact]
-    public void APowerUpLineNamesItsRoomAndStat()
-    {
-        MapDraft d = MapDraft.Parse(Network);
-        Assert.Equal(new[] { ("C", PowerStat.Strength), ("C", PowerStat.Defense) }, d.PowerUps);
-    }
-
     [Theory]
-    [InlineData("powerup A speed\n")]     // not a stat
-    [InlineData("powerup A 1\n")]         // a number, not a stat
-    [InlineData("powerup A\n")]           // no stat
-    [InlineData("powerup Z strength\n")]  // an undeclared room
-    public void AMalformedPowerUpLineIsAnError(string line)
+    [InlineData("prototype")]
+    [InlineData("sequel")]
+    public void EachWorldsTableAgreesWithItsNetwork(string world)
     {
-        Assert.Throws<FormatException>(() => MapDraft.Parse("start A\nroom A L\n" + line));
-    }
-
-    [Fact]
-    public void AHiddenWayMustJoinTwoRoomsAWayJoins()
-    {
-        Assert.Throws<FormatException>(() => MapDraft.Parse("start A\nroom A L\nroom B L\nway A -> B\nhidden A C\n"));
-        Assert.Throws<FormatException>(() => MapDraft.Parse("start A\nroom A L\nroom B L\nroom C L\nway A -> B\nhidden A C\n"));
-    }
-
-    [Theory]
-    [InlineData("prototype", "map-draft.md")]
-    [InlineData("sequel", "network.md")]
-    public void EachWorldsTableAgreesWithItsNetwork(string world, string network)
-    {
-        string dir = Path.Combine(RepoRoot(), "worlds", world);
-        RoomTable t = RoomTable.Parse(File.ReadAllText(Path.Combine(dir, "rooms.tsv")));
-        MapDraft d = MapDraft.FromMarkdown(File.ReadAllText(Path.Combine(dir, network)));
+        RoomTable t = RoomTable.Parse(File.ReadAllText(RepoPaths.Rooms(world)));
+        MapDraft d = MapDraft.FromMarkdown(File.ReadAllText(RepoPaths.Network(world)));
         Assert.Empty(t.Check(d));
-    }
-
-    private static string RepoRoot()
-    {
-        for (var dir = new DirectoryInfo(AppContext.BaseDirectory); dir is not null; dir = dir.Parent)
-        {
-            if (File.Exists(Path.Combine(dir.FullName, "AGENTS.md")))
-            {
-                return dir.FullName;
-            }
-        }
-
-        throw new DirectoryNotFoundException("no AGENTS.md above the test binaries");
     }
 }

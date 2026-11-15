@@ -418,6 +418,11 @@ public class KitGeometryTests
 
         Assert.True(MathF.Abs(min.Y) < 1e-3f);
         Assert.True(max.Y > 0.5f + 0.55f && max.Y < 0.5f + 0.55f + 0.12f, $"the quadrant tops out at {max.Y}");
+    }
+
+    [Fact]
+    public void LeverHandleHangsFromItsHub()
+    {
         (Vector3 hMin, Vector3 hMax) = BuildPiece("handle", seed: 0).Bounds();
         Assert.Equal(0.9f, hMax.Y, 3);
         Assert.True(hMin.Y < 0f, "the hub sits across the pivot");

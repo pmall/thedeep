@@ -5,9 +5,7 @@ namespace TheDeep.Tests;
 
 public class WaterMotionTests
 {
-    // The live tuning (resources/player_tuning.tres, the Water group).
-    public static readonly WaterLimits Water = new(SwimSpeed: 4.5f, SwimAcceleration: 30f, SwimDeceleration: 18f, FloatDepth: 1.05f,
-        FloatStiffness: 4f, RiseSpeed: 4f, SinkSpeed: 4.5f, WaterAcceleration: 22f, SplashKeep: 0.3f, EnterDepth: 0.55f, JumpWindow: 0.4f);
+    private static readonly WaterLimits Water = TestTuning.Water;
 
     private const float Dt = 1f / 60f;
 

@@ -121,6 +121,11 @@ public class MapSolverTests
         // Down the hatch to the Reliquary for Mag-grip, back up the flue, up the metal wall to the Descent.
         Assert.Equal(new[] { "DrownedHall", "Nave", "Cistern", "Reliquary", "Cistern", "Nave", "Descent" }, route.Select(e => e.To));
         Assert.Equal("Narthex", route[0].From);
+    }
+
+    [Fact]
+    public void RouteIsNullWhenTheGoalCannotBeReached()
+    {
         var g = new MapGraph { Start = "A" };
         g.AddEdge(new MapEdge("A", "B", "B", "A", Requirement.Parse("Drill")));
         g.AddGoal("B");

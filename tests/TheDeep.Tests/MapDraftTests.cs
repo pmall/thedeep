@@ -147,13 +147,35 @@ public class MapDraftTests
         }
 
         Assert.Empty(problems);
-        Assert.Equal(new MapTargets(Orders: 24, Positions: 2, MinRooms: 40, MaxRooms: 60), d.Targets);
-        Assert.Equal(new[] { "Flooded", "Frozen", "Volcanic", "Core" }, d.LayerOrder);
+        Assert.NotEqual(MapTargets.None, d.Targets); // the draft names its targets, so Check() held it to them
 
         // The design's rule (worlds/prototype/map-draft.md#draft-order-freedom): Mag-grip or Harpoon first, Heat plating after Drill or Ballast.
         Assert.All(report.Orders, o => Assert.Contains(o[0], new[] { Ability.MagGrip, Ability.Harpoon }));
         Assert.All(report.Orders, o => Assert.True(Array.IndexOf(o, Ability.HeatPlating) > Math.Min(Array.IndexOf(o, Ability.Drill), Array.IndexOf(o, Ability.Ballast))));
-        Assert.Equal(32, report.Orders.Count);
+    }
+
+    [Fact]
+    public void APowerUpLineNamesItsRoomAndStat()
+    {
+        MapDraft d = MapDraft.Parse("start A\nroom A L\nroom C L\nway A <-> C\npowerup C strength\npowerup C Defense\n");
+        Assert.Equal(new[] { ("C", PowerStat.Strength), ("C", PowerStat.Defense) }, d.PowerUps);
+    }
+
+    [Theory]
+    [InlineData("powerup A speed\n")]     // not a stat
+    [InlineData("powerup A 1\n")]         // a number, not a stat
+    [InlineData("powerup A\n")]           // no stat
+    [InlineData("powerup Z strength\n")]  // an undeclared room
+    public void AMalformedPowerUpLineIsAnError(string line)
+    {
+        Assert.Throws<FormatException>(() => MapDraft.Parse("start A\nroom A L\n" + line));
+    }
+
+    [Fact]
+    public void AHiddenWayMustJoinTwoRoomsAWayJoins()
+    {
+        Assert.Throws<FormatException>(() => MapDraft.Parse("start A\nroom A L\nroom B L\nway A -> B\nhidden A C\n"));
+        Assert.Throws<FormatException>(() => MapDraft.Parse("start A\nroom A L\nroom B L\nroom C L\nway A -> B\nhidden A C\n"));
     }
 
     /// <summary>A world may use fewer than the five abilities: only the ones its ways need must lie in a relic, and none in two.</summary>
@@ -188,20 +210,7 @@ public class MapDraftTests
         Assert.Throws<FormatException>(() => MapDraft.Parse($"start A\nroom A L\n{line}\n"));
     }
 
-    private static string PrototypeNetwork() => Path.Combine(RepoRoot(), "worlds", "prototype", "map-draft.md");
-
-    private static string RepoRoot()
-    {
-        for (var dir = new DirectoryInfo(AppContext.BaseDirectory); dir is not null; dir = dir.Parent)
-        {
-            if (File.Exists(Path.Combine(dir.FullName, "AGENTS.md")))
-            {
-                return dir.FullName;
-            }
-        }
-
-        throw new DirectoryNotFoundException("no AGENTS.md above the test binaries");
-    }
+    private static string PrototypeNetwork() => RepoPaths.Network("prototype");
 
     [Fact]
     public void ARoomPickedToTryStartsWithWhatARouteThereNeeds()

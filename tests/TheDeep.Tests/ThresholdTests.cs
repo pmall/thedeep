@@ -25,7 +25,7 @@ public class ThresholdTests
     [Fact]
     public void ADoorwaysTriggerCoversItsWholeOpening()
     {
-        // Walking out, and jumping out through the top of the opening (the old trigger reached only half way up: the owner fell out).
+        // Walking out, and jumping out through the top of the opening, count as crossing.
         Assert.True(West.Crossed(Standing(new Vector2(0.8f, 0f))));
         Assert.True(West.Crossed(Standing(new Vector2(0.8f, 2.3f))));
         Assert.True(West.Crossed(Standing(new Vector2(-2f, 0f))));

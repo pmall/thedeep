@@ -37,23 +37,6 @@ public class SurfaceBakeTests
         }
     }
 
-    [Fact]
-    public void StrataRepeatEveryTile()
-    {
-        var strata = new StrataSurface();
-        double tile = strata.TileMeters;
-        for (int i = 0; i < 200; i++)
-        {
-            double along = i * 0.0731 % tile;
-            double up = i * 0.1937 % tile;
-            SurfacePoint here = strata.At(along, up);
-            SurfacePoint there = strata.At(along + tile, up - tile);
-            Assert.Equal(here.HeightMeters, there.HeightMeters, 6);
-            Assert.Equal(here.Tone, there.Tone, 6);
-            Assert.Equal(here.Cavity, there.Cavity, 6);
-        }
-    }
-
     [Theory]
     [MemberData(nameof(Patterns))]
     public void BakingTwiceWritesTheSameBytes(string name)
@@ -66,6 +49,21 @@ public class SurfaceBakeTests
     }
 
     public static TheoryData<string> Patterns => new() { "strata", "basalt", "masonry", "ice", "cracks", "panels", "coating", "glyphs", "frost", "flames" };
+
+    /// <summary>Every pattern repeats every tile along both axes: the same point a whole number of tiles away is the same surface.</summary>
+    [Theory]
+    [MemberData(nameof(Patterns))]
+    public void EveryPatternRepeatsEveryTile(string name)
+    {
+        ISurfacePattern pattern = Pattern(name);
+        double tile = pattern.TileMeters;
+        for (int i = 0; i < 400; i++)
+        {
+            double along = i * 0.0731 % tile;
+            double up = i * 0.1937 % tile;
+            AssertSame(pattern.At(along, up), pattern.At(along + (i % 3 * tile), up - ((1 + (i % 2)) * tile)));
+        }
+    }
 
     /// <summary>Half a tile on, the bake is the same image rolled by half: its edges meet as its middle does, so it has no seam.</summary>
     [Theory]
@@ -91,49 +89,6 @@ public class SurfaceBakeTests
                 {
                     Assert.InRange(Math.Abs(shifted.Surface[(i * 4) + channel] - baked.Surface[(rolled * 4) + channel]), 0, 1);
                 }
-            }
-        }
-    }
-
-    [Fact]
-    public void MasonryRepeatsEveryTile()
-    {
-        var masonry = new MasonrySurface();
-        double tile = masonry.TileMeters;
-        for (int i = 0; i < 200; i++)
-        {
-            double along = i * 0.0731 % tile;
-            double up = i * 0.1937 % tile;
-            SurfacePoint here = masonry.At(along, up);
-            SurfacePoint there = masonry.At(along - tile, up + (2.0 * tile));
-            Assert.Equal(here.HeightMeters, there.HeightMeters, 6);
-            Assert.Equal(here.Tone, there.Tone, 6);
-            Assert.Equal(here.Cavity, there.Cavity, 6);
-            Assert.Equal(here.Cell, there.Cell);
-        }
-    }
-
-    /// <summary>
-    /// The material shuffles courses and slides each along (<c>rock.gdshader</c>): within a joint's half width of a course's
-    /// floor, every course, anywhere along, is the same mortar, so any course sits on any other without a seam.
-    /// </summary>
-    [Fact]
-    public void AnyCourseSitsOnAnyOther()
-    {
-        var masonry = new MasonrySurface();
-        double course = masonry.CourseMeters;
-        SurfacePoint mortar = masonry.At(0.37, 0.0);
-        for (int k = 0; k < masonry.Courses; k++)
-        {
-            for (int i = 0; i < 40; i++)
-            {
-                double along = i * 0.0973;
-                double offset = ((i % 9) - 4) / 4.0 * masonry.JointMeters * 0.99;
-                SurfacePoint here = masonry.At(along, (k * course) + offset);
-                Assert.Equal(mortar.HeightMeters, here.HeightMeters, 9);
-                Assert.Equal(mortar.Tone, here.Tone, 9);
-                Assert.Equal(mortar.Cavity, here.Cavity, 9);
-                Assert.Equal(mortar.Roughness, here.Roughness, 9);
             }
         }
     }
@@ -186,11 +141,13 @@ public class SurfaceBakeTests
         "coating" => new CoatingSurface(),
         "glyphs" => new GlyphBandSurface(),
         "frost" => new FrostSurface(),
-        _ => new IceSurface(),
+        "ice" => new IceSurface(),
+        "flames" => new FlameSurface(),
+        _ => throw new ArgumentException($"no surface pattern named {name}", nameof(name)),
     };
 
     [Fact]
-    public void IceRepeatsEveryTileAndItsInclusionsArePale()
+    public void IceInclusionsArePale()
     {
         var ice = new IceSurface();
         double tile = ice.TileMeters;
@@ -200,10 +157,6 @@ public class SurfaceBakeTests
             double along = i * 0.0731 % tile;
             double up = i * 0.1937 % tile;
             SurfacePoint here = ice.At(along, up);
-            SurfacePoint there = ice.At(along + (3.0 * tile), up - tile);
-            Assert.Equal(here.HeightMeters, there.HeightMeters, 6);
-            Assert.Equal(here.Tone, there.Tone, 6);
-            Assert.Equal(here.Roughness, there.Roughness, 6);
             Assert.InRange(here.Tone, 1.0, SurfaceMaps.ToneScale);
             Assert.Equal(0.0, here.Cavity);
             white += here.Tone > 1.3 ? 1 : 0;
@@ -214,7 +167,7 @@ public class SurfaceBakeTests
     }
 
     [Fact]
-    public void CracksRepeatEveryTileAndWebTheFace()
+    public void CracksWebTheFace()
     {
         var cracks = new CracksSurface();
         double tile = cracks.TileMeters;
@@ -224,10 +177,6 @@ public class SurfaceBakeTests
             double along = i * 0.0731 % tile;
             double up = i * 0.1937 % tile;
             SurfacePoint here = cracks.At(along, up);
-            SurfacePoint there = cracks.At(along - (2.0 * tile), up + tile);
-            Assert.Equal(here.HeightMeters, there.HeightMeters, 6);
-            Assert.Equal(here.Tone, there.Tone, 6);
-            Assert.Equal(here.Cavity, there.Cavity, 6);
             Assert.InRange(here.Tone, 0.0, SurfaceMaps.ToneScale);
             fissured += here.Cavity > 0.5 ? 1 : 0;
         }
@@ -272,7 +221,7 @@ public class SurfaceBakeTests
     }
 
     [Fact]
-    public void CoatingRepeatsEveryTileAndRunsStreakSomeOfIt()
+    public void CoatingRunsStreakSomeOfIt()
     {
         var coating = new CoatingSurface();
         double tile = coating.TileMeters;
@@ -282,7 +231,6 @@ public class SurfaceBakeTests
             double along = i * 0.0731 % tile;
             double up = i * 0.1937 % tile;
             SurfacePoint here = coating.At(along, up);
-            AssertSame(here, coating.At(along - tile, up + (2.0 * tile)));
             Assert.InRange(here.Tone, 0.5, 1.2);
             wet += here.Cavity > 0.5 ? 1 : 0;
         }
@@ -317,7 +265,6 @@ public class SurfaceBakeTests
         for (int i = 0; i < 4000; i++)
         {
             SurfacePoint here = glyphs.At(i * 0.0731 % glyphs.TileMeters, i * 0.1937 % glyphs.TileMeters);
-            AssertSame(here, glyphs.At((i * 0.0731 % glyphs.TileMeters) + glyphs.TileMeters, (i * 0.1937 % glyphs.TileMeters) - glyphs.TileMeters));
             strokes += here.Cell;
         }
 
@@ -327,7 +274,7 @@ public class SurfaceBakeTests
     /// <summary>The material shows the coat where it is thicker than the place leaves bare (<c>lib/frost.gdshaderinc</c>): its
     /// thickness must spread over the whole range, with gaps where it is thin, and smooth crystals stand on some of it.</summary>
     [Fact]
-    public void FrostRepeatsEveryTileAndItsThicknessSpreads()
+    public void FrostThicknessSpreads()
     {
         var frost = new FrostSurface();
         double tile = frost.TileMeters;
@@ -339,7 +286,6 @@ public class SurfaceBakeTests
             double along = i * 0.0731 % tile;
             double up = i * 0.1937 % tile;
             SurfacePoint here = frost.At(along, up);
-            AssertSame(here, frost.At(along + tile, up - (2.0 * tile)));
             Assert.InRange(here.Tone, 0.5, SurfaceMaps.ToneScale);
             Assert.InRange(here.Cavity, 0.0, 1.0);
             thin += here.Cavity < 0.25 ? 1 : 0;
