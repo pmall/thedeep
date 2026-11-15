@@ -128,7 +128,7 @@ public partial class OwnerCapture : CanvasLayer
         string folder = CaptureFolder();
         string name = ReserveName(folder);
         string report = DescribeGame($"The Deep screenshot {name}.png").ToString();
-        _grabber.Request(bytes => Task.Run(() => SaveScreenshot(bytes, frame, folder, name, report)));
+        _grabber.Request((bytes, _) => Task.Run(() => SaveScreenshot(bytes, frame, folder, name, report)));
     }
 
     private void SaveScreenshot(byte[] bytes, FrameFormat frame, string folder, string name, string report)
@@ -224,7 +224,13 @@ public partial class OwnerCapture : CanvasLayer
     {
         double elapsed = (Time.GetTicksUsec() - recording.StartUsec) / 1_000_000.0;
         RecDot.Modulate = new Color(1f, 1f, 1f, 0.55f + 0.45f * Mathf.Cos((float)elapsed * Mathf.Tau * 0.5f));
-        RecTime.Text = FormatDuration(elapsed);
+        int whole = (int)elapsed;
+        if (whole != recording.ShownSecond)
+        {
+            // The label's text changes once a second; a string built every frame is garbage.
+            recording.ShownSecond = whole;
+            RecTime.Text = FormatDuration(elapsed);
+        }
 
         if (recording.Encoder.Failed)
         {
@@ -251,8 +257,7 @@ public partial class OwnerCapture : CanvasLayer
             return;
         }
 
-        VideoEncoder encoder = recording.Encoder;
-        recording.Grabber.Request(bytes => encoder.Submit(bytes, due));
+        recording.Grabber.Request(recording.Submit, due);
     }
 
     private async Task FinishRecording(Recording recording, string reason)
@@ -381,5 +386,12 @@ public partial class OwnerCapture : CanvasLayer
 
     private sealed record Recording(
         FrameGrabber Grabber, VideoEncoder Encoder, VideoClock Clock, ulong StartUsec, FrameFormat Format,
-        string Folder, string Name, CaptureReport Report);
+        string Folder, string Name, CaptureReport Report)
+    {
+        /// <summary>What a frame's bytes go to, made once so a request needs no closure.</summary>
+        public Action<byte[], int> Submit { get; } = Encoder.Submit;
+
+        /// <summary>The whole second the REC time shows.</summary>
+        public int ShownSecond { get; set; } = -1;
+    }
 }

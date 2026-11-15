@@ -19,6 +19,7 @@ public sealed class ButtonPainter : System.IDisposable
     };
 
     private readonly float _s;
+    private readonly Vector2[] _arrow = new Vector2[3];
     private readonly StyleBoxFlat _cap = new() { AntiAliasing = true, CornerDetail = 5 };
 
     /// <summary>A painter drawing <paramref name="scale"/> times the manual's size (a cap 18 pixels high at 1).</summary>
@@ -129,7 +130,10 @@ public sealed class ButtonPainter : System.IDisposable
             Vector2 dir = arrow switch { 0 => Vector2.Up, 1 => Vector2.Left, 2 => Vector2.Down, _ => Vector2.Right };
             Vector2 side = new(-dir.Y, dir.X);
             float s = _s;
-            canvas.DrawColoredPolygon(new[] { mid + dir * 4f * s, mid - dir * 3f * s + side * 4f * s, mid - dir * 3f * s - side * 4f * s }, ink);
+            _arrow[0] = mid + dir * 4f * s;
+            _arrow[1] = mid - dir * 3f * s + side * 4f * s;
+            _arrow[2] = mid - dir * 3f * s - side * 4f * s;
+            canvas.DrawColoredPolygon(_arrow, ink);
             return;
         }
 

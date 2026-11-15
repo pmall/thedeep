@@ -19,7 +19,11 @@ public partial class DebugHud : CanvasLayer
     [Export] public Player Player { get; set; } = null!;
     [Export] public World World { get; set; } = null!;
 
+    /// <summary>Seconds between two rebuilds of the F7 readout: a tenth shows it live and builds a handful of strings a second, not per frame.</summary>
+    private const float ReadoutInterval = 0.1f;
+
     private readonly StringBuilder _text = new();
+    private float _sinceReadout = ReadoutInterval;
     private Label? _info;
     private Label? _room;
 
@@ -58,6 +62,7 @@ public partial class DebugHud : CanvasLayer
         if (@event.IsActionPressed(InputActions.DebugToggleHud) && OS.IsDebugBuild())
         {
             Info.Visible = !Info.Visible;
+            _sinceReadout = ReadoutInterval;
             if (DebugKeys is not null)
             {
                 DebugKeys.Visible = Info.Visible;
@@ -93,11 +98,13 @@ public partial class DebugHud : CanvasLayer
             }
         }
 
-        if (!Info.Visible)
+        _sinceReadout += (float)delta;
+        if (!Info.Visible || _sinceReadout < ReadoutInterval)
         {
             return;
         }
 
+        _sinceReadout = 0f;
         Vector3 v = Player.Velocity;
         _text.Clear();
         _text.Append("state  ").Append(Player.CurrentState.Name).Append('\n');

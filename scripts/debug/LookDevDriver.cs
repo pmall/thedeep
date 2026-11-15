@@ -188,7 +188,7 @@ public partial class LookDevDriver : Node
             // A request made now returns the last finished frame: the settled shot.
             string path = Path.Combine(OutputDir, $"{Room.NameText()}-{spot.NameText()}.png");
             Interlocked.Increment(ref _pendingSaves);
-            _grabber.Request(bytes => Task.Run(() => Save(bytes, format, path)));
+            _grabber.Request((bytes, _) => Task.Run(() => Save(bytes, format, path)));
             _saved.Add(Path.GetFileName(path));
         }
 
@@ -241,7 +241,7 @@ public partial class LookDevDriver : Node
                         {
                             string path = Path.Combine(reelDir, $"{shotCount++:00}-{shot.Label.Replace(' ', '-')}.png");
                             Interlocked.Increment(ref _pendingSaves);
-                            _grabber.Request(bytes => Task.Run(() => Save(bytes, format, path)));
+                            _grabber.Request((bytes, _) => Task.Run(() => Save(bytes, format, path)));
                         }
                     }
 
