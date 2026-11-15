@@ -21,6 +21,9 @@ public partial class FalseWall : Node3D, IWalkedThrough
     /// <summary>Seconds it takes to fade away once found.</summary>
     [Export] public float FadeTime { get; set; } = 0.8f;
 
+    /// <summary>The wall's edge bevel, meters.</summary>
+    private const float FaceBevel = 0.05f;
+
     private MeshInstance3D? _face;
 
     /// <summary>Found by the pilgrim, now or on an earlier visit: fading or gone.</summary>
@@ -31,7 +34,7 @@ public partial class FalseWall : Node3D, IWalkedThrough
 
     public override void _Ready()
     {
-        _face = new MeshInstance3D { Name = FaceName, Mesh = new BlockMesh { Size = Size, Bevel = 0.05f }, MaterialOverride = Material };
+        _face = new MeshInstance3D { Name = FaceName, Mesh = new BlockMesh { Size = Size, Bevel = FaceBevel }, MaterialOverride = Material };
         AddChild(_face);
     }
 

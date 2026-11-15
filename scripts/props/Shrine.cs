@@ -15,6 +15,11 @@ public partial class Shrine : Node3D
     /// <summary>The prompt offered while the pilgrim can rest ("Rest").</summary>
     [Export] public ActionPrompt Prompt { get; set; } = null!;
 
+    /// <summary>How the glyphs flare when the pilgrim rests: the light's peak as a multiple of its resting energy, seconds to reach it, and seconds to settle back.</summary>
+    [Export] public float FlarePeak { get; set; } = 4f;
+    [Export] public float FlareRise { get; set; } = 0.25f;
+    [Export] public float FlareSettle { get; set; } = 1.4f;
+
     private float _baseEnergy;
     private Tween? _flare;
 
@@ -28,7 +33,7 @@ public partial class Shrine : Node3D
     {
         _flare?.Kill();
         _flare = CreateTween();
-        _flare.TweenProperty(Light, Names.LightEnergy, _baseEnergy * 4f, 0.25f).SetTrans(Tween.TransitionType.Sine).SetEase(Tween.EaseType.Out);
-        _flare.TweenProperty(Light, Names.LightEnergy, _baseEnergy, 1.4f).SetTrans(Tween.TransitionType.Sine).SetEase(Tween.EaseType.InOut);
+        _flare.TweenProperty(Light, Names.LightEnergy, _baseEnergy * FlarePeak, FlareRise).SetTrans(Tween.TransitionType.Sine).SetEase(Tween.EaseType.Out);
+        _flare.TweenProperty(Light, Names.LightEnergy, _baseEnergy, FlareSettle).SetTrans(Tween.TransitionType.Sine).SetEase(Tween.EaseType.InOut);
     }
 }

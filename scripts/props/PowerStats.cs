@@ -7,12 +7,17 @@ namespace TheDeep;
 /// does, shown when taken).</summary>
 public static class PowerStats
 {
+    // Saturated, and apart in hue so the two never read alike (the palette of the kinds lives in code beside GateKinds/ItemKinds).
+    private static readonly Color StrengthColor = new(1f, 0.4f, 0.3f);
+    private static readonly Color DefenseColor = new(0.18f, 0.5f, 1f);
+    private static readonly Color NoneColor = new(0.86f, 0.86f, 0.95f);
+
     /// <summary>The color the crystal raising <paramref name="stat"/> glows.</summary>
     public static Color ColorOf(PowerStat stat) => stat switch
     {
-        PowerStat.Strength => new Color(1f, 0.4f, 0.3f),
-        PowerStat.Defense => new Color(0.18f, 0.5f, 1f),
-        _ => new Color(0.86f, 0.86f, 0.95f),
+        PowerStat.Strength => StrengthColor,
+        PowerStat.Defense => DefenseColor,
+        _ => NoneColor,
     };
 
     /// <summary>The id of the line naming <paramref name="stat"/>.</summary>

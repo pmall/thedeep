@@ -30,6 +30,11 @@ public partial class AbilityRelic : Node3D, IAnnounces, IWalkedThrough
     /// <inheritdoc/>
     public System.Collections.Generic.IEnumerable<Announcement> Announcements => new[] { Said };
 
+    /// <summary>How the core hovers over its pedestal: its bob's height (meters), its bob's and its spin's speed (radians per second).</summary>
+    [Export] public float BobHeight { get; set; } = 0.08f;
+    [Export] public float BobSpeed { get; set; } = 1.6f;
+    [Export] public float SpinSpeed { get; set; } = 0.6f;
+
     private Vector3 _coreRest;
     private float _time;
     private bool _taken;
@@ -50,8 +55,8 @@ public partial class AbilityRelic : Node3D, IAnnounces, IWalkedThrough
         }
 
         _time += (float)delta;
-        Core.Position = _coreRest + new Vector3(0f, 0.08f * Mathf.Sin(_time * 1.6f), 0f);
-        Core.RotateY((float)delta * 0.6f);
+        Core.Position = _coreRest + new Vector3(0f, BobHeight * Mathf.Sin(_time * BobSpeed), 0f);
+        Core.RotateY((float)delta * SpinSpeed);
     }
 
     /// <summary>The core drifts into <paramref name="target"/> (the pilgrim's chest) with a flare, then fades.</summary>

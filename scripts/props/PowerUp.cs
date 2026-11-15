@@ -36,6 +36,11 @@ public partial class PowerUp : Node3D, IWalkedThrough
     /// <summary>How far the token rocks either side of facing the camera, radians: the look keeps its face (its crystals spin on their own, <see cref="Spinner"/>).</summary>
     private const float Rock = 0.45f;
 
+    /// <summary>How the token hovers: its bob's height (meters) and speed, and its rocking speed (radians per second).</summary>
+    [Export] public float BobHeight { get; set; } = 0.07f;
+    [Export] public float BobSpeed { get; set; } = 1.4f;
+    [Export] public float RockSpeed { get; set; } = 0.8f;
+
     private Vector3 _rest;
     private float _time;
 
@@ -64,8 +69,8 @@ public partial class PowerUp : Node3D, IWalkedThrough
         }
 
         _time += (float)delta;
-        Token.Position = _rest + new Vector3(0f, 0.07f * Mathf.Sin(_time * 1.4f), 0f);
-        Token.Rotation = new Vector3(0f, Rock * Mathf.Sin(_time * 0.8f), 0f);
+        Token.Position = _rest + new Vector3(0f, BobHeight * Mathf.Sin(_time * BobSpeed), 0f);
+        Token.Rotation = new Vector3(0f, Rock * Mathf.Sin(_time * RockSpeed), 0f);
     }
 
     /// <summary>The token sinks into <paramref name="target"/> (the pilgrim's chest), flaring, and fades; the cradle's rim dies.</summary>
