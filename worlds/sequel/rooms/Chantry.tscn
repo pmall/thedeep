@@ -105,6 +105,8 @@ Profile = ExtResource("93_seam_hatch")
 [node name="MagGrip" parent="Props" instance=ExtResource("4_relic")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 15, 0.5, 0)
 Ability = 1
+NameLine = &"ability.mag_grip.name"
+HintLine = &"ability.mag_grip.hint"
 
 [node name="Shafts" type="Node3D" parent="."]
 
