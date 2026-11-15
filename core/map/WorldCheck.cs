@@ -214,7 +214,7 @@ public sealed class WorldCheck
         yield return $"REACH {room} all ledges: " + string.Join(" ", none.Ledges.OrderBy(l => l.Y).Select(Describe));
     }
 
-    private static string Describe(Ledge l) => $"{(l.Swim ? "~" : "")}{l.Y:0.##}@{l.MinX:0.##}..{l.MaxX:0.##}";
+    private static string Describe(Ledge l) => $"{(l.Swim ? "~" : "")}{Fmt.Num(l.Y)}@{Fmt.Num(l.MinX)}..{Fmt.Num(l.MaxX)}";
 
     /// <summary>
     /// The planner for a room with some abilities (cached): Mag-grip walks its metal, the Harpoon zips between its anchors, the Drill
@@ -294,7 +294,7 @@ public sealed class WorldCheck
 
         foreach (Vector2 wake in shape.Wakes)
         {
-            ways.Add(new WayIn($"waking at ({wake.X:0.#}, {wake.Y:0.#})", wake, Vector2.Zero, 0, -1, true, Ability.None));
+            ways.Add(new WayIn($"waking at {Fmt.Point(wake)}", wake, Vector2.Zero, 0, -1, true, Ability.None));
         }
 
         return ways;

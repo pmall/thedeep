@@ -284,7 +284,7 @@ public sealed record SeamFrame(float Opening, float Approach, float HeadRise = 0
         {
             ExitSide.Up when end < area.MinY => new Box(area.MinX - a, end, area.MaxX + a, area.MinY),
             ExitSide.Down when end > area.MaxY => new Box(area.MinX - a, area.MaxY, area.MaxX + a, end),
-            _ => throw new ArgumentException($"no heat rises through a {side} exit of this seam at {marker} to {end} m"),
+            _ => throw new ArgumentException($"no heat rises through a {side} exit of this seam at {Fmt.Point(marker)} to {Fmt.Num(end)} m"),
         };
     }
 
@@ -331,7 +331,7 @@ public sealed record SeamFrame(float Opening, float Approach, float HeadRise = 0
         float mouth = water.MaxY + PipeMouth;
         if (mouth >= area.MinY)
         {
-            throw new ArgumentException($"the water under the hatch at {marker} lies {area.MinY - water.MaxY} m under its slab: no room for a standpipe's mouth");
+            throw new ArgumentException($"the water under the hatch at {Fmt.Point(marker)} lies {Fmt.Num(area.MinY - water.MaxY)} m under its slab: no room for a standpipe's mouth");
         }
 
         var column = new Box(area.MinX, MathF.Max(water.MaxY - PipeMouth, water.MinY), area.MaxX, area.MaxY);
@@ -354,7 +354,7 @@ public sealed record SeamFrame(float Opening, float Approach, float HeadRise = 0
         {
             ExitSide.Up when handOff > floor => (new Vector2(marker.X, floor), handOff - floor),
             ExitSide.Down when HeadRise > 0f => (new Vector2(marker.X, handOff), HeadRise),
-            _ => throw new ArgumentException($"no lift rides through a {side} exit of this seam from {floor} m (head rise {HeadRise} m)"),
+            _ => throw new ArgumentException($"no lift rides through a {side} exit of this seam from {Fmt.Num(floor)} m (head rise {Fmt.Num(HeadRise)} m)"),
         };
     }
 }

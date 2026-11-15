@@ -132,7 +132,7 @@ public readonly record struct Threshold(ExitSide Side, Vector2 Marker, Vector2 S
         var arriving = new Box(feet.X - body.X * 0.5f, feet.Y, feet.X + body.X * 0.5f, feet.Y + body.Y);
         if (Hit(solids, arriving) is { } inArrival)
         {
-            yield return $"a body arriving through it, at {Describe(arriving)}, is in a solid at {Describe(inArrival)}";
+            yield return $"a body arriving through it, at {Fmt.Rect(arriving)}, is in a solid at {Fmt.Rect(inArrival)}";
         }
 
         if (!left)
@@ -143,7 +143,7 @@ public readonly record struct Threshold(ExitSide Side, Vector2 Marker, Vector2 S
         Box area = Area;
         if (Hit(solids, area) is { } inArea)
         {
-            yield return $"its area {Describe(area)} is blocked by a solid at {Describe(inArea)}";
+            yield return $"its area {Fmt.Rect(area)} is blocked by a solid at {Fmt.Rect(inArea)}";
         }
 
         if (!IsHatch)
@@ -154,7 +154,7 @@ public readonly record struct Threshold(ExitSide Side, Vector2 Marker, Vector2 S
             {
                 if (!solids.Any(s => s.MinX <= x && x <= s.MaxX && MathF.Abs(s.MaxY - floor) < 0.01f))
                 {
-                    yield return $"its marker is not on the floor of its opening: nothing stands at ({x:0.##}, {floor:0.##})";
+                    yield return $"its marker is not on the floor of its opening: nothing stands at {Fmt.Point(new Vector2(x, floor))}";
                     yield break;
                 }
             }
@@ -162,7 +162,7 @@ public readonly record struct Threshold(ExitSide Side, Vector2 Marker, Vector2 S
             // Somewhere out from the trigger's edge, the wall over the passage leaves no room for a body above the trigger.
             if (!Closed(solids, room, top, body.Y, horizontal: true))
             {
-                yield return $"nothing closes its opening over the trigger (top {top:0.##}) within {Passage} m out: a body passes over " +
+                yield return $"nothing closes its opening over the trigger (top {Fmt.Num(top)}) within {Passage} m out: a body passes over " +
                              "it; make it as tall as the opening";
             }
 
@@ -236,6 +236,4 @@ public readonly record struct Threshold(ExitSide Side, Vector2 Marker, Vector2 S
 
         return null;
     }
-
-    private static string Describe(Box b) => $"({b.MinX:0.##}, {b.MinY:0.##})..({b.MaxX:0.##}, {b.MaxY:0.##})";
 }

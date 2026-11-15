@@ -24,12 +24,12 @@ public sealed record SealedArena(string Name, Box Area, IReadOnlyList<Box> Gates
     {
         foreach ((string foe, Vector2 at) in Foes.Where(f => !Area.Contains(f.At)))
         {
-            yield return $"arena {Name}: its foe {foe} stands at ({at.X:0.##}, {at.Y:0.##}), outside its area {Describe(Area)}";
+            yield return $"arena {Name}: its foe {foe} stands at {Fmt.Point(at)}, outside its area {Fmt.Rect(Area)}";
         }
 
         if (!bounds.Contains(Area))
         {
-            yield return $"arena {Name}: its area {Describe(Area)} reaches past the room's camera bounds {Describe(bounds)}";
+            yield return $"arena {Name}: its area {Fmt.Rect(Area)} reaches past the room's camera bounds {Fmt.Rect(bounds)}";
         }
 
         RoomShape shut = room with { Solids = room.Solids.Concat(Gates).ToList(), Sound = room.Sound.Concat(Gates).ToList() };
@@ -46,7 +46,7 @@ public sealed record SealedArena(string Name, Box Area, IReadOnlyList<Box> Gates
 
         if (starts.Count == 0)
         {
-            yield return $"arena {Name}: no floor lies inside its area {Describe(Area)}, so the fight never starts";
+            yield return $"arena {Name}: no floor lies inside its area {Fmt.Rect(Area)}, so the fight never starts";
             yield break;
         }
 
@@ -57,6 +57,4 @@ public sealed record SealedArena(string Name, Box Area, IReadOnlyList<Box> Gates
                          "a gate must bar every way out";
         }
     }
-
-    private static string Describe(Box b) => $"({b.MinX:0.##}, {b.MinY:0.##})..({b.MaxX:0.##}, {b.MaxY:0.##})";
 }
