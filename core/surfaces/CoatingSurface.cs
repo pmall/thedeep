@@ -18,13 +18,13 @@ public sealed record CoatingSurface : ISurfacePattern
 {
     public double TileMeters { get; init; } = 2.0;
 
-    /// <summary>The mottle in the coating's tone, and its first octave's cells per tile.</summary>
+    /// <summary>How far the mottle moves the coating's tone, either way, a share of it.</summary>
     public double Mottle { get; init; } = 0.05;
 
     /// <summary>The mottle noise's first octave's cells per tile.</summary>
     public int MottleCells { get; init; } = 5;
 
-    /// <summary>Dents: cells per tile side (one dent per cell at most), the share of cells with one, their depth.</summary>
+    /// <summary>Dents: cells per tile side (one dent per cell at most).</summary>
     public int DentCells { get; init; } = 12;
 
     /// <summary>Share of cells (0 to 1) that hold a dent.</summary>
@@ -33,9 +33,7 @@ public sealed record CoatingSurface : ISurfacePattern
     /// <summary>A dent's depth at its bottom, meters.</summary>
     public double DentMeters { get; init; } = 0.0015;
 
-    /// <summary>Scratches: cells per tile side (each holds the middle of one at most), the share of cells with one, their
-    /// length at least and at most (in cells), their half width and depth, how dark the metal they bare is, and how far they
-    /// stray from level (radians; most scratches are made by things moving along).</summary>
+    /// <summary>Scratches: cells per tile side (each holds the middle of one at most).</summary>
     public int ScratchCells { get; init; } = 14;
 
     /// <summary>Share of cells (0 to 1) that hold the middle of a scratch.</summary>
@@ -59,8 +57,7 @@ public sealed record CoatingSurface : ISurfacePattern
     /// <summary>How far a scratch strays from level at most, either way, radians.</summary>
     public double ScratchLean { get; init; } = 0.5;
 
-    /// <summary>The runs: their noise's cells per tile along and up the face (narrow and long), the noise level where a run
-    /// starts and where it is full, and the cells per tile of the broad field that leaves some stretches dry.</summary>
+    /// <summary>The runs' noise's cells per tile along the face (many: a run is narrow).</summary>
     public int RunCellsAlong { get; init; } = 28;
 
     /// <summary>The runs' noise's cells per tile up the face (few: a run is long).</summary>
@@ -75,7 +72,7 @@ public sealed record CoatingSurface : ISurfacePattern
     /// <summary>Cells per tile of the broad noise whose low stretches stay dry of runs.</summary>
     public int RunPatchCells { get; init; } = 4;
 
-    /// <summary>The coating's roughness, how far smudges move it, their cells per tile, and the scratches' roughness.</summary>
+    /// <summary>The coating's dry roughness (0 to 1).</summary>
     public double Roughness { get; init; } = 0.32;
 
     /// <summary>How far a smudge moves the coating's roughness, either way (roughness runs 0 to 1).</summary>

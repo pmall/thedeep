@@ -20,8 +20,7 @@ public sealed record MasonrySurface : ISurfacePattern
     /// <summary>Courses per tile: each is <see cref="TileMeters"/> over this high.</summary>
     public int Courses { get; init; } = 7;
 
-    /// <summary>Blocks per course, at least and at most (at most <see cref="SurfaceMaps.Cells"/>), and how far a joint
-    /// strays from even spacing, as a share of a block.</summary>
+    /// <summary>Blocks per course at least (at most <see cref="MaxBlocks"/>, which is at most <see cref="SurfaceMaps.Cells"/>).</summary>
     public int MinBlocks { get; init; } = 3;
 
     /// <summary>Blocks per course at most.</summary>
@@ -30,7 +29,7 @@ public sealed record MasonrySurface : ISurfacePattern
     /// <summary>How far a joint between two blocks strays from even spacing, either way, a share of a block.</summary>
     public double BlockJitter { get; init; } = 0.2;
 
-    /// <summary>Half width of a mortar joint (flat, recessed by <see cref="JointDepthMeters"/>), and how far an arris rounds.</summary>
+    /// <summary>Half width of a mortar joint, meters (flat, recessed by <see cref="JointDepthMeters"/>).</summary>
     public double JointMeters { get; init; } = 0.02;
 
     /// <summary>How far the mortar lies behind the blocks' faces, meters.</summary>
@@ -39,7 +38,7 @@ public sealed record MasonrySurface : ISurfacePattern
     /// <summary>The width over which a block's edge rounds, from the mortar up to its face, meters.</summary>
     public double ArrisMeters { get; init; } = 0.012;
 
-    /// <summary>How far a chip bites into a block's arris at most, how deep its scar is, and its noise's cells per tile.</summary>
+    /// <summary>How far a chip bites into a block's arris at most, meters.</summary>
     public double ChipMeters { get; init; } = 0.06;
 
     /// <summary>How deep a chip's scar is, meters.</summary>
@@ -48,7 +47,7 @@ public sealed record MasonrySurface : ISurfacePattern
     /// <summary>The chips' noise's first octave's cells per tile.</summary>
     public int ChipCells { get; init; } = 40;
 
-    /// <summary>A block's face: its tilt (slope, along and up), how far it bulges, and how far it stands proud of the others.</summary>
+    /// <summary>How far a block's face tilts, along and up, at most, as a slope (meters per meter).</summary>
     public double TiltSlope { get; init; } = 0.04;
 
     /// <summary>How far the middle of a block's face bulges out past its edges, meters.</summary>
@@ -57,7 +56,7 @@ public sealed record MasonrySurface : ISurfacePattern
     /// <summary>How far a block stands proud of the wall's plane or behind it, at most, meters.</summary>
     public double ReliefMeters { get; init; } = 0.01;
 
-    /// <summary>The tooled grain: its relief, its first octave's cells per tile and octaves.</summary>
+    /// <summary>The tooled grain's relief, meters.</summary>
     public double GrainMeters { get; init; } = 0.004;
 
     /// <summary>The grain noise's first octave's cells per tile.</summary>
@@ -66,7 +65,7 @@ public sealed record MasonrySurface : ISurfacePattern
     /// <summary>The grain noise's octaves: more add finer detail.</summary>
     public int GrainOctaves { get; init; } = 4;
 
-    /// <summary>Small pits: their depth, cells per tile (one pit per cell at most), and the share of cells pitted in the most weathered block.</summary>
+    /// <summary>A small pit's depth, meters.</summary>
     public double PitMeters { get; init; } = 0.004;
 
     /// <summary>Pit cells per tile side, one pit per cell at most.</summary>
@@ -75,7 +74,7 @@ public sealed record MasonrySurface : ISurfacePattern
     /// <summary>Share of cells (0 to 1) pitted in the most weathered block; fewer in the others.</summary>
     public double PitShare { get; init; } = 0.12;
 
-    /// <summary>How much the grain shows in the tone; how much paler a chip's fresh stone is; the mortar's tone.</summary>
+    /// <summary>How much the grain shows in the stone's tone.</summary>
     public double GrainTone { get; init; } = 0.3;
 
     /// <summary>How much paler a chip's fresh stone is, a share of the stone's tone.</summary>
@@ -84,7 +83,7 @@ public sealed record MasonrySurface : ISurfacePattern
     /// <summary>The mortar's tone (1 is the stone's).</summary>
     public double MortarTone { get; init; } = 0.85;
 
-    /// <summary>Roughness of the cut stone (each block departs from it by up to <see cref="RoughnessSpread"/>) and of the mortar.</summary>
+    /// <summary>Roughness of the cut stone (0 to 1); each block departs from it by up to <see cref="RoughnessSpread"/>.</summary>
     public double Roughness { get; init; } = 0.8;
 
     /// <summary>How far a block's roughness departs from the cut stone's, either way (roughness runs 0 to 1).</summary>

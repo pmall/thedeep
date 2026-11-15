@@ -17,13 +17,13 @@ public sealed record CracksSurface : ISurfacePattern
 {
     public double TileMeters { get; init; } = 4.0;
 
-    /// <summary>Chunks per tile side, and how far a fissure strays from straight.</summary>
+    /// <summary>Chunks per tile side.</summary>
     public int ChunkCells { get; init; } = 5;
 
     /// <summary>How far a fissure strays from the straight border between two chunks, meters.</summary>
     public double WarpMeters { get; init; } = 0.09;
 
-    /// <summary>A fissure's half width, at least and at most (it varies along it), its depth, and how dark its bottom is.</summary>
+    /// <summary>A fissure's half width at least, meters (it varies along it).</summary>
     public double FissureMinMeters { get; init; } = 0.045;
 
     /// <summary>A fissure's half width at most, meters.</summary>
@@ -35,8 +35,7 @@ public sealed record CracksSurface : ISurfacePattern
     /// <summary>The tone at a fissure's bottom (1 is the rock's; near 0 is black).</summary>
     public double FissureTone { get; init; } = 0.06;
 
-    /// <summary>The chipped band along a chunk's edge: how far it reaches beyond the fissure, how pale, and how far it slopes
-    /// down into the fissure.</summary>
+    /// <summary>How far the chipped band along a chunk's edge reaches beyond the fissure, meters.</summary>
     public double ChipMeters { get; init; } = 0.07;
 
     /// <summary>How much paler the chipped band is, a share of the rock's tone.</summary>
@@ -45,13 +44,13 @@ public sealed record CracksSurface : ISurfacePattern
     /// <summary>How far the chipped band slopes down toward the fissure, meters.</summary>
     public double ChipDropMeters { get; init; } = 0.012;
 
-    /// <summary>How far a chunk leans out of the face (a slope, meters per meter) and how far its tone departs from the rock's.</summary>
+    /// <summary>How far a chunk leans out of the face at most, as a slope (meters per meter).</summary>
     public double TiltSlope { get; init; } = 0.07;
 
     /// <summary>How far a chunk's tone departs from the rock's, either way, a share of it.</summary>
     public double ChunkContrast { get; init; } = 0.12;
 
-    /// <summary>Finer cracks: cells per tile side, the share of their length that shows, their half width, depth and darkness.</summary>
+    /// <summary>Finer cracks: cells per tile side.</summary>
     public int FineCells { get; init; } = 13;
 
     /// <summary>Share of the finer cracks' length that shows (0 to 1).</summary>
@@ -66,13 +65,13 @@ public sealed record CracksSurface : ISurfacePattern
     /// <summary>What the rock's tone is multiplied by in a finer crack (below 1 darkens).</summary>
     public double FineTone { get; init; } = 0.65;
 
-    /// <summary>Rough grit over the broken faces: its relief and its first octave's cells per tile.</summary>
+    /// <summary>The rough grit over the broken faces: its relief, meters.</summary>
     public double GritMeters { get; init; } = 0.006;
 
     /// <summary>The grit noise's first octave's cells per tile.</summary>
     public int GritCells { get; init; } = 40;
 
-    /// <summary>The broken faces' roughness, and the fissures'.</summary>
+    /// <summary>The broken faces' roughness (0 to 1).</summary>
     public double Roughness { get; init; } = 0.9;
 
     /// <summary>The roughness (0 to 1) in the fissures.</summary>

@@ -21,7 +21,7 @@ public sealed record FrostSurface : ISurfacePattern
 {
     public double TileMeters { get; init; } = 4.0;
 
-    /// <summary>The coat's mottle: its first octave's cells per tile, how far it moves the tone, and how far the thickness.</summary>
+    /// <summary>The coat's mottle: its first octave's cells per tile.</summary>
     public int MottleCells { get; init; } = 7;
 
     /// <summary>How far the mottle moves the rime's tone, a share either way (0.16: from 16% darker to 16% paler).</summary>
@@ -30,8 +30,7 @@ public sealed record FrostSurface : ISurfacePattern
     /// <summary>How far the mottle moves the coat's thickness either side of half (thickness runs 0 to 1).</summary>
     public double MottleThickness { get; init; } = 0.55;
 
-    /// <summary>The gaps: cells per tile side (one gap per cell at most), the share of cells with one where the coat is thin,
-    /// their half length at least and at most and their half width (shares of a cell), and how dark the coat is at their rim.</summary>
+    /// <summary>The gaps: cells per tile side (one gap per cell at most).</summary>
     public int GapCells { get; init; } = 12;
 
     /// <summary>Share of cells (0 to 1) that hold a gap where the coat is thinnest; four tenths of it where the coat is
@@ -61,8 +60,7 @@ public sealed record FrostSurface : ISurfacePattern
     /// <summary>Cells per tile of the noise that pushes the gaps' outlines about.</summary>
     public int GapWarpCells { get; init; } = 10;
 
-    /// <summary>The crusts: their noise's first octave's cells per tile, the noise level where a crust starts and where it is
-    /// full, how far it stands proud, and how pale it is.</summary>
+    /// <summary>The crusts' noise's first octave's cells per tile.</summary>
     public int CrustCells { get; init; } = 11;
 
     /// <summary>The crust noise's level (0 to 1) where a crust starts.</summary>
@@ -77,11 +75,10 @@ public sealed record FrostSurface : ISurfacePattern
     /// <summary>How much paler a full crust is, a share of the rime's tone.</summary>
     public double CrustTone { get; init; } = 0.12;
 
-    /// <summary>The hoarfrost: the cells per tile of the patches it grows in, its fronds' cells per tile along and across them
-    /// (on the diagonals, long and narrow), how pale a frond is and how far it stands proud.</summary>
+    /// <summary>The cells per tile of the patches the hoarfrost grows in.</summary>
     public int HoarCells { get; init; } = 5;
 
-    /// <summary>The frond noise's cells per tile along the fronds (few: they run long).</summary>
+    /// <summary>The frond noise's cells per tile along the fronds, which run on the diagonals (few: they run long).</summary>
     public int FrondCellsAlong { get; init; } = 10;
 
     /// <summary>The frond noise's cells per tile across the fronds (many: they are narrow).</summary>
@@ -93,8 +90,7 @@ public sealed record FrostSurface : ISurfacePattern
     /// <summary>How far a frond stands proud of the coat, meters.</summary>
     public double FrondMeters { get; init; } = 0.0012;
 
-    /// <summary>The crystals: cells per tile side (one crystal per cell at most), the share of cells with one where the coat is
-    /// thick, their radius (a share of a cell), how far a facet tilts (a slope), how pale and how smooth it is.</summary>
+    /// <summary>The crystals: cells per tile side (one crystal per cell at most).</summary>
     public int CrystalCells { get; init; } = 120;
 
     /// <summary>Share of cells (0 to 1) that hold a crystal where the coat is thickest; none where it is thin.</summary>
@@ -113,7 +109,7 @@ public sealed record FrostSurface : ISurfacePattern
     /// <summary>The roughness (0 to 1) of a crystal's facet, low so it glints.</summary>
     public double CrystalRoughness { get; init; } = 0.12;
 
-    /// <summary>The rime's roughness, and the crusts'.</summary>
+    /// <summary>The rime's roughness (0 to 1).</summary>
     public double Roughness { get; init; } = 0.66;
 
     /// <summary>The roughness (0 to 1) of a full crust.</summary>
