@@ -93,17 +93,17 @@ public sealed record CoatingSurface : ISurfacePattern
     public SurfacePoint At(double alongMeters, double upMeters)
     {
         double tile = TileMeters;
-        double u = TileNoise.Wrap(alongMeters, tile) / tile;
-        double v = TileNoise.Wrap(upMeters, tile) / tile;
+        double u = TileNoise.Unit(alongMeters, tile);
+        double v = TileNoise.Unit(upMeters, tile);
 
-        double mottle = (TileNoise.Fractal(u * MottleCells, v * MottleCells, MottleCells, MottleCells, 4, Seed + 1) - 0.5) * 2.0;
+        double mottle = (TileNoise.Fractal(u, v, MottleCells, 4, Seed + 1) - 0.5) * 2.0;
         double dent = TileNoise.Pit(u, v, DentCells, DentShare, Seed + 2);
         double scratch = Scratch(u, v);
 
         double runs = TileNoise.SmoothStep(RunFrom, RunTo, TileNoise.Fractal(u * RunCellsAlong, v * RunCellsUp, RunCellsAlong, RunCellsUp, 3, Seed + 3));
-        runs *= TileNoise.SmoothStep(0.3, 0.55, TileNoise.Fractal(u * RunPatchCells, v * RunPatchCells, RunPatchCells, RunPatchCells, 2, Seed + 4));
+        runs *= TileNoise.SmoothStep(0.3, 0.55, TileNoise.Fractal(u, v, RunPatchCells, 2, Seed + 4));
 
-        double smudge = (TileNoise.Fractal(u * SmudgeCells, v * SmudgeCells, SmudgeCells, SmudgeCells, 3, Seed + 5) - 0.5) * 2.0;
+        double smudge = (TileNoise.Fractal(u, v, SmudgeCells, 3, Seed + 5) - 0.5) * 2.0;
         double height = -(dent * DentMeters) - (scratch * ScratchDepthMeters);
         double tone = (1.0 + (mottle * Mottle)) * TileNoise.Lerp(1.0, ScratchTone, scratch);
         double rough = TileNoise.Lerp(Roughness + (smudge * Smudge), ScratchRoughness, scratch);

@@ -5,6 +5,14 @@ namespace TheDeep.Tests;
 
 public class SurfaceBakeTests
 {
+    [Fact]
+    public void TheTileFormsOfNoiseAgreeWithTheLatticeForms()
+    {
+        Assert.Equal(TileNoise.Fractal(0.3 * 7, 0.8 * 7, 7, 7, 3, 9), TileNoise.Fractal(0.3, 0.8, 7, 3, 9));
+        Assert.Equal(0.25, TileNoise.Unit(4.5, 2.0), 9);
+        Assert.Equal(0.75, TileNoise.Unit(-0.5, 2.0), 9);
+    }
+
     [Theory]
     [InlineData(0.3, 0.7)]
     [InlineData(2.9, 5.15)]

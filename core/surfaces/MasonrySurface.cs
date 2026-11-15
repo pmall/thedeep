@@ -127,7 +127,7 @@ public sealed record MasonrySurface : ISurfacePattern
         // The mortar, up to the rounded arris; the arris chipped where the noise says, a shallow scar of paler broken stone (a
         // chip only ever bites the block, never the mortar).
         double mortar = 1.0 - TileNoise.SmoothStep(JointMeters, JointMeters + ArrisMeters, toJoint);
-        double chipNoise = TileNoise.Fractal(u * ChipCells, v * ChipCells, ChipCells, ChipCells, 3, Seed + 7);
+        double chipNoise = TileNoise.Fractal(u, v, ChipCells, 3, Seed + 7);
         double bite = ChipMeters * TileNoise.SmoothStep(0.56, 0.8, chipNoise);
         double chipped = 1.0 - TileNoise.SmoothStep(JointMeters + (0.3 * bite), JointMeters + ArrisMeters + bite, toJoint) - mortar;
 
@@ -140,7 +140,7 @@ public sealed record MasonrySurface : ISurfacePattern
         double blockHeight = proud + bulge + (tiltAlong * (x - ((left + right) / 2.0))) + (tiltUp * (fromFloor - (courseMeters / 2.0)));
 
         double coarse = 0.6 + (0.8 * weathered) + chipped;
-        double grain = TileNoise.Fractal(u * GrainCells, v * GrainCells, GrainCells, GrainCells, GrainOctaves, Seed + 6) - 0.5;
+        double grain = TileNoise.Fractal(u, v, GrainCells, GrainOctaves, Seed + 6) - 0.5;
         double pit = TileNoise.Pit(u, v, PitCells, PitShare * weathered, Seed + 17);
 
         double stone = 1.0 - mortar;

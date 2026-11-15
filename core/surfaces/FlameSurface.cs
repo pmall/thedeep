@@ -18,9 +18,9 @@ public sealed record FlameSurface : ISurfacePattern
 
     public SurfacePoint At(double alongMeters, double upMeters)
     {
-        double u = TileNoise.Wrap(alongMeters, TileMeters) / TileMeters;
-        double v = TileNoise.Wrap(upMeters, TileMeters) / TileMeters;
-        double noise = TileNoise.Fractal(u * Cells, v * Cells, Cells, Cells, 3, Seed);
+        double u = TileNoise.Unit(alongMeters, TileMeters);
+        double v = TileNoise.Unit(upMeters, TileMeters);
+        double noise = TileNoise.Fractal(u, v, Cells, 3, Seed);
         return new SurfacePoint(0.0, noise * SurfaceMaps.ToneScale, 0.0, 1.0);
     }
 }

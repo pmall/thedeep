@@ -120,14 +120,14 @@ public sealed record IceSurface : ISurfacePattern
     public SurfacePoint At(double alongMeters, double upMeters)
     {
         double tile = TileMeters;
-        double u = TileNoise.Wrap(alongMeters, tile) / tile;
-        double v = TileNoise.Wrap(upMeters, tile) / tile;
+        double u = TileNoise.Unit(alongMeters, tile);
+        double v = TileNoise.Unit(upMeters, tile);
 
         // The plates' cracks: a bright edge, a wash on the lit side; they fade in and out along their length, so some end in
         // the ice. Every border of a lit plate washes it (fainter where the crack fades), so the wash has no edge of its own.
         double warp = CrackWarpMeters / tile * PlateCells;
-        double wx = (TileNoise.Fractal(u * 8, v * 8, 8, 8, 3, Seed + 1) - 0.5) * 2.0 * warp;
-        double wy = (TileNoise.Fractal(u * 8, v * 8, 8, 8, 3, Seed + 2) - 0.5) * 2.0 * warp;
+        double wx = (TileNoise.Fractal(u, v, 8, 3, Seed + 1) - 0.5) * 2.0 * warp;
+        double wy = (TileNoise.Fractal(u, v, 8, 3, Seed + 2) - 0.5) * 2.0 * warp;
         VoronoiCell plate = TileNoise.Voronoi((u * PlateCells) + wx, (v * PlateCells) + wy, PlateCells, Seed + 3);
         double meters = plate.Border * tile / PlateCells;
         bool lit = TileNoise.Hash(plate.Cell, 0, Seed + 5) < LitShare;
@@ -136,7 +136,7 @@ public sealed record IceSurface : ISurfacePattern
         double crack = Math.Max(fade * TileNoise.Line(meters, CrackMeters), wash);
 
         // Finer cracks, in patches.
-        double patch = TileNoise.SmoothStep(0.5, 0.68, TileNoise.Fractal(u * FinePatchCells, v * FinePatchCells, FinePatchCells, FinePatchCells, 2, Seed + 6));
+        double patch = TileNoise.SmoothStep(0.5, 0.68, TileNoise.Fractal(u, v, FinePatchCells, 2, Seed + 6));
         if (patch > 0.0)
         {
             VoronoiCell fine = TileNoise.Voronoi((u * FineCells) + (wx * 2.0), (v * FineCells) + (wy * 2.0), FineCells, Seed + 7);
@@ -153,8 +153,8 @@ public sealed record IceSurface : ISurfacePattern
         double veil = Veil * TileNoise.SmoothStep(0.5, 0.78, TileNoise.Fractal(u * VeilCellsAlong, v * VeilCellsUp, VeilCellsAlong, VeilCellsUp, 4, Seed + 11));
 
         double white = Math.Clamp(Math.Max(crack, bubble) + veil, 0.0, 1.0);
-        double height = (TileNoise.Fractal(u * RippleCells, v * RippleCells, RippleCells, RippleCells, 4, Seed + 12) - 0.5) * 2.0 * RippleMeters;
-        double matte = TileNoise.SmoothStep(0.55, 0.8, TileNoise.Fractal(u * MatteCells, v * MatteCells, MatteCells, MatteCells, 3, Seed + 13));
+        double height = (TileNoise.Fractal(u, v, RippleCells, 4, Seed + 12) - 0.5) * 2.0 * RippleMeters;
+        double matte = TileNoise.SmoothStep(0.55, 0.8, TileNoise.Fractal(u, v, MatteCells, 3, Seed + 13));
         return new SurfacePoint(height, 1.0 + white, 0.0, TileNoise.Lerp(Roughness, MatteRoughness, matte));
     }
 
@@ -194,7 +194,7 @@ public sealed record IceSurface : ISurfacePattern
     /// <paramref name="cells"/> per tile, so a crack fades out over a few centimeters rather than stopping dead.</summary>
     private static double Fade(double u, double v, int cells, double share, int seed)
     {
-        double noise = TileNoise.Fractal(u * cells, v * cells, cells, cells, 2, seed);
+        double noise = TileNoise.Fractal(u, v, cells, 2, seed);
         double threshold = 0.5 - ((share - 0.5) * 0.5);
         return TileNoise.SmoothStep(threshold - 0.04, threshold + 0.04, noise);
     }

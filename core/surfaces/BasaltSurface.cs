@@ -99,20 +99,20 @@ public sealed record BasaltSurface : ISurfacePattern
     public SurfacePoint At(double alongMeters, double upMeters)
     {
         double tile = TileMeters;
-        double u = TileNoise.Wrap(alongMeters, tile) / tile;
-        double v = TileNoise.Wrap(upMeters, tile) / tile;
+        double u = TileNoise.Unit(alongMeters, tile);
+        double v = TileNoise.Unit(upMeters, tile);
 
-        double undulation = TileNoise.Fractal(u * UndulationCells, v * UndulationCells, UndulationCells, UndulationCells, 2, Seed + 1) - 0.5;
+        double undulation = TileNoise.Fractal(u, v, UndulationCells, 2, Seed + 1) - 0.5;
         double chisel = TileNoise.Fractal(u * ChiselCells, v * ChiselBands, ChiselCells, ChiselBands, 2, Seed + 2) - 0.5;
-        double mottle = TileNoise.Fractal(u * MottleCells, v * MottleCells, MottleCells, MottleCells, 3, Seed + 8) - 0.5;
-        double grain = TileNoise.Fractal(u * GrainCells, v * GrainCells, GrainCells, GrainCells, 4, Seed + 3) - 0.5;
+        double mottle = TileNoise.Fractal(u, v, MottleCells, 3, Seed + 8) - 0.5;
+        double grain = TileNoise.Fractal(u, v, GrainCells, 4, Seed + 3) - 0.5;
 
         double small = Math.Max(Vesicle(u, v, VesicleCells, VesicleShare, Seed + 4), Vesicle(u, v, VesicleCellsOther, VesicleShare, Seed + 10));
         double large = Vesicle(u, v, LargeVesicleCells, LargeVesicleShare, Seed + 5);
 
         // Hairline cracks, in short stretches.
         VoronoiCell web = TileNoise.Voronoi(u * CrackCells, v * CrackCells, CrackCells, Seed + 6);
-        double showsNoise = TileNoise.Fractal(u * 8, v * 8, 8, 8, 2, Seed + 7);
+        double showsNoise = TileNoise.Fractal(u, v, 8, 2, Seed + 7);
         double threshold = 1.0 - CrackShare;
         double shows = TileNoise.SmoothStep(threshold - 0.04, threshold + 0.04, showsNoise);
         double crack = TileNoise.Line(web.Border * tile / CrackCells, CrackMeters) * shows;

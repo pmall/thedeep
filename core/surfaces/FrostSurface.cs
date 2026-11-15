@@ -125,19 +125,19 @@ public sealed record FrostSurface : ISurfacePattern
     public SurfacePoint At(double alongMeters, double upMeters)
     {
         double tile = TileMeters;
-        double u = TileNoise.Wrap(alongMeters, tile) / tile;
-        double v = TileNoise.Wrap(upMeters, tile) / tile;
+        double u = TileNoise.Unit(alongMeters, tile);
+        double v = TileNoise.Unit(upMeters, tile);
 
         // The mottle: the coat's tone and thickness in blotches, one noise for both, so the thick parts are the pale ones.
-        double mottle = TileNoise.Fractal(u * MottleCells, v * MottleCells, MottleCells, MottleCells, 4, Seed + 1);
+        double mottle = TileNoise.Fractal(u, v, MottleCells, 4, Seed + 1);
         double thick = 0.5 + ((mottle - 0.5) * 2.0 * MottleThickness);
         double tone = 1.0 + ((mottle - 0.5) * 2.0 * Mottle);
 
         // Crusts, frosted and proud.
-        double crust = TileNoise.SmoothStep(CrustFrom, CrustTo, TileNoise.Fractal(u * CrustCells, v * CrustCells, CrustCells, CrustCells, 3, Seed + 2));
+        double crust = TileNoise.SmoothStep(CrustFrom, CrustTo, TileNoise.Fractal(u, v, CrustCells, 3, Seed + 2));
 
         // Hoarfrost fronds on the two diagonals, one way or the other in patches.
-        double hoar = TileNoise.SmoothStep(0.5, 0.68, TileNoise.Fractal(u * HoarCells, v * HoarCells, HoarCells, HoarCells, 2, Seed + 3));
+        double hoar = TileNoise.SmoothStep(0.5, 0.68, TileNoise.Fractal(u, v, HoarCells, 2, Seed + 3));
         double way = TileNoise.SmoothStep(0.4, 0.6, TileNoise.Value(u * HoarCells, v * HoarCells, HoarCells, HoarCells, Seed + 4));
         double frond = TileNoise.Lerp(Frond(u + v, v - u, Seed + 5), Frond(u - v, u + v, Seed + 6), way) * hoar;
 
@@ -168,8 +168,8 @@ public sealed record FrostSurface : ISurfacePattern
     /// each cell around the point that holds one; more of them where the coat is thin (<paramref name="mottle"/> low).</summary>
     private double Gap(double u, double v, double mottle)
     {
-        double x = (u * GapCells) + ((TileNoise.Fractal(u * GapWarpCells, v * GapWarpCells, GapWarpCells, GapWarpCells, 2, Seed + 19) - 0.5) * 2.0 * GapWarp);
-        double y = (v * GapCells) + ((TileNoise.Fractal(u * GapWarpCells, v * GapWarpCells, GapWarpCells, GapWarpCells, 2, Seed + 20) - 0.5) * 2.0 * GapWarp);
+        double x = (u * GapCells) + ((TileNoise.Fractal(u, v, GapWarpCells, 2, Seed + 19) - 0.5) * 2.0 * GapWarp);
+        double y = (v * GapCells) + ((TileNoise.Fractal(u, v, GapWarpCells, 2, Seed + 20) - 0.5) * 2.0 * GapWarp);
         int cx = (int)Math.Floor(x);
         int cy = (int)Math.Floor(y);
         double share = GapShare * TileNoise.Lerp(0.4, 1.0, TileNoise.SmoothStep(0.7, 0.3, mottle));

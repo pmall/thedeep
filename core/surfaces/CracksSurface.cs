@@ -84,23 +84,23 @@ public sealed record CracksSurface : ISurfacePattern
     public SurfacePoint At(double alongMeters, double upMeters)
     {
         double tile = TileMeters;
-        double u = TileNoise.Wrap(alongMeters, tile) / tile;
-        double v = TileNoise.Wrap(upMeters, tile) / tile;
+        double u = TileNoise.Unit(alongMeters, tile);
+        double v = TileNoise.Unit(upMeters, tile);
 
         // The chunks: a warped Voronoi web, so the fissures wander.
         double warp = WarpMeters / tile * ChunkCells;
-        double wx = (TileNoise.Fractal(u * 6, v * 6, 6, 6, 3, Seed + 1) - 0.5) * 2.0 * warp;
-        double wy = (TileNoise.Fractal(u * 6, v * 6, 6, 6, 3, Seed + 2) - 0.5) * 2.0 * warp;
+        double wx = (TileNoise.Fractal(u, v, 6, 3, Seed + 1) - 0.5) * 2.0 * warp;
+        double wy = (TileNoise.Fractal(u, v, 6, 3, Seed + 2) - 0.5) * 2.0 * warp;
         VoronoiCell chunk = TileNoise.Voronoi((u * ChunkCells) + wx, (v * ChunkCells) + wy, ChunkCells, Seed + 3);
         double meters = chunk.Border * tile / ChunkCells;
 
         // The fissure: its width varies along it, its bottom dark and deep, its sides a V.
-        double width = TileNoise.Lerp(FissureMinMeters, FissureMaxMeters, TileNoise.Fractal(u * 10, v * 10, 10, 10, 2, Seed + 4));
+        double width = TileNoise.Lerp(FissureMinMeters, FissureMaxMeters, TileNoise.Fractal(u, v, 10, 2, Seed + 4));
         double fissure = TileNoise.Line(meters, width);
         double core = TileNoise.Line(meters, width * 0.75);
 
         // The chipped edge: beyond the fissure, ragged, sloping down into it.
-        double ragged = TileNoise.Fractal(u * 30, v * 30, 30, 30, 2, Seed + 5);
+        double ragged = TileNoise.Fractal(u, v, 30, 2, Seed + 5);
         double chip = TileNoise.Line(meters - width, ChipMeters * (0.4 + (1.2 * ragged))) * (1.0 - fissure);
         double onChunk = TileNoise.SmoothStep(width, width + ChipMeters, meters);
 
@@ -112,12 +112,12 @@ public sealed record CracksSurface : ISurfacePattern
 
         // Finer cracks running in from the fissures, showing in stretches.
         VoronoiCell fineCell = TileNoise.Voronoi((u * FineCells) + (wx * 2.0), (v * FineCells) + (wy * 2.0), FineCells, Seed + 7);
-        double showsNoise = TileNoise.Fractal(u * 9, v * 9, 9, 9, 2, Seed + 8);
+        double showsNoise = TileNoise.Fractal(u, v, 9, 2, Seed + 8);
         double threshold = 1.0 - FineShare;
         double shows = TileNoise.SmoothStep(threshold - 0.05, threshold + 0.05, showsNoise) * onChunk;
         double fine = TileNoise.Line(fineCell.Border * tile / FineCells, FineMeters) * shows;
 
-        double grit = TileNoise.Fractal(u * GritCells, v * GritCells, GritCells, GritCells, 3, Seed + 9) - 0.5;
+        double grit = TileNoise.Fractal(u, v, GritCells, 3, Seed + 9) - 0.5;
         double height = tilt - (fissure * FissureDepthMeters * (0.5 + (0.5 * core))) - (chip * ChipDropMeters)
             - (fine * FineDepthMeters) + (grit * 2.0 * GritMeters * onChunk);
         double tone = (1.0 + chunkTone + (grit * 0.15)) * (1.0 + (chip * ChipTone));

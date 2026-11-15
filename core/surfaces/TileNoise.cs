@@ -68,6 +68,17 @@ public static class TileNoise
         return sum / total;
     }
 
+    /// <summary>
+    /// <see cref="Fractal(double, double, int, int, int, int)"/> over a square tile of <paramref name="cells"/> cells a side, the
+    /// point given in tiles (<paramref name="u"/> and <paramref name="v"/>, from <see cref="Unit"/>).
+    /// </summary>
+    public static double Fractal(double u, double v, int cells, int octaves, int seed) =>
+        Fractal(u * cells, v * cells, cells, cells, octaves, seed);
+
+    /// <summary>A position in meters as a share of the tile (<paramref name="tileMeters"/> long) it falls in, in [0, 1): the
+    /// coordinate every pattern's noise is sampled by.</summary>
+    public static double Unit(double meters, double tileMeters) => Wrap(meters, tileMeters) / tileMeters;
+
     /// <summary>1 at the center of a line and 0 from <paramref name="width"/> away, rounded at both ends (a groove's profile).</summary>
     public static double Line(double distance, double width) => 1.0 - SmoothStep(0.0, width, Math.Abs(distance));
 

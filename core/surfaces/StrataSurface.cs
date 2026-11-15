@@ -105,12 +105,12 @@ public sealed record StrataSurface : ISurfacePattern
     public SurfacePoint At(double alongMeters, double upMeters)
     {
         double tile = TileMeters;
-        double u = TileNoise.Wrap(alongMeters, tile) / tile;
-        double v = TileNoise.Wrap(upMeters, tile) / tile;
+        double u = TileNoise.Unit(alongMeters, tile);
+        double v = TileNoise.Unit(upMeters, tile);
 
         // The beds wave as they run; their lips are ragged.
-        double warp = TileNoise.Fractal(u * 2.0, v * 2.0, 2, 2, 3, Seed + 1) - 0.5;
-        double ragged = TileNoise.Fractal(u * RaggedCells, v * RaggedCells, RaggedCells, RaggedCells, 3, Seed + 2) - 0.5;
+        double warp = TileNoise.Fractal(u, v, 2, 3, Seed + 1) - 0.5;
+        double ragged = TileNoise.Fractal(u, v, RaggedCells, 3, Seed + 2) - 0.5;
         double bedUp = TileNoise.Wrap(upMeters + (warp * 2.0 * WarpMeters) + (ragged * 2.0 * RaggedMeters), tile);
 
         // The bed the point is in: between its lower joint and the next one up (the last bed wraps round to the first).
@@ -161,7 +161,7 @@ public sealed record StrataSurface : ISurfacePattern
 
         // Lumps, a grain stretched along the beds (sediment, not concrete) and pits: the coarse beds take more of each.
         double roughness = 0.4 + coarse;
-        double lumps = TileNoise.Fractal(u * LumpCells, v * LumpCells, LumpCells, LumpCells, 3, Seed + 10) - 0.5;
+        double lumps = TileNoise.Fractal(u, v, LumpCells, 3, Seed + 10) - 0.5;
         double grain = TileNoise.Fractal(u * GrainCells, v * GrainCells * 2.0, GrainCells, GrainCells * 2, GrainOctaves, Seed + 11) - 0.5;
         double pit = TileNoise.Pit(u, v, PitCells, PitShare * coarse, Seed + 17);
 
