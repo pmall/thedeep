@@ -705,21 +705,20 @@ public partial class Player : CharacterBody3D
         Visual.SetFacing(Facing);
     }
 
-    /// <summary>The surface under the player, from the physics layer of the floor it touched (metal wins).</summary>
+    /// <summary>How far above the feet the floor ray starts (meters): inside the body, so a floor that rose a little is still hit.</summary>
+    private const float FloorProbeUp = 0.1f;
+
+    /// <summary>How far below the feet the floor ray ends (meters): past the contact skin, short of any floor the body isn't on.</summary>
+    private const float FloorProbeDown = 0.3f;
+
+    /// <summary>
+    /// The surface under the feet, from the physics layer of the floor a short ray straight down hits (a ray allocates nothing, where
+    /// the slide collisions would wrap one every tick). Where the ray finds none (standing on a ledge's very edge), the last one holds.
+    /// </summary>
     private SurfaceKind FloorSurfaceKind()
     {
-        SurfaceKind kind = SurfaceKind.Rock;
-        for (int i = 0; i < GetSlideCollisionCount(); i++)
-        {
-            using KinematicCollision3D collision = GetSlideCollision(i); // disposed: a live wrapper makes the engine allocate a new one next call
-            if (collision.GetNormal().Y > 0.7f && collision.GetCollider() is CollisionObject3D body
-                && (body.CollisionLayer & PhysicsLayers.WorldMetal) != 0)
-            {
-                kind = SurfaceKind.Metal;
-            }
-        }
-
-        return kind;
+        NVector2 feet = Feet;
+        return SurfaceRay(feet + new NVector2(0f, FloorProbeUp), feet - new NVector2(0f, FloorProbeDown)) ?? FloorSurface ?? SurfaceKind.Rock;
     }
 
     /// <summary>All gameplay happens on X/Y; AxisLockLinearZ covers physics, this covers everything else.</summary>
