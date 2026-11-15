@@ -5,12 +5,15 @@ using System.Numerics;
 
 namespace TheDeep;
 
-/// <summary>The base moveset's numbers (copied from <c>player_tuning.tres</c>, the single source), as the planner simulates them.</summary>
+/// <summary>
+/// The base moveset's numbers (copied from <c>player_tuning.tres</c>, the single source), as the planner simulates them, with the
+/// body's size (<see cref="Width"/>, <see cref="Height"/>, meters: the pilgrim's capsule).
+/// </summary>
 public sealed record MoveLimits(
     float RunSpeed, float AirAcceleration, float AirDeceleration, float AirDrag, float AirCarrySpeed, float JumpHeight, float JumpTimeToApex, float JumpCutFactor,
     float FallGravityMultiplier, float ApexHangThreshold, float ApexGravityMultiplier, float MaxFallSpeed,
     float DashDistance, float DashDuration, float DashExitSpeedFactor, int AirDashes,
-    float Width = 0.7f, float Height = 1.6f, float EdgeMargin = 0f, float LedgeAssist = 0f)
+    float Width, float Height, float EdgeMargin = 0f, float LedgeAssist = 0f)
 {
     /// <summary>
     /// A clumsier pilgrim, for the slack report: jumps 18% lower, dashes 35% shorter, runs 20% slower, never takes off from the very

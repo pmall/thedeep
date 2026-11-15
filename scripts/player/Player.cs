@@ -17,7 +17,7 @@ public partial class Player : CharacterBody3D
     [Export] public PlayerVisual Visual { get; set; } = null!;
     [Export] public PlayerAttack Attack { get; set; } = null!;
 
-    /// <summary>The body's capsule (its shape is a <see cref="CapsuleShape3D"/>).</summary>
+    /// <summary>The body's capsule (its shape is a <see cref="CapsuleShape3D"/>), sized and placed from the tuning's body on ready.</summary>
     [Export] public CollisionShape3D Collision { get; set; } = null!;
 
     private PlayerState? _state;
@@ -230,6 +230,10 @@ public partial class Player : CharacterBody3D
     {
         CollisionLayer = PhysicsLayers.Player;
         CollisionMask = PhysicsLayers.Solid;
+        Capsule.Radius = Tuning.BodyRadius;
+        Capsule.Height = Tuning.BodyHeight;
+        Collision.Position = new Vector3(0f, 0.5f * Tuning.BodyHeight, 0f);
+        _capsuleOffset = null;
         Ray.Attach(this);
         Fit.Attach(this, Capsule);
         CurrentState.Enter();

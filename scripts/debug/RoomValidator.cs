@@ -371,7 +371,7 @@ public partial class RoomValidator : Node
         var ends = new List<SeamEnd>();
         var frame = blocks.Select(b => Ancestors(b).OfType<SeamEnd>().FirstOrDefault() is { } end ? (int?)Index(ends, end) : null).ToList();
         var low = new HashSet<int>(Enumerable.Range(0, blocks.Count).Where(i => blocks[i].Low || frame[i] is not null));
-        float radius = 0.5f * Tuning.Move.Width;
+        float radius = Tuning.BodyRadius;
         var bounds = new Box(room.BoundsMin.X, room.BoundsMin.Y, room.BoundsMax.X, room.BoundsMax.Y);
         foreach (LowCeiling c in GroundRules.Headroom(solids, low, Tuning.Move.JumpHeight, Tuning.Move.Height, radius, bounds))
         {

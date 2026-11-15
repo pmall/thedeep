@@ -60,6 +60,8 @@ Sparks = 0.85
 
 [resource]
 script = ExtResource("1_tuning")
+BodyRadius = 0.35
+BodyHeight = 1.6
 RunSpeed = 7.0
 GroundAcceleration = 70.0
 GroundDeceleration = 80.0

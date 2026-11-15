@@ -9,6 +9,11 @@ namespace TheDeep;
 [GlobalClass]
 public partial class PlayerTuning : Resource
 {
+    /// <summary>The body's capsule: its radius and its whole height, meters (the player's collision shape is made to it).</summary>
+    [ExportGroup("Body")]
+    [Export] public float BodyRadius { get; set; } = 0.35f;
+    [Export] public float BodyHeight { get; set; } = 1.6f;
+
     [ExportGroup("Run")]
     [Export] public float RunSpeed { get; set; } = 7f;
     [Export] public float GroundAcceleration { get; set; } = 70f;
@@ -171,7 +176,7 @@ public partial class PlayerTuning : Resource
     /// <summary>The base moveset as the map's planner simulates it (<see cref="ReachPlanner"/>).</summary>
     public MoveLimits Move => new(RunSpeed, AirAcceleration, AirDeceleration, AirDrag, AirCarrySpeed, JumpHeight, JumpTimeToApex, JumpCutFactor,
         FallGravityMultiplier, ApexHangThreshold, ApexGravityMultiplier, MaxFallSpeed, DashDistance, DashDuration, DashExitSpeedFactor,
-        AirDashes, LedgeAssist: LedgeAssistHeight);
+        AirDashes, Width: 2f * BodyRadius, Height: BodyHeight, LedgeAssist: LedgeAssistHeight);
 
     /// <summary>The Harpoon group, as the planner simulates it.</summary>
     public HarpoonLimits Harpoon => new(HarpoonRange, HarpoonMinDistance, HarpoonZipSpeed, HarpoonZipAcceleration, HarpoonExitSpeedFactor,

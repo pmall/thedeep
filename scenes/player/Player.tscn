@@ -16,9 +16,8 @@
 [ext_resource type="Material" path="res://assets/materials/pilgrim/slash.tres" id="15_slash"]
 [ext_resource type="Script" path="res://scripts/player/SlashTrail.cs" id="16_slash_trail"]
 
+; Sized and placed over the feet from the tuning's body (Player._Ready).
 [sub_resource type="CapsuleShape3D" id="CapsuleShape3D_body"]
-radius = 0.35
-height = 1.6
 
 [node name="Player" type="CharacterBody3D" node_paths=PackedStringArray("Visual", "Attack", "Collision")]
 collision_layer = 4
@@ -32,7 +31,6 @@ Attack = NodePath("Attack")
 Collision = NodePath("Collision")
 
 [node name="Collision" type="CollisionShape3D" parent="."]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.8, 0)
 shape = SubResource("CapsuleShape3D_body")
 
 ; The pilgrim's body: parts from resources/parts/pilgrim.tres, animated by PlayerVisual (its blade too, and the slash it leaves).
