@@ -6,8 +6,8 @@ namespace TheDeep;
 /// A body of water: its surface at the node's height, <see cref="Size"/> wide (X) and deep into the scene
 /// (Z), <see cref="Depth"/> meters deep. Builds the surface mesh (told its floor and sides, so it draws its depth) and
 /// the reflection probe it mirrors, and pushes its level, floor, area and murk into the water globals so nearby materials draw caustics
-/// and sink into the water what lies in it (lib/water.gdshaderinc). One water body
-/// per room (the globals hold one). Colors come from the biome. With <see cref="Swim"/>, the pilgrim swims in it:
+/// and sink into the water what lies in it (lib/water.gdshaderinc). Only one water body per room
+/// pushes the globals (<see cref="Globals"/>); a second one is scenery or a pool beside it. Colors come from the biome. With <see cref="Swim"/>, the pilgrim swims in it:
 /// its play-plane region (<see cref="Size"/>.X wide, from the surface down <see cref="Depth"/>) becomes an area on the water
 /// layer that the pilgrim finds itself in (<see cref="Player.WaterSurface"/>), and the map's geometry check swims it.
 /// With a <see cref="SectionMaterial"/>, its front on the play plane is drawn, so water seen from the side reads as water, and so is
@@ -46,8 +46,10 @@ public partial class WaterBody : Node3D
     /// <summary>Water no deeper than this keeps the room's light down to its floor: a lit floor reads through shallow water.</summary>
     private const float ShallowDepth = 3f;
 
-    /// <summary>The play plane's back, world Z: its blocks run from here to their front faces at 2.</summary>
-    private const float PlayPlaneBack = -2f;
+    /// <summary>
+    /// How thick the sheet that casts the light cutoff's shadow is, meters: thin, since only its shadow is used (<see cref="LightCutoff"/>).
+    /// </summary>
+    private const float CutoffThickness = 0.1f;
 
     /// <summary>Surface size: X across the room, Y into the scene (world Z).</summary>
     [Export] public Vector2 Size { get; set; } = new(10f, 10f);
@@ -76,8 +78,8 @@ public partial class WaterBody : Node3D
     /// </summary>
     [Export] public bool Globals { get; set; } = true;
 
-    /// <summary>The body's front, seen from the side: the world Z of the cut (the blocks' front faces are at 2).</summary>
-    [Export] public float SectionFront { get; set; } = 2.05f;
+    /// <summary>The body's front, seen from the side: the world Z of the cut (kept off the blocks' front faces, <see cref="PlayPlane.Front"/>).</summary>
+    [Export] public float SectionFront { get; set; } = PlayPlane.SectionFront;
 
     /// <summary>
     /// The part of the front that is water, in the body's local X (across the room) and Y (up, the surface at 0): for
@@ -269,7 +271,7 @@ public partial class WaterBody : Node3D
     private MeshInstance3D? LightCutoff()
     {
         Rect2 extent = Area;
-        float back = Mathf.Min(extent.End.Y, PlayPlaneBack);
+        float back = Mathf.Min(extent.End.Y, PlayPlane.Back);
         if (Depth <= ShallowDepth || back <= extent.Position.Y)
         {
             return null;
@@ -277,7 +279,7 @@ public partial class WaterBody : Node3D
 
         return new MeshInstance3D
         {
-            Mesh = new BoxMesh { Size = new Vector3(Size.X + 2f * Depth, 0.1f, back - extent.Position.Y) },
+            Mesh = new BoxMesh { Size = new Vector3(Size.X + 2f * Depth, CutoffThickness, back - extent.Position.Y) },
             CastShadow = GeometryInstance3D.ShadowCastingSetting.ShadowsOnly,
             Position = new Vector3(0f, -LightReach, 0.5f * (back + extent.Position.Y) - GlobalPosition.Z),
         };

@@ -27,6 +27,7 @@ public partial class BackdropArchitecture : Node3D
 
     private static readonly MachineryBackdropSpec Machinery = MachineryBackdropSpec.Default;
 
+    /// <summary>The style of the structures in the rows (the depth layer's: <see cref="BiomeProfile.Architecture"/>).</summary>
     [Export] public BackdropStyle Style { get; set; }
 
     /// <summary>Masonry (naves).</summary>

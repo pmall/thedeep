@@ -43,8 +43,8 @@ public partial class SlagBody : Node3D
     /// </summary>
     [Export] public float FootingHeight { get; set; } = 2.5f;
 
-    /// <summary>The front's world Z on the play plane (the blocks' front faces are at 2: kept off them, so no face shares its plane).</summary>
-    [Export] public float SectionFront { get; set; } = 2.05f;
+    /// <summary>The front's world Z on the play plane (kept off the blocks' front faces, <see cref="PlayPlane.Front"/>, so no face shares its plane).</summary>
+    [Export] public float SectionFront { get; set; } = PlayPlane.SectionFront;
 
     /// <summary>Each light over the surface: its energy (its color is the biome's: <see cref="Glow"/>).</summary>
     [Export] public float GlowEnergy { get; set; } = 14f;
