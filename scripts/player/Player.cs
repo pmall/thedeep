@@ -385,11 +385,11 @@ public partial class Player : CharacterBody3D
         }
 
         GripPose? pose = null;
-        if (IsOnCeiling() && Velocity.Y >= 0f && MetalContact(n => n.Y < -0.5f) is { } ceiling)
+        if (IsOnCeiling() && Velocity.Y >= 0f && MetalContact(new NVector2(0f, 1f), HeadOn) is { } ceiling)
         {
             pose = GripMath.OntoCeiling(Feet, ceiling.Point.Y);
         }
-        else if (IsOnWall() && CurrentInput.MoveX != 0 && MetalContact(n => n.X * CurrentInput.MoveX < -0.5f) is { } wall)
+        else if (IsOnWall() && CurrentInput.MoveX != 0 && MetalContact(new NVector2(CurrentInput.MoveX, 0f), HeadOn) is { } wall)
         {
             pose = GripMath.OntoWall(Feet, CenterHeight, wall.Point.X, wall.Normal);
         }
@@ -470,14 +470,20 @@ public partial class Player : CharacterBody3D
     /// <summary>Faces +X (+1) or -X (-1); only meaningful upright.</summary>
     public void SetWorldFacing(int direction) => SetFacing(direction);
 
-    /// <summary>A contact from the last move with a metal surface whose (axis-snapped) normal passes <paramref name="accept"/>.</summary>
-    public (NVector2 Normal, NVector2 Point)? MetalContact(Func<NVector2, bool> accept)
+    /// <summary>The dot product under which a surface's normal faces the way the body heads (<see cref="MetalContact"/>): more than 60 degrees past square-on.</summary>
+    public const float HeadOn = -0.5f;
+
+    /// <summary>
+    /// A contact from the last move with a metal surface whose (axis-snapped) normal has a dot product with <paramref name="heading"/>
+    /// under <paramref name="maxDot"/> (<see cref="HeadOn"/>: the surface is in the way of that heading).
+    /// </summary>
+    public (NVector2 Normal, NVector2 Point)? MetalContact(NVector2 heading, float maxDot)
     {
         for (int i = 0; i < GetSlideCollisionCount(); i++)
         {
             using KinematicCollision3D collision = GetSlideCollision(i); // disposed: a live wrapper makes the engine allocate a new one next call
             NVector2 normal = GripMath.Snap(collision.GetNormal().Flat());
-            if (collision.GetCollider() is CollisionObject3D body && (body.CollisionLayer & PhysicsLayers.WorldMetal) != 0 && accept(normal))
+            if (collision.GetCollider() is CollisionObject3D body && (body.CollisionLayer & PhysicsLayers.WorldMetal) != 0 && NVector2.Dot(normal, heading) < maxDot)
             {
                 return (normal, collision.GetPosition().Flat());
             }

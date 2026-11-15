@@ -96,8 +96,8 @@ public partial class GateHints : Node
         }
 
         int x = Player.CurrentInput.MoveX;
-        return (Player.IsOnWall() && x != 0 && Player.MetalContact(n => n.X * x < -0.5f) is not null)
-               || (Player.IsOnCeiling() && Player.MetalContact(n => n.Y < -0.5f) is not null);
+        return (Player.IsOnWall() && x != 0 && Player.MetalContact(new System.Numerics.Vector2(x, 0f), Player.HeadOn) is not null)
+               || (Player.IsOnCeiling() && Player.MetalContact(new System.Numerics.Vector2(0f, 1f), Player.HeadOn) is not null);
     }
 
     private bool TouchesCrackedRock()

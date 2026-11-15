@@ -136,7 +136,7 @@ public sealed class GripState : PlayerState
         NVector2 feet = Player.Feet;
 
         // A wall ahead: metal turns the player onto it, anything else just stops it.
-        if (_speed != 0f && Player.MetalContact(n => NVector2.Dot(n, travel) < -0.5f) is { } wall)
+        if (_speed != 0f && Player.MetalContact(travel, Player.HeadOn) is { } wall)
         {
             GripPose pose = GripMath.InnerCorner(feet, up, wall.Point, wall.Normal, Player.GripClearance);
             return Turn(pose, GripMath.TravelAfterInner(up));
