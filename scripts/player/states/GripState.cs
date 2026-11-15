@@ -109,7 +109,7 @@ public sealed class GripState : PlayerState
         else
         {
             _lockedInput = null;
-            if (GripMath.PullsAway(input, up))
+            if (GripMath.PullsAway(input, up, Tuning.GripPullAway))
             {
                 return LetGo();
             }

@@ -10,9 +10,6 @@ namespace TheDeep;
 /// </summary>
 public sealed class PilgrimControl
 {
-    /// <summary>Stick deflection below which an axis counts as neutral.</summary>
-    public const float StickThreshold = 0.3f;
-
     private readonly ControlLimits _limits;
     private readonly Countdown _coyote = new();
     private readonly Countdown _jumpBuffer = new();
@@ -169,8 +166,9 @@ public sealed class PilgrimControl
         _harpoonBuffer.Clear();
         _steer.Clear();
         _stun.Clear();
+        _regrab.Clear();
         RefillAirDash();
     }
 
-    private static int Axis(float value) => MathF.Abs(value) < StickThreshold ? 0 : Math.Sign(value);
+    private int Axis(float value) => MathF.Abs(value) < _limits.StickThreshold ? 0 : Math.Sign(value);
 }

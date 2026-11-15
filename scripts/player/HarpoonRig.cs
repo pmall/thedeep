@@ -149,7 +149,7 @@ public partial class HarpoonRig : Node3D
 
         _sightFrom = center;
         int skip = Player.LastAnchor is { } last ? _anchors.IndexOf(last) : -1;
-        int index = HarpoonAim.Pick(center, aim, facing, _points, t.HarpoonRange, t.HarpoonMinDistance, _inSight, skip);
+        int index = HarpoonAim.Pick(center, aim, facing, _points, t.HarpoonRange, t.HarpoonMinDistance, t.HarpoonAimCone, _inSight, skip);
         return index >= 0 ? _anchors[index] : null;
     }
 

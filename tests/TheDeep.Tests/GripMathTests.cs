@@ -45,9 +45,9 @@ public class GripMathTests
         Near(Up, GripMath.Tangent(Right) * along);
         // Under a ceiling, pressing right moves right.
         Near(Right, GripMath.Tangent(Down) * GripMath.Along(Right, Down));
-        Assert.True(GripMath.PullsAway(Down, Down));
-        Assert.True(GripMath.PullsAway(Left, Left));
-        Assert.False(GripMath.PullsAway(Up, Right));
+        Assert.True(GripMath.PullsAway(Down, Down, 0.5f));
+        Assert.True(GripMath.PullsAway(Left, Left, 0.5f));
+        Assert.False(GripMath.PullsAway(Up, Right, 0.5f));
     }
 
     [Fact]

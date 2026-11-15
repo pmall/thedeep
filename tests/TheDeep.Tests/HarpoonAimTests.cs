@@ -6,7 +6,7 @@ namespace TheDeep.Tests;
 public class HarpoonAimTests
 {
     private static int Pick(Vector2 aim, int facing, params Vector2[] anchors) =>
-        HarpoonAim.Pick(Vector2.Zero, aim, facing, anchors, range: 9f, minDistance: 1.2f, clear: _ => true);
+        HarpoonAim.Pick(Vector2.Zero, aim, facing, anchors, range: 9f, minDistance: 1.2f, aimCone: 1.2f, clear: _ => true);
 
     [Fact]
     public void OutOfRangeOrTooNearIsNeverPicked()
@@ -52,8 +52,8 @@ public class HarpoonAimTests
     public void BlockedSightAndTheLastAnchorAreSkipped()
     {
         var anchors = new[] { new Vector2(3f, 1f), new Vector2(6f, 1f) };
-        Assert.Equal(1, HarpoonAim.Pick(Vector2.Zero, Vector2.Zero, 1, anchors, 9f, 1.2f, i => i != 0));
-        Assert.Equal(1, HarpoonAim.Pick(Vector2.Zero, Vector2.Zero, 1, anchors, 9f, 1.2f, _ => true, skip: 0));
+        Assert.Equal(1, HarpoonAim.Pick(Vector2.Zero, Vector2.Zero, 1, anchors, 9f, 1.2f, 1.2f, i => i != 0));
+        Assert.Equal(1, HarpoonAim.Pick(Vector2.Zero, Vector2.Zero, 1, anchors, 9f, 1.2f, 1.2f, _ => true, skip: 0));
     }
 
     [Fact]

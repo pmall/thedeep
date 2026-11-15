@@ -37,6 +37,8 @@ public partial class PlayerTuning : Resource
     [Export] public float CoyoteTime { get; set; } = 0.1f;
     /// <summary>A jump pressed this long before landing still fires on landing.</summary>
     [Export] public float JumpBufferTime { get; set; } = 0.12f;
+    /// <summary>A stick pushed less than this far counts as neutral on its axis (0 to 1).</summary>
+    [Export] public float StickThreshold { get; set; } = 0.3f;
     /// <summary>
     /// Ledge assist: airborne and pressing into a wall whose top is at most this far above the feet, the pilgrim is lifted onto
     /// it, keeping its way and speed (a jump that ends just short of a ledge still makes it).
@@ -65,10 +67,14 @@ public partial class PlayerTuning : Resource
     [Export] public float GripLeapUpFactor { get; set; } = 0.85f;
     /// <summary>After letting go or leaping off, the same surface can't be gripped again for this long.</summary>
     [Export] public float GripRegrabDelay { get; set; } = 0.25f;
+    /// <summary>Held input pulls the pilgrim off a surface when its share along the surface's normal passes this (0 to 1).</summary>
+    [Export] public float GripPullAway { get; set; } = 0.5f;
 
     /// <summary>How far from the pilgrim's center an anchor can be fired at, and how near it must not be.</summary>
     [ExportGroup("Harpoon")]
     [Export] public float HarpoonRange { get; set; } = 9f;
+    /// <summary>With input held, only anchors within this half-angle (radians) of it can be aimed at.</summary>
+    [Export] public float HarpoonAimCone { get; set; } = 1.2f;
     [Export] public float HarpoonMinDistance { get; set; } = 1.2f;
     /// <summary>Speed of the line flying out to the anchor; the pilgrim hangs, slowing, until it bites.</summary>
     [Export] public float HarpoonThrowSpeed { get; set; } = 70f;
@@ -150,7 +156,7 @@ public partial class PlayerTuning : Resource
     public ControlLimits Control => new(RunSpeed, GroundAcceleration, GroundDeceleration, AirAcceleration, AirDeceleration, AirDrag, AirCarrySpeed,
         Gravity, ApexHangThreshold, ApexGravityMultiplier, FallGravityMultiplier, MaxFallSpeed,
         CoyoteTime, JumpBufferTime, DashBufferTime, DashCooldown, HarpoonBufferTime, GripRegrabDelay,
-        AirDashes, HurtKnockback, HurtLift, HurtStun);
+        AirDashes, HurtKnockback, HurtLift, HurtStun, StickThreshold);
 
     /// <summary>The strikes as the pure <see cref="Combo"/> reads them.</summary>
     public Combo NewCombo()

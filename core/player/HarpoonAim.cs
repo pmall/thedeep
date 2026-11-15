@@ -7,23 +7,20 @@ namespace TheDeep;
 /// <summary>
 /// Which anchor the Harpoon fires at, pure (docs/gameplay.md#harpoon). Anchors within <c>range</c> of the chest, not
 /// closer than <c>minDistance</c>, and in clear sight are candidates. Held input aims: only anchors within
-/// <see cref="AimCone"/> of it count, the best lined up first. With no input the pilgrim looks ahead and up:
+/// the aim cone of it count, the best lined up first. With no input the pilgrim looks ahead and up:
 /// anchors in front beat anchors above, which beat anchors behind; nearer ones win within a group.
 /// </summary>
 public static class HarpoonAim
 {
-    /// <summary>Half-angle (radians) of the cone around held input inside which an anchor can be picked.</summary>
-    public const float AimCone = 1.2f;
-
     /// <summary>Sight to an anchor stops this short of it, meters (an anchor may hang by a wall's face).</summary>
     public const float SightMargin = 0.3f;
 
     /// <summary>
     /// The index of the anchor to fire at, or −1. <paramref name="aim"/> is the held input (screen axes, zero for none);
-    /// <paramref name="facing"/> +1 or −1; <paramref name="clear"/> says whether an anchor is in sight from <paramref name="chest"/>.
+    /// <paramref name="facing"/> +1 or −1; <paramref name="aimCone"/> the half-angle (radians) around held input inside which an anchor can be picked; <paramref name="clear"/> says whether an anchor is in sight from <paramref name="chest"/>.
     /// </summary>
     public static int Pick(Vector2 chest, Vector2 aim, int facing, IReadOnlyList<Vector2> anchors, float range, float minDistance,
-        Func<int, bool> clear, int skip = -1)
+        float aimCone, Func<int, bool> clear, int skip = -1)
     {
         int best = -1;
         float bestScore = float.MaxValue;
@@ -43,7 +40,7 @@ public static class HarpoonAim
             if (aiming)
             {
                 float angle = MathF.Acos(Math.Clamp(Vector2.Dot(dir, aimDir), -1f, 1f));
-                if (angle > AimCone)
+                if (angle > aimCone)
                 {
                     continue;
                 }
@@ -52,7 +49,8 @@ public static class HarpoonAim
             }
             else
             {
-                // In front (a third of the way out or more), above, behind: each group beats the next.
+                // In front (a third of the way out or more), above, behind: each group beats the next. The scores and cut-offs only
+                // order candidates (a group's span exceeds any distance share), so they are not feel knobs.
                 bool ahead = dir.X * facing > 0.33f;
                 bool above = !ahead && dir.Y > 0.5f;
                 score = (ahead ? 0f : above ? 10f : 20f) + distance / range;

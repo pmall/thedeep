@@ -9,7 +9,7 @@ public class PilgrimControlTests
         RunSpeed: 7f, GroundAcceleration: 70f, GroundDeceleration: 80f, AirAcceleration: 45f, AirDeceleration: 30f, AirDrag: 12f, AirCarrySpeed: 11.5f,
         Gravity: JumpMath.Gravity(3.2f, 0.38f), ApexHangThreshold: 1.5f, ApexGravityMultiplier: 0.55f, FallGravityMultiplier: 1.6f,
         MaxFallSpeed: 20f, CoyoteTime: 0.15f, JumpBufferTime: 0.15f, DashBufferTime: 0.1f, DashCooldown: 0.4f, HarpoonBufferTime: 0.1f,
-        GripRegrabDelay: 0.25f, AirDashes: 1, HurtKnockback: 6f, HurtLift: 6f, HurtStun: 0.22f);
+        GripRegrabDelay: 0.25f, AirDashes: 1, HurtKnockback: 6f, HurtLift: 6f, HurtStun: 0.22f, StickThreshold: 0.3f);
 
     private const float Tick = 1f / 60f;
 
@@ -169,7 +169,9 @@ public class PilgrimControlTests
         c.BeginDash(onFloor: false);
         c.EndDash();
         c.Hurt();
+        c.HoldOffGrip();
         c.Reset();
+        Assert.False(c.GripHeldOff);
         Assert.False(c.JumpPressed);
         Assert.False(c.HarpoonPressed);
         Assert.False(c.Stunned);

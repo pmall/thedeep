@@ -38,8 +38,9 @@ public static class GripMath
     /// </summary>
     public static bool Drowned(float centerY, float surface, WaterLimits w) => surface - centerY > w.EnterDepth;
 
-    /// <summary>Whether held input pulls away from the surface (letting go).</summary>
-    public static bool PullsAway(Vector2 input, Vector2 up) => Vector2.Dot(input, up) > 0.5f;
+    /// <summary>Whether held input pulls away from the surface (letting go): its component along <paramref name="up"/> is above
+    /// <paramref name="threshold"/> (0 to 1).</summary>
+    public static bool PullsAway(Vector2 input, Vector2 up, float threshold) => Vector2.Dot(input, up) > threshold;
 
     /// <summary>
     /// Moving along a surface into a wall ahead (normal <paramref name="wallUp"/>, its face through
