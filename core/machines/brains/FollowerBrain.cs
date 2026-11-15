@@ -27,11 +27,35 @@ public sealed class FollowerBrain : MachineBrain
     /// <summary>Closer than this, it darts away, meters.</summary>
     public float Shy { get; init; } = 2.2f;
 
-    /// <summary>Its flying speed when following, m/s; it darts away 1.3 times as fast.</summary>
+    /// <summary>Its flying speed when following, m/s; it darts away <see cref="DartFactor"/> times as fast.</summary>
     public float Speed { get; init; } = 6f;
 
     /// <summary>Player speed (m/s) above which it moves to trail behind them.</summary>
     public float TrailSpeed { get; init; } = 1.5f;
+
+    /// <summary>How much faster than <see cref="Speed"/> it darts away.</summary>
+    public float DartFactor { get; init; } = 1.3f;
+
+    /// <summary>How much higher it flies, meters, to pass over the player's head when it changes sides.</summary>
+    public float CrossingLift { get; init; } = 1.8f;
+
+    /// <summary>How close to its place by the player, meters, it starts slowing to settle there.</summary>
+    public float SlowRadius { get; init; } = 2.5f;
+
+    /// <summary>How wide its lazy loop is while it waits unwoken, meters.</summary>
+    public float LoiterSize { get; init; } = 2.5f;
+
+    /// <summary>Its speed drifting around that loop, m/s.</summary>
+    public float LoiterSpeed { get; init; } = 1.2f;
+
+    /// <summary>How close to its loop point, meters, it starts slowing.</summary>
+    public float LoiterSlowRadius { get; init; } = 1f;
+
+    /// <summary>How alert it looks when startled, 0 to 1.</summary>
+    public float StartleAlert { get; init; } = 0.35f;
+
+    /// <summary>How fast its alertness follows, per second.</summary>
+    public float AlertRate { get; init; } = 6f;
 
     public override Intent Think(in Perception p, float delta)
     {
@@ -54,19 +78,19 @@ public sealed class FollowerBrain : MachineBrain
             bool crossing = MathF.Sign(p.Position.X - player.Position.X) != _side && MathF.Abs(p.Position.X - player.Position.X) < Distance;
             if (crossing)
             {
-                target.Y += 1.8f;
+                target.Y += CrossingLift;
             }
 
             float distance = Vector2.Distance(p.Position, player.Position);
             if (distance < Shy && !crossing)
             {
                 Vector2 away = Vector2.Normalize(p.Position - player.Position + new Vector2(0f, 0.3f));
-                intent.Velocity = away * Speed * 1.3f;
+                intent.Velocity = away * Speed * DartFactor;
                 Act = MachineAct.Startle;
             }
             else
             {
-                intent.Velocity = Steering.Arrive(p.Position, target, Speed, 2.5f);
+                intent.Velocity = Steering.Arrive(p.Position, target, Speed, SlowRadius);
                 Act = MachineAct.Follow;
             }
 
@@ -75,11 +99,11 @@ public sealed class FollowerBrain : MachineBrain
         }
         else
         {
-            intent.Velocity = Steering.Arrive(p.Position, Steering.Loiter(home, p.Time, 2.5f), 1.2f, 1f);
+            intent.Velocity = Steering.Arrive(p.Position, Steering.Loiter(home, p.Time, LoiterSize), LoiterSpeed, LoiterSlowRadius);
             Act = MachineAct.Hover;
         }
 
-        _alert = Motion.Damp(_alert, Act == MachineAct.Startle ? 0.35f : 0f, 6f, delta);
+        _alert = Motion.Damp(_alert, Act == MachineAct.Startle ? StartleAlert : 0f, AlertRate, delta);
         intent.Act = Act;
         intent.Alert = _alert;
         intent.Work = Act == MachineAct.Follow ? 1f : 0f;

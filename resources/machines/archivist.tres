@@ -87,6 +87,7 @@ Hostile = true
 CreedLine = &"creed.archivist"
 Assembly = ExtResource("5_assembly")
 Locomotion = 1
+HitLift = 1
 BodySize = Vector2(1.9, 2.2)
 SensorHeight = 0
 TurnSharpness = 4

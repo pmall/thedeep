@@ -45,6 +45,30 @@ public sealed class HoarderBrain : MachineBrain
     /// <summary>The longest it pecks at one spot, seconds.</summary>
     public float MaxWork { get; init; } = 3.5f;
 
+    /// <summary>How close to its spot, meters, it starts slowing to stop on it.</summary>
+    public float WalkSlowRadius { get; init; } = 0.4f;
+
+    /// <summary>The shortest walk to a new spot, meters: at least a stride, so it visibly walks.</summary>
+    public float MinStride { get; init; } = 0.8f;
+
+    /// <summary>While running, it turns back when the player slips past within this fraction of <see cref="Wary"/>.</summary>
+    public float TurnFraction { get; init; } = 0.6f;
+
+    /// <summary>A cowering machine gets up once the player is this much farther than <see cref="Wary"/>, meters.</summary>
+    public float CowerMargin { get; init; } = 1.5f;
+
+    /// <summary>How fast it pecks at its spot, radians per second.</summary>
+    public float PeckRate { get; init; } = 9f;
+
+    /// <summary>How fast its pecking follows the beat, per second.</summary>
+    public float PeckSharpness { get; init; } = 10f;
+
+    /// <summary>How fast its alertness rises when it bolts, per second.</summary>
+    public float AlertRise { get; init; } = 10f;
+
+    /// <summary>How fast its alertness fades once it is safe, per second.</summary>
+    public float AlertFall { get; init; } = 2f;
+
     public override Intent Think(in Perception p, float delta)
     {
         Vector2 home = _home ??= p.Position;
@@ -79,7 +103,7 @@ public sealed class HoarderBrain : MachineBrain
                 else
                 {
                     int side = MathF.Sign(_target - p.Position.X);
-                    float speed = WalkSpeed * MathF.Min(1f, MathF.Abs(_target - p.Position.X) / 0.4f);
+                    float speed = WalkSpeed * MathF.Min(1f, MathF.Abs(_target - p.Position.X) / WalkSlowRadius);
                     intent.Velocity = new Vector2(side * speed, 0f);
                     if (MathF.Abs(_target - p.Position.X) < 0.1f || p.Blocked(side))
                     {
@@ -94,7 +118,7 @@ public sealed class HoarderBrain : MachineBrain
                 {
                     // The player got past it: run the other way.
                     int away = Steering.AwaySide(p.Position, chaser.Position, _fleeSide);
-                    if (away != _fleeSide && distance < Wary * 0.6f)
+                    if (away != _fleeSide && distance < Wary * TurnFraction)
                     {
                         _fleeSide = away;
                     }
@@ -130,7 +154,7 @@ public sealed class HoarderBrain : MachineBrain
                     intent.Facing = -away;
                 }
 
-                if (distance > Wary + 1.5f)
+                if (distance > Wary + CowerMargin)
                 {
                     _home = p.Position;
                     Begin(MachineAct.Glean, p);
@@ -140,9 +164,9 @@ public sealed class HoarderBrain : MachineBrain
         }
 
         bool fleeing = Act is MachineAct.Flee or MachineAct.Cower;
-        float peck = Act == MachineAct.Glean ? 0.5f + 0.5f * MathF.Sin(p.Time * 9f) : 0f;
-        _work = Motion.Damp(_work, peck, 10f, delta);
-        _alert = Motion.Damp(_alert, fleeing ? 1f : 0f, fleeing ? 10f : 2f, delta);
+        float peck = Act == MachineAct.Glean ? 0.5f + 0.5f * MathF.Sin(p.Time * PeckRate) : 0f;
+        _work = Motion.Damp(_work, peck, PeckSharpness, delta);
+        _alert = Motion.Damp(_alert, fleeing ? 1f : 0f, fleeing ? AlertRise : AlertFall, delta);
         intent.Act = Act;
         intent.Work = _work;
         intent.Alert = _alert;
@@ -163,9 +187,9 @@ public sealed class HoarderBrain : MachineBrain
             Vector2 home = _home ?? p.Position;
             float offset = HomeRange * (2f * (float)_random.NextDouble() - 1f);
             // At least a stride away, so it visibly walks.
-            if (MathF.Abs(home.X + offset - p.Position.X) < 0.8f)
+            if (MathF.Abs(home.X + offset - p.Position.X) < MinStride)
             {
-                offset = -offset + MathF.Sign(offset + 1e-3f) * 0.8f;
+                offset = -offset + MathF.Sign(offset + 1e-3f) * MinStride;
             }
 
             _target = home.X + offset;

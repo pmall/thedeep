@@ -62,6 +62,9 @@ public partial class MachineSpecies : Resource, INamesLines
     /// <summary>How far a hit pushes it, as a share of the swing's knockback (a heavy machine barely moves).</summary>
     [Export(PropertyHint.Range, "0,1")] public float Heft { get; set; } = 1f;
 
+    /// <summary>How hard a hit pops it up, m/s before <see cref="Heft"/> (a flyer is lifted less).</summary>
+    [Export] public float HitLift { get; set; } = 2f;
+
     /// <summary>How far from the player's chest, measured from its sensors, a landing blow still counts, meters.</summary>
     [Export] public float StrikeRange { get; set; } = 2.6f;
 

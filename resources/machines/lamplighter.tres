@@ -70,6 +70,7 @@ Hostile = false
 CreedLine = &"creed.lamplighter"
 Assembly = ExtResource("5_assembly")
 Locomotion = 1
+HitLift = 1
 BodySize = Vector2(0.6, 0.7)
 SensorHeight = 0
 TurnSharpness = 5

@@ -195,7 +195,7 @@ public partial class Machine : CharacterBody3D
         }
 
         bool broke = Vitals.Hit(damage);
-        if (MachineVitals.Knockback(Species.Locomotion, PlanePosition.X, fromX, knockback, Species.Heft) is { } push)
+        if (MachineVitals.Knockback(Species.Locomotion, PlanePosition.X, fromX, knockback, Species.Heft, Species.HitLift) is { } push)
         {
             Velocity = push.OnPlane();
         }

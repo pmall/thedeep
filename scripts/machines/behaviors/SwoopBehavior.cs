@@ -21,6 +21,14 @@ public partial class SwoopBehavior : MachineBehavior
     [Export] public float Hang { get; set; } = 1.4f;
     [Export] public int Flurry { get; set; } = 3;
 
+    [ExportGroup("Bearing")]
+    [Export] public float ArriveRadius { get; set; } = 2f;
+    [Export] public float WindShudder { get; set; } = 0.6f;
+    [Export] public float HangSag { get; set; } = 0.3f;
+    [Export] public float HangAlert { get; set; } = 0.4f;
+    [Export] public float AlertRate { get; set; } = 6f;
+    [Export] public float BobRate { get; set; } = 1.3f;
+
     public override MachineBrain CreateBrain(MachineSpecies species, int seed) => new SwoopBrain
     {
         SightRange = SightRange,
@@ -35,5 +43,11 @@ public partial class SwoopBehavior : MachineBehavior
         DiveTime = DiveTime,
         Hang = Hang,
         Flurry = Flurry,
+        ArriveRadius = ArriveRadius,
+        WindShudder = WindShudder,
+        HangSag = HangSag,
+        HangAlert = HangAlert,
+        AlertRate = AlertRate,
+        BobRate = BobRate,
     };
 }

@@ -15,6 +15,17 @@ public partial class PrayerBehavior : MachineBehavior
     [Export] public float Congregation { get; set; } = 8f;
     [Export] public float Calm { get; set; } = 1.6f;
 
+    [ExportGroup("Bearing")]
+    [Export] public float Coupling { get; set; } = 0.12f;
+    [Export] public float MinAhead { get; set; } = 0.1f;
+    [Export] public float BowRate { get; set; } = 6f;
+    [Export] public float RiseRate { get; set; } = 12f;
+    [Export] public float AlertRise { get; set; } = 14f;
+    [Export] public float AlertFall { get; set; } = 3f;
+    [Export] public float WatchAlert { get; set; } = 0.3f;
+    [Export] public float GazeAhead { get; set; } = 3f;
+    [Export] public float GazeDrop { get; set; } = -1.2f;
+
     [ExportGroup("Strike")]
     [Export] public float WindUp { get; set; } = 0.45f;
     [Export] public float Blow { get; set; } = 0.12f;
@@ -23,8 +34,16 @@ public partial class PrayerBehavior : MachineBehavior
 
     public override MachineBrain CreateBrain(MachineSpecies species, int seed) =>
         new PrayerBrain(species.Id, Period * (0.9f + 0.2f * Jitter(seed, 1)), Jitter(seed, 2),
-            new StrikeAction { WindUp = WindUp, Blow = Blow, Recover = Recover, Cooldown = Cooldown })
+            new StrikeAction { WindUp = WindUp, Blow = Blow, Recover = Recover, Cooldown = Cooldown }, Coupling)
         {
+            MinAhead = MinAhead,
+            BowRate = BowRate,
+            RiseRate = RiseRate,
+            AlertRise = AlertRise,
+            AlertFall = AlertFall,
+            WatchAlert = WatchAlert,
+            GazeAhead = GazeAhead,
+            GazeDrop = GazeDrop,
             Reach = Reach,
             Band = Band,
             ChestHeight = ChestHeight,

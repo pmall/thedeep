@@ -26,8 +26,9 @@ public sealed class SwoopBrain : MachineBrain
     /// <summary>It wakes when the player comes within this distance, meters, whether it can see them or not.</summary>
     public float SightRange { get; init; } = 16f;
 
-    /// <summary>How high over the player's chest it drifts, meters, and how far to the side.</summary>
+    /// <summary>How high over the player's chest it drifts, meters.</summary>
     public float Altitude { get; init; } = 6f;
+
     /// <summary>How far to the side of the player it drifts, meters.</summary>
     public float Offset { get; init; } = 3f;
 
@@ -56,8 +57,23 @@ public sealed class SwoopBrain : MachineBrain
     /// <summary>Every this many dives, a second one follows at once; 0 for never.</summary>
     public int Flurry { get; init; } = 3;
 
-    /// <summary>Whether it has seen the player (the fight is on).</summary>
-    public bool Engaged => _phase != Phase.Waiting;
+    /// <summary>How close to its drift point, meters, it starts slowing to settle on it.</summary>
+    public float ArriveRadius { get; init; } = 2f;
+
+    /// <summary>How far the wind-up's shudder rises, 0 to 1 of the strike channel, by the end of the warning.</summary>
+    public float WindShudder { get; init; } = 0.6f;
+
+    /// <summary>How far the strike channel is raised, 0 to 1, as the hang begins, easing to rest through it.</summary>
+    public float HangSag { get; init; } = 0.3f;
+
+    /// <summary>How alert it stays while hanging after a dive, 0 to 1 (1 while it hunts).</summary>
+    public float HangAlert { get; init; } = 0.4f;
+
+    /// <summary>How fast its alertness follows the fight, per second.</summary>
+    public float AlertRate { get; init; } = 6f;
+
+    /// <summary>How fast it bobs while it waits unwoken, radians per second.</summary>
+    public float BobRate { get; init; } = 1.3f;
 
     public override Intent Think(in Perception p, float delta)
     {
@@ -74,7 +90,7 @@ public sealed class SwoopBrain : MachineBrain
             {
                 Act = MachineAct.Hover;
                 intent.Act = Act;
-                intent.Work = 0.5f + 0.5f * MathF.Sin(p.Time * 1.3f);
+                intent.Work = 0.5f + 0.5f * MathF.Sin(p.Time * BobRate);
                 return intent;
             }
         }
@@ -92,7 +108,7 @@ public sealed class SwoopBrain : MachineBrain
         {
             case Phase.Drift:
                 Act = MachineAct.Hunt;
-                intent.Velocity = Steering.Arrive(p.Position, player.Position + new Vector2(side * Offset, Altitude), DriftSpeed, 2f);
+                intent.Velocity = Steering.Arrive(p.Position, player.Position + new Vector2(side * Offset, Altitude), DriftSpeed, ArriveRadius);
                 intent.Facing = -side;
                 if (_timer <= 0f)
                 {
@@ -104,7 +120,7 @@ public sealed class SwoopBrain : MachineBrain
             case Phase.Wind:
                 Act = MachineAct.WindUp;
                 intent.Facing = -side;
-                intent.Strike = 0.6f * (1f - _timer / MathF.Max(_again ? QuickWindUp : WindUp, 0.01f));
+                intent.Strike = WindShudder * (1f - _timer / MathF.Max(_again ? QuickWindUp : WindUp, 0.01f));
                 if (_timer <= 0f)
                 {
                     // The aim is where the player is now: past it by the overshoot.
@@ -143,7 +159,7 @@ public sealed class SwoopBrain : MachineBrain
 
             case Phase.Hang:
                 Act = MachineAct.Recover;
-                intent.Strike = 0.3f * MathF.Max(_timer / MathF.Max(Hang, 0.01f), 0f);
+                intent.Strike = HangSag * MathF.Max(_timer / MathF.Max(Hang, 0.01f), 0f);
                 if (_timer <= 0f)
                 {
                     Begin(Phase.Drift, Interval);
@@ -152,7 +168,7 @@ public sealed class SwoopBrain : MachineBrain
                 break;
         }
 
-        _alert = Motion.Damp(_alert, _phase == Phase.Hang ? 0.4f : 1f, 6f, delta);
+        _alert = Motion.Damp(_alert, _phase == Phase.Hang ? HangAlert : 1f, AlertRate, delta);
         intent.Alert = _alert;
         intent.LookAt = player.Position;
         intent.Act = Act;

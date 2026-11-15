@@ -14,6 +14,12 @@ public partial class SleeperBehavior : MachineBehavior
     [Export] public float WakeTime { get; set; } = 0.7f;
     [Export] public float Patience { get; set; } = 5f;
 
+    [ExportGroup("Bearing")]
+    [Export] public float ArriveRadius { get; set; } = 0.8f;
+    [Export] public float RouseFraction { get; set; } = 0.4f;
+    [Export] public float DozeRate { get; set; } = 1.2f;
+    [Export] public float DrowseAlert { get; set; } = 0.5f;
+
     [ExportGroup("Strike")]
     [Export] public float WindUp { get; set; } = 0.35f;
     [Export] public float Blow { get; set; } = 0.1f;
@@ -30,5 +36,9 @@ public partial class SleeperBehavior : MachineBehavior
             Reach = Reach,
             WakeTime = WakeTime,
             Patience = Patience,
+            ArriveRadius = ArriveRadius,
+            RouseFraction = RouseFraction,
+            DozeRate = DozeRate,
+            DrowseAlert = DrowseAlert,
         };
 }

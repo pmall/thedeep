@@ -14,6 +14,16 @@ public partial class HoarderBehavior : MachineBehavior
     [Export] public float MinWork { get; set; } = 1.5f;
     [Export] public float MaxWork { get; set; } = 3.5f;
 
+    [ExportGroup("Bearing")]
+    [Export] public float WalkSlowRadius { get; set; } = 0.4f;
+    [Export] public float MinStride { get; set; } = 0.8f;
+    [Export] public float TurnFraction { get; set; } = 0.6f;
+    [Export] public float CowerMargin { get; set; } = 1.5f;
+    [Export] public float PeckRate { get; set; } = 9f;
+    [Export] public float PeckSharpness { get; set; } = 10f;
+    [Export] public float AlertRise { get; set; } = 10f;
+    [Export] public float AlertFall { get; set; } = 2f;
+
     public override MachineBrain CreateBrain(MachineSpecies species, int seed) => new HoarderBrain(seed)
     {
         HomeRange = HomeRange,
@@ -23,5 +33,13 @@ public partial class HoarderBehavior : MachineBehavior
         Safe = Safe,
         MinWork = MinWork,
         MaxWork = MaxWork,
+        WalkSlowRadius = WalkSlowRadius,
+        MinStride = MinStride,
+        TurnFraction = TurnFraction,
+        CowerMargin = CowerMargin,
+        PeckRate = PeckRate,
+        PeckSharpness = PeckSharpness,
+        AlertRise = AlertRise,
+        AlertFall = AlertFall,
     };
 }

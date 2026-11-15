@@ -77,9 +77,9 @@ public class MachineBodyTests
     [Fact]
     public void ABlowPushesAwayByHeftButNeverACrawler()
     {
-        Assert.Equal(new Vector2(1.5f, 1f), MachineVitals.Knockback(Locomotion.Walk, 2f, 1f, 3f, 0.5f));
-        Assert.Equal(new Vector2(-3f, 1f), MachineVitals.Knockback(Locomotion.Hover, 0f, 1f, 3f, 1f));
-        Assert.Null(MachineVitals.Knockback(Locomotion.Crawl, 0f, 1f, 3f, 1f));
+        Assert.Equal(new Vector2(1.5f, 1f), MachineVitals.Knockback(Locomotion.Walk, 2f, 1f, 3f, 0.5f, 2f));
+        Assert.Equal(new Vector2(-3f, 1f), MachineVitals.Knockback(Locomotion.Hover, 0f, 1f, 3f, 1f, 1f));
+        Assert.Null(MachineVitals.Knockback(Locomotion.Crawl, 0f, 1f, 3f, 1f, 2f));
     }
 
     [Fact]

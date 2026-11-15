@@ -52,8 +52,17 @@ public sealed class ConductorBrain : MachineBrain
     /// <summary>Seconds per beat while it conducts.</summary>
     public float BeatPeriod { get; init; } = 1.2f;
 
-    /// <summary>Whether it has seen the player (the fight is on).</summary>
-    public bool Engaged => _engaged;
+    /// <summary>How fast its alertness fades while it only conducts, per second.</summary>
+    public float AlertFall { get; init; } = 3f;
+
+    /// <summary>How fast its alertness rises once the fight is on, per second.</summary>
+    public float AlertRise { get; init; } = 8f;
+
+    /// <summary>It stops stalking once the player is within this fraction of its reach.</summary>
+    public float StopFraction { get; init; } = 0.8f;
+
+    /// <summary>How much of the beat still shows in its sway while it stalks, 0 to 1.</summary>
+    public float StalkSway { get; init; } = 0.4f;
 
     private StrikeAction Current => _quick.Active ? _quick : _strike;
 
@@ -70,7 +79,7 @@ public sealed class ConductorBrain : MachineBrain
         if (!_engaged || p.Player is not { } player)
         {
             Act = MachineAct.Idle;
-            _alert = Motion.Damp(_alert, 0f, 3f, delta);
+            _alert = Motion.Damp(_alert, 0f, AlertFall, delta);
             intent.Work = 0.5f + 0.5f * MathF.Sin(_beat * MathF.Tau);
             intent.Alert = _alert;
             intent.Act = Act;
@@ -107,13 +116,13 @@ public sealed class ConductorBrain : MachineBrain
         else
         {
             float gap = MathF.Abs(player.Position.X - p.Position.X);
-            intent.Velocity = gap > Reach * 0.8f && !p.Blocked(toward) ? new Vector2(toward * Speed, 0f) : Vector2.Zero;
+            intent.Velocity = gap > Reach * StopFraction && !p.Blocked(toward) ? new Vector2(toward * Speed, 0f) : Vector2.Zero;
             Act = MachineAct.Hunt;
         }
 
-        _alert = Motion.Damp(_alert, 1f, 8f, delta);
+        _alert = Motion.Damp(_alert, 1f, AlertRise, delta);
         intent.Alert = _alert;
-        intent.Work = 0.5f + 0.5f * MathF.Sin(_beat * MathF.Tau) * (striking ? 0f : 0.4f);
+        intent.Work = 0.5f + 0.5f * MathF.Sin(_beat * MathF.Tau) * (striking ? 0f : StalkSway);
         intent.LookAt = player.Position;
         intent.Act = Act;
         return intent;
