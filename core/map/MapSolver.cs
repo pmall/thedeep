@@ -82,12 +82,6 @@ public sealed class MapReport
     /// <summary>The map's rooms no reachable state stands in.</summary>
     public IReadOnlyList<string> UnreachableRooms { get; init; } = Array.Empty<string>();
 
-    /// <summary>The map's relics that can never be collected.</summary>
-    public IReadOnlyList<MapRelic> UnreachableRelics { get; init; } = Array.Empty<MapRelic>();
-
-    /// <summary>The map's items that can never be picked up.</summary>
-    public IReadOnlyList<MapItem> UnreachableItems { get; init; } = Array.Empty<MapItem>();
-
     /// <summary>The orders in which every ability on the map can be collected.</summary>
     public IReadOnlyList<Ability[]> Orders { get; init; } = Array.Empty<Ability[]>();
 
@@ -182,8 +176,6 @@ public static class MapSolver
             Softlocks = softlocks,
             GoalReachable = good.Contains(start),
             UnreachableRooms = map.Rooms.Where(r => !reachedRooms.Contains(r)).ToList(),
-            UnreachableRelics = map.Relics.Where(i => !reachedRooms.Contains(i.Room)).ToList(),
-            UnreachableItems = map.Items.Where(i => !reachedRooms.Contains(i.Room)).ToList(),
             Orders = orders,
             AbilityCount = count,
             Positions = positions,

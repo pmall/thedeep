@@ -43,7 +43,6 @@ public class ItemsTests
 
         Assert.True(r.SoftlockFree);
         Assert.Empty(r.UnreachableRooms);
-        Assert.Empty(r.UnreachableItems);
     }
 
     [Fact]
@@ -67,7 +66,6 @@ public class ItemsTests
         MapReport r = MapSolver.Solve(g);
 
         Assert.Equal(new[] { "Vault" }, r.UnreachableRooms);
-        Assert.Single(r.UnreachableItems);
     }
 
     [Fact]
