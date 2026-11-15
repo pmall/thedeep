@@ -73,11 +73,11 @@ public partial class Banner : CanvasLayer
         Column.SetAnchorsPreset(Control.LayoutPreset.TopWide);
         Column.Position = new Vector2(0f, Style.BannerTop);
         var words = new VBoxContainer { MouseFilter = Control.MouseFilterEnum.Ignore };
-        words.AddThemeConstantOverride("separation", 2);
+        words.AddThemeConstantOverride(ThemeNames.Separation, 2);
         words.AddChild(SpeakerLabel);
         words.AddChild(TitleLabel);
         words.AddChild(LineLabel);
-        Plate.AddThemeStyleboxOverride("panel", Style.NewPlate());
+        Plate.AddThemeStyleboxOverride(ThemeNames.Panel, Style.NewPlate());
         Plate.AddChild(words);
         Column.AddChild(Plate);
         Column.Modulate = Colors.White with { A = 0f };
@@ -183,7 +183,7 @@ public partial class Banner : CanvasLayer
         if (_shown >= _hold)
         {
             _tween = CreateTween();
-            _tween.TweenProperty(Column, "modulate:a", 0f, _queue.Waiting > 0 ? Style.Hurried : Style.Leave).SetTrans(Tween.TransitionType.Sine);
+            _tween.TweenProperty(Column, Names.ModulateAlpha, 0f, _queue.Waiting > 0 ? Style.Hurried : Style.Leave).SetTrans(Tween.TransitionType.Sine);
             _tween.TweenCallback(Callable.From(Left));
         }
     }
@@ -214,11 +214,11 @@ public partial class Banner : CanvasLayer
         headLabel.Text = head;
         if (spoken)
         {
-            SpeakerLabel.AddThemeColorOverride("font_color", Style.Accent(World.Room.Biome));
+            SpeakerLabel.AddThemeColorOverride(ThemeNames.FontColor, Style.Accent(World.Room.Biome));
         }
 
         // Spoken words are what is read first; under a title, the line is read after it.
-        LineLabel.AddThemeColorOverride("font_color", spoken ? Style.Ink : Style.Dim);
+        LineLabel.AddThemeColorOverride(ThemeNames.FontColor, spoken ? Style.Ink : Style.Dim);
         LineLabel.Text = line;
         LineLabel.Visible = line.Length > 0;
 
@@ -236,7 +236,7 @@ public partial class Banner : CanvasLayer
         _placed = false;
         _tween?.Kill();
         _tween = CreateTween();
-        _tween.TweenProperty(Column, "modulate:a", 1f, Style.Appear).SetTrans(Tween.TransitionType.Sine);
+        _tween.TweenProperty(Column, Names.ModulateAlpha, 1f, Style.Appear).SetTrans(Tween.TransitionType.Sine);
         _tween.TweenCallback(Callable.From(() => _tween = null));
     }
 

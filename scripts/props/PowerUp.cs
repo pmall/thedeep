@@ -81,8 +81,8 @@ public partial class PowerUp : Node3D, IWalkedThrough
             Token.Scale = Vector3.One * (1f + 0.5f * Mathf.Sin(Mathf.Pi * t) - 0.9f * e * e);
         }), 0f, 1f, 0.9f);
         TokenGlow.FlareOut(tween, Rim, 2.5f, 0.9f);
-        tween.Parallel().TweenProperty(Light, "light_energy", Light.LightEnergy * 2.5f, 0.4f);
-        tween.TweenProperty(Light, "light_energy", 0f, 0.5f);
+        tween.Parallel().TweenProperty(Light, Names.LightEnergy, Light.LightEnergy * 2.5f, 0.4f);
+        tween.TweenProperty(Light, Names.LightEnergy, 0f, 0.5f);
         await ToSignal(tween, Tween.SignalName.Finished);
         Token.Visible = false;
     }

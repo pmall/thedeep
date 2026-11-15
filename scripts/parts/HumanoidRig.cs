@@ -32,7 +32,7 @@ public sealed class HumanoidRig
         var rest = new Vector3[Humanoid.BoneCount];
         foreach (HumanoidBone bone in Enum.GetValues<HumanoidBone>())
         {
-            var name = new StringName(bone.ToString());
+            using var name = new StringName(bone.ToString());
             if (body.Joint(name) is not { } joint)
             {
                 GD.PushError($"{body.Assembly.ResourcePath}: humanoid joint {bone} is missing");

@@ -108,13 +108,12 @@ public partial class SlagBody : Node3D
         {
             var glow = new OmniLight3D
             {
-                Name = $"Glow{i}",
                 Position = new Vector3(-half + 2f * half * i / gaps, GlowHeight, SectionFront + GlowAhead - GlobalPosition.Z),
                 LightEnergy = GlowEnergy,
                 OmniAttenuation = 1.6f,
                 OmniRange = GlowRange,
                 ShadowEnabled = false,
-            };
+            }.Named($"Glow{i}");
             _glows.Add(glow);
             AddChild(glow);
         }

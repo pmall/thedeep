@@ -10,7 +10,7 @@ namespace TheDeep;
 [GlobalClass]
 public partial class JointDriver : Resource
 {
-    [Export] public StringName Joint { get; set; } = "";
+    [Export] public StringName Joint { get; set; } = Names.None;
     [Export] public DriverMode Mode { get; set; } = DriverMode.Pose;
     [Export] public DriverChannel Channel { get; set; } = DriverChannel.One;
 

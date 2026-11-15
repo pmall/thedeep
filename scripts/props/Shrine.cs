@@ -28,7 +28,7 @@ public partial class Shrine : Node3D
     {
         _flare?.Kill();
         _flare = CreateTween();
-        _flare.TweenProperty(Light, "light_energy", _baseEnergy * 4f, 0.25f).SetTrans(Tween.TransitionType.Sine).SetEase(Tween.EaseType.Out);
-        _flare.TweenProperty(Light, "light_energy", _baseEnergy, 1.4f).SetTrans(Tween.TransitionType.Sine).SetEase(Tween.EaseType.InOut);
+        _flare.TweenProperty(Light, Names.LightEnergy, _baseEnergy * 4f, 0.25f).SetTrans(Tween.TransitionType.Sine).SetEase(Tween.EaseType.Out);
+        _flare.TweenProperty(Light, Names.LightEnergy, _baseEnergy, 1.4f).SetTrans(Tween.TransitionType.Sine).SetEase(Tween.EaseType.InOut);
     }
 }

@@ -15,7 +15,7 @@ public partial class MachineSpecies : Resource, INamesLines
     public const string Folder = "res://resources/machines";
 
     /// <summary>Stable id (the file name): neighbors recognize their kind by it, the bestiary keys on it.</summary>
-    [Export] public StringName Id { get; set; } = "";
+    [Export] public StringName Id { get; set; } = Names.None;
 
     [Export] public string DisplayName { get; set; } = "";
 
@@ -26,7 +26,7 @@ public partial class MachineSpecies : Resource, INamesLines
     [Export] public bool Hostile { get; set; }
 
     /// <summary>Id of its creed, a line of the game's own book (a species is every world's; placeholder text, stored as data for voicing later).</summary>
-    [Export] public StringName CreedLine { get; set; } = "";
+    [Export] public StringName CreedLine { get; set; } = Names.None;
 
     /// <inheritdoc/>
     public System.Collections.Generic.IEnumerable<StringName> LineIds => new[] { CreedLine };

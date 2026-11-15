@@ -35,7 +35,7 @@ public partial class Secrets : Node
             if (!wall.Found && wall.Region.HasPoint(center))
             {
                 wall.Reveal();
-                Session.Remember(wall.Name);
+                Session.Remember(wall.NameText());
                 Found?.Invoke(wall);
             }
         }
@@ -46,7 +46,7 @@ public partial class Secrets : Node
         string name = World.NameOf(room.SceneFilePath);
         foreach (FalseWall wall in room.All<FalseWall>())
         {
-            if (Session.Done(name, wall.Name))
+            if (Session.Done(name, wall.NameText()))
             {
                 wall.Settle();
             }

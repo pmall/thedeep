@@ -30,12 +30,11 @@ public sealed unsafe class NativeMeshArrays : IDisposable
     {
         Managed.Resize((int)Mesh.ArrayType.Max);
         // Once: a second reference to the managed array's engine array (Godot arrays are shared by reference).
-        Variant wrapped = Variant.CreateFrom(Managed);
+        using Variant wrapped = Variant.CreateFrom(Managed);
         godot_variant variant = wrapped.CopyNativeVariant();
         _native = (godot_array*)System.Runtime.InteropServices.NativeMemory.AllocZeroed((nuint)sizeof(godot_array));
         *_native = VariantUtils.ConvertToNativeArray(variant);
         variant.Dispose();
-        wrapped.Dispose();
     }
 
     ~NativeMeshArrays() => Release();
@@ -58,6 +57,7 @@ public sealed unsafe class NativeMeshArrays : IDisposable
     public void Dispose()
     {
         Release();
+        Managed.Dispose();
         GC.SuppressFinalize(this);
     }
 

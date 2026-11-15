@@ -17,39 +17,45 @@ public partial class KitMesh : PrimitiveMesh
     /// <summary>Heights are stored in 8-bit vertex color, over this range in meters (about 3 cm steps).</summary>
     public const float HeightRange = 8f;
 
+    /// <summary>The last build's buffers: the engine keeps its own reference to their array; ours is released at the next build or with the mesh.</summary>
+    private Buffers? _built;
+
     public override Array _CreateMeshArray()
     {
         var builder = new MeshBuilder();
         Build(builder);
-        return ToArrays(builder.Finish());
+        _built?.Dispose();
+        _built = new Buffers();
+        return ToArrays(builder.Finish(), _built);
     }
 
-    /// <summary>Godot mesh arrays for <paramref name="mesh"/>, with the surface frame the materials read.</summary>
-    public static Array ToArrays(MeshData mesh) => ToArrays(mesh, new Buffers());
+    protected override void Dispose(bool disposing)
+    {
+        if (disposing)
+        {
+            _built?.Dispose();
+            _built = null;
+        }
+
+        base.Dispose(disposing);
+    }
 
     /// <summary>
-    /// Buffers for <see cref="ToArrays(MeshData, Buffers)"/>. Kept (<c>new Buffers(kept: true)</c>) for a mesh rebuilt every frame with
-    /// the same topology (a chain): the managed arrays are reused and the Godot array's slots written in place
-    /// (<see cref="NativeMeshArrays"/>), so nothing is left for the garbage collector. Dispose kept buffers with their mesh.
+    /// Buffers for <see cref="ToArrays(MeshData, Buffers)"/>, reused for a mesh rebuilt every frame with the same topology (a
+    /// chain): the managed arrays are kept and the Godot array's slots written in place (<see cref="NativeMeshArrays"/>), so
+    /// nothing is left for the garbage collector. Disposed by their owner, with their mesh.
     /// </summary>
     public sealed class Buffers : System.IDisposable
     {
-        private readonly NativeMeshArrays? _native;
+        private readonly NativeMeshArrays _native = new();
 
-        /// <summary>Buffers used once, or with <paramref name="kept"/> reused frame after frame and written in place.</summary>
-        public Buffers(bool kept = false)
-        {
-            _native = kept ? new NativeMeshArrays() : null;
-            Arrays = _native?.Managed ?? new Array();
-        }
+        /// <summary>The Godot array the slots are written into.</summary>
+        public Array Arrays => _native.Managed;
 
-        /// <summary>The Godot array the slots are written into (the native writer's own, for kept buffers).</summary>
-        public Array Arrays { get; }
+        /// <summary>The in-place writer of the Godot array's slots.</summary>
+        internal NativeMeshArrays Native => _native;
 
-        /// <summary>The in-place writer of kept buffers; null for buffers used once.</summary>
-        internal NativeMeshArrays? Native => _native;
-
-        public void Dispose() => _native?.Dispose();
+        public void Dispose() => _native.Dispose();
 
         /// <summary>Each vertex's position, in meters.</summary>
         public Vector3[] Positions { get; private set; } = System.Array.Empty<Vector3>();
@@ -84,11 +90,6 @@ public partial class KitMesh : PrimitiveMesh
             {
                 Indices = new int[indices];
             }
-
-            if (Arrays.Count != (int)ArrayType.Max)
-            {
-                Arrays.Resize((int)ArrayType.Max);
-            }
         }
     }
 
@@ -118,27 +119,14 @@ public partial class KitMesh : PrimitiveMesh
         }
 
         mesh.Indices.CopyTo(buffers.Indices);
-        if (buffers.Native is { } native)
-        {
-            native.Set(ArrayType.Vertex, positions);
-            native.Set(ArrayType.Normal, normals);
-            native.Set(ArrayType.Tangent, tangents);
-            native.Set(ArrayType.Color, colors);
-            native.Set(ArrayType.TexUV, uvs);
-            native.Set(ArrayType.TexUV2, patches);
-            native.Set(ArrayType.Index, buffers.Indices);
-            return native.Managed;
-        }
-
-        Array arrays = buffers.Arrays;
-        arrays[(int)ArrayType.Vertex] = positions;
-        arrays[(int)ArrayType.Normal] = normals;
-        arrays[(int)ArrayType.Tangent] = tangents;
-        arrays[(int)ArrayType.Color] = colors;
-        arrays[(int)ArrayType.TexUV] = uvs;
-        arrays[(int)ArrayType.TexUV2] = patches;
-        arrays[(int)ArrayType.Index] = buffers.Indices;
-        return arrays;
+        buffers.Native.Set(ArrayType.Vertex, positions);
+        buffers.Native.Set(ArrayType.Normal, normals);
+        buffers.Native.Set(ArrayType.Tangent, tangents);
+        buffers.Native.Set(ArrayType.Color, colors);
+        buffers.Native.Set(ArrayType.TexUV, uvs);
+        buffers.Native.Set(ArrayType.TexUV2, patches);
+        buffers.Native.Set(ArrayType.Index, buffers.Indices);
+        return buffers.Arrays;
     }
 
     /// <summary>Writes the piece's geometry. Exported properties call <see cref="PrimitiveMesh.RequestUpdate"/> when set.</summary>

@@ -14,6 +14,8 @@ namespace TheDeep;
 /// </summary>
 public partial class BallastCheck : Node
 {
+    private static readonly StringName TankName = "Tank";
+
     /// <summary>The running game's pilgrim.</summary>
     public required Player Player { get; init; }
     /// <summary>The running game's world: its rooms, and the one loaded.</summary>
@@ -50,7 +52,7 @@ public partial class BallastCheck : Node
     {
         World.Room.AddChild(new WaterBody
         {
-            Name = "Tank",
+            Name = TankName,
             Swim = true,
             Size = new Vector2(4f, 4f),
             Depth = Surface - Bottom,

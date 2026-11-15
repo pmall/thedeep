@@ -240,12 +240,12 @@ public partial class RoomValidator : Node
             Vector3 p = block.GlobalPosition;
             if (!block.GlobalBasis.IsEqualApprox(Basis.Identity))
             {
-                Problem($"block {block.Name} is rotated; gameplay blocks stay axis-aligned");
+                Problem($"block {block.NameText()} is rotated; gameplay blocks stay axis-aligned");
             }
 
             if (!GridSnap.EdgesOnGrid(p.X, block.Size.X, GridSnap.BlockStep) || !GridSnap.EdgesOnGrid(p.Y, block.Size.Y, GridSnap.BlockStep))
             {
-                Problem($"block {block.Name} at {p} size {block.Size} has edges off the {GridSnap.BlockStep} m grid");
+                Problem($"block {block.NameText()} at {p} size {block.Size} has edges off the {GridSnap.BlockStep} m grid");
             }
         }
 
@@ -254,12 +254,12 @@ public partial class RoomValidator : Node
             Vector3 p = piece.GlobalPosition;
             if (!GridSnap.OnGrid(p.X, GridSnap.PieceStep) || !GridSnap.OnGrid(p.Y, GridSnap.PieceStep) || !GridSnap.OnGrid(p.Z, GridSnap.PieceStep))
             {
-                Problem($"kit piece {piece.Name} at {p} is off the {GridSnap.PieceStep} m grid");
+                Problem($"kit piece {piece.NameText()} at {p} is off the {GridSnap.PieceStep} m grid");
             }
         }
 
         List<RoomExit> exits = nodes.OfType<RoomExit>().ToList();
-        foreach (IGrouping<string, RoomExit> same in exits.GroupBy(e => e.Name.ToString()).Where(g => g.Count() > 1))
+        foreach (IGrouping<string, RoomExit> same in exits.GroupBy(e => e.NameText()).Where(g => g.Count() > 1))
         {
             Problem($"{same.Count()} exits are named {same.Key}");
         }
@@ -271,7 +271,7 @@ public partial class RoomValidator : Node
             CheckExit(exit, path, Inside(exit.GlobalPosition), Problem);
             foreach (string problem in exit.Threshold.Problems(solids, new Box(room.BoundsMin.X, room.BoundsMin.Y, room.BoundsMax.X, room.BoundsMax.Y), body, left: !exit.ArrivalOnly))
             {
-                Problem($"exit {exit.Name}: {problem}");
+                Problem($"exit {exit.NameText()}: {problem}");
             }
         }
 
@@ -282,7 +282,7 @@ public partial class RoomValidator : Node
             var trigger = new Rect2(area.MinX, area.MinY, area.MaxX - area.MinX, area.MaxY - area.MinY);
             if (!room.All<FalseWall>().Any(w => w.Region.Intersects(trigger)))
             {
-                Problem($"exit {exit.Name} is hidden, but no FalseWall covers it");
+                Problem($"exit {exit.NameText()} is hidden, but no FalseWall covers it");
             }
         }
 
@@ -291,7 +291,7 @@ public partial class RoomValidator : Node
         {
             foreach (string problem in SlagBasin.Problems(slag.PlayRegion, solids).Concat(SlagBasin.SunkenGround(slag.PlayRegion, solids, 0.5f * body.X)))
             {
-                Problem($"slag {slag.Name}: {problem}");
+                Problem($"slag {slag.NameText()}: {problem}");
             }
         }
 
@@ -301,7 +301,7 @@ public partial class RoomValidator : Node
         {
             foreach (string problem in HeatGate.Problems(heat.Region, solids, openings, bounds, body))
             {
-                Problem($"heat {heat.Name}: {problem}");
+                Problem($"heat {heat.NameText()}: {problem}");
             }
         }
 
@@ -334,11 +334,11 @@ public partial class RoomValidator : Node
         }
 
         RoomShape shape = RoomShapes.Of(room, start: false);
-        var waysOut = room.Exits().Where(e => !e.ArrivalOnly).Select(e => (e.Name.ToString(), e.Threshold.Trigger)).ToList();
+        var waysOut = room.Exits().Where(e => !e.ArrivalOnly).Select(e => (e.NameText(), e.Threshold.Trigger)).ToList();
         foreach (Arena arena in arenas)
         {
-            var sealedArena = new SealedArena(arena.Name, arena.Area, arena.Gates.Select(g => g.ShutBox).ToList(),
-                arena.Foes.Select(f => (f.Name.ToString(), f.PlanePosition.ToCore())).ToList());
+            var sealedArena = new SealedArena(arena.NameText(), arena.Area, arena.Gates.Select(g => g.ShutBox).ToList(),
+                arena.Foes.Select(f => (f.NameText(), f.PlanePosition.ToCore())).ToList());
             foreach (string what in sealedArena.Problems(shape, bounds, waysOut, Tuning.Planner(ClimbRise), WorldCheck.Simulated))
             {
                 problem(what);
@@ -375,14 +375,14 @@ public partial class RoomValidator : Node
         var bounds = new Box(room.BoundsMin.X, room.BoundsMin.Y, room.BoundsMax.X, room.BoundsMax.Y);
         foreach (LowCeiling c in GroundRules.Headroom(solids, low, Tuning.Move.JumpHeight, Tuning.Move.Height, radius, bounds))
         {
-            Found(3, $"{blocks[c.Ground].Name}'s top at y {c.Y:0.##}, x {c.MinX:0.##}..{c.MaxX:0.##}: every place under a solid, {blocks[c.Ceiling].Name} " +
+            Found(3, $"{blocks[c.Ground].NameText()}'s top at y {c.Y:0.##}, x {c.MinX:0.##}..{c.MaxX:0.##}: every place under a solid, {blocks[c.Ceiling].NameText()} " +
                      $"{c.Clearance:0.##} m over it, cutting the jump short (mark a passage low on purpose with Block.Low)");
         }
 
         var unwalked = room.All<WaterBody>().Where(w => w.Swim).Select(w => w.PlayRegion).Concat(Resting(room)).ToList();
         foreach (Seam seam in GroundRules.Seams(solids, Tuning.Move.LedgeAssist, unwalked, bounds, blocks.Select(Front).ToList()))
         {
-            string where = $"{blocks[seam.A].Name} and {blocks[seam.B].Name} at x {seam.X:0.##}, y {seam.Y:0.##}";
+            string where = $"{blocks[seam.A].NameText()} and {blocks[seam.B].NameText()} at x {seam.X:0.##}, y {seam.Y:0.##}";
             Found(seam.Kind == SeamKind.Step ? 0 : 4, seam.Kind == SeamKind.Step
                 ? $"{where}: a {seam.Size:0.##} m step on a walking surface (under the {Tuning.Move.LedgeAssist} m ledge assist)"
                 : $"{where}: overlapping, a face in one plane seen over {seam.Size:0.##} m or m² (z-fighting; trim one so they only touch)");
@@ -390,13 +390,13 @@ public partial class RoomValidator : Node
 
         foreach ((int a, int b, Box o) in GroundRules.Intrusions(solids, frame))
         {
-            Found(1, $"{room.GetPathTo(blocks[a])} and {room.GetPathTo(blocks[b])} overlap at x {o.MinX:0.##}..{o.MaxX:0.##}, y {o.MinY:0.##}..{o.MaxY:0.##}: " +
+            Found(1, $"{room.PathTextTo(blocks[a])} and {room.PathTextTo(blocks[b])} overlap at x {o.MinX:0.##}..{o.MaxX:0.##}, y {o.MinY:0.##}..{o.MaxY:0.##}: " +
                      "a seam frame owns its column (docs/gameplay.md#seam-rule)");
         }
 
         foreach (MeshInstance3D mesh in Descendants(room).OfType<MeshInstance3D>().Where(m => m.Mesh is not null && m.IsVisibleInTree() && m is not LightShaft))
         {
-            if (Ancestors(mesh).Any(n => n is CollisionObject3D or WaterBody or HeatColumn or SlagBody or IWalkedThrough) || mesh.GetChildren().Any(n => n is CollisionObject3D))
+            if (Ancestors(mesh).Any(n => n is CollisionObject3D or WaterBody or HeatColumn or SlagBody or IWalkedThrough) || mesh.Children().Any(n => n is CollisionObject3D))
             {
                 continue;
             }
@@ -411,7 +411,7 @@ public partial class RoomValidator : Node
             string lies = turns ? "sweeps across the play plane as it turns" : "lies across the play plane";
             foreach ((float from, float to) in GroundRules.OpenSpans(plane, solids))
             {
-                Found(2, $"{room.GetPathTo(mesh)} {lies} (y {plane.MinY:0.##}..{plane.MaxY:0.##}) with no solid from x {from:0.##} to {to:0.##}: the pilgrim passes through it");
+                Found(2, $"{room.PathTextTo(mesh)} {lies} (y {plane.MinY:0.##}..{plane.MaxY:0.##}) with no solid from x {from:0.##} to {to:0.##}: the pilgrim passes through it");
             }
         }
 
@@ -496,7 +496,7 @@ public partial class RoomValidator : Node
             var footprint = new Rect2(box.Position.X, box.Position.Z, box.Size.X, box.Size.Z);
             foreach (WaterBody water in waters.Where(w => w.Area.Intersects(footprint) && Mathf.Abs(box.End.Y - w.SurfaceY) < WaterClearance))
             {
-                problem($"{room.GetPathTo(mesh)}'s top at y {box.End.Y:0.###} lies on {water.Name}'s surface (y {water.SurfaceY:0.###}): keep it {WaterClearance} m clear");
+                problem($"{room.PathTextTo(mesh)}'s top at y {box.End.Y:0.###} lies on {water.NameText()}'s surface (y {water.SurfaceY:0.###}): keep it {WaterClearance} m clear");
             }
         }
     }
@@ -511,7 +511,7 @@ public partial class RoomValidator : Node
         {
             if (Requirement.TryParse(exit.Requires, out Requirement requires, out _))
             {
-                world.AddExit(new MapEdge(name, exit.Name, World.NameOf(exit.TargetRoom), exit.TargetExit, requires), exit.RoomPosition.ToCore(),
+                world.AddExit(new MapEdge(name, exit.NameText(), World.NameOf(exit.TargetRoom), exit.TargetExit, requires), exit.RoomPosition.ToCore(),
                     ArrivalPosition(exit.TargetRoom, exit.TargetExit));
             }
         }
@@ -528,17 +528,17 @@ public partial class RoomValidator : Node
 
         foreach (AbilityRelic relic in room.All<AbilityRelic>())
         {
-            world.Graph.AddRelic(new MapRelic(name, relic.Name, relic.Ability));
+            world.Graph.AddRelic(new MapRelic(name, relic.NameText(), relic.Ability));
         }
 
         foreach (ItemPickup pickup in room.All<ItemPickup>())
         {
-            world.Graph.AddItem(new MapItem(name, pickup.Name, pickup.Item.Id));
+            world.Graph.AddItem(new MapItem(name, pickup.NameText(), pickup.Item.Id));
         }
 
         foreach (Lever lever in room.All<Lever>())
         {
-            world.Graph.AddItem(new MapItem(name, lever.Name, lever.Item.Id));
+            world.Graph.AddItem(new MapItem(name, lever.NameText(), lever.Item.Id));
         }
 
         if (room.All<MapGoal>().Any())
@@ -584,12 +584,12 @@ public partial class RoomValidator : Node
     private void AddSeams(Room room, string name, List<RoomExit> exits, List<Box> solids)
     {
         var waters = room.All<WaterBody>().Where(w => w.Area.Position.Y <= 0f && 0f <= w.Area.End.Y)
-            .Select(w => (w.Name.ToString(), w.PlayRegion)).ToList();
+            .Select(w => (w.NameText(), w.PlayRegion)).ToList();
         _seams.AddRoom(name, new SeamRoom(new Box(room.BoundsMin.X, room.BoundsMin.Y, room.BoundsMax.X, room.BoundsMax.Y), solids, waters,
-            room.All<Lift>().Select(l => l.Path).ToList(), exits.ToDictionary(e => e.Name.ToString(), e => e.Threshold)));
+            room.All<Lift>().Select(l => l.Path).ToList(), exits.ToDictionary(e => e.NameText(), e => e.Threshold)));
         foreach (RoomExit exit in exits.Where(e => e.TargetRoom != "" && e.TargetExit != ""))
         {
-            _seams.AddWay(name, exit.Name, World.NameOf(exit.TargetRoom), exit.TargetExit);
+            _seams.AddWay(name, exit.NameText(), World.NameOf(exit.TargetRoom), exit.TargetExit);
         }
     }
 
@@ -730,7 +730,7 @@ public partial class RoomValidator : Node
             int barring = exits.Count(e => e.Door == door);
             if (barring != 1)
             {
-                problem($"locked door {door.Name} bars {barring} exits (point one exit's Door at it)");
+                problem($"locked door {door.NameText()} bars {barring} exits (point one exit's Door at it)");
             }
         }
 
@@ -739,14 +739,14 @@ public partial class RoomValidator : Node
             Requirement requires = exit.Requirement;
             if (exit.Door is { } door && requires.Options.Any(o => !o.Items.Contains(door.Item.Id)))
             {
-                problem($"exit {exit.Name} is barred by {door.Name}, so every alternative of its requirement needs {door.Item.Id} (it is \"{exit.Requires}\")");
+                problem($"exit {exit.NameText()} is barred by {door.NameText()}, so every alternative of its requirement needs {door.Item.Id} (it is \"{exit.Requires}\")");
             }
 
             WayBack? arrival = ArrivalOf(exit);
             if (exit.Door is { } barred && !exit.OneWay && arrival is { } way
                 && (!Requirement.TryParse(way.Requires, out Requirement back, out _) || back.Options.Any(o => !o.Items.Contains(barred.Item.Id))))
             {
-                problem($"exit {exit.Name} is barred by {barred.Name}, so the way back ({exit.TargetRoom}:{exit.TargetExit}) needs {barred.Item.Id} " +
+                problem($"exit {exit.NameText()} is barred by {barred.NameText()}, so the way back ({exit.TargetRoom}:{exit.TargetExit}) needs {barred.Item.Id} " +
                         "too, in every alternative (or mark this exit OneWay)");
             }
 
@@ -755,7 +755,7 @@ public partial class RoomValidator : Node
                 bool here = exit.Door?.Item.Id == item, there = arrival?.DoorItem == item;
                 if (!here && !there)
                 {
-                    problem($"exit {exit.Name} needs {item}, but no locked door for it bars this way (on either side)");
+                    problem($"exit {exit.NameText()} needs {item}, but no locked door for it bars this way (on either side)");
                 }
             }
         }
@@ -764,11 +764,11 @@ public partial class RoomValidator : Node
         {
             if (World.Definition.Item(pickup.Item.Id) != pickup.Item)
             {
-                problem($"item {pickup.Name} lays {pickup.Item.Id} ({pickup.Item.ResourcePath}), which is not one of the world's items");
+                problem($"item {pickup.NameText()} lays {pickup.Item.Id} ({pickup.Item.ResourcePath}), which is not one of the world's items");
             }
             else if (pickup.Item.Kind == ItemKind.Mechanism)
             {
-                problem($"item {pickup.Name} lays {pickup.Item.Id}, a mechanism: a Lever sets one, nothing picks it up");
+                problem($"item {pickup.NameText()} lays {pickup.Item.Id}, a mechanism: a Lever sets one, nothing picks it up");
             }
         }
 
@@ -776,7 +776,7 @@ public partial class RoomValidator : Node
         {
             if (World.Definition.Item(lever.Item.Id) != lever.Item || lever.Item.Kind != ItemKind.Mechanism)
             {
-                problem($"lever {lever.Name} sets {lever.Item.Id} ({lever.Item.ResourcePath}), which is not one of the world's mechanisms");
+                problem($"lever {lever.NameText()} sets {lever.Item.Id} ({lever.Item.ResourcePath}), which is not one of the world's mechanisms");
             }
         }
     }
@@ -810,7 +810,7 @@ public partial class RoomValidator : Node
 
     private void CheckExit(RoomExit exit, string path, bool inside, System.Action<string> problem)
     {
-        string name = exit.Name;
+        string name = exit.NameText();
         if (!inside)
         {
             problem($"exit {name} is outside the camera bounds");
@@ -866,7 +866,7 @@ public partial class RoomValidator : Node
 
     private static IEnumerable<Node> Descendants(Node node)
     {
-        foreach (Node child in node.GetChildren())
+        foreach (Node child in node.Children())
         {
             yield return child;
             foreach (Node nested in Descendants(child))

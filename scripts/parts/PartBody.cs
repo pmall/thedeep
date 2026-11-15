@@ -252,7 +252,7 @@ public partial class PartBody : Node3D
         /// <summary>The frames the profile is swept along, reused every frame.</summary>
         public readonly List<PathFrame> Path = new();
         /// <summary>The mesh arrays, kept and written in place every frame.</summary>
-        public readonly KitMesh.Buffers Arrays = new(kept: true);
+        public readonly KitMesh.Buffers Arrays = new();
 
         /// <summary>What drawing the chain <paramref name="spec"/> with <paramref name="count"/> points reuses.</summary>
         public ChainMesh(PartChain spec, int count)

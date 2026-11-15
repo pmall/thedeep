@@ -10,6 +10,8 @@ namespace TheDeep;
 /// </summary>
 public partial class FalseWall : Node3D, IWalkedThrough
 {
+    private static readonly StringName FaceName = "Face";
+
     /// <summary>Width, height and depth, meters, like a block's.</summary>
     [Export] public Vector3 Size { get; set; } = new(2f, 4f, 4f);
 
@@ -29,7 +31,7 @@ public partial class FalseWall : Node3D, IWalkedThrough
 
     public override void _Ready()
     {
-        _face = new MeshInstance3D { Name = "Face", Mesh = new BlockMesh { Size = Size, Bevel = 0.05f }, MaterialOverride = Material };
+        _face = new MeshInstance3D { Name = FaceName, Mesh = new BlockMesh { Size = Size, Bevel = 0.05f }, MaterialOverride = Material };
         AddChild(_face);
     }
 
@@ -40,7 +42,7 @@ public partial class FalseWall : Node3D, IWalkedThrough
         if (_face is { } face)
         {
             Tween tween = CreateTween();
-            tween.TweenProperty(face, "transparency", 1f, FadeTime).SetTrans(Tween.TransitionType.Sine);
+            tween.TweenProperty(face, Names.Transparency, 1f, FadeTime).SetTrans(Tween.TransitionType.Sine);
             tween.TweenCallback(Callable.From(() => face.Visible = false));
         }
     }

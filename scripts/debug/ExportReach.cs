@@ -44,8 +44,8 @@ public sealed class ExportReach
 
     private void Visit(Node root, Node node, List<(GodotObject, string)> reached)
     {
-        Reach(node, root == node ? node.Name.ToString() : root.GetPathTo(node).ToString(), reached);
-        foreach (Node child in node.GetChildren())
+        Reach(node, root == node ? node.NameText() : root.PathTextTo(node), reached);
+        foreach (Node child in node.Children())
         {
             Visit(root, child, reached);
         }

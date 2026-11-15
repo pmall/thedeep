@@ -114,13 +114,12 @@ public partial class BackdropArchitecture : Node3D
 
             var instance = new MultiMeshInstance3D
             {
-                Name = $"Row{index}{piece}{(length > 0 ? length : "")}",
                 Multimesh = multimesh,
                 MaterialOverride = MaterialFor(piece),
                 CastShadow = GeometryInstance3D.ShadowCastingSetting.Off,
                 GIMode = GeometryInstance3D.GIModeEnum.Disabled,
                 Position = new Vector3(0f, 0f, -depth),
-            };
+            }.Named($"Row{index}{piece}{(length > 0 ? length : "")}");
             instance.SetInstanceShaderParameter(VeilParameter, veil);
             AddChild(instance);
         }

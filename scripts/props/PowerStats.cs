@@ -16,10 +16,13 @@ public static class PowerStats
     };
 
     /// <summary>The id of the line naming <paramref name="stat"/>.</summary>
-    public static StringName NameLine(PowerStat stat) => $"powerup.{Key(stat)}.name";
+    public static StringName NameLine(PowerStat stat) => NameLines[stat];
 
     /// <summary>The id of the line saying what <paramref name="stat"/> does, shown when its power-up is taken.</summary>
-    public static StringName HintLine(PowerStat stat) => $"powerup.{Key(stat)}.hint";
+    public static StringName HintLine(PowerStat stat) => HintLines[stat];
+
+    private static readonly NameCache<PowerStat> NameLines = new(s => $"powerup.{Key(s)}.name");
+    private static readonly NameCache<PowerStat> HintLines = new(s => $"powerup.{Key(s)}.hint");
 
     /// <summary>What the banner says as a power-up raising <paramref name="stat"/> is taken.</summary>
     public static Announcement Said(PowerStat stat) => new(NameLine(stat), HintLine(stat));

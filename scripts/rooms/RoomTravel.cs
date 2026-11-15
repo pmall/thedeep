@@ -97,7 +97,7 @@ public partial class RoomTravel : Node
         MapRoom? here = World.Map.Find(World.RoomName);
         NVector2 hereOffset = here?.Offset ?? NVector2.Zero;
         string targetExit = exit.TargetExit;
-        string leaving = World.RoomName, leavingExit = exit.Name, target = exit.TargetRoom;
+        string leaving = World.RoomName, leavingExit = exit.NameText(), target = exit.TargetRoom;
 
         // The arrival exit's position is only known once the room is loaded: place the room on the map after.
         Room room = World.Load(World.Scene(target), map: false);
@@ -113,10 +113,10 @@ public partial class RoomTravel : Node
         Threshold to = arrival.Threshold;
         World.Enter(room, ExitMath.RoomOffset(hereOffset, from, to.Marker));
         World.Map.Take(leaving, leavingExit);
-        World.Map.Take(World.RoomName, arrival.Name);
+        World.Map.Take(World.RoomName, arrival.NameText());
         NVector2 position = to.Arrival(Player.BodySize, room.Solids(), along: player.X - from.X);
         NVector2 keep = to.ArrivalVelocity(velocity, ClimbRise * Player.Tuning.JumpTakeOffSpeed);
-        GD.Print($"[travel] {leaving}:{leavingExit} → {World.RoomName}:{arrival.Name}, from {player} moving {velocity} ({Player.CurrentState.GetType().Name}), to {position} moving {keep}");
+        GD.Print($"[travel] {leaving}:{leavingExit} → {World.RoomName}:{arrival.NameText()}, from {player} moving {velocity} ({Player.CurrentState.GetType().Name}), to {position} moving {keep}");
         Player.Arrive(position.OnPlane(), keep.OnPlane());
         Entry = arrival;
         if (arrival.ArrivalSide != 0 && to.Side == ExitSide.Down)

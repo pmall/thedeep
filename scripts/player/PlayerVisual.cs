@@ -15,6 +15,10 @@ namespace TheDeep;
 /// </summary>
 public partial class PlayerVisual : Node3D
 {
+    private static readonly StringName UpperArmR = nameof(HumanoidBone.UpperArmR);
+    private static readonly StringName FootR = "FootR";
+    private static readonly StringName FootL = "FootL";
+
     [Export] public PartBody Body { get; set; } = null!;
 
     /// <summary>The light the pilgrim carries; it moves into the lantern at the end of <see cref="LanternChain"/>.</summary>
@@ -56,12 +60,12 @@ public partial class PlayerVisual : Node3D
     public override void _Ready()
     {
         _rig = HumanoidRig.From(Body);
-        _shoulder = Body.Joint(nameof(HumanoidBone.UpperArmR));
+        _shoulder = Body.Joint(UpperArmR);
         _blade = Body.Joint(BladeJoint);
         if (_blade is not null)
         {
             // The blade's length is its part's: whatever mesh the assembly hangs there.
-            foreach (Node child in _blade.GetChildren())
+            foreach (Node child in _blade.Children())
             {
                 if (child is MeshInstance3D part && part.Mesh is not null)
                 {
@@ -182,7 +186,7 @@ public partial class PlayerVisual : Node3D
 
         Body.StepChains(delta, onFloor && !float.IsNaN(floorY) ? floorY + 0.02f : float.NaN);
 
-        if (_motion.Footfall != 0 && Body.Joint(_motion.Footfall > 0 ? "FootR" : "FootL") is { } foot)
+        if (_motion.Footfall != 0 && Body.Joint(_motion.Footfall > 0 ? FootR : FootL) is { } foot)
         {
             Footfall?.Invoke(float.IsNaN(floorY) ? foot.GlobalPosition : foot.GlobalPosition with { Y = floorY }, _motion.Footfall);
         }

@@ -14,8 +14,8 @@ public partial class Proclamation : Marker3D, IAnnounces
     [Export] public Vector2 Size { get; set; } = new(6f, 4f);
 
     /// <summary>Who speaks (a line naming the speaker, its caption over the words) and what it says.</summary>
-    [Export] public StringName SpeakerLine { get; set; } = "";
-    [Export] public StringName TextLine { get; set; } = "";
+    [Export] public StringName SpeakerLine { get; set; } = Names.None;
+    [Export] public StringName TextLine { get; set; } = Names.None;
 
     /// <inheritdoc/>
     public System.Collections.Generic.IEnumerable<StringName> LineIds => new[] { SpeakerLine, TextLine };

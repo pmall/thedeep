@@ -58,22 +58,22 @@ public partial class PlaythroughCheck : Node
             {
                 foreach (RoomExit exit in room.Exits().Where(e => e.Open && ResourceLoader.Exists(e.TargetRoom)))
                 {
-                    map.AddEdge(new MapEdge(name, exit.Name, World.NameOf(exit.TargetRoom), exit.TargetExit, exit.Requirement));
+                    map.AddEdge(new MapEdge(name, exit.NameText(), World.NameOf(exit.TargetRoom), exit.TargetExit, exit.Requirement));
                 }
 
                 foreach (AbilityRelic relic in room.All<AbilityRelic>())
                 {
-                    map.AddRelic(new MapRelic(name, relic.Name, relic.Ability));
+                    map.AddRelic(new MapRelic(name, relic.NameText(), relic.Ability));
                 }
 
                 foreach (ItemPickup pickup in room.All<ItemPickup>())
                 {
-                    map.AddItem(new MapItem(name, pickup.Name, pickup.Item.Id));
+                    map.AddItem(new MapItem(name, pickup.NameText(), pickup.Item.Id));
                 }
 
                 foreach (Lever lever in room.All<Lever>())
                 {
-                    map.AddItem(new MapItem(name, lever.Name, lever.Item.Id));
+                    map.AddItem(new MapItem(name, lever.NameText(), lever.Item.Id));
                 }
 
                 if (room.All<MapGoal>().Any())
@@ -193,13 +193,13 @@ public partial class PlaythroughCheck : Node
 
                 if (door.Opened && door.Gate.Raised)
                 {
-                    _log.Add($"{World.RoomName}: {door.Name} open with {door.Item.Id}");
+                    _log.Add($"{World.RoomName}: {door.NameText()} open with {door.Item.Id}");
                     _doors++;
                     Begin(Phase.Cross);
                 }
                 else if (_ticks > 600)
                 {
-                    Fail($"in {World.RoomName}, coming near {door.Name} holding {door.Item.Id} did not open it");
+                    Fail($"in {World.RoomName}, coming near {door.NameText()} holding {door.Item.Id} did not open it");
                 }
 
                 break;
@@ -332,11 +332,11 @@ public partial class PlaythroughCheck : Node
         Hold(InputActions.Interact, _ticks % 20 == 10);
         if (_ticks > 600)
         {
-            Fail($"in {World.RoomName}, interact at the lever {lever.Name} did not pull it");
+            Fail($"in {World.RoomName}, interact at the lever {lever.NameText()} did not pull it");
         }
         else if (lever.Pulled)
         {
-            _log.Add($"{World.RoomName}: pulled {lever.Name} ({lever.Item.Id})");
+            _log.Add($"{World.RoomName}: pulled {lever.NameText()} ({lever.Item.Id})");
             _levers++;
             _lever = null;
             Hold(InputActions.Interact, false);

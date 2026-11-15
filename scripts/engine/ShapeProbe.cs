@@ -8,10 +8,12 @@ namespace TheDeep;
 /// </summary>
 public partial class ShapeProbe : ShapeCast3D
 {
+    private static readonly StringName ProbeName = nameof(ShapeProbe);
+
     /// <summary>A new probe against bodies on <paramref name="mask"/>; it tests once <see cref="Attach"/>ed with its shape.</summary>
     public static ShapeProbe For(uint mask) => new()
     {
-        Name = nameof(ShapeProbe),
+        Name = ProbeName,
         TopLevel = true,
         Enabled = false,
         ExcludeParent = false,

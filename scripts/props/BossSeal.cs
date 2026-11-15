@@ -13,9 +13,9 @@ public partial class BossSeal : Arena, IAnnounces
     [Export] public Machine Boss { get; set; } = null!;
 
     /// <summary>Banner lines when the fight starts (the boss's name) and when it ends.</summary>
-    [Export] public StringName NameLine { get; set; } = "";
-    [Export] public StringName FallenLine { get; set; } = "";
-    [Export] public StringName FallenHintLine { get; set; } = "";
+    [Export] public StringName NameLine { get; set; } = Names.None;
+    [Export] public StringName FallenLine { get; set; } = Names.None;
+    [Export] public StringName FallenHintLine { get; set; } = Names.None;
 
     /// <summary>How hard the camera shakes as the boss breaks (<see cref="SideCamera.AddShake"/>).</summary>
     [Export] public float FallenShake { get; set; } = 0.5f;
@@ -24,7 +24,7 @@ public partial class BossSeal : Arena, IAnnounces
     public IEnumerable<StringName> LineIds => new[] { NameLine, FallenLine, FallenHintLine };
 
     /// <summary>What the banner says as the fight begins: the boss's name alone.</summary>
-    public Announcement Named => new(NameLine, "");
+    public Announcement Named => new(NameLine, Names.None);
 
     /// <summary>What the banner says as the boss breaks.</summary>
     public Announcement Fallen => new(FallenLine, FallenHintLine);

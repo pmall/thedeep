@@ -186,7 +186,7 @@ public partial class LookDevDriver : Node
             }
 
             // A request made now returns the last finished frame: the settled shot.
-            string path = Path.Combine(OutputDir, $"{Room.Name}-{spot.Name}.png");
+            string path = Path.Combine(OutputDir, $"{Room.NameText()}-{spot.NameText()}.png");
             Interlocked.Increment(ref _pendingSaves);
             _grabber.Request(bytes => Task.Run(() => Save(bytes, format, path)));
             _saved.Add(Path.GetFileName(path));
@@ -194,11 +194,11 @@ public partial class LookDevDriver : Node
 
         if (_saved.Count == 0)
         {
-            _problems.Enqueue($"room {Room.Name} has no PhotoSpot");
+            _problems.Enqueue($"room {Room.NameText()} has no PhotoSpot");
         }
 
         // 2. Reels, shot with a close camera.
-        foreach (MotionReel.Reel reel in MotionReel.For(Room.Name))
+        foreach (MotionReel.Reel reel in MotionReel.For(Room.NameText()))
         {
             string reelDir = Path.Combine(OutputDir, reel.Folder);
             Directory.CreateDirectory(reelDir);
@@ -217,7 +217,7 @@ public partial class LookDevDriver : Node
                 Machine? subject = segment.Subject is { } name ? Room.FindChild(name, true, false) as Machine : null;
                 if (segment.Subject is not null && subject is null)
                 {
-                    _problems.Enqueue($"reel {reel.Folder}: no machine named {segment.Subject} in {Room.Name}");
+                    _problems.Enqueue($"reel {reel.Folder}: no machine named {segment.Subject} in {Room.NameText()}");
                 }
 
                 _segment = segment;
@@ -346,7 +346,7 @@ public partial class LookDevDriver : Node
                 .ToArray(),
             ["frames"] = _frame.Count,
             ["gpu_name"] = RenderingServer.GetVideoAdapterName(),
-            ["godot"] = (string)Engine.GetVersionInfo()["string"],
+            ["godot"] = EngineVersion.Text,
         };
         File.WriteAllText(Path.Combine(OutputDir, PerfFile), JsonSerializer.Serialize(perf, PerfJson));
 

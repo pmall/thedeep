@@ -25,6 +25,13 @@ namespace TheDeep;
 /// </summary>
 public partial class HeatColumn : Node3D
 {
+    private static readonly StringName PlumeName = "Plume";
+    private static readonly StringName GrateName = "Grate";
+    private static readonly StringName PostWestName = "PostWest";
+    private static readonly StringName PostEastName = "PostEast";
+    private static readonly StringName SizeParameter = "size";
+    private static readonly StringName StrengthParameter = "strength";
+
     /// <summary>Width (X) and height (Y) of the column, rising from the node's origin, meters.</summary>
     [Export] public Vector2 Size { get; set; } = new(2f, 6f);
 
@@ -92,8 +99,8 @@ public partial class HeatColumn : Node3D
             return;
         }
 
-        SeamEnd frame = Through.GetChildren().OfType<SeamEnd>().FirstOrDefault()
-            ?? throw new System.InvalidOperationException($"heat {Name} rises through {Through.Name}, an exit no seam brick frames");
+        SeamEnd frame = Through.Children().OfType<SeamEnd>().FirstOrDefault()
+            ?? throw new System.InvalidOperationException($"heat {this.NameText()} rises through {Through.NameText()}, an exit no seam brick frames");
         float end = Through.Side == ExitSide.Up ? GlobalPosition.Y : GlobalPosition.Y + Size.Y;
         Box column = frame.Profile.Frame.Heat(Through.Side, Through.RoomPosition.ToCore(), end);
         GlobalPosition = new Vector3(0.5f * (column.MinX + column.MaxX), column.MinY, GlobalPosition.Z);
@@ -128,13 +135,12 @@ public partial class HeatColumn : Node3D
         {
             var glow = new OmniLight3D
             {
-                Name = $"Glow{i}",
                 Position = new Vector3(0f, low + (high - low) * i / gaps, GlowAhead),
                 LightEnergy = GlowEnergy,
                 OmniAttenuation = 1.3f,
                 OmniRange = range,
                 ShadowEnabled = false,
-            };
+            }.Named($"Glow{i}");
             _glows.Add(glow);
             AddChild(glow);
         }
@@ -158,12 +164,12 @@ public partial class HeatColumn : Node3D
 
         _sheet = new MeshInstance3D
         {
-            Name = "Plume",
+            Name = PlumeName,
             Mesh = new QuadMesh { Size = Size, Material = Plume },
             Position = new Vector3(0f, 0.5f * Size.Y, SheetZ),
             CastShadow = GeometryInstance3D.ShadowCastingSetting.Off,
         };
-        _sheet.SetInstanceShaderParameter("size", Size);
+        _sheet.SetInstanceShaderParameter(SizeParameter, Size);
         AddChild(_sheet);
 
         ShowStrength(1f);
@@ -179,7 +185,7 @@ public partial class HeatColumn : Node3D
 
         var grate = new MeshInstance3D
         {
-            Name = "Grate",
+            Name = GrateName,
             Mesh = new GrateMesh { Size = new Vector3(Size.X, GrateThickness, VentDepth), Spacing = 0.28f, Bar = 0.07f },
             MaterialOverride = Source,
             Position = new Vector3(0f, 0.02f, 0f),
@@ -189,7 +195,7 @@ public partial class HeatColumn : Node3D
         {
             AddChild(new MeshInstance3D
             {
-                Name = side < 0f ? "PostWest" : "PostEast",
+                Name = side < 0f ? PostWestName : PostEastName,
                 Mesh = new BoxMesh { Size = new Vector3(PostWidth, PostHeight, PostDepth) },
                 MaterialOverride = Source,
                 Position = new Vector3(side * (0.5f * Size.X + 0.5f * PostWidth), 0.5f * PostHeight + 0.01f, 0f),
@@ -205,7 +211,7 @@ public partial class HeatColumn : Node3D
         }
 
         _strength = strength;
-        _sheet?.SetInstanceShaderParameter("strength", strength);
+        _sheet?.SetInstanceShaderParameter(StrengthParameter, strength);
         foreach (OmniLight3D glow in _glows)
         {
             glow.LightEnergy = GlowEnergy * (0.5f + 0.5f * strength);

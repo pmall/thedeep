@@ -7,10 +7,10 @@ namespace TheDeep;
 public partial class RigJoint : Resource
 {
     /// <summary>Unique within the assembly. Humanoid rigs use the <see cref="HumanoidBone"/> names.</summary>
-    [Export] public StringName Name { get; set; } = "";
+    [Export] public StringName Name { get; set; } = Names.None;
 
     /// <summary>The joint this one hangs from; empty for a root joint (on the assembly's origin).</summary>
-    [Export] public StringName Parent { get; set; } = "";
+    [Export] public StringName Parent { get; set; } = Names.None;
 
     /// <summary>Position on the parent joint at rest, meters (X forward, Y up, Z toward the camera when facing right).</summary>
     [Export] public Vector3 Offset { get; set; }

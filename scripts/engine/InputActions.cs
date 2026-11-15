@@ -55,4 +55,10 @@ public static class InputActions
     public static readonly StringName DebugToggleHud = "debug_toggle_hud";
     /// <summary>Shows or hides the controls manual (<see cref="ControlsManual"/>).</summary>
     public static readonly StringName DebugToggleManual = "debug_toggle_manual";
+
+    /// <summary>The events bound to <paramref name="action"/>, in order (the engine's array released at once).</summary>
+    public static InputEvent[] Bindings(StringName action)
+    {
+        return EngineArrays.Take(InputMap.ActionGetEvents(action));
+    }
 }

@@ -151,15 +151,15 @@ public partial class TextStyle : Resource
     /// <summary>Dresses <paramref name="label"/> in the font at <paramref name="size"/> in <paramref name="ink"/>; with <paramref name="rim"/>, ringed for the world behind it.</summary>
     public void Dress(Label label, int size, Color ink, bool rim = false)
     {
-        label.AddThemeFontOverride("font", Font);
-        label.AddThemeFontSizeOverride("font_size", size);
-        label.AddThemeColorOverride("font_color", ink);
+        label.AddThemeFontOverride(ThemeNames.Font, Font);
+        label.AddThemeFontSizeOverride(ThemeNames.FontSize, size);
+        label.AddThemeColorOverride(ThemeNames.FontColor, ink);
         if (rim)
         {
-            label.AddThemeColorOverride("font_shadow_color", Rim);
-            label.AddThemeConstantOverride("shadow_outline_size", RimWidth);
-            label.AddThemeConstantOverride("shadow_offset_x", 0);
-            label.AddThemeConstantOverride("shadow_offset_y", RimDrop);
+            label.AddThemeColorOverride(ThemeNames.FontShadowColor, Rim);
+            label.AddThemeConstantOverride(ThemeNames.ShadowOutlineSize, RimWidth);
+            label.AddThemeConstantOverride(ThemeNames.ShadowOffsetX, 0);
+            label.AddThemeConstantOverride(ThemeNames.ShadowOffsetY, RimDrop);
         }
     }
 }

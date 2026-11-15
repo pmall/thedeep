@@ -52,11 +52,10 @@ public partial class RackRow : Node3D
 
             var piece = new MeshInstance3D
             {
-                Name = $"Piece{slot.Index}",
                 Mesh = Variants[slot.Variant],
                 MaterialOverride = Material,
                 Position = new Vector3(x, 0f, 0f),
-            };
+            }.Named($"Piece{slot.Index}");
             if (slot.Toppled)
             {
                 // Laid over toward +X, its base against the slot's left edge.

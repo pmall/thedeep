@@ -17,6 +17,9 @@ namespace TheDeep;
 /// </summary>
 public partial class HeatCheck : Node
 {
+    private static readonly NodePath SlagPath = "Slag";
+    private static readonly NodePath VentPath = "Heat/Vent";
+
     /// <summary>The running game's pilgrim.</summary>
     public required Player Player { get; init; }
     /// <summary>The running game's world: its rooms, and the one loaded.</summary>
@@ -64,10 +67,10 @@ public partial class HeatCheck : Node
     private Vector2 P => new(Player.GlobalPosition.X, Player.GlobalPosition.Y);
 
     /// <summary>The slag channel of the room under check, found on first use.</summary>
-    private Box Channel => (_slag ??= World.Room.GetNode<SlagBody>("Slag")).PlayRegion;
+    private Box Channel => (_slag ??= World.Room.GetNode<SlagBody>(SlagPath)).PlayRegion;
 
     /// <summary>The vent's heat, on the cavern's floor, found on first use.</summary>
-    private Box Vent => (_vent ??= World.Room.GetNode<HeatColumn>("Heat/Vent")).Region;
+    private Box Vent => (_vent ??= World.Room.GetNode<HeatColumn>(VentPath)).Region;
 
     /// <summary>Standing on the west bank, clear of the channel, in control.</summary>
     private bool OnWestBank => Player.InControl && Player.IsOnFloor() && P.X < Channel.MinX - 0.4f && P.Y > Channel.MaxY - 1f;

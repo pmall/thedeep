@@ -13,6 +13,8 @@ namespace TheDeep;
 /// </summary>
 public partial class Hatch : SeamEnd
 {
+    private static readonly StringName StandpipeName = "Standpipe";
+
     /// <summary>
     /// Whether this flooded hatch in a roof holds its water down to the room's own (<see cref="SeamFrame.Pipe"/>): a column of water
     /// from the slab into the highest swum <see cref="WaterBody"/> under the hole, walled by two <see cref="Block"/>s whose mouth stops
@@ -40,19 +42,19 @@ public partial class Hatch : SeamEnd
 
         if (!Flooded)
         {
-            throw new InvalidOperationException($"Hatch on {exit.Name} hangs a standpipe but isn't flooded: the pipe holds the way's water");
+            throw new InvalidOperationException($"Hatch on {exit.NameText()} hangs a standpipe but isn't flooded: the pipe holds the way's water");
         }
 
-        Node room = exit.Owner ?? throw new InvalidOperationException($"{exit.Name} is in no room");
+        Node room = exit.Owner ?? throw new InvalidOperationException($"{exit.NameText()} is in no room");
         List<WaterBody> pools = Waters(room).Where(w => w.Swim).ToList();
         var pipe = frame.Pipe(exit.Side, marker, pools.Select(w => w.PlayRegion).ToList())
-            ?? throw new InvalidOperationException($"Hatch on {exit.Name} hangs a standpipe, but no swum water of its room lies under the whole hole");
+            ?? throw new InvalidOperationException($"Hatch on {exit.NameText()} hangs a standpipe, but no swum water of its room lies under the whole hole");
         WaterBody pool = pools[pipe.Pool];
         Vector3 at = GlobalPosition;
         Box c = pipe.Column;
         AddChild(new WaterBody
         {
-            Name = "Standpipe",
+            Name = StandpipeName,
             Size = new Vector2(c.MaxX - c.MinX, Profile.Depth + 0.1f),
             Depth = c.MaxY - c.MinY,
             Murk = pool.Murk,
@@ -67,7 +69,7 @@ public partial class Hatch : SeamEnd
         foreach ((string name, Box w) in new[] { ("PipeWest", pipe.West), ("PipeEast", pipe.East) })
         {
             var wall = BlockScene.Instantiate<Block>();
-            wall.Name = name;
+            wall.Named(name);
             wall.Size = new Vector3(w.MaxX - w.MinX, w.MaxY - w.MinY, Profile.Depth);
             wall.Position = new Vector3((w.MinX + w.MaxX) * 0.5f - at.X, (w.MinY + w.MaxY) * 0.5f - at.Y, 0f);
             wall.Surface = Surface;

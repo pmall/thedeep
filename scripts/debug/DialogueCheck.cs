@@ -97,7 +97,7 @@ public partial class DialogueCheck : Node
             }));
         _steps.Add(new("the pilgrim is free, the box closed, the conversation remembered", 1f,
             () => { },
-            () => Player.InControl && !Box.IsOpen && lamplighter.Spent && Session.Save.Collected.Contains($"{World.RoomName}/{lamplighter.Name}")
+            () => Player.InControl && !Box.IsOpen && lamplighter.Spent && Session.Save.Collected.Contains($"{World.RoomName}/{lamplighter.NameText()}")
                   && _speakers.Count == lines && _speakers.All(name => name.Length > 0) && _sizes.Count == 1 && _covered.Count == 0));
         _steps.Add(new("and it is not offered again", 1f,
             () => { },
@@ -110,8 +110,15 @@ public partial class DialogueCheck : Node
     {
         Vector3 from = conversation.GlobalPosition + new Vector3(-2f, 0.5f, 0f);
         var ray = PhysicsRayQueryParameters3D.Create(from, from + Vector3.Down * 30f, PhysicsLayers.Solid);
-        Godot.Collections.Dictionary hit = conversation.GetWorld3D().DirectSpaceState.IntersectRay(ray);
-        return hit.Count > 0 ? hit["position"].AsVector3() with { Z = 0f } : new Vector3(from.X, 0f, 0f);
+        using Godot.Collections.Dictionary hit = conversation.GetWorld3D().DirectSpaceState.IntersectRay(ray);
+        if (hit.Count == 0)
+        {
+            return new Vector3(from.X, 0f, 0f);
+        }
+
+        using Variant key = "position";
+        using Variant position = hit[key];
+        return position.AsVector3() with { Z = 0f };
     }
 
     private bool PromptInSight(Node3D prompt) => InSight(prompt, Player);
@@ -176,7 +183,7 @@ public partial class DialogueCheck : Node
         else if (_ticks > step.Seconds * 60f)
         {
             _problems.Add($"step {_index + 1} \"{step.What}\" failed in {step.Seconds} s (at {Player.GlobalPosition}, talking " +
-                          $"{Conversations.Talking}, offered {Conversations.Offered?.Name}, line {Conversations.Flow?.Index}, speakers " +
+                          $"{Conversations.Talking}, offered {Conversations.Offered?.NameText()}, line {Conversations.Flow?.Index}, speakers " +
                           $"{string.Join(",", _speakers)}, box sizes {string.Join(" ", _sizes)}; {string.Join("; ", _covered)})");
             Finish();
         }

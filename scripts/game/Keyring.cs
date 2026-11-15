@@ -57,7 +57,7 @@ public partial class Keyring : Node
         if (arrival.Door is { Opened: false } door && Player.Items.Holds(door.Item.Id))
         {
             door.Settle();
-            Session.Remember(door.Name);
+            Session.Remember(door.NameText());
         }
     }
 
@@ -88,7 +88,7 @@ public partial class Keyring : Node
         {
             lever.Pull();
             Player.Items.Take(lever.Item.Id);
-            Session.Remember(lever.Name);
+            Session.Remember(lever.NameText());
             Camera.AddShake(0.1f);
             Pulled?.Invoke(lever);
         }
@@ -108,7 +108,7 @@ public partial class Keyring : Node
                 if (mechanism || door.Near(p))
                 {
                     door.Open();
-                    Session.Remember(door.Name);
+                    Session.Remember(door.NameText());
                     Camera.AddShake(0.15f);
                     Opened?.Invoke(door);
                 }
@@ -159,7 +159,7 @@ public partial class Keyring : Node
         Player.Frozen = true;
         await pickup.Fly(Player, new Vector3(0f, 1.05f, 0f));
         Player.Items.Take(pickup.Item.Id);
-        Session.Remember(pickup.Name);
+        Session.Remember(pickup.NameText());
         Player.Frozen = false;
         _taking = false;
         Banner.Show(pickup.Item.Said);
@@ -172,7 +172,7 @@ public partial class Keyring : Node
         string name = World.NameOf(room.SceneFilePath);
         foreach (ItemPickup pickup in room.All<ItemPickup>())
         {
-            if (Session.ItemTaken(name, pickup.Name, pickup.Item.Id, Player.Items.Held))
+            if (Session.ItemTaken(name, pickup.NameText(), pickup.Item.Id, Player.Items.Held))
             {
                 pickup.Empty();
             }
@@ -180,7 +180,7 @@ public partial class Keyring : Node
 
         foreach (Lever lever in room.All<Lever>())
         {
-            if (Session.ItemTaken(name, lever.Name, lever.Item.Id, Player.Items.Held))
+            if (Session.ItemTaken(name, lever.NameText(), lever.Item.Id, Player.Items.Held))
             {
                 lever.Settle();
             }
@@ -188,7 +188,7 @@ public partial class Keyring : Node
 
         foreach (LockedDoor door in room.All<LockedDoor>())
         {
-            if (Session.Done(name, door.Name) || (door.Item.Kind == ItemKind.Mechanism && Player.Items.Holds(door.Item.Id)))
+            if (Session.Done(name, door.NameText()) || (door.Item.Kind == ItemKind.Mechanism && Player.Items.Holds(door.Item.Id)))
             {
                 door.Settle();
             }

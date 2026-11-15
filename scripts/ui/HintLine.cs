@@ -60,10 +60,10 @@ public partial class HintLine : CanvasLayer
         Mark.Draw += () => Mark.DrawCircle(Mark.Size * 0.5f, MarkSize * 0.5f, _color);
         Style.Dress(Words, Style.Body, Style.Ink);
         var words = new HBoxContainer { MouseFilter = Control.MouseFilterEnum.Ignore };
-        words.AddThemeConstantOverride("separation", Mathf.RoundToInt(Style.Padding.Y));
+        words.AddThemeConstantOverride(ThemeNames.Separation, Mathf.RoundToInt(Style.Padding.Y));
         words.AddChild(Mark);
         words.AddChild(Words);
-        Plate.AddThemeStyleboxOverride("panel", Style.NewPlate());
+        Plate.AddThemeStyleboxOverride(ThemeNames.Panel, Style.NewPlate());
         Plate.AddChild(words);
         Row.AddChild(Plate);
         Row.Modulate = Colors.White with { A = 0f };
@@ -106,7 +106,7 @@ public partial class HintLine : CanvasLayer
         _withdrawn = true;
         _tween?.Kill();
         _tween = CreateTween();
-        _tween.TweenProperty(Row, "modulate:a", 0f, Style.Hurried).SetTrans(Tween.TransitionType.Sine);
+        _tween.TweenProperty(Row, Names.ModulateAlpha, 0f, Style.Hurried).SetTrans(Tween.TransitionType.Sine);
         _tween.TweenCallback(Callable.From(() =>
         {
             _tween = null;
@@ -130,7 +130,7 @@ public partial class HintLine : CanvasLayer
         if (_shown >= ReadingTime.Seconds(_letters, LettersPerSecond, _queue.Waiting > 0 ? HoldWhenWaited : Hold))
         {
             _tween = CreateTween();
-            _tween.TweenProperty(Row, "modulate:a", 0f, _queue.Waiting > 0 ? Style.Hurried : Style.Leave).SetTrans(Tween.TransitionType.Sine);
+            _tween.TweenProperty(Row, Names.ModulateAlpha, 0f, _queue.Waiting > 0 ? Style.Hurried : Style.Leave).SetTrans(Tween.TransitionType.Sine);
             _tween.TweenCallback(Callable.From(Left));
         }
     }
@@ -149,7 +149,7 @@ public partial class HintLine : CanvasLayer
         _shown = 0f;
         _tween?.Kill();
         _tween = CreateTween();
-        _tween.TweenProperty(Row, "modulate:a", 1f, Style.Appear).SetTrans(Tween.TransitionType.Sine);
+        _tween.TweenProperty(Row, Names.ModulateAlpha, 1f, Style.Appear).SetTrans(Tween.TransitionType.Sine);
         _tween.TweenCallback(Callable.From(() => _tween = null));
     }
 

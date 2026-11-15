@@ -229,7 +229,7 @@ public partial class Main : Node3D
     /// </summary>
     public override void _ExitTree()
     {
-        foreach (Node child in GetChildren())
+        foreach (Node child in this.Children())
         {
             child.Free();
         }

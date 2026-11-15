@@ -86,7 +86,7 @@ public partial class TravelValidator : Node
             var room = World.Scene(path).Instantiate<Room>();
             foreach (RoomExit exit in Find(room).Where(e => e.TargetRoom != ""))
             {
-                _todo.Add((World.NameOf(path), exit.Name));
+                _todo.Add((World.NameOf(path), exit.NameText()));
             }
 
             room.Free();
@@ -108,7 +108,7 @@ public partial class TravelValidator : Node
 
     private static IEnumerable<RoomExit> Find(Node node)
     {
-        foreach (Node child in node.GetChildren())
+        foreach (Node child in node.Children())
         {
             if (child is RoomExit exit)
             {
@@ -257,7 +257,7 @@ public partial class TravelValidator : Node
 
         if (Arrival() is { } arrival && arrival.Threshold.Crossed(Player.Body))
         {
-            Fail($"arrived past the threshold of {arrival.Name}, at {Player.GlobalPosition}");
+            Fail($"arrived past the threshold of {arrival.NameText()}, at {Player.GlobalPosition}");
             return;
         }
 

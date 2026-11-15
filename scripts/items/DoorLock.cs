@@ -36,7 +36,7 @@ public partial class DoorLock : Node3D
     public void Release()
     {
         Tween tween = CreateTween();
-        tween.TweenProperty(Turning, "rotation_degrees:z", Turning.RotationDegrees.Z + TurnDegrees, TurnTime)
+        tween.TweenProperty(Turning, Names.RollDegrees, Turning.RotationDegrees.Z + TurnDegrees, TurnTime)
             .SetTrans(Tween.TransitionType.Back).SetEase(Tween.EaseType.Out);
         foreach (GeometryInstance3D glow in Glows)
         {

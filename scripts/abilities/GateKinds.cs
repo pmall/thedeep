@@ -21,10 +21,13 @@ public static class GateKinds
     };
 
     /// <summary>The line the pilgrim says meeting this gate without the ability.</summary>
-    public static StringName HintLine(Ability ability) => $"hint.gate.{Key(ability)}";
+    public static StringName HintLine(Ability ability) => HintLines[ability];
 
     /// <summary>The gate's word on the map's legend.</summary>
-    public static StringName MapWord(Ability ability) => $"map.gate.{Key(ability)}";
+    public static StringName MapWord(Ability ability) => MapWords[ability];
+
+    private static readonly NameCache<Ability> HintLines = new(a => $"hint.gate.{Key(a)}");
+    private static readonly NameCache<Ability> MapWords = new(a => $"map.gate.{Key(a)}");
 
     private static string Key(Ability ability) => ability switch
     {

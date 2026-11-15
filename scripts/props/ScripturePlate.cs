@@ -21,8 +21,8 @@ public partial class ScripturePlate : Node3D, IAnnounces
     [Export] public MeshInstance3D Glyphs { get; set; } = null!;
 
     /// <summary>Who wrote it (the banner's title) and what it says.</summary>
-    [Export] public StringName TitleLine { get; set; } = "";
-    [Export] public StringName TextLine { get; set; } = "";
+    [Export] public StringName TitleLine { get; set; } = Names.None;
+    [Export] public StringName TextLine { get; set; } = Names.None;
 
     /// <summary>Optional looks replacing the scene's: the post's, the plate's, the glyphs'.</summary>
     [ExportGroup("Look")]

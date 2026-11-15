@@ -18,7 +18,7 @@ namespace TheDeep;
 public partial class ActionPrompt : Node3D, INamesLines
 {
     /// <summary>The verb shown (a line id: "Pull", "Rest").</summary>
-    [Export] public StringName Verb { get; set; } = "";
+    [Export] public StringName Verb { get; set; } = Names.None;
 
     /// <summary>The input action asked for; its main button is shown.</summary>
     [Export] public StringName Action { get; set; } = InputActions.Interact;
@@ -56,7 +56,7 @@ public partial class ActionPrompt : Node3D, INamesLines
     private HoldProgress? _hold;
     private ButtonNames.Device _device;
     private ButtonNames.Device _drawn;
-    private StringName _drawnVerb = "";
+    private StringName _drawnVerb = Names.None;
     private float _shown;
 
     private CanvasLayer Screen => _layer ??= new CanvasLayer { Layer = ScreenLayer, Visible = false };

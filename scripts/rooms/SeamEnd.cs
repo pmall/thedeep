@@ -44,11 +44,11 @@ public abstract partial class SeamEnd : Node3D
 
     public override void _Ready()
     {
-        var exit = GetParent() as RoomExit ?? throw new InvalidOperationException($"{GetType().Name} {Name} must be the child of a RoomExit");
+        var exit = GetParent() as RoomExit ?? throw new InvalidOperationException($"{GetType().Name} {this.NameText()} must be the child of a RoomExit");
         if (exit.Threshold.IsHatch != FramesHatch)
         {
             throw new InvalidOperationException(
-                $"{GetType().Name} {Name} is on {exit.Name}, a {(exit.Threshold.IsHatch ? "hatch" : "doorway")}: it frames the other kind");
+                $"{GetType().Name} {this.NameText()} is on {exit.NameText()}, a {(exit.Threshold.IsHatch ? "hatch" : "doorway")}: it frames the other kind");
         }
 
         SeamFrame frame = Profile.Frame;
@@ -61,7 +61,7 @@ public abstract partial class SeamEnd : Node3D
         {
             Box b = solids[i];
             var block = BlockScene.Instantiate<Block>();
-            block.Name = PieceNames[i];
+            block.Named(PieceNames[i]);
             block.Size = new Vector3(b.MaxX - b.MinX, b.MaxY - b.MinY, Profile.Depth);
             block.Position = new Vector3((b.MinX + b.MaxX) * 0.5f, (b.MinY + b.MaxY) * 0.5f, 0f);
             block.Surface = Surface;
@@ -91,9 +91,9 @@ public abstract partial class SeamEnd : Node3D
         if (Flooded)
         {
             Box passage = frame.Passage(exit.Side, new System.Numerics.Vector2(exit.GlobalPosition.X, exit.GlobalPosition.Y));
-            WaterBody water = Waters(exit.Owner ?? throw new InvalidOperationException($"{exit.Name} is in no room"))
+            WaterBody water = Waters(exit.Owner ?? throw new InvalidOperationException($"{exit.NameText()} is in no room"))
                 .FirstOrDefault(w => w.Swim && w.PlayRegion.Overlaps(passage))
-                ?? throw new InvalidOperationException($"{GetType().Name} on {exit.Name} is flooded, but no swum water of its room reaches the opening");
+                ?? throw new InvalidOperationException($"{GetType().Name} on {exit.NameText()} is flooded, but no swum water of its room reaches the opening");
             water.Flood(passage);
         }
     }
@@ -145,7 +145,7 @@ public abstract partial class SeamEnd : Node3D
             }
 
             var block = BlockScene.Instantiate<Block>();
-            block.Name = $"{(w.MinY >= marker.Y ? "Head" : "Foot")}{++extra}";
+            block.Named($"{(w.MinY >= marker.Y ? "Head" : "Foot")}{++extra}");
             block.Size = new Vector3(local.MaxX - local.MinX, local.MaxY - local.MinY, Profile.Depth);
             block.Position = new Vector3((local.MinX + local.MaxX) * 0.5f, (local.MinY + local.MaxY) * 0.5f, 0f);
             block.Surface = Surface;
@@ -159,7 +159,7 @@ public abstract partial class SeamEnd : Node3D
     /// </summary>
     private static Box[] OtherFrame(RoomExit other, bool hole)
     {
-        SeamEnd? end = other.GetChildren().OfType<SeamEnd>().FirstOrDefault();
+        SeamEnd? end = other.Children().OfType<SeamEnd>().FirstOrDefault();
         if (end?.Profile is null)
         {
             return Array.Empty<Box>();
@@ -210,11 +210,10 @@ public abstract partial class SeamEnd : Node3D
             var size = new Vector3(p.Face.MaxX - p.Face.MinX, p.Face.MaxY - p.Face.MinY, z1 - z0);
             AddChild(new MeshInstance3D
             {
-                Name = $"Trim{i}",
                 Mesh = new BlockMesh { Size = size, Bevel = MathF.Min(0.04f, MathF.Min(size.X, size.Y) * 0.25f) },
                 MaterialOverride = p.Lining ? metal : look,
                 Position = new Vector3((p.Face.MinX + p.Face.MaxX) * 0.5f, (p.Face.MinY + p.Face.MaxY) * 0.5f, (z0 + z1) * 0.5f),
-            });
+            }.Named($"Trim{i}"));
         }
     }
 
@@ -236,13 +235,13 @@ public abstract partial class SeamEnd : Node3D
 
     /// <summary>The exits under <paramref name="node"/>, at any depth.</summary>
     private static IEnumerable<RoomExit> Exits(Node node) =>
-        node.GetChildren().SelectMany(child => child is RoomExit exit ? new[] { exit } : Exits(child));
+        node.Children().SelectMany(child => child is RoomExit exit ? new[] { exit } : Exits(child));
 
     /// <summary>The blocks under <paramref name="node"/>, at any depth.</summary>
     private static IEnumerable<Block> Blocks(Node node) =>
-        node.GetChildren().SelectMany(child => child is Block block ? new[] { block } : Blocks(child));
+        node.Children().SelectMany(child => child is Block block ? new[] { block } : Blocks(child));
 
     /// <summary>The water bodies under <paramref name="node"/>, at any depth.</summary>
     protected static IEnumerable<WaterBody> Waters(Node node) =>
-        node.GetChildren().SelectMany(child => child is WaterBody water ? new[] { water } : Waters(child));
+        node.Children().SelectMany(child => child is WaterBody water ? new[] { water } : Waters(child));
 }

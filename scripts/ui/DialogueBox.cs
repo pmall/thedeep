@@ -75,9 +75,9 @@ public partial class DialogueBox : CanvasLayer
         Root.SetAnchorsPreset(Control.LayoutPreset.FullRect);
         AddChild(Root);
         _plate = Style.NewPlate();
-        Panel.AddThemeStyleboxOverride("panel", _plate);
+        Panel.AddThemeStyleboxOverride(ThemeNames.Panel, _plate);
         var lines = new VBoxContainer { MouseFilter = Control.MouseFilterEnum.Ignore };
-        lines.AddThemeConstantOverride("separation", 4);
+        lines.AddThemeConstantOverride(ThemeNames.Separation, 4);
         Style.DressSpeaker(SpeakerLabel, Style.Ink); // its ink: the accent, once a room's is known (Show)
         Style.Dress(TextLabel, Style.Body, Style.Ink);
         lines.AddChild(SpeakerLabel);
@@ -131,7 +131,7 @@ public partial class DialogueBox : CanvasLayer
         }
 
         // As tall as the label stands with its longest line: its rows and the spacing between them.
-        float height = rows * font.GetHeight(Style.Body) + (rows - 1) * TextLabel.GetThemeConstant("line_spacing");
+        float height = rows * font.GetHeight(Style.Body) + (rows - 1) * TextLabel.GetThemeConstant(ThemeNames.LineSpacing);
         SpeakerLabel.CustomMinimumSize = new Vector2(width, 0f);
         TextLabel.CustomMinimumSize = new Vector2(width, Mathf.Ceil(height));
         Panel.ResetSize();

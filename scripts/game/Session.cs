@@ -256,7 +256,7 @@ public partial class Session : Node
     {
         _busy = true;
         Player.Vitality.Restore();
-        _pilgrimage.Rest(World.RoomName, shrine.Name);
+        _pilgrimage.Rest(World.RoomName, shrine.NameText());
         Write();
         shrine.Flare();
         Player.Velocity = Vector3.Zero;
@@ -278,7 +278,7 @@ public partial class Session : Node
         await relic.Absorb(Player, new Vector3(0f, 1.05f, 0f));
         Player.Visual.Moment = PilgrimMoment.None;
         Player.Abilities.Unlock(relic.Ability);
-        Remember(relic.Name);
+        Remember(relic.NameText());
         Player.Frozen = false;
         _busy = false;
         Banner.Show(relic.Said);
@@ -371,7 +371,7 @@ public partial class Session : Node
     }
 
     private Vector3 RespawnPoint(Room room) =>
-        room.All<Shrine>().FirstOrDefault(s => s.Name == Save.Shrine)?.GlobalPosition ?? room.SpawnPoint.GlobalPosition;
+        room.All<Shrine>().FirstOrDefault(s => s.NameText() == Save.Shrine)?.GlobalPosition ?? room.SpawnPoint.GlobalPosition;
 
     private void OnRoomLoaded(Room room)
     {
@@ -383,7 +383,7 @@ public partial class Session : Node
         _pilgrimage.Enter(name);
         foreach (AbilityRelic relic in room.All<AbilityRelic>())
         {
-            if (_pilgrimage.RelicEmpty(name, relic.Name, relic.Ability, Player.Abilities.Unlocked))
+            if (_pilgrimage.RelicEmpty(name, relic.NameText(), relic.Ability, Player.Abilities.Unlocked))
             {
                 relic.Empty();
             }
@@ -391,7 +391,7 @@ public partial class Session : Node
 
         foreach (Block block in room.Blocks().Where(b => b.Cracked))
         {
-            if (_pilgrimage.Done(name, block.Name))
+            if (_pilgrimage.Done(name, block.NameText()))
             {
                 block.Settle();
                 continue;
@@ -424,7 +424,7 @@ public partial class Session : Node
         foreach (LawBreak law in room.All<LawBreak>())
         {
             law.Player = Player;
-            if (_pilgrimage.Done(name, law.Name))
+            if (_pilgrimage.Done(name, law.NameText()))
             {
                 law.Settle();
                 continue;
@@ -437,14 +437,14 @@ public partial class Session : Node
     /// <summary>Cracked rock broken by the Drill: remembered (and saved) at once, so the way stays open.</summary>
     private void OnShattered(Block block)
     {
-        Remember(block.Name);
+        Remember(block.NameText());
         Camera.AddShake(0.25f);
     }
 
     /// <summary>A law broken: remembered (and saved) at once; the moment is the pilgrim's, so it holds still a breath.</summary>
     private async void OnLawBroke(LawBreak law)
     {
-        Remember(law.Name);
+        Remember(law.NameText());
         Camera.AddShake(0.6f);
         _busy = true;
         Player.Velocity = Vector3.Zero;
