@@ -46,6 +46,7 @@ public class MapDraftTests
     [InlineData("start A\nroom A Flooded\nway A -> Z", "never declared")]
     [InlineData("start A\nroom A Flooded\nroom A Frozen", "declared twice")]
     [InlineData("start A\nroom A Flooded\nrelic A Wings", "unknown ability")]
+    [InlineData("start A\nroom A Flooded\nrelic A 1", "unknown ability")]
     [InlineData("start A\nroom A Flooded\nwander A", "unknown statement")]
     [InlineData("room A Flooded", "no start room")]
     [InlineData("start A\nroom A Flooded\nway A => A", "line 3")]
