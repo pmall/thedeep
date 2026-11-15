@@ -4,7 +4,8 @@ using System.Linq;
 
 namespace TheDeep;
 
-/// <summary>Stretches along one axis, as the room check's hazard rules hold a bed, a bank or a roof to being unbroken.</summary>
+/// <summary>Stretches along one axis and what spans leave open of one: a bed, a bank or a roof the room checks hold unbroken, the
+/// standing ranges the reach planner finds between the solids over a floor.</summary>
 public static class Spans
 {
     /// <summary>The shortest stretch left open that counts as a gap, meters.</summary>

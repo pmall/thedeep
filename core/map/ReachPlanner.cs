@@ -6,96 +6,6 @@ using System.Numerics;
 namespace TheDeep;
 
 /// <summary>
-/// The base moveset's numbers (copied from <c>player_tuning.tres</c>, the single source), as the planner simulates them, with the
-/// body's size (<see cref="Width"/>, <see cref="Height"/>, meters: the pilgrim's capsule).
-/// </summary>
-public sealed record MoveLimits(
-    float RunSpeed, float AirAcceleration, float AirDeceleration, float AirDrag, float AirCarrySpeed, float JumpHeight, float JumpTimeToApex, float JumpCutFactor,
-    float FallGravityMultiplier, float ApexHangThreshold, float ApexGravityMultiplier, float MaxFallSpeed,
-    float DashDistance, float DashDuration, float DashExitSpeedFactor, int AirDashes,
-    float Width, float Height, float EdgeMargin = 0f, float LedgeAssist = 0f)
-{
-    /// <summary>
-    /// A clumsier pilgrim, for the slack report: jumps 18% lower, dashes 35% shorter, runs 20% slower, never takes off from the very
-    /// end of a ledge, and gets no ledge assist (it still climbs 2.5 m steps and crosses 7.5 m gaps). A way only these limits miss asks
-    /// for too exact play: jumps must not be exact (owner).
-    /// </summary>
-    public MoveLimits Clumsy() => this with
-    {
-        JumpHeight = JumpHeight * 0.82f,
-        DashDistance = DashDistance * 0.65f,
-        RunSpeed = RunSpeed * 0.8f,
-        EdgeMargin = 0.3f,
-        LedgeAssist = 0f,
-    };
-
-    /// <summary>The gravity of a rising jump, m/s² (positive down): what makes it peak at the jump height after the time to
-    /// apex.</summary>
-    public float Gravity => JumpMath.Gravity(JumpHeight, JumpTimeToApex);
-    /// <summary>The upward speed a jump starts with, m/s.</summary>
-    public float TakeOff => JumpMath.TakeOffSpeed(JumpHeight, JumpTimeToApex);
-}
-
-/// <summary>
-/// The Harpoon's numbers (from <c>player_tuning.tres</c>), for a planner that may also zip to anchors: range from the body's
-/// center, the nearest an anchor may be, the pull's top speed and acceleration, and the release (speed kept, lift).
-/// </summary>
-public sealed record HarpoonLimits(float Range, float MinDistance, float ZipSpeed, float ZipAcceleration, float ExitSpeedFactor, float ExitLift);
-
-/// <summary>
-/// Mag-grip's numbers (from <c>player_tuning.tres</c>), for a planner that may also walk on metal: the leap off a wall (speed away,
-/// share of a jump's take-off upward), how long after letting go the body can't grip again, the downward speed of a drop from under
-/// a ceiling and the speed away from the surface on letting go (m/s).
-/// </summary>
-public sealed record GripLimits(float LeapAwaySpeed, float LeapUpFactor, float RegrabDelay, float DropSpeed, float LetGoSpeed);
-
-/// <summary>An axis-aligned solid on the play plane.</summary>
-public readonly record struct Box(float MinX, float MinY, float MaxX, float MaxY)
-{
-    /// <summary>Whether the two boxes share some area; boxes that only touch along an edge do not.</summary>
-    public bool Overlaps(Box o) => MinX < o.MaxX && o.MinX < MaxX && MinY < o.MaxY && o.MinY < MaxY;
-
-    /// <summary>Whether the point lies in the box, its edges included.</summary>
-    public bool Contains(Vector2 p) => p.X >= MinX && p.X <= MaxX && p.Y >= MinY && p.Y <= MaxY;
-
-    /// <summary>Whether the other box lies wholly in this one, edges included.</summary>
-    public bool Contains(Box o) => o.MinX >= MinX && o.MaxX <= MaxX && o.MinY >= MinY && o.MaxY <= MaxY;
-
-    /// <summary>The box grown by <paramref name="margin"/> meters on every side.</summary>
-    public Box Grown(float margin) => new(MinX - margin, MinY - margin, MaxX + margin, MaxY + margin);
-
-    /// <summary>The box of the given <paramref name="size"/> (meters) centered on <paramref name="center"/>.</summary>
-    public static Box Around(Vector2 center, Vector2 size) =>
-        new(center.X - size.X * 0.5f, center.Y - size.Y * 0.5f, center.X + size.X * 0.5f, center.Y + size.Y * 0.5f);
-}
-
-/// <summary>
-/// A lift on the play plane: its platform at the lower stop (a solid there), carrying whoever stands on it <see cref="Rise"/> up.
-/// </summary>
-public readonly record struct LiftPath(Box Platform, float Rise);
-
-/// <summary>
-/// A floor the pilgrim can stand on: the top of a solid at <see cref="Y"/>, feet from <see cref="MinX"/> to <see cref="MaxX"/>;
-/// or, with <see cref="Swim"/>, a water's float line (the feet of a body floating on it).
-/// </summary>
-public readonly record struct Ledge(float Y, float MinX, float MaxX, bool Swim = false);
-
-/// <summary>
-/// One move tried from a take-off point (<see cref="ReachPlanner.GroundMoves"/>): held toward <see cref="Dir"/> (−1, 0, +1) from a run at
-/// that speed, a jump held for <see cref="JumpTicks"/> (−1: to the apex; 0: no jump, walking off the end), an air dash toward
-/// <see cref="Dir"/> (right when 0) at <see cref="DashTick"/> (−1: none), ticks counted from the take-off.
-/// </summary>
-public readonly record struct GroundMove(int Dir, int JumpTicks, int DashTick);
-
-/// <summary>
-/// One move as the planner flies it from a ledge (<see cref="ReachPlanner.Reach(IEnumerable{ValueTuple{Vector2, Vector2, int}}, IReadOnlyList{Box}, Action{Leap})"/>): the ledge it starts on (<see cref="From"/>), the
-/// take-off point, the move (its dash tick the one it came at), the feet tick by tick from the take-off (<see cref="Path"/>, walking
-/// to the edge first for a walk-off), the ledge it landed on (<see cref="Lands"/>, −1: none in time), and whether the flight was clean:
-/// landed on a floor touching no wall or ceiling on the way, no ledge assist, no water, no hazard.
-/// </summary>
-public sealed record Leap(int From, Vector2 TakeOff, GroundMove Move, IReadOnlyList<Vector2> Path, int Lands, bool Clean);
-
-/// <summary>
 /// What the base moveset can reach in one room, pure (the geometry sanity check, docs/long-term.md#any-order): the
 /// pilgrim's body as a box walks along ledges and is simulated tick by tick through jumps (full and cut),
 /// walk-offs and air dashes, with the real tuning numbers and collisions against the room's solids. From
@@ -1133,29 +1043,11 @@ public sealed class ReachPlanner
     private List<Ledge> FindLedges()
     {
         var ledges = new List<Ledge>();
-        float half = _m.Width * 0.5f;
         foreach (Box s in _solids)
         {
-            var free = new List<(float A, float B)> { (s.MinX, s.MaxX) };
-            var room = new Box(s.MinX - half, s.MaxY + Skin, s.MaxX + half, s.MaxY + _m.Height);
-            foreach (Box o in _solids.Concat(_hazards))
+            foreach ((float from, float to) in Clear(s.MinX, s.MaxX, s.MaxY))
             {
-                if (!o.Overlaps(room))
-                {
-                    continue;
-                }
-
-                // Feet can't be where the body would overlap o.
-                float cutA = o.MinX - half, cutB = o.MaxX + half;
-                free = free.SelectMany(f => Cut(f, cutA, cutB)).ToList();
-            }
-
-            foreach ((float a, float b) in free)
-            {
-                if (b - a > 0.05f)
-                {
-                    ledges.Add(new Ledge(s.MaxY, a, b));
-                }
+                ledges.Add(new Ledge(s.MaxY, from, to));
             }
         }
 
@@ -1171,21 +1063,25 @@ public sealed class ReachPlanner
             return ledges;
         }
 
-        float half = _m.Width * 0.5f;
         foreach (Box water in wet.Bodies)
         {
             float y = WaterMotion.FloatLine(water.MaxY, wet.Limits);
-            var free = new List<(float A, float B)> { (water.MinX, water.MaxX) };
-            var body = new Box(water.MinX - half, y + Skin, water.MaxX + half, y + _m.Height);
-            foreach (Box o in _solids.Concat(_hazards).Where(o => o.Overlaps(body)))
-            {
-                free = free.SelectMany(f => Cut(f, o.MinX - half, o.MaxX + half)).ToList();
-            }
-
-            ledges.AddRange(free.Where(f => f.B - f.A > 0.05f).Select(f => new Ledge(y, f.A, f.B, Swim: true)));
+            ledges.AddRange(Clear(water.MinX, water.MaxX, y).Select(f => new Ledge(y, f.From, f.To, Swim: true)));
         }
 
         return ledges;
+    }
+
+    /// <summary>
+    /// The stretches of [<paramref name="from"/>, <paramref name="to"/>] where feet at height <paramref name="y"/> keep the body clear
+    /// of every solid and hazard, wider than 5 cm.
+    /// </summary>
+    private IEnumerable<(float From, float To)> Clear(float from, float to, float y)
+    {
+        float half = _m.Width * 0.5f;
+        var body = new Box(from - half, y + Skin, to + half, y + _m.Height);
+        IEnumerable<(float, float)> blocked = _solids.Concat(_hazards).Where(o => o.Overlaps(body)).Select(o => (o.MinX - half, o.MaxX + half));
+        return Spans.Gaps(blocked, from, to).Where(f => f.To - f.From > 0.05f);
     }
 
     /// <summary>
@@ -1275,24 +1171,5 @@ public sealed class ReachPlanner
         }
 
         return -1;
-    }
-
-    private static IEnumerable<(float, float)> Cut((float A, float B) f, float a, float b)
-    {
-        if (b <= f.A || a >= f.B)
-        {
-            yield return f;
-            yield break;
-        }
-
-        if (a > f.A)
-        {
-            yield return (f.A, a);
-        }
-
-        if (b < f.B)
-        {
-            yield return (b, f.B);
-        }
     }
 }
