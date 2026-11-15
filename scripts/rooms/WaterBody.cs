@@ -38,6 +38,12 @@ public partial class WaterBody : Node3D
     /// <summary>How high above the surface the reflection probe takes its picture, meters.</summary>
     private const float ReflectionEye = 1.5f;
 
+    /// <summary>How far the probe's box reaches under the surface, meters: the surface lies well inside the box, where no blending fades it.</summary>
+    private const float ReflectionUnder = 1f;
+
+    /// <summary>The 20 render layers a probe may show or cull.</summary>
+    private const uint AllRenderLayers = 0xFFFFF;
+
     /// <summary>
     /// How deep the room's light from above reaches into deep water behind the play plane, meters (<see cref="LightCutoff"/>).
     /// </summary>
@@ -243,10 +249,9 @@ public partial class WaterBody : Node3D
         float eyeZ = Mathf.Clamp(-GlobalPosition.Z, -0.5f * Size.Y + 0.5f, 0.5f * Size.Y - 0.5f);
         return new ReflectionProbe
         {
-            // From a meter under the surface, so the surface lies well inside the box, where no blending fades it.
-            Size = new Vector3(Size.X, ReflectionHeight + 1f, Size.Y),
-            Position = new Vector3(0f, 0.5f * (ReflectionHeight - 1f), 0f),
-            OriginOffset = new Vector3(0f, ReflectionEye + 0.5f - 0.5f * ReflectionHeight, eyeZ),
+            Size = new Vector3(Size.X, ReflectionHeight + ReflectionUnder, Size.Y),
+            Position = new Vector3(0f, 0.5f * (ReflectionHeight - ReflectionUnder), 0f),
+            OriginOffset = new Vector3(0f, ReflectionEye + 0.5f * ReflectionUnder - 0.5f * ReflectionHeight, eyeZ),
             BlendDistance = 0f,
             Intensity = Reflection,
             BoxProjection = true,
@@ -254,7 +259,7 @@ public partial class WaterBody : Node3D
             EnableShadows = true,
             AmbientMode = ReflectionProbe.AmbientModeEnum.Disabled,
             UpdateMode = ReflectionProbe.UpdateModeEnum.Once,
-            CullMask = ~WaterRenderLayer & 0xFFFFF,
+            CullMask = ~WaterRenderLayer & AllRenderLayers,
             ReflectionMask = WaterRenderLayer,
         };
     }

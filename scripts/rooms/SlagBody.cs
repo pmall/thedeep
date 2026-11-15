@@ -64,6 +64,12 @@ public partial class SlagBody : Node3D
     /// <summary>How far ahead of the front (toward the camera) the lights hang, meters, so they reach the faces on the play plane.</summary>
     [Export] public float GlowAhead { get; set; } = 1.3f;
 
+    /// <summary>How sharply each light falls off (the engine's attenuation exponent).</summary>
+    [Export] public float GlowAttenuation { get; set; } = 1.6f;
+
+    /// <summary>How far in from each end of the surface the end lights stand, meters (just inside the banks).</summary>
+    [Export] public float GlowInset { get; set; } = 0.15f;
+
     /// <summary>The surface's look: crust drifting on the melt (<c>magma.tres</c>).</summary>
     [Export] public Material SurfaceMaterial { get; set; } = null!;
 
@@ -102,7 +108,7 @@ public partial class SlagBody : Node3D
         front.SetInstanceShaderParameter(HalfWidthParameter, 0.5f * Size.X);
         AddChild(front);
 
-        float half = 0.5f * Size.X - 0.15f;
+        float half = 0.5f * Size.X - GlowInset;
         int gaps = Mathf.Max(1, Mathf.CeilToInt(2f * half / GlowSpacing));
         for (int i = 0; i <= gaps; i++)
         {
@@ -110,7 +116,7 @@ public partial class SlagBody : Node3D
             {
                 Position = new Vector3(-half + 2f * half * i / gaps, GlowHeight, SectionFront + GlowAhead - GlobalPosition.Z),
                 LightEnergy = GlowEnergy,
-                OmniAttenuation = 1.6f,
+                OmniAttenuation = GlowAttenuation,
                 OmniRange = GlowRange,
                 ShadowEnabled = false,
             }.Named($"Glow{i}");
@@ -136,7 +142,7 @@ public partial class SlagBody : Node3D
         }
 
         Box slag = PlayRegion;
-        var keepOff = new Box(slag.MinX - FootingMargin, slag.MinY - FootingMargin, slag.MaxX + FootingMargin, slag.MaxY + FootingHeight);
+        var keepOff = Burn.KeepOff(slag, FootingMargin, FootingHeight);
         BurnReach reach = Burn.Reach(slag, keepOff, player.BodyBox);
         if (reach == BurnReach.Clear)
         {
