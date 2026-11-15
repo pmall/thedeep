@@ -73,8 +73,8 @@ public partial class WallDressing : Node3D
                 Add(new BlockMesh { Size = new Vector3(0.45f, 0.6f, 0.45f), Bevel = 0.08f }, looks.Iron, at + new Vector3(0f, -h - 0.3f, 0f));
                 break;
             case WallPiece.Bank:
-                Add(new BankMesh { Size = new Vector3(w, h, WallLayout.BankDepth), Chest = WallLayout.BankChest(h), Seed = Seed + index }, looks.Plate,
-                    at + new Vector3(0f, 0f, WallLayout.BankDepth * 0.5f));
+                Add(new BankMesh { Size = new Vector3(w, h, MachineryWallSpec.Default.BankDepth), Chest = MachineryWall.BankChest(h), Seed = Seed + index }, looks.Plate,
+                    at + new Vector3(0f, 0f, MachineryWallSpec.Default.BankDepth * 0.5f));
                 break;
             case WallPiece.Slit:
                 Add(new QuadMesh { Size = new Vector2(w, h) }, looks.Glow, at);
@@ -83,7 +83,7 @@ public partial class WallDressing : Node3D
                 Add(new ColumnMesh { Height = h, Radius = w, Sides = 10, Shafts = 1, Plinth = 0.6f, Capital = 0.5f }, looks.Plate, at);
                 break;
             case WallPiece.Gear:
-                Add(new CogMesh { Radius = w, Teeth = WallLayout.GearTeeth(w), Depth = 0.25f }, looks.Iron, at, new Basis(Vector3.Back, p.Roll));
+                Add(new CogMesh { Radius = w, Teeth = MachineryWall.GearTeeth(w), Depth = 0.25f }, looks.Iron, at, new Basis(Vector3.Back, p.Roll));
                 break;
             case WallPiece.Pier:
                 Add(new ColumnMesh { Height = h, Radius = w * 0.4f, Sides = 8, Shafts = 1, Plinth = 0.5f, Capital = 0.4f }, looks.Stone, at);
@@ -95,7 +95,7 @@ public partial class WallDressing : Node3D
                 Add(new IcicleMesh { Width = w, Length = h, Count = Mathf.Max(3, (int)(w * 1.6f)), Seed = Seed + index }, looks.Ice, at, shadow: false);
                 break;
             case WallPiece.Rack:
-                int variant = Mathf.Clamp((int)p.Roll, 0, _racks.Length - 1);
+                int variant = Mathf.Clamp(p.Variant, 0, _racks.Length - 1);
                 // Stacks, not full racks: a wall holds hundreds, far back in the fog (racks cost a millisecond on the Sounding's wall).
                 _racks[variant] ??= new StackMesh { Size = new Vector3(w, h, 0.9f), Shelf = 0.45f + 0.12f * variant };
                 Add(_racks[variant], looks.Plate, at, shadow: false); // hundreds against the wall: their shadows cost more than they show

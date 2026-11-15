@@ -39,21 +39,6 @@ public sealed class FrameTimeStats
         return sorted[Math.Max(rank, 1) - 1];
     }
 
-    /// <summary>Frames slower than <paramref name="milliseconds"/>.</summary>
-    public int CountOver(double milliseconds)
-    {
-        int count = 0;
-        foreach (double ms in _milliseconds)
-        {
-            if (ms > milliseconds)
-            {
-                count++;
-            }
-        }
-
-        return count;
-    }
-
     public override string ToString() =>
         Count == 0 ? "no frames" : $"avg {Average:0.00} ms, p99 {Percentile(99):0.00} ms, worst {Worst:0.00} ms over {Count} frames";
 }

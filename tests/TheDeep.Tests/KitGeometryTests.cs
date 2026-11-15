@@ -272,7 +272,7 @@ public class KitGeometryTests
         foreach (float height in new[] { 1.4f, 2.5f, 5.4f })
         {
             var b = new MeshBuilder();
-            KitShapes.Bank(b, new Vector3(3f, height, 0.7f), WallLayout.BankChest(height), 2);
+            KitShapes.Bank(b, new Vector3(3f, height, 0.7f), MachineryWall.BankChest(height), 2);
             (Vector3 min, Vector3 max) = b.Finish().Bounds();
             Assert.True(MathF.Abs(min.Y) < 1e-3f && max.Y <= height + 1e-3f, $"a bank {height} m tall spans {min.Y}..{max.Y}");
             Assert.True(min.X >= -1.5f - 0.05f && max.X <= 1.5f + 0.05f);

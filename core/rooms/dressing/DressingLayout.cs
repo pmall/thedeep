@@ -28,6 +28,15 @@ public static class DressingLayout
         }
     }
 
+    /// <summary>
+    /// A value in [0, 1) for one decision of a layout: <paramref name="salt"/> names the decision, so each draws its own
+    /// stream from the same <paramref name="seed"/>, and <paramref name="index"/> the bay or piece it concerns.
+    /// </summary>
+    public static float Hash01(int seed, int salt, int index) => Hash01(seed + salt * SaltStride, index);
+
+    /// <summary>What a salt is multiplied by before it joins the seed, so the salts' streams do not overlap.</summary>
+    private const int SaltStride = 7919;
+
     /// <summary>The bays (0 to <paramref name="bays"/> − 1) that get something, each with probability <paramref name="chance"/>.</summary>
     public static IEnumerable<int> Chosen(int bays, float chance, int seed)
     {
@@ -67,7 +76,7 @@ public static class DressingLayout
             }
 
             bool toppled = !previousToppled && Hash01(seed, 3 * i + 2) < toppleChance;
-            slots.Add(new DressingSlot(i, Math.Clamp(variant, 0, Math.Max(0, variants - 1)), toppled));
+            slots.Add(new DressingSlot(i, variant, toppled));
             previousVariant = variant;
             previousToppled = toppled;
         }

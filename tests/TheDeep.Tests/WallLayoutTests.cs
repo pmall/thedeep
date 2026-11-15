@@ -88,7 +88,7 @@ public class WallLayoutTests
                 {
                     // Two gears' pitch circles touch (meshed) or keep apart; never one through the other.
                     float gap = new System.Numerics.Vector2(gears[i].Position.X - gears[j].Position.X, gears[i].Position.Y - gears[j].Position.Y).Length()
-                        - WallLayout.GearMesh * (gears[i].Size.X + gears[j].Size.X);
+                        - MachineryWallSpec.Default.GearMesh * (gears[i].Size.X + gears[j].Size.X);
                     Assert.True(gap > -1e-3f, $"seed {seed}: two gears overlap by {-gap} m");
                     meshed += gap < 1e-3f ? 1 : 0;
                 }
@@ -96,7 +96,7 @@ public class WallLayoutTests
 
             foreach (var bank in wall.Where(p => p.Piece == WallPiece.Bank))
             {
-                Assert.True(bank.Size.Y > 2f * WallLayout.BankChest(bank.Size.Y), "a bank's pipes rise well over its chest");
+                Assert.True(bank.Size.Y > 2f * MachineryWall.BankChest(bank.Size.Y), "a bank's pipes rise well over its chest");
                 Assert.True(bank.Position.Y + bank.Size.Y <= 24f);
             }
         }
