@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 
 namespace TheDeep;
 
@@ -6,7 +7,7 @@ namespace TheDeep;
 public sealed class AbilitySet
 {
     /// <summary>Every ability the pilgrim can unlock, one flag each.</summary>
-    public static readonly Ability[] All =
+    public static readonly IReadOnlyList<Ability> All = new[]
     {
         Ability.MagGrip, Ability.Harpoon, Ability.Drill, Ability.Ballast, Ability.HeatPlating,
     };

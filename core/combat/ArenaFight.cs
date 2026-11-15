@@ -1,25 +1,5 @@
 namespace TheDeep;
 
-/// <summary>Where an arena's fight stands (<see cref="ArenaFight"/>).</summary>
-public enum ArenaPhase
-{
-    Waiting,
-    Fighting,
-    Won,
-}
-
-/// <summary>What a step of an arena's fight did (<see cref="ArenaFight.Step"/>).</summary>
-public enum ArenaChange
-{
-    None,
-
-    /// <summary>The pilgrim stepped in while foes stand: the gates fall.</summary>
-    Began,
-
-    /// <summary>The last foe broke: the gates rise, for good.</summary>
-    Cleared,
-}
-
 /// <summary>
 /// The rule of a sealed arena (a boss's, an ambush's), pure: it waits until the pilgrim, in control, steps inside while foes stand;
 /// then the fight is on until none stands; then it is won for good.

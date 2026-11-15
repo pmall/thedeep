@@ -11,6 +11,9 @@ namespace TheDeep;
 /// </summary>
 public sealed class Combo
 {
+    /// <summary>The strikes of a chain, in the order its presses give them.</summary>
+    private static readonly StrikeKind[] Chain = { StrikeKind.Swing, StrikeKind.Second, StrikeKind.Finisher };
+
     private readonly IReadOnlyDictionary<StrikeKind, StrikeShape> _shapes;
     private int _step;
     private float _sinceEnd = float.MaxValue;
@@ -49,8 +52,8 @@ public sealed class Combo
             return _shapes[StrikeKind.Down];
         }
 
-        _step = _sinceEnd <= ChainWindow ? _step % 3 + 1 : 1;
-        return _shapes[_step switch { 1 => StrikeKind.Swing, 2 => StrikeKind.Second, _ => StrikeKind.Finisher }];
+        _step = _sinceEnd <= ChainWindow ? _step % Chain.Length + 1 : 1;
+        return _shapes[Chain[_step - 1]];
     }
 
     /// <summary>A strike's recovery ended: the chain window opens.</summary>

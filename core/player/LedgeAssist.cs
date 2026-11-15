@@ -3,7 +3,7 @@ using System;
 namespace TheDeep;
 
 /// <summary>
-/// The ledge assist's shape (owner playtest 2026-11-01), shared by the pilgrim and the map's planner so they lift the same way: an
+/// The ledge assist's shape, shared by the pilgrim and the map's planner so they lift the same way: an
 /// airborne body pressing into a wall whose top is a little above its feet is set onto the top, just past the edge, keeping its way.
 /// </summary>
 public static class LedgeAssist

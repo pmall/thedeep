@@ -1,14 +1,5 @@
 namespace TheDeep;
 
-/// <summary>Where a melee swing is in its timing: ready for the next, winding up, hitting, or recovering.</summary>
-public enum SwingPhase
-{
-    Ready,
-    WindUp,
-    Active,
-    Recover,
-}
-
 /// <summary>
 /// The timing of one melee swing, pure: a short wind-up, the window in which it hits, a recovery, then a
 /// cooldown before the next. A press once the swing hits (its window, its recovery, the cooldown) is buffered so swings chain
