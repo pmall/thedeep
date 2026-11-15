@@ -13,6 +13,9 @@ public partial class Secrets : Node
     [Export] public Player Player { get; set; } = null!;
     [Export] public Session Session { get; set; } = null!;
 
+    /// <summary>How far above the pilgrim's feet the point is that finds a false wall (the middle of its body, meters).</summary>
+    [Export] public float BodyCenter { get; set; } = 0.9f;
+
     /// <summary>Raised when a false wall is found.</summary>
     public event System.Action<FalseWall>? Found;
 
@@ -28,7 +31,7 @@ public partial class Secrets : Node
     {
         IReadOnlyList<FalseWall> walls = World.Room.All<FalseWall>();
         Vector3 p = Player.GlobalPosition;
-        var center = new Vector2(p.X, p.Y + 0.9f);
+        var center = new Vector2(p.X, p.Y + BodyCenter);
         for (int i = 0; i < walls.Count; i++)
         {
             FalseWall wall = walls[i];

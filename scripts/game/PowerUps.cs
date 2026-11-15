@@ -54,16 +54,35 @@ public partial class PowerUps : Node
 
     private async void Take(PowerUp power)
     {
+        // Read before the wait: the room may be gone when it ends.
+        string name = power.NameText();
+        PowerStat stat = power.Stat;
+        int amount = power.Amount;
         _taking = true;
-        Player.Velocity = Vector3.Zero;
-        Player.Frozen = true;
-        await power.Sink(Player, new Vector3(0f, 1.05f, 0f));
-        Player.Strengthen(Player.Prowess.With(power.Stat, power.Amount));
-        Session.Remember(power.NameText());
-        Player.Frozen = false;
-        _taking = false;
-        Taken?.Invoke(power);
-        Banner.Show(PowerStats.Said(power.Stat));
+        try
+        {
+            Player.Velocity = Vector3.Zero;
+            Player.Frozen = true;
+            await power.Sink(Player, Session.AbsorbPoint);
+            Player.Strengthen(Player.Prowess.With(stat, amount));
+            Session.Remember(name);
+        }
+        finally
+        {
+            if (IsInstanceValid(Player))
+            {
+                Player.Frozen = false;
+            }
+
+            _taking = false;
+        }
+
+        if (IsInstanceValid(power))
+        {
+            Taken?.Invoke(power);
+        }
+
+        Banner.Show(PowerStats.Said(stat));
     }
 
     private void OnRoomLoaded(Room room)

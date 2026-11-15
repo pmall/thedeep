@@ -56,11 +56,12 @@ public static class SaveFile
     }
 
     /// <summary>Writes <paramref name="data"/> as the save at <paramref name="path"/>, replacing the one there: written to a
-    /// temporary file beside it first, then renamed over, so a crash mid-write never breaks the save; a failure is reported
-    /// as an engine error.</summary>
+    /// temporary file beside it first, then renamed over, so a crash or a failed write never breaks the save; a failure is reported
+    /// as an engine error and the old save stays.</summary>
     public static void Write(string path, SaveData data)
     {
         string temp = SaveData.TempPath(path);
+        bool stored;
         using (FileAccess? file = FileAccess.Open(temp, FileAccess.ModeFlags.Write))
         {
             if (file is null)
@@ -69,7 +70,15 @@ public static class SaveFile
                 return;
             }
 
-            file.StoreString(data.ToJson());
+            stored = file.StoreString(data.ToJson());
+        }
+
+        if (!stored)
+        {
+            // A half-written file must never replace the good save.
+            GD.PushError($"could not write all of {temp} (the disk may be full): the save at {path} is kept as it was");
+            DirAccess.RemoveAbsolute(ProjectSettings.GlobalizePath(temp));
+            return;
         }
 
         Error error = DirAccess.RenameAbsolute(ProjectSettings.GlobalizePath(temp), ProjectSettings.GlobalizePath(path));
