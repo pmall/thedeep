@@ -36,6 +36,20 @@ public class MapLayoutTests
     }
 
     [Fact]
+    public void PlacesAreWrittenInTheInvariantCulture()
+    {
+        var links = new[]
+        {
+            new MapLink("A", "East", new Vector2(37.5f, 0f), "B", "West", new Vector2(1f, 0f)),
+            new MapLink("B", "Up", new Vector2(10f, 33f), "C", "Down", new Vector2(5f, 0f)),
+            new MapLink("C", "West", new Vector2(0f, 10f), "A", "Roof", new Vector2(20f, 21f)),
+        };
+        MapLayout.Result r = CommaDecimals.Under(() => MapLayout.Place("A", links, Bounds, 6.5f));
+        Assert.Contains(r.Problems, p => p.Contains(".5, ", System.StringComparison.Ordinal));
+        Assert.DoesNotContain(r.Problems, p => p.Contains(",5", System.StringComparison.Ordinal));
+    }
+
+    [Fact]
     public void OverlappingRoomsAreReported()
     {
         var links = new[] { new MapLink("A", "Hatch", new Vector2(20f, 0f), "C", "Top", new Vector2(10f, 15f)) };

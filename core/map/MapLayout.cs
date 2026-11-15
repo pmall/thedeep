@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 using System.Numerics;
 
@@ -71,7 +72,7 @@ public static class MapLayout
                 (Vector2 bMin, Vector2 bMax) = Shrink(bounds[placedRooms[j]], offsets[placedRooms[j]], overlapMargin * 0.5f);
                 if (aMin.X < bMax.X && bMin.X < aMax.X && aMin.Y < bMax.Y && bMin.Y < aMax.Y)
                 {
-                    problems.Add($"{placedRooms[i]} and {placedRooms[j]} overlap on the map (more than {overlapMargin} m)");
+                    problems.Add(string.Create(CultureInfo.InvariantCulture, $"{placedRooms[i]} and {placedRooms[j]} overlap on the map (more than {overlapMargin} m)"));
                 }
             }
         }
@@ -82,5 +83,5 @@ public static class MapLayout
     private static (Vector2, Vector2) Shrink((Vector2 Min, Vector2 Max) b, Vector2 offset, float by) =>
         (b.Min + offset + new Vector2(by), b.Max + offset - new Vector2(by));
 
-    private static string Fmt(Vector2 v) => $"({v.X:0.##}, {v.Y:0.##})";
+    private static string Fmt(Vector2 v) => string.Create(CultureInfo.InvariantCulture, $"({v.X:0.##}, {v.Y:0.##})");
 }

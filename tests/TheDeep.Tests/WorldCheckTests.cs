@@ -20,24 +20,35 @@ public class WorldCheckTests
 
     private static readonly Vector2 Min = new(-10f, -1f), Max = new(10f, 8f);
 
-    /// <summary>A flat room (a floor from -10 to 10 m), its exits as given, a goal box if any, waking at its middle in the start room.</summary>
-    private static RoomShape Room(IEnumerable<ExitShape> exits, bool goal = false, bool start = false) => new(
-        Solids: new List<Box> { new(-10f, -1f, 10f, 0f) },
-        Exits: exits.ToList(),
-        Wakes: start ? new List<Vector2> { new(0f, 0f) } : new List<Vector2>(),
-        Anchors: new List<Vector2>(), Lifts: new List<LiftPath>(),
-        Sound: new List<Box> { new(-10f, -1f, 10f, 0f) },
-        Waters: new List<Box>(), Heat: new List<Box>(), Relics: new List<(Box, Ability)>(),
-        Goals: goal ? new List<Box> { Box.Around(new Vector2(0f, 1f), new Vector2(2f, 2f)) } : new List<Box>(),
-        Metal: new List<Box>(), Spawn: new Vector2(0f, 0f));
+    /// <summary>
+    /// A flat room (a floor from -10 to 10 m) with <paramref name="metal"/> standing on it, its exits as given, a goal box if any, waking at
+    /// <paramref name="wakeX"/> on the floor in the start room.
+    /// </summary>
+    private static RoomShape Room(IEnumerable<ExitShape> exits, bool goal = false, bool start = false, IEnumerable<Box>? metal = null, float wakeX = 0f)
+    {
+        List<Box> plates = metal?.ToList() ?? new List<Box>();
+        return new RoomShape(
+            Solids: plates.Prepend(new Box(-10f, -1f, 10f, 0f)).ToList(),
+            Exits: exits.ToList(),
+            Wakes: start ? new List<Vector2> { new(wakeX, 0f) } : new List<Vector2>(),
+            Anchors: new List<Vector2>(), Lifts: new List<LiftPath>(),
+            Sound: plates.Prepend(new Box(-10f, -1f, 10f, 0f)).ToList(),
+            Waters: new List<Box>(), Heat: new List<Box>(), Relics: new List<(Box, Ability)>(),
+            Goals: goal ? new List<Box> { Box.Around(new Vector2(0f, 1f), new Vector2(2f, 2f)) } : new List<Box>(),
+            Metal: plates, Spawn: new Vector2(wakeX, 0f));
+    }
 
     private static ExitShape Doorway(string name, float x, string requires = "", float y = 1.5f) =>
         new(name, new Threshold(x > 0f ? ExitSide.East : ExitSide.West, new Vector2(x, y), new Vector2(1f, 3f)), requires, ArrivalSide: 0, Sealed: false);
 
-    private static WorldCheck TwoRooms(string eastNeeds = "", float eastY = 1.5f)
+    /// <summary>A metal tower under the hall's way out when it hangs high: no jump reaches its top, Mag-grip climbs it.</summary>
+    private static readonly Box Tower = new(7f, 0f, 9f, 10f);
+
+    private static WorldCheck TwoRooms(string eastNeeds = "", float eastY = 1.5f, Box? hallMetal = null, float wakeX = 0f)
     {
         var world = new WorldCheck(Limits);
-        world.AddRoom("Hall", Min, Max, Room(new[] { Doorway("East", 9.5f, eastNeeds, eastY) }, start: true));
+        world.AddRoom("Hall", Min, Max, Room(new[] { Doorway("East", 9.5f, eastNeeds, eastY) }, start: true,
+            metal: hallMetal is { } m ? new[] { m } : null, wakeX: wakeX));
         world.AddRoom("Sanctum", Min, Max, Room(new[] { Doorway("West", -9.5f) }, goal: true));
         world.AddExit(new MapEdge("Hall", "East", "Sanctum", "West", Requirement.Parse(eastNeeds)), new Vector2(9.5f, eastY), new Vector2(-9.5f, 1.5f));
         world.AddExit(new MapEdge("Sanctum", "West", "Hall", "East", Requirement.None), new Vector2(-9.5f, 1.5f), new Vector2(9.5f, eastY));
@@ -103,5 +114,14 @@ public class WorldCheckTests
         List<string> lines = world.ReachReport("Hall", with: null, clumsy: false).ToList();
         Assert.Contains(lines, l => l.StartsWith("REACH Hall waking at (0, 0) [None]: exits East", StringComparison.Ordinal));
         Assert.Equal("REACH Atrium: not a room in the game", Assert.Single(world.ReachReport("Atrium", null, false)));
+    }
+
+    [Fact]
+    public void TheReachReportIsWrittenInTheInvariantCulture()
+    {
+        WorldCheck world = TwoRooms(hallMetal: new Box(6f, 0f, 7.5f, 1.5f), wakeX: 0.5f);
+        List<string> lines = CommaDecimals.Under(() => world.ReachReport("Hall", with: null, clumsy: false).ToList());
+        Assert.Contains(lines, l => l.StartsWith("REACH Hall waking at (0.5, 0)", StringComparison.Ordinal));
+        Assert.Contains(lines, l => l.StartsWith("REACH Hall all ledges:", StringComparison.Ordinal) && l.Contains("1.5@6..7.5", StringComparison.Ordinal));
     }
 }
