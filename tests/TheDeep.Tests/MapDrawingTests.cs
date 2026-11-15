@@ -54,27 +54,13 @@ public class MapDrawingTests
     }
 
     [Theory]
-    [InlineData("prototype", "map-draft.md")]
-    [InlineData("sequel", "network.md")]
-    public void DrawsEachWorld(string world, string network)
+    [InlineData("prototype")]
+    [InlineData("sequel")]
+    public void DrawsEachWorld(string world)
     {
-        string dir = Path.Combine(RepoRoot(), "worlds", world);
-        MapDraft d = MapDraft.FromMarkdown(File.ReadAllText(Path.Combine(dir, network)));
-        RoomTable t = RoomTable.Parse(File.ReadAllText(Path.Combine(dir, "rooms.tsv")));
+        MapDraft d = MapDraft.FromMarkdown(File.ReadAllText(RepoPaths.Network(world)));
+        RoomTable t = RoomTable.Parse(File.ReadAllText(RepoPaths.Rooms(world)));
         XDocument svg = XDocument.Parse(MapDrawing.Svg(d, t, world));
         Assert.Equal(d.Graph.Rooms.Count, svg.Descendants().Count(e => (string?)e.Attribute("class") == "room"));
-    }
-
-    private static string RepoRoot()
-    {
-        for (var dir = new DirectoryInfo(AppContext.BaseDirectory); dir is not null; dir = dir.Parent)
-        {
-            if (File.Exists(Path.Combine(dir.FullName, "AGENTS.md")))
-            {
-                return dir.FullName;
-            }
-        }
-
-        throw new DirectoryNotFoundException("no AGENTS.md above the test binaries");
     }
 }

@@ -108,26 +108,12 @@ public class RoomTableTests
     }
 
     [Theory]
-    [InlineData("prototype", "map-draft.md")]
-    [InlineData("sequel", "network.md")]
-    public void EachWorldsTableAgreesWithItsNetwork(string world, string network)
+    [InlineData("prototype")]
+    [InlineData("sequel")]
+    public void EachWorldsTableAgreesWithItsNetwork(string world)
     {
-        string dir = Path.Combine(RepoRoot(), "worlds", world);
-        RoomTable t = RoomTable.Parse(File.ReadAllText(Path.Combine(dir, "rooms.tsv")));
-        MapDraft d = MapDraft.FromMarkdown(File.ReadAllText(Path.Combine(dir, network)));
+        RoomTable t = RoomTable.Parse(File.ReadAllText(RepoPaths.Rooms(world)));
+        MapDraft d = MapDraft.FromMarkdown(File.ReadAllText(RepoPaths.Network(world)));
         Assert.Empty(t.Check(d));
-    }
-
-    private static string RepoRoot()
-    {
-        for (var dir = new DirectoryInfo(AppContext.BaseDirectory); dir is not null; dir = dir.Parent)
-        {
-            if (File.Exists(Path.Combine(dir.FullName, "AGENTS.md")))
-            {
-                return dir.FullName;
-            }
-        }
-
-        throw new DirectoryNotFoundException("no AGENTS.md above the test binaries");
     }
 }

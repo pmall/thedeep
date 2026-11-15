@@ -188,20 +188,7 @@ public class MapDraftTests
         Assert.Throws<FormatException>(() => MapDraft.Parse($"start A\nroom A L\n{line}\n"));
     }
 
-    private static string PrototypeNetwork() => Path.Combine(RepoRoot(), "worlds", "prototype", "map-draft.md");
-
-    private static string RepoRoot()
-    {
-        for (var dir = new DirectoryInfo(AppContext.BaseDirectory); dir is not null; dir = dir.Parent)
-        {
-            if (File.Exists(Path.Combine(dir.FullName, "AGENTS.md")))
-            {
-                return dir.FullName;
-            }
-        }
-
-        throw new DirectoryNotFoundException("no AGENTS.md above the test binaries");
-    }
+    private static string PrototypeNetwork() => RepoPaths.Network("prototype");
 
     [Fact]
     public void ARoomPickedToTryStartsWithWhatARouteThereNeeds()
