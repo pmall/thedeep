@@ -24,9 +24,8 @@ case "${1:-}" in
         ;;
 esac
 
-export DOTNET_ROOT="${DOTNET_ROOT:-$HOME/.dotnet}"
-export PATH="$DOTNET_ROOT:$HOME/.local/bin:$PATH"
-export DOTNET_CLI_TELEMETRY_OPTOUT=1 DOTNET_NOLOGO=1
+# shellcheck source=tools/env.sh
+source tools/env.sh
 GODOT="${GODOT:-godot}"
 TESTS=tests/TheDeep.Tests/TheDeep.Tests.csproj
 
@@ -44,9 +43,6 @@ STYLE_FIXES=(IDE0011 IDE0161 IDE0065)
 LOG_DIR=".godot/check"
 mkdir -p "$LOG_DIR"
 rm -f "$LOG_DIR"/*.log "$LOG_DIR"/*.status
-
-# Lines that mean something went wrong in Godot output.
-FAIL_PATTERN='ERROR|SCRIPT ERROR|Unhandled exception|System\.[A-Za-z.]*Exception|Failed to load|Parse Error'
 
 START=$SECONDS
 STEP_START=$SECONDS
@@ -177,7 +173,6 @@ echo "ok"
 took
 
 step "4 headless import"
-tools/glsl_includes.sh
 "$GODOT" --headless --import >"$LOG_DIR/import.log" 2>&1 || {
     tail -20 "$LOG_DIR/import.log"
     fail "godot --import exited non-zero (full log: $(keep_failed import "$LOG_DIR/import.log"))"
@@ -299,7 +294,7 @@ failed=()
 for entry in "${CHECKS[@]}"; do
     IFS='|' read -r name ok problem frames args <<<"$entry"
     log="$LOG_DIR/$name.log"
-    read -r code secs <"$LOG_DIR/$name.status"
+    read -r code secs <"$LOG_DIR/$name.status" || { code=missing secs=0; }
     if [ "$code" != 0 ] || grep -E "$FAIL_PATTERN" "$log" >/dev/null || { [ -n "$ok" ] && ! grep -q "$ok" "$log"; }; then
         printf '\033[31m%s FAILED\033[0m (exit %s, %ss; full log: %s)\n' "$name" "$code" "$secs" "$(keep_failed "$name" "$log")"
         { grep -n -E -A3 "$problem|$FAIL_PATTERN" "$log" || tail -20 "$log"; } | head -40
@@ -315,7 +310,7 @@ for entry in "${CHECKS[@]}"; do
 done
 
 if [ -f "$TESTS" ]; then
-    read -r code secs <"$LOG_DIR/unit.status"
+    read -r code secs <"$LOG_DIR/unit.status" || { code=missing secs=0; }
     if [ "$code" != 0 ]; then
         tail -40 "$LOG_DIR/unit.log"
         echo "unit tests failed; full log: $(keep_failed unit "$LOG_DIR/unit.log")"
