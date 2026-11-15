@@ -21,11 +21,8 @@ public static class ItemKinds
         ItemKind.Key => new Color(1f, 0.68f, 0.26f),
         ItemKind.Code => new Color(0.32f, 1f, 0.42f),
         ItemKind.Mechanism => new Color(0.72f, 1f, 0.3f),
-        _ => new Color(0.86f, 0.86f, 0.95f),
+        _ => throw new System.ArgumentOutOfRangeException(nameof(kind), kind, null),
     };
-
-    /// <summary>Whether the pilgrim carries it (a key, a code), so the map lists it; a mechanism's state stays in the world.</summary>
-    public static bool Carried(ItemKind kind) => kind != ItemKind.Mechanism;
 
     /// <summary>The door's word on the map's legend.</summary>
     public static StringName MapWord(ItemKind kind) => kind switch
@@ -33,6 +30,6 @@ public static class ItemKinds
         ItemKind.Key => LockWord,
         ItemKind.Code => SealWord,
         ItemKind.Mechanism => MechanismWord,
-        _ => LockWord,
+        _ => throw new System.ArgumentOutOfRangeException(nameof(kind), kind, null),
     };
 }

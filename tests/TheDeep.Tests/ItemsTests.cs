@@ -167,4 +167,13 @@ public class ItemsTests
         Assert.Contains(d.Differences(built, System.Array.Empty<(string, Requirement)>()), p => p.Contains("an item CryptKey"));
         Assert.Throws<System.FormatException>(() => MapDraft.Parse("start A\nroom A L\nitem A Drill\n"));
     }
+
+    [Fact]
+    public void KeysAndCodesAreCarriedButAMechanismStaysInTheWorld()
+    {
+        Assert.True(ItemKind.Key.Carried());
+        Assert.True(ItemKind.Code.Carried());
+        Assert.False(ItemKind.Mechanism.Carried());
+        Assert.Throws<System.ArgumentOutOfRangeException>(() => ((ItemKind)99).Carried());
+    }
 }
