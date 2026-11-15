@@ -55,7 +55,7 @@ public partial class Session : Node
     /// <summary>Where, above the pilgrim's feet, a relic's core, an item or a shard drifts to be taken in (meters).</summary>
     public static readonly Vector3 AbsorbPoint = new(0f, 1.05f, 0f);
 
-    private bool _busy;
+    private HeldMoments _held = null!;
     private Shrine? _prompted;
     private ScripturePlate? _plate;
 
@@ -87,6 +87,7 @@ public partial class Session : Node
 
     public override void _Ready()
     {
+        _held = new HeldMoments(Player);
         World.RoomLoaded += OnRoomLoaded;
         Player.Died += OnDied;
         Player.Scorched += SetBack;
@@ -112,13 +113,13 @@ public partial class Session : Node
         World.Enter(World.Room, World.Map.Find(World.RoomName)?.Offset ?? System.Numerics.Vector2.Zero);
 
         // The room's nodes are wired already (by _Ready, or the load of the room the world began in): only what the save says is done is applied.
-        Settle(World.Room, Begin(World.Room));
+        RoomBind.Settle(World.Room, Begin(World.Room), _pilgrimage, Player.Abilities.Unlocked);
         Player.Respawn(RespawnPoint(World.Room), 1);
     }
 
     public override void _PhysicsProcess(double delta)
     {
-        if (_busy || !Player.InControl)
+        if (_held.Busy || !Player.InControl)
         {
             Prompt(null);
             PromptPlate(null);
@@ -133,9 +134,9 @@ public partial class Session : Node
             return;
         }
 
-        if (GoalAt(room, p) is { } goal)
+        if (RoomLookups.GoalAt(room, p) is { } goal)
         {
-            switch (_pilgrimage.ReachGoal(goal.Ending, goal.Ending && BossLeft(room)))
+            switch (_pilgrimage.ReachGoal(goal.Ending, goal.Ending && RoomLookups.BossLeft(room)))
             {
                 case GoalMoment.End:
                     End();
@@ -148,7 +149,7 @@ public partial class Session : Node
             }
         }
 
-        if (Unspoken(room, p) is { } spoken)
+        if (RoomLookups.Unspoken(room, p, _spoken) is { } spoken)
         {
             _spoken.Add(spoken);
             Banner.Show(spoken.Said);
@@ -156,10 +157,10 @@ public partial class Session : Node
         }
 
         bool standing = Player.IsUpright && Player.IsOnFloor();
-        Shrine? near = standing ? Near(room.All<Shrine>(), p, RestRange) : null;
+        Shrine? near = standing ? RoomLookups.Near(room.All<Shrine>(), p, RestRange) : null;
         Prompt(near);
         ScripturePlate? plate = standing && near is null
-            ? Near(room.All<ScripturePlate>(), p, ReadRange)
+            ? RoomLookups.Near(room.All<ScripturePlate>(), p, ReadRange)
             : null;
         PromptPlate(plate);
         if (near is not null && Input.IsActionJustPressed(InputActions.Interact))
@@ -182,63 +183,6 @@ public partial class Session : Node
                 break;
             }
         }
-    }
-
-    // Per-tick lookups, written as loops over the room's kept lists: LINQ with a lambda capturing the position allocates every tick.
-
-    private static T? Near<T>(IReadOnlyList<T> nodes, Vector3 p, float range) where T : Node3D
-    {
-        for (int i = 0; i < nodes.Count; i++)
-        {
-            if (nodes[i].GlobalPosition.WithinOnPlane(p, range))
-            {
-                return nodes[i];
-            }
-        }
-
-        return null;
-    }
-
-    private static MapGoal? GoalAt(Room room, Vector3 p)
-    {
-        IReadOnlyList<MapGoal> goals = room.All<MapGoal>();
-        for (int i = 0; i < goals.Count; i++)
-        {
-            if (goals[i].Contains(p))
-            {
-                return goals[i];
-            }
-        }
-
-        return null;
-    }
-
-    private static bool BossLeft(Room room)
-    {
-        IReadOnlyList<BossSeal> seals = room.All<BossSeal>();
-        for (int i = 0; i < seals.Count; i++)
-        {
-            if (!seals[i].Won)
-            {
-                return true;
-            }
-        }
-
-        return false;
-    }
-
-    private Proclamation? Unspoken(Room room, Vector3 p)
-    {
-        IReadOnlyList<Proclamation> said = room.All<Proclamation>();
-        for (int i = 0; i < said.Count; i++)
-        {
-            if (!_spoken.Contains(said[i]) && said[i].Contains(p))
-            {
-                return said[i];
-            }
-        }
-
-        return null;
     }
 
     private void Prompt(Shrine? shrine)
@@ -276,22 +220,14 @@ public partial class Session : Node
     /// <summary>Resting: full health, the shrine flares, and the game is saved here.</summary>
     private async void Rest(Shrine shrine)
     {
-        _busy = true;
-        try
+        await _held.Hold(PilgrimMoment.Rest, async () =>
         {
             Player.Vitality.Restore();
             _pilgrimage.Rest(World.RoomName, shrine.NameText());
             Write();
             shrine.Flare();
-            Player.Velocity = Vector3.Zero;
-            Player.Frozen = true;
-            Player.Visual.Moment = PilgrimMoment.Rest;
             await ToSignal(GetTree().CreateTimer(RestTime, processAlways: false), SceneTreeTimer.SignalName.Timeout);
-        }
-        finally
-        {
-            Release();
-        }
+        });
     }
 
     /// <summary>Taking a relic: the pilgrim stands still while its core drifts in, then the ability is its own.</summary>
@@ -301,35 +237,14 @@ public partial class Session : Node
         string name = relic.NameText();
         Ability ability = relic.Ability;
         Announcement said = relic.Said;
-        _busy = true;
-        try
+        await _held.Hold(PilgrimMoment.Relic, async () =>
         {
-            Player.Velocity = Vector3.Zero;
-            Player.Frozen = true;
-            Player.Visual.Moment = PilgrimMoment.Relic;
             await relic.Absorb(Player, AbsorbPoint);
             Player.Visual.Moment = PilgrimMoment.None;
             Player.Abilities.Unlock(ability);
             Remember(name);
-        }
-        finally
-        {
-            Release();
-        }
-
+        });
         Banner.Show(said);
-    }
-
-    /// <summary>Lets the pilgrim go again after a held moment (rest, relic, law), whatever ended it; a pilgrim already freed (the scene reloading) is left alone.</summary>
-    private void Release()
-    {
-        if (IsInstanceValid(Player))
-        {
-            Player.Visual.Moment = PilgrimMoment.None;
-            Player.Frozen = false;
-        }
-
-        _busy = false;
     }
 
     /// <summary>
@@ -338,17 +253,30 @@ public partial class Session : Node
     /// </summary>
     private async void End()
     {
-        _busy = true;
-        Player.Velocity = Vector3.Zero;
-        Player.Frozen = true;
-        Ended?.Invoke();
-        await EndCard.Play();
-        if (Persist)
+        _held.Begin();
+        bool reloaded = false;
+        try
         {
-            SaveFile.Delete(World.Definition.SavePath);
-        }
+            Player.Velocity = Vector3.Zero;
+            Player.Frozen = true;
+            Ended?.Invoke();
+            await EndCard.Play();
+            if (Persist)
+            {
+                SaveFile.Delete(World.Definition.SavePath);
+            }
 
-        GetTree().ReloadCurrentScene();
+            GetTree().ReloadCurrentScene();
+            reloaded = true;
+        }
+        finally
+        {
+            // A reload frees the pilgrim with the scene; a pilgrim that stays (something failed) is let go.
+            if (!reloaded)
+            {
+                _held.Let();
+            }
+        }
     }
 
     /// <summary>Raised when the pilgrim reaches the end of the game, as the end card begins.</summary>
@@ -393,28 +321,40 @@ public partial class Session : Node
     /// </summary>
     private async void SetBack()
     {
-        _busy = true;
-        Player.Frozen = true;
-        await Fade.To(1f, ScorchFadeOut);
-        Player.Respawn(Player.Footing);
-        Player.Frozen = false;
-        _busy = false;
+        _held.Begin();
+        try
+        {
+            Player.Frozen = true;
+            await Fade.To(1f, ScorchFadeOut);
+            Player.Respawn(Player.Footing);
+        }
+        finally
+        {
+            _held.Let();
+        }
+
         await Fade.To(0f, ScorchFadeIn);
     }
 
     private async void Return()
     {
-        _busy = true;
-        await Fade.To(1f, DeathFadeOut);
-        Player.Frozen = true;
-        string path = World.RoomPath(_pilgrimage.Room);
-        Room room = World.Load(GD.Load<PackedScene>(ResourceLoader.Exists(path) ? path : World.RoomPath(World.RoomName)));
-        Player.Respawn(RespawnPoint(room), 1);
-        Player.Vitality.Restore();
-        await ToSignal(GetTree(), SceneTree.SignalName.ProcessFrame);
-        await ToSignal(GetTree(), SceneTree.SignalName.ProcessFrame);
-        Player.Frozen = false;
-        _busy = false;
+        _held.Begin();
+        try
+        {
+            await Fade.To(1f, DeathFadeOut);
+            Player.Frozen = true;
+            string path = World.RoomPath(_pilgrimage.Room);
+            Room room = World.Load(GD.Load<PackedScene>(ResourceLoader.Exists(path) ? path : World.RoomPath(World.RoomName)));
+            Player.Respawn(RespawnPoint(room), 1);
+            Player.Vitality.Restore();
+            await ToSignal(GetTree(), SceneTree.SignalName.ProcessFrame);
+            await ToSignal(GetTree(), SceneTree.SignalName.ProcessFrame);
+        }
+        finally
+        {
+            _held.Let();
+        }
+
         await Fade.To(0f, DeathFadeIn);
     }
 
@@ -424,7 +364,7 @@ public partial class Session : Node
     private void OnRoomLoaded(Room room)
     {
         string name = Begin(room);
-        Settle(room, name);
+        RoomBind.Settle(room, name, _pilgrimage, Player.Abilities.Unlocked);
         Wire(room, name);
     }
 
@@ -440,67 +380,22 @@ public partial class Session : Node
         return name;
     }
 
-    /// <summary>What the pilgrimage holds done in <paramref name="room"/> (<paramref name="name"/>) is shown done: relics empty, rock and laws gone.</summary>
-    private void Settle(Room room, string name)
-    {
-        IReadOnlyList<AbilityRelic> relics = room.All<AbilityRelic>();
-        for (int i = 0; i < relics.Count; i++)
-        {
-            if (_pilgrimage.RelicEmpty(name, relics[i].NameText(), relics[i].Ability, Player.Abilities.Unlocked))
-            {
-                relics[i].Empty();
-            }
-        }
-
-        foreach (Block block in room.Blocks().Where(b => b.Cracked))
-        {
-            if (_pilgrimage.Done(name, block.NameText()))
-            {
-                block.Settle();
-            }
-        }
-
-        foreach (LawBreak law in room.All<LawBreak>())
-        {
-            if (_pilgrimage.Done(name, law.NameText()))
-            {
-                law.Settle();
-            }
-        }
-    }
-
     /// <summary>Connects the room's bricks to the pilgrim and to what the session keeps; once per room, when it loads.</summary>
     private void Wire(Room room, string name)
     {
+        RoomBind.Give(room, Player, Banner);
         foreach (Block block in room.Blocks().Where(b => b.Cracked && !_pilgrimage.Done(name, b.NameText())))
         {
             block.Shattered += OnShattered;
         }
 
-        foreach (HeatColumn zone in room.All<HeatColumn>())
-        {
-            zone.Player = Player;
-        }
-
-        foreach (SlagBody slag in room.All<SlagBody>())
-        {
-            slag.Player = Player;
-        }
-
         foreach (Lift lift in room.All<Lift>())
         {
-            lift.Player = Player;
             lift.Released += OnLiftReleased;
-        }
-
-        foreach (ScripturePlate plate in room.All<ScripturePlate>())
-        {
-            plate.Banner = Banner;
         }
 
         foreach (LawBreak law in room.All<LawBreak>())
         {
-            law.Player = Player;
             if (!_pilgrimage.Done(name, law.NameText()))
             {
                 law.Broke += OnLawBroke;
@@ -523,18 +418,8 @@ public partial class Session : Node
         Announcement said = law.Said;
         Remember(law.NameText());
         Camera.AddShake(LawShake);
-        _busy = true;
-        try
-        {
-            Player.Velocity = Vector3.Zero;
-            Player.Frozen = true;
-            await ToSignal(GetTree().CreateTimer(LawHold, processAlways: false), SceneTreeTimer.SignalName.Timeout);
-        }
-        finally
-        {
-            Release();
-        }
-
+        await _held.Hold(PilgrimMoment.None, async () =>
+            await ToSignal(GetTree().CreateTimer(LawHold, processAlways: false), SceneTreeTimer.SignalName.Timeout));
         Banner.Show(said);
     }
 
