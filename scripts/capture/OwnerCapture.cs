@@ -33,7 +33,7 @@ public partial class OwnerCapture : CanvasLayer
     /// <summary>Wider frames are scaled down to this width in the video.</summary>
     [Export] public int VideoMaxWidth { get; set; } = 1920;
 
-    private readonly ConcurrentQueue<string> _messages = new();
+    private readonly ConcurrentQueue<Message> _messages = new();
     private readonly ConcurrentQueue<string> _savedFiles = new();
     private readonly HashSet<string> _reservedNames = new();
     /// <summary>The REC dot and running time shown while a video records; the toast naming a saved file.</summary>
@@ -78,7 +78,7 @@ public partial class OwnerCapture : CanvasLayer
             }
             else
             {
-                StopRecording("");
+                StopRecording(CaptureLines.StopKey, false);
             }
 
             GetViewport().SetInputAsHandled();
@@ -88,9 +88,9 @@ public partial class OwnerCapture : CanvasLayer
     public override void _Process(double delta)
     {
         // Files are written on worker threads; report them here, on the main thread.
-        while (_messages.TryDequeue(out string? message))
+        while (_messages.TryDequeue(out Message? message))
         {
-            ShowToast(message);
+            ShowToast(message.Line, message.Args);
         }
 
         while (_savedFiles.TryDequeue(out string? path))
@@ -111,7 +111,7 @@ public partial class OwnerCapture : CanvasLayer
         {
             Recording recording = _recording;
             _recording = null;
-            FinishRecording(recording, "game closed").Wait(FinishTimeout);
+            FinishRecording(recording, CaptureLines.Say(CaptureLines.StopClosed)).Wait(FinishTimeout);
         }
     }
 
@@ -121,7 +121,7 @@ public partial class OwnerCapture : CanvasLayer
         FrameFormat? format = _grabber?.CurrentFormat(out _);
         if (_grabber is null || format is not { } frame)
         {
-            ShowToast("Screenshot unavailable here");
+            ShowToast(CaptureLines.ScreenshotUnavailable);
             return;
         }
 
@@ -140,17 +140,17 @@ public partial class OwnerCapture : CanvasLayer
             Error error = FramePng.Save(bytes, frame, png);
             if (error != Error.Ok)
             {
-                _messages.Enqueue($"Screenshot failed: {error}");
+                _messages.Enqueue(new Message(CaptureLines.ScreenshotFailed, error.ToString()));
                 return;
             }
 
             File.WriteAllText(Path.Combine(folder, name + ".txt"), report);
-            _messages.Enqueue($"Screenshot saved   captures/{name}.png");
+            _messages.Enqueue(new Message(CaptureLines.ScreenshotSaved, name));
             _savedFiles.Enqueue(png);
         }
         catch (Exception e)
         {
-            _messages.Enqueue($"Screenshot failed: {e.Message}");
+            _messages.Enqueue(new Message(CaptureLines.ScreenshotFailed, e.Message));
         }
     }
 
@@ -158,25 +158,25 @@ public partial class OwnerCapture : CanvasLayer
     {
         if (_grabber is null || _codecProbe is null)
         {
-            ShowToast("Video unavailable here");
+            ShowToast(CaptureLines.VideoUnavailable);
             return;
         }
 
         if (!_codecProbe.IsCompleted)
         {
-            ShowToast("Video not ready yet, try again in a second");
+            ShowToast(CaptureLines.VideoNotReady);
             return;
         }
 
         if (_codecProbe.Result is not { } codec)
         {
-            ShowToast("Video needs ffmpeg, which was not found");
+            ShowToast(CaptureLines.VideoNeedsFfmpeg);
             return;
         }
 
         if (_grabber.CurrentFormat(out string formatError) is not { } format)
         {
-            ShowToast($"Video unavailable: {formatError}");
+            ShowToast(CaptureLines.VideoFormat, formatError);
             return;
         }
 
@@ -192,7 +192,7 @@ public partial class OwnerCapture : CanvasLayer
         }
         catch (Exception e)
         {
-            ShowToast($"Video failed to start: {e.Message}");
+            ShowToast(CaptureLines.VideoStartFailed, e.Message);
             return;
         }
 
@@ -202,7 +202,7 @@ public partial class OwnerCapture : CanvasLayer
         RecordFrame(_recording);
     }
 
-    private void StopRecording(string reason)
+    private void StopRecording(StringName reason, bool announce = true)
     {
         if (_recording is not { } recording)
         {
@@ -211,12 +211,13 @@ public partial class OwnerCapture : CanvasLayer
 
         _recording = null;
         RecIndicator.Visible = false;
-        if (reason.Length > 0)
+        string why = CaptureLines.Say(reason);
+        if (announce)
         {
-            ShowToast($"Recording stopped: {reason}");
+            ShowToast(CaptureLines.RecordingStopped, why);
         }
 
-        _ = FinishRecording(recording, reason);
+        _ = FinishRecording(recording, why);
     }
 
     private void RecordFrame(Recording recording)
@@ -227,7 +228,7 @@ public partial class OwnerCapture : CanvasLayer
 
         if (recording.Encoder.Failed)
         {
-            StopRecording("ffmpeg stopped");
+            StopRecording(CaptureLines.StopFfmpeg);
             return;
         }
 
@@ -240,7 +241,7 @@ public partial class OwnerCapture : CanvasLayer
         FrameFormat? format = recording.Grabber.CurrentFormat(out _);
         if (format != recording.Format)
         {
-            StopRecording("the window size changed");
+            StopRecording(CaptureLines.StopResized);
             return;
         }
 
@@ -265,7 +266,7 @@ public partial class OwnerCapture : CanvasLayer
             .Add("duration", string.Format(CultureInfo.InvariantCulture, "{0:0.0} s", seconds))
             .Add("video", $"{encoder.Command.Width}x{encoder.Command.Height} at {recording.Clock.Fps} fps, {FfmpegCommand.CodecName(encoder.Command.Codec)}, max width {encoder.Command.MaxWidth}")
             .Add("frames", $"{encoder.FramesWritten} written, {encoder.FramesRepeatedForLag} missed and repeated, {recording.Clock.FramesCut} cut by stalls")
-            .Add("stopped", reason.Length > 0 ? reason : "F10");
+            .Add("stopped", reason);
         if (exitCode != 0)
         {
             recording.Report.Add("ffmpeg", $"exit code {exitCode}: {errors}");
@@ -281,17 +282,18 @@ public partial class OwnerCapture : CanvasLayer
 
         if (exitCode == 0)
         {
-            _messages.Enqueue($"Video saved   captures/{recording.Name}.mp4   {FormatDuration(seconds)}");
+            _messages.Enqueue(new Message(CaptureLines.VideoSaved, recording.Name, FormatDuration(seconds)));
             _savedFiles.Enqueue(mp4);
         }
         else
         {
-            _messages.Enqueue($"Video failed: ffmpeg exit code {exitCode} (see captures/{recording.Name}.txt)");
+            _messages.Enqueue(new Message(CaptureLines.VideoFailed, exitCode.ToString(CultureInfo.InvariantCulture), recording.Name));
         }
     }
 
-    private void ShowToast(string text)
+    private void ShowToast(StringName line, params string[] args)
     {
+        string text = CaptureLines.Say(line, args);
         GD.Print($"[capture] {text}");
         Toast.Text = text;
         _toastTween?.Kill();
@@ -337,8 +339,8 @@ public partial class OwnerCapture : CanvasLayer
             .Add("velocity", FormatVector(velocity))
             .Add("state", Player.CurrentState.Name)
             .Add("facing", Player.Facing > 0 ? "right" : "left")
-            .Add("on floor", Player.IsOnFloor() ? "yes" : "no")
-            .Add("abilities", abilities.Count > 0 ? string.Join(", ", abilities) : "none")
+            .Add("on floor", CaptureLines.Say(Player.IsOnFloor() ? CaptureLines.Yes : CaptureLines.No))
+            .Add("abilities", abilities.Count > 0 ? string.Join(", ", abilities) : CaptureLines.Say(CaptureLines.None))
             .Add("camera", camera is null ? "none" : FormatVector(camera.GlobalPosition))
             .Add("fps", Engine.GetFramesPerSecond().ToString("0", CultureInfo.InvariantCulture))
             .Add("window", $"{window.X}x{window.Y}")
@@ -373,6 +375,9 @@ public partial class OwnerCapture : CanvasLayer
         int total = (int)seconds;
         return $"{total / 60}:{total % 60:00}";
     }
+
+    /// <summary>A toast queued from a worker thread: the line to say, read from the book on the main thread, and its places.</summary>
+    private sealed record Message(StringName Line, params string[] Args);
 
     private sealed record Recording(
         FrameGrabber Grabber, VideoEncoder Encoder, VideoClock Clock, ulong StartUsec, FrameFormat Format,
