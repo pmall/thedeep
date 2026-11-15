@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using System.Linq;
 using System.Numerics;
 using Xunit;
 
@@ -33,6 +34,20 @@ public class MapLayoutTests
         };
         MapLayout.Result r = MapLayout.Place("A", links, Bounds, 6f);
         Assert.Contains(r.Problems, p => p.Contains("don't line up"));
+    }
+
+    [Fact]
+    public void ALoopThatDoesNotLineUpIsReportedOnce()
+    {
+        // Every exit two-way: each is two links, each met from both its rooms; the loop is still one problem.
+        var oneWay = new[]
+        {
+            new MapLink("A", "East", new Vector2(37f, 0f), "B", "West", new Vector2(1f, 0f)),
+            new MapLink("B", "Up", new Vector2(10f, 33f), "C", "Down", new Vector2(5f, 0f)),
+            new MapLink("C", "West", new Vector2(0f, 10f), "A", "Roof", new Vector2(20f, 21f)),
+        };
+        var links = oneWay.Concat(oneWay.Select(l => new MapLink(l.To, l.ToExit, l.ToPosition, l.From, l.FromExit, l.FromPosition)));
+        Assert.Single(MapLayout.Place("A", links, Bounds, 6f).Problems, p => p.Contains("don't line up"));
     }
 
     [Fact]
