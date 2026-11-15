@@ -231,6 +231,7 @@ public sealed class VideoEncoder : IDisposable
         }
 
         _writer.Join();
+        ReturnQueued();
         _queue.Dispose();
         _process.Dispose();
     }
@@ -238,10 +239,12 @@ public sealed class VideoEncoder : IDisposable
     private void WriteLoop()
     {
         Stream stdin = _process.StandardInput.BaseStream;
+        byte[]? writing = null;
         try
         {
             foreach (var (frame, repeats) in _queue.GetConsumingEnumerable())
             {
+                writing = frame;
                 int lagRepeats = Interlocked.Exchange(ref _lagRepeats, 0);
                 int total = repeats + lagRepeats;
                 for (int i = 0; i < total; i++)
@@ -251,6 +254,7 @@ public sealed class VideoEncoder : IDisposable
 
                 Interlocked.Add(ref _framesWritten, total);
                 Interlocked.Add(ref _framesRepeatedForLag, lagRepeats);
+                writing = null;
                 _pool?.Return(frame);
             }
 
@@ -260,6 +264,12 @@ public sealed class VideoEncoder : IDisposable
         {
             // ffmpeg exited early; FinishAsync reports its errors.
             _failed = true;
+            if (writing is not null)
+            {
+                _pool?.Return(writing);
+            }
+
+            ReturnQueued();
             try
             {
                 stdin.Close();
@@ -268,6 +278,15 @@ public sealed class VideoEncoder : IDisposable
             {
                 // The pipe is already broken (the reason we are here): there is nothing left to close.
             }
+        }
+    }
+
+    /// <summary>Gives the frames still waiting back to the pool: nothing will write them (ffmpeg failed, or the recording was abandoned).</summary>
+    private void ReturnQueued()
+    {
+        while (_queue.TryTake(out (byte[] Frame, int Repeats) waiting))
+        {
+            _pool?.Return(waiting.Frame);
         }
     }
 
