@@ -120,6 +120,24 @@ public class ReachPlannerTests
     }
 
     [Fact]
+    public void TheHarpoonFiresFromNoHigherThanAJumpRises()
+    {
+        // A sealed room: a slab 0.9 m over the head shuts the floor in, an anchor hangs over it. A jump bumps the slab's underside, so
+        // the Harpoon never fires from above it.
+        var solids = new[] { B(-10f, -2f, 10f, 0f), B(-11f, -2f, -10f, 20f), B(10f, -2f, 11f, 20f), B(-10f, 2.5f, 10f, 3f) };
+        var anchors = new[] { new Vector2(0f, 8f) };
+        var planner = new ReachPlanner(Limits, solids, Harpoon, anchors);
+        (HashSet<int> triggers, HashSet<int> ledges) = planner.Reach(Vector2.Zero, Vector2.Zero, new[] { B(-1f, 3.2f, 1f, 4f) });
+        Assert.DoesNotContain(0, triggers);
+        Assert.DoesNotContain(ledges, l => planner.Ledges[l].Y > 2.9f);
+
+        // With nothing over it, the top of a jump brings an anchor 10.2 m over the standing chest within range.
+        var open = new[] { B(-10f, -2f, 10f, 0f) };
+        Box anchor = B(-0.2f, 10.8f, 0.2f, 11.2f);
+        Assert.Contains(0, new ReachPlanner(Limits, open, Harpoon, new[] { new Vector2(0f, 11f) }).Reach(Vector2.Zero, Vector2.Zero, new[] { anchor }).Triggers);
+    }
+
+    [Fact]
     public void ALiftCarriesThePilgrimUpItsShaft()
     {
         // A hatch 20 m up, over a lift's platform set flush in the floor beside the start.

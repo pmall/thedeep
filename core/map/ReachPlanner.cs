@@ -99,8 +99,8 @@ public sealed record Leap(int From, Vector2 TakeOff, GroundMove Move, IReadOnlyL
 /// enter. Conservative where it must be: the body is a box (the real capsule slips off edges a little
 /// more easily), take-offs are sampled (ledge ends and every 2 m), so a gap the planner can't cross may
 /// still be crossable by a hair; the check treats "reached" as proof, "not reached" as the designer's claim.
-/// Given <see cref="HarpoonLimits"/> and anchors, it also fires the Harpoon: from standing (and from the top of a
-/// full jump) at every take-off point, and from each anchor reached, at every anchor in range and in clear sight,
+/// Given <see cref="HarpoonLimits"/> and anchors, it also fires the Harpoon: from standing, and from the top of a full jump
+/// straight up (as high as the room lets it rise), at every take-off point, and from each anchor reached, at every anchor in range and in clear sight,
 /// then lets go there (drifting either way or not, jumping off or not, dashing or not).
 /// Lifts (<see cref="LiftPath"/>) stand at their lower stop as solids; landing on one rides it up, the body touching every
 /// trigger it passes through on the way (stepping off at the top is not simulated: keep a lift's way out in its path).
@@ -372,7 +372,6 @@ public sealed class ReachPlanner
                 if (_harpoon is not null)
                 {
                     Fire(at + new Vector2(0f, _m.Height * 0.5f));
-                    Fire(at + new Vector2(0f, _m.Height * 0.5f + _m.JumpHeight));
                 }
 
                 foreach (GroundMove move in GroundMoves)
@@ -383,9 +382,16 @@ public sealed class ReachPlanner
                         || (!l.Swim && (move.Dir > 0 ? x == last && !_goesOn[ledge].East : x == first && !_goesOn[ledge].West)))
                     {
                         var running = new Vector2(move.Dir * (l.Swim && _water is { } wet ? wet.Limits.SwimSpeed : _m.RunSpeed), 0f);
-                        Trace? trace = leaps is not null && !l.Swim ? new Trace() : null;
+                        bool leap = leaps is not null && !l.Swim;
+                        bool fires = _harpoon is not null && move == StraightUp;
+                        Trace? trace = leap || fires ? new Trace() : null;
                         Simulate(at, running, move.Dir, move.JumpTicks, move.DashTick, triggers, reachedTriggers, Land, Sink, Grab, trace: trace);
-                        if (leaps is not null && trace is not null && (move.DashTick < 0 || trace.DashedAt >= 0))
+                        if (fires && trace is not null)
+                        {
+                            Fire(Apex(trace) + new Vector2(0f, _m.Height * 0.5f)); // as high as the room lets the jump rise
+                        }
+
+                        if (leap && leaps is not null && trace is not null && (move.DashTick < 0 || trace.DashedAt >= 0))
                         {
                             leaps(new Leap(ledge, at, move with { DashTick = trace.DashedAt }, trace.Path, trace.Lands,
                                 trace is { Lands: >= 0, Touched: false, Wet: false, Burned: false, Assisted: false }));
@@ -412,6 +418,24 @@ public sealed class ReachPlanner
             .Concat(dir == 0 ? Enumerable.Empty<GroundMove>() : new[] { -1, 4, 12, 20 }.Select(dash => new GroundMove(dir, 0, dash)))
         select move
     ).ToList();
+
+    /// <summary>The move the Harpoon also fires from, at its top: a full jump straight up, no air dash.</summary>
+    private static readonly GroundMove StraightUp = new(0, -1, -1);
+
+    /// <summary>The highest feet of a flight the body was whole at (not the tick it burned).</summary>
+    private static Vector2 Apex(Trace trace)
+    {
+        Vector2 top = trace.Path[0];
+        for (int i = 1; i < trace.Path.Count - (trace.Burned ? 1 : 0); i++)
+        {
+            if (trace.Path[i].Y > top.Y)
+            {
+                top = trace.Path[i];
+            }
+        }
+
+        return top;
+    }
 
     /// <summary>What one flight met, for a <see cref="Leap"/>: the feet tick by tick and the ledge it ended on (−1: none).</summary>
     private sealed class Trace
