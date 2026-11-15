@@ -25,9 +25,8 @@ public partial class Session : Node
     [Export] public EndCard EndCard { get; set; } = null!;
     [Export] public RoomTravel Travel { get; set; } = null!;
 
-    /// <summary>How close (meters, on the play plane) the pilgrim must stand to rest at a shrine or take a relic.</summary>
+    /// <summary>How close (meters, on the play plane) the pilgrim must stand to rest at a shrine (a relic: <see cref="PickupReach.Take"/>).</summary>
     [Export] public float RestRange { get; set; } = 1.6f;
-    [Export] public float RelicRange { get; set; } = 1.2f;
     [Export] public float ReadRange { get; set; } = 1.2f;
 
     /// <summary>Falling this far below a room's camera bounds is falling out of it: back to the last shrine, meters.</summary>
@@ -177,7 +176,7 @@ public partial class Session : Node
         IReadOnlyList<AbilityRelic> relics = room.All<AbilityRelic>();
         for (int i = 0; i < relics.Count; i++)
         {
-            if (!relics[i].Taken && relics[i].GlobalPosition.WithinOnPlane(p, RelicRange))
+            if (!relics[i].Taken && relics[i].GlobalPosition.WithinOnPlane(p, PickupReach.Take))
             {
                 Take(relics[i]);
                 break;
