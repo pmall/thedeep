@@ -17,6 +17,7 @@ public class MapLayoutTests
     [Fact]
     public void RoomsArePlacedFromTheirDoorways()
     {
+        // Joined rooms share a doorway margin: A's east wall and B's west wall overlap by 4 m in X, which is not a problem.
         var links = new[] { new MapLink("A", "East", new Vector2(37f, 0f), "B", "West", new Vector2(1f, 0f)) };
         MapLayout.Result r = MapLayout.Place("B", links, Bounds, 6f);
         Assert.Empty(r.Problems);
@@ -72,11 +73,4 @@ public class MapLayoutTests
         Assert.Contains(r.Problems, p => p.Contains("overlap"));
     }
 
-    [Fact]
-    public void ASharedDoorwayMarginIsFine()
-    {
-        // B's west wall (x -2..0) and A's east wall overlap by 4 m in X at the doorway.
-        var links = new[] { new MapLink("A", "East", new Vector2(37f, 0f), "B", "West", new Vector2(1f, 0f)) };
-        Assert.Empty(MapLayout.Place("A", links, Bounds, 6f).Problems);
-    }
 }

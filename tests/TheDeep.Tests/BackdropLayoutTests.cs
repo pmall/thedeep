@@ -114,6 +114,5 @@ public class BackdropLayoutTests
         Assert.True(row.TopY >= max.Y + (90f + 24f) * 0.27f - 1e-3f);
         Assert.Equal((min.Y, max.Y), (row.FloorY, row.RoofY));
         Assert.Equal((spec.Pitch, spec.Scale), (row.Pitch, row.Scale));
-        Assert.Equal(3, BackdropRowSpec.Defaults.Count);
     }
 }

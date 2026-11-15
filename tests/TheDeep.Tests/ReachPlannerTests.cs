@@ -39,8 +39,10 @@ public class ReachPlannerTests
         Assert.False(Reaches(solids, new Vector2(0f, 0f), top));
         var assisted = new ReachPlanner(Limits with { LedgeAssist = 0.6f }, solids);
         Assert.Equal(reachable, assisted.Reach(new Vector2(0f, 0f), Vector2.Zero, new[] { top }).Triggers.Contains(0));
-        Assert.Equal(0f, (Limits with { LedgeAssist = 0.6f }).Clumsy().LedgeAssist);
     }
+
+    [Fact]
+    public void AClumsyPilgrimHasNoLedgeAssist() => Assert.Equal(0f, (Limits with { LedgeAssist = 0.6f }).Clumsy().LedgeAssist);
 
     [Theory]
     [InlineData(6f, true)]     // a running jump

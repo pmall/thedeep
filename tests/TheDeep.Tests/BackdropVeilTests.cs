@@ -30,9 +30,14 @@ public class BackdropVeilTests
         Assert.True(BiomeRules.Value(veil) <= BackdropVeil.UnderRock * rock + 1e-4f);
         // The fog's own hue, only dimmed.
         Assert.Equal(Vector3.Normalize(fog).X, Vector3.Normalize(veil).X, 3);
-        if (BiomeRules.Value(fog) <= BackdropVeil.UnderRock * rock)
-        {
-            Assert.Equal(fog, veil);
-        }
+    }
+
+    [Fact]
+    public void AHazeDarkerThanTheCapIsLeftAsItIs()
+    {
+        var fog = new Vector3(0.05f, 0.06f, 0.08f);
+        const float rock = 0.5f;
+        Assert.True(BiomeRules.Value(fog) <= BackdropVeil.UnderRock * rock);
+        Assert.Equal(fog, BackdropVeil.Color(fog, new Vector3(rock)));
     }
 }
