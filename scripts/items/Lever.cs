@@ -25,6 +25,13 @@ public partial class Lever : Node3D
     /// <summary>How near the pilgrim must stand, meters on the play plane.</summary>
     [Export] public float Range { get; set; } = 1.4f;
 
+    /// <summary>How long the handle takes to swing down, seconds.</summary>
+    [Export] public float PullSeconds { get; set; } = 0.35f;
+
+    /// <summary>How bright the glow flares as it is pulled (<see cref="TokenGlow.FlareOut"/>'s peak) and how long it takes to die, seconds.</summary>
+    [Export] public float FlarePeak { get; set; } = 2.2f;
+    [Export] public float FlareSeconds { get; set; } = 1f;
+
     /// <summary>The handle's angle set and pulled, degrees about the depth axis.</summary>
     private const float SetAngle = 40f, PulledAngle = -40f;
 
@@ -51,10 +58,10 @@ public partial class Lever : Node3D
         Pulled = true;
         Prompt.Offer(false);
         Tween tween = CreateTween();
-        tween.TweenProperty(Handle, Names.RollDegrees, PulledAngle, 0.35f).SetTrans(Tween.TransitionType.Back).SetEase(Tween.EaseType.Out);
+        tween.TweenProperty(Handle, Names.RollDegrees, PulledAngle, PullSeconds).SetTrans(Tween.TransitionType.Back).SetEase(Tween.EaseType.Out);
         foreach (GeometryInstance3D glow in Glows)
         {
-            TokenGlow.FlareOut(tween, glow, 2.2f, 1f);
+            TokenGlow.FlareOut(tween, glow, FlarePeak, FlareSeconds);
         }
     }
 

@@ -43,6 +43,9 @@ public partial class Conversation : Node3D, INamesLines
 
     [Export] public float Lean { get; set; } = 0.6f;
 
+    /// <summary>How far before the play plane the prompt stands, meters, so it is never inside the speaker.</summary>
+    [Export] public float PromptDepth { get; set; } = 0.6f;
+
     /// <summary>Heard to its end, and <see cref="Once"/>: no longer offered.</summary>
     public bool Spent { get; set; }
 
@@ -57,7 +60,4 @@ public partial class Conversation : Node3D, INamesLines
         Prompt.GlobalPosition = new Vector3(at.X, at.Y, GlobalPosition.Z + PromptDepth);
         Prompt.Reach = reach;
     }
-
-    /// <summary>How far before the play plane the prompt stands, meters, so it is never inside the speaker.</summary>
-    private const float PromptDepth = 0.6f;
 }
