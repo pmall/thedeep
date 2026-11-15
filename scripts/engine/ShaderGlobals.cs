@@ -47,11 +47,6 @@ public static class ShaderGlobals
     /// <summary>How far the faith glyphs take the accent toward white (<see cref="BiomeProfile.GlyphWhiten"/>, its one source).</summary>
     public static readonly StringName GlyphWhiten = "glyph_whiten";
 
-    /// <summary>The baked frost set (<see cref="FrostSurface"/>) every material that frosts samples; project.godot sets it once.</summary>
-    public static readonly StringName FrostSurfaceMap = "frost_surface";
-
-    /// <summary>The frost's normal map, sampled by every material that frosts; project.godot sets it once.</summary>
-    public static readonly StringName FrostNormalMap = "frost_normal";
     /// <summary>The far distance's color, which backdrop skylines sink into (<see cref="BiomeProfile.HazeColor"/>).</summary>
     public static readonly StringName BiomeHaze = "biome_haze";
     /// <summary>The murk the architecture behind a room sinks into (<see cref="BiomeProfile.BackdropVeilColor"/>).</summary>
