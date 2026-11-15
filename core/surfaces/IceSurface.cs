@@ -126,8 +126,7 @@ public sealed record IceSurface : ISurfacePattern
         // The plates' cracks: a bright edge, a wash on the lit side; they fade in and out along their length, so some end in
         // the ice. Every border of a lit plate washes it (fainter where the crack fades), so the wash has no edge of its own.
         double warp = CrackWarpMeters / tile * PlateCells;
-        double wx = (TileNoise.Fractal(u, v, 8, 3, Seed + 1) - 0.5) * 2.0 * warp;
-        double wy = (TileNoise.Fractal(u, v, 8, 3, Seed + 2) - 0.5) * 2.0 * warp;
+        (double wx, double wy) = TileNoise.WarpPair(u, v, 8, 3, Seed + 1, Seed + 2, warp);
         VoronoiCell plate = TileNoise.Voronoi((u * PlateCells) + wx, (v * PlateCells) + wy, PlateCells, Seed + 3);
         double meters = plate.Border * tile / PlateCells;
         bool lit = TileNoise.Hash(plate.Cell, 0, Seed + 5) < LitShare;
@@ -189,6 +188,6 @@ public sealed record IceSurface : ISurfacePattern
     {
         double noise = TileNoise.Fractal(u, v, cells, 2, seed);
         double threshold = 0.5 - ((share - 0.5) * 0.5);
-        return TileNoise.SmoothStep(threshold - 0.04, threshold + 0.04, noise);
+        return TileNoise.SmoothStepAround(threshold, 0.04, noise);
     }
 }

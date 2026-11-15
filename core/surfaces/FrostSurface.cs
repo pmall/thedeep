@@ -168,8 +168,9 @@ public sealed record FrostSurface : ISurfacePattern
     /// each cell around the point that holds one; more of them where the coat is thin (<paramref name="mottle"/> low).</summary>
     private double Gap(double u, double v, double mottle)
     {
-        double x = (u * GapCells) + ((TileNoise.Fractal(u, v, GapWarpCells, 2, Seed + 19) - 0.5) * 2.0 * GapWarp);
-        double y = (v * GapCells) + ((TileNoise.Fractal(u, v, GapWarpCells, 2, Seed + 20) - 0.5) * 2.0 * GapWarp);
+        (double warpX, double warpY) = TileNoise.WarpPair(u, v, GapWarpCells, 2, Seed + 19, Seed + 20, GapWarp);
+        double x = (u * GapCells) + warpX;
+        double y = (v * GapCells) + warpY;
         int cx = (int)Math.Floor(x);
         int cy = (int)Math.Floor(y);
         double share = GapShare * TileNoise.Lerp(0.4, 1.0, TileNoise.SmoothStep(0.7, 0.3, mottle));
@@ -190,10 +191,9 @@ public sealed record FrostSurface : ISurfacePattern
                 double angle = TileNoise.Hash(wx, wy, Seed + 10) * Math.PI;
                 double half = TileNoise.Lerp(GapMinLength, GapMaxLength, TileNoise.Hash(wx, wy, Seed + 11));
                 double width = GapWidth * (0.5 + (0.8 * TileNoise.Hash(wx, wy, Seed + 12)));
-                double dx = Math.Cos(angle);
-                double dy = Math.Sin(angle);
-                double s = (((x - mx) * dx) + ((y - my) * dy)) / half;
-                double t = (((x - mx) * -dy) + ((y - my) * dx)) / width;
+                (double along, double across) = TileNoise.StrokeFrame(x, y, mx, my, angle);
+                double s = along / half;
+                double t = across / width;
 
                 // An ellipse, its border soft.
                 double lens = 1.0 - (s * s);

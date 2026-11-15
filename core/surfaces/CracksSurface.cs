@@ -89,8 +89,7 @@ public sealed record CracksSurface : ISurfacePattern
 
         // The chunks: a warped Voronoi web, so the fissures wander.
         double warp = WarpMeters / tile * ChunkCells;
-        double wx = (TileNoise.Fractal(u, v, 6, 3, Seed + 1) - 0.5) * 2.0 * warp;
-        double wy = (TileNoise.Fractal(u, v, 6, 3, Seed + 2) - 0.5) * 2.0 * warp;
+        (double wx, double wy) = TileNoise.WarpPair(u, v, 6, 3, Seed + 1, Seed + 2, warp);
         VoronoiCell chunk = TileNoise.Voronoi((u * ChunkCells) + wx, (v * ChunkCells) + wy, ChunkCells, Seed + 3);
         double meters = chunk.Border * tile / ChunkCells;
 
@@ -113,8 +112,7 @@ public sealed record CracksSurface : ISurfacePattern
         // Finer cracks running in from the fissures, showing in stretches.
         VoronoiCell fineCell = TileNoise.Voronoi((u * FineCells) + (wx * 2.0), (v * FineCells) + (wy * 2.0), FineCells, Seed + 7);
         double showsNoise = TileNoise.Fractal(u, v, 9, 2, Seed + 8);
-        double threshold = 1.0 - FineShare;
-        double shows = TileNoise.SmoothStep(threshold - 0.05, threshold + 0.05, showsNoise) * onChunk;
+        double shows = TileNoise.Shows(showsNoise, FineShare, 0.05) * onChunk;
         double fine = TileNoise.Line(fineCell.Border * tile / FineCells, FineMeters) * shows;
 
         double grit = TileNoise.Fractal(u, v, GritCells, 3, Seed + 9) - 0.5;

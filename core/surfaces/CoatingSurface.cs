@@ -135,12 +135,10 @@ public sealed record CoatingSurface : ISurfacePattern
                 double my = cy + j + TileNoise.Hash(wx, wy, Seed + 8);
                 double angle = (TileNoise.Hash(wx, wy, Seed + 9) - 0.5) * 2.0 * ScratchLean;
                 double half = TileNoise.Lerp(ScratchMinLength, ScratchMaxLength, TileNoise.Hash(wx, wy, Seed + 10)) * 0.5;
-                double dx = Math.Cos(angle);
-                double dy = Math.Sin(angle);
 
                 // Along the score from its middle (in cells), and across it (in meters).
-                double s = ((x - mx) * dx) + ((y - my) * dy);
-                double across = Math.Abs(((x - mx) * -dy) + ((y - my) * dx)) * cellMeters;
+                (double s, double acrossCells) = TileNoise.StrokeFrame(x, y, mx, my, angle);
+                double across = Math.Abs(acrossCells) * cellMeters;
                 if (Math.Abs(s) >= half)
                 {
                     continue;

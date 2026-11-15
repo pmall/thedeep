@@ -113,8 +113,7 @@ public sealed record BasaltSurface : ISurfacePattern
         // Hairline cracks, in short stretches.
         VoronoiCell web = TileNoise.Voronoi(u * CrackCells, v * CrackCells, CrackCells, Seed + 6);
         double showsNoise = TileNoise.Fractal(u, v, 8, 2, Seed + 7);
-        double threshold = 1.0 - CrackShare;
-        double shows = TileNoise.SmoothStep(threshold - 0.04, threshold + 0.04, showsNoise);
+        double shows = TileNoise.Shows(showsNoise, CrackShare, 0.04);
         double crack = TileNoise.Line(web.Border * tile / CrackCells, CrackMeters) * shows;
 
         double height = (undulation * 2.0 * UndulationMeters) + (chisel * 2.0 * ChiselMeters) + (grain * 2.0 * GrainMeters)
@@ -136,7 +135,7 @@ public sealed record BasaltSurface : ISurfacePattern
         LatticeCell cell = TileNoise.Locate(u, v, cells);
         double field = TileNoise.Fractal(
             (cell.Wx + 0.5) / cells * VesicleFieldCells, (cell.Wy + 0.5) / cells * VesicleFieldCells, VesicleFieldCells, VesicleFieldCells, 2, Seed + 9);
-        double gathered = TileNoise.SmoothStep(1.0 - VesicleFieldShare - 0.1, 1.0 - VesicleFieldShare + 0.1, field);
+        double gathered = TileNoise.Shows(field, VesicleFieldShare, 0.1);
         if (TileNoise.Hash(cell.Wx, cell.Wy, seed) >= share * gathered)
         {
             return 0.0;

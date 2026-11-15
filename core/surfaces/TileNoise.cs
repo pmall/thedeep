@@ -172,6 +172,35 @@ public static class TileNoise
         return t * t * (3.0 - (2.0 * t));
     }
 
+    /// <summary><see cref="SmoothStep"/> from <paramref name="center"/> minus <paramref name="half"/> to <paramref name="center"/>
+    /// plus <paramref name="half"/>: a soft threshold at <paramref name="center"/>.</summary>
+    public static double SmoothStepAround(double center, double half, double x) => SmoothStep(center - half, center + half, x);
+
+    /// <summary>
+    /// Where a noise of values in [0, 1] shows (0 to 1) when about <paramref name="share"/> of the face should: its high part,
+    /// softly cut <paramref name="softness"/> either side of the level that leaves that share.
+    /// </summary>
+    public static double Shows(double noise, double share, double softness) => SmoothStepAround(1.0 - share, softness, noise);
+
+    /// <summary>
+    /// A pair of offsets for warping a lattice, each <paramref name="amount"/> either way at most, from two noises of
+    /// <paramref name="cells"/> per tile that differ only by seed (<paramref name="seedX"/>, <paramref name="seedY"/>).
+    /// </summary>
+    public static (double X, double Y) WarpPair(double u, double v, int cells, int octaves, int seedX, int seedY, double amount) =>
+        ((Fractal(u, v, cells, octaves, seedX) - 0.5) * 2.0 * amount, (Fractal(u, v, cells, octaves, seedY) - 0.5) * 2.0 * amount);
+
+    /// <summary>
+    /// A point seen from a straight stroke through (<paramref name="mx"/>, <paramref name="my"/>) at <paramref name="angle"/>
+    /// (radians from the x axis): how far along the stroke from that middle, and how far across it (signed), in the units of
+    /// the arguments.
+    /// </summary>
+    public static (double Along, double Across) StrokeFrame(double x, double y, double mx, double my, double angle)
+    {
+        double dx = Math.Cos(angle);
+        double dy = Math.Sin(angle);
+        return (((x - mx) * dx) + ((y - my) * dy), ((x - mx) * -dy) + ((y - my) * dx));
+    }
+
     /// <summary>From the point to the site of lattice cell (<paramref name="gx"/>, <paramref name="gy"/>).</summary>
     private static (double X, double Y) ToSite(int gx, int gy, double x, double y, int cells, int seed)
     {
