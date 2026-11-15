@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Numerics;
+using static TheDeep.DressingLayout;
 
 namespace TheDeep;
 
@@ -110,7 +111,6 @@ public static class BackdropLayout
         return xs;
     }
 
-    private static float H(BackdropRow row, int a, int b) => DressingLayout.Hash01(row.Seed + a * 7919, b);
 
     /// <summary>The band a style places its features in: the room's bounds, at least a few bays' worth tall.</summary>
     private static float Band(BackdropRow row) => MathF.Max(row.RoofY - row.FloorY, 10f * row.Scale);
@@ -134,7 +134,7 @@ public static class BackdropLayout
         var height = new int[xs.Count];
         for (int k = 0; k < xs.Count; k++)
         {
-            height[k] = H(row, 1, k) < 0.2f && tiers.Count > 1 ? 1 + (int)(H(row, 2, k) * (tiers.Count - 1)) : tiers.Count;
+            height[k] = Hash01(row.Seed, 1, k) < 0.2f && tiers.Count > 1 ? 1 + (int)(Hash01(row.Seed, 2, k) * (tiers.Count - 1)) : tiers.Count;
         }
 
         for (int k = 0; k < xs.Count; k++)
@@ -144,7 +144,7 @@ public static class BackdropLayout
                 list.Add(new BackdropPlacement(j == 0 ? BackdropPiece.Pier : BackdropPiece.UpperPier, new Vector3(xs[k], tiers[j], 0f)));
             }
 
-            if (height[k] > 1 && H(row, 40, k) < 0.2f)
+            if (height[k] > 1 && Hash01(row.Seed, 40, k) < 0.2f)
             {
                 // A shaft up the pier's face, from the first arches' springing to its top: upright, few, in the stone.
                 float from = tiers[0] + d.PierHeight;
@@ -159,7 +159,7 @@ public static class BackdropLayout
             int both = Math.Min(height[k], height[k + 1]);
             for (int j = 0; j < both; j++)
             {
-                if (H(row, 3 + j, k) < 0.1f)
+                if (Hash01(row.Seed, 3 + j, k) < 0.1f)
                 {
                     continue; // a fallen arch
                 }
@@ -184,13 +184,13 @@ public static class BackdropLayout
         for (int k = 0; k < xs.Count; k++)
         {
             // Towers of stacked rack segments, of uneven height; the odd one missing.
-            if (H(row, 1, k) < 0.12f)
+            if (Hash01(row.Seed, 1, k) < 0.12f)
             {
                 floors[k] = 0;
                 continue;
             }
 
-            float top = row.TopY - (row.TopY - row.FloorY) * 0.45f * H(row, 2, k);
+            float top = row.TopY - (row.TopY - row.FloorY) * 0.45f * Hash01(row.Seed, 2, k);
             int n = Math.Max(1, (int)MathF.Ceiling((top - row.BaseY) / d.TowerHeight));
             floors[k] = n;
             for (int j = 0; j < n; j++)
@@ -205,7 +205,7 @@ public static class BackdropLayout
             float mid = (xs[k] + xs[k + 1]) * 0.5f;
             for (int j = 1; j < both; j++)
             {
-                if (H(row, 3 + j, k) < 0.55f)
+                if (Hash01(row.Seed, 3 + j, k) < 0.55f)
                 {
                     continue;
                 }
@@ -230,22 +230,22 @@ public static class BackdropLayout
         for (int k = 0; k < xs.Count; k++)
         {
             // A furnace on every other bay line at least, its stack rising from its hood, some stacks shorter.
-            stack[k] = k % 2 == 0 || H(row, 1, k) < 0.25f;
+            stack[k] = k % 2 == 0 || Hash01(row.Seed, 1, k) < 0.25f;
             if (!stack[k])
             {
                 continue;
             }
 
             // Built in whole steps of length, so each piece's mesh is made at the length it is placed at.
-            int steps = Math.Max(1, (int)MathF.Round((row.FloorY + d.FurnaceHeight * (0.6f + 0.8f * H(row, 2, k)) - row.BaseY) / d.LengthStep));
+            int steps = Math.Max(1, (int)MathF.Round((row.FloorY + d.FurnaceHeight * (0.6f + 0.8f * Hash01(row.Seed, 2, k)) - row.BaseY) / d.LengthStep));
             float top = row.BaseY + steps * d.LengthStep;
             list.Add(new BackdropPlacement(BackdropPiece.Furnace, new Vector3(xs[k], (row.BaseY + top) * 0.5f, 0f), Length: steps * d.LengthStep));
             list.Add(new BackdropPlacement(BackdropPiece.Hood, new Vector3(xs[k], top + d.HoodHeight * 0.5f, 0f)));
             hoodTop[k] = top + d.HoodHeight;
-            float end = H(row, 3, k) < 0.25f ? hoodTop[k] + band * (0.5f + 0.4f * H(row, 4, k)) : row.TopY;
+            float end = Hash01(row.Seed, 3, k) < 0.25f ? hoodTop[k] + band * (0.5f + 0.4f * Hash01(row.Seed, 4, k)) : row.TopY;
             int stackSteps = Math.Max(1, (int)MathF.Round((end - hoodTop[k]) / d.LengthStep));
             list.Add(new BackdropPlacement(BackdropPiece.Stack, new Vector3(xs[k], hoodTop[k], 0f), Length: stackSteps * d.LengthStep));
-            if (row.Glows && H(row, 6, k) < 0.4f)
+            if (row.Glows && Hash01(row.Seed, 6, k) < 0.4f)
             {
                 list.Add(new BackdropPlacement(BackdropPiece.FurnaceMouth, new Vector3(xs[k], top - d.FurnaceHeight * 0.4f, d.FurnaceDepth * 0.5f)));
             }
@@ -269,17 +269,17 @@ public static class BackdropLayout
             float from = xs[k] + d.StackRadius, to = xs[next] - d.StackRadius;
             float span = to - from;
             float mid = (from + to) * 0.5f;
-            float low = MathF.Max(hoodTop[k], hoodTop[next]) + (2f + 4f * H(row, 5, k)) * row.Scale;
-            int levels = H(row, 4, k) < 0.5f ? 1 : 2;
+            float low = MathF.Max(hoodTop[k], hoodTop[next]) + (2f + 4f * Hash01(row.Seed, 5, k)) * row.Scale;
+            int levels = Hash01(row.Seed, 4, k) < 0.5f ? 1 : 2;
             float high = low;
             for (int level = 0; level < levels; level++)
             {
                 low = level == 0 ? low : high + d.TankRadius * 2f + d.TrussDepth;
                 high = low + d.TrussDepth;
                 Truss(list, d, from, span, low, high);
-                if (level == 0 && span > d.TankLength * 1.4f && H(row, 7, k) < 0.6f)
+                if (level == 0 && span > d.TankLength * 1.4f && Hash01(row.Seed, 7, k) < 0.6f)
                 {
-                    float x = mid + (H(row, 8, k) - 0.5f) * (span - d.TankLength * 1.2f);
+                    float x = mid + (Hash01(row.Seed, 8, k) - 0.5f) * (span - d.TankLength * 1.2f);
                     list.Add(new BackdropPlacement(BackdropPiece.Tank, new Vector3(x, high + d.BeamSection * 0.5f + d.TankRadius, 0f)));
                 }
 
@@ -287,18 +287,18 @@ public static class BackdropLayout
                 float w = span / panels;
                 for (int c = 0; c < panels; c++)
                 {
-                    if (H(row, 20 + level, k * 31 + c) < 0.12f)
+                    if (Hash01(row.Seed, 20 + level, k * 31 + c) < 0.12f)
                     {
-                        float chain = (low - row.FloorY) * (0.2f + 0.4f * H(row, 30 + level, k * 31 + c));
+                        float chain = (low - row.FloorY) * (0.2f + 0.4f * Hash01(row.Seed, 30 + level, k * 31 + c));
                         list.Add(new BackdropPlacement(BackdropPiece.Chain, new Vector3(from + (c + 0.5f) * w, low, 0f), Length: chain));
                     }
                 }
             }
 
-            if (H(row, 9, k) < 0.5f)
+            if (Hash01(row.Seed, 9, k) < 0.5f)
             {
                 // From one stack's axis to the next, its ends inside them.
-                float duct = high + d.DuctRadius * 2f + (3f + 3f * H(row, 10, k)) * row.Scale;
+                float duct = high + d.DuctRadius * 2f + (3f + 3f * Hash01(row.Seed, 10, k)) * row.Scale;
                 list.Add(new BackdropPlacement(BackdropPiece.Duct, new Vector3((xs[k] + xs[next]) * 0.5f, duct, 0f), Length: xs[next] - xs[k]));
             }
         }
@@ -339,11 +339,11 @@ public static class BackdropLayout
             }
 
             float cx = (xs[k] + xs[k + 1]) * 0.5f;
-            float cy = row.FloorY + band * (0.3f + 0.4f * H(row, 1, k));
-            float radius = d.GearRadius * (0.75f + 0.4f * H(row, 2, k));
+            float cy = row.FloorY + band * (0.3f + 0.4f * Hash01(row.Seed, 1, k));
+            float radius = d.GearRadius * (0.75f + 0.4f * Hash01(row.Seed, 2, k));
             // In front of the pistons, so they pass behind the gear.
             float z = 2f * row.Scale;
-            list.Add(new BackdropPlacement(BackdropPiece.Gear, new Vector3(cx, cy, z), RollZ: H(row, 4, k) * MathF.PI, Length: radius));
+            list.Add(new BackdropPlacement(BackdropPiece.Gear, new Vector3(cx, cy, z), RollZ: Hash01(row.Seed, 4, k) * MathF.PI, Length: radius));
             list.Add(new BackdropPlacement(BackdropPiece.Hub, new Vector3(cx, cy, z - 0.6f * row.Scale), PitchX: MathF.PI * 0.5f));
         }
 
