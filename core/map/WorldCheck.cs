@@ -30,11 +30,6 @@ public sealed class WorldCheck
     /// <summary>Each simulated ability on its own.</summary>
     private static readonly Ability[] Singles = { Ability.MagGrip, Ability.Harpoon, Ability.Drill, Ability.Ballast, Ability.HeatPlating };
 
-    /// <summary>The simulated abilities taken together, fewest first, for ways that need more than one.</summary>
-    private static readonly Ability[] Combined = Enumerable.Range(1, (int)Simulated)
-        .Select(i => (Ability)i).Where(a => (a & ~Simulated) == 0 && BitOperations.PopCount((uint)a) > 1)
-        .OrderBy(a => BitOperations.PopCount((uint)a)).ToArray();
-
     private readonly PlannerLimits _limits;
     private readonly List<string> _problems = new();
     private readonly List<(string Room, Requirement Requires)> _sealed = new();
@@ -358,16 +353,9 @@ public sealed class WorldCheck
                 continue;
             }
 
-            // Each way the requirement can be met: every single ability that meets it, else the fewest abilities together.
-            var options = Singles.Where(a => r.IsMetBy(a)).ToList();
-            if (options.Count == 0 && Combined.FirstOrDefault(c => r.IsMetBy(c)) is var together && together != Ability.None)
+            foreach (Need option in r.Options.Where(o => !others.Any(w => Reached(w, o.Abilities).Contains(i))))
             {
-                options.Add(together);
-            }
-
-            foreach (Ability a in options.Where(a => !others.Any(w => Reached(w, a).Contains(i))))
-            {
-                problems.Add($"{room}: exit {x.Name} needs {x.Requires}, but {Describe(a)} reaches it from no way into the room");
+                problems.Add($"{room}: exit {x.Name} needs {x.Requires}, but {Describe(option.Abilities)} reaches it from no way into the room");
             }
 
             foreach (int w in others.Where(w => ways[w].Base && Reached(w, Ability.None).Contains(i)))

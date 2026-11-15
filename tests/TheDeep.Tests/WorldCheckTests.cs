@@ -95,6 +95,16 @@ public class WorldCheckTests
     }
 
     [Fact]
+    public void EachOptionOfARequirementMustReachTheExit()
+    {
+        // The way out on top of a metal tower: Mag-grip climbs to it, the Drill and Ballast together don't.
+        WorldCheck world = TwoRooms(eastNeeds: "MagGrip | Drill & Ballast", eastY: 11.5f, hallMetal: Tower);
+        world.Check("Hall", MapTargets.None, report: false);
+        Assert.DoesNotContain(world.Problems, p => p.Contains("Mag-grip reaches it from no way", StringComparison.Ordinal));
+        Assert.Contains("Hall: exit East needs MagGrip | Drill & Ballast, but Drill, Ballast together reaches it from no way into the room", world.Problems);
+    }
+
+    [Fact]
     public void RoomsThatOverlapOnTheMapAreAProblem()
     {
         var world = new WorldCheck(Limits);
