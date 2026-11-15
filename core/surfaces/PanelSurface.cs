@@ -47,7 +47,7 @@ public sealed record PanelSurface : ISurfacePattern
     /// <summary>The flat band either side of a panel's middle lines.</summary>
     public double FlatMeters { get; init; } = 0.05;
 
-    /// <summary>The seam's half width, its depth, and how dark its bottom is.</summary>
+    /// <summary>The seam's half width, meters.</summary>
     public double SeamMeters { get; init; } = 0.014;
 
     /// <summary>How deep the seam's bottom lies below the panels' edges, meters.</summary>
@@ -56,13 +56,13 @@ public sealed record PanelSurface : ISurfacePattern
     /// <summary>What the coating's tone is multiplied by at the seam's bottom (below 1 darkens).</summary>
     public double SeamTone { get; init; } = 0.25;
 
-    /// <summary>The bevel beside the seam: how wide, and how high the panel's face stands once over it.</summary>
+    /// <summary>The bevel beside the seam: how wide it is, meters.</summary>
     public double BevelMeters { get; init; } = 0.05;
 
     /// <summary>How high a panel's face stands above its edge once over the bevel, meters.</summary>
     public double BevelRiseMeters { get; init; } = 0.012;
 
-    /// <summary>A rivet: its distance from the seams, its radius, its head's height and tone, the dirt ring round it.</summary>
+    /// <summary>A corner rivet's distance from the seams, meters.</summary>
     public double RivetInsetMeters { get; init; } = 0.1;
 
     /// <summary>A corner rivet's radius, meters.</summary>
@@ -77,8 +77,7 @@ public sealed record PanelSurface : ISurfacePattern
     /// <summary>How far the dirt ring reaches beyond a rivet's rim, meters.</summary>
     public double RingMeters { get; init; } = 0.025;
 
-    /// <summary>The corner plate: its inner edge's distance from the seams, how far it reaches, its thickness and tone; its
-    /// rivets' distances from the seams and radius.</summary>
+    /// <summary>The corner plate's inner edge's distance from the seams, meters.</summary>
     public double GussetFromMeters { get; init; } = 0.035;
 
     /// <summary>How far the corner plate reaches from the seams along them, meters; its outer corner is cut on the
@@ -101,7 +100,7 @@ public sealed record PanelSurface : ISurfacePattern
     /// <summary>The radius of a corner plate's rivet, meters.</summary>
     public double GussetRivetMeters { get; init; } = 0.02;
 
-    /// <summary>The sunk middle: its frame's width from the seams, its corners' radius, its depth and the chamfer down to it.</summary>
+    /// <summary>The sunk middle's frame's width from the seams, meters.</summary>
     public double InsetMeters { get; init; } = 0.13;
 
     /// <summary>The radius of the sunk middle's rounded corners, meters.</summary>
@@ -113,14 +112,35 @@ public sealed record PanelSurface : ISurfacePattern
     /// <summary>The width of the chamfer from the frame down to the sunk middle, meters.</summary>
     public double InsetChamferMeters { get; init; } = 0.012;
 
-    /// <summary>The coating's roughness, and the rivet heads' (matte, so their small domes never glint).</summary>
+    /// <summary>The coating's roughness (0 to 1).</summary>
     public double Roughness { get; init; } = 0.32;
 
     /// <summary>The roughness (0 to 1) at the seam's bottom.</summary>
     public double SeamRoughness { get; init; } = 0.5;
 
-    /// <summary>The roughness (0 to 1) of a rivet's head.</summary>
+    /// <summary>The roughness (0 to 1) of a rivet's head (matte, so its small dome never glints).</summary>
     public double RivetRoughness { get; init; } = 0.48;
+
+    /// <summary>How softly the seam's edge fades, meters either side of its half width.</summary>
+    public double SeamEdgeMeters { get; init; } = 0.003;
+
+    /// <summary>How softly a corner plate's edge fades, meters.</summary>
+    public double PlateEdgeMeters { get; init; } = 0.004;
+
+    /// <summary>How much of the shadow along a corner plate's edge counts as cavity (0 to 1).</summary>
+    public double GussetCavity { get; init; } = 0.3;
+
+    /// <summary>The half width of the shadow along a corner plate's edge, meters.</summary>
+    public double GussetShadowMeters { get; init; } = 0.008;
+
+    /// <summary>How much of the shadow along the sunk middle's chamfer counts as cavity (0 to 1).</summary>
+    public double InsetCavity { get; init; } = 0.35;
+
+    /// <summary>The half width of the shadow along the sunk middle's chamfer, meters.</summary>
+    public double InsetShadowMeters { get; init; } = 0.01;
+
+    /// <summary>How much of the dirt ring round a rivet counts as cavity (0 to 1).</summary>
+    public double RivetCavity { get; init; } = 0.35;
 
     public SurfacePoint At(double alongMeters, double upMeters)
     {
@@ -138,7 +158,7 @@ public sealed record PanelSurface : ISurfacePattern
         y = Math.Min(y, side - y);
         double toSeam = Math.Min(x, y);
 
-        double seam = 1.0 - TileNoise.SmoothStep(SeamMeters - 0.003, SeamMeters + 0.003, toSeam);
+        double seam = 1.0 - TileNoise.SmoothStep(SeamMeters - SeamEdgeMeters, SeamMeters + SeamEdgeMeters, toSeam);
         double rise = TileNoise.SmoothStep(SeamMeters, SeamMeters + BevelMeters, toSeam);
         double height = (rise * BevelRiseMeters) - (seam * SeamDepthMeters);
         double tone = 1.0;
@@ -156,10 +176,10 @@ public sealed record PanelSurface : ISurfacePattern
                 // A plate over the corner, its far corner cut off square across the diagonal.
                 double inner = Math.Min(x, y) - GussetFromMeters;
                 double outer = Math.Min(GussetToMeters - Math.Max(x, y), (GussetToMeters * 1.6) - (x + y));
-                double plate = TileNoise.SmoothStep(0.0, 0.004, Math.Min(inner, outer));
+                double plate = TileNoise.SmoothStep(0.0, PlateEdgeMeters, Math.Min(inner, outer));
                 height += plate * GussetMeters;
                 tone = TileNoise.Lerp(tone, GussetTone, plate);
-                cavity = Math.Max(cavity, 0.3 * TileNoise.Line(Math.Min(inner, outer), 0.008) * (1.0 - plate));
+                cavity = Math.Max(cavity, GussetCavity * TileNoise.Line(Math.Min(inner, outer), GussetShadowMeters) * (1.0 - plate));
                 Rivet(x, y, GussetRivetNearMeters, GussetRivetNearMeters, GussetRivetMeters, ref height, ref cavity, ref head);
                 Rivet(x, y, GussetRivetNearMeters, GussetRivetFarMeters, GussetRivetMeters, ref height, ref cavity, ref head);
                 Rivet(x, y, GussetRivetFarMeters, GussetRivetNearMeters, GussetRivetMeters, ref height, ref cavity, ref head);
@@ -175,7 +195,7 @@ public sealed record PanelSurface : ISurfacePattern
                     : Math.Min(x, y) - InsetMeters;
                 double sunk = TileNoise.SmoothStep(0.0, InsetChamferMeters, inside);
                 height -= sunk * InsetDepthMeters;
-                cavity = Math.Max(cavity, 0.35 * TileNoise.Line(inside - InsetChamferMeters, 0.01));
+                cavity = Math.Max(cavity, InsetCavity * TileNoise.Line(inside - InsetChamferMeters, InsetShadowMeters));
                 break;
             }
         }
@@ -195,7 +215,7 @@ public sealed record PanelSurface : ISurfacePattern
         double on = 1.0 - TileNoise.SmoothStep(0.94, 1.0, t);
         double crown = (1.0 - TileNoise.SmoothStep(0.55, 1.0, t)) * (1.0 - (0.25 * t * t));
         height += RivetHeightMeters * crown;
-        cavity = Math.Max(cavity, 0.35 * TileNoise.Line(d - radius, RingMeters) * (1.0 - on));
+        cavity = Math.Max(cavity, RivetCavity * TileNoise.Line(d - radius, RingMeters) * (1.0 - on));
         head = Math.Max(head, on);
     }
 }

@@ -20,21 +20,19 @@ public sealed record IceSurface : ISurfacePattern
 {
     public double TileMeters { get; init; } = 4.0;
 
-    /// <summary>Plates per tile side, the share of their borders that cracked (in stretches, from a noise of
-    /// <see cref="CrackCells"/> per tile), and how far a crack strays from straight.</summary>
+    /// <summary>Plates per tile side.</summary>
     public int PlateCells { get; init; } = 5;
 
-    /// <summary>Share of the plates' borders that cracked (0 to 1), in stretches.</summary>
+    /// <summary>Share of the plates' borders that cracked (0 to 1), in stretches picked by a noise of <see cref="CrackCells"/> per tile.</summary>
     public double CrackShare { get; init; } = 0.75;
 
-    /// <summary>Cells per tile of the noise that says which stretches of border cracked; the finer cracks use three times as
-    /// many.</summary>
+    /// <summary>Cells per tile of the noise that says which stretches of border cracked.</summary>
     public int CrackCells { get; init; } = 3;
 
     /// <summary>How far a crack strays from the straight border between two plates, meters.</summary>
     public double CrackWarpMeters { get; init; } = 0.05;
 
-    /// <summary>A crack's bright edge (half width); the wash on its lit side: how bright at the edge and how far it reaches.</summary>
+    /// <summary>A crack's bright edge: its half width, meters.</summary>
     public double CrackMeters { get; init; } = 0.012;
 
     /// <summary>How bright the wash is at a crack's edge on its lit side, added to the ice's tone (1 is the plain
@@ -48,8 +46,7 @@ public sealed record IceSurface : ISurfacePattern
     /// <summary>Share of plates whose cracks wash them (the planes slanting under them).</summary>
     public double LitShare { get; init; } = 0.4;
 
-    /// <summary>Finer cracks: cells per tile side, the share of their length cracked, their half width, how white, and the
-    /// cells per tile side of the patches they cluster in.</summary>
+    /// <summary>Finer cracks: cells per tile side.</summary>
     public int FineCells { get; init; } = 14;
 
     /// <summary>Share of the finer cracks' length that cracked (0 to 1), in stretches.</summary>
@@ -64,8 +61,7 @@ public sealed record IceSurface : ISurfacePattern
     /// <summary>Cells per tile side of the noise whose high patches hold the finer cracks.</summary>
     public int FinePatchCells { get; init; } = 4;
 
-    /// <summary>Bubbles: cells per tile side (one bubble per cell at most), the share of cells holding one where they crowd most,
-    /// and their radius at least and at most (a share of a cell).</summary>
+    /// <summary>Bubbles: cells per tile side (one bubble per cell at most).</summary>
     public int BubbleCells { get; init; } = 40;
 
     /// <summary>Share of cells (0 to 1) that hold a bubble where bubbles crowd most.</summary>
@@ -83,13 +79,13 @@ public sealed record IceSurface : ISurfacePattern
     /// <summary>Share of cells (0 to 1) that hold a small bubble where bubbles crowd most.</summary>
     public double SmallBubbleShare { get; init; } = 0.04;
 
-    /// <summary>Where bubbles crowd: vertical trails (columns per tile) and horizontal bands (bands per tile).</summary>
+    /// <summary>Where bubbles crowd: how many vertical trails per tile along the face.</summary>
     public int TrailCells { get; init; } = 9;
 
-    /// <summary>Horizontal bands of bubbles per tile, up the face.</summary>
+    /// <summary>How many horizontal bands of crowded bubbles per tile, up the face.</summary>
     public int BandCells { get; init; } = 5;
 
-    /// <summary>The frozen-in veils: how white at most, and their noise's cells per tile along and up the face.</summary>
+    /// <summary>How white the frozen-in veils are at most, added to the ice's tone.</summary>
     public double Veil { get; init; } = 0.08;
 
     /// <summary>The veil noise's cells per tile along the face.</summary>
@@ -98,13 +94,13 @@ public sealed record IceSurface : ISurfacePattern
     /// <summary>The veil noise's cells per tile up the face.</summary>
     public int VeilCellsUp { get; init; } = 6;
 
-    /// <summary>The skin's undulation: its relief and its first octave's cells per tile.</summary>
+    /// <summary>The skin's undulation: its relief, meters.</summary>
     public double RippleMeters { get; init; } = 0.01;
 
     /// <summary>The undulation noise's first octave's cells per tile.</summary>
     public int RippleCells { get; init; } = 6;
 
-    /// <summary>The glossy skin's roughness, the matte patches' and those patches' cells per tile.</summary>
+    /// <summary>The glossy skin's roughness (0 to 1).</summary>
     public double Roughness { get; init; } = 0.05;
 
     /// <summary>The roughness (0 to 1) of the matte patches.</summary>
@@ -113,6 +109,51 @@ public sealed record IceSurface : ISurfacePattern
     /// <summary>The matte patches' noise's cells per tile.</summary>
     public int MatteCells { get; init; } = 5;
 
+    /// <summary>Cells per tile of the noise that bends the plates' borders.</summary>
+    public int WarpCells { get; init; } = 8;
+
+    /// <summary>Cells per tile of the noise that picks which stretches of the finer cracks show.</summary>
+    public int FineShowCells { get; init; } = 9;
+
+    /// <summary>How softly a crack fades in and out along its length, as a share of the noise's range.</summary>
+    public double CrackSoftness { get; init; } = 0.04;
+
+    /// <summary>How much of the wash stays where its crack has faded out (0 to 1).</summary>
+    public double WashFloor { get; init; } = 0.4;
+
+    /// <summary>How white a small bubble is against a large one (0 to 1).</summary>
+    public double SmallBubbleWhite { get; init; } = 0.8;
+
+    /// <summary>The finer cracks' patch noise's level (0 to 1) where a patch starts.</summary>
+    public double PatchFrom { get; init; } = 0.5;
+
+    /// <summary>The finer cracks' patch noise's level (0 to 1) where a patch is full.</summary>
+    public double PatchTo { get; init; } = 0.68;
+
+    /// <summary>The veil noise's level (0 to 1) where a veil starts.</summary>
+    public double VeilFrom { get; init; } = 0.5;
+
+    /// <summary>The veil noise's level (0 to 1) where a veil is full.</summary>
+    public double VeilTo { get; init; } = 0.78;
+
+    /// <summary>The matte noise's level (0 to 1) where a patch starts.</summary>
+    public double MatteFrom { get; init; } = 0.55;
+
+    /// <summary>The matte noise's level (0 to 1) where a patch is full.</summary>
+    public double MatteTo { get; init; } = 0.8;
+
+    /// <summary>The trails' noise's level (0 to 1) where a trail starts.</summary>
+    public double TrailFrom { get; init; } = 0.58;
+
+    /// <summary>The trails' noise's level (0 to 1) where a trail is full.</summary>
+    public double TrailTo { get; init; } = 0.74;
+
+    /// <summary>The bands' noise's level (0 to 1) where a band starts.</summary>
+    public double BandFrom { get; init; } = 0.6;
+
+    /// <summary>The bands' noise's level (0 to 1) where a band is full.</summary>
+    public double BandTo { get; init; } = 0.78;
+
     /// <summary>The seed of every noise of the pattern: another seed gives another sheet of ice of the same
     /// character.</summary>
     public int Seed { get; init; } = 4;
@@ -120,49 +161,48 @@ public sealed record IceSurface : ISurfacePattern
     public SurfacePoint At(double alongMeters, double upMeters)
     {
         double tile = TileMeters;
-        double u = TileNoise.Wrap(alongMeters, tile) / tile;
-        double v = TileNoise.Wrap(upMeters, tile) / tile;
+        double u = TileNoise.Unit(alongMeters, tile);
+        double v = TileNoise.Unit(upMeters, tile);
 
         // The plates' cracks: a bright edge, a wash on the lit side; they fade in and out along their length, so some end in
         // the ice. Every border of a lit plate washes it (fainter where the crack fades), so the wash has no edge of its own.
         double warp = CrackWarpMeters / tile * PlateCells;
-        double wx = (TileNoise.Fractal(u * 8, v * 8, 8, 8, 3, Seed + 1) - 0.5) * 2.0 * warp;
-        double wy = (TileNoise.Fractal(u * 8, v * 8, 8, 8, 3, Seed + 2) - 0.5) * 2.0 * warp;
+        (double wx, double wy) = TileNoise.WarpPair(u, v, WarpCells, 3, Seed + 1, Seed + 2, warp);
         VoronoiCell plate = TileNoise.Voronoi((u * PlateCells) + wx, (v * PlateCells) + wy, PlateCells, Seed + 3);
         double meters = plate.Border * tile / PlateCells;
         bool lit = TileNoise.Hash(plate.Cell, 0, Seed + 5) < LitShare;
         double fade = Fade(u, v, CrackCells, CrackShare, Seed + 4);
-        double wash = lit ? Wash * Math.Exp(-meters / WashMeters) * (0.4 + (0.6 * fade)) : 0.0;
+        double wash = lit ? Wash * Math.Exp(-meters / WashMeters) * (WashFloor + ((1.0 - WashFloor) * fade)) : 0.0;
         double crack = Math.Max(fade * TileNoise.Line(meters, CrackMeters), wash);
 
         // Finer cracks, in patches.
-        double patch = TileNoise.SmoothStep(0.5, 0.68, TileNoise.Fractal(u * FinePatchCells, v * FinePatchCells, FinePatchCells, FinePatchCells, 2, Seed + 6));
+        double patch = TileNoise.SmoothStep(PatchFrom, PatchTo, TileNoise.Fractal(u, v, FinePatchCells, 2, Seed + 6));
         if (patch > 0.0)
         {
             VoronoiCell fine = TileNoise.Voronoi((u * FineCells) + (wx * 2.0), (v * FineCells) + (wy * 2.0), FineCells, Seed + 7);
-            double fineFade = Fade(u, v, CrackCells * 3, FineShare, Seed + 8);
+            double fineFade = Fade(u, v, FineShowCells, FineShare, Seed + 8);
             crack = Math.Max(crack, Fine * patch * fineFade * TileNoise.Line(fine.Border * tile / FineCells, FineMeters));
         }
 
         // Bubbles in trails and bands.
         double bubble = Math.Max(
             Bubble(u, v, BubbleCells, BubbleShare, Seed + 9),
-            Bubble(u, v, SmallBubbleCells, SmallBubbleShare, Seed + 10) * 0.8);
+            Bubble(u, v, SmallBubbleCells, SmallBubbleShare, Seed + 10) * SmallBubbleWhite);
 
         // Veils, stretched along the face.
-        double veil = Veil * TileNoise.SmoothStep(0.5, 0.78, TileNoise.Fractal(u * VeilCellsAlong, v * VeilCellsUp, VeilCellsAlong, VeilCellsUp, 4, Seed + 11));
+        double veil = Veil * TileNoise.SmoothStep(VeilFrom, VeilTo, TileNoise.Fractal(u * VeilCellsAlong, v * VeilCellsUp, VeilCellsAlong, VeilCellsUp, 4, Seed + 11));
 
         double white = Math.Clamp(Math.Max(crack, bubble) + veil, 0.0, 1.0);
-        double height = (TileNoise.Fractal(u * RippleCells, v * RippleCells, RippleCells, RippleCells, 4, Seed + 12) - 0.5) * 2.0 * RippleMeters;
-        double matte = TileNoise.SmoothStep(0.55, 0.8, TileNoise.Fractal(u * MatteCells, v * MatteCells, MatteCells, MatteCells, 3, Seed + 13));
+        double height = (TileNoise.Fractal(u, v, RippleCells, 4, Seed + 12) - 0.5) * 2.0 * RippleMeters;
+        double matte = TileNoise.SmoothStep(MatteFrom, MatteTo, TileNoise.Fractal(u, v, MatteCells, 3, Seed + 13));
         return new SurfacePoint(height, 1.0 + white, 0.0, TileNoise.Lerp(Roughness, MatteRoughness, matte));
     }
 
     /// <summary>How crowded bubbles are at a point (0 to 1): in a vertical trail or a horizontal band.</summary>
     private double Crowd(double u, double v)
     {
-        double trail = TileNoise.SmoothStep(0.58, 0.74, TileNoise.Fractal(u * TrailCells, v * 2, TrailCells, 2, 2, Seed + 14));
-        double band = TileNoise.SmoothStep(0.6, 0.78, TileNoise.Fractal(u * 2, v * BandCells, 2, BandCells, 3, Seed + 15));
+        double trail = TileNoise.SmoothStep(TrailFrom, TrailTo, TileNoise.Fractal(u * TrailCells, v * 2, TrailCells, 2, 2, Seed + 14));
+        double band = TileNoise.SmoothStep(BandFrom, BandTo, TileNoise.Fractal(u * 2, v * BandCells, 2, BandCells, 3, Seed + 15));
         return Math.Max(trail, band);
     }
 
@@ -170,21 +210,14 @@ public sealed record IceSurface : ISurfacePattern
     /// per cell, in <paramref name="share"/> of the cells where they crowd most (taken at the cell's center, so none is cut).</summary>
     private double Bubble(double u, double v, int cells, double share, int seed)
     {
-        double x = u * cells;
-        double y = v * cells;
-        int cx = (int)Math.Floor(x);
-        int cy = (int)Math.Floor(y);
-        int wx = TileNoise.Wrap(cx, cells);
-        int wy = TileNoise.Wrap(cy, cells);
-        if (TileNoise.Hash(wx, wy, seed) >= share * Crowd((wx + 0.5) / cells, (wy + 0.5) / cells))
+        LatticeCell cell = TileNoise.Locate(u, v, cells);
+        if (TileNoise.Hash(cell.Wx, cell.Wy, seed) >= share * Crowd((cell.Wx + 0.5) / cells, (cell.Wy + 0.5) / cells))
         {
             return 0.0;
         }
 
-        double radius = TileNoise.Lerp(BubbleMinRadius, BubbleMaxRadius, TileNoise.Hash(wx, wy, seed + 3));
-        double px = cx + 0.5 + ((TileNoise.Hash(wx, wy, seed + 1) - 0.5) * (1.0 - (2.0 * radius)));
-        double py = cy + 0.5 + ((TileNoise.Hash(wx, wy, seed + 2) - 0.5) * (1.0 - (2.0 * radius)));
-        double r = Math.Sqrt(((x - px) * (x - px)) + ((y - py) * (y - py))) / radius;
+        double radius = TileNoise.Lerp(BubbleMinRadius, BubbleMaxRadius, TileNoise.Hash(cell.Wx, cell.Wy, seed + 3));
+        double r = cell.DistanceToCenter(TileNoise.Hash(cell.Wx, cell.Wy, seed + 1), TileNoise.Hash(cell.Wx, cell.Wy, seed + 2), 1.0 - (2.0 * radius)) / radius;
         double disc = 1.0 - TileNoise.SmoothStep(0.85, 1.0, r);
         double rim = TileNoise.SmoothStep(0.5, 0.85, r);
         return disc * (0.45 + (0.55 * rim));
@@ -192,10 +225,10 @@ public sealed record IceSurface : ISurfacePattern
 
     /// <summary>Where cracks show (0 to 1): about <paramref name="share"/> of the face, in a smooth noise of
     /// <paramref name="cells"/> per tile, so a crack fades out over a few centimeters rather than stopping dead.</summary>
-    private static double Fade(double u, double v, int cells, double share, int seed)
+    private double Fade(double u, double v, int cells, double share, int seed)
     {
-        double noise = TileNoise.Fractal(u * cells, v * cells, cells, cells, 2, seed);
+        double noise = TileNoise.Fractal(u, v, cells, 2, seed);
         double threshold = 0.5 - ((share - 0.5) * 0.5);
-        return TileNoise.SmoothStep(threshold - 0.04, threshold + 0.04, noise);
+        return TileNoise.SmoothStepAround(threshold, CrackSoftness, noise);
     }
 }

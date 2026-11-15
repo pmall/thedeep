@@ -68,8 +68,30 @@ public static class TileNoise
         return sum / total;
     }
 
+    /// <summary>
+    /// <see cref="Fractal(double, double, int, int, int, int)"/> over a square tile of <paramref name="cells"/> cells a side, the
+    /// point given in tiles (<paramref name="u"/> and <paramref name="v"/>, from <see cref="Unit"/>).
+    /// </summary>
+    public static double Fractal(double u, double v, int cells, int octaves, int seed) =>
+        Fractal(u * cells, v * cells, cells, cells, octaves, seed);
+
+    /// <summary>A position in meters as a share of the tile (<paramref name="tileMeters"/> long) it falls in, in [0, 1): the
+    /// coordinate every pattern's noise is sampled by.</summary>
+    public static double Unit(double meters, double tileMeters) => Wrap(meters, tileMeters) / tileMeters;
+
     /// <summary>1 at the center of a line and 0 from <paramref name="width"/> away, rounded at both ends (a groove's profile).</summary>
     public static double Line(double distance, double width) => 1.0 - SmoothStep(0.0, width, Math.Abs(distance));
+
+    /// <summary>The lattice cell of <paramref name="cells"/> a side that holds the point (<paramref name="u"/> and
+    /// <paramref name="v"/> in tiles), for the patterns that put one thing in a cell.</summary>
+    public static LatticeCell Locate(double u, double v, int cells)
+    {
+        double x = u * cells;
+        double y = v * cells;
+        int cx = (int)Math.Floor(x);
+        int cy = (int)Math.Floor(y);
+        return new LatticeCell(x, y, cx, cy, Wrap(cx, cells), Wrap(cy, cells));
+    }
 
     /// <summary>
     /// Small pits in a tile, <paramref name="cells"/> cells a side (<paramref name="u"/> and <paramref name="v"/> in tiles): at most
@@ -78,21 +100,14 @@ public static class TileNoise
     /// </summary>
     public static double Pit(double u, double v, int cells, double share, int seed)
     {
-        double x = u * cells;
-        double y = v * cells;
-        int cx = (int)Math.Floor(x);
-        int cy = (int)Math.Floor(y);
-        int wx = Wrap(cx, cells);
-        int wy = Wrap(cy, cells);
-        if (Hash(wx, wy, seed) >= share)
+        LatticeCell cell = Locate(u, v, cells);
+        if (Hash(cell.Wx, cell.Wy, seed) >= share)
         {
             return 0.0;
         }
 
-        double px = cx + 0.3 + (0.4 * Hash(wx, wy, seed + 1));
-        double py = cy + 0.3 + (0.4 * Hash(wx, wy, seed + 2));
-        double radius = 0.1 + (0.25 * Hash(wx, wy, seed + 3));
-        double distance = Math.Sqrt(((x - px) * (x - px)) + ((y - py) * (y - py)));
+        double radius = 0.1 + (0.25 * Hash(cell.Wx, cell.Wy, seed + 3));
+        double distance = cell.DistanceToCenter(Hash(cell.Wx, cell.Wy, seed + 1), Hash(cell.Wx, cell.Wy, seed + 2), 0.4);
         return Line(distance, radius);
     }
 
@@ -155,6 +170,35 @@ public static class TileNoise
     {
         double t = Math.Clamp((x - edge0) / (edge1 - edge0), 0.0, 1.0);
         return t * t * (3.0 - (2.0 * t));
+    }
+
+    /// <summary><see cref="SmoothStep"/> from <paramref name="center"/> minus <paramref name="half"/> to <paramref name="center"/>
+    /// plus <paramref name="half"/>: a soft threshold at <paramref name="center"/>.</summary>
+    public static double SmoothStepAround(double center, double half, double x) => SmoothStep(center - half, center + half, x);
+
+    /// <summary>
+    /// Where a noise of values in [0, 1] shows (0 to 1) when about <paramref name="share"/> of the face should: its high part,
+    /// softly cut <paramref name="softness"/> either side of the level that leaves that share.
+    /// </summary>
+    public static double Shows(double noise, double share, double softness) => SmoothStepAround(1.0 - share, softness, noise);
+
+    /// <summary>
+    /// A pair of offsets for warping a lattice, each <paramref name="amount"/> either way at most, from two noises of
+    /// <paramref name="cells"/> per tile that differ only by seed (<paramref name="seedX"/>, <paramref name="seedY"/>).
+    /// </summary>
+    public static (double X, double Y) WarpPair(double u, double v, int cells, int octaves, int seedX, int seedY, double amount) =>
+        ((Fractal(u, v, cells, octaves, seedX) - 0.5) * 2.0 * amount, (Fractal(u, v, cells, octaves, seedY) - 0.5) * 2.0 * amount);
+
+    /// <summary>
+    /// A point seen from a straight stroke through (<paramref name="mx"/>, <paramref name="my"/>) at <paramref name="angle"/>
+    /// (radians from the x axis): how far along the stroke from that middle, and how far across it (signed), in the units of
+    /// the arguments.
+    /// </summary>
+    public static (double Along, double Across) StrokeFrame(double x, double y, double mx, double my, double angle)
+    {
+        double dx = Math.Cos(angle);
+        double dy = Math.Sin(angle);
+        return (((x - mx) * dx) + ((y - my) * dy), ((x - mx) * -dy) + ((y - my) * dx));
     }
 
     /// <summary>From the point to the site of lattice cell (<paramref name="gx"/>, <paramref name="gy"/>).</summary>

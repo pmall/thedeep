@@ -18,13 +18,13 @@ public sealed record CoatingSurface : ISurfacePattern
 {
     public double TileMeters { get; init; } = 2.0;
 
-    /// <summary>The mottle in the coating's tone, and its first octave's cells per tile.</summary>
+    /// <summary>How far the mottle moves the coating's tone, either way, a share of it.</summary>
     public double Mottle { get; init; } = 0.05;
 
     /// <summary>The mottle noise's first octave's cells per tile.</summary>
     public int MottleCells { get; init; } = 5;
 
-    /// <summary>Dents: cells per tile side (one dent per cell at most), the share of cells with one, their depth.</summary>
+    /// <summary>Dents: cells per tile side (one dent per cell at most).</summary>
     public int DentCells { get; init; } = 12;
 
     /// <summary>Share of cells (0 to 1) that hold a dent.</summary>
@@ -33,9 +33,7 @@ public sealed record CoatingSurface : ISurfacePattern
     /// <summary>A dent's depth at its bottom, meters.</summary>
     public double DentMeters { get; init; } = 0.0015;
 
-    /// <summary>Scratches: cells per tile side (each holds the middle of one at most), the share of cells with one, their
-    /// length at least and at most (in cells), their half width and depth, how dark the metal they bare is, and how far they
-    /// stray from level (radians; most scratches are made by things moving along).</summary>
+    /// <summary>Scratches: cells per tile side (each holds the middle of one at most).</summary>
     public int ScratchCells { get; init; } = 14;
 
     /// <summary>Share of cells (0 to 1) that hold the middle of a scratch.</summary>
@@ -59,8 +57,7 @@ public sealed record CoatingSurface : ISurfacePattern
     /// <summary>How far a scratch strays from level at most, either way, radians.</summary>
     public double ScratchLean { get; init; } = 0.5;
 
-    /// <summary>The runs: their noise's cells per tile along and up the face (narrow and long), the noise level where a run
-    /// starts and where it is full, and the cells per tile of the broad field that leaves some stretches dry.</summary>
+    /// <summary>The runs' noise's cells per tile along the face (many: a run is narrow).</summary>
     public int RunCellsAlong { get; init; } = 28;
 
     /// <summary>The runs' noise's cells per tile up the face (few: a run is long).</summary>
@@ -75,7 +72,7 @@ public sealed record CoatingSurface : ISurfacePattern
     /// <summary>Cells per tile of the broad noise whose low stretches stay dry of runs.</summary>
     public int RunPatchCells { get; init; } = 4;
 
-    /// <summary>The coating's roughness, how far smudges move it, their cells per tile, and the scratches' roughness.</summary>
+    /// <summary>The coating's dry roughness (0 to 1).</summary>
     public double Roughness { get; init; } = 0.32;
 
     /// <summary>How far a smudge moves the coating's roughness, either way (roughness runs 0 to 1).</summary>
@@ -87,23 +84,29 @@ public sealed record CoatingSurface : ISurfacePattern
     /// <summary>The roughness (0 to 1) of a scratch's bared metal.</summary>
     public double ScratchRoughness { get; init; } = 0.24;
 
+    /// <summary>The broad noise's level (0 to 1) where runs start to be let through.</summary>
+    public double RunPatchFrom { get; init; } = 0.3;
+
+    /// <summary>The broad noise's level (0 to 1) where runs are let through fully.</summary>
+    public double RunPatchTo { get; init; } = 0.55;
+
     /// <summary>The seed of every noise of the pattern: another seed gives another coating of the same character.</summary>
     public int Seed { get; init; } = 37;
 
     public SurfacePoint At(double alongMeters, double upMeters)
     {
         double tile = TileMeters;
-        double u = TileNoise.Wrap(alongMeters, tile) / tile;
-        double v = TileNoise.Wrap(upMeters, tile) / tile;
+        double u = TileNoise.Unit(alongMeters, tile);
+        double v = TileNoise.Unit(upMeters, tile);
 
-        double mottle = (TileNoise.Fractal(u * MottleCells, v * MottleCells, MottleCells, MottleCells, 4, Seed + 1) - 0.5) * 2.0;
+        double mottle = (TileNoise.Fractal(u, v, MottleCells, 4, Seed + 1) - 0.5) * 2.0;
         double dent = TileNoise.Pit(u, v, DentCells, DentShare, Seed + 2);
         double scratch = Scratch(u, v);
 
         double runs = TileNoise.SmoothStep(RunFrom, RunTo, TileNoise.Fractal(u * RunCellsAlong, v * RunCellsUp, RunCellsAlong, RunCellsUp, 3, Seed + 3));
-        runs *= TileNoise.SmoothStep(0.3, 0.55, TileNoise.Fractal(u * RunPatchCells, v * RunPatchCells, RunPatchCells, RunPatchCells, 2, Seed + 4));
+        runs *= TileNoise.SmoothStep(RunPatchFrom, RunPatchTo, TileNoise.Fractal(u, v, RunPatchCells, 2, Seed + 4));
 
-        double smudge = (TileNoise.Fractal(u * SmudgeCells, v * SmudgeCells, SmudgeCells, SmudgeCells, 3, Seed + 5) - 0.5) * 2.0;
+        double smudge = (TileNoise.Fractal(u, v, SmudgeCells, 3, Seed + 5) - 0.5) * 2.0;
         double height = -(dent * DentMeters) - (scratch * ScratchDepthMeters);
         double tone = (1.0 + (mottle * Mottle)) * TileNoise.Lerp(1.0, ScratchTone, scratch);
         double rough = TileNoise.Lerp(Roughness + (smudge * Smudge), ScratchRoughness, scratch);
@@ -135,12 +138,10 @@ public sealed record CoatingSurface : ISurfacePattern
                 double my = cy + j + TileNoise.Hash(wx, wy, Seed + 8);
                 double angle = (TileNoise.Hash(wx, wy, Seed + 9) - 0.5) * 2.0 * ScratchLean;
                 double half = TileNoise.Lerp(ScratchMinLength, ScratchMaxLength, TileNoise.Hash(wx, wy, Seed + 10)) * 0.5;
-                double dx = Math.Cos(angle);
-                double dy = Math.Sin(angle);
 
                 // Along the score from its middle (in cells), and across it (in meters).
-                double s = ((x - mx) * dx) + ((y - my) * dy);
-                double across = Math.Abs(((x - mx) * -dy) + ((y - my) * dx)) * cellMeters;
+                (double s, double acrossCells) = TileNoise.StrokeFrame(x, y, mx, my, angle);
+                double across = Math.Abs(acrossCells) * cellMeters;
                 if (Math.Abs(s) >= half)
                 {
                     continue;
