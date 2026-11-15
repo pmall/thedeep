@@ -20,10 +20,6 @@ public static class Steering
         return d / distance * s;
     }
 
-    /// <summary>Directly away from <paramref name="threat"/> along X at <paramref name="speed"/> (a walker fleeing).</summary>
-    public static Vector2 FleeX(Vector2 from, Vector2 threat, float speed, int fallback = 1) =>
-        new(AwaySide(from, threat, fallback) * speed, 0f);
-
     /// <summary>The side of <paramref name="threat"/> that <paramref name="from"/> is on: +1 right of it, -1 left.</summary>
     public static int AwaySide(Vector2 from, Vector2 threat, int fallback = 1)
     {

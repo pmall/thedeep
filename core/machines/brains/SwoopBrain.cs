@@ -56,9 +56,6 @@ public sealed class SwoopBrain : MachineBrain
     /// <summary>Every this many dives, a second one follows at once; 0 for never.</summary>
     public int Flurry { get; init; } = 3;
 
-    /// <summary>Whether it has seen the player (the fight is on).</summary>
-    public bool Engaged => _phase != Phase.Waiting;
-
     public override Intent Think(in Perception p, float delta)
     {
         var intent = new Intent { Rouse = 1f };

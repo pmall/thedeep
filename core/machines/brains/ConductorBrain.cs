@@ -52,9 +52,6 @@ public sealed class ConductorBrain : MachineBrain
     /// <summary>Seconds per beat while it conducts.</summary>
     public float BeatPeriod { get; init; } = 1.2f;
 
-    /// <summary>Whether it has seen the player (the fight is on).</summary>
-    public bool Engaged => _engaged;
-
     private StrikeAction Current => _quick.Active ? _quick : _strike;
 
     public override Intent Think(in Perception p, float delta)

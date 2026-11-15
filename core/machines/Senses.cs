@@ -26,10 +26,6 @@ public static class Senses
         return ahead >= -behind && d.Length() <= range && MathF.Abs(d.Y) <= range * 0.6f;
     }
 
-    /// <summary>The player is within <paramref name="radius"/>, seen or not (presence, vibration, scent of ozone).</summary>
-    public static bool PlayerWithin(in Perception p, float radius) =>
-        p.Player is { } player && Vector2.Distance(player.Position, p.Position) <= radius;
-
     /// <summary>Distance to the player, or +∞ without one.</summary>
     public static float PlayerDistance(in Perception p) =>
         p.Player is { } player ? Vector2.Distance(player.Position, p.Position) : float.PositiveInfinity;
@@ -57,20 +53,6 @@ public static class Senses
         return loudest;
     }
 
-    /// <summary>How many machines of <paramref name="kind"/> (any kind if null) are within <paramref name="radius"/>.</summary>
-    public static int NeighborsWithin(in Perception p, float radius, string? kind = null)
-    {
-        int count = 0;
-        foreach (Neighbor n in p.Neighbors)
-        {
-            if ((kind is null || n.Kind == kind) && Vector2.Distance(n.Position, p.Position) <= radius)
-            {
-                count++;
-            }
-        }
-
-        return count;
-    }
 
     /// <summary>Signed distance of <paramref name="point"/> ahead of the machine (negative behind it).</summary>
     public static float Ahead(in Perception p, Vector2 point) => (point.X - p.Position.X) * p.Facing;

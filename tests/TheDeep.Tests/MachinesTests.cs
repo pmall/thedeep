@@ -268,7 +268,6 @@ public class MachinesTests
         var brain = NewConductor();
         var far = With(Vector2.Zero, 1, new PlayerTrace(new Vector2(30f, 1f), Vector2.Zero, true));
         List<Intent> ticks = Run(brain, far, 120);
-        Assert.False(brain.Engaged);
         Assert.Equal(MachineAct.Idle, brain.Act);
         Assert.All(ticks, i => Assert.Equal(Vector2.Zero, i.Velocity));
         Assert.True(ticks.Max(i => i.Work) - ticks.Min(i => i.Work) > 0.5f, "the baton beats");
@@ -280,7 +279,6 @@ public class MachinesTests
         var brain = NewConductor();
         // Seen 8 m ahead: it walks toward the player.
         Intent stalk = Run(brain, With(Vector2.Zero, 1, new PlayerTrace(new Vector2(8f, 1.5f), Vector2.Zero, true)), 2).Last();
-        Assert.True(brain.Engaged);
         Assert.Equal(MachineAct.Hunt, brain.Act);
         Assert.True(stalk.Velocity.X > 1f);
 
@@ -318,12 +316,10 @@ public class MachinesTests
     {
         var brain = new SwoopBrain { Altitude = 6f, Offset = 3f, Interval = 10f };
         Assert.Equal(MachineAct.Hover, Run(brain, Perception.Alone(0f, Vector2.Zero, 1), 30).Last().Act);
-        Assert.False(brain.Engaged);
 
         // Seen below and to the left: it drifts toward a point above and beside them, never down at them.
         var seen = With(new Vector2(4f, 2f), 1, new PlayerTrace(new Vector2(0f, 1f), Vector2.Zero, true));
         Intent drift = Run(brain, seen, 5).Last();
-        Assert.True(brain.Engaged);
         Assert.Equal(MachineAct.Hunt, drift.Act);
         Assert.True(drift.Velocity.Y > 0f, "it climbs to its altitude");
         Assert.False(drift.Hit);
