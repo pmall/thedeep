@@ -16,7 +16,8 @@ public sealed class MachineAnimator
     private readonly Node3D _ground;
     private readonly JointDriver[] _drivers;
     private readonly float[] _driverState;
-    private readonly Dictionary<StringName, Node3D> _driven = new();
+    private readonly Driven?[] _driven;
+    private readonly List<Driven> _resting = new();
     private readonly List<Leg> _legs = new();
 
     /// <summary>Poses <paramref name="body"/>, carried by <paramref name="ground"/>, with the drivers and legs of
@@ -27,11 +28,18 @@ public sealed class MachineAnimator
         _ground = ground;
         _drivers = species.Drivers;
         _driverState = new float[_drivers.Length];
-        foreach (JointDriver driver in _drivers)
+        _driven = new Driven?[_drivers.Length];
+        var seen = new HashSet<StringName>();
+        for (int i = 0; i < _drivers.Length; i++)
         {
+            JointDriver driver = _drivers[i];
             if (body.Joint(driver.Joint) is { } joint)
             {
-                _driven[driver.Joint] = joint;
+                _driven[i] = new Driven(joint, body.RestOffset(driver.Joint));
+                if (seen.Add(driver.Joint))
+                {
+                    _resting.Add(_driven[i]!);
+                }
             }
             else
             {
@@ -55,8 +63,8 @@ public sealed class MachineAnimator
             }
 
             Vector3 knee = body.RestOffset(spec.Lower), foot = body.RestOffset(spec.Foot);
-            _legs.Add(new Leg(spec, upper, lower, knee.Flat().Length(), foot.Flat().Length(), RestAngle(knee), RestAngle(foot),
-                rest.GetValueOrDefault(spec.Foot).Flat()));
+            _legs.Add(new Leg(spec, upper, lower, (Node3D)upper.GetParent(), body.RestOffset(spec.Upper), knee, knee.Flat().Length(),
+                foot.Flat().Length(), RestAngle(knee), RestAngle(foot), rest.GetValueOrDefault(spec.Foot).Flat()));
         }
     }
 
@@ -67,18 +75,20 @@ public sealed class MachineAnimator
     /// </summary>
     public void Update(float delta, float time, in Intent intent, float speed, float walked, float stepping)
     {
-        foreach ((StringName name, Node3D joint) in _driven)
+        foreach (Driven driven in _resting)
         {
-            joint.Transform = new Transform3D(Basis.Identity, _body.RestOffset(name));
+            driven.Joint.Transform = new Transform3D(Basis.Identity, driven.Rest);
         }
 
         for (int i = 0; i < _drivers.Length; i++)
         {
             JointDriver d = _drivers[i];
-            if (!_driven.TryGetValue(d.Joint, out Node3D? joint))
+            if (_driven[i] is not { } driven)
             {
                 continue;
             }
+
+            Node3D joint = driven.Joint;
 
             float channel = d.Channel switch
             {
@@ -102,8 +112,7 @@ public sealed class MachineAnimator
             switch (d.Mode)
             {
                 case DriverMode.Pose when d.Channel == DriverChannel.Strike && d.WindUp != 0f && intent.Act != MachineAct.Recover:
-                    // Draw back over the wind-up (0 to 0.6), swing through on the blow (0.6 to 1).
-                    angle = channel <= 0.6f ? d.WindUp * channel / 0.6f : Mathf.Lerp(d.WindUp, d.Angle, (channel - 0.6f) / 0.4f);
+                    angle = StrikeAction.Pose(channel, StrikeAction.WindChannel, d.WindUp, d.Angle);
                     offset = d.Offset * channel;
                     break;
                 case DriverMode.Pose:
@@ -131,28 +140,28 @@ public sealed class MachineAnimator
             joint.Transform = new Transform3D(t.Basis * new Basis(axis, Mathf.DegToRad(angle)), t.Origin + offset);
         }
 
+        Transform3D toGround = _ground.GlobalTransform.AffineInverse();
         foreach (Leg leg in _legs)
         {
-            Step(leg, walked, stepping);
+            Step(leg, toGround, walked, stepping);
         }
     }
 
-    private void Step(Leg leg, float walked, float stepping)
+    private static void Step(Leg leg, Transform3D toGround, float walked, float stepping)
     {
         MachineLeg spec = leg.Spec;
         float phase = LegGait.Advance(walked, spec.Stride, spec.Stance) + spec.Phase;
         NVector2 target = leg.RestFoot + LegGait.Foot(phase, spec.Stance, spec.Stride, spec.Lift) * stepping;
-        Transform3D toGround = _ground.GlobalTransform.AffineInverse();
         NVector2 hip = (toGround * leg.Upper.GlobalPosition).Flat();
         (float upper, float lower) = PlanarIk.TwoBone(hip, target, leg.UpperLength, leg.LowerLength, (float)spec.Bend);
 
         // Absolute angles in the ground frame, to local turns: minus the parent's turn and the segment's rest angle.
-        Vector3 parentX = toGround.Basis * ((Node3D)leg.Upper.GetParent()).GlobalBasis.X;
+        Vector3 parentX = toGround.Basis * leg.Parent.GlobalBasis.X;
         float parentTurn = Mathf.Atan2(parentX.Y, parentX.X);
         float upperTurn = upper - leg.UpperRest - parentTurn;
-        leg.Upper.Transform = new Transform3D(new Basis(Vector3.Back, upperTurn), _body.RestOffset(spec.Upper));
+        leg.Upper.Transform = new Transform3D(new Basis(Vector3.Back, upperTurn), leg.UpperOffset);
         float lowerTurn = lower - leg.LowerRest - (parentTurn + upperTurn);
-        leg.Lower.Transform = new Transform3D(new Basis(Vector3.Back, lowerTurn), _body.RestOffset(spec.Lower));
+        leg.Lower.Transform = new Transform3D(new Basis(Vector3.Back, lowerTurn), leg.LowerOffset);
     }
 
     /// <summary>The turn around Z (degrees, within ±<paramref name="limit"/>) that points the joint's forward at <paramref name="look"/>.</summary>
@@ -167,6 +176,8 @@ public sealed class MachineAnimator
     /// <summary>The angle of a segment from straight down, positive toward +X (PlanarIk's convention).</summary>
     private static float RestAngle(Vector3 offset) => Mathf.Atan2(offset.X, -offset.Y);
 
-    private sealed record Leg(MachineLeg Spec, Node3D Upper, Node3D Lower, float UpperLength, float LowerLength,
+    private sealed record Driven(Node3D Joint, Vector3 Rest);
+
+    private sealed record Leg(MachineLeg Spec, Node3D Upper, Node3D Lower, Node3D Parent, Vector3 UpperOffset, Vector3 LowerOffset, float UpperLength, float LowerLength,
         float UpperRest, float LowerRest, NVector2 RestFoot);
 }

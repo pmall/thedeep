@@ -21,8 +21,17 @@ public sealed class StrikeAction
     /// <summary>Seconds after the recovery before another strike can start.</summary>
     public float Cooldown { get; init; } = 0.8f;
 
-    /// <summary>How far the channel has risen, 0 to 1, when the wind-up ends and the blow begins.</summary>
-    public float WindChannel { get; init; } = 0.6f;
+    /// <summary>How far the channel has risen, 0 to 1, when the wind-up ends and the blow begins; the animator's pose reads it too.</summary>
+    public const float WindChannel = 0.6f;
+
+    /// <summary>
+    /// The angle of a limb posed by a strike <paramref name="channel"/>: drawn back to <paramref name="windUp"/>
+    /// over the wind-up (0 to <paramref name="windChannel"/>), swung through to <paramref name="angle"/> on the blow.
+    /// </summary>
+    public static float Pose(float channel, float windChannel, float windUp, float angle) =>
+        channel <= windChannel
+            ? windUp * channel / windChannel
+            : windUp + (angle - windUp) * ((channel - windChannel) / (1f - windChannel));
 
     /// <summary>Between the start of the wind-up and the end of the recovery.</summary>
     public bool Active => _time >= 0f;

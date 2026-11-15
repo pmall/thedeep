@@ -56,6 +56,16 @@ public class MachinesTests
     }
 
     [Fact]
+    public void StrikePoseDrawsBackThenSwingsThroughAtTheWindChannel()
+    {
+        Assert.Equal(0f, StrikeAction.Pose(0f, 0.5f, -40f, 60f), 3);
+        Assert.Equal(-40f, StrikeAction.Pose(0.5f, 0.5f, -40f, 60f), 3);
+        Assert.Equal(-20f, StrikeAction.Pose(0.25f, 0.5f, -40f, 60f), 3);
+        Assert.Equal(10f, StrikeAction.Pose(0.75f, 0.5f, -40f, 60f), 3);
+        Assert.Equal(60f, StrikeAction.Pose(1f, 0.5f, -40f, 60f), 3);
+    }
+
+    [Fact]
     public void StrikeWindsUpBeforeTheBlowAndCoolsDown()
     {
         var strike = new StrikeAction { WindUp = 0.4f, Blow = 0.1f, Recover = 0.3f, Cooldown = 0.5f };
