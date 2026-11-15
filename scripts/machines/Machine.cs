@@ -1,4 +1,3 @@
-using System;
 using System.Collections.Generic;
 using Godot;
 using NVector2 = System.Numerics.Vector2;
@@ -30,6 +29,9 @@ public partial class Machine : CharacterBody3D
 
     /// <summary>A crawler looks for its metal block this far around its origin, meters.</summary>
     private const float PerchSearch = 1.5f;
+
+    /// <summary>How deep, across the play plane, a crawler's face probe reaches, meters.</summary>
+    private const float ProbeDepth = 0.5f;
 
     /// <summary>A walker probes this far beyond its body for walls and drops, meters.</summary>
     private const float ProbeAhead = 0.35f;
@@ -362,49 +364,37 @@ public partial class Machine : CharacterBody3D
         return !Ray.Cast(new Vector3(edge, knee, 0f), new Vector3(edge, GlobalPosition.Y - ProbeDrop, 0f));
     }
 
-    /// <summary>A crawler's surface: the faces of the nearest metal block that nothing else touches.</summary>
+    /// <summary>A crawler's surface: the faces of the nearest metal block that nothing else touches (<see cref="CrawlPerch"/> chooses; this asks the engine).</summary>
     private void FindPerch()
     {
         _perchSearched = true;
-        Block? perch = null;
-        float best = PerchSearch;
-        IEnumerable<Block> blocks = FindRoom()?.Blocks() ?? Array.Empty<Block>();
-        foreach (Block block in blocks)
+        var blocks = new List<Block>();
+        var boxes = new List<PerchBox>();
+        if (this.Ancestor<Room>() is { } room)
         {
-            if (block.Surface != SurfaceKind.Metal)
+            foreach (Block block in room.Blocks())
             {
-                continue;
-            }
-
-            Vector3 half = block.Size * 0.5f;
-            Vector3 c = block.GlobalPosition;
-            float dx = Mathf.Max(Mathf.Abs(_spawn.X - c.X) - half.X, 0f);
-            float dy = Mathf.Max(Mathf.Abs(_spawn.Y - c.Y) - half.Y, 0f);
-            float distance = Mathf.Sqrt(dx * dx + dy * dy);
-            if (distance <= best)
-            {
-                best = distance;
-                perch = block;
+                Vector3 half = block.Size * 0.5f;
+                Vector3 c = block.GlobalPosition;
+                blocks.Add(block);
+                boxes.Add(new PerchBox(new NVector2(c.X - half.X, c.Y - half.Y), new NVector2(c.X + half.X, c.Y + half.Y), block.Surface == SurfaceKind.Metal));
             }
         }
 
-        if (perch is null)
+        int index = CrawlPerch.Nearest(boxes, _spawn.Flat(), PerchSearch);
+        if (index < 0)
         {
             GD.PushWarning($"{this.NameText()}: a crawler with no metal block within {PerchSearch} m; it stays put");
             return;
         }
 
-        Vector3 h = perch.Size * 0.5f;
-        Vector2 min = new(perch.GlobalPosition.X - h.X, perch.GlobalPosition.Y - h.Y);
-        Vector2 max = new(perch.GlobalPosition.X + h.X, perch.GlobalPosition.Y + h.Y);
-        var free = new[]
+        var free = new bool[CrawlPerch.Faces];
+        for (int face = 0; face < free.Length; face++)
         {
-            FaceIsFree(perch, new Vector3((min.X + max.X) * 0.5f, min.Y - 0.1f, 0f), new Vector3(max.X - min.X - 0.2f, 0.1f, 0.5f)),
-            FaceIsFree(perch, new Vector3(max.X + 0.1f, (min.Y + max.Y) * 0.5f, 0f), new Vector3(0.1f, max.Y - min.Y - 0.2f, 0.5f)),
-            FaceIsFree(perch, new Vector3((min.X + max.X) * 0.5f, max.Y + 0.1f, 0f), new Vector3(max.X - min.X - 0.2f, 0.1f, 0.5f)),
-            FaceIsFree(perch, new Vector3(min.X - 0.1f, (min.Y + max.Y) * 0.5f, 0f), new Vector3(0.1f, max.Y - min.Y - 0.2f, 0.5f)),
-        };
-        if (SurfacePath.AroundBox(min.ToCore(), max.ToCore(), free, 0.01f) is { } path)
+            free[face] = FaceIsFree(blocks[index], CrawlPerch.Probe(boxes[index], face));
+        }
+
+        if (CrawlPerch.Path(boxes[index], free) is { } path)
         {
             _crawl = new CrawlMotion(path, _spawn.Flat());
             _normal = _crawl.At.Normal.ToGodot();
@@ -415,29 +405,18 @@ public partial class Machine : CharacterBody3D
         }
     }
 
-    private bool FaceIsFree(Block perch, Vector3 center, Vector3 size)
+    private bool FaceIsFree(Block perch, FaceProbe probe)
     {
-        using var box = new BoxShape3D { Size = size };
+        using var box = new BoxShape3D { Size = new Vector3(probe.Size.X, probe.Size.Y, ProbeDepth) };
         using var exclude = EngineArrays.Own(new Godot.Collections.Array<Rid> { perch.GetRid() });
         using var query = new PhysicsShapeQueryParameters3D
         {
             Shape = box,
-            Transform = new Transform3D(Basis.Identity, center),
+            Transform = new Transform3D(Basis.Identity, new Vector3(probe.Center.X, probe.Center.Y, 0f)),
             CollisionMask = PhysicsLayers.Solid,
             Exclude = exclude.Value,
         };
         return EngineArrays.Count(GetWorld3D().DirectSpaceState.IntersectShape(query, 1)) == 0;
-    }
-
-    private Room? FindRoom()
-    {
-        Node? node = this;
-        while (node is not null and not Room)
-        {
-            node = node.GetParent();
-        }
-
-        return node as Room;
     }
 
     /// <summary>Facing +X is yaw 0; facing -X is -π, so a turn passes through facing the camera.</summary>

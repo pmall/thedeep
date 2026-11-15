@@ -20,6 +20,19 @@ public static class NodeTree
         return children;
     }
 
+    /// <summary>The nearest ancestor of <paramref name="node"/> that is a <typeparamref name="T"/>, or null.</summary>
+    public static T? Ancestor<T>(this Node node)
+        where T : Node
+    {
+        Node? up = node.GetParent();
+        while (up is not null and not T)
+        {
+            up = up.GetParent();
+        }
+
+        return up as T;
+    }
+
     /// <summary>The name of <paramref name="node"/>, as text.</summary>
     public static string NameText(this Node node)
     {
