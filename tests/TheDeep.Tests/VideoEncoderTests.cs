@@ -88,6 +88,28 @@ public class VideoEncoderTests
         }
     }
 
+    [Fact]
+    public void FramesStillQueuedAfterAFailureOrDisposeAreGivenBack()
+    {
+        const int big = 640;
+        string path = Path.Combine(Path.GetTempPath(), $"thedeep-missing-{Guid.NewGuid():N}", "out.mp4"); // ffmpeg cannot open it and exits
+        var pool = new CountingPool();
+        VideoEncoder encoder = VideoEncoder.Start(new FfmpegCommand(big, big, "rgba", 30, VideoCodec.X264, 1920, path), pool);
+        for (int i = 0; i < 5; i++)
+        {
+            encoder.Submit(new byte[big * big * 4], 1);
+        }
+
+        for (int waited = 0; !encoder.Failed && waited < 200; waited++)
+        {
+            Thread.Sleep(50);
+        }
+
+        encoder.Dispose();
+
+        Assert.Equal(5, pool.Returned);
+    }
+
     private static FfmpegCommand Command(string path) => new(Width, Height, "rgba", 30, VideoCodec.X264, 1920, path);
 
     private static byte[] Frame(byte shade)

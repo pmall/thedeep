@@ -105,9 +105,9 @@ public partial class SaveCheck : Node
                 Input.ActionRelease(InputActions.Interact);
                 break;
             case 200:
-                if (Session.Save.Shrine == "" || !FileAccess.FileExists(Path))
+                if (Session.RestedShrine == "" || !FileAccess.FileExists(Path))
                 {
-                    _problems.Add($"resting at the shrine did not save: shrine '{Session.Save.Shrine}', file {(FileAccess.FileExists(Path) ? "there" : "missing")}");
+                    _problems.Add($"resting at the shrine did not save: shrine '{Session.RestedShrine}', file {(FileAccess.FileExists(Path) ? "there" : "missing")}");
                 }
 
                 Finish();
@@ -139,7 +139,7 @@ public partial class SaveCheck : Node
         Expect("the map has ways", file.Ways.Count > 0, true);
         Expect("the map's ways taken", Names(World.Map.TakenWays), Names(file.Taken));
         Expect("a way taken is kept", file.Taken.Count, 1);
-        Expect("the session's save is the file's", Session.Save.ToJson(), file.ToJson());
+        Expect("the session's save is the file's", Session.SaveText(), file.ToJson());
     }
 
     /// <summary>A save that cannot be read is renamed aside, whole, so the file is never lost to the new game that follows.</summary>

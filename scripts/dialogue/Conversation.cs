@@ -43,21 +43,21 @@ public partial class Conversation : Node3D, INamesLines
 
     [Export] public float Lean { get; set; } = 0.6f;
 
+    /// <summary>How far before the play plane the prompt stands, meters, so it is never inside the speaker.</summary>
+    [Export] public float PromptDepth { get; set; } = 0.6f;
+
     /// <summary>Heard to its end, and <see cref="Once"/>: no longer offered.</summary>
     public bool Spent { get; set; }
 
     /// <summary>Whether feet at <paramref name="feet"/> are near enough to talk.</summary>
-    public bool Near(Vector3 feet) => new Vector2(feet.X - GlobalPosition.X, feet.Y - GlobalPosition.Y).Length() <= Range;
+    public bool Near(Vector3 feet) => feet.WithinOnPlane(GlobalPosition, Range);
 
     /// <summary>Stands the prompt for the pilgrim's feet at <paramref name="feet"/>: over the speaker, or by the pilgrim.</summary>
     public void Place(Vector3 feet)
     {
         (System.Numerics.Vector2 at, int reach) = new TalkPrompt(Body, Overhead, Lean)
-            .Place(new System.Numerics.Vector2(GlobalPosition.X, GlobalPosition.Y), new System.Numerics.Vector2(feet.X, feet.Y));
+            .Place(GlobalPosition.Flat(), feet.Flat());
         Prompt.GlobalPosition = new Vector3(at.X, at.Y, GlobalPosition.Z + PromptDepth);
         Prompt.Reach = reach;
     }
-
-    /// <summary>How far before the play plane the prompt stands, meters, so it is never inside the speaker.</summary>
-    private const float PromptDepth = 0.6f;
 }

@@ -136,7 +136,7 @@ public partial class MapScreen : CanvasLayer
         foreach (string id in held.Ids)
         {
             ItemDefinition? item = World.Definition.Item(id);
-            if (ItemKinds.Carried(item?.Kind ?? ItemKind.Key))
+            if ((item?.Kind ?? ItemKind.Key).Carried())
             {
                 _held.Add((item is null ? id : Words(item.NameLine), ItemKinds.ColorOf(item?.Kind ?? ItemKind.Key)));
             }

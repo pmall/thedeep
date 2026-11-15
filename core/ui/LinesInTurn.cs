@@ -1,3 +1,4 @@
+using System.Diagnostics.CodeAnalysis;
 using System.Collections.Generic;
 
 namespace TheDeep;
@@ -48,14 +49,14 @@ public sealed class LinesInTurn<T>
     }
 
     /// <summary>The line showing has been read: true with the next one to show, false when none waits.</summary>
-    public bool Next(out T next)
+    public bool Next([MaybeNullWhen(false)] out T next)
     {
         if (_lines.Count > 0)
         {
             _lines.RemoveAt(0);
         }
 
-        next = _lines.Count > 0 ? _lines[0] : default!;
+        next = _lines.Count > 0 ? _lines[0] : default;
         return _lines.Count > 0;
     }
 

@@ -111,7 +111,7 @@ public partial class EncounterCheck : Node
             }));
         _steps.Add(new("the gates rise and the fight is remembered", 4f,
             () => { Hold(InputActions.MoveRight, false); Hold(InputActions.MoveLeft, false); Hold(InputActions.Attack, false); },
-            () => Seal.Gates.All(g => g.Raised) && Session.Save.Collected.Contains("Chapterhouse/Fight")));
+            () => Seal.Gates.All(g => g.Raised) && Session.Done("Chapterhouse", "Fight")));
         _steps.Add(new("entering again: the Precentor stays broken, the gates stay up", 3f,
             () =>
             {
@@ -139,7 +139,7 @@ public partial class EncounterCheck : Node
             () => Hold(InputActions.Interact, _ticks % 12 < 6)));
         _steps.Add(new("a hold let go at half starts from zero; the full hold breaks it, remembered", 5f,
             () => { Hold(InputActions.Interact, false); _brokeAt = -1; },
-            () => _brokeAt >= 0 && Session.Save.Collected.Contains("Brink/ThirdLaw"),
+            () => _brokeAt >= 0 && Session.Done("Brink", "ThirdLaw"),
             () =>
             {
                 int hold = Mathf.RoundToInt(Law.Prompt.HoldSeconds * 60f);
@@ -241,7 +241,7 @@ public partial class EncounterCheck : Node
         _steps.Add(new("a dash bores through the cracked wall, remembered; the tunnel's steps climb back to the hall", 10f,
             () => { Hold(InputActions.MoveLeft, false); Hold(InputActions.MoveRight, true); },
             () => X > 43f && X < 46f && Player.IsOnFloor() && Mathf.Abs(Player.GlobalPosition.Y) < 0.05f
-                  && Session.Save.Collected.Contains("Bore/CrackedWall"),
+                  && Session.Done("Bore", "CrackedWall"),
             () =>
             {
                 Hold(InputActions.Dash, X > 16.5f && X < 19f && _ticks % 20 < 2);
@@ -372,7 +372,7 @@ public partial class EncounterCheck : Node
                     Hold(action, false);
                 }
             },
-            () => Seal.Gates.All(g => g.Raised) && Session.Save.Collected.Contains("Vault/Arena")));
+            () => Seal.Gates.All(g => g.Raised) && Session.Done("Vault", "Arena")));
         _steps.Add(new("in the Sanctum, coming near the Hierarch: its order is heard", 6f,
             () =>
             {
@@ -388,7 +388,7 @@ public partial class EncounterCheck : Node
                   && Hint.Current == Law.RefusalLine));
         _steps.Add(new("holding the act breaks it, remembered, the refusal withdrawn at once; past it, the end of what is built", 6f,
             () => _brokeAt = -1,
-            () => Law.Broken && Session.Save.Collected.Contains("Sanctum/Law") && X < 6f,
+            () => Law.Broken && Session.Done("Sanctum", "Law") && X < 6f,
             () =>
             {
                 Hold(InputActions.Interact, Law.Prompt.Offered && !Law.Broken);

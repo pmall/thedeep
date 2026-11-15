@@ -35,10 +35,7 @@ public abstract record SaveReading
 }
 
 /// <summary>
-/// What a save holds, pure: the shrine the pilgrim last rested at (where it comes back after dying or
-/// relaunching), its abilities, items and prowess, what is done for good (relics taken, doors opened...), and the map of visited
-/// rooms. Stored as JSON in
-/// user://save.json by <see cref="SaveFile"/>.
+/// What a save holds, pure: the shrine the pilgrim last rested at (where it comes back after dying or relaunching), its abilities, items and prowess, what is done for good (relics taken, doors opened...), and the map of visited rooms. Stored as JSON by <see cref="SaveFile"/>, at the path its world gives (<see cref="WorldDefinition.SavePath"/>).
 /// </summary>
 public sealed class SaveData
 {

@@ -53,8 +53,17 @@ public partial class Session : Node
 
     private Pilgrimage _pilgrimage = new(new SaveData());
 
-    /// <summary>What the pilgrimage has done so far, as it is written to disk.</summary>
-    public SaveData Save => _pilgrimage.Save;
+    /// <summary>The shrine last rested at (empty before the first rest), kept in the save.</summary>
+    public string RestedShrine => _pilgrimage.Shrine;
+
+    /// <summary>What the power-ups taken so far add, as the save keeps them.</summary>
+    public Prowess SavedProwess => _pilgrimage.Prowess;
+
+    /// <summary>The items the save holds.</summary>
+    public ItemSet SavedItems => _pilgrimage.Held;
+
+    /// <summary>What the pilgrimage has done so far, as the text written to disk.</summary>
+    public string SaveText() => _pilgrimage.Save.ToJson();
 
     /// <summary>A shrine or a plate is offered (interact would rest or read): nothing else takes the press.</summary>
     public bool Prompting => _prompted is not null || _plate is not null;
@@ -154,7 +163,7 @@ public partial class Session : Node
 
         foreach (AbilityRelic relic in room.All<AbilityRelic>())
         {
-            if (!relic.Taken && Flat(relic.GlobalPosition).DistanceTo(Flat(p)) <= RelicRange)
+            if (!relic.Taken && relic.GlobalPosition.WithinOnPlane(p, RelicRange))
             {
                 Take(relic);
                 break;
@@ -168,7 +177,7 @@ public partial class Session : Node
     {
         for (int i = 0; i < nodes.Count; i++)
         {
-            if (Flat(nodes[i].GlobalPosition).DistanceTo(Flat(p)) <= range)
+            if (nodes[i].GlobalPosition.WithinOnPlane(p, range))
             {
                 return nodes[i];
             }
@@ -359,7 +368,7 @@ public partial class Session : Node
         _busy = true;
         await Fade.To(1f, DeathFadeOut);
         Player.Frozen = true;
-        string path = World.RoomPath(Save.Room);
+        string path = World.RoomPath(_pilgrimage.Room);
         Room room = World.Load(GD.Load<PackedScene>(ResourceLoader.Exists(path) ? path : World.RoomPath(World.RoomName)));
         Player.Respawn(RespawnPoint(room), 1);
         Player.Vitality.Restore();
@@ -371,7 +380,7 @@ public partial class Session : Node
     }
 
     private Vector3 RespawnPoint(Room room) =>
-        room.All<Shrine>().FirstOrDefault(s => s.NameText() == Save.Shrine)?.GlobalPosition ?? room.SpawnPoint.GlobalPosition;
+        room.All<Shrine>().FirstOrDefault(s => s.NameText() == _pilgrimage.Shrine)?.GlobalPosition ?? room.SpawnPoint.GlobalPosition;
 
     private void OnRoomLoaded(Room room)
     {
@@ -479,9 +488,7 @@ public partial class Session : Node
         _pilgrimage.Record(Player.Abilities.Unlocked, Player.Items.Held, Player.Prowess, World.Map);
         if (Persist)
         {
-            SaveFile.Write(World.Definition.SavePath, Save);
+            SaveFile.Write(World.Definition.SavePath, _pilgrimage.Save);
         }
     }
-
-    private static Vector2 Flat(Vector3 v) => new(v.X, v.Y);
 }

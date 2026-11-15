@@ -19,6 +19,10 @@ public partial class DoorLock : Node3D
     [Export] public float TurnDegrees { get; set; } = 90f;
     [Export] public float TurnTime { get; set; } = 0.5f;
 
+    /// <summary>How bright the glow flares as the lock opens, and how many seconds it takes to die after the turn ends.</summary>
+    [Export] public float FlarePeak { get; set; } = 2f;
+    [Export] public float FlareSeconds { get; set; } = 0.6f;
+
     /// <summary>The pieces that glow in the kind's color.</summary>
     [Export] public GeometryInstance3D[] Glows { get; set; } = System.Array.Empty<GeometryInstance3D>();
 
@@ -40,7 +44,7 @@ public partial class DoorLock : Node3D
             .SetTrans(Tween.TransitionType.Back).SetEase(Tween.EaseType.Out);
         foreach (GeometryInstance3D glow in Glows)
         {
-            TokenGlow.FlareOut(tween, glow, 2f, TurnTime + 0.6f);
+            TokenGlow.FlareOut(tween, glow, FlarePeak, TurnTime + FlareSeconds);
         }
     }
 

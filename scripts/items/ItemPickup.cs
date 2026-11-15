@@ -29,6 +29,20 @@ public partial class ItemPickup : Node3D, IWalkedThrough
 
     [Export] public OmniLight3D Light { get; set; } = null!;
 
+    /// <summary>How the token floats: bobs <see cref="BobMeters"/> up and down at <see cref="BobSpeed"/> (radians per second), rocks at <see cref="RockSpeed"/>, tilts <see cref="TiltRadians"/> at <see cref="TiltSpeed"/>.</summary>
+    [ExportGroup("Float")]
+    [Export] public float BobMeters { get; set; } = 0.06f;
+    [Export] public float BobSpeed { get; set; } = 1.9f;
+    [Export] public float RockSpeed { get; set; } = 0.9f;
+    [Export] public float TiltRadians { get; set; } = 0.06f;
+    [Export] public float TiltSpeed { get; set; } = 1.3f;
+
+    /// <summary>How the token is taken: flies into the pilgrim for <see cref="FlySeconds"/>, arcing <see cref="ArcMeters"/> up on the way, the rim flaring to <see cref="FlarePeak"/>.</summary>
+    [ExportGroup("Take")]
+    [Export] public float FlySeconds { get; set; } = 0.6f;
+    [Export] public float ArcMeters { get; set; } = 0.4f;
+    [Export] public float FlarePeak { get; set; } = 2.5f;
+
     /// <summary>How far the token rocks either side of facing the camera, radians: a flat key never turns edge-on.</summary>
     private const float Rock = 0.55f;
 
@@ -60,8 +74,8 @@ public partial class ItemPickup : Node3D, IWalkedThrough
         }
 
         _time += (float)delta;
-        Token.Position = _rest + new Vector3(0f, 0.06f * Mathf.Sin(_time * 1.9f), 0f);
-        Token.Rotation = new Vector3(0f, Rock * Mathf.Sin(_time * 0.9f), 0.06f * Mathf.Sin(_time * 1.3f));
+        Token.Position = _rest + new Vector3(0f, BobMeters * Mathf.Sin(_time * BobSpeed), 0f);
+        Token.Rotation = new Vector3(0f, Rock * Mathf.Sin(_time * RockSpeed), TiltRadians * Mathf.Sin(_time * TiltSpeed));
     }
 
     /// <summary>The token flies into <paramref name="target"/> (the pilgrim's chest) and fades; the cradle's rim flares and dies.</summary>
@@ -73,11 +87,11 @@ public partial class ItemPickup : Node3D, IWalkedThrough
         tween.TweenMethod(Callable.From<float>(t =>
         {
             float e = t * t * (3f - 2f * t);
-            Token.GlobalPosition = start.Lerp(target.GlobalPosition + offset, e) + new Vector3(0f, 0.4f * Mathf.Sin(Mathf.Pi * t), 0f);
+            Token.GlobalPosition = start.Lerp(target.GlobalPosition + offset, e) + new Vector3(0f, ArcMeters * Mathf.Sin(Mathf.Pi * t), 0f);
             Token.Scale = Vector3.One * (1f - 0.8f * e * e);
-        }), 0f, 1f, 0.6f);
-        tween.Parallel().TweenProperty(Light, Names.LightEnergy, 0f, 0.6f);
-        TokenGlow.FlareOut(tween, Rim, 2.5f, 0.6f);
+        }), 0f, 1f, FlySeconds);
+        tween.Parallel().TweenProperty(Light, Names.LightEnergy, 0f, FlySeconds);
+        TokenGlow.FlareOut(tween, Rim, FlarePeak, FlySeconds);
         await ToSignal(tween, Tween.SignalName.Finished);
         Token.Visible = false;
     }

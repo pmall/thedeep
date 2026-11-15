@@ -63,6 +63,12 @@ public sealed class Pilgrimage
         Save.SetMap(map);
     }
 
+    /// <summary>The shrine last rested at in <see cref="Room"/>; empty for the room's spawn point.</summary>
+    public string Shrine => Save.Shrine;
+
+    /// <summary>The room of the shrine last rested at, where the pilgrim comes back.</summary>
+    public string Room => Save.Room;
+
     /// <summary>What the save's power-ups add.</summary>
     public Prowess Prowess => new(Save.Strength, Save.Defense);
 

@@ -25,10 +25,16 @@ public partial class LockedDoor : Node3D
     /// <summary>How near the pilgrim must come (meters, on the play plane) for the door to know it.</summary>
     [Export] public float Range { get; set; } = 2.2f;
 
+    /// <summary>How high above its foot the door is looked at (<see cref="Sight"/>), meters.</summary>
+    [Export] public float SightHeight { get; set; } = 1.2f;
+
+    /// <summary>How long the lock's light takes to go out as the door opens, seconds.</summary>
+    [Export] public float LightFadeSeconds { get; set; } = 1.2f;
+
     private DoorLock? _lock;
 
     /// <summary>Where the door is looked at (its lock's height): on screen, the pilgrim sees it.</summary>
-    public Vector3 Sight => GlobalPosition + new Vector3(0f, 1.2f, 0f);
+    public Vector3 Sight => GlobalPosition + new Vector3(0f, SightHeight, 0f);
 
     /// <summary>Unlocked: the way through is open.</summary>
     public bool Opened { get; private set; }
@@ -51,7 +57,7 @@ public partial class LockedDoor : Node3D
     }
 
     /// <summary>Whether a body with its feet at <paramref name="feet"/> is near enough.</summary>
-    public bool Near(Vector3 feet) => new Vector2(feet.X - GlobalPosition.X, feet.Y - GlobalPosition.Y).Length() <= Range;
+    public bool Near(Vector3 feet) => feet.WithinOnPlane(GlobalPosition, Range);
 
     /// <summary>The lock turns and the gate rises.</summary>
     public void Open()
@@ -59,7 +65,7 @@ public partial class LockedDoor : Node3D
         Opened = true;
         Gate.Open();
         _lock?.Release();
-        CreateTween().TweenProperty(Light, Names.LightEnergy, 0f, 1.2f).SetTrans(Tween.TransitionType.Sine);
+        CreateTween().TweenProperty(Light, Names.LightEnergy, 0f, LightFadeSeconds).SetTrans(Tween.TransitionType.Sine);
     }
 
     /// <summary>Opened before (from the save): up already.</summary>
