@@ -18,12 +18,13 @@ public static class DebrisShapes
     {
         var random = new Random(seed);
         float R(float min, float max) => min + (max - min) * (float)random.NextDouble();
+        Matrix4x4 placement = b.Transform;
 
         // A cylindrical tank lying on its side, slightly sunk, along X with a little yaw.
         float tankRadius = size * R(0.16f, 0.22f);
         float tankLength = size * R(0.5f, 0.7f);
         float yaw = R(-0.5f, 0.5f);
-        b.Transform = Matrix4x4.CreateRotationY(yaw) * Matrix4x4.CreateTranslation(R(-0.15f, 0.15f) * size, tankRadius * 0.85f, 0f);
+        b.Transform = Matrix4x4.CreateRotationY(yaw) * Matrix4x4.CreateTranslation(R(-0.15f, 0.15f) * size, tankRadius * 0.85f, 0f) * placement;
         b.Variation = R(0f, 1f);
         b.Sweep(SweepPath.Line(new Vector3(-tankLength * 0.5f, 0f, 0f), new Vector3(tankLength * 0.5f, 0f, 0f), Vector3.UnitY),
             Profile.Circle(tankRadius, 20));
@@ -39,7 +40,7 @@ public static class DebrisShapes
         float gearRadius = size * R(0.18f, 0.26f);
         float gearSide = random.NextDouble() < 0.5 ? -1f : 1f;
         b.Transform = Matrix4x4.CreateRotationZ(gearSide * R(0.15f, 0.4f))
-            * Matrix4x4.CreateTranslation(gearSide * size * R(0.25f, 0.38f), gearRadius * 0.95f, R(-0.1f, 0.25f) * size);
+            * Matrix4x4.CreateTranslation(gearSide * size * R(0.25f, 0.38f), gearRadius * 0.95f, R(-0.1f, 0.25f) * size) * placement;
         b.Variation = R(0f, 1f);
         b.Sweep(SweepPath.Line(new Vector3(0f, 0f, -0.07f), new Vector3(0f, 0f, 0.07f), Vector3.UnitY),
             Profile.Gear(gearRadius * 0.82f, gearRadius, 12));
@@ -52,7 +53,7 @@ public static class DebrisShapes
             float w = size * R(0.2f, 0.4f), h = size * R(0.15f, 0.3f);
             b.Transform = Matrix4x4.CreateRotationX(R(-0.6f, 0.6f)) * Matrix4x4.CreateRotationZ(R(-0.9f, 0.9f))
                 * Matrix4x4.CreateRotationY(R(-0.8f, 0.8f))
-                * Matrix4x4.CreateTranslation(R(-0.4f, 0.4f) * size, h * 0.3f, R(-0.3f, 0.3f) * size);
+                * Matrix4x4.CreateTranslation(R(-0.4f, 0.4f) * size, h * 0.3f, R(-0.3f, 0.3f) * size) * placement;
             b.Variation = R(0f, 1f);
             b.Box(Vector3.Zero, new Vector3(w, h, 0.05f), 0.015f);
         }
@@ -62,13 +63,13 @@ public static class DebrisShapes
         {
             float radius = size * R(0.03f, 0.06f);
             b.Transform = Matrix4x4.CreateRotationZ(R(-1.2f, 1.2f)) * Matrix4x4.CreateRotationY(R(0f, MathF.Tau))
-                * Matrix4x4.CreateTranslation(R(-0.3f, 0.3f) * size, 0f, R(-0.2f, 0.2f) * size);
+                * Matrix4x4.CreateTranslation(R(-0.3f, 0.3f) * size, 0f, R(-0.2f, 0.2f) * size) * placement;
             b.Variation = R(0f, 1f);
             b.Sweep(SweepPath.Line(Vector3.Zero, new Vector3(0f, size * R(0.3f, 0.6f), 0f), Vector3.UnitZ),
                 Profile.Circle(radius, 10));
         }
 
-        b.Transform = Matrix4x4.Identity;
+        b.Transform = placement;
     }
 
     /// <summary>

@@ -296,6 +296,20 @@ public class KitGeometryTests
     }
 
     [Fact]
+    public void WreckKeepsTheCallersPlacement()
+    {
+        var placement = Matrix4x4.CreateTranslation(100f, 5f, 0f);
+        var b = new MeshBuilder { Transform = placement };
+        DebrisShapes.Wreck(b, 3f, 1);
+        (Vector3 min, Vector3 max) = b.Finish().Bounds();
+
+        Assert.Equal(placement, b.Transform);
+        Assert.InRange(min.X, 95f, 100f);
+        Assert.InRange(max.X, 100f, 105f);
+        Assert.True(min.Y >= 5f - 0.5f, $"the heap starts at {min.Y}");
+    }
+
+    [Fact]
     public void OrganPipeGirthPhaseIsTheSameWhereTheBackStripMeetsTheRest()
     {
         const float radius = 0.3f;
