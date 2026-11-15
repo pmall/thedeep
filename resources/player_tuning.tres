@@ -40,7 +40,6 @@ script = ExtResource("2_strike")
 Kind = 3
 Reach = 1.6
 Width = 1.4
-Downward = true
 Knockback = 2.0
 HitStop = 0.06
 Bounce = 9.0

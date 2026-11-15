@@ -15,9 +15,6 @@ public partial class StrikeTuning : Resource
     [Export] public float Reach { get; set; } = 1.8f;
     [Export] public float Width { get; set; } = 1.5f;
 
-    /// <summary>Strikes downward, under the feet (a down strike), instead of forward.</summary>
-    [Export] public bool Downward { get; set; }
-
     /// <summary>Damage added to a blow's (<see cref="PlayerTuning.AttackDamage"/>).</summary>
     [Export] public int ExtraDamage { get; set; }
 
@@ -35,8 +32,7 @@ public partial class StrikeTuning : Resource
     [Export] public float Kick { get; set; } = 0.06f;
     [Export] public float Sparks { get; set; } = 0.5f;
 
-    /// <summary>The strike these knobs describe, as the combat rules read it: ahead of the pilgrim, or below it for a downward
-    /// one.</summary>
-    public StrikeShape Shape => new(Kind, Reach, Width, Downward ? -System.Numerics.Vector2.UnitY : System.Numerics.Vector2.UnitX,
+    /// <summary>The strike these knobs describe, as the combat rules read it: ahead of the pilgrim, or below it for the down strike.</summary>
+    public StrikeShape Shape => new(Kind, Reach, Width, Kind == StrikeKind.Down ? -System.Numerics.Vector2.UnitY : System.Numerics.Vector2.UnitX,
         ExtraDamage, Knockback, HitStop, Bounce, Kick, Sparks);
 }
