@@ -75,11 +75,10 @@ public static class GroundRoutes
         var leaps = new List<Leap>();
         planner.Reach(ways, new List<Box>(), leaps.Add);
 
-        float liftClear = limits.Move.Height + limits.Rise;
         List<Box> avoid = shape.Exits.Select(x => x.Threshold.Trigger)
             .Concat(shape.Relics.Select(r => r.Area)).Concat(shape.Items.Select(i => i.Area)).Concat(shape.Goals)
             .Concat(shape.Waters).Concat(shape.Heat).Concat(shape.Slag)
-            .Concat(shape.Lifts.Select(l => l.Platform with { MaxY = l.Platform.MaxY + l.Rise + liftClear }))
+            .Concat(shape.Lifts.Select(l => l.Platform with { MaxY = l.Platform.MaxY + l.Rise + limits.Move.Height }))
             .Concat(keepOff ?? Enumerable.Empty<Box>()).ToList();
         var routes = leaps.Select(leap => Playable(leap, planner.Ledges, shape.Solids, avoid, limits.Move)).OfType<GroundRoute>().ToList();
 
