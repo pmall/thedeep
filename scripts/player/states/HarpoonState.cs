@@ -14,12 +14,6 @@ public sealed class HarpoonState : PlayerState
     /// <summary>How fast the pilgrim's own motion dies while the line flies out (m/s²).</summary>
     private const float HangDamping = 60f;
 
-    /// <summary>A pull moving less than this share of its speed, a few ticks running, is blocked.</summary>
-    private const float StuckShare = 0.25f;
-
-    /// <summary>Ticks in a row a pull must be blocked (<see cref="StuckShare"/>) before it lets go: one slow tick is a bump.</summary>
-    private const int StuckTicks = 4;
-
     private HarpoonAnchor? _anchor;
     private float _line;
     private float _speed;
@@ -73,7 +67,7 @@ public sealed class HarpoonState : PlayerState
 
         NVector2 to = anchor.Point - Player.Center;
         float distance = to.Length();
-        NVector2 dir = distance > 1e-4f ? to / distance : new NVector2(0f, 1f);
+        NVector2 dir = HarpoonPull.Direction(to);
         if (!_bitten)
         {
             _line += Tuning.HarpoonThrowSpeed * delta;
@@ -85,8 +79,7 @@ public sealed class HarpoonState : PlayerState
 
             _line = distance;
             _bitten = true;
-            NVector2 v = Player.Velocity.Flat();
-            _speed = Mathf.Max(0f, NVector2.Dot(v, dir));
+            _speed = HarpoonPull.BiteSpeed(Player.Velocity.Flat(), dir);
         }
 
         _line = distance;
@@ -100,10 +93,10 @@ public sealed class HarpoonState : PlayerState
             return Player.States.Dash;
         }
 
-        _speed = TheDeep.Motion.Approach(_speed, Tuning.HarpoonZipSpeed, Tuning.HarpoonZipAcceleration * delta);
-        _arriving = distance <= _speed * delta;
-        NVector2 step = _arriving ? to / delta : dir * _speed;
-        Player.Velocity = step.OnPlane();
+        PullStep step = HarpoonPull.Step(to, _speed, Tuning.HarpoonZipSpeed, Tuning.HarpoonZipAcceleration, delta);
+        _speed = step.Speed;
+        _arriving = step.Arriving;
+        Player.Velocity = step.Velocity.OnPlane();
         _before = Player.Center;
         _pull = dir;
         return null;
@@ -116,7 +109,7 @@ public sealed class HarpoonState : PlayerState
             return null;
         }
 
-        if (_arriving || (anchor.Point - Player.Center).Length() < 0.05f)
+        if (_arriving || (anchor.Point - Player.Center).Length() < HarpoonPull.ArrivedWithin)
         {
             NVector2 v = HarpoonAim.Release(_pull, _speed, Tuning.HarpoonExitSpeedFactor, Tuning.HarpoonExitLift);
             Player.Velocity = v.OnPlane();
@@ -127,8 +120,8 @@ public sealed class HarpoonState : PlayerState
 
         float moved = (Player.Center - _before).Length();
         float expected = _speed / Engine.PhysicsTicksPerSecond;
-        _stuck = moved < expected * StuckShare ? _stuck + 1 : 0;
-        if (_stuck >= StuckTicks)
+        _stuck = HarpoonPull.Blocked(moved, expected, _stuck);
+        if (HarpoonPull.GivesUp(_stuck))
         {
             Player.LastAnchor = anchor;
             return Player.States.Fall;
