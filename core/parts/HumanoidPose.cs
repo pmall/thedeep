@@ -122,15 +122,15 @@ public sealed class HumanoidPose
     public void SetBetween(HumanoidBone bone, HumanoidPose a, HumanoidPose b, float t)
     {
         int i = (int)bone;
-        _angles[i] = a._angles[i] + (b._angles[i] - a._angles[i]) * t;
-        _yaw[i] = a._yaw[i] + (b._yaw[i] - a._yaw[i]) * t;
-        _roll[i] = a._roll[i] + (b._roll[i] - a._roll[i]) * t;
+        _angles[i] = Motion.Lerp(a._angles[i], b._angles[i], t);
+        _yaw[i] = Motion.Lerp(a._yaw[i], b._yaw[i], t);
+        _roll[i] = Motion.Lerp(a._roll[i], b._roll[i], t);
     }
 
     private void Blend(HumanoidPose other, int i, float t)
     {
-        _angles[i] += (other._angles[i] - _angles[i]) * t;
-        _yaw[i] += (other._yaw[i] - _yaw[i]) * t;
-        _roll[i] += (other._roll[i] - _roll[i]) * t;
+        _angles[i] = Motion.Lerp(_angles[i], other._angles[i], t);
+        _yaw[i] = Motion.Lerp(_yaw[i], other._yaw[i], t);
+        _roll[i] = Motion.Lerp(_roll[i], other._roll[i], t);
     }
 }
