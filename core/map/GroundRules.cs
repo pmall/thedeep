@@ -108,12 +108,12 @@ public static class GroundRules
                     }
                 }
 
-                if (front[i] is null || front[j] is null)
+                if (front[i] is not { } frontI || front[j] is not { } frontJ)
                 {
                     continue;
                 }
 
-                foreach (Seam face in SharedFaces(solids, front, view, i, j))
+                foreach (Seam face in SharedFaces(solids, frontI, frontJ, view, i, j))
                 {
                     yield return face;
                 }
@@ -193,9 +193,10 @@ public static class GroundRules
 
     /// <summary>
     /// The faces of overlapping solids <paramref name="i"/> and <paramref name="j"/> that lie in one plane, facing the same way, and
-    /// show in <paramref name="view"/> (<see cref="Seen"/>), their faces toward the camera at depth <paramref name="front"/> included.
+    /// show in <paramref name="view"/> (<see cref="Seen"/>), their faces toward the camera (at depths <paramref name="frontI"/> and
+    /// <paramref name="frontJ"/>) included.
     /// </summary>
-    private static IEnumerable<Seam> SharedFaces(IReadOnlyList<Box> solids, IReadOnlyList<float?> front, Box view, int i, int j)
+    private static IEnumerable<Seam> SharedFaces(IReadOnlyList<Box> solids, float frontI, float frontJ, Box view, int i, int j)
     {
         Box a = solids[i], b = solids[j];
         float fromX = Math.Max(a.MinX, b.MinX), toX = Math.Min(a.MaxX, b.MaxX), fromY = Math.Max(a.MinY, b.MinY), toY = Math.Min(a.MaxY, b.MaxY);
@@ -218,7 +219,7 @@ public static class GroundRules
         }
 
         float seenX = Math.Min(toX, view.MaxX) - Math.Max(fromX, view.MinX), seenY = Math.Min(toY, view.MaxY) - Math.Max(fromY, view.MinY);
-        if (Math.Abs(front[i]!.Value - front[j]!.Value) <= Eps && seenX >= Least && seenY >= Least)
+        if (Math.Abs(frontI - frontJ) <= Eps && seenX >= Least && seenY >= Least)
         {
             yield return new Seam(SeamKind.Coplanar, i, j, midX, midY, seenX * seenY);
         }

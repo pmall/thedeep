@@ -18,7 +18,7 @@ public sealed record MoveLimits(
     /// <summary>
     /// A clumsier pilgrim, for the slack report: jumps 18% lower, dashes 35% shorter, runs 20% slower, never takes off from the very
     /// end of a ledge, and gets no ledge assist (it still climbs 2.5 m steps and crosses 7.5 m gaps). A way only these limits miss asks
-    /// for too exact play (owner 2026-11-01: jumps must not be exact; the bar was 10/15/8% until then).
+    /// for too exact play: jumps must not be exact (owner).
     /// </summary>
     public MoveLimits Clumsy() => this with
     {
