@@ -38,7 +38,7 @@ The type to open first for each system; its docblock leads on.
 
 | System | Start at |
 | -- | -- |
-| Boot, command-line arguments | `Main` |
+| Boot, command-line arguments, the table of checks and tools | `Main`, `LaunchOptions`, `Drivers` |
 | The pilgrim | `Player` (over the core's `PilgrimControl` and `MoveRules`), its states in `scripts/player/states/`, its look `PlayerVisual` |
 | A world, its rooms and travel | `WorldDefinition`, `World`, `Room`, `RoomExit` (over the core's `Threshold`), `RoomTravel`, `RoomStage` |
 | The run and the save | `Session` (over `Pilgrimage`), `SaveFile` |

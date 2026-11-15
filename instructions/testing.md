@@ -41,7 +41,7 @@ A check that crashes in `GodotObject.Finalize` (`gchandle.is_released`, "Handle 
 | UI screens to PNGs (windowed) | `godot --path . --disable-vsync -- --room Undercroft --ui-shot <dir>` (`--hops 18` shows the map after more rooms) |
 | Windowed capture check (needs a GPU; after touching capture code) | `godot --path . -- --capture-test` (add `--disable-vsync` before `--` for the raw cost) |
 
-The full list of arguments is in `Main`; each tool's options are in its header.
+The full list of arguments is read by `LaunchOptions` (a command line it cannot follow quits with the reason) and the checks and tools they start are the table `Drivers`; each tool's options are in its header.
 
 ## Placing a seam brick on an exit <a id="seam-brick"></a>
 
