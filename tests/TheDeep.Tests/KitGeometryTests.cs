@@ -199,6 +199,29 @@ public class KitGeometryTests
     }
 
     [Fact]
+    public void PolylineIgnoresRepeatedPoints()
+    {
+        Vector3[] points = { Vector3.Zero, Vector3.Zero, new(4f, 0f, 0f), new(4f, 0f, 0f), new(4f, 4f, 0f) };
+        List<PathFrame> path = SweepPath.Polyline(points, Vector3.UnitZ, 0.8f);
+
+        Assert.All(path, f => Assert.True(float.IsFinite(f.Position.X + f.Position.Y + f.Tangent.X + f.Tangent.Y + f.Distance)));
+        AssertClose(points[0], path[0].Position);
+        AssertClose(points[^1], path[^1].Position);
+    }
+
+    [Fact]
+    public void ArchWithNoRiseIsAFlatBeamAndAnArchBelowItsSpringingLineIsRefused()
+    {
+        List<List<PathFrame>> flat = SweepPath.Arch(6f, 0f, 12);
+
+        List<PathFrame> beam = Assert.Single(flat);
+        AssertClose(new Vector3(-3f, 0f, 0f), beam[0].Position);
+        AssertClose(new Vector3(3f, 0f, 0f), beam[^1].Position);
+        AssertClose(Vector3.UnitY, beam[0].Side);
+        Assert.Throws<ArgumentOutOfRangeException>(() => SweepPath.Arch(6f, -1f, 12));
+    }
+
+    [Fact]
     public void HangingCableDipsBySagAtItsMiddle()
     {
         List<PathFrame> path = SweepPath.Hanging(Vector3.Zero, new Vector3(6f, 0f, 0f), 1.5f, 24);
