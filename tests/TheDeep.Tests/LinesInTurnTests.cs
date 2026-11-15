@@ -20,7 +20,7 @@ public class LinesInTurnTests
         queue.Offer("seal");
         Assert.False(queue.Offer("heat"));
         Assert.Equal("seal", queue.Current);
-        Assert.True(queue.Next(out string next));
+        Assert.True(queue.Next(out string? next));
         Assert.Equal("heat", next);
         Assert.False(queue.Next(out _));
         Assert.False(queue.Showing);
