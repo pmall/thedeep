@@ -234,7 +234,7 @@ public partial class HeatColumn : Node3D
             return;
         }
 
-        BurnReach reach = Burn.Reach(Region, Region.Grown(FootingMargin), player.BodyBox);
+        BurnReach reach = Burn.Reach(Region, Burn.KeepOff(Region, FootingMargin, FootingMargin), player.BodyBox);
         if (reach == BurnReach.Clear)
         {
             return;
