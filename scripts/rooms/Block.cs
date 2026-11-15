@@ -45,6 +45,9 @@ public partial class Block : StaticBody3D
     /// <summary>The dust thrown up when it shatters (a one-shot particle burst).</summary>
     [Export] public PackedScene? ShatterDust { get; set; }
 
+    /// <summary>The block's box on the play plane, in world meters.</summary>
+    public Box PlayBox => Box.Around(GlobalPosition.Flat(), new System.Numerics.Vector2(Size.X, Size.Y));
+
     /// <summary>Broken by the Drill (or remembered broken): no collision, no mesh.</summary>
     public bool Broken { get; private set; }
 

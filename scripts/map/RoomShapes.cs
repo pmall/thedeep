@@ -47,5 +47,5 @@ public static class RoomShapes
     }
 
     /// <summary>A block as a box on the play plane.</summary>
-    public static Box BoxOf(Block b) => Box.Around(b.GlobalPosition.Flat(), new NVector2(b.Size.X, b.Size.Y));
+    public static Box BoxOf(Block b) => b.PlayBox;
 }

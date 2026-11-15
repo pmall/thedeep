@@ -81,24 +81,19 @@ public abstract partial class SeamEnd : Node3D
         for (int i = 0; i < solids.Count; i++)
         {
             Box b = solids[i];
-            var block = BlockScene.Instantiate<Block>();
-            block.Named(PieceNames[i]);
-            block.Size = new Vector3(b.MaxX - b.MinX, b.MaxY - b.MinY, Profile.Depth);
-            block.Position = new Vector3((b.MinX + b.MaxX) * 0.5f, (b.MinY + b.MaxY) * 0.5f, 0f);
-            block.Surface = Surface;
-            blocks.Add(block);
+            blocks.Add(NewBlock(PieceNames[i], b));
         }
 
         var marker = new System.Numerics.Vector2(exit.GlobalPosition.X, exit.GlobalPosition.Y);
         Node room = exit.Owner ?? exit;
-        List<Block> inPlane = Blocks(room)
+        List<Block> inPlane = room.Descendants<Block>()
             .Where(b => !b.CollisionOnly && b.GetParent() is not SeamEnd && Mathf.Abs(b.GlobalPosition.Z) < b.Size.Z * 0.5f)
             .ToList();
         List<Block> walls = inPlane.Where(b => !b.Cracked).ToList();
-        List<Box> wallBoxes = walls.Select(PlayBox).ToList();
+        List<Box> wallBoxes = walls.Select(b => b.PlayBox).ToList();
         (Material look, bool lined) = Look(frame.Solids(exit.Side, marker), walls, wallBoxes, blocks[0]);
         (bool head, bool foot) = Walled;
-        BuildWall(frame, exit, marker, room, inPlane.Select(PlayBox), blocks, head, foot);
+        BuildWall(frame, exit, marker, room, inPlane.Select(b => b.PlayBox), blocks, head, foot);
         foreach (Block block in blocks)
         {
             block.Material = look;
@@ -112,7 +107,7 @@ public abstract partial class SeamEnd : Node3D
         if (Flooded)
         {
             Box passage = frame.Passage(exit.Side, new System.Numerics.Vector2(exit.GlobalPosition.X, exit.GlobalPosition.Y));
-            WaterBody water = Waters(exit.Owner ?? throw new InvalidOperationException($"{exit.NameText()} is in no room"))
+            WaterBody water = (exit.Owner ?? throw new InvalidOperationException($"{exit.NameText()} is in no room")).Descendants<WaterBody>()
                 .FirstOrDefault(w => w.Swim && w.PlayRegion.Overlaps(passage))
                 ?? throw new InvalidOperationException($"{GetType().Name} on {exit.NameText()} is flooded, but no swum water of its room reaches the opening");
             water.Flood(passage);
@@ -143,8 +138,8 @@ public abstract partial class SeamEnd : Node3D
             return;
         }
 
-        List<RoomExit> others = Exits(room).Where(e => e != exit).ToList();
-        var built = Blocks(room).Where(b => b.GetParent() is SeamEnd end && end != this).Select(PlayBox); // other ends' walls, once built
+        List<RoomExit> others = room.Descendants<RoomExit>().Where(e => e != exit).ToList();
+        var built = room.Descendants<Block>().Where(b => b.GetParent() is SeamEnd end && end != this).Select(b => b.PlayBox); // other ends' walls, once built
         var stops = solids.Concat(others.SelectMany(e => OtherFrame(e, hole: false))).Concat(built).ToList();
         var holes = others.Where(e => e.Threshold.IsHatch).SelectMany(e => OtherFrame(e, hole: true)).ToList();
         Vector3 origin = room is Node3D r ? r.GlobalPosition : Vector3.Zero;
@@ -156,21 +151,15 @@ public abstract partial class SeamEnd : Node3D
         {
             Box local = new(w.MinX - marker.X, w.MinY - marker.Y, w.MaxX - marker.X, w.MaxY - marker.Y);
             Block below = w.MinY >= marker.Y ? blocks[1] : blocks[0];
-            Box piece = PlayBox(below.Size, below.Position);
+            Box piece = Box.Around(below.Position.Flat(), new System.Numerics.Vector2(below.Size.X, below.Size.Y));
             if (MathF.Abs(local.MinX - piece.MinX) < 0.01f && MathF.Abs(local.MaxX - piece.MaxX) < 0.01f)
             {
                 Box joined = new(piece.MinX, MathF.Min(piece.MinY, local.MinY), piece.MaxX, MathF.Max(piece.MaxY, local.MaxY));
-                below.Size = new Vector3(joined.MaxX - joined.MinX, joined.MaxY - joined.MinY, Profile.Depth);
-                below.Position = new Vector3((joined.MinX + joined.MaxX) * 0.5f, (joined.MinY + joined.MaxY) * 0.5f, 0f);
+                Resize(below, joined);
                 continue;
             }
 
-            var block = BlockScene.Instantiate<Block>();
-            block.Named($"{(w.MinY >= marker.Y ? "Head" : "Foot")}{++extra}");
-            block.Size = new Vector3(local.MaxX - local.MinX, local.MaxY - local.MinY, Profile.Depth);
-            block.Position = new Vector3((local.MinX + local.MaxX) * 0.5f, (local.MinY + local.MaxY) * 0.5f, 0f);
-            block.Surface = Surface;
-            blocks.Add(block);
+            blocks.Add(NewBlock($"{(w.MinY >= marker.Y ? "Head" : "Foot")}{++extra}", local));
         }
     }
 
@@ -223,7 +212,7 @@ public abstract partial class SeamEnd : Node3D
     private void BuildTrim(IReadOnlyList<TrimPiece> pieces, Material look, Material metal)
     {
         float front = Profile.Depth * 0.5f, overlap = TrimOverlap;
-        List<WaterBody> waters = Owner is null ? new() : Waters(Owner).ToList();
+        List<WaterBody> waters = Owner is null ? new() : Owner.Descendants<WaterBody>().ToList();
         for (int i = 0; i < pieces.Count; i++)
         {
             TrimPiece p = ClearOfWater(pieces[i], waters);
@@ -247,22 +236,20 @@ public abstract partial class SeamEnd : Node3D
         return onSurface ? piece with { Face = piece.Face with { MaxY = piece.Face.MaxY - WaterLower } } : piece;
     }
 
-    /// <summary>A block's box on the play plane, in world meters.</summary>
-    private static Box PlayBox(Block b) => PlayBox(b.Size, b.GlobalPosition);
+    /// <summary>A frame block named <paramref name="name"/> filling <paramref name="local"/> (this end's meters), of the frame's depth and surface.</summary>
+    protected Block NewBlock(string name, Box local)
+    {
+        var block = BlockScene.Instantiate<Block>();
+        block.Named(name);
+        block.Surface = Surface;
+        Resize(block, local);
+        return block;
+    }
 
-    /// <summary>The box of a block of <paramref name="size"/> centered at <paramref name="c"/>, on the play plane.</summary>
-    private static Box PlayBox(Vector3 size, Vector3 c) =>
-        new(c.X - size.X * 0.5f, c.Y - size.Y * 0.5f, c.X + size.X * 0.5f, c.Y + size.Y * 0.5f);
-
-    /// <summary>The exits under <paramref name="node"/>, at any depth.</summary>
-    private static IEnumerable<RoomExit> Exits(Node node) =>
-        node.Children().SelectMany(child => child is RoomExit exit ? new[] { exit } : Exits(child));
-
-    /// <summary>The blocks under <paramref name="node"/>, at any depth.</summary>
-    private static IEnumerable<Block> Blocks(Node node) =>
-        node.Children().SelectMany(child => child is Block block ? new[] { block } : Blocks(child));
-
-    /// <summary>The water bodies under <paramref name="node"/>, at any depth.</summary>
-    protected static IEnumerable<WaterBody> Waters(Node node) =>
-        node.Children().SelectMany(child => child is WaterBody water ? new[] { water } : Waters(child));
+    /// <summary>Sets <paramref name="block"/> to fill <paramref name="local"/> (this end's meters), at the frame's depth.</summary>
+    private void Resize(Block block, Box local)
+    {
+        block.Size = new Vector3(local.MaxX - local.MinX, local.MaxY - local.MinY, Profile.Depth);
+        block.Position = new Vector3((local.MinX + local.MaxX) * 0.5f, (local.MinY + local.MaxY) * 0.5f, 0f);
+    }
 }

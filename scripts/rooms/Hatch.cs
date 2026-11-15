@@ -46,7 +46,7 @@ public partial class Hatch : SeamEnd
         }
 
         Node room = exit.Owner ?? throw new InvalidOperationException($"{exit.NameText()} is in no room");
-        List<WaterBody> pools = Waters(room).Where(w => w.Swim).ToList();
+        List<WaterBody> pools = room.Descendants<WaterBody>().Where(w => w.Swim).ToList();
         var pipe = frame.Pipe(exit.Side, marker, pools.Select(w => w.PlayRegion).ToList())
             ?? throw new InvalidOperationException($"Hatch on {exit.NameText()} hangs a standpipe, but no swum water of its room lies under the whole hole");
         WaterBody pool = pools[pipe.Pool];
@@ -68,11 +68,7 @@ public partial class Hatch : SeamEnd
 
         foreach ((string name, Box w) in new[] { ("PipeWest", pipe.West), ("PipeEast", pipe.East) })
         {
-            var wall = BlockScene.Instantiate<Block>();
-            wall.Named(name);
-            wall.Size = new Vector3(w.MaxX - w.MinX, w.MaxY - w.MinY, Profile.Depth);
-            wall.Position = new Vector3((w.MinX + w.MaxX) * 0.5f - at.X, (w.MinY + w.MaxY) * 0.5f - at.Y, 0f);
-            wall.Surface = Surface;
+            Block wall = NewBlock(name, new Box(w.MinX - at.X, w.MinY - at.Y, w.MaxX - at.X, w.MaxY - at.Y));
             wall.Material = PipeMaterial ?? look;
             AddChild(wall);
         }
