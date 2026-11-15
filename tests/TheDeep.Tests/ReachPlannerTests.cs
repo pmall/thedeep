@@ -8,11 +8,7 @@ namespace TheDeep.Tests;
 
 public class ReachPlannerTests
 {
-    // The live tuning (resources/player_tuning.tres).
-    private static readonly MoveLimits Limits = new(
-        RunSpeed: 7f, AirAcceleration: 45f, AirDeceleration: 30f, AirDrag: 12f, AirCarrySpeed: 11.5f, JumpHeight: 3.2f, JumpTimeToApex: 0.38f, JumpCutFactor: 0.45f,
-        FallGravityMultiplier: 1.6f, ApexHangThreshold: 1.5f, ApexGravityMultiplier: 0.55f, MaxFallSpeed: 20f,
-        DashDistance: 4.5f, DashDuration: 0.16f, DashExitSpeedFactor: 1f, AirDashes: 1, Width: 0.7f, Height: 1.6f);
+    private static readonly MoveLimits Limits = TestTuning.Move;
 
     private static Box B(float x0, float y0, float x1, float y1) => new(x0, y0, x1, y1);
 
@@ -84,8 +80,7 @@ public class ReachPlannerTests
         Assert.Single(ledges);
     }
 
-    private static readonly HarpoonLimits Harpoon = new(Range: 9f, MinDistance: 1.2f, ZipSpeed: 17f, ZipAcceleration: 110f,
-        ExitSpeedFactor: 0.5f, ExitLift: 6f);
+    private static readonly HarpoonLimits Harpoon = TestTuning.Harpoon;
 
     [Fact]
     public void AnAnchorLiftsThePilgrimOntoAHighLedge()
@@ -158,7 +153,7 @@ public class ReachPlannerTests
     private static readonly Box Doorway = B(20f, -8f, 21f, -6f);
 
     private static ReachPlanner Swimmer(bool ballast = false) =>
-        new(Limits, Pool, water: WaterMotionTests.Water, waters: new[] { PoolWater }, ballast: ballast);
+        new(Limits, Pool, water: TestTuning.Water, waters: new[] { PoolWater }, ballast: ballast);
 
     [Fact]
     public void FloatingCrossesAPoolAndJumpsOntoTheFarBank()
@@ -198,7 +193,7 @@ public class ReachPlannerTests
     }
 
     // Mag-grip's live tuning.
-    private static readonly GripLimits Grip = new(LeapAwaySpeed: 6.5f, LeapUpFactor: 0.85f, RegrabDelay: 0.25f, DropSpeed: 2f, LetGoSpeed: 1.5f);
+    private static readonly GripLimits Grip = TestTuning.Grip;
 
     private static bool Grips(IEnumerable<Box> solids, IEnumerable<Box> metal, Vector2 from, Box target) =>
         new ReachPlanner(Limits, solids, grip: Grip, metal: metal).Reach(from, Vector2.Zero, new[] { target }).Triggers.Contains(0);
@@ -250,7 +245,7 @@ public class ReachPlannerTests
     {
         // The far bank's face is metal down into the pool: a grip holds only above the water, so the doorway low in the far wall stays
         // Ballast's.
-        var planner = new ReachPlanner(Limits, Pool, water: WaterMotionTests.Water, waters: new[] { PoolWater }, grip: Grip, metal: new[] { Pool[2] });
+        var planner = new ReachPlanner(Limits, Pool, water: TestTuning.Water, waters: new[] { PoolWater }, grip: Grip, metal: new[] { Pool[2] });
         Box onTheFace = B(19.5f, 0.2f, 20f, 0.6f);
         (HashSet<int> reached, _) = planner.Reach(new Vector2(-5f, 0f), Vector2.Zero, new[] { Doorway, onTheFace });
         Assert.Contains(1, reached);

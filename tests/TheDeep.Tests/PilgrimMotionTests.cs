@@ -10,8 +10,7 @@ public class PilgrimMotionTests
     private const float Dt = 1f / 60f;
     private const float RunSpeed = 7f;
 
-    /// <summary>The pilgrim's rig sizes (resources/parts/pilgrim.tres).</summary>
-    private static readonly HumanoidDims Dims = new(0.9f, new Vector2(0f, -0.05f), 0.085f, 0.4f, 0.39f, 0.43f, 0.26f, 0.24f);
+    private static readonly HumanoidDims Dims = TestTuning.Dims;
 
     [Fact]
     public void StandingStillKeepsBothAnklesOnTheGround()

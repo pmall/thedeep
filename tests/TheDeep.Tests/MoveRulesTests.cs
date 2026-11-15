@@ -4,7 +4,7 @@ namespace TheDeep.Tests;
 
 public class MoveRulesTests
 {
-    private static readonly ControlLimits L = PilgrimControlTests.Limits;
+    private static readonly ControlLimits L = TestTuning.Control;
 
     [Fact]
     public void RunningReachesRunSpeedAndNoFurther()
