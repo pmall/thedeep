@@ -17,6 +17,9 @@ public sealed class HarpoonState : PlayerState
     /// <summary>A pull moving less than this share of its speed, a few ticks running, is blocked.</summary>
     private const float StuckShare = 0.25f;
 
+    /// <summary>Ticks in a row a pull must be blocked (<see cref="StuckShare"/>) before it lets go: one slow tick is a bump.</summary>
+    private const int StuckTicks = 4;
+
     private HarpoonAnchor? _anchor;
     private float _line;
     private float _speed;
@@ -57,7 +60,7 @@ public sealed class HarpoonState : PlayerState
         float dx = _anchor is { } anchor ? anchor.Point.X - Player.Center.X : 0f;
         if (Mathf.Abs(dx) > 0.1f)
         {
-            Player.SetWorldFacing(dx > 0f ? 1 : -1);
+            Player.SetFacing(dx > 0f ? 1 : -1);
         }
     }
 
@@ -125,7 +128,7 @@ public sealed class HarpoonState : PlayerState
         float moved = (Player.Center - _before).Length();
         float expected = _speed / Engine.PhysicsTicksPerSecond;
         _stuck = moved < expected * StuckShare ? _stuck + 1 : 0;
-        if (_stuck >= 4)
+        if (_stuck >= StuckTicks)
         {
             Player.LastAnchor = anchor;
             return Player.States.Fall;

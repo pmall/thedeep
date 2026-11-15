@@ -223,7 +223,7 @@ public partial class UiShot : Node
         {
             Player.Vitality.Restore();
             // The dash toward the room's middle, so it never carries the pilgrim out of the room.
-            Player.SetWorldFacing(Player.GlobalPosition.X < (World.Room.BoundsMin.X + World.Room.BoundsMax.X) * 0.5f ? 1 : -1);
+            Player.SetFacing(Player.GlobalPosition.X < (World.Room.BoundsMin.X + World.Room.BoundsMax.X) * 0.5f ? 1 : -1);
         }
         else if (_tick == 120)
         {

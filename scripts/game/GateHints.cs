@@ -27,13 +27,6 @@ public partial class GateHints : Node
     /// <summary>How fast the meeting of a gate is forgotten when it stops, as a share of real time (a brush now and then never adds up).</summary>
     [Export] public float MeetDecay { get; set; } = 0.5f;
 
-    /// <summary>How squarely a surface must face the pilgrim to be pressed against: the normal's part along the pressing direction.</summary>
-    private const float PressNormal = 0.5f;
-
-    private static readonly System.Func<System.Numerics.Vector2, bool> WallOnRight = n => n.X < -PressNormal;
-    private static readonly System.Func<System.Numerics.Vector2, bool> WallOnLeft = n => n.X > PressNormal;
-    private static readonly System.Func<System.Numerics.Vector2, bool> CeilingAbove = n => n.Y < -PressNormal;
-
     private readonly Dictionary<Ability, float> _met = new();
     private readonly HashSet<Ability> _said = new();
 
@@ -119,10 +112,9 @@ public partial class GateHints : Node
             return false;
         }
 
-        // Static predicates, one per side: a lambda capturing the direction would allocate every frame.
         int x = Player.CurrentInput.MoveX;
-        return (Player.IsOnWall() && x != 0 && Player.MetalContact(x > 0 ? WallOnRight : WallOnLeft) is not null)
-               || (Player.IsOnCeiling() && Player.MetalContact(CeilingAbove) is not null);
+        return (Player.IsOnWall() && x != 0 && Player.MetalContact(new System.Numerics.Vector2(x, 0f), Player.HeadOn) is not null)
+               || (Player.IsOnCeiling() && Player.MetalContact(new System.Numerics.Vector2(0f, 1f), Player.HeadOn) is not null);
     }
 
     private bool TouchesCrackedRock()

@@ -72,15 +72,6 @@ public partial class Player : CharacterBody3D
     /// <summary>Raised when a dash starts, with its direction (+1 right, -1 left).</summary>
     public event Action<int>? Dashed;
 
-    /// <summary>Raised when the Drill dives (straight down).</summary>
-    public event Action? Dove;
-
-    /// <summary>Raised when the Drill breaks cracked rock.</summary>
-    public event Action<Block>? Bored;
-
-    /// <summary>Raised on going into water deep enough to swim, with the downward speed (m/s) just before.</summary>
-    public event Action<float>? Splashed;
-
     /// <summary>The abilities the pilgrim has.</summary>
     public AbilitySet Abilities { get; } = new();
 
@@ -190,10 +181,7 @@ public partial class Player : CharacterBody3D
     /// <summary>The feet (the body's origin) on the play plane.</summary>
     public NVector2 Feet => GlobalPosition.Flat();
 
-    /// <summary>The body on the play plane (upright: the capsule's width and height over the feet).</summary>
-    public Rect2 BodyRect => new(GlobalPosition.X - Capsule.Radius, GlobalPosition.Y, 2f * Capsule.Radius, 2f * CenterHeight);
-
-    /// <summary>The body on the play plane as the core's box (<see cref="BodyRect"/>).</summary>
+    /// <summary>The body on the play plane as the core's box (upright: the capsule's width and height over the feet).</summary>
     public Box BodyBox => new(GlobalPosition.X - Capsule.Radius, GlobalPosition.Y, GlobalPosition.X + Capsule.Radius, GlobalPosition.Y + 2f * CenterHeight);
 
     /// <summary>Height of the body's center above the feet.</summary>
@@ -214,7 +202,7 @@ public partial class Player : CharacterBody3D
     }
 
     /// <summary>How far the feet stay from a surface the body lies along after a corner: the body's radius and a little air.</summary>
-    public float GripClearance => Capsule.Radius + 0.02f;
+    public float GripClearance => Capsule.Radius + Tuning.GripClearanceGap;
 
     /// <summary>The facing as the world sees it: +1 toward +X, -1 toward -X (on a wall, the way the head points along X, else the local facing).</summary>
     public int WorldFacing
@@ -284,7 +272,7 @@ public partial class Player : CharacterBody3D
         float fallSpeed = -Velocity.Y;
         if (CurrentState.Bores)
         {
-            Bore(Velocity * dt * 2f);
+            Bore(Velocity * dt * Tuning.BoreLookAhead);
         }
 
         PushSpeed = Velocity.X;
@@ -328,7 +316,7 @@ public partial class Player : CharacterBody3D
         Vector3 localVelocity = GlobalBasis.Inverse() * Velocity;
         if (CurrentState is HarpoonState { Anchor: { } anchor })
         {
-            Visual.Reach(anchor.GlobalPosition - GlobalPosition - GlobalBasis.Y * ShoulderHeight);
+            Visual.Reach(anchor.GlobalPosition - GlobalPosition - GlobalBasis.Y * Tuning.ShoulderHeight);
         }
 
         Visual.Animate(dt, localVelocity, CurrentState.Motion, IsOnFloor(), IsUpright ? GlobalPosition.Y : float.NaN);
@@ -389,11 +377,11 @@ public partial class Player : CharacterBody3D
         }
 
         GripPose? pose = null;
-        if (IsOnCeiling() && Velocity.Y >= 0f && MetalContact(n => n.Y < -0.5f) is { } ceiling)
+        if (IsOnCeiling() && Velocity.Y >= 0f && MetalContact(new NVector2(0f, 1f), HeadOn) is { } ceiling)
         {
             pose = GripMath.OntoCeiling(Feet, ceiling.Point.Y);
         }
-        else if (IsOnWall() && CurrentInput.MoveX != 0 && MetalContact(n => n.X * CurrentInput.MoveX < -0.5f) is { } wall)
+        else if (IsOnWall() && CurrentInput.MoveX != 0 && MetalContact(new NVector2(CurrentInput.MoveX, 0f), HeadOn) is { } wall)
         {
             pose = GripMath.OntoWall(Feet, CenterHeight, wall.Point.X, wall.Normal);
         }
@@ -433,10 +421,8 @@ public partial class Player : CharacterBody3D
     /// <summary>Called by SwimState as it starts: the plunge is caught by the surface, and the air dash is back.</summary>
     public void BeginSwim()
     {
-        float plunge = -Velocity.Y;
         Velocity = Velocity with { Y = WaterMotion.Splash(Velocity.Y, Water) };
         Control.RefillAirDash();
-        Splashed?.Invoke(plunge);
     }
 
     /// <summary>An anchor reached: the air dash is back, like on a landing.</summary>
@@ -468,20 +454,20 @@ public partial class Player : CharacterBody3D
     /// <summary>No grip for a moment (after letting go or leaping off), so the same surface doesn't catch the player again.</summary>
     public void HoldOffGrip() => Control.HoldOffGrip();
 
-    /// <summary>Faces along the body's own forward (+1) or backward (-1).</summary>
-    public void SetLocalFacing(int direction) => SetFacing(direction);
+    /// <summary>The dot product under which a surface's normal faces the way the body heads (<see cref="MetalContact"/>): more than 60 degrees past square-on.</summary>
+    public const float HeadOn = -0.5f;
 
-    /// <summary>Faces +X (+1) or -X (-1); only meaningful upright.</summary>
-    public void SetWorldFacing(int direction) => SetFacing(direction);
-
-    /// <summary>A contact from the last move with a metal surface whose (axis-snapped) normal passes <paramref name="accept"/>.</summary>
-    public (NVector2 Normal, NVector2 Point)? MetalContact(Func<NVector2, bool> accept)
+    /// <summary>
+    /// A contact from the last move with a metal surface whose (axis-snapped) normal has a dot product with <paramref name="heading"/>
+    /// under <paramref name="maxDot"/> (<see cref="HeadOn"/>: the surface is in the way of that heading).
+    /// </summary>
+    public (NVector2 Normal, NVector2 Point)? MetalContact(NVector2 heading, float maxDot)
     {
         for (int i = 0; i < GetSlideCollisionCount(); i++)
         {
             using KinematicCollision3D collision = GetSlideCollision(i); // disposed: a live wrapper makes the engine allocate a new one next call
             NVector2 normal = GripMath.Snap(collision.GetNormal().Flat());
-            if (collision.GetCollider() is CollisionObject3D body && (body.CollisionLayer & PhysicsLayers.WorldMetal) != 0 && accept(normal))
+            if (collision.GetCollider() is CollisionObject3D body && (body.CollisionLayer & PhysicsLayers.WorldMetal) != 0 && NVector2.Dot(normal, heading) < maxDot)
             {
                 return (normal, collision.GetPosition().Flat());
             }
@@ -560,12 +546,9 @@ public partial class Player : CharacterBody3D
     private bool Fits(GripPose pose)
     {
         var basis = new Basis(Vector3.Back, GripMath.Angle(pose.Up));
-        var origin = new Vector3(pose.Feet.X + pose.Up.X * 0.05f, pose.Feet.Y + pose.Up.Y * 0.05f, 0f);
+        var origin = new Vector3(pose.Feet.X + pose.Up.X * Tuning.FitLift, pose.Feet.Y + pose.Up.Y * Tuning.FitLift, 0f);
         return !Fit.Overlaps(new Transform3D(basis, origin) * new Transform3D(Basis.Identity, CapsuleOffset));
     }
-
-    /// <summary>Height of the shoulders over the feet, meters: the near arm reaches along the Harpoon's line from there.</summary>
-    private const float ShoulderHeight = 1.35f;
 
     /// <summary>
     /// A blow from <paramref name="from"/> (on the play plane): takes <paramref name="damage"/> health unless in the
@@ -668,7 +651,6 @@ public partial class Player : CharacterBody3D
     public void BeginDive()
     {
         Control.BeginDash(IsOnFloor());
-        Dove?.Invoke();
     }
 
     /// <summary>With the Drill, breaks the cracked rock the body would run into moving by <paramref name="motion"/>.</summary>
@@ -683,7 +665,6 @@ public partial class Player : CharacterBody3D
         for (int i = 0; i < 3 && CrackedAt(motion) is { } block; i++)
         {
             block.Break(motion.Normalized());
-            Bored?.Invoke(block);
         }
     }
 
@@ -718,27 +699,27 @@ public partial class Player : CharacterBody3D
         next.Enter();
     }
 
-    private void SetFacing(int direction)
+    /// <summary>Faces <paramref name="direction"/> (+1 or -1) along the body's own forward: the world's +X when upright, along the surface when gripping.</summary>
+    public void SetFacing(int direction)
     {
         Facing = direction < 0 ? -1 : 1;
         Visual.SetFacing(Facing);
     }
 
-    /// <summary>The surface under the player, from the physics layer of the floor it touched (metal wins).</summary>
+    /// <summary>How far above the feet the floor ray starts (meters): inside the body, so a floor that rose a little is still hit.</summary>
+    private const float FloorProbeUp = 0.1f;
+
+    /// <summary>How far below the feet the floor ray ends (meters): past the contact skin, short of any floor the body isn't on.</summary>
+    private const float FloorProbeDown = 0.3f;
+
+    /// <summary>
+    /// The surface under the feet, from the physics layer of the floor a short ray straight down hits (a ray allocates nothing, where
+    /// the slide collisions would wrap one every tick). Where the ray finds none (standing on a ledge's very edge), the last one holds.
+    /// </summary>
     private SurfaceKind FloorSurfaceKind()
     {
-        SurfaceKind kind = SurfaceKind.Rock;
-        for (int i = 0; i < GetSlideCollisionCount(); i++)
-        {
-            using KinematicCollision3D collision = GetSlideCollision(i); // disposed: a live wrapper makes the engine allocate a new one next call
-            if (collision.GetNormal().Y > 0.7f && collision.GetCollider() is CollisionObject3D body
-                && (body.CollisionLayer & PhysicsLayers.WorldMetal) != 0)
-            {
-                kind = SurfaceKind.Metal;
-            }
-        }
-
-        return kind;
+        NVector2 feet = Feet;
+        return SurfaceRay(feet + new NVector2(0f, FloorProbeUp), feet - new NVector2(0f, FloorProbeDown)) ?? FloorSurface ?? SurfaceKind.Rock;
     }
 
     /// <summary>All gameplay happens on X/Y; AxisLockLinearZ covers physics, this covers everything else.</summary>
