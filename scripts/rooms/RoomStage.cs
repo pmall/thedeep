@@ -20,14 +20,7 @@ public partial class RoomStage : Node3D
     private static readonly StringName ArchitectureName = "Architecture";
     private static readonly StringName UnderglowName = "Underglow";
 
-    /// <summary>Distance from the camera to the play plane (the gameplay camera); used to size the backdrop.</summary>
-    public const float CameraDistance = 22f;
-
-    /// <summary>
-    /// Half the view's width per meter of distance from the camera: half the horizontal field of view's tangent
-    /// at 16:9 with the 30° vertical FOV, with a margin.
-    /// </summary>
-    public const float ViewHalfWidthPerMeter = 0.55f;
+    private static readonly StageSpec Spec = StageSpec.Default;
 
     [Export] public WorldEnvironment Environment { get; set; } = null!;
     [Export] public DirectionalLight3D KeyLight { get; set; } = null!;
@@ -89,39 +82,41 @@ public partial class RoomStage : Node3D
         Vector2 size = max - min;
         float centerX = (min.X + max.X) * 0.5f;
 
-        _farSkyline = AddSkyline("FarSkyline", FarSkylineDepth, min.Y - 6f, size, centerX, 90f);
-        _nearSkyline = AddSkyline("NearSkyline", NearSkylineDepth, min.Y - 4f, size, centerX, 60f);
+        _farSkyline = AddSkyline("FarSkyline", FarSkylineDepth, min.Y - Spec.FarSkylineBelow, size, centerX, Spec.FarSkylineMinHeight);
+        _nearSkyline = AddSkyline("NearSkyline", NearSkylineDepth, min.Y - Spec.NearSkylineBelow, size, centerX, Spec.NearSkylineMinHeight);
 
-        float frameWidth = size.X + 8f;
+        var depthRange = new Vector2(Spec.FrameDepthMin, Spec.FrameDepthMax);
         if (FrameBelow)
         {
+            FrameBand band = Spec.Frame(min.ToCore(), max.ToCore(), above: false);
             AddChild(new BackdropScatter
             {
                 Name = FrameBelowName,
                 Material = FrameMaterial,
-                Count = Mathf.Max(1, Mathf.RoundToInt(frameWidth / 9.5f)),
-                AreaMin = new Vector2(min.X - 4f, min.Y - 4f),
-                AreaMax = new Vector2(max.X + 4f, min.Y - 3f),
-                DepthRange = new Vector2(6f, 9f),
-                SizeMin = new Vector3(0.6f, 3f, 0.6f),
-                SizeMax = new Vector3(1.8f, 6.5f, 1.5f),
-                Seed = Seed * 7 + 37,
+                Count = band.Count,
+                AreaMin = band.AreaMin.ToGodot(),
+                AreaMax = band.AreaMax.ToGodot(),
+                DepthRange = depthRange,
+                SizeMin = Spec.FrameBelowSizeMin.ToGodot(),
+                SizeMax = Spec.FrameBelowSizeMax.ToGodot(),
+                Seed = Spec.Seed(Seed, Spec.FrameBelowSalt),
             });
         }
 
         if (FrameAbove)
         {
+            FrameBand band = Spec.Frame(min.ToCore(), max.ToCore(), above: true);
             AddChild(new BackdropScatter
             {
                 Name = FrameAboveName,
                 Material = FrameMaterial,
-                Count = Mathf.Max(1, Mathf.RoundToInt(frameWidth / 15f)),
-                AreaMin = new Vector2(min.X - 4f, max.Y + 2f),
-                AreaMax = new Vector2(max.X + 4f, max.Y + 3f),
-                DepthRange = new Vector2(6f, 9f),
-                SizeMin = new Vector3(0.4f, 3f, 0.4f),
-                SizeMax = new Vector3(1f, 6.5f, 1f),
-                Seed = Seed * 7 + 41,
+                Count = band.Count,
+                AreaMin = band.AreaMin.ToGodot(),
+                AreaMax = band.AreaMax.ToGodot(),
+                DepthRange = depthRange,
+                SizeMin = Spec.FrameAboveSizeMin.ToGodot(),
+                SizeMax = Spec.FrameAboveSizeMax.ToGodot(),
+                Seed = Spec.Seed(Seed, Spec.FrameAboveSalt),
                 Hanging = true,
             });
         }
@@ -130,8 +125,8 @@ public partial class RoomStage : Node3D
         {
             var dust = Dust.Instantiate<AmbientParticles>();
             dust.Named("Dust");
-            dust.Position = new Vector3(centerX, (min.Y + max.Y) * 0.5f - 1f, -5.5f);
-            dust.Extents = new Vector3(size.X * 0.5f, size.Y * 0.4f, 6.5f);
+            dust.Position = new Vector3(centerX, (min.Y + max.Y) * 0.5f - Spec.DustSink.X, -Spec.DustSink.Y);
+            dust.Extents = new Vector3(size.X * 0.5f, size.Y * Spec.DustHeightShare, Spec.DustHalfDepth);
             dust.Density = DustDensity;
             AddChild(dust);
             _dust = dust;
@@ -189,7 +184,7 @@ public partial class RoomStage : Node3D
             BoundsMax = _max,
             Rows = rows,
             OmitNearest = PillarDensity < 2f,
-            Seed = Seed * 7 + 11,
+            Seed = Spec.Seed(Seed, Spec.ArchitectureSalt),
         };
         AddChild(_architecture);
     }
@@ -242,9 +237,9 @@ public partial class RoomStage : Node3D
     /// <summary>A skyline's sheet, hidden until the biome gives it a look (<see cref="Restyle"/>).</summary>
     private MeshInstance3D AddSkyline(string name, float depth, float bottom, Vector2 roomSize, float centerX, float minHeight)
     {
-        float viewDistance = CameraDistance + depth;
-        float width = roomSize.X + 2f * viewDistance * ViewHalfWidthPerMeter;
-        float height = Mathf.Max(minHeight, roomSize.Y + minHeight * 0.6f);
+        float viewDistance = SideCamera.DefaultDistance + depth;
+        float width = roomSize.X + 2f * viewDistance * SideCamera.ViewHalfWidthPerMeter;
+        float height = Mathf.Max(minHeight, roomSize.Y + minHeight * Spec.SkylineHeightShare);
         var skyline = new MeshInstance3D
         {
             Mesh = new QuadMesh { Size = new Vector2(width, height), CenterOffset = new Vector3(0f, height * 0.5f, 0f) },

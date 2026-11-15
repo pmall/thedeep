@@ -19,6 +19,14 @@ public partial class BackdropArchitecture : Node3D
 {
     private static readonly StringName VeilParameter = "veil";
 
+    private static readonly NaveBackdropSpec Nave = NaveBackdropSpec.Default;
+
+    private static readonly StacksBackdropSpec Stacks = StacksBackdropSpec.Default;
+
+    private static readonly FoundryBackdropSpec Foundry = FoundryBackdropSpec.Default;
+
+    private static readonly MachineryBackdropSpec Machinery = MachineryBackdropSpec.Default;
+
     [Export] public BackdropStyle Style { get; set; }
 
     /// <summary>Masonry (naves).</summary>
@@ -45,13 +53,10 @@ public partial class BackdropArchitecture : Node3D
     [Export] public bool OmitNearest { get; set; }
 
     /// <summary>How far in front of the play plane a camera may stand and still see the rows fill its view, meters: the
-    /// widest look-dev shot, past the gameplay camera's <see cref="RoomStage.CameraDistance"/>.</summary>
+    /// widest look-dev shot, past the gameplay camera's <see cref="SideCamera.DefaultDistance"/>.</summary>
     [Export] public float ViewDistance { get; set; } = 90f;
 
     [Export] public int Seed { get; set; } = 1;
-
-    /// <summary>Half the vertical view's height per meter from the camera: tan(15°), for the 30° vertical FOV.</summary>
-    private const float ViewHalfHeightPerMeter = 0.27f;
 
     public override void _Ready()
     {
@@ -65,7 +70,7 @@ public partial class BackdropArchitecture : Node3D
         for (int i = OmitNearest && specs.Count > 1 ? 1 : 0; i < specs.Count; i++)
         {
             BackdropRowSpec spec = specs[i];
-            BackdropRow row = spec.Behind(BoundsMin.ToCore(), BoundsMax.ToCore(), ViewDistance, RoomStage.ViewHalfWidthPerMeter, ViewHalfHeightPerMeter, Seed * 31 + i * 7);
+            BackdropRow row = spec.Behind(BoundsMin.ToCore(), BoundsMax.ToCore(), ViewDistance, SideCamera.ViewHalfWidthPerMeter, SideCamera.ViewHalfHeightPerMeter, Seed * 31 + i * 7);
             BuildRow(row with { Glows = spec.Depth >= farthest }, spec.Depth, i);
         }
     }
@@ -159,27 +164,27 @@ public partial class BackdropArchitecture : Node3D
         float s = d.Scale;
         return piece switch
         {
-            BackdropPiece.Pier => new ColumnMesh { Height = d.PierHeight, Radius = d.PierRadius, Sides = 10, Shafts = 4, Plinth = 0.8f * s, Capital = 0.6f * s },
-            BackdropPiece.UpperPier => new ColumnMesh { Height = d.UpperHeight, Radius = 0.6f * s, Sides = 8, Shafts = 1, Plinth = 0.35f * s, Capital = 0.4f * s },
-            BackdropPiece.PointedArch => new ArchMesh { Span = d.Pitch, Rise = d.PointedRise, Thickness = d.ArchThickness, Depth = d.ArchDepth, Segments = 24 },
-            BackdropPiece.UpperArch => new ArchMesh { Span = d.Pitch, Rise = d.UpperRise, Thickness = d.ArchThickness * 0.8f, Depth = d.ArchDepth * 0.9f, Segments = 20 },
-            BackdropPiece.Course => new BlockMesh { Size = new Vector3(d.Pitch, d.CourseHeight, d.ArchDepth * 1.15f), Bevel = 0.1f * s },
+            BackdropPiece.Pier => new ColumnMesh { Height = d.PierHeight, Radius = d.PierRadius, Sides = Nave.PierSides, Shafts = Nave.PierShafts, Plinth = Nave.PierPlinth * s, Capital = Nave.PierCapital * s },
+            BackdropPiece.UpperPier => new ColumnMesh { Height = d.UpperHeight, Radius = Nave.UpperRadius * s, Sides = Nave.UpperSides, Shafts = 1, Plinth = Nave.UpperPlinth * s, Capital = Nave.UpperCapital * s },
+            BackdropPiece.PointedArch => new ArchMesh { Span = d.Pitch, Rise = d.PointedRise, Thickness = d.ArchThickness, Depth = d.ArchDepth, Segments = Nave.ArchSegments },
+            BackdropPiece.UpperArch => new ArchMesh { Span = d.Pitch, Rise = d.UpperRise, Thickness = d.ArchThickness * Nave.UpperArchThicknessShare, Depth = d.ArchDepth * Nave.UpperArchDepthShare, Segments = Nave.UpperArchSegments },
+            BackdropPiece.Course => new BlockMesh { Size = new Vector3(d.Pitch, d.CourseHeight, d.ArchDepth * Nave.CourseDepthShare), Bevel = Nave.CourseBevel * s },
             BackdropPiece.Shaft => new BlockMesh { Size = new Vector3(d.ShaftSection, 1f, d.ShaftSection), Bevel = 0f },
-            BackdropPiece.Tower => new StackMesh { Size = new Vector3(d.TowerWidth, d.TowerHeight, 2.4f * s), Shelf = 1.2f * s },
-            BackdropPiece.Walkway => new BlockMesh { Size = new Vector3(d.Pitch - d.TowerWidth + 0.4f * s, d.WalkwayHeight, d.WalkwayDepth), Bevel = 0.06f * s },
-            BackdropPiece.Icicles => new IcicleMesh { Width = (d.Pitch - d.TowerWidth) * 0.9f, Length = 1.8f * s, Count = 9, Seed = seed },
-            BackdropPiece.Furnace => new BlockMesh { Size = new Vector3(d.FurnaceWidth, length, d.FurnaceDepth), Bevel = 0.2f * s },
-            BackdropPiece.Hood => new BlockMesh { Size = new Vector3(d.HoodWidth, d.HoodHeight, d.FurnaceDepth * 0.7f), Bevel = 0.15f * s },
-            BackdropPiece.FurnaceMouth => new BlockMesh { Size = new Vector3(d.MouthWidth, d.MouthHeight, 0.3f * s), Bevel = 0.05f * s },
-            BackdropPiece.Stack => new PipeMesh { Points = [Vector3.Zero, new Vector3(0f, length, 0f)], Radius = d.StackRadius, FlangeSpacing = 3.5f * s },
-            BackdropPiece.Duct => new PipeMesh { Points = [new Vector3(-0.5f * length, 0f, 0f), new Vector3(0.5f * length, 0f, 0f)], Radius = d.DuctRadius, FlangeSpacing = 2.5f * s },
-            BackdropPiece.Tank => new PipeMesh { Points = [new Vector3(-0.5f * d.TankLength, 0f, 0f), new Vector3(0.5f * d.TankLength, 0f, 0f)], Radius = d.TankRadius, FlangeSpacing = 1.6f * s },
-            BackdropPiece.Chord => new BlockMesh { Size = new Vector3(1f, d.BeamSection, d.BeamSection), Bevel = 0.02f },
-            BackdropPiece.Brace => new BlockMesh { Size = new Vector3(1f, d.BeamSection * 0.7f, d.BeamSection * 0.7f), Bevel = 0.02f },
-            BackdropPiece.Chain => new CableMesh { End = new Vector3(0f, -1f, 0f), Sag = 0f, Radius = 0.08f * s, Strands = 1, Seed = seed },
-            BackdropPiece.Gear => new CogMesh { Radius = 1f, Teeth = 28, Depth = 0.5f * s },
-            BackdropPiece.Hub => new ColumnMesh { Height = 1.2f * s, Radius = 1.1f * s, Sides = 12, Shafts = 1, Plinth = 0.3f * s, Capital = 0.3f * s },
-            BackdropPiece.Piston => new ColumnMesh { Height = length, Radius = d.PistonRadius, Sides = 10, Shafts = 1, Plinth = 0.8f * s, Capital = 0.5f * s },
+            BackdropPiece.Tower => new StackMesh { Size = new Vector3(d.TowerWidth, d.TowerHeight, Stacks.TowerDepth * s), Shelf = Stacks.TowerShelf * s },
+            BackdropPiece.Walkway => new BlockMesh { Size = new Vector3(d.Pitch - d.TowerWidth + Stacks.WalkwayOverhang * s, d.WalkwayHeight, d.WalkwayDepth), Bevel = Stacks.WalkwayBevel * s },
+            BackdropPiece.Icicles => new IcicleMesh { Width = (d.Pitch - d.TowerWidth) * Stacks.IcicleWidthShare, Length = Stacks.IcicleLength * s, Count = Stacks.IcicleCount, Seed = seed },
+            BackdropPiece.Furnace => new BlockMesh { Size = new Vector3(d.FurnaceWidth, length, d.FurnaceDepth), Bevel = Foundry.FurnaceBevel * s },
+            BackdropPiece.Hood => new BlockMesh { Size = new Vector3(d.HoodWidth, d.HoodHeight, d.FurnaceDepth * Foundry.HoodDepthShare), Bevel = Foundry.HoodBevel * s },
+            BackdropPiece.FurnaceMouth => new BlockMesh { Size = new Vector3(d.MouthWidth, d.MouthHeight, Foundry.MouthThickness * s), Bevel = Foundry.MouthBevel * s },
+            BackdropPiece.Stack => new PipeMesh { Points = [Vector3.Zero, new Vector3(0f, length, 0f)], Radius = d.StackRadius, FlangeSpacing = Foundry.StackFlange * s },
+            BackdropPiece.Duct => new PipeMesh { Points = [new Vector3(-0.5f * length, 0f, 0f), new Vector3(0.5f * length, 0f, 0f)], Radius = d.DuctRadius, FlangeSpacing = Foundry.DuctFlange * s },
+            BackdropPiece.Tank => new PipeMesh { Points = [new Vector3(-0.5f * d.TankLength, 0f, 0f), new Vector3(0.5f * d.TankLength, 0f, 0f)], Radius = d.TankRadius, FlangeSpacing = Foundry.TankFlange * s },
+            BackdropPiece.Chord => new BlockMesh { Size = new Vector3(1f, d.BeamSection, d.BeamSection), Bevel = Foundry.BeamBevel },
+            BackdropPiece.Brace => new BlockMesh { Size = new Vector3(1f, d.BeamSection * Foundry.BraceShare, d.BeamSection * Foundry.BraceShare), Bevel = Foundry.BeamBevel },
+            BackdropPiece.Chain => new CableMesh { End = new Vector3(0f, -1f, 0f), Sag = 0f, Radius = Foundry.ChainRadius * s, Strands = 1, Seed = seed },
+            BackdropPiece.Gear => new CogMesh { Radius = 1f, Teeth = Machinery.GearTeeth, Depth = Machinery.GearThickness * s },
+            BackdropPiece.Hub => new ColumnMesh { Height = Machinery.HubLength * s, Radius = Machinery.HubRadius * s, Sides = Machinery.HubSides, Shafts = 1, Plinth = Machinery.HubPlinth * s, Capital = Machinery.HubCapital * s },
+            BackdropPiece.Piston => new ColumnMesh { Height = length, Radius = d.PistonRadius, Sides = Machinery.PistonSides, Shafts = 1, Plinth = Machinery.PistonPlinth * s, Capital = Machinery.PistonCapital * s },
             _ => throw new ArgumentOutOfRangeException(nameof(piece), piece, "no mesh for this backdrop piece"),
         };
     }

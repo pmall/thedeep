@@ -17,6 +17,18 @@ public partial class SideCamera : Camera3D
     /// <summary>The gameplay camera's distance from the play plane, unless a scene sets <see cref="Distance"/>.</summary>
     public const float DefaultDistance = 22f;
 
+    /// <summary>The gameplay camera's vertical field of view, degrees (narrow, so the backdrop and foreground layers get parallax).</summary>
+    public const float DefaultFov = 30f;
+
+    /// <summary>Half the gameplay view's height per meter of distance from the camera.</summary>
+    public static readonly float ViewHalfHeightPerMeter = CameraMath.HalfHeightAtDistance(1f, DefaultFov);
+
+    /// <summary>
+    /// Half the width the backdrop is sized to fill per meter of distance from the camera: the widescreen view's, with a
+    /// margin (<see cref="StageSpec.ViewMargin"/>).
+    /// </summary>
+    public static readonly float ViewHalfWidthPerMeter = CameraMath.HalfWidthAtDistance(1f, DefaultFov, StageSpec.Default.WideAspect) * StageSpec.Default.ViewMargin;
+
     /// <summary>Distance from the play plane (Z = 0) to the camera.</summary>
     [Export] public float Distance { get; set; } = DefaultDistance;
 
@@ -68,6 +80,7 @@ public partial class SideCamera : Camera3D
 
     public override void _Ready()
     {
+        Fov = DefaultFov;
         // Moved in _Process from the target's interpolated transform, so it must not be interpolated itself.
         PhysicsInterpolationMode = PhysicsInterpolationModeEnum.Off;
         Target.Respawned += SnapToTarget;

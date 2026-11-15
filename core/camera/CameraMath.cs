@@ -25,6 +25,12 @@ public static class CameraMath
         return distance * MathF.Tan(verticalFovDegrees * MathF.PI / 360f);
     }
 
+    /// <summary>Half the visible width at <paramref name="distance"/>: the half height times the view's <paramref name="aspect"/> (width over height).</summary>
+    public static float HalfWidthAtDistance(float distance, float verticalFovDegrees, float aspect)
+    {
+        return HalfHeightAtDistance(distance, verticalFovDegrees) * aspect;
+    }
+
     /// <summary>
     /// Whether a point on the play plane is on screen: within a view of half-size (<paramref name="halfWidth"/>, <paramref name="halfHeight"/>)
     /// centered on (<paramref name="centerX"/>, <paramref name="centerY"/>), its edges drawn in by <paramref name="margin"/> meters.

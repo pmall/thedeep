@@ -44,4 +44,46 @@ public sealed record NaveBackdropSpec
 
     /// <summary>The chance an arch has fallen.</summary>
     public float FallenArchChance { get; init; } = 0.1f;
+
+    /// <summary>A first-tier pier's column has this many sides...</summary>
+    public int PierSides { get; init; } = 10;
+
+    /// <summary>...and this many shafts down its face...</summary>
+    public int PierShafts { get; init; } = 4;
+
+    /// <summary>...a plinth this high, times the row's scale...</summary>
+    public float PierPlinth { get; init; } = 0.8f;
+
+    /// <summary>...and a capital this high, times the row's scale.</summary>
+    public float PierCapital { get; init; } = 0.6f;
+
+    /// <summary>An upper tier's pier radius, times the row's scale...</summary>
+    public float UpperRadius { get; init; } = 0.6f;
+
+    /// <summary>...with this many sides...</summary>
+    public int UpperSides { get; init; } = 8;
+
+    /// <summary>...a plinth this high, times the row's scale...</summary>
+    public float UpperPlinth { get; init; } = 0.35f;
+
+    /// <summary>...and a capital this high, times the row's scale.</summary>
+    public float UpperCapital { get; init; } = 0.4f;
+
+    /// <summary>A first-tier arch's ring is cut in this many segments.</summary>
+    public int ArchSegments { get; init; } = 24;
+
+    /// <summary>An upper tier's arch ring is cut in this many segments.</summary>
+    public int UpperArchSegments { get; init; } = 20;
+
+    /// <summary>An upper arch's ring is this share of a first-tier ring's thickness...</summary>
+    public float UpperArchThicknessShare { get; init; } = 0.8f;
+
+    /// <summary>...and this share of its depth.</summary>
+    public float UpperArchDepthShare { get; init; } = 0.9f;
+
+    /// <summary>A course is this share of an arch's depth.</summary>
+    public float CourseDepthShare { get; init; } = 1.15f;
+
+    /// <summary>A course's bevel, times the row's scale.</summary>
+    public float CourseBevel { get; init; } = 0.1f;
 }

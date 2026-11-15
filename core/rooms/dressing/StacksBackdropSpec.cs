@@ -32,4 +32,25 @@ public sealed record StacksBackdropSpec
 
     /// <summary>How far icicles hang toward the camera under a walkway, as a share of its depth.</summary>
     public float IcicleDepthShare { get; init; } = 0.3f;
+
+    /// <summary>A tower's depth toward the camera, times the row's scale.</summary>
+    public float TowerDepth { get; init; } = 2.4f;
+
+    /// <summary>A tower's shelf spacing, times the row's scale.</summary>
+    public float TowerShelf { get; init; } = 1.2f;
+
+    /// <summary>A walkway is this much longer than the bay between towers, times the row's scale.</summary>
+    public float WalkwayOverhang { get; init; } = 0.4f;
+
+    /// <summary>A walkway's bevel, times the row's scale.</summary>
+    public float WalkwayBevel { get; init; } = 0.06f;
+
+    /// <summary>An icicle fringe's width as a share of the bay between towers.</summary>
+    public float IcicleWidthShare { get; init; } = 0.9f;
+
+    /// <summary>An icicle fringe's length, times the row's scale.</summary>
+    public float IcicleLength { get; init; } = 1.8f;
+
+    /// <summary>The icicles in a fringe.</summary>
+    public int IcicleCount { get; init; } = 9;
 }
