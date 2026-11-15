@@ -5,29 +5,6 @@ using System.Linq;
 namespace TheDeep;
 
 /// <summary>
-/// A pocket: a stretch of ground from <see cref="MinX"/> to <see cref="MaxX"/> (the capsule's center) on solid <see cref="Ground"/>'s
-/// top at <see cref="Y"/> (and any ground flush with it), every place of which is under a solid that cuts a jump short
-/// (<see cref="GroundRules.Headroom"/>); <see cref="Ceiling"/> is the lowest unmarked solid over it, <see cref="Clearance"/> meters over the ground.
-/// </summary>
-public readonly record struct LowCeiling(int Ground, int Ceiling, float Y, float MinX, float MaxX, float Clearance);
-
-/// <summary>The kinds of meeting between two solids that the physics or the renderer gets wrong.</summary>
-public enum SeamKind
-{
-    /// <summary>Two tops side by side, one higher by less than the ledge assist (and more than nothing): a bump the run trips on.</summary>
-    Step,
-
-    /// <summary>Two solids overlapping with a face in the same plane: the faces fight for the same depth (z-fighting).</summary>
-    Coplanar,
-}
-
-/// <summary>
-/// A meeting of solids <see cref="A"/> and <see cref="B"/> at (<see cref="X"/>, <see cref="Y"/>): a step's height, or the length of a
-/// shared face seen (the area seen, square meters, for the face toward the camera).
-/// </summary>
-public readonly record struct Seam(SeamKind Kind, int A, int B, float X, float Y, float Size);
-
-/// <summary>
 /// Rules on a room's solids (play-plane boxes) that hold the ground it is walked on, pure, each catching a defect measured in play:
 /// pockets under low ceilings (<see cref="Headroom"/>), steps that stop a run and faces in one plane (<see cref="Seams"/>), a seam
 /// frame's column entered by another solid (<see cref="Intrusions"/>), and a mesh lying across the play plane where nothing solid is
