@@ -105,6 +105,21 @@ public class WorldCheckTests
     }
 
     [Fact]
+    public void ARoomTheWalkNeverEntersIsAProblem()
+    {
+        // The goal in the hall, the way to the sanctum 12 m up: the map's markers reach the sanctum, the walk never does.
+        var world = new WorldCheck(Limits);
+        world.AddRoom("Hall", Min, Max, Room(new[] { Doorway("East", 9.5f, y: 12f) }, goal: true, start: true));
+        world.AddRoom("Sanctum", Min, Max, Room(new[] { Doorway("West", -9.5f) }));
+        world.AddExit(new MapEdge("Hall", "East", "Sanctum", "West", Requirement.None), new Vector2(9.5f, 12f), new Vector2(-9.5f, 1.5f));
+        world.AddExit(new MapEdge("Sanctum", "West", "Hall", "East", Requirement.None), new Vector2(-9.5f, 1.5f), new Vector2(9.5f, 12f));
+        world.Graph.AddGoal("Hall");
+        world.Check("Hall", MapTargets.None, report: false);
+        Assert.Contains("map inside the rooms: Sanctum is never entered walking the rooms from where the pilgrim comes in", world.Problems);
+        Assert.DoesNotContain(world.Problems, p => p.Contains("no goal", StringComparison.Ordinal));
+    }
+
+    [Fact]
     public void RoomsThatOverlapOnTheMapAreAProblem()
     {
         var world = new WorldCheck(Limits);

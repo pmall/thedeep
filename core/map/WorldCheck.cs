@@ -371,7 +371,7 @@ public sealed class WorldCheck
     /// The map with the rooms' insides (<see cref="MapSolver.SolveInside"/>): each room walked by the planner from the way the pilgrim
     /// came in, with the abilities it owns, taking the relics it reaches there (then walking again with them), leaving only through
     /// the exits it reaches. From waking in the start room, no reachable (room, way in, abilities) may be a softlock, the goal must be
-    /// reached (its goal area walked into), and every relic taken. Returns the summary.
+    /// reached (its goal area walked into), every room entered, and every relic and item taken. Returns the summary.
     /// </summary>
     private string CheckInside()
     {
@@ -394,10 +394,14 @@ public sealed class WorldCheck
             _problems.Add($"map inside the rooms: softlock in {state}: no goal can be reached from there; reached by {string.Join(" → ", path)}");
         }
 
+        foreach (string room in report.UnenteredRooms)
+        {
+            _problems.Add($"map inside the rooms: {room} is never entered walking the rooms from where the pilgrim comes in");
+        }
+
         if (!report.GoalReachable)
         {
-            _problems.Add("map inside the rooms: no goal is reached walking the rooms from where the pilgrim comes in" +
-                          (report.UnenteredRooms.Count > 0 ? $"; never entered: {string.Join(", ", report.UnenteredRooms)}" : ""));
+            _problems.Add("map inside the rooms: no goal is reached walking the rooms from where the pilgrim comes in");
         }
 
         return $"INSIDE OK: {report.ReachableStates} states (room, way in, abilities), every room walked from each way in, no softlock; " +
