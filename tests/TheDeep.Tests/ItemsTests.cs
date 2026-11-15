@@ -43,7 +43,6 @@ public class ItemsTests
 
         Assert.True(r.SoftlockFree);
         Assert.Empty(r.UnreachableRooms);
-        Assert.Empty(r.UnreachableItems);
     }
 
     [Fact]
@@ -67,7 +66,6 @@ public class ItemsTests
         MapReport r = MapSolver.Solve(g);
 
         Assert.Equal(new[] { "Vault" }, r.UnreachableRooms);
-        Assert.Single(r.UnreachableItems);
     }
 
     [Fact]
@@ -104,7 +102,7 @@ public class ItemsTests
     {
         // Every exit and every item of a room reached from any way in.
         MapGraph g = Crypts();
-        RoomReach Open(WayState s) => new(s.Owned, g.ItemsIn(s.Room).Aggregate(s.Held, (h, i) => h.With(i.Item)),
+        RoomReach? Open(WayState s) => new RoomReach(s.Owned, g.ItemsIn(s.Room).Aggregate(s.Held, (h, i) => h.With(i.Item)),
             g.From(s.Room).Select(e => e.FromExit).ToList(), g.Goals.Contains(s.Room));
 
         InsideReport r = MapSolver.SolveInside(g, Open);

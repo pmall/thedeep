@@ -128,7 +128,7 @@ public class MapSolverTests
     }
 
     /// <summary>A room's inside by hand: from each way in (and with what), the exits reached; relics and goals as given.</summary>
-    private static System.Func<WayState, RoomReach> Inside(System.Func<WayState, (Ability, string[], bool)> rule) => s =>
+    private static System.Func<WayState, RoomReach?> Inside(System.Func<WayState, (Ability, string[], bool)> rule) => s =>
     {
         (Ability owned, string[] exits, bool goal) = rule(s);
         return new RoomReach(owned, exits, goal);
@@ -145,6 +145,18 @@ public class MapSolverTests
         InsideReport r = MapSolver.SolveInside(g, Inside(s => Open(g, s)));
         Assert.True(r.SoftlockFree);
         Assert.Empty(r.UntakenRelics);
+    }
+
+    [Fact]
+    public void AWayInTheRoomLacksIsNotTaken()
+    {
+        // The Nave has no way in from the Cistern after all: that way is skipped, not walked into a dead end.
+        MapGraph g = Slice();
+        var through = new WayEntry.Through("Cistern");
+        InsideReport open = MapSolver.SolveInside(g, Inside(s => Open(g, s)));
+        InsideReport r = MapSolver.SolveInside(g, s => s.Room == "Nave" && s.Entry == through ? null : Inside(t => Open(g, t))(s));
+        Assert.DoesNotContain(r.Softlocks, p => p.Path.Any(s => s.Room == "Nave" && s.Entry == through));
+        Assert.True(r.ReachableStates < open.ReachableStates);
     }
 
     [Fact]
@@ -171,12 +183,12 @@ public class MapSolverTests
         InsideReport r = MapSolver.SolveInside(g, Inside(s =>
         {
             (Ability owned, string[] exits, bool goal) = Open(g, s);
-            return s.Room == "Nave" && s.Entry == "Cistern" ? (owned, new[] { "Cistern" }, false) : (owned, exits, goal);
+            return s.Room == "Nave" && s.Entry == new WayEntry.Through("Cistern") ? (owned, new[] { "Cistern" }, false) : (owned, exits, goal);
         }));
 
         Assert.False(r.SoftlockFree);
-        Assert.Contains(r.Softlocks, p => p.State == new WayState("Nave", "Cistern", Ability.MagGrip));
+        Assert.Contains(r.Softlocks, p => p.State == new WayState("Nave", new WayEntry.Through("Cistern"), Ability.MagGrip));
         Assert.Equal(new[] { "Narthex", "DrownedHall", "Nave", "Cistern", "Reliquary", "Cistern", "Nave" },
-            r.Softlocks.First(p => p.State == new WayState("Nave", "Cistern", Ability.MagGrip)).Path.Select(p => p.Room));
+            r.Softlocks.First(p => p.State == new WayState("Nave", new WayEntry.Through("Cistern"), Ability.MagGrip)).Path.Select(p => p.Room));
     }
 }

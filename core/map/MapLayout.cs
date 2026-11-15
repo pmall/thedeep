@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 using System.Numerics;
 
@@ -33,12 +34,14 @@ public static class MapLayout
         var problems = new List<string>();
         List<MapLink> all = links.ToList();
         var queue = new Queue<string>();
+        var met = new HashSet<((string, string, Vector2), (string, string, Vector2))>();
         queue.Enqueue(start);
         while (queue.Count > 0)
         {
             string room = queue.Dequeue();
-            // Both directions place rooms: a one-way drop still fixes where its target lies.
-            foreach (MapLink link in all.Where(l => l.From == room || l.To == room))
+            // Both directions place rooms: a one-way drop still fixes where its target lies. Each pair of markers is held once: a
+            // link is met from both its rooms, and a two-way exit is two links between the same markers.
+            foreach (MapLink link in all.Where(l => (l.From == room || l.To == room) && met.Add(Markers(l))))
             {
                 bool forward = link.From == room;
                 string other = forward ? link.To : link.From;
@@ -71,12 +74,20 @@ public static class MapLayout
                 (Vector2 bMin, Vector2 bMax) = Shrink(bounds[placedRooms[j]], offsets[placedRooms[j]], overlapMargin * 0.5f);
                 if (aMin.X < bMax.X && bMin.X < aMax.X && aMin.Y < bMax.Y && bMin.Y < aMax.Y)
                 {
-                    problems.Add($"{placedRooms[i]} and {placedRooms[j]} overlap on the map (more than {overlapMargin} m)");
+                    problems.Add(string.Create(CultureInfo.InvariantCulture, $"{placedRooms[i]} and {placedRooms[j]} overlap on the map (more than {overlapMargin} m)"));
                 }
             }
         }
 
         return new Result(offsets, problems);
+    }
+
+    /// <summary>The two markers a link joins, in the same order whichever way it leads.</summary>
+    private static ((string, string, Vector2), (string, string, Vector2)) Markers(MapLink l)
+    {
+        (string, string, Vector2) from = (l.From, l.FromExit, l.FromPosition), to = (l.To, l.ToExit, l.ToPosition);
+        int order = string.CompareOrdinal(l.From, l.To) is var c and not 0 ? c : string.CompareOrdinal(l.FromExit, l.ToExit);
+        return order <= 0 ? (from, to) : (to, from);
     }
 
     private static (Vector2, Vector2) Shrink((Vector2 Min, Vector2 Max) b, Vector2 offset, float by) =>

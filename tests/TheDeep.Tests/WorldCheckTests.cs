@@ -20,24 +20,35 @@ public class WorldCheckTests
 
     private static readonly Vector2 Min = new(-10f, -1f), Max = new(10f, 8f);
 
-    /// <summary>A flat room (a floor from -10 to 10 m), its exits as given, a goal box if any, waking at its middle in the start room.</summary>
-    private static RoomShape Room(IEnumerable<ExitShape> exits, bool goal = false, bool start = false) => new(
-        Solids: new List<Box> { new(-10f, -1f, 10f, 0f) },
-        Exits: exits.ToList(),
-        Wakes: start ? new List<Vector2> { new(0f, 0f) } : new List<Vector2>(),
-        Anchors: new List<Vector2>(), Lifts: new List<LiftPath>(),
-        Sound: new List<Box> { new(-10f, -1f, 10f, 0f) },
-        Waters: new List<Box>(), Heat: new List<Box>(), Relics: new List<(Box, Ability)>(),
-        Goals: goal ? new List<Box> { Box.Around(new Vector2(0f, 1f), new Vector2(2f, 2f)) } : new List<Box>(),
-        Metal: new List<Box>(), Spawn: new Vector2(0f, 0f));
+    /// <summary>
+    /// A flat room (a floor from -10 to 10 m) with <paramref name="metal"/> standing on it, its exits as given, a goal box if any, waking at
+    /// <paramref name="wakeX"/> on the floor in the start room.
+    /// </summary>
+    private static RoomShape Room(IEnumerable<ExitShape> exits, bool goal = false, bool start = false, IEnumerable<Box>? metal = null, float wakeX = 0f)
+    {
+        List<Box> plates = metal?.ToList() ?? new List<Box>();
+        return new RoomShape(
+            Solids: plates.Prepend(new Box(-10f, -1f, 10f, 0f)).ToList(),
+            Exits: exits.ToList(),
+            Wakes: start ? new List<Vector2> { new(wakeX, 0f) } : new List<Vector2>(),
+            Anchors: new List<Vector2>(), Lifts: new List<LiftPath>(),
+            Sound: plates.Prepend(new Box(-10f, -1f, 10f, 0f)).ToList(),
+            Waters: new List<Box>(), Heat: new List<Box>(), Relics: new List<(Box, Ability)>(),
+            Goals: goal ? new List<Box> { Box.Around(new Vector2(0f, 1f), new Vector2(2f, 2f)) } : new List<Box>(),
+            Metal: plates, Spawn: new Vector2(wakeX, 0f));
+    }
 
     private static ExitShape Doorway(string name, float x, string requires = "", float y = 1.5f) =>
         new(name, new Threshold(x > 0f ? ExitSide.East : ExitSide.West, new Vector2(x, y), new Vector2(1f, 3f)), requires, ArrivalSide: 0, Sealed: false);
 
-    private static WorldCheck TwoRooms(string eastNeeds = "", float eastY = 1.5f)
+    /// <summary>A metal tower under the hall's way out when it hangs high: no jump reaches its top, Mag-grip climbs it.</summary>
+    private static readonly Box Tower = new(7f, 0f, 9f, 10f);
+
+    private static WorldCheck TwoRooms(string eastNeeds = "", float eastY = 1.5f, Box? hallMetal = null, float wakeX = 0f)
     {
         var world = new WorldCheck(Limits);
-        world.AddRoom("Hall", Min, Max, Room(new[] { Doorway("East", 9.5f, eastNeeds, eastY) }, start: true));
+        world.AddRoom("Hall", Min, Max, Room(new[] { Doorway("East", 9.5f, eastNeeds, eastY) }, start: true,
+            metal: hallMetal is { } m ? new[] { m } : null, wakeX: wakeX));
         world.AddRoom("Sanctum", Min, Max, Room(new[] { Doorway("West", -9.5f) }, goal: true));
         world.AddExit(new MapEdge("Hall", "East", "Sanctum", "West", Requirement.Parse(eastNeeds)), new Vector2(9.5f, eastY), new Vector2(-9.5f, 1.5f));
         world.AddExit(new MapEdge("Sanctum", "West", "Hall", "East", Requirement.None), new Vector2(-9.5f, 1.5f), new Vector2(9.5f, eastY));
@@ -84,6 +95,56 @@ public class WorldCheckTests
     }
 
     [Fact]
+    public void EachOptionOfARequirementMustReachTheExit()
+    {
+        // The way out on top of a metal tower: Mag-grip climbs to it, the Drill and Ballast together don't.
+        WorldCheck world = TwoRooms(eastNeeds: "MagGrip | Drill & Ballast", eastY: 11.5f, hallMetal: Tower);
+        world.Check("Hall", MapTargets.None, report: false);
+        Assert.DoesNotContain(world.Problems, p => p.Contains("Mag-grip reaches it from no way", StringComparison.Ordinal));
+        Assert.Contains("Hall: exit East needs MagGrip | Drill & Ballast, but Drill, Ballast together reaches it from no way into the room", world.Problems);
+    }
+
+    [Fact]
+    public void ARoomTheWalkNeverEntersIsAProblem()
+    {
+        // The goal in the hall, the way to the sanctum 12 m up: the map's markers reach the sanctum, the walk never does.
+        var world = new WorldCheck(Limits);
+        world.AddRoom("Hall", Min, Max, Room(new[] { Doorway("East", 9.5f, y: 12f) }, goal: true, start: true));
+        world.AddRoom("Sanctum", Min, Max, Room(new[] { Doorway("West", -9.5f) }));
+        world.AddExit(new MapEdge("Hall", "East", "Sanctum", "West", Requirement.None), new Vector2(9.5f, 12f), new Vector2(-9.5f, 1.5f));
+        world.AddExit(new MapEdge("Sanctum", "West", "Hall", "East", Requirement.None), new Vector2(-9.5f, 1.5f), new Vector2(9.5f, 12f));
+        world.Graph.AddGoal("Hall");
+        world.Check("Hall", MapTargets.None, report: false);
+        Assert.Contains("map inside the rooms: Sanctum is never entered walking the rooms from where the pilgrim comes in", world.Problems);
+        Assert.DoesNotContain(world.Problems, p => p.Contains("no goal", StringComparison.Ordinal));
+    }
+
+    [Fact]
+    public void AWayOnlyNearPerfectPlayTakesIsAProblem()
+    {
+        // The way out on a 3 m step: the 3.2 m jump clears it, the clumsier pilgrim's doesn't.
+        WorldCheck world = TwoRooms(eastY: 4.5f, hallMetal: new Box(5f, 0f, 10f, 3f));
+        string summary = world.Check("Hall", MapTargets.None, report: false);
+        Assert.Equal("no room for error: Hall via the start : only near-perfect play reaches exit East (a clumsier pilgrim does not; tools: --reach-report Hall --slack-report)",
+            Assert.Single(world.Problems));
+        Assert.Contains("INSIDE OK", summary);
+    }
+
+    [Fact]
+    public void AWayIntoAnExitTheRoomLacksIsReportedAndNotTaken()
+    {
+        var world = new WorldCheck(Limits);
+        world.AddRoom("Hall", Min, Max, Room(new[] { Doorway("East", 9.5f) }, start: true));
+        world.AddRoom("Sanctum", Min, Max, Room(new[] { Doorway("West", -9.5f) }, goal: true));
+        world.AddExit(new MapEdge("Hall", "East", "Sanctum", "Nowhere", Requirement.None), new Vector2(9.5f, 1.5f), null);
+        world.AddExit(new MapEdge("Sanctum", "West", "Hall", "East", Requirement.None), new Vector2(-9.5f, 1.5f), new Vector2(9.5f, 1.5f));
+        world.Graph.AddGoal("Sanctum");
+        world.Check("Hall", MapTargets.None, report: false);
+        Assert.Contains("map: Hall:East leads to Sanctum:Nowhere, which is no exit of Sanctum (the room check walks no way in there)", world.Problems);
+        Assert.Contains("map inside the rooms: Sanctum is never entered walking the rooms from where the pilgrim comes in", world.Problems);
+    }
+
+    [Fact]
     public void RoomsThatOverlapOnTheMapAreAProblem()
     {
         var world = new WorldCheck(Limits);
@@ -118,5 +179,14 @@ public class WorldCheckTests
         Assert.Equal((new Vector2(0f, Limits.Rise), -1), (floor.Entry(Limits, solids).Velocity, floor.Entry(Limits, solids).Steer));
         Assert.Equal((new Vector2(0f, -ExitShape.FallInSpeed), 0), (roof.Entry(Limits, solids).Velocity, roof.Entry(Limits, solids).Steer));
         Assert.Equal(door.Threshold.Arrival(new Vector2(0.7f, 1.6f), solids), door.Entry(Limits, solids).At);
+    }
+
+    [Fact]
+    public void TheReachReportIsWrittenInTheInvariantCulture()
+    {
+        WorldCheck world = TwoRooms(hallMetal: new Box(6f, 0f, 7.5f, 1.5f), wakeX: 0.5f);
+        List<string> lines = CommaDecimals.Under(() => world.ReachReport("Hall", with: null, clumsy: false).ToList());
+        Assert.Contains(lines, l => l.StartsWith("REACH Hall waking at (0.5, 0)", StringComparison.Ordinal));
+        Assert.Contains(lines, l => l.StartsWith("REACH Hall all ledges:", StringComparison.Ordinal) && l.Contains("1.5@6..7.5", StringComparison.Ordinal));
     }
 }

@@ -169,7 +169,8 @@ public sealed class MapDraft
                 break;
             case "relic":
                 Expect(args, 2);
-                if (!Enum.TryParse(args[1], out Ability ability) || ability == Ability.None || !Enum.IsDefined(ability))
+                if (!Enum.TryParse(args[1], out Ability ability) || ability == Ability.None || !Enum.IsDefined(ability)
+                    || int.TryParse(args[1], NumberStyles.Integer, CultureInfo.InvariantCulture, out _))
                 {
                     throw new FormatException($"unknown ability {args[1]}");
                 }

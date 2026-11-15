@@ -30,11 +30,6 @@ public sealed class WorldCheck
     /// <summary>Each simulated ability on its own.</summary>
     private static readonly Ability[] Singles = { Ability.MagGrip, Ability.Harpoon, Ability.Drill, Ability.Ballast, Ability.HeatPlating };
 
-    /// <summary>The simulated abilities taken together, fewest first, for ways that need more than one.</summary>
-    private static readonly Ability[] Combined = Enumerable.Range(1, (int)Simulated)
-        .Select(i => (Ability)i).Where(a => (a & ~Simulated) == 0 && BitOperations.PopCount((uint)a) > 1)
-        .OrderBy(a => BitOperations.PopCount((uint)a)).ToArray();
-
     private readonly PlannerLimits _limits;
     private readonly List<string> _problems = new();
     private readonly List<(string Room, Requirement Requires)> _sealed = new();
@@ -110,6 +105,11 @@ public sealed class WorldCheck
         }
 
         _problems.AddRange(Graph.ItemProblems(_sealed.Select(s => s.Requires)).Select(p => $"map: {p}"));
+        foreach (MapEdge e in Graph.Edges.Where(e => _shapes.TryGetValue(e.To, out RoomShape? to) && !to.Exits.Any(x => x.Name == e.ToExit)))
+        {
+            _problems.Add($"map: {e.From}:{e.FromExit} leads to {e.To}:{e.ToExit}, which is no exit of {e.To} (the room check walks no way in there)");
+        }
+
         CheckGeometry();
         string inside = CheckInside();
         MapReport solved = MapSolver.Solve(Graph);
@@ -358,16 +358,9 @@ public sealed class WorldCheck
                 continue;
             }
 
-            // Each way the requirement can be met: every single ability that meets it, else the fewest abilities together.
-            var options = Singles.Where(a => r.IsMetBy(a)).ToList();
-            if (options.Count == 0 && Combined.FirstOrDefault(c => r.IsMetBy(c)) is var together && together != Ability.None)
+            foreach (Need option in r.Options.Where(o => !others.Any(w => Reached(w, o.Abilities).Contains(i))))
             {
-                options.Add(together);
-            }
-
-            foreach (Ability a in options.Where(a => !others.Any(w => Reached(w, a).Contains(i))))
-            {
-                problems.Add($"{room}: exit {x.Name} needs {x.Requires}, but {Describe(a)} reaches it from no way into the room");
+                problems.Add($"{room}: exit {x.Name} needs {x.Requires}, but {Describe(option.Abilities)} reaches it from no way into the room");
             }
 
             foreach (int w in others.Where(w => ways[w].Base && Reached(w, Ability.None).Contains(i)))
@@ -383,12 +376,13 @@ public sealed class WorldCheck
     /// The map with the rooms' insides (<see cref="MapSolver.SolveInside"/>): each room walked by the planner from the way the pilgrim
     /// came in, with the abilities it owns, taking the relics it reaches there (then walking again with them), leaving only through
     /// the exits it reaches. From waking in the start room, no reachable (room, way in, abilities) may be a softlock, the goal must be
-    /// reached (its goal area walked into), and every relic taken. Returns the summary.
+    /// reached (its goal area walked into), every room entered, and every relic and item taken. Returns the summary.
     /// </summary>
     private string CheckInside()
     {
-        var reaches = new ConcurrentDictionary<WayState, RoomReach>();
-        InsideReport report = MapSolver.SolveInside(Graph, state => reaches[state] = Inside(state, clumsy: false));
+        var reaches = new ConcurrentDictionary<WayState, (WayIn Way, RoomReach Reach)>();
+        InsideReport report = MapSolver.SolveInside(Graph,
+            state => Way(state) is { } way ? (reaches[state] = (way, Inside(state, way, clumsy: false))).Reach : null);
         CheckSlack(reaches);
 
         foreach (MapItem item in report.UntakenItems)
@@ -406,23 +400,36 @@ public sealed class WorldCheck
             _problems.Add($"map inside the rooms: softlock in {state}: no goal can be reached from there; reached by {string.Join(" → ", path)}");
         }
 
-        if (!report.GoalReachable)
+        foreach (string room in report.UnenteredRooms)
         {
-            _problems.Add("map inside the rooms: no goal is reached walking the rooms from where the pilgrim comes in" +
-                          (report.UnenteredRooms.Count > 0 ? $"; never entered: {string.Join(", ", report.UnenteredRooms)}" : ""));
+            _problems.Add($"map inside the rooms: {room} is never entered walking the rooms from where the pilgrim comes in");
         }
 
-        return $"INSIDE OK: {report.ReachableStates} states (room, way in, abilities), every room walked from each way in, no softlock; " +
+        if (!report.GoalReachable)
+        {
+            _problems.Add("map inside the rooms: no goal is reached walking the rooms from where the pilgrim comes in");
+        }
+
+        return $"INSIDE OK: {report.ReachableStates} states (room, way in, abilities), every room entered, no softlock; " +
                "a clumsier pilgrim reaches all the same";
     }
 
-    /// <summary>What the planner reaches in a room from the way in of <paramref name="state"/>, taking the relics it reaches there.</summary>
-    private RoomReach Inside(WayState state, bool clumsy)
+    /// <summary>The way into the room of <paramref name="state"/>; null when the room has no exit of the name it arrives through (<see cref="Check"/> reports it).</summary>
+    private WayIn? Way(WayState state)
     {
         RoomShape shape = _shapes[state.Room];
-        WayIn way = state.Entry == ""
-            ? new WayIn("waking", shape.Spawn, Vector2.Zero, 0, -1, true, Ability.None)
-            : Arriving(shape, shape.Exits.FindIndex(x => x.Name == state.Entry), Requirement.None);
+        return state.Entry switch
+        {
+            WayEntry.Waking => new WayIn("waking", shape.Spawn, Vector2.Zero, 0, -1, true, Ability.None),
+            WayEntry.Through through when shape.Exits.FindIndex(x => x.Name == through.Exit) is var index and >= 0 => Arriving(shape, index, Requirement.None),
+            _ => null,
+        };
+    }
+
+    /// <summary>What the planner reaches in the room of <paramref name="state"/> from <paramref name="way"/>, taking the relics it reaches there.</summary>
+    private RoomReach Inside(WayState state, WayIn way, bool clumsy)
+    {
+        RoomShape shape = _shapes[state.Room];
         int relics = shape.Exits.Count, items = relics + shape.Relics.Count, goals = items + shape.Items.Count;
         Ability owned = state.Owned;
         while (true)
@@ -445,23 +452,21 @@ public sealed class WorldCheck
     }
 
     /// <summary>
-    /// Room for error: every state the inside check walked is walked again by a clumsier pilgrim (<see cref="MoveLimits.Clumsy"/>:
-    /// jumps 18% lower, dashes 35% shorter, runs 20% slower, never takes off from the very end of a ledge, no ledge assist), which must
-    /// reach every way out, relic and goal the exact one does. A way only perfect play takes is a problem, once per room, way in and
-    /// way out (with the fewest abilities). Before this held (2026-11-01), ladders of 3 m steps against a 3.2 m jump made the second
-    /// room a trial.
+    /// Room for error: every state the inside check walked is walked again by a clumsier pilgrim (<see cref="MoveLimits.Clumsy"/>),
+    /// which must reach every way out, relic, item and goal the exact one does. A way only near-perfect play takes is a problem, once
+    /// per room, way in and what is missed (with the fewest abilities).
     /// </summary>
-    private void CheckSlack(ConcurrentDictionary<WayState, RoomReach> reaches)
+    private void CheckSlack(ConcurrentDictionary<WayState, (WayIn Way, RoomReach Reach)> reaches)
     {
         var states = reaches.Keys.ToList();
         var clumsy = new RoomReach[states.Count];
-        Parallel.For(0, states.Count, i => clumsy[i] = Inside(states[i], clumsy: true));
-        var seen = new HashSet<(string, string, string)>();
+        Parallel.For(0, states.Count, i => clumsy[i] = Inside(states[i], reaches[states[i]].Way, clumsy: true));
+        var seen = new HashSet<(string, WayEntry, string)>();
         var lines = new List<string>();
         foreach (int i in Enumerable.Range(0, states.Count).OrderBy(i => BitOperations.PopCount((uint)states[i].Owned)))
         {
             WayState s = states[i];
-            RoomReach exact = reaches[s], loose = clumsy[i];
+            RoomReach exact = reaches[s].Reach, loose = clumsy[i];
             var missed = exact.Exits.Except(loose.Exits).Select(x => $"exit {x}").ToList();
             Ability lost = exact.Owned & ~loose.Owned;
             if (lost != Ability.None)
