@@ -81,6 +81,8 @@ transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 4, 0, 0)
 [node name="Relic" parent="Props" instance=ExtResource("3_relic")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 16, 0, 0)
 Ability = 4
+NameLine = &"ability.drill.name"
+HintLine = &"ability.drill.hint"
 
 ; harpoon anchors under the slab: one in reach from the floor, the next from the first (HarpoonCheck)
 [node name="AnchorA" parent="Props" instance=ExtResource("10_anchor")]

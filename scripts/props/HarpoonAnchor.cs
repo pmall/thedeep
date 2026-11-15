@@ -52,7 +52,15 @@ public partial class HarpoonAnchor : Node3D
     /// <summary>The point the pilgrim's center is pulled to, on the play plane.</summary>
     public System.Numerics.Vector2 Point => new(GlobalPosition.X, GlobalPosition.Y);
 
+    /// <summary>The hoop glow rises this fast per second (an exponential rate) when the look lights up, and falls at <see cref="FallRate"/>: a flare spent on a zip is dim before the pilgrim fires again.</summary>
+    private const float RiseRate = 14f, FallRate = 8f;
+
+    /// <summary>The sight's marks close on the ring at <see cref="CloseRate"/> per second and open at <see cref="OpenRate"/>; the shackle's jolt rings out at <see cref="JoltRate"/>.</summary>
+    private const float CloseRate = 7f, OpenRate = 4f, JoltRate = 2.5f;
+
     private AnchorLook _look;
+    private float _hoopLit = -1f;
+    private float _sightLit = -1f;
     private float _baseEnergy;
     private float _glow;
     private float _sight;
@@ -81,13 +89,13 @@ public partial class HarpoonAnchor : Node3D
         _time += dt;
         float target = GlowOf(_look);
         // Eased: up quickly, down a little slower, so a flare spent on a zip is dim before the pilgrim fires again.
-        _glow = Mathf.Lerp(target, _glow, Mathf.Exp(-dt * (target > _glow ? 14f : 8f)));
+        _glow = Mathf.Lerp(target, _glow, Mathf.Exp(-dt * (target > _glow ? RiseRate : FallRate)));
         bool aimed = _look is AnchorLook.Sighted or AnchorLook.Bitten;
-        _sight = Motion.Approach(_sight, aimed ? 1f : 0f, dt * (aimed ? 7f : 4f));
-        _jolt = Motion.Approach(_jolt, 0f, dt * 2.5f);
+        _sight = Motion.Approach(_sight, aimed ? 1f : 0f, dt * (aimed ? CloseRate : OpenRate));
+        _jolt = Motion.Approach(_jolt, 0f, dt * JoltRate);
 
         float breathe = 0.9f + 0.1f * Mathf.Sin(_time * 2.2f);
-        TokenGlow.Light(Hoop, _glow * breathe);
+        Show(Hoop, _glow * breathe, ref _hoopLit);
         Light.LightEnergy = _baseEnergy * (0.25f + 0.75f * _glow * breathe);
 
         Sight.Visible = _sight > 0.01f;
@@ -98,12 +106,22 @@ public partial class HarpoonAnchor : Node3D
             float beat = _look == AnchorLook.Bitten ? -0.12f : 0.04f * Mathf.Sin(_time * 5f);
             Sight.Scale = Vector3.One * (1f + SightSpread * (1f - closed) + beat * closed);
             Sight.Rotation = new Vector3(0f, 0f, 0.6f * (1f - closed) + 0.15f * Mathf.Sin(_time * 0.9f) * closed);
-            TokenGlow.Light(Sight, closed * (_look == AnchorLook.Bitten ? 2.2f : 1.4f));
+            Show(Sight, closed * (_look == AnchorLook.Bitten ? 2.2f : 1.4f), ref _sightLit);
         }
 
         // A slow sway on the shackle, and a jolt that rings out when the line bites.
         float sway = 0.035f * Mathf.Sin(_time * 1.1f) + 0.16f * _jolt * _jolt * Mathf.Sin(_time * 21f);
         Ring.Rotation = new Vector3(0f, 0f, sway);
+    }
+
+    /// <summary>Sets a glow's instance uniform only when it changed: an anchor at rest repeats the same value every frame.</summary>
+    private static void Show(GeometryInstance3D glow, float lit, ref float shown)
+    {
+        if (!Mathf.IsEqualApprox(lit, shown))
+        {
+            shown = lit;
+            TokenGlow.Light(glow, lit);
+        }
     }
 
     private float GlowOf(AnchorLook look) => look switch

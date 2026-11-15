@@ -52,8 +52,11 @@ public partial class LawBreak : Node3D, IAnnounces, IHints
     /// <summary>The color of the law's words shown, and of the mark beside the pilgrim's refusal.</summary>
     public static readonly Color WordsColor = new(0.86f, 0.84f, 1f);
 
-    /// <summary>Which way the forbidden side lies from the node (+1 east, −1 west).</summary>
-    [Export] public int Toward { get; set; } = 1;
+    /// <summary>Which way the forbidden side lies from the node.</summary>
+    [Export] public LawSide Toward { get; set; } = LawSide.East;
+
+    /// <summary>Which way the forbidden side lies along X (+1 east, −1 west).</summary>
+    public int Direction => (int)Toward;
 
     /// <summary>The words start to show this far from the lip, meters.</summary>
     [Export] public float Near { get; set; } = 6f;
@@ -67,28 +70,43 @@ public partial class LawBreak : Node3D, IAnnounces, IHints
     /// <summary>How near the lip the pilgrim stands to press on it, or be offered the act, meters.</summary>
     [Export] public float Lip { get; set; } = 1.2f;
 
+    /// <summary>How far past the lip (toward the forbidden side) the pilgrim still counts as at it, meters.</summary>
+    [Export] public float BehindLip { get; set; } = 0.2f;
+
+    /// <summary>How far above or below the node the pilgrim may stand and still be at the lip, meters.</summary>
+    [Export] public float LipHeight { get; set; } = 1.5f;
+
+    /// <summary>How fast the words rise as the pilgrim nears, per second.</summary>
+    [Export] public float ShowRate { get; set; } = 1.5f;
+
+    /// <summary>How fast the strain eases off when the pilgrim stops pressing, as a fraction of the rate it builds.</summary>
+    [Export] public float ReleaseRate { get; set; } = 0.5f;
+
+    /// <summary>Seconds the veil takes to scatter and the words to go out once the law breaks.</summary>
+    [Export] public float BreakTime { get; set; } = 1.2f;
+
     /// <summary>The words' color before they show: the dark of the room around the lip.</summary>
     private static readonly Color Dark = new(0.12f, 0.11f, 0.16f);
 
-    private float _push;
-    private float _strain;
-    private float _shown;
+    private LawStrain? _strain;
     private float _time;
-    private float _gone = -1f;
     private float _baseEnergy;
     private Vector3 _wordsAt;
 
     /// <summary>The pilgrim, set by the session when the room loads.</summary>
     public Player? Player { get; set; }
 
+    /// <summary>The law's rules, built from the exports on first use.</summary>
+    private LawStrain Rules => _strain ??= new LawStrain(new LawStrainTuning(Near, Lip, BehindLip, LipHeight, PushStrain, PushTime, ShowRate, ReleaseRate, BreakTime));
+
     /// <summary>The law is broken: the veil is gone and the way open.</summary>
-    public bool Broken => _gone >= 0f;
+    public bool Broken => Rules.Broken;
 
     /// <summary>0 to 1 while the pilgrim presses against the law (never above <see cref="PushStrain"/>) or holds the act.</summary>
-    public float Strain => _strain;
+    public float Strain => Rules.Strain;
 
     /// <summary>The pilgrim has said why it may not, this visit: the act is offered at the lip.</summary>
-    public bool Refused { get; private set; }
+    public bool Refused => Rules.Refused;
 
     /// <summary>Raised once a visit, the first time the pilgrim presses on: it says <see cref="RefusalLine"/>.</summary>
     public event Action<LawBreak>? Refusal;
@@ -100,14 +118,14 @@ public partial class LawBreak : Node3D, IAnnounces, IHints
     {
         Fence.CollisionLayer = PhysicsLayers.WorldRock;
         Fence.CollisionMask = 0;
-        Fence.Position = new Vector3(Toward * 0.25f, 0f, 0f);
+        Fence.Position = new Vector3(Direction * 0.25f, 0f, 0f);
         Words.Font = TextStyle.Shared.WorldFont;
         Words.Text = LineBook.Shared.Find(LawLine)?.Text ?? "";
-        Words.Position = Words.Position with { X = -Toward * Mathf.Abs(Words.Position.X) };
+        Words.Position = Words.Position with { X = -Direction * Mathf.Abs(Words.Position.X) };
         _wordsAt = Words.Position;
         _baseEnergy = Light.LightEnergy;
-        Prompt.Position = Prompt.Position with { X = -Toward * Mathf.Abs(Prompt.Position.X) };
-        Prompt.Reach = -Toward;
+        Prompt.Position = Prompt.Position with { X = -Direction * Mathf.Abs(Prompt.Position.X) };
+        Prompt.Reach = -Direction;
         Prompt.Verb = ActLine;
         Prompt.Completed += Break;
         Apply();
@@ -116,8 +134,7 @@ public partial class LawBreak : Node3D, IAnnounces, IHints
     /// <summary>Broken before: the way is open, nothing shows.</summary>
     public void Settle()
     {
-        _gone = 10f;
-        _strain = 0f;
+        Rules.Settle();
         Prompt.Offer(false);
         Fence.ProcessMode = ProcessModeEnum.Disabled;
         Apply();
@@ -129,32 +146,27 @@ public partial class LawBreak : Node3D, IAnnounces, IHints
         _time += dt;
         if (Broken)
         {
-            _gone += dt;
+            Rules.Advance(dt);
             Apply();
             return;
         }
 
         float away = float.PositiveInfinity;
-        bool atLip = false;
-        bool pressing = false;
+        bool standing = false;
+        bool pushing = false;
         if (Player is { } player)
         {
-            away = (GlobalPosition.X - player.GlobalPosition.X) * Toward;
-            atLip = player.InControl && player.IsUpright && player.IsOnFloor() && away > -0.2f && away < Lip
-                    && Mathf.Abs(player.GlobalPosition.Y - GlobalPosition.Y) < 1.5f;
-            pressing = atLip && player.CurrentInput.MoveX == Toward;
+            away = (GlobalPosition.X - player.GlobalPosition.X) * Direction;
+            standing = player.InControl && player.IsUpright && player.IsOnFloor() && Mathf.Abs(player.GlobalPosition.Y - GlobalPosition.Y) < LipHeight;
+            pushing = player.CurrentInput.MoveX == Direction;
         }
 
-        _shown = Motion.Approach(_shown, away < Near && away > -1f ? 1f : 0f, dt * 1.5f);
-        _push = Mathf.Clamp(_push + (pressing ? dt : -dt * 0.5f) * PushStrain / PushTime, 0f, PushStrain);
-        if (!Refused && _push >= PushStrain)
+        if (Rules.Step(dt, away, standing, pushing, Prompt.Fill))
         {
-            Refused = true;
             Refusal?.Invoke(this);
         }
 
-        Prompt.Offer(Refused && atLip);
-        _strain = Mathf.Max(_push, Prompt.Fill);
+        Prompt.Offer(Rules.Offering);
         Apply();
     }
 
@@ -166,8 +178,7 @@ public partial class LawBreak : Node3D, IAnnounces, IHints
             return;
         }
 
-        _gone = 0f;
-        _strain = 1f;
+        Rules.Break();
         Prompt.Offer(false);
         Fence.ProcessMode = ProcessModeEnum.Disabled;
         Broke?.Invoke(this);
@@ -175,10 +186,10 @@ public partial class LawBreak : Node3D, IAnnounces, IHints
 
     private void Apply()
     {
-        float s = _strain * _strain;
+        float s = Rules.Strain * Rules.Strain;
         // Breaking: the words flare white and drift up as they go out; the veil scatters upward.
-        float gone = Broken ? Mathf.Clamp(_gone / 1.2f, 0f, 1f) : 0f;
-        float shown = _shown * _shown * (3f - 2f * _shown) * (1f - gone);
+        float gone = Rules.Gone;
+        float shown = Rules.Shown * Rules.Shown * (3f - 2f * Rules.Shown) * (1f - gone);
         float tremble = s * 0.05f;
         Words.Position = _wordsAt + new Vector3(Mathf.Sin(_time * 41f) * tremble, Mathf.Sin(_time * 29f) * tremble + gone * 1.5f, 0f);
         // They fade in by color, from the dark of the room, so their outline never shows before them.

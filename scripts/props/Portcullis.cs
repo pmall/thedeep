@@ -52,6 +52,7 @@ public partial class Portcullis : Node3D
     private const float RailDepth = 0.34f;
     private const float MiddleShare = 0.62f;
     private const float RailOverhang = 0.12f;
+    private const float RailBevel = 0.04f;
 
     /// <summary>The bars and beams stand this far toward the camera from the collision's plane.</summary>
     private const float FaceZ = 0.15f;
@@ -123,7 +124,7 @@ public partial class Portcullis : Node3D
         Bars.Mesh = new GrateMesh { Size = new Vector3(Width, BarsThickness, Height), Spacing = BarSpacing, Bar = BarWidth };
         Bars.Position = new Vector3(0f, Height / 2f, FaceZ);
 
-        var beam = new BlockMesh { Size = new Vector3(Width + RailOverhang, RailHeight, RailDepth), Bevel = 0.04f };
+        var beam = new BlockMesh { Size = new Vector3(Width + RailOverhang, RailHeight, RailDepth), Bevel = RailBevel };
         Header.Mesh = beam;
         Header.Position = new Vector3(0f, Height - RailHeight / 2f, FaceZ);
         Foot.Mesh = beam;

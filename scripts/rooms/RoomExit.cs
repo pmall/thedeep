@@ -1,3 +1,5 @@
+using System;
+using System.Linq;
 using Godot;
 
 namespace TheDeep;
@@ -72,4 +74,9 @@ public partial class RoomExit : Marker3D
 
     /// <summary>The exit's trigger and arrival (<see cref="TheDeep.Threshold"/>).</summary>
     public Threshold Threshold => new(Side, RoomPosition.ToCore(), Size.ToCore());
+
+    /// <summary>The seam brick that frames this exit; <paramref name="user"/> (a brick that takes its place from the seam) is named if none does.</summary>
+    public SeamEnd FramingSeam(Node user) =>
+        this.Children().OfType<SeamEnd>().FirstOrDefault()
+        ?? throw new InvalidOperationException($"{user.NameText()} is placed through {this.NameText()}, an exit no seam brick frames");
 }

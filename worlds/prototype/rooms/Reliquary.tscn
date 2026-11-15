@@ -243,6 +243,8 @@ Material = ExtResource("4_wet_stone")
 [node name="MagGrip" parent="Props" instance=ExtResource("7_relic")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 8, 0.5, 0)
 Ability = 1
+NameLine = &"ability.mag_grip.name"
+HintLine = &"ability.mag_grip.hint"
 
 ; a pilgrim shrine by the doorway: rest here to save and heal
 [node name="Shrine" parent="Props" instance=ExtResource("8_shrine")]

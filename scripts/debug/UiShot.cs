@@ -387,9 +387,9 @@ public partial class UiShot : Node
         }
 
         _law = law;
-        Player.GlobalPosition = new Vector3(law.GlobalPosition.X - law.Toward * 0.8f, law.GlobalPosition.Y + 0.05f, 0f);
+        Player.GlobalPosition = new Vector3(law.GlobalPosition.X - law.Direction * 0.8f, law.GlobalPosition.Y + 0.05f, 0f);
         Player.ResetPhysicsInterpolation();
-        Input.ActionPress(law.Toward > 0 ? InputActions.MoveRight : InputActions.MoveLeft);
+        Input.ActionPress(law.Direction > 0 ? InputActions.MoveRight : InputActions.MoveLeft);
         return true;
     }
 
@@ -398,7 +398,7 @@ public partial class UiShot : Node
     {
         if (law.Prompt.Offered)
         {
-            Input.ActionRelease(law.Toward > 0 ? InputActions.MoveRight : InputActions.MoveLeft);
+            Input.ActionRelease(law.Direction > 0 ? InputActions.MoveRight : InputActions.MoveLeft);
             Input.ActionPress(InputActions.Interact);
         }
 

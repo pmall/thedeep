@@ -1,4 +1,3 @@
-using System.Linq;
 using Godot;
 
 namespace TheDeep;
@@ -84,6 +83,12 @@ public partial class HeatColumn : Node3D
     /// <summary>The vent: fixed proportions of one look, no world sets them (the grate takes the column's width); its grate's thickness and depth, its posts' width, height and depth (meters).</summary>
     private const float GrateThickness = 0.1f, VentDepth = 3f, PostWidth = 0.08f, PostHeight = 0.3f, PostDepth = 0.5f;
 
+    /// <summary>The grate's bars: the gap between two (meters) and their width, and how far the grate and the posts stand off the floor's face, so neither shares its plane.</summary>
+    private const float GrateSpacing = 0.28f, GrateBar = 0.07f, GrateLift = 0.02f, PostLift = 0.01f;
+
+    /// <summary>Its lights: the falloff of their reach, how far inside the column's ends the first and last hang (meters), and the least width their range is reckoned from (meters), plus <see cref="GlowReach"/> around it.</summary>
+    private const float GlowFalloff = 1.3f, GlowEndMargin = 0.6f, GlowMinWidth = 2f, GlowReach = 4f;
+
     private readonly System.Collections.Generic.List<OmniLight3D> _glows = [];
     private MeshInstance3D? _sheet;
     private float _strength = -1f;
@@ -99,8 +104,7 @@ public partial class HeatColumn : Node3D
             return;
         }
 
-        SeamEnd frame = Through.Children().OfType<SeamEnd>().FirstOrDefault()
-            ?? throw new System.InvalidOperationException($"heat {this.NameText()} rises through {Through.NameText()}, an exit no seam brick frames");
+        SeamEnd frame = Through.FramingSeam(this);
         float end = Through.Side == ExitSide.Up ? GlobalPosition.Y : GlobalPosition.Y + Size.Y;
         Box column = frame.Profile.Frame.Heat(Through.Side, Through.RoomPosition.ToCore(), end);
         GlobalPosition = new Vector3(0.5f * (column.MinX + column.MaxX), column.MinY, GlobalPosition.Z);
@@ -128,16 +132,16 @@ public partial class HeatColumn : Node3D
     /// <summary>Its lights, spread from just over the vent to just under its end.</summary>
     private void BuildGlow()
     {
-        float low = Mathf.Min(0.6f, 0.5f * Size.Y), high = Mathf.Max(low, Size.Y - 0.6f);
+        float low = Mathf.Min(GlowEndMargin, 0.5f * Size.Y), high = Mathf.Max(low, Size.Y - GlowEndMargin);
         int gaps = Mathf.Max(1, Mathf.CeilToInt((high - low) / GlowSpacing));
-        float range = Mathf.Max(Size.X, 2f) + 4f;
+        float range = Mathf.Max(Size.X, GlowMinWidth) + GlowReach;
         for (int i = 0; i <= gaps; i++)
         {
             var glow = new OmniLight3D
             {
                 Position = new Vector3(0f, low + (high - low) * i / gaps, GlowAhead),
                 LightEnergy = GlowEnergy,
-                OmniAttenuation = 1.3f,
+                OmniAttenuation = GlowFalloff,
                 OmniRange = range,
                 ShadowEnabled = false,
             }.Named($"Glow{i}");
@@ -186,9 +190,9 @@ public partial class HeatColumn : Node3D
         var grate = new MeshInstance3D
         {
             Name = GrateName,
-            Mesh = new GrateMesh { Size = new Vector3(Size.X, GrateThickness, VentDepth), Spacing = 0.28f, Bar = 0.07f },
+            Mesh = new GrateMesh { Size = new Vector3(Size.X, GrateThickness, VentDepth), Spacing = GrateSpacing, Bar = GrateBar },
             MaterialOverride = Source,
-            Position = new Vector3(0f, 0.02f, 0f),
+            Position = new Vector3(0f, GrateLift, 0f),
         };
         AddChild(grate);
         foreach (float side in new[] { -1f, 1f })
@@ -198,7 +202,7 @@ public partial class HeatColumn : Node3D
                 Name = side < 0f ? PostWestName : PostEastName,
                 Mesh = new BoxMesh { Size = new Vector3(PostWidth, PostHeight, PostDepth) },
                 MaterialOverride = Source,
-                Position = new Vector3(side * (0.5f * Size.X + 0.5f * PostWidth), 0.5f * PostHeight + 0.01f, 0f),
+                Position = new Vector3(side * (0.5f * Size.X + 0.5f * PostWidth), 0.5f * PostHeight + PostLift, 0f),
             });
         }
     }
@@ -220,10 +224,7 @@ public partial class HeatColumn : Node3D
 
     public override void _Process(double delta)
     {
-        if (_sheet is not null)
-        {
-            ShowStrength(Player is { } player && player.Abilities.Has(Ability.HeatPlating) ? PlatedStrength : 1f);
-        }
+        ShowStrength(Player is { } player && player.Abilities.Has(Ability.HeatPlating) ? PlatedStrength : 1f);
     }
 
     public override void _PhysicsProcess(double delta)

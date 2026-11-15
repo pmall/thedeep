@@ -4,7 +4,7 @@ using Godot;
 namespace TheDeep;
 
 /// <summary>
-/// A relic holding one of the pilgrim's abilities (Mag-grip, later Harpoon, Drill, Ballast, Heat plating),
+/// A relic holding one of the pilgrim's abilities (<see cref="Ability"/>),
 /// floating over a pedestal. Walking up to it takes it (<see cref="Session"/>): the core drifts into the
 /// pilgrim, the ability unlocks, the game saves, and it is gone for good. The node stands on the floor.
 /// </summary>
@@ -17,9 +17,9 @@ public partial class AbilityRelic : Node3D, IAnnounces, IWalkedThrough
 
     [Export] public OmniLight3D Light { get; set; } = null!;
 
-    /// <summary>Lines naming the ability and telling how to use it (shown when taken).</summary>
-    [Export] public StringName NameLine { get; set; } = "ability.mag_grip.name";
-    [Export] public StringName HintLine { get; set; } = "ability.mag_grip.hint";
+    /// <summary>Lines naming the ability and telling how to use it (shown when taken); a room sets both (the line check fails an unset one).</summary>
+    [Export] public StringName NameLine { get; set; } = Names.None;
+    [Export] public StringName HintLine { get; set; } = Names.None;
 
     /// <inheritdoc/>
     public System.Collections.Generic.IEnumerable<StringName> LineIds => new[] { NameLine, HintLine };
@@ -29,6 +29,11 @@ public partial class AbilityRelic : Node3D, IAnnounces, IWalkedThrough
 
     /// <inheritdoc/>
     public System.Collections.Generic.IEnumerable<Announcement> Announcements => new[] { Said };
+
+    /// <summary>How the core hovers over its pedestal: its bob's height (meters), its bob's and its spin's speed (radians per second).</summary>
+    [Export] public float BobHeight { get; set; } = 0.08f;
+    [Export] public float BobSpeed { get; set; } = 1.6f;
+    [Export] public float SpinSpeed { get; set; } = 0.6f;
 
     private Vector3 _coreRest;
     private float _time;
@@ -50,8 +55,8 @@ public partial class AbilityRelic : Node3D, IAnnounces, IWalkedThrough
         }
 
         _time += (float)delta;
-        Core.Position = _coreRest + new Vector3(0f, 0.08f * Mathf.Sin(_time * 1.6f), 0f);
-        Core.RotateY((float)delta * 0.6f);
+        Core.Position = _coreRest + new Vector3(0f, BobHeight * Mathf.Sin(_time * BobSpeed), 0f);
+        Core.RotateY((float)delta * SpinSpeed);
     }
 
     /// <summary>The core drifts into <paramref name="target"/> (the pilgrim's chest) with a flare, then fades.</summary>

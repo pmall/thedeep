@@ -26,6 +26,9 @@ public sealed class LineCheck
     /// <summary>Each hint said, with where it was first named.</summary>
     private readonly Dictionary<StringName, string> _hinted = new();
 
+    /// <summary>Each place a relic's name or hint line was left unset (it would show blank, or someone else's).</summary>
+    private readonly List<string> _unset = new();
+
     /// <summary>Starts with the ids and the banners the code names (<see cref="GameLines"/>).</summary>
     public LineCheck()
     {
@@ -56,6 +59,7 @@ public sealed class LineCheck
     {
         var problems = _named.Where(n => book.Find(n.Key) is null)
             .Select(n => $"line {n.Key} (named by {n.Value}) is in neither {book.ResourcePath} nor its base").ToList();
+        problems.AddRange(_unset);
         for (LineBook? b = book; b is not null; b = b.Base)
         {
             string path = b.ResourcePath;
@@ -166,6 +170,11 @@ public sealed class LineCheck
     {
         foreach ((GodotObject target, string where) in reached)
         {
+            if (target is AbilityRelic { NameLine.IsEmpty: true } or AbilityRelic { HintLine.IsEmpty: true })
+            {
+                _unset.Add($"{(target is Node ? scene + where : where)}: a relic's NameLine and HintLine must both be set");
+            }
+
             if (target is IAnnounces announces)
             {
                 foreach (Announcement said in announces.Announcements)
