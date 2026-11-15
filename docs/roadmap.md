@@ -34,7 +34,6 @@ The open items, in order (owner: the world, its bricks and its look are finished
    - `core/map/`: the graph and its proof (`MapSolver`, `WorldCheck`, `MapDraft`, `MapGraph`, `MapState`, `Requirement`, `ItemSet`, `Need`, `MapTargets`, `RoomTable`, `MapLayout`, `MapDrawing`).
    - `scripts/player/`, `scripts/camera/`, `scripts/abilities/`, `scripts/combat/`, `scripts/tuning/`.
    - `scripts/rooms/`, `scripts/world/`, `scripts/map/`, `scripts/surfaces/`.
-   - `scripts/kit/`, `scripts/props/`, `scripts/parts/`.
    - `scripts/machines/`, `scripts/game/`, `scripts/Main.cs`.
    - `scripts/ui/`, `scripts/engine/`, `scripts/biome/`, `scripts/capture/`.
    - `scripts/debug/`, the world checks (`RoomValidator`, `TravelValidator`, `RouteCheck`, `BurnProbe`, `HeatCheck`, `SpeciesValidator`, `ExportReach`, `RequiredExports`).
