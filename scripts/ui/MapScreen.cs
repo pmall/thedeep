@@ -77,6 +77,14 @@ public partial class MapScreen : CanvasLayer
     /// <summary>The legend's words' widths as the map last opened, pixels, one per entry of <see cref="MapSheet.Legend"/>.</summary>
     public IReadOnlyList<float> LegendWidths => _legendWidths;
 
+    public override void _Notification(int what)
+    {
+        if (what == NotificationPredelete)
+        {
+            _plate?.Dispose();
+        }
+    }
+
     public override void _Ready()
     {
         Layer = UiLayers.Map;
