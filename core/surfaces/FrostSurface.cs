@@ -214,21 +214,15 @@ public sealed record FrostSurface : ISurfacePattern
     /// the point it covers (0 to 1). One per cell at most, where the coat is thick.</summary>
     private (double Facet, double Cover) Crystal(double u, double v, double thick)
     {
-        double x = u * CrystalCells;
-        double y = v * CrystalCells;
-        int cx = (int)Math.Floor(x);
-        int cy = (int)Math.Floor(y);
-        int wx = TileNoise.Wrap(cx, CrystalCells);
-        int wy = TileNoise.Wrap(cy, CrystalCells);
-        if (TileNoise.Hash(wx, wy, Seed + 13) >= CrystalShare * TileNoise.SmoothStep(0.45, 0.75, thick))
+        LatticeCell cell = TileNoise.Locate(u, v, CrystalCells);
+        if (TileNoise.Hash(cell.Wx, cell.Wy, Seed + 13) >= CrystalShare * TileNoise.SmoothStep(0.45, 0.75, thick))
         {
             return (0.0, 0.0);
         }
 
-        double radius = CrystalRadius * (0.7 + (0.3 * TileNoise.Hash(wx, wy, Seed + 14)));
-        double px = cx + 0.5 + ((TileNoise.Hash(wx, wy, Seed + 15) - 0.5) * (1.0 - (2.0 * radius)));
-        double py = cy + 0.5 + ((TileNoise.Hash(wx, wy, Seed + 16) - 0.5) * (1.0 - (2.0 * radius)));
-        double r = Math.Sqrt(((x - px) * (x - px)) + ((y - py) * (y - py))) / radius;
+        double radius = CrystalRadius * (0.7 + (0.3 * TileNoise.Hash(cell.Wx, cell.Wy, Seed + 14)));
+        (double ox, double oy) = cell.OffsetFromCenter(TileNoise.Hash(cell.Wx, cell.Wy, Seed + 15), TileNoise.Hash(cell.Wx, cell.Wy, Seed + 16), 1.0 - (2.0 * radius));
+        double r = Math.Sqrt((ox * ox) + (oy * oy)) / radius;
         double cover = 1.0 - TileNoise.SmoothStep(0.6, 1.0, r);
         if (cover <= 0.0)
         {
@@ -236,10 +230,10 @@ public sealed record FrostSurface : ISurfacePattern
         }
 
         // The facet's tilt, any way round, as a slope over the cell's meters.
-        double angle = TileNoise.Hash(wx, wy, Seed + 17) * 2.0 * Math.PI;
+        double angle = TileNoise.Hash(cell.Wx, cell.Wy, Seed + 17) * 2.0 * Math.PI;
         double cellMeters = TileMeters / CrystalCells;
-        double lean = CrystalTilt * (0.5 + (0.5 * TileNoise.Hash(wx, wy, Seed + 18)));
-        double plane = (((x - px) * Math.Cos(angle)) + ((y - py) * Math.Sin(angle))) * cellMeters * lean;
+        double lean = CrystalTilt * (0.5 + (0.5 * TileNoise.Hash(cell.Wx, cell.Wy, Seed + 18)));
+        double plane = ((ox * Math.Cos(angle)) + (oy * Math.Sin(angle))) * cellMeters * lean;
         return (plane * cover, cover);
     }
 }

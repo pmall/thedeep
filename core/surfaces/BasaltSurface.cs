@@ -133,25 +133,18 @@ public sealed record BasaltSurface : ISurfacePattern
     /// </summary>
     private double Vesicle(double u, double v, int cells, double share, int seed)
     {
-        double x = u * cells;
-        double y = v * cells;
-        int cx = (int)Math.Floor(x);
-        int cy = (int)Math.Floor(y);
-        int wx = TileNoise.Wrap(cx, cells);
-        int wy = TileNoise.Wrap(cy, cells);
+        LatticeCell cell = TileNoise.Locate(u, v, cells);
         double field = TileNoise.Fractal(
-            (wx + 0.5) / cells * VesicleFieldCells, (wy + 0.5) / cells * VesicleFieldCells, VesicleFieldCells, VesicleFieldCells, 2, Seed + 9);
+            (cell.Wx + 0.5) / cells * VesicleFieldCells, (cell.Wy + 0.5) / cells * VesicleFieldCells, VesicleFieldCells, VesicleFieldCells, 2, Seed + 9);
         double gathered = TileNoise.SmoothStep(1.0 - VesicleFieldShare - 0.1, 1.0 - VesicleFieldShare + 0.1, field);
-        if (TileNoise.Hash(wx, wy, seed) >= share * gathered)
+        if (TileNoise.Hash(cell.Wx, cell.Wy, seed) >= share * gathered)
         {
             return 0.0;
         }
 
-        double radius = 0.1 + (0.25 * TileNoise.Hash(wx, wy, seed + 3));
+        double radius = 0.1 + (0.25 * TileNoise.Hash(cell.Wx, cell.Wy, seed + 3));
         double room = 1.0 - (2.0 * (radius + 0.03));
-        double px = cx + radius + 0.03 + (room * TileNoise.Hash(wx, wy, seed + 1));
-        double py = cy + radius + 0.03 + (room * TileNoise.Hash(wx, wy, seed + 2));
-        double distance = Math.Sqrt(((x - px) * (x - px)) + ((y - py) * (y - py)));
+        double distance = cell.DistanceToCenter(TileNoise.Hash(cell.Wx, cell.Wy, seed + 1), TileNoise.Hash(cell.Wx, cell.Wy, seed + 2), room);
         return TileNoise.Line(distance, radius);
     }
 }

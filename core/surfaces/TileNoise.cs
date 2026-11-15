@@ -82,6 +82,17 @@ public static class TileNoise
     /// <summary>1 at the center of a line and 0 from <paramref name="width"/> away, rounded at both ends (a groove's profile).</summary>
     public static double Line(double distance, double width) => 1.0 - SmoothStep(0.0, width, Math.Abs(distance));
 
+    /// <summary>The lattice cell of <paramref name="cells"/> a side that holds the point (<paramref name="u"/> and
+    /// <paramref name="v"/> in tiles), for the patterns that put one thing in a cell.</summary>
+    public static LatticeCell Locate(double u, double v, int cells)
+    {
+        double x = u * cells;
+        double y = v * cells;
+        int cx = (int)Math.Floor(x);
+        int cy = (int)Math.Floor(y);
+        return new LatticeCell(x, y, cx, cy, Wrap(cx, cells), Wrap(cy, cells));
+    }
+
     /// <summary>
     /// Small pits in a tile, <paramref name="cells"/> cells a side (<paramref name="u"/> and <paramref name="v"/> in tiles): at most
     /// one per cell, in <paramref name="share"/> of the cells, each somewhere inside its cell with its own size so they never line
@@ -89,21 +100,14 @@ public static class TileNoise
     /// </summary>
     public static double Pit(double u, double v, int cells, double share, int seed)
     {
-        double x = u * cells;
-        double y = v * cells;
-        int cx = (int)Math.Floor(x);
-        int cy = (int)Math.Floor(y);
-        int wx = Wrap(cx, cells);
-        int wy = Wrap(cy, cells);
-        if (Hash(wx, wy, seed) >= share)
+        LatticeCell cell = Locate(u, v, cells);
+        if (Hash(cell.Wx, cell.Wy, seed) >= share)
         {
             return 0.0;
         }
 
-        double px = cx + 0.3 + (0.4 * Hash(wx, wy, seed + 1));
-        double py = cy + 0.3 + (0.4 * Hash(wx, wy, seed + 2));
-        double radius = 0.1 + (0.25 * Hash(wx, wy, seed + 3));
-        double distance = Math.Sqrt(((x - px) * (x - px)) + ((y - py) * (y - py)));
+        double radius = 0.1 + (0.25 * Hash(cell.Wx, cell.Wy, seed + 3));
+        double distance = cell.DistanceToCenter(Hash(cell.Wx, cell.Wy, seed + 1), Hash(cell.Wx, cell.Wy, seed + 2), 0.4);
         return Line(distance, radius);
     }
 

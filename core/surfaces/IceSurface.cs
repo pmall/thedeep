@@ -170,21 +170,14 @@ public sealed record IceSurface : ISurfacePattern
     /// per cell, in <paramref name="share"/> of the cells where they crowd most (taken at the cell's center, so none is cut).</summary>
     private double Bubble(double u, double v, int cells, double share, int seed)
     {
-        double x = u * cells;
-        double y = v * cells;
-        int cx = (int)Math.Floor(x);
-        int cy = (int)Math.Floor(y);
-        int wx = TileNoise.Wrap(cx, cells);
-        int wy = TileNoise.Wrap(cy, cells);
-        if (TileNoise.Hash(wx, wy, seed) >= share * Crowd((wx + 0.5) / cells, (wy + 0.5) / cells))
+        LatticeCell cell = TileNoise.Locate(u, v, cells);
+        if (TileNoise.Hash(cell.Wx, cell.Wy, seed) >= share * Crowd((cell.Wx + 0.5) / cells, (cell.Wy + 0.5) / cells))
         {
             return 0.0;
         }
 
-        double radius = TileNoise.Lerp(BubbleMinRadius, BubbleMaxRadius, TileNoise.Hash(wx, wy, seed + 3));
-        double px = cx + 0.5 + ((TileNoise.Hash(wx, wy, seed + 1) - 0.5) * (1.0 - (2.0 * radius)));
-        double py = cy + 0.5 + ((TileNoise.Hash(wx, wy, seed + 2) - 0.5) * (1.0 - (2.0 * radius)));
-        double r = Math.Sqrt(((x - px) * (x - px)) + ((y - py) * (y - py))) / radius;
+        double radius = TileNoise.Lerp(BubbleMinRadius, BubbleMaxRadius, TileNoise.Hash(cell.Wx, cell.Wy, seed + 3));
+        double r = cell.DistanceToCenter(TileNoise.Hash(cell.Wx, cell.Wy, seed + 1), TileNoise.Hash(cell.Wx, cell.Wy, seed + 2), 1.0 - (2.0 * radius)) / radius;
         double disc = 1.0 - TileNoise.SmoothStep(0.85, 1.0, r);
         double rim = TileNoise.SmoothStep(0.5, 0.85, r);
         return disc * (0.45 + (0.55 * rim));
