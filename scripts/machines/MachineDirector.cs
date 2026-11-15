@@ -9,7 +9,7 @@ namespace TheDeep;
 /// Runs the machines of the current room. Each physics tick it gathers what they can perceive (the
 /// player and whether each machine can see them, impacts from the player's landings and dashes, the
 /// machines around each one) and steps every machine in a fixed order, so runs are deterministic. A strike
-/// that reaches the player raises <see cref="PlayerStruck"/>; when it hurts, it throws sparks, shakes the camera and holds the
+/// that reaches the player, when it hurts, throws sparks, shakes the camera and holds the
 /// machine still as long as the pilgrim's hurt stop.
 /// </summary>
 public partial class MachineDirector : Node
@@ -44,20 +44,16 @@ public partial class MachineDirector : Node
     private PlaneRay? _sight;
     private PlaneRay Sight => _sight ??= PlaneRay.For(PhysicsLayers.Solid);
 
-    /// <summary>Machines already hit by a swing (by the swing's number), so a swing hits each once.</summary>
-    private readonly HashSet<(Machine, int)> _struck = new();
+    /// <summary>Machines already hit by the swing numbered <see cref="_swing"/>, so a swing hits each once; emptied when a new swing begins.</summary>
+    private readonly HashSet<Machine> _struck = new();
+
+    private int _swing = -1;
 
     /// <summary>False hides the player from every machine (the species check runs them alone).</summary>
     public bool PlayerPresent { get; set; } = true;
 
     /// <summary>The machines of the room it is in charge of.</summary>
     public IReadOnlyList<Machine> Machines => _machines;
-
-    /// <summary>The pilgrim's swing hit a machine (true: and broke it).</summary>
-    public event Action<Machine, bool>? MachineHit;
-
-    /// <summary>A machine's blow landed on the player.</summary>
-    public event Action<Machine>? PlayerStruck;
 
     public override void _Ready()
     {
@@ -122,7 +118,7 @@ public partial class MachineDirector : Node
             {
                 if (other != machine && !other.Broken && other.PlanePosition.DistanceTo(here) <= NeighborRange)
                 {
-                    _neighbors.Add(new Neighbor(other.PlanePosition.ToCore(), other.Species.Id, other.Intent.Signal));
+                    _neighbors.Add(new Neighbor(other.PlanePosition.ToCore(), other.Species.IdText, other.Intent.Signal));
                 }
             }
 
@@ -137,7 +133,6 @@ public partial class MachineDirector : Node
                     machine.Halt(Player.Tuning.HurtStop);
                 }
 
-                PlayerStruck?.Invoke(machine);
             }
         }
     }
@@ -149,10 +144,16 @@ public partial class MachineDirector : Node
     /// </summary>
     private void OnStriking(Rect2 area, int swing, StrikeShape strike)
     {
+        if (swing != _swing)
+        {
+            _swing = swing;
+            _struck.Clear();
+        }
+
         bool landed = false;
         foreach (Machine machine in _machines)
         {
-            if (machine.Broken || !machine.BodyRect.Intersects(area) || !_struck.Add((machine, swing)))
+            if (machine.Broken || !machine.BodyRect.Intersects(area) || !_struck.Add(machine))
             {
                 continue;
             }
@@ -163,7 +164,6 @@ public partial class MachineDirector : Node
             machine.Halt(strike.HitStop);
             HitSparks?.Emit(new Vector3(at.X, at.Y, 0.3f), strike.Sparks + (broke ? BreakSparks : 0f));
             Camera?.Kick(Along(strike) * (strike.Kick + (broke ? BreakKick : 0f)));
-            MachineHit?.Invoke(machine, broke);
             landed = true;
         }
 
@@ -185,22 +185,7 @@ public partial class MachineDirector : Node
         _struck.Clear();
         _machines.Clear();
         _impacts.Clear();
-        Collect(room);
-    }
-
-    private void Collect(Node parent)
-    {
-        foreach (Node child in parent.Children())
-        {
-            if (child is Machine machine)
-            {
-                _machines.Add(machine);
-            }
-            else
-            {
-                Collect(child);
-            }
-        }
+        _machines.AddRange(room.All<Machine>());
     }
 
     private void OnLanded(float fallSpeed) => _impacts.Add(new Impact(Player.GlobalPosition.Flat(), fallSpeed));

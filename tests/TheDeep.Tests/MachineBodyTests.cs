@@ -160,4 +160,17 @@ public class MachineBodyTests
     {
         Assert.Equal(seed, MachineGait.SeedAt(x, y));
     }
+
+    [Fact]
+    public void JitterIsFixedByItsSeedAndSaltAndStaysInUnitRange()
+    {
+        Assert.Equal(MachineGait.Jitter(145, 1), MachineGait.Jitter(145, 1));
+        Assert.NotEqual(MachineGait.Jitter(145, 1), MachineGait.Jitter(145, 2));
+        Assert.NotEqual(MachineGait.Jitter(145, 1), MachineGait.Jitter(146, 1));
+        for (int seed = -50; seed < 9973; seed += 7)
+        {
+            float jitter = MachineGait.Jitter(seed, 1);
+            Assert.InRange(jitter, 0f, 0.99999994f);
+        }
+    }
 }

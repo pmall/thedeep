@@ -44,6 +44,17 @@ public partial class Session : Node
     [Export] public float ScorchFadeOut { get; set; } = 0.2f;
     [Export] public float ScorchFadeIn { get; set; } = 0.3f;
 
+    /// <summary>The camera's shake when a lift is released, when cracked rock shatters and when a law breaks (a unit of <see cref="SideCamera.AddShake"/>).</summary>
+    [Export] public float LiftShake { get; set; } = 0.12f;
+    [Export] public float ShatterShake { get; set; } = 0.25f;
+    [Export] public float LawShake { get; set; } = 0.6f;
+
+    /// <summary>How long a broken law holds the pilgrim still before its words show (seconds).</summary>
+    [Export] public float LawHold { get; set; } = 0.9f;
+
+    /// <summary>Where, above the pilgrim's feet, a relic's core, an item or a shard drifts to be taken in (meters).</summary>
+    public static readonly Vector3 AbsorbPoint = new(0f, 1.05f, 0f);
+
     private bool _busy;
     private Shrine? _prompted;
     private ScripturePlate? _plate;
@@ -100,7 +111,8 @@ public partial class Session : Node
         // Entered again where the save placed it (or at the origin): its ways out are read afresh from the room.
         World.Enter(World.Room, World.Map.Find(World.RoomName)?.Offset ?? System.Numerics.Vector2.Zero);
 
-        OnRoomLoaded(World.Room);
+        // The room's nodes are wired already (by _Ready, or the load of the room the world began in): only what the save says is done is applied.
+        Settle(World.Room, Begin(World.Room));
         Player.Respawn(RespawnPoint(World.Room), 1);
     }
 
@@ -161,11 +173,12 @@ public partial class Session : Node
             Banner.Show(plate.Said);
         }
 
-        foreach (AbilityRelic relic in room.All<AbilityRelic>())
+        IReadOnlyList<AbilityRelic> relics = room.All<AbilityRelic>();
+        for (int i = 0; i < relics.Count; i++)
         {
-            if (!relic.Taken && relic.GlobalPosition.WithinOnPlane(p, RelicRange))
+            if (!relics[i].Taken && relics[i].GlobalPosition.WithinOnPlane(p, RelicRange))
             {
-                Take(relic);
+                Take(relics[i]);
                 break;
             }
         }
@@ -264,33 +277,59 @@ public partial class Session : Node
     private async void Rest(Shrine shrine)
     {
         _busy = true;
-        Player.Vitality.Restore();
-        _pilgrimage.Rest(World.RoomName, shrine.NameText());
-        Write();
-        shrine.Flare();
-        Player.Velocity = Vector3.Zero;
-        Player.Frozen = true;
-        Player.Visual.Moment = PilgrimMoment.Rest;
-        await ToSignal(GetTree().CreateTimer(RestTime, processAlways: false), SceneTreeTimer.SignalName.Timeout);
-        Player.Visual.Moment = PilgrimMoment.None;
-        Player.Frozen = false;
-        _busy = false;
+        try
+        {
+            Player.Vitality.Restore();
+            _pilgrimage.Rest(World.RoomName, shrine.NameText());
+            Write();
+            shrine.Flare();
+            Player.Velocity = Vector3.Zero;
+            Player.Frozen = true;
+            Player.Visual.Moment = PilgrimMoment.Rest;
+            await ToSignal(GetTree().CreateTimer(RestTime, processAlways: false), SceneTreeTimer.SignalName.Timeout);
+        }
+        finally
+        {
+            Release();
+        }
     }
 
     /// <summary>Taking a relic: the pilgrim stands still while its core drifts in, then the ability is its own.</summary>
     private async void Take(AbilityRelic relic)
     {
+        // Read before the wait: the room may be gone when it ends.
+        string name = relic.NameText();
+        Ability ability = relic.Ability;
+        Announcement said = relic.Said;
         _busy = true;
-        Player.Velocity = Vector3.Zero;
-        Player.Frozen = true;
-        Player.Visual.Moment = PilgrimMoment.Relic;
-        await relic.Absorb(Player, new Vector3(0f, 1.05f, 0f));
-        Player.Visual.Moment = PilgrimMoment.None;
-        Player.Abilities.Unlock(relic.Ability);
-        Remember(relic.NameText());
-        Player.Frozen = false;
+        try
+        {
+            Player.Velocity = Vector3.Zero;
+            Player.Frozen = true;
+            Player.Visual.Moment = PilgrimMoment.Relic;
+            await relic.Absorb(Player, AbsorbPoint);
+            Player.Visual.Moment = PilgrimMoment.None;
+            Player.Abilities.Unlock(ability);
+            Remember(name);
+        }
+        finally
+        {
+            Release();
+        }
+
+        Banner.Show(said);
+    }
+
+    /// <summary>Lets the pilgrim go again after a held moment (rest, relic, law), whatever ended it; a pilgrim already freed (the scene reloading) is left alone.</summary>
+    private void Release()
+    {
+        if (IsInstanceValid(Player))
+        {
+            Player.Visual.Moment = PilgrimMoment.None;
+            Player.Frozen = false;
+        }
+
         _busy = false;
-        Banner.Show(relic.Said);
     }
 
     /// <summary>
@@ -384,17 +423,32 @@ public partial class Session : Node
 
     private void OnRoomLoaded(Room room)
     {
+        string name = Begin(room);
+        Settle(room, name);
+        Wire(room, name);
+    }
+
+    /// <summary>A room is entered: its prompts, banner and spoken lines are cleared and the pilgrimage notes the visit; the room's name.</summary>
+    private string Begin(Room room)
+    {
         Prompt(null);
         PromptPlate(null);
         Banner.Clear();
         _spoken.Clear();
         string name = World.NameOf(room.SceneFilePath);
         _pilgrimage.Enter(name);
-        foreach (AbilityRelic relic in room.All<AbilityRelic>())
+        return name;
+    }
+
+    /// <summary>What the pilgrimage holds done in <paramref name="room"/> (<paramref name="name"/>) is shown done: relics empty, rock and laws gone.</summary>
+    private void Settle(Room room, string name)
+    {
+        IReadOnlyList<AbilityRelic> relics = room.All<AbilityRelic>();
+        for (int i = 0; i < relics.Count; i++)
         {
-            if (_pilgrimage.RelicEmpty(name, relic.NameText(), relic.Ability, Player.Abilities.Unlocked))
+            if (_pilgrimage.RelicEmpty(name, relics[i].NameText(), relics[i].Ability, Player.Abilities.Unlocked))
             {
-                relic.Empty();
+                relics[i].Empty();
             }
         }
 
@@ -403,9 +457,23 @@ public partial class Session : Node
             if (_pilgrimage.Done(name, block.NameText()))
             {
                 block.Settle();
-                continue;
             }
+        }
 
+        foreach (LawBreak law in room.All<LawBreak>())
+        {
+            if (_pilgrimage.Done(name, law.NameText()))
+            {
+                law.Settle();
+            }
+        }
+    }
+
+    /// <summary>Connects the room's bricks to the pilgrim and to what the session keeps; once per room, when it loads.</summary>
+    private void Wire(Room room, string name)
+    {
+        foreach (Block block in room.Blocks().Where(b => b.Cracked && !_pilgrimage.Done(name, b.NameText())))
+        {
             block.Shattered += OnShattered;
         }
 
@@ -422,7 +490,7 @@ public partial class Session : Node
         foreach (Lift lift in room.All<Lift>())
         {
             lift.Player = Player;
-            lift.Released += _ => Camera.AddShake(0.12f);
+            lift.Released += OnLiftReleased;
         }
 
         foreach (ScripturePlate plate in room.All<ScripturePlate>())
@@ -433,35 +501,41 @@ public partial class Session : Node
         foreach (LawBreak law in room.All<LawBreak>())
         {
             law.Player = Player;
-            if (_pilgrimage.Done(name, law.NameText()))
+            if (!_pilgrimage.Done(name, law.NameText()))
             {
-                law.Settle();
-                continue;
+                law.Broke += OnLawBroke;
             }
-
-            law.Broke += OnLawBroke;
         }
     }
+
+    private void OnLiftReleased(Lift lift) => Camera.AddShake(LiftShake);
 
     /// <summary>Cracked rock broken by the Drill: remembered (and saved) at once, so the way stays open.</summary>
     private void OnShattered(Block block)
     {
         Remember(block.NameText());
-        Camera.AddShake(0.25f);
+        Camera.AddShake(ShatterShake);
     }
 
     /// <summary>A law broken: remembered (and saved) at once; the moment is the pilgrim's, so it holds still a breath.</summary>
     private async void OnLawBroke(LawBreak law)
     {
+        Announcement said = law.Said;
         Remember(law.NameText());
-        Camera.AddShake(0.6f);
+        Camera.AddShake(LawShake);
         _busy = true;
-        Player.Velocity = Vector3.Zero;
-        Player.Frozen = true;
-        await ToSignal(GetTree().CreateTimer(0.9f, processAlways: false), SceneTreeTimer.SignalName.Timeout);
-        Player.Frozen = false;
-        _busy = false;
-        Banner.Show(law.Said);
+        try
+        {
+            Player.Velocity = Vector3.Zero;
+            Player.Frozen = true;
+            await ToSignal(GetTree().CreateTimer(LawHold, processAlways: false), SceneTreeTimer.SignalName.Timeout);
+        }
+        finally
+        {
+            Release();
+        }
+
+        Banner.Show(said);
     }
 
     /// <summary>Whether the node <paramref name="node"/> of <paramref name="room"/> is done for good (taken, beaten, broken, opened).</summary>

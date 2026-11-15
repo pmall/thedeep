@@ -144,7 +144,7 @@ public sealed class MachineAnimator
         NVector2 target = leg.RestFoot + LegGait.Foot(phase, spec.Stance, spec.Stride, spec.Lift) * stepping;
         Transform3D toGround = _ground.GlobalTransform.AffineInverse();
         NVector2 hip = (toGround * leg.Upper.GlobalPosition).Flat();
-        (float upper, float lower) = PlanarIk.TwoBone(hip, target, leg.UpperLength, leg.LowerLength, spec.Bend);
+        (float upper, float lower) = PlanarIk.TwoBone(hip, target, leg.UpperLength, leg.LowerLength, (float)spec.Bend);
 
         // Absolute angles in the ground frame, to local turns: minus the parent's turn and the segment's rest angle.
         Vector3 parentX = toGround.Basis * ((Node3D)leg.Upper.GetParent()).GlobalBasis.X;

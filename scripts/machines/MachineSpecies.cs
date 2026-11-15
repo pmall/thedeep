@@ -15,7 +15,21 @@ public partial class MachineSpecies : Resource, INamesLines
     public const string Folder = "res://resources/machines";
 
     /// <summary>Stable id (the file name): neighbors recognize their kind by it, the bestiary keys on it.</summary>
-    [Export] public StringName Id { get; set; } = Names.None;
+    [Export]
+    public StringName Id
+    {
+        get => _id;
+        set
+        {
+            _id = value;
+            IdText = value.ToString();
+        }
+    }
+
+    private StringName _id = Names.None;
+
+    /// <summary>The id as text, converted once here: the core's neighbors carry it every tick.</summary>
+    public string IdText { get; private set; } = Names.None.ToString();
 
     [Export] public string DisplayName { get; set; } = "";
 

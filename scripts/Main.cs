@@ -526,7 +526,6 @@ public partial class Main : Node3D
         return owned;
     }
 
-    /// <summary>The argument following <paramref name="name"/>, or null.</summary>
     /// <summary>`K/N` (1 ≤ K ≤ N) as a part of a list; the whole list when absent or malformed (said in the log).</summary>
     private static (int Index, int Count) ParseShard(string? text)
     {
@@ -545,6 +544,7 @@ public partial class Main : Node3D
         return (1, 1);
     }
 
+    /// <summary>The argument following <paramref name="name"/>, or null.</summary>
     private static string? ArgumentValue(string[] args, string name)
     {
         int index = Array.IndexOf(args, name);

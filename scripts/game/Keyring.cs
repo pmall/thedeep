@@ -25,12 +25,13 @@ public partial class Keyring : Node
     /// <summary>How close (meters, on the play plane) the pilgrim must stand to take an item.</summary>
     [Export] public float TakeRange { get; set; } = 1.2f;
 
+    /// <summary>The camera's shake when a lever is pulled and when a door opens (a unit of <see cref="SideCamera.AddShake"/>).</summary>
+    [Export] public float LeverShake { get; set; } = 0.1f;
+    [Export] public float DoorShake { get; set; } = 0.15f;
+
     private readonly HashSet<LockedDoor> _said = new();
     private bool _taking;
     private Lever? _prompted;
-
-    /// <summary>Raised when a lever is pulled.</summary>
-    public event System.Action<Lever>? Pulled;
 
     /// <summary>Raised when a door opens for its item.</summary>
     public event System.Action<LockedDoor>? Opened;
@@ -89,8 +90,7 @@ public partial class Keyring : Node
             lever.Pull();
             Player.Items.Take(lever.Item.Id);
             Session.Remember(lever.NameText());
-            Camera.AddShake(0.1f);
-            Pulled?.Invoke(lever);
+            Camera.AddShake(LeverShake);
         }
 
         IReadOnlyList<LockedDoor> doors = room.All<LockedDoor>();
@@ -109,7 +109,7 @@ public partial class Keyring : Node
                 {
                     door.Open();
                     Session.Remember(door.NameText());
-                    Camera.AddShake(0.15f);
+                    Camera.AddShake(DoorShake);
                     Opened?.Invoke(door);
                 }
             }
@@ -154,15 +154,29 @@ public partial class Keyring : Node
     /// <summary>Taking an item: the pilgrim stands still while it flies in, then it is held, saved, and its name shows.</summary>
     private async void Take(ItemPickup pickup)
     {
+        // Read before the wait: the room may be gone when it ends.
+        ItemDefinition item = pickup.Item;
+        string name = pickup.NameText();
         _taking = true;
-        Player.Velocity = Vector3.Zero;
-        Player.Frozen = true;
-        await pickup.Fly(Player, new Vector3(0f, 1.05f, 0f));
-        Player.Items.Take(pickup.Item.Id);
-        Session.Remember(pickup.NameText());
-        Player.Frozen = false;
-        _taking = false;
-        Banner.Show(pickup.Item.Said);
+        try
+        {
+            Player.Velocity = Vector3.Zero;
+            Player.Frozen = true;
+            await pickup.Fly(Player, Session.AbsorbPoint);
+            Player.Items.Take(item.Id);
+            Session.Remember(name);
+        }
+        finally
+        {
+            if (IsInstanceValid(Player))
+            {
+                Player.Frozen = false;
+            }
+
+            _taking = false;
+        }
+
+        Banner.Show(item.Said);
     }
 
     private void OnRoomLoaded(Room room)

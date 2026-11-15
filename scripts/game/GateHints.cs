@@ -24,6 +24,16 @@ public partial class GateHints : Node
     /// <summary>A ring is only remarked on after it has been in sight this long, seconds.</summary>
     [Export] public float RingTime { get; set; } = 0.8f;
 
+    /// <summary>How fast the meeting of a gate is forgotten when it stops, as a share of real time (a brush now and then never adds up).</summary>
+    [Export] public float MeetDecay { get; set; } = 0.5f;
+
+    /// <summary>How squarely a surface must face the pilgrim to be pressed against: the normal's part along the pressing direction.</summary>
+    private const float PressNormal = 0.5f;
+
+    private static readonly System.Func<System.Numerics.Vector2, bool> WallOnRight = n => n.X < -PressNormal;
+    private static readonly System.Func<System.Numerics.Vector2, bool> WallOnLeft = n => n.X > PressNormal;
+    private static readonly System.Func<System.Numerics.Vector2, bool> CeilingAbove = n => n.Y < -PressNormal;
+
     private readonly Dictionary<Ability, float> _met = new();
     private readonly HashSet<Ability> _said = new();
 
@@ -59,21 +69,35 @@ public partial class GateHints : Node
         }
 
         float dt = (float)delta;
-        Meet(Ability.MagGrip, PressesBareMetal(), dt, MeetTime);
-        Meet(Ability.Harpoon, Harpoon.OutOfReach is not null, dt, RingTime);
-        Meet(Ability.Drill, TouchesCrackedRock(), dt, MeetTime);
-        Meet(Ability.Ballast, Player.CurrentState is SwimState && Player.CurrentInput.MoveY < 0, dt, MeetTime);
+        // A gate is only looked for while its line is still to come.
+        if (Pending(Ability.MagGrip))
+        {
+            Meet(Ability.MagGrip, PressesBareMetal(), dt, MeetTime);
+        }
+
+        if (Pending(Ability.Harpoon))
+        {
+            Meet(Ability.Harpoon, Harpoon.OutOfReach is not null, dt, RingTime);
+        }
+
+        if (Pending(Ability.Drill))
+        {
+            Meet(Ability.Drill, TouchesCrackedRock(), dt, MeetTime);
+        }
+
+        if (Pending(Ability.Ballast))
+        {
+            Meet(Ability.Ballast, Player.CurrentState is SwimState && Player.CurrentInput.MoveY < 0, dt, MeetTime);
+        }
     }
+
+    /// <summary>Whether the pilgrim still lacks <paramref name="kind"/> and has not said its line about it this visit.</summary>
+    private bool Pending(Ability kind) => !Player.Abilities.Has(kind) && !_said.Contains(kind);
 
     private void Meet(Ability kind, bool meeting, float dt, float needed)
     {
-        if (Player.Abilities.Has(kind) || _said.Contains(kind))
-        {
-            return;
-        }
-
         float t = _met.GetValueOrDefault(kind);
-        t = meeting ? t + dt : Mathf.Max(0f, t - 0.5f * dt);
+        t = meeting ? t + dt : Mathf.Max(0f, t - MeetDecay * dt);
         _met[kind] = t;
         if (t >= needed)
         {
@@ -95,9 +119,10 @@ public partial class GateHints : Node
             return false;
         }
 
+        // Static predicates, one per side: a lambda capturing the direction would allocate every frame.
         int x = Player.CurrentInput.MoveX;
-        return (Player.IsOnWall() && x != 0 && Player.MetalContact(n => n.X * x < -0.5f) is not null)
-               || (Player.IsOnCeiling() && Player.MetalContact(n => n.Y < -0.5f) is not null);
+        return (Player.IsOnWall() && x != 0 && Player.MetalContact(x > 0 ? WallOnRight : WallOnLeft) is not null)
+               || (Player.IsOnCeiling() && Player.MetalContact(CeilingAbove) is not null);
     }
 
     private bool TouchesCrackedRock()

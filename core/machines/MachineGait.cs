@@ -49,6 +49,21 @@ public sealed class MachineGait
     /// <summary>A walker's vertical speed after a tick: pressed into the floor it stands on, or falling.</summary>
     public static float Fall(float vy, bool onFloor, float dt) => onFloor ? -FloorPress : MathF.Max(vy - Gravity * dt, -MaxFallSpeed);
 
+    /// <summary>
+    /// A value in [0, 1) fixed by <paramref name="seed"/> and <paramref name="salt"/> (which of a machine's knobs it varies), to vary
+    /// machines of one species. A hash, so nothing is allocated and the same pair always gives the same value.
+    /// </summary>
+    public static float Jitter(int seed, int salt)
+    {
+        uint h = unchecked((uint)(seed * 7919 + salt));
+        h ^= h >> 16;
+        h = unchecked(h * 0x7feb352dU);
+        h ^= h >> 15;
+        h = unchecked(h * 0x846ca68bU);
+        h ^= h >> 16;
+        return (h >> 8) / 16777216f;
+    }
+
     /// <summary>A seed that varies a machine from others of its species, from where it stands (1 to 9973).</summary>
     public static int SeedAt(float x, float y)
     {
