@@ -120,6 +120,17 @@ public class WorldCheckTests
     }
 
     [Fact]
+    public void AWayOnlyNearPerfectPlayTakesIsAProblem()
+    {
+        // The way out on a 3 m step: the 3.2 m jump clears it, the clumsier pilgrim's doesn't.
+        WorldCheck world = TwoRooms(eastY: 4.5f, hallMetal: new Box(5f, 0f, 10f, 3f));
+        string summary = world.Check("Hall", MapTargets.None, report: false);
+        Assert.Equal("no room for error: Hall via the start : only near-perfect play reaches exit East (a clumsier pilgrim does not; tools: --reach-report Hall --slack-report)",
+            Assert.Single(world.Problems));
+        Assert.Contains("INSIDE OK", summary);
+    }
+
+    [Fact]
     public void RoomsThatOverlapOnTheMapAreAProblem()
     {
         var world = new WorldCheck(Limits);

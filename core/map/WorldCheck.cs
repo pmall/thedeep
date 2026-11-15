@@ -404,7 +404,7 @@ public sealed class WorldCheck
             _problems.Add("map inside the rooms: no goal is reached walking the rooms from where the pilgrim comes in");
         }
 
-        return $"INSIDE OK: {report.ReachableStates} states (room, way in, abilities), every room walked from each way in, no softlock; " +
+        return $"INSIDE OK: {report.ReachableStates} states (room, way in, abilities), every room entered, no softlock; " +
                "a clumsier pilgrim reaches all the same";
     }
 
@@ -437,11 +437,9 @@ public sealed class WorldCheck
     }
 
     /// <summary>
-    /// Room for error: every state the inside check walked is walked again by a clumsier pilgrim (<see cref="MoveLimits.Clumsy"/>:
-    /// jumps 18% lower, dashes 35% shorter, runs 20% slower, never takes off from the very end of a ledge, no ledge assist), which must
-    /// reach every way out, relic and goal the exact one does. A way only perfect play takes is a problem, once per room, way in and
-    /// way out (with the fewest abilities). Before this held (2026-11-01), ladders of 3 m steps against a 3.2 m jump made the second
-    /// room a trial.
+    /// Room for error: every state the inside check walked is walked again by a clumsier pilgrim (<see cref="MoveLimits.Clumsy"/>),
+    /// which must reach every way out, relic, item and goal the exact one does. A way only near-perfect play takes is a problem, once
+    /// per room, way in and what is missed (with the fewest abilities).
     /// </summary>
     private void CheckSlack(ConcurrentDictionary<WayState, RoomReach> reaches)
     {
