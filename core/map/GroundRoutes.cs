@@ -53,13 +53,20 @@ public static class GroundRoutes
     /// <summary>The farthest the real landing may be from the planned one along the floor, meters: a tick of a run, and a little.</summary>
     public const float LandingTolerance = 0.15f;
 
+    /// <summary>The farthest the real landing's height may be from the planned one, meters: beyond it, it landed on another floor.</summary>
+    public const float FloorTolerance = 0.05f;
+
     private const float Dt = 1f / 60f;
 
-    /// <summary>The kinds of move, in the order routes are picked: those whose drift shows most first.</summary>
-    private static readonly (int Jump, bool Dash)[] Kinds =
+    /// <summary>The kinds of move (a jump's ticks, whether it dashes) in the order routes are picked: those whose drift shows most first.</summary>
+    private static readonly (int Jump, bool Dash)[] Preference =
     {
         (-1, true), (0, true), (-1, false), (12, false), (0, false), (6, true), (12, true), (6, false),
     };
+
+    /// <summary>Every kind of move the planner tries (<see cref="ReachPlanner.GroundMoves"/>), in the <see cref="Preference"/> order, any other after.</summary>
+    private static readonly (int Jump, bool Dash)[] Kinds = ReachPlanner.GroundMoves.Select(Kind).Distinct()
+        .OrderBy(k => Array.IndexOf(Preference, k) is var i and >= 0 ? i : Preference.Length).ToArray();
 
     /// <summary>
     /// Up to <paramref name="count"/> ground routes of the room of <paramref name="shape"/>, its moves simulated with
@@ -75,11 +82,10 @@ public static class GroundRoutes
         var leaps = new List<Leap>();
         planner.Reach(ways, new List<Box>(), leaps.Add);
 
-        float liftClear = limits.Move.Height + limits.Rise;
         List<Box> avoid = shape.Exits.Select(x => x.Threshold.Trigger)
             .Concat(shape.Relics.Select(r => r.Area)).Concat(shape.Items.Select(i => i.Area)).Concat(shape.Goals)
             .Concat(shape.Waters).Concat(shape.Heat).Concat(shape.Slag)
-            .Concat(shape.Lifts.Select(l => l.Platform with { MaxY = l.Platform.MaxY + l.Rise + liftClear }))
+            .Concat(shape.Lifts.Select(l => l.Platform with { MaxY = l.Platform.MaxY + l.Rise + limits.Move.Height }))
             .Concat(keepOff ?? Enumerable.Empty<Box>()).ToList();
         var routes = leaps.Select(leap => Playable(leap, planner.Ledges, shape.Solids, avoid, limits.Move)).OfType<GroundRoute>().ToList();
 
@@ -129,7 +135,7 @@ public static class GroundRoutes
         }
 
         bool walkOff = route.Leap.Move.JumpTicks == 0;
-        if (MathF.Abs(end.Y - planned.Y) > 0.05f || MathF.Abs(end.X - planned.X) > (walkOff ? WalkOffTolerance : LandingTolerance))
+        if (MathF.Abs(end.Y - planned.Y) > FloorTolerance || MathF.Abs(end.X - planned.X) > (walkOff ? WalkOffTolerance : LandingTolerance))
         {
             return string.Create(CultureInfo.InvariantCulture, $"landed at ({end.X:0.##}, {end.Y:0.##}) after {real.Count} ticks, " +
                                                                $"planned at ({planned.X:0.##}, {planned.Y:0.##}) after {plan.Count}");
@@ -148,7 +154,7 @@ public static class GroundRoutes
     }
 
     /// <summary>The farthest of the points of <paramref name="path"/> from the line of <paramref name="from"/>, and that point.</summary>
-    public static (float Distance, Vector2 At) Farthest(IReadOnlyList<Vector2> path, IReadOnlyList<Vector2> from)
+    private static (float Distance, Vector2 At) Farthest(IReadOnlyList<Vector2> path, IReadOnlyList<Vector2> from)
     {
         (float worst, Vector2 at) = (0f, path[0]);
         foreach (Vector2 p in path)
@@ -251,29 +257,3 @@ public static class GroundRoutes
     }
 }
 
-/// <summary>
-/// A ground route to play (<see cref="GroundRoutes"/>): the planner's <see cref="Leap"/>, where the real pilgrim starts
-/// (<see cref="Start"/>: a run-up behind a running take-off, the take-off itself for a standing one) and the floor it must land on.
-/// </summary>
-public sealed record GroundRoute(Leap Leap, Vector2 Start, Ledge Landing)
-{
-    /// <summary>The route in words, for a problem line.</summary>
-    public string What
-    {
-        get
-        {
-            GroundMove m = Leap.Move;
-            string move = m.JumpTicks switch
-            {
-                0 => "walking off",
-                < 0 => "a full jump",
-                _ => $"a jump cut after {m.JumpTicks} ticks",
-            };
-            string way = m.Dir switch { < 0 => " west", > 0 => " east", _ => " straight up" };
-            string dash = m.DashTick >= 0 ? $", an air dash at tick {m.DashTick}" : "";
-            Vector2 end = Leap.Path[^1];
-            return string.Create(CultureInfo.InvariantCulture,
-                $"{move}{way}{dash} from ({Leap.TakeOff.X:0.##}, {Leap.TakeOff.Y:0.##}) onto ({end.X:0.##}, {end.Y:0.##})");
-        }
-    }
-}

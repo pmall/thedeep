@@ -60,6 +60,8 @@ Sparks = 0.85
 
 [resource]
 script = ExtResource("1_tuning")
+BodyRadius = 0.35
+BodyHeight = 1.6
 RunSpeed = 7.0
 GroundAcceleration = 70.0
 GroundDeceleration = 80.0
@@ -91,6 +93,8 @@ GripLeapAwaySpeed = 6.5
 GripLeapUpFactor = 0.85
 GripRegrabDelay = 0.25
 GripPullAway = 0.5
+GripDropSpeed = 2.0
+GripLetGoSpeed = 1.5
 HarpoonRange = 9.0
 HarpoonAimCone = 1.2
 HarpoonMinDistance = 1.2

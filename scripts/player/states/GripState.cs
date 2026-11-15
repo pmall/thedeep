@@ -191,7 +191,7 @@ public sealed class GripState : PlayerState
         NVector2 up = Player.SurfaceUp;
         NVector2 along = GripMath.Tangent(up) * _speed;
         Player.StandUpright();
-        Player.Velocity = new Vector3(along.X + up.X * 1.5f, along.Y + up.Y * 1.5f, 0f);
+        Player.Velocity = new Vector3(along.X + up.X * Tuning.GripLetGoSpeed, along.Y + up.Y * Tuning.GripLetGoSpeed, 0f);
         Player.HoldOffGrip();
         return Player.States.Fall;
     }
@@ -204,7 +204,7 @@ public sealed class GripState : PlayerState
         if (up.Y < -0.5f)
         {
             // Under a ceiling: push off downward.
-            Player.Velocity = new Vector3(Player.CurrentInput.MoveX * Tuning.RunSpeed, -2f, 0f);
+            Player.Velocity = new Vector3(Player.CurrentInput.MoveX * Tuning.RunSpeed, -Tuning.GripDropSpeed, 0f);
             return Player.States.Fall;
         }
 

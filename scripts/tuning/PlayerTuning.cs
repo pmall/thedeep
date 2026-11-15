@@ -9,6 +9,11 @@ namespace TheDeep;
 [GlobalClass]
 public partial class PlayerTuning : Resource
 {
+    /// <summary>The body's capsule: its radius and its whole height, meters (the player's collision shape is made to it).</summary>
+    [ExportGroup("Body")]
+    [Export] public float BodyRadius { get; set; } = 0.35f;
+    [Export] public float BodyHeight { get; set; } = 1.6f;
+
     [ExportGroup("Run")]
     [Export] public float RunSpeed { get; set; } = 7f;
     [Export] public float GroundAcceleration { get; set; } = 70f;
@@ -69,6 +74,10 @@ public partial class PlayerTuning : Resource
     [Export] public float GripRegrabDelay { get; set; } = 0.25f;
     /// <summary>Held input pulls the pilgrim off a surface when its share along the surface's normal passes this (0 to 1).</summary>
     [Export] public float GripPullAway { get; set; } = 0.5f;
+    /// <summary>Dropping from under a ceiling: the downward speed it pushes off with, m/s.</summary>
+    [Export] public float GripDropSpeed { get; set; } = 2f;
+    /// <summary>Letting go of a surface: the speed away from it, m/s.</summary>
+    [Export] public float GripLetGoSpeed { get; set; } = 1.5f;
 
     /// <summary>How far from the pilgrim's center an anchor can be fired at, and how near it must not be.</summary>
     [ExportGroup("Harpoon")]
@@ -173,14 +182,14 @@ public partial class PlayerTuning : Resource
     /// <summary>The base moveset as the map's planner simulates it (<see cref="ReachPlanner"/>).</summary>
     public MoveLimits Move => new(RunSpeed, AirAcceleration, AirDeceleration, AirDrag, AirCarrySpeed, JumpHeight, JumpTimeToApex, JumpCutFactor,
         FallGravityMultiplier, ApexHangThreshold, ApexGravityMultiplier, MaxFallSpeed, DashDistance, DashDuration, DashExitSpeedFactor,
-        AirDashes, LedgeAssist: LedgeAssistHeight);
+        AirDashes, Width: 2f * BodyRadius, Height: BodyHeight, LedgeAssist: LedgeAssistHeight);
 
     /// <summary>The Harpoon group, as the planner simulates it.</summary>
     public HarpoonLimits Harpoon => new(HarpoonRange, HarpoonMinDistance, HarpoonZipSpeed, HarpoonZipAcceleration, HarpoonExitSpeedFactor,
         HarpoonExitLift);
 
     /// <summary>The Mag-grip group, as the planner simulates it.</summary>
-    public GripLimits Grip => new(GripLeapAwaySpeed, GripLeapUpFactor, GripRegrabDelay);
+    public GripLimits Grip => new(GripLeapAwaySpeed, GripLeapUpFactor, GripRegrabDelay, GripDropSpeed, GripLetGoSpeed);
 
     /// <summary>
     /// Every group the planner simulates, an arrival up through a hatch keeping at least <paramref name="climbRise"/> of a jump's

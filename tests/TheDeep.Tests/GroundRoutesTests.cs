@@ -11,9 +11,9 @@ public class GroundRoutesTests
     private static readonly PlannerLimits Limits = new(
         new MoveLimits(RunSpeed: 7f, AirAcceleration: 45f, AirDeceleration: 30f, AirDrag: 12f, AirCarrySpeed: 11.5f, JumpHeight: 3.2f, JumpTimeToApex: 0.38f, JumpCutFactor: 0.45f,
             FallGravityMultiplier: 1.6f, ApexHangThreshold: 1.5f, ApexGravityMultiplier: 0.55f, MaxFallSpeed: 20f,
-            DashDistance: 4.5f, DashDuration: 0.16f, DashExitSpeedFactor: 1f, AirDashes: 1),
+            DashDistance: 4.5f, DashDuration: 0.16f, DashExitSpeedFactor: 1f, AirDashes: 1, Width: 0.7f, Height: 1.6f),
         new HarpoonLimits(Range: 9f, MinDistance: 1.2f, ZipSpeed: 17f, ZipAcceleration: 110f, ExitSpeedFactor: 0.65f, ExitLift: 6f),
-        new GripLimits(LeapAwaySpeed: 6.5f, LeapUpFactor: 0.85f, RegrabDelay: 0.25f),
+        new GripLimits(LeapAwaySpeed: 6.5f, LeapUpFactor: 0.85f, RegrabDelay: 0.25f, DropSpeed: 2f, LetGoSpeed: 1.5f),
         WaterMotionTests.Water,
         Rise: 0.85f * JumpMath.TakeOffSpeed(3.2f, 0.38f));
 
@@ -62,6 +62,21 @@ public class GroundRoutesTests
             Assert.All(r.Leap.Path, p => Assert.False(Box.Around(p + new Vector2(0f, 0.8f), new Vector2(0.7f, 1.6f)).Grown(GroundRoutes.KeepOff)
                 .Overlaps(east.Threshold.Trigger)));
         }
+    }
+
+    [Fact]
+    public void RoutesKeepOffALiftsPathOnlyAsHighAsItCarries()
+    {
+        // A lift set flush in a long floor, rising half a meter: a jump high over it is a route, a flight through what it carries is not.
+        var lift = new LiftPath(new Box(0f, -0.5f, 2f, 0f), 0.5f);
+        var solids = new List<Box> { new(-20f, -2f, 0f, 0f), new(2f, -2f, 20f, 0f), new(0f, -2f, 2f, -0.5f), new(-21f, -2f, -20f, 20f), new(20f, -2f, 21f, 20f) };
+        var shape = new RoomShape(solids, new List<ExitShape>(), new List<Vector2>(), new List<Vector2>(), new List<LiftPath> { lift }, solids,
+            new List<Box>(), new List<Box>(), new List<(Box, Ability)>(), new List<Box>(), new List<Box>(), new Vector2(-10f, 0f));
+        List<GroundRoute> routes = GroundRoutes.Pick(shape, Limits, 20);
+        Assert.Contains(routes, r => r.Leap.Path.Any(p => p.X > 0f && p.X < 2f));
+        var carried = new Box(0f, -0.5f, 2f, lift.Rise + 1.6f);
+        Assert.All(routes, r => Assert.All(r.Leap.Path, p => Assert.False(Box.Around(p + new Vector2(0f, 0.8f), new Vector2(0.7f, 1.6f))
+            .Grown(GroundRoutes.KeepOff).Overlaps(carried))));
     }
 
     [Fact]

@@ -12,7 +12,7 @@ public class ReachPlannerTests
     private static readonly MoveLimits Limits = new(
         RunSpeed: 7f, AirAcceleration: 45f, AirDeceleration: 30f, AirDrag: 12f, AirCarrySpeed: 11.5f, JumpHeight: 3.2f, JumpTimeToApex: 0.38f, JumpCutFactor: 0.45f,
         FallGravityMultiplier: 1.6f, ApexHangThreshold: 1.5f, ApexGravityMultiplier: 0.55f, MaxFallSpeed: 20f,
-        DashDistance: 4.5f, DashDuration: 0.16f, DashExitSpeedFactor: 1f, AirDashes: 1);
+        DashDistance: 4.5f, DashDuration: 0.16f, DashExitSpeedFactor: 1f, AirDashes: 1, Width: 0.7f, Height: 1.6f);
 
     private static Box B(float x0, float y0, float x1, float y1) => new(x0, y0, x1, y1);
 
@@ -120,6 +120,24 @@ public class ReachPlannerTests
     }
 
     [Fact]
+    public void TheHarpoonFiresFromNoHigherThanAJumpRises()
+    {
+        // A sealed room: a slab 0.9 m over the head shuts the floor in, an anchor hangs over it. A jump bumps the slab's underside, so
+        // the Harpoon never fires from above it.
+        var solids = new[] { B(-10f, -2f, 10f, 0f), B(-11f, -2f, -10f, 20f), B(10f, -2f, 11f, 20f), B(-10f, 2.5f, 10f, 3f) };
+        var anchors = new[] { new Vector2(0f, 8f) };
+        var planner = new ReachPlanner(Limits, solids, Harpoon, anchors);
+        (HashSet<int> triggers, HashSet<int> ledges) = planner.Reach(Vector2.Zero, Vector2.Zero, new[] { B(-1f, 3.2f, 1f, 4f) });
+        Assert.DoesNotContain(0, triggers);
+        Assert.DoesNotContain(ledges, l => planner.Ledges[l].Y > 2.9f);
+
+        // With nothing over it, the top of a jump brings an anchor 10.2 m over the standing chest within range.
+        var open = new[] { B(-10f, -2f, 10f, 0f) };
+        Box anchor = B(-0.2f, 10.8f, 0.2f, 11.2f);
+        Assert.Contains(0, new ReachPlanner(Limits, open, Harpoon, new[] { new Vector2(0f, 11f) }).Reach(Vector2.Zero, Vector2.Zero, new[] { anchor }).Triggers);
+    }
+
+    [Fact]
     public void ALiftCarriesThePilgrimUpItsShaft()
     {
         // A hatch 20 m up, over a lift's platform set flush in the floor beside the start.
@@ -180,7 +198,7 @@ public class ReachPlannerTests
     }
 
     // Mag-grip's live tuning.
-    private static readonly GripLimits Grip = new(LeapAwaySpeed: 6.5f, LeapUpFactor: 0.85f, RegrabDelay: 0.25f);
+    private static readonly GripLimits Grip = new(LeapAwaySpeed: 6.5f, LeapUpFactor: 0.85f, RegrabDelay: 0.25f, DropSpeed: 2f, LetGoSpeed: 1.5f);
 
     private static bool Grips(IEnumerable<Box> solids, IEnumerable<Box> metal, Vector2 from, Box target) =>
         new ReachPlanner(Limits, solids, grip: Grip, metal: metal).Reach(from, Vector2.Zero, new[] { target }).Triggers.Contains(0);
@@ -248,5 +266,52 @@ public class ReachPlannerTests
         Box top = B(7f, 12.1f, 8f, 13f);
         Assert.False(Reaches(solids, new Vector2(-3f, 0f), top));
         Assert.True(Grips(solids, new[] { tower }, new Vector2(-3f, 0f), top));
+    }
+
+    private static List<Leap> Leaps(ReachPlanner planner, params Vector2[] from)
+    {
+        var leaps = new List<Leap>();
+        planner.Reach(from.Select(f => (f, Vector2.Zero, 0)), Array.Empty<Box>(), leaps.Add);
+        return leaps;
+    }
+
+    [Fact]
+    public void ALeapIsCleanOnlyWhenItLandsTouchingNothing()
+    {
+        // A jump straight up lands where it took off, touching nothing.
+        var open = new[] { B(-10f, -2f, 30f, 0f) };
+        Leap up = Leaps(new ReachPlanner(Limits, open), Vector2.Zero).First(l => l.Move == new GroundMove(0, -1, -1));
+        Assert.True(up.Clean);
+        Assert.Equal(up.From, up.Lands);
+
+        // Under a low roof every full jump bumps it.
+        var roofed = new[] { B(-10f, -2f, 30f, 0f), B(-10f, 2.5f, 30f, 3f) };
+        Assert.All(Leaps(new ReachPlanner(Limits, roofed), Vector2.Zero).Where(l => l.Move.JumpTicks < 0), l => Assert.False(l.Clean));
+
+        // A flight into heat ends there, landing nowhere.
+        List<Leap> burned = Leaps(new ReachPlanner(Limits, open, hazards: new[] { B(2f, 0f, 4f, 10f) }), Vector2.Zero);
+        Assert.Contains(burned, l => l.Lands < 0);
+        Assert.All(burned.Where(l => l.Lands < 0), l => Assert.False(l.Clean));
+    }
+
+    [Fact]
+    public void AClumsyPilgrimTakesOffInsideALedgesEnds()
+    {
+        // A floor 10 m long and a pillar 0.5 m wide over a pit: from 0.3 m inside the floor's ends, and from the pillar's middle.
+        var solids = new[] { B(-10f, -2f, 0f, 0f), B(5f, -2f, 5.5f, 0f), B(-20f, -30f, 20f, -29f) };
+        foreach ((float margin, float from, float to) in new[] { (0f, -10f, 0f), (0.3f, -9.7f, -0.3f) })
+        {
+            var planner = new ReachPlanner(Limits with { EdgeMargin = margin }, solids);
+            List<Leap> leaps = Leaps(planner, new Vector2(-5f, 0f), new Vector2(5.25f, 0f));
+            var floor = leaps.Where(l => planner.Ledges[l.From] is { Y: 0f, MaxX: 0f }).Select(l => l.TakeOff.X).ToList();
+            Assert.Equal(from, floor.Min(), 3);
+            Assert.Equal(to, floor.Max(), 3);
+            var pillar = leaps.Where(l => planner.Ledges[l.From] is { Y: 0f, MinX: 5f }).ToList();
+            Assert.NotEmpty(pillar);
+            if (margin > 0f)
+            {
+                Assert.All(pillar, l => Assert.Equal(5.25f, l.TakeOff.X, 3));
+            }
+        }
     }
 }
