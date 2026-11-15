@@ -6,7 +6,7 @@ The owner's plan and the open items, in order, opened by where the work stands. 
 
 - **Stage:** A, the prototype (`docs/roadmap.md#stage-prototype`).
 - **Current item:** the deep code review (`docs/roadmap.md#code-review`); then the pilgrim (`docs/roadmap.md#pilgrim`).
-- **Next step:** map the code into review areas and review the first: the Godot-free core.
+- **Next step:** the first area left in `docs/roadmap.md#review-areas`.
 - **Waiting on the owner:** the Blender MCP installed (needed later to model and rig the pilgrim), and the stage's sign-off play: `docs/roadmap.md#to-play`.
 
 ## The plan <a id="direction"></a>
@@ -29,6 +29,26 @@ A room gets the attention its bricks need, no more. Bosses, machines and law bre
 The open items, in order (owner: the world, its bricks and its look are finished before the character):
 
 1. **The deep code review** <a id="code-review"></a> (owner: before the character; `instructions/principles.md` is its general guide). Every line of the project read with fresh eyes, area by area (the core, the game layer, the rooms and their bricks, the UI, shaders, tools, tests), held to every principle: bricks, not rooms (`instructions/principles.md#bricks`); the engine a thin layer over a pure core (`instructions/principles.md#engine-detail`); worlds as data (`instructions/principles.md#data-first`); types that tell the truth (`instructions/principles.md#types-truth`); proven, not hoped (`instructions/principles.md#proven`); performance as a rule (`instructions/principles.md#performance`); small and readable (`instructions/principles.md#small-readable`). In that light, every defect is found and fixed: correctness bugs, dead code, duplication, breaks of `instructions/godot-csharp.md`, docblocks that don't match the code. Each finding is verified before it is fixed, and fixed in its own coherent commit; one too big for the review becomes a roadmap item. Done when every area holds to the principles, every finding is fixed, and the full check passes.
+   **The areas still to review** <a id="review-areas"></a>, in order, each deleted once its findings are fixed and the full check passes:
+   - `core/map/`: the reach planner and the ground (`ReachPlanner`, `GroundRoutes`, `GroundRules`, `SolidGrid`, `RoomShape`, `GridSnap`, `ExitMath`, `ExitSide`).
+   - `core/map/`: the graph and its proof (`MapSolver`, `WorldCheck`, `MapDraft`, `MapGraph`, `MapState`, `Requirement`, `ItemSet`, `Need`, `MapTargets`, `RoomTable`, `MapLayout`, `MapDrawing`).
+   - `core/map/` seams and hazards (`SeamFrame`, `SeamCheck`, `Threshold`, `HeatGate`, `SlagBasin`, `SealedArena`, `Standpipe`) and `core/kit/`.
+   - `core/rooms/`, `core/props/`, `core/util/`, `core/surfaces/`, `core/biome/`.
+   - `core/player/`, `core/abilities/`, `core/camera/`, `core/tuning/`, `core/combat/`.
+   - `core/machines/`, `core/parts/`.
+   - `core/ui/`, `core/dialogue/`, `core/items/`, `core/game/`, `core/capture/`, with `scripts/text/`, `scripts/dialogue/`, `scripts/items/`.
+   - `scripts/player/`, `scripts/camera/`, `scripts/abilities/`, `scripts/combat/`, `scripts/tuning/`.
+   - `scripts/rooms/`, `scripts/world/`, `scripts/map/`, `scripts/surfaces/`.
+   - `scripts/kit/`, `scripts/props/`, `scripts/parts/`.
+   - `scripts/machines/`, `scripts/game/`, `scripts/Main.cs`.
+   - `scripts/ui/`, `scripts/engine/`, `scripts/biome/`, `scripts/capture/`.
+   - `scripts/debug/`, the world checks (`RoomValidator`, `TravelValidator`, `RouteCheck`, `BurnProbe`, `HeatCheck`, `SpeciesValidator`, `ExportReach`, `RequiredExports`).
+   - `scripts/debug/`, the other drivers.
+   - `assets/shaders/`.
+   - `tests/TheDeep.Tests/`, the map, kit, surfaces and rooms tests.
+   - `tests/TheDeep.Tests/`, the other tests.
+   - `tools/` and its analyzers.
+   - The content: `scenes/`, `resources/`, `worlds/`, `project.godot`.
 2. **The pilgrim, from zero** <a id="pilgrim"></a> (owner: last, once the world, its bricks and its look are finished). The current character, its procedural animation and its halo are thrown away. The bar is *Ori*'s animation (a 3D-rendered character) with *NieR: Automata*'s dynamism; the look is `docs/art-direction.md#character`. First the environment for top-quality animation, then the character: modeled and rigged in Blender (the owner installs the Blender MCP), animated from real motion capture (free libraries and Mixamo first), keyed by hand, blended in the game with its feet held to the ground. Every move and ability: run, jump, land, dash, air dash, ledge assist, grip and its corners, harpoon throw and zip, bore and dive, swim, sink and rise, the strikes, hurt, death, rest, taking a relic. Its secondary motion is stage D's. Done when every state reads at a glance in motion, in the reels and in the owner's play.
 
 **To play** <a id="to-play"></a>: what the owner's eye alone can judge, each line deleted once they have said. An item closes on what the agent can verify; the owner's word reopens it.
