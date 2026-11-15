@@ -16,17 +16,17 @@ public readonly record struct SolverState(string Room, Ability Owned, ItemSet He
 }
 
 /// <summary>
-/// A place in the game as the inside solver sees it: a room, the way the pilgrim came in (an exit's name; "" for waking at the
-/// start), and the abilities owned and items held on arriving.
+/// A place in the game as the inside solver sees it: a room, the way the pilgrim came in, and the abilities owned and items held on
+/// arriving.
 /// </summary>
-public readonly record struct WayState(string Room, string Entry, Ability Owned, ItemSet Held)
+public readonly record struct WayState(string Room, WayEntry Entry, Ability Owned, ItemSet Held)
 {
     /// <summary>The place, arrived at holding no item.</summary>
-    public WayState(string room, string entry, Ability owned) : this(room, entry, owned, ItemSet.Empty)
+    public WayState(string room, WayEntry entry, Ability owned) : this(room, entry, owned, ItemSet.Empty)
     {
     }
 
-    public override string ToString() => $"{Room} via {(Entry == "" ? "the start" : Entry)}{MapSolver.Holding(Owned, Held)}";
+    public override string ToString() => $"{Room} via {Entry}{MapSolver.Holding(Owned, Held)}";
 }
 
 /// <summary>
@@ -187,27 +187,35 @@ public static class MapSolver
     /// it from each way in, with the abilities owned (<paramref name="inside"/>): which exits, which relics, the goal. Explores every
     /// (room, way in, abilities) reachable from waking in the start room; from each, some goal must stay reachable. Catches what the
     /// room-level <see cref="Solve"/> can't: a drop into the part of a room that only an ability leads out of, a relic behind a wall.
-    /// <paramref name="inside"/> is called once per state, from several threads at once.
+    /// <paramref name="inside"/> is called once per state, from several threads at once; it answers null for a way in the room doesn't
+    /// have (an edge whose arrival exit is missing), and that way is not taken.
     /// </summary>
-    public static InsideReport SolveInside(MapGraph map, Func<WayState, RoomReach> inside)
+    public static InsideReport SolveInside(MapGraph map, Func<WayState, RoomReach?> inside)
     {
-        var start = new WayState(map.Start, "", Ability.None, ItemSet.Empty);
+        var start = new WayState(map.Start, new WayEntry.Waking(), Ability.None, ItemSet.Empty);
         var parent = new Dictionary<WayState, WayState?> { [start] = null };
         var successors = new Dictionary<WayState, List<WayState>>();
         var goals = new HashSet<WayState>();
         var taken = new HashSet<(string Room, Ability Ability)>();
         var held = new HashSet<(string Room, string Item)>();
+        var missing = new HashSet<WayState>();
         var level = new List<WayState> { start };
         while (level.Count > 0)
         {
             // One breadth-first level at a time, the rooms walked in parallel (the planner is the cost).
-            var reach = new RoomReach[level.Count];
+            var reach = new RoomReach?[level.Count];
             System.Threading.Tasks.Parallel.For(0, level.Count, i => reach[i] = inside(level[i]));
             var next = new List<WayState>();
             for (int i = 0; i < level.Count; i++)
             {
                 WayState s = level[i];
-                RoomReach r = reach[i];
+                if (reach[i] is not { } r)
+                {
+                    parent.Remove(s);
+                    missing.Add(s);
+                    continue;
+                }
+
                 if (r.Goal)
                 {
                     goals.Add(s);
@@ -226,9 +234,9 @@ public static class MapSolver
                 var after = new List<WayState>();
                 foreach (MapEdge edge in map.From(s.Room).Where(e => r.Exits.Contains(e.FromExit) && e.Requires.IsMetBy(r.Owned, r.Held)))
                 {
-                    var t = new WayState(edge.To, edge.ToExit, r.Owned, r.Held);
+                    var t = new WayState(edge.To, new WayEntry.Through(edge.ToExit), r.Owned, r.Held);
                     after.Add(t);
-                    if (!parent.ContainsKey(t))
+                    if (!parent.ContainsKey(t) && !missing.Contains(t))
                     {
                         parent[t] = s;
                         next.Add(t);
@@ -274,7 +282,7 @@ public static class MapSolver
             GoalReachable = good.Contains(start),
             Softlocks = parent.Keys.Where(s => !good.Contains(s))
                 .Select(s => (s, (IReadOnlyList<WayState>)PathOf(s)))
-                .OrderBy(p => p.Item2.Count).ThenBy(p => p.s.Room, StringComparer.Ordinal).ThenBy(p => p.s.Entry, StringComparer.Ordinal)
+                .OrderBy(p => p.Item2.Count).ThenBy(p => p.s.Room, StringComparer.Ordinal).ThenBy(p => p.s.Entry.ToString(), StringComparer.Ordinal)
                 .ThenBy(p => p.s.Owned).ThenBy(p => p.s.Held.ToString(), StringComparer.Ordinal).ToList(),
             UntakenRelics = map.Relics.Where(relic => !taken.Contains((relic.Room, relic.Ability))).ToList(),
             UntakenItems = map.Items.Where(item => !held.Contains((item.Room, item.Item))).ToList(),

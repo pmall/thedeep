@@ -131,6 +131,20 @@ public class WorldCheckTests
     }
 
     [Fact]
+    public void AWayIntoAnExitTheRoomLacksIsReportedAndNotTaken()
+    {
+        var world = new WorldCheck(Limits);
+        world.AddRoom("Hall", Min, Max, Room(new[] { Doorway("East", 9.5f) }, start: true));
+        world.AddRoom("Sanctum", Min, Max, Room(new[] { Doorway("West", -9.5f) }, goal: true));
+        world.AddExit(new MapEdge("Hall", "East", "Sanctum", "Nowhere", Requirement.None), new Vector2(9.5f, 1.5f), null);
+        world.AddExit(new MapEdge("Sanctum", "West", "Hall", "East", Requirement.None), new Vector2(-9.5f, 1.5f), new Vector2(9.5f, 1.5f));
+        world.Graph.AddGoal("Sanctum");
+        world.Check("Hall", MapTargets.None, report: false);
+        Assert.Contains("map: Hall:East leads to Sanctum:Nowhere, which is no exit of Sanctum (the room check walks no way in there)", world.Problems);
+        Assert.Contains("map inside the rooms: Sanctum is never entered walking the rooms from where the pilgrim comes in", world.Problems);
+    }
+
+    [Fact]
     public void RoomsThatOverlapOnTheMapAreAProblem()
     {
         var world = new WorldCheck(Limits);

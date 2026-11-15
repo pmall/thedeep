@@ -105,6 +105,11 @@ public sealed class WorldCheck
         }
 
         _problems.AddRange(Graph.ItemProblems(_sealed.Select(s => s.Requires)).Select(p => $"map: {p}"));
+        foreach (MapEdge e in Graph.Edges.Where(e => _shapes.TryGetValue(e.To, out RoomShape? to) && !to.Exits.Any(x => x.Name == e.ToExit)))
+        {
+            _problems.Add($"map: {e.From}:{e.FromExit} leads to {e.To}:{e.ToExit}, which is no exit of {e.To} (the room check walks no way in there)");
+        }
+
         CheckGeometry();
         string inside = CheckInside();
         MapReport solved = MapSolver.Solve(Graph);
@@ -375,8 +380,9 @@ public sealed class WorldCheck
     /// </summary>
     private string CheckInside()
     {
-        var reaches = new ConcurrentDictionary<WayState, RoomReach>();
-        InsideReport report = MapSolver.SolveInside(Graph, state => reaches[state] = Inside(state, clumsy: false));
+        var reaches = new ConcurrentDictionary<WayState, (WayIn Way, RoomReach Reach)>();
+        InsideReport report = MapSolver.SolveInside(Graph,
+            state => Way(state) is { } way ? (reaches[state] = (way, Inside(state, way, clumsy: false))).Reach : null);
         CheckSlack(reaches);
 
         foreach (MapItem item in report.UntakenItems)
@@ -408,13 +414,22 @@ public sealed class WorldCheck
                "a clumsier pilgrim reaches all the same";
     }
 
-    /// <summary>What the planner reaches in a room from the way in of <paramref name="state"/>, taking the relics it reaches there.</summary>
-    private RoomReach Inside(WayState state, bool clumsy)
+    /// <summary>The way into the room of <paramref name="state"/>; null when the room has no exit of the name it arrives through (<see cref="Check"/> reports it).</summary>
+    private WayIn? Way(WayState state)
     {
         RoomShape shape = _shapes[state.Room];
-        WayIn way = state.Entry == ""
-            ? new WayIn("waking", shape.Spawn, Vector2.Zero, 0, -1, true, Ability.None)
-            : Arriving(shape, shape.Exits.FindIndex(x => x.Name == state.Entry), Requirement.None);
+        return state.Entry switch
+        {
+            WayEntry.Waking => new WayIn("waking", shape.Spawn, Vector2.Zero, 0, -1, true, Ability.None),
+            WayEntry.Through through when shape.Exits.FindIndex(x => x.Name == through.Exit) is var index and >= 0 => Arriving(shape, index, Requirement.None),
+            _ => null,
+        };
+    }
+
+    /// <summary>What the planner reaches in the room of <paramref name="state"/> from <paramref name="way"/>, taking the relics it reaches there.</summary>
+    private RoomReach Inside(WayState state, WayIn way, bool clumsy)
+    {
+        RoomShape shape = _shapes[state.Room];
         int relics = shape.Exits.Count, items = relics + shape.Relics.Count, goals = items + shape.Items.Count;
         Ability owned = state.Owned;
         while (true)
@@ -441,17 +456,17 @@ public sealed class WorldCheck
     /// which must reach every way out, relic, item and goal the exact one does. A way only near-perfect play takes is a problem, once
     /// per room, way in and what is missed (with the fewest abilities).
     /// </summary>
-    private void CheckSlack(ConcurrentDictionary<WayState, RoomReach> reaches)
+    private void CheckSlack(ConcurrentDictionary<WayState, (WayIn Way, RoomReach Reach)> reaches)
     {
         var states = reaches.Keys.ToList();
         var clumsy = new RoomReach[states.Count];
-        Parallel.For(0, states.Count, i => clumsy[i] = Inside(states[i], clumsy: true));
-        var seen = new HashSet<(string, string, string)>();
+        Parallel.For(0, states.Count, i => clumsy[i] = Inside(states[i], reaches[states[i]].Way, clumsy: true));
+        var seen = new HashSet<(string, WayEntry, string)>();
         var lines = new List<string>();
         foreach (int i in Enumerable.Range(0, states.Count).OrderBy(i => BitOperations.PopCount((uint)states[i].Owned)))
         {
             WayState s = states[i];
-            RoomReach exact = reaches[s], loose = clumsy[i];
+            RoomReach exact = reaches[s].Reach, loose = clumsy[i];
             var missed = exact.Exits.Except(loose.Exits).Select(x => $"exit {x}").ToList();
             Ability lost = exact.Owned & ~loose.Owned;
             if (lost != Ability.None)
