@@ -83,7 +83,7 @@ public partial class PowerUpCheck : Node
                   && Player.Vitality.Current == Player.Vitality.Max && Player.InControl && Banner.Current == strong && Banner.Waiting == 1));
         _steps.Add(new("both are in the save", 0.5f,
             () => Input.ActionRelease(InputActions.MoveLeft),
-            () => Session.Save.Strength == StrengthAmount && Session.Save.Defense == _defense));
+            () => Session.SavedProwess == new Prowess(StrengthAmount, _defense)));
         _steps.Add(new("the strength banner is read whole for its full time, then the defense one shows", 8f,
             () => { },
             () => _read.Count == 2 && _read[0].Said == strong && _read[0].Seconds >= Hold(strong) - 0.1f && _read[1].Said == defended

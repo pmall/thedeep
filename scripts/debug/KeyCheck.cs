@@ -97,7 +97,7 @@ public partial class KeyCheck : Node
                 Input.ActionPress(InputActions.MoveLeft);
             },
             () => Player.Items.Holds(Key) && Player.InControl && World.Room.All<ItemPickup>().Where(p => p.Item.Id == Key).All(p => p.Taken)
-                  && Session.Save.Items.Contains(Key) && Session.Save.Collected.Any(c => c.StartsWith($"{Checked.ItemRoom}/", StringComparison.Ordinal))));
+                  && Session.SavedItems.Contains(Key) && World.Room.All<ItemPickup>().Where(p => p.Item.Id == Key).All(p => Session.Done(p.NameText()))));
         _steps.Add(new($"back in the {Checked.DoorRoom} holding it, coming near the door opens it", 3f,
             () =>
             {
@@ -118,7 +118,7 @@ public partial class KeyCheck : Node
 
         _steps.Add(new($"and the {Checked.DoorRoom} loaded again finds it open, remembered", 1f,
             () => { Input.ActionRelease(Toward); Input.ActionRelease(Back); Load(Checked.DoorRoom); },
-            () => Door is { Opened: true } door && door.Gate.Raised && Session.Save.Collected.Contains($"{Checked.DoorRoom}/{door.NameText()}")));
+            () => Door is { Opened: true } door && door.Gate.Raised && Session.Done(Checked.DoorRoom, door.NameText())));
         Next();
     }
 

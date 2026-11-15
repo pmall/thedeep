@@ -121,7 +121,7 @@ public partial class DialogueCheck : Node
             }));
         _steps.Add(new("the pilgrim is free, the box closed, the conversation remembered", 1f,
             () => { },
-            () => Player.InControl && !Box.IsOpen && lamplighter.Spent && Session.Save.Collected.Contains($"{World.RoomName}/{lamplighter.NameText()}")
+            () => Player.InControl && !Box.IsOpen && lamplighter.Spent && Session.Done(World.RoomName, lamplighter.NameText())
                   && _speakers.Count == lines && _speakers.All(name => name.Length > 0) && _sizes.Count == 1 && _covered.Count == 0));
         _steps.Add(new("and it is not offered again", 1f,
             () => { },

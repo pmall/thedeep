@@ -95,7 +95,7 @@ public partial class CombatCheck : Node
                 Player.Respawn(new Vector3(4.5f, 0f, 0f), 1);
                 Player.TakeHit(1, new System.Numerics.Vector2(10f, 0f));
             },
-            () => Session.Save.Shrine == "Shrine" && Player.Vitality.Current == Player.Vitality.Max && _ticks > 57,
+            () => Session.RestedShrine == "Shrine" && Player.Vitality.Current == Player.Vitality.Max && _ticks > 57,
             () =>
             {
                 // Pressed once the pilgrim has landed from the blow's knockback, back by the shrine.

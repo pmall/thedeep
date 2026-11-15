@@ -115,7 +115,7 @@ public partial class ArenaCheck : Node
                     machine.TakeHit(999, machine.PlanePosition.X - 1f, 0f);
                 }
             },
-            () => arena.Won && arena.Gates.All(g => g.Raised) && Session.Save.Collected.Contains($"{_room}/{arena.NameText()}")));
+            () => arena.Won && arena.Gates.All(g => g.Raised) && Session.Done(_room, arena.NameText())));
         _steps.Add(new("the room loaded again holds no foe, its gates up", 1f,
             () => World.Load(GD.Load<PackedScene>(World.RoomPath(_room))),
             () => Fight is { Won: true } again && again.Gates.All(g => g.Raised) && again.Foes.All(m => !m.Visible)));
