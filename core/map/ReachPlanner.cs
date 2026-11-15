@@ -41,9 +41,10 @@ public sealed record HarpoonLimits(float Range, float MinDistance, float ZipSpee
 
 /// <summary>
 /// Mag-grip's numbers (from <c>player_tuning.tres</c>), for a planner that may also walk on metal: the leap off a wall (speed away,
-/// share of a jump's take-off upward) and how long after letting go the body can't grip again.
+/// share of a jump's take-off upward), how long after letting go the body can't grip again, the downward speed of a drop from under
+/// a ceiling and the speed away from the surface on letting go (m/s).
 /// </summary>
-public sealed record GripLimits(float LeapAwaySpeed, float LeapUpFactor, float RegrabDelay);
+public sealed record GripLimits(float LeapAwaySpeed, float LeapUpFactor, float RegrabDelay, float DropSpeed, float LetGoSpeed);
 
 /// <summary>An axis-aligned solid on the play plane.</summary>
 public readonly record struct Box(float MinX, float MinY, float MaxX, float MaxY)
@@ -254,8 +255,8 @@ public sealed class ReachPlanner
             for (int a = 0; a < harpoon.Anchors.Count; a++)
             {
                 Vector2 anchor = harpoon.Anchors[a];
-                float d = Vector2.Distance(center, anchor);
-                if (d <= harpoon.Limits.Range && d >= harpoon.Limits.MinDistance && !reachedAnchors.Contains(a) && InSight(center, anchor))
+                if (HarpoonAim.InReach(Vector2.Distance(center, anchor), harpoon.Limits.Range, harpoon.Limits.MinDistance) && !reachedAnchors.Contains(a)
+                    && InSight(center, anchor))
                 {
                     reachedAnchors.Add(a);
                     anchorQueue.Enqueue((anchor, center));
@@ -267,10 +268,10 @@ public sealed class ReachPlanner
         var grippedParts = new HashSet<int>();
         var gripQueue = new Queue<int>();
 
-        // With Mag-grip: gripping a metal surface at a pose (feet, up) walks the whole part of the surface connected to it.
-        void Grab(Vector2 feet, Vector2 up)
+        // With Mag-grip: gripping a metal surface at a pose walks the whole part of the surface connected to it.
+        void Grab(GripPose pose)
         {
-            int node = GripNodeNear(feet, up);
+            int node = GripNodeNear(pose.Feet, pose.Up);
             if (node >= 0 && grippedParts.Add(_gripNodes[node].Part))
             {
                 gripQueue.Enqueue(_gripNodes[node].Part);
@@ -455,7 +456,7 @@ public sealed class ReachPlanner
     /// off (or letting go of) its walls and dropping from under its ceilings, every meter or so.
     /// </summary>
     private void Walk(List<int> part, GripLimits g, IReadOnlyList<Box> triggers, HashSet<int> reachedTriggers, Action<int> land, Action<Vector2> sink,
-        Action<Vector2, Vector2> grab)
+        Action<GripPose> grab)
     {
         int regrab = (int)MathF.Ceiling(g.RegrabDelay / Dt);
         float centerHeight = _m.Height * 0.5f;
@@ -482,8 +483,7 @@ public sealed class ReachPlanner
                 continue;
             }
 
-            // Upright again, turned about the body's center (GripMath.Upright).
-            Vector2 upright = node.Feet + node.Up * centerHeight - new Vector2(0f, centerHeight);
+            Vector2 upright = GripMath.Upright(node.Feet, node.Up, centerHeight);
             foreach (int dir in new[] { -1, 0, 1 })
             {
                 if (node.Up.Y < -0.5f)
@@ -491,7 +491,7 @@ public sealed class ReachPlanner
                     // Under a ceiling: the leap pushes off downward.
                     foreach (int dash in new[] { -1, 8 })
                     {
-                        Simulate(upright, new Vector2(dir * _m.RunSpeed, -2f), dir, 0, dash, triggers, reachedTriggers, land, sink, grab,
+                        Simulate(upright, new Vector2(dir * _m.RunSpeed, -g.DropSpeed), dir, 0, dash, triggers, reachedTriggers, land, sink, grab,
                             airborne: true, gripFrom: regrab);
                     }
 
@@ -504,7 +504,7 @@ public sealed class ReachPlanner
                     Simulate(upright, leap, dir, 0, dash, triggers, reachedTriggers, land, sink, grab, airborne: true, gripFrom: regrab);
                 }
 
-                Simulate(upright, node.Up * 1.5f, dir, 0, -1, triggers, reachedTriggers, land, sink, grab, airborne: true, gripFrom: regrab);
+                Simulate(upright, node.Up * g.LetGoSpeed, dir, 0, -1, triggers, reachedTriggers, land, sink, grab, airborne: true, gripFrom: regrab);
             }
         }
     }
@@ -658,7 +658,7 @@ public sealed class ReachPlanner
 
     /// <summary>Pulled from <paramref name="from"/> to <paramref name="anchor"/> (the body's center), then letting go there.</summary>
     private void LetGo(Vector2 anchor, Vector2 from, HarpoonLimits h, IReadOnlyList<Box> triggers, HashSet<int> reachedTriggers, Action<int> land,
-        Action<Vector2> sink, Action<Vector2, Vector2> grab)
+        Action<Vector2> sink, Action<GripPose> grab)
     {
         float distance = Vector2.Distance(from, anchor);
         float speed = MathF.Min(h.ZipSpeed, MathF.Sqrt(2f * h.ZipAcceleration * distance));
@@ -738,7 +738,7 @@ public sealed class ReachPlanner
     /// on, floating, until it settles on the float line (a landing on that swim ledge), or with Ballast reports where it went in.
     /// </summary>
     private void Simulate(Vector2 start, Vector2 velocity, int dir, int jumpTicks, int dashTick, IReadOnlyList<Box> triggers,
-        HashSet<int> reachedTriggers, Action<int> land, Action<Vector2> sink, Action<Vector2, Vector2> grab, bool airborne = false,
+        HashSet<int> reachedTriggers, Action<int> land, Action<Vector2> sink, Action<GripPose> grab, bool airborne = false,
         int gripFrom = 0, Trace? trace = null)
     {
         Vector2 p = start, v = velocity;
@@ -862,10 +862,10 @@ public sealed class ReachPlanner
                 }
                 if (grips && dir != 0 && MathF.Sign(pushX) == dir && _metal.Contains(solidX))
                 {
-                    // Pushing into a metal wall: onto it, the body turning about its center (GripMath.OntoWall). The trajectory goes
-                    // on too, sliding down the wall (a pilgrim that lets the stick go a moment doesn't grip).
+                    // Pushing into a metal wall: onto it. The trajectory goes on too, sliding down the wall (a pilgrim that lets the
+                    // stick go a moment doesn't grip).
                     Box wall = _solids[solidX];
-                    grab(new Vector2(dir > 0 ? wall.MinX : wall.MaxX, p.Y + _m.Height * 0.5f), new Vector2(-dir, 0f));
+                    grab(GripMath.OntoWall(p, _m.Height * 0.5f, dir > 0 ? wall.MinX : wall.MaxX, new Vector2(-dir, 0f)));
                 }
             }
 
@@ -873,8 +873,8 @@ public sealed class ReachPlanner
             p.Y = MoveAxis(p, v.Y * Dt, horizontal: false, out bool hitY, out int solidY);
             if (hitY && grips && pushY > 0f && _metal.Contains(solidY))
             {
-                // Rising into a metal ceiling: hanging under it (GripMath.OntoCeiling); or not, bumping it (as above).
-                grab(new Vector2(p.X, _solids[solidY].MinY), new Vector2(0f, -1f));
+                // Rising into a metal ceiling: hanging under it; or not, bumping it (as above).
+                grab(GripMath.OntoCeiling(p, _solids[solidY].MinY));
             }
 
             if (!hitY || v.Y >= 0f)

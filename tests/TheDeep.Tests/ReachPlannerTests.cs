@@ -198,7 +198,7 @@ public class ReachPlannerTests
     }
 
     // Mag-grip's live tuning.
-    private static readonly GripLimits Grip = new(LeapAwaySpeed: 6.5f, LeapUpFactor: 0.85f, RegrabDelay: 0.25f);
+    private static readonly GripLimits Grip = new(LeapAwaySpeed: 6.5f, LeapUpFactor: 0.85f, RegrabDelay: 0.25f, DropSpeed: 2f, LetGoSpeed: 1.5f);
 
     private static bool Grips(IEnumerable<Box> solids, IEnumerable<Box> metal, Vector2 from, Box target) =>
         new ReachPlanner(Limits, solids, grip: Grip, metal: metal).Reach(from, Vector2.Zero, new[] { target }).Triggers.Contains(0);

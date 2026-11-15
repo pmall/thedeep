@@ -65,6 +65,10 @@ public partial class PlayerTuning : Resource
     [Export] public float GripLeapUpFactor { get; set; } = 0.85f;
     /// <summary>After letting go or leaping off, the same surface can't be gripped again for this long.</summary>
     [Export] public float GripRegrabDelay { get; set; } = 0.25f;
+    /// <summary>Dropping from under a ceiling: the downward speed it pushes off with, m/s.</summary>
+    [Export] public float GripDropSpeed { get; set; } = 2f;
+    /// <summary>Letting go of a surface: the speed away from it, m/s.</summary>
+    [Export] public float GripLetGoSpeed { get; set; } = 1.5f;
 
     /// <summary>How far from the pilgrim's center an anchor can be fired at, and how near it must not be.</summary>
     [ExportGroup("Harpoon")]
@@ -174,7 +178,7 @@ public partial class PlayerTuning : Resource
         HarpoonExitLift);
 
     /// <summary>The Mag-grip group, as the planner simulates it.</summary>
-    public GripLimits Grip => new(GripLeapAwaySpeed, GripLeapUpFactor, GripRegrabDelay);
+    public GripLimits Grip => new(GripLeapAwaySpeed, GripLeapUpFactor, GripRegrabDelay, GripDropSpeed, GripLetGoSpeed);
 
     /// <summary>
     /// Every group the planner simulates, an arrival up through a hatch keeping at least <paramref name="climbRise"/> of a jump's
