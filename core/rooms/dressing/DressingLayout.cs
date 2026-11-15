@@ -76,7 +76,7 @@ public static class DressingLayout
             }
 
             bool toppled = !previousToppled && Hash01(seed, 3 * i + 2) < toppleChance;
-            slots.Add(new DressingSlot(i, Math.Clamp(variant, 0, Math.Max(0, variants - 1)), toppled));
+            slots.Add(new DressingSlot(i, variant, toppled));
             previousVariant = variant;
             previousToppled = toppled;
         }
