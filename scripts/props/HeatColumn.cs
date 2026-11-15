@@ -220,10 +220,7 @@ public partial class HeatColumn : Node3D
 
     public override void _Process(double delta)
     {
-        if (_sheet is not null)
-        {
-            ShowStrength(Player is { } player && player.Abilities.Has(Ability.HeatPlating) ? PlatedStrength : 1f);
-        }
+        ShowStrength(Player is { } player && player.Abilities.Has(Ability.HeatPlating) ? PlatedStrength : 1f);
     }
 
     public override void _PhysicsProcess(double delta)
