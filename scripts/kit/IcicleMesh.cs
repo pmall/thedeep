@@ -20,5 +20,5 @@ public partial class IcicleMesh : KitMesh
     /// <summary>1: mostly short ones, now and then a long one; 0: all full length (a frozen fall).</summary>
     [Export(PropertyHint.Range, "0,1")] public float Spread { get => _spread; set { _spread = value; RequestUpdate(); } }
 
-    protected override void Build(MeshBuilder builder) => KitShapes.Icicles(builder, Width, Length, Count, Seed, Spread);
+    protected override void Build(MeshBuilder builder) => DebrisShapes.Icicles(builder, Width, Length, Count, Seed, Spread);
 }

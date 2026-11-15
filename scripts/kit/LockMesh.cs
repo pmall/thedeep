@@ -4,7 +4,7 @@ namespace TheDeep;
 
 /// <summary>
 /// Prop piece: a key lock's round boss, facing the camera with its back on the origin's plane: housing, rim and studs
-/// (<see cref="PropShapes.Boss"/>). A <see cref="KeyholeMesh"/> sits in its face.
+/// (<see cref="LockShapes.Boss"/>). A <see cref="KeyholeMesh"/> sits in its face.
 /// </summary>
 [GlobalClass]
 public partial class LockMesh : KitMesh
@@ -17,5 +17,5 @@ public partial class LockMesh : KitMesh
     [Export] public float Depth { get => _depth; set { _depth = value; RequestUpdate(); } }
     [Export] public int Studs { get => _studs; set { _studs = value; RequestUpdate(); } }
 
-    protected override void Build(MeshBuilder builder) => PropShapes.Boss(builder, Radius, Depth, Studs);
+    protected override void Build(MeshBuilder builder) => LockShapes.Boss(builder, Radius, Depth, Studs);
 }

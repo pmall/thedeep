@@ -2,7 +2,7 @@ using Godot;
 
 namespace TheDeep;
 
-/// <summary>Kit piece: a stack of shelves standing on its origin (<see cref="KitShapes.Stack"/>), cheap to repeat far away.</summary>
+/// <summary>Kit piece: a stack of shelves standing on its origin (<see cref="ShelfShapes.Stack"/>), cheap to repeat far away.</summary>
 [GlobalClass]
 public partial class StackMesh : KitMesh
 {
@@ -14,5 +14,5 @@ public partial class StackMesh : KitMesh
     /// <summary>Height between shelves, meters.</summary>
     [Export] public float Shelf { get => _shelf; set { _shelf = value; RequestUpdate(); } }
 
-    protected override void Build(MeshBuilder builder) => KitShapes.Stack(builder, Size.ToCore(), Shelf);
+    protected override void Build(MeshBuilder builder) => ShelfShapes.Stack(builder, Size.ToCore(), Shelf);
 }

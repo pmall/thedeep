@@ -4,7 +4,7 @@ namespace TheDeep;
 
 /// <summary>
 /// Prop piece: a lever's housing standing on the origin: plinth, cheeks and drum at the pivot, the quadrant over it
-/// (<see cref="PropShapes.LeverBase"/>). Its handle (<see cref="LeverHandleMesh"/>) turns at the pivot.
+/// (<see cref="LeverShapes.LeverBase"/>). Its handle (<see cref="LeverHandleMesh"/>) turns at the pivot.
 /// </summary>
 [GlobalClass]
 public partial class LeverMesh : KitMesh
@@ -26,5 +26,5 @@ public partial class LeverMesh : KitMesh
     [Export] public float GuideAngle { get => _guideAngle; set { _guideAngle = value; RequestUpdate(); } }
 
     protected override void Build(MeshBuilder builder) =>
-        PropShapes.LeverBase(builder, Size.ToCore(), PivotHeight, GuideRadius, Mathf.DegToRad(GuideAngle));
+        LeverShapes.LeverBase(builder, Size.ToCore(), PivotHeight, GuideRadius, Mathf.DegToRad(GuideAngle));
 }

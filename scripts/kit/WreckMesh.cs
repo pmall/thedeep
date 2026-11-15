@@ -4,7 +4,7 @@ namespace TheDeep;
 
 /// <summary>
 /// Kit piece: a heap of broken machinery (a fallen tank, a gear, tilted plates, snapped pipe stubs) about <see cref="Size"/> meters across;
-/// each <see cref="Seed"/> gives a different heap, so a room's wrecks differ (<see cref="KitShapes.Wreck"/>).
+/// each <see cref="Seed"/> gives a different heap, so a room's wrecks differ (<see cref="DebrisShapes.Wreck"/>).
 /// </summary>
 [GlobalClass]
 public partial class WreckMesh : KitMesh
@@ -15,5 +15,5 @@ public partial class WreckMesh : KitMesh
     [Export] public float Size { get => _size; set { _size = value; RequestUpdate(); } }
     [Export] public int Seed { get => _seed; set { _seed = value; RequestUpdate(); } }
 
-    protected override void Build(MeshBuilder builder) => KitShapes.Wreck(builder, Size, Seed);
+    protected override void Build(MeshBuilder builder) => DebrisShapes.Wreck(builder, Size, Seed);
 }

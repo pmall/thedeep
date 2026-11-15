@@ -4,7 +4,7 @@ namespace TheDeep;
 
 /// <summary>
 /// Prop piece: a keyhole facing the camera, its back on the origin's plane and the eye's middle at the origin, a locked door's mark.
-/// <see cref="Height"/> is the whole shape's height, <see cref="Depth"/> its thickness (<see cref="PropShapes.Keyhole"/>).
+/// <see cref="Height"/> is the whole shape's height, <see cref="Depth"/> its thickness (<see cref="LockShapes.Keyhole"/>).
 /// </summary>
 [GlobalClass]
 public partial class KeyholeMesh : KitMesh
@@ -15,5 +15,5 @@ public partial class KeyholeMesh : KitMesh
     [Export] public float Height { get => _height; set { _height = value; RequestUpdate(); } }
     [Export] public float Depth { get => _depth; set { _depth = value; RequestUpdate(); } }
 
-    protected override void Build(MeshBuilder builder) => PropShapes.Keyhole(builder, Height, Depth);
+    protected override void Build(MeshBuilder builder) => LockShapes.Keyhole(builder, Height, Depth);
 }
