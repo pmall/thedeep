@@ -36,15 +36,11 @@ public partial class DialogueBox : CanvasLayer
     private Label? _speaker;
     private Label SpeakerLabel => _speaker ??= new Label { MouseFilter = Control.MouseFilterEnum.Ignore };
     private Label? _text;
-    private Label TextLabel => _text ??= new Label { MouseFilter = Control.MouseFilterEnum.Ignore, AutowrapMode = Wrap };
+    private Label TextLabel => _text ??= new Label { MouseFilter = Control.MouseFilterEnum.Ignore, AutowrapMode = TextStyle.Wrap };
     private Control? _more;
     private Control More => _more ??= new Control { MouseFilter = Control.MouseFilterEnum.Ignore };
     private ButtonPainter? _painter;
     private ButtonPainter Painter => _painter ??= new ButtonPainter(GlyphScale);
-
-    private const TextServer.AutowrapMode Wrap = TextServer.AutowrapMode.WordSmart;
-
-    private const TextServer.LineBreakFlag Breaks = TextServer.LineBreakFlag.Mandatory | TextServer.LineBreakFlag.WordBound | TextServer.LineBreakFlag.Adaptive;
 
     private static TextStyle Style => TextStyle.Shared;
 
@@ -139,15 +135,10 @@ public partial class DialogueBox : CanvasLayer
     }
 
     /// <summary>The widest the text stands within the plate, pixels.</summary>
-    private float TextWidth => MaxWidth - 2f * Style.Padding.X;
+    private float TextWidth => Style.TextWidth(MaxWidth);
 
     /// <summary>How many rows <paramref name="text"/> takes as the label wraps it at <paramref name="width"/>.</summary>
-    private static int RowsOf(string text, float width)
-    {
-        Font font = Style.Font;
-        float tall = font.GetMultilineStringSize(text, HorizontalAlignment.Left, width, Style.Body, -1, Breaks).Y;
-        return Mathf.RoundToInt(tall / font.GetHeight(Style.Body));
-    }
+    private static int RowsOf(string text, float width) => Style.RowsOf(text, Style.Body, width);
 
     /// <summary>Shows <paramref name="speaker"/>'s <paramref name="text"/>, its first <paramref name="shown"/> letters.</summary>
     public void Show(string speaker, string text, int shown, bool whole)
@@ -191,7 +182,7 @@ public partial class DialogueBox : CanvasLayer
 
         if (_glyph is { } shownGlyph)
         {
-            shownGlyph.Light(dt, RestLit);
+            shownGlyph.Light(dt, ButtonGlyph.RestLit);
             float size = Painter.CapHeight + 4f * GlyphScale;
             More.Size = new Vector2(Painter.Width(Style.Font, shownGlyph) + 4f * GlyphScale, size);
             // On the plate's lower right corner, half over its edge, so it reads as the box's own.
@@ -199,9 +190,6 @@ public partial class DialogueBox : CanvasLayer
             More.QueueRedraw();
         }
     }
-
-    /// <summary>How lit the glyph stands unheld: a pale cap with dark letters, as the prompts show it.</summary>
-    private const float RestLit = 0.8f;
 
     private void DrawMore()
     {
@@ -223,14 +211,14 @@ public partial class DialogueBox : CanvasLayer
         float lowTop = places.BannerLowBottom(canvas.Y, Style.RowPlate(Style.Body)) - size.Y;
         Box high = new(x, places.BannerTop, x + size.X, places.BannerTop + size.Y);
         Box low = new(x, lowTop, x + size.X, lowTop + size.Y);
-        Box pilgrim = OnScreen(Player.Body);
-        Box speaker = _speakerNode is { } node && IsInstanceValid(node)
-            ? OnScreen(new Box(node.GlobalPosition.X - SpeakerSize.X * 0.5f, node.GlobalPosition.Y - SpeakerSize.Y * 0.5f,
-                node.GlobalPosition.X + SpeakerSize.X * 0.5f, node.GlobalPosition.Y + SpeakerSize.Y * 0.5f))
-            : new Box(-1f, -1f, -1f, -1f);
         // Decided as it opens and kept while it shows, so the box never jumps while it is read.
         if (!_placed)
         {
+            Box pilgrim = OnScreen(Player.Body);
+            Box speaker = _speakerNode is { } node && IsInstanceValid(node)
+                ? OnScreen(new Box(node.GlobalPosition.X - SpeakerSize.X * 0.5f, node.GlobalPosition.Y - SpeakerSize.Y * 0.5f,
+                    node.GlobalPosition.X + SpeakerSize.X * 0.5f, node.GlobalPosition.Y + SpeakerSize.Y * 0.5f))
+                : new Box(-1f, -1f, -1f, -1f);
             _low = DialoguePlace.Low(high, low, pilgrim, speaker);
         }
 

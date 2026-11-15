@@ -27,6 +27,7 @@ public partial class PromptFace : Control
     private bool _hold;
     private float _glyphWidth;
     private float _ring;
+    private float _box;
 
     /// <summary>How full the hold's ring is, 0–1 (a hold only).</summary>
     public float Fill { get; set; }
@@ -37,7 +38,7 @@ public partial class PromptFace : Control
         _glyph = glyph;
         if (glyph is not null)
         {
-            glyph.Lit = RestLit;
+            glyph.Lit = ButtonGlyph.RestLit;
         }
 
         _verb = verb;
@@ -47,19 +48,17 @@ public partial class PromptFace : Control
         _glyphWidth = glyph is null ? 0f : _painter.Width(font, glyph);
         float glyphHeight = _painter.CapHeight + 2f * GlyphScale;
         _ring = hold ? 0.5f * Mathf.Sqrt(_glyphWidth * _glyphWidth + glyphHeight * glyphHeight) + RingWidth : 0f;
-        float glyphBox = glyph is null ? 0f : (hold ? 2f * _ring + RingWidth : _glyphWidth) + Gap;
+        _box = hold ? 2f * _ring + RingWidth : _glyphWidth;
+        float glyphBox = glyph is null ? 0f : _box + Gap;
         // A row as tall as the hint line's, unless the button or its ring stands taller.
-        float height = Mathf.Max(font.GetHeight(VerbFont), hold ? 2f * _ring + RingWidth : glyphHeight);
+        float height = Mathf.Max(font.GetHeight(VerbFont), hold ? _box : glyphHeight);
         Vector2 margin = Style.Padding;
         Size = new Vector2(Mathf.Ceil(2f * margin.X + glyphBox + textWidth), Mathf.Ceil(2f * margin.Y + height));
         QueueRedraw();
     }
 
-    /// <summary>How lit the button stands unheld: a pale cap with dark letters reads on any ground.</summary>
-    private const float RestLit = 0.8f;
-
     /// <summary>Lights the button fully while its action is held.</summary>
-    public void Light(float dt) => _glyph?.Light(dt, RestLit);
+    public void Light(float dt) => _glyph?.Light(dt, ButtonGlyph.RestLit);
 
     public override void _Notification(int what)
     {
@@ -79,7 +78,7 @@ public partial class PromptFace : Control
         float x = Style.Padding.X;
         if (_glyph is { } glyph)
         {
-            float box = _hold ? 2f * _ring + RingWidth : _glyphWidth;
+            float box = _box;
             Vector2 center = new(x + box * 0.5f, mid);
             if (_hold)
             {
