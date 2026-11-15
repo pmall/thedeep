@@ -57,7 +57,7 @@ public sealed class HarpoonState : PlayerState
         float dx = _anchor is { } anchor ? anchor.Point.X - Player.Center.X : 0f;
         if (Mathf.Abs(dx) > 0.1f)
         {
-            Player.SetWorldFacing(dx > 0f ? 1 : -1);
+            Player.SetFacing(dx > 0f ? 1 : -1);
         }
     }
 

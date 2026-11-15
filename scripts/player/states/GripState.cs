@@ -60,7 +60,7 @@ public sealed class GripState : PlayerState
         Player.Velocity = Vector3.Zero;
         NVector2 t = GripMath.Tangent(_attach.Up);
         NVector2 facingWay = _attach.Up.X != 0f ? new NVector2(0f, 1f) : new NVector2(Player.WorldFacing, 0f);
-        Player.SetLocalFacing(NVector2.Dot(facingWay, t) < 0f ? -1 : 1);
+        Player.SetFacing(NVector2.Dot(facingWay, t) < 0f ? -1 : 1);
     }
 
     public override void Exit()
@@ -120,7 +120,7 @@ public sealed class GripState : PlayerState
         _speed = TheDeep.Motion.Approach(_speed, target, rate * delta);
         if (along != 0f)
         {
-            Player.SetLocalFacing(along > 0f ? 1 : -1);
+            Player.SetFacing(along > 0f ? 1 : -1);
         }
 
         NVector2 t = GripMath.Tangent(up);
@@ -172,7 +172,7 @@ public sealed class GripState : PlayerState
             // Onto a floor: upright again, walking on.
             Player.Orient(pose);
             Player.Velocity = new Vector3(travel.X * speed, 0f, 0f);
-            Player.SetWorldFacing(travel.X < 0f ? -1 : 1);
+            Player.SetFacing(travel.X < 0f ? -1 : 1);
             return Player.CurrentInput.MoveX != 0 ? Player.States.Run : Player.States.Idle;
         }
 
@@ -182,7 +182,7 @@ public sealed class GripState : PlayerState
         _speed = speed * sign;
         _lockedInput = new NVector2(Player.CurrentInput.MoveX, Player.CurrentInput.MoveY);
         _lockedAlong = sign;
-        Player.SetLocalFacing((int)sign);
+        Player.SetFacing((int)sign);
         return null;
     }
 
@@ -209,7 +209,7 @@ public sealed class GripState : PlayerState
         }
 
         Player.Velocity = new Vector3(up.X * Tuning.GripLeapAwaySpeed, Tuning.JumpTakeOffSpeed * Tuning.GripLeapUpFactor, 0f);
-        Player.SetWorldFacing(up.X < 0f ? -1 : 1);
+        Player.SetFacing(up.X < 0f ? -1 : 1);
         return Player.States.Fall;
     }
 }

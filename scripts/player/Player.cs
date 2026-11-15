@@ -72,15 +72,6 @@ public partial class Player : CharacterBody3D
     /// <summary>Raised when a dash starts, with its direction (+1 right, -1 left).</summary>
     public event Action<int>? Dashed;
 
-    /// <summary>Raised when the Drill dives (straight down).</summary>
-    public event Action? Dove;
-
-    /// <summary>Raised when the Drill breaks cracked rock.</summary>
-    public event Action<Block>? Bored;
-
-    /// <summary>Raised on going into water deep enough to swim, with the downward speed (m/s) just before.</summary>
-    public event Action<float>? Splashed;
-
     /// <summary>The abilities the pilgrim has.</summary>
     public AbilitySet Abilities { get; } = new();
 
@@ -190,10 +181,7 @@ public partial class Player : CharacterBody3D
     /// <summary>The feet (the body's origin) on the play plane.</summary>
     public NVector2 Feet => GlobalPosition.Flat();
 
-    /// <summary>The body on the play plane (upright: the capsule's width and height over the feet).</summary>
-    public Rect2 BodyRect => new(GlobalPosition.X - Capsule.Radius, GlobalPosition.Y, 2f * Capsule.Radius, 2f * CenterHeight);
-
-    /// <summary>The body on the play plane as the core's box (<see cref="BodyRect"/>).</summary>
+    /// <summary>The body on the play plane as the core's box (upright: the capsule's width and height over the feet).</summary>
     public Box BodyBox => new(GlobalPosition.X - Capsule.Radius, GlobalPosition.Y, GlobalPosition.X + Capsule.Radius, GlobalPosition.Y + 2f * CenterHeight);
 
     /// <summary>Height of the body's center above the feet.</summary>
@@ -429,10 +417,8 @@ public partial class Player : CharacterBody3D
     /// <summary>Called by SwimState as it starts: the plunge is caught by the surface, and the air dash is back.</summary>
     public void BeginSwim()
     {
-        float plunge = -Velocity.Y;
         Velocity = Velocity with { Y = WaterMotion.Splash(Velocity.Y, Water) };
         Control.RefillAirDash();
-        Splashed?.Invoke(plunge);
     }
 
     /// <summary>An anchor reached: the air dash is back, like on a landing.</summary>
@@ -463,12 +449,6 @@ public partial class Player : CharacterBody3D
 
     /// <summary>No grip for a moment (after letting go or leaping off), so the same surface doesn't catch the player again.</summary>
     public void HoldOffGrip() => Control.HoldOffGrip();
-
-    /// <summary>Faces along the body's own forward (+1) or backward (-1).</summary>
-    public void SetLocalFacing(int direction) => SetFacing(direction);
-
-    /// <summary>Faces +X (+1) or -X (-1); only meaningful upright.</summary>
-    public void SetWorldFacing(int direction) => SetFacing(direction);
 
     /// <summary>The dot product under which a surface's normal faces the way the body heads (<see cref="MetalContact"/>): more than 60 degrees past square-on.</summary>
     public const float HeadOn = -0.5f;
@@ -670,7 +650,6 @@ public partial class Player : CharacterBody3D
     public void BeginDive()
     {
         Control.BeginDash(IsOnFloor());
-        Dove?.Invoke();
     }
 
     /// <summary>With the Drill, breaks the cracked rock the body would run into moving by <paramref name="motion"/>.</summary>
@@ -685,7 +664,6 @@ public partial class Player : CharacterBody3D
         for (int i = 0; i < 3 && CrackedAt(motion) is { } block; i++)
         {
             block.Break(motion.Normalized());
-            Bored?.Invoke(block);
         }
     }
 
@@ -720,7 +698,8 @@ public partial class Player : CharacterBody3D
         next.Enter();
     }
 
-    private void SetFacing(int direction)
+    /// <summary>Faces <paramref name="direction"/> (+1 or -1) along the body's own forward: the world's +X when upright, along the surface when gripping.</summary>
+    public void SetFacing(int direction)
     {
         Facing = direction < 0 ? -1 : 1;
         Visual.SetFacing(Facing);
