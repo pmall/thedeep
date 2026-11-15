@@ -112,7 +112,7 @@ public sealed class MachineAnimator
             switch (d.Mode)
             {
                 case DriverMode.Pose when d.Channel == DriverChannel.Strike && d.WindUp != 0f && intent.Act != MachineAct.Recover:
-                    angle = StrikeAction.Pose(channel, StrikeAction.DefaultWindChannel, d.WindUp, d.Angle);
+                    angle = StrikeAction.Pose(channel, StrikeAction.WindChannel, d.WindUp, d.Angle);
                     offset = d.Offset * channel;
                     break;
                 case DriverMode.Pose:

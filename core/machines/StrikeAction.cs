@@ -21,11 +21,8 @@ public sealed class StrikeAction
     /// <summary>Seconds after the recovery before another strike can start.</summary>
     public float Cooldown { get; init; } = 0.8f;
 
-    /// <summary>The <see cref="WindChannel"/> every strike uses, and the animator's pose reads.</summary>
-    public const float DefaultWindChannel = 0.6f;
-
-    /// <summary>How far the channel has risen, 0 to 1, when the wind-up ends and the blow begins.</summary>
-    public float WindChannel { get; init; } = DefaultWindChannel;
+    /// <summary>How far the channel has risen, 0 to 1, when the wind-up ends and the blow begins; the animator's pose reads it too.</summary>
+    public const float WindChannel = 0.6f;
 
     /// <summary>
     /// The angle of a limb posed by a strike <paramref name="channel"/>: drawn back to <paramref name="windUp"/>
