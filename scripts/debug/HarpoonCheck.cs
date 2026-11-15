@@ -30,9 +30,9 @@ public partial class HarpoonCheck : Node
 
     private sealed record Step(string What, float Seconds, Action Start, Func<bool> Done, bool Hold = false);
 
-    private HarpoonAnchor A => World.Room.All<HarpoonAnchor>().First(a => a.Name == "AnchorA");
+    private HarpoonAnchor A => World.Room.All<HarpoonAnchor>().First(a => a.NameText() == "AnchorA");
 
-    private HarpoonAnchor B => World.Room.All<HarpoonAnchor>().First(a => a.Name == "AnchorB");
+    private HarpoonAnchor B => World.Room.All<HarpoonAnchor>().First(a => a.NameText() == "AnchorB");
 
     /// <summary>Runs before the pilgrim each frame and each physics tick, so what it presses is read the same tick.</summary>
     public HarpoonCheck()
@@ -148,7 +148,7 @@ public partial class HarpoonCheck : Node
     private void Fail(Step step)
     {
         _problems.Add($"step {_index + 1} \"{step.What}\" failed in {step.Seconds} s (at {Player.GlobalPosition}, state {Player.CurrentState.Name}, " +
-                      $"in sight {Player.AnchorInSight?.Name ?? "none"}, last {Player.LastAnchor?.Name ?? "none"}, closest {_closest:0.00} m)");
+                      $"in sight {Player.AnchorInSight?.NameText() ?? "none"}, last {Player.LastAnchor?.NameText() ?? "none"}, closest {_closest:0.00} m)");
         Finish();
     }
 

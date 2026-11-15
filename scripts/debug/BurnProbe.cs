@@ -117,11 +117,11 @@ public partial class BurnProbe : Node
             {
                 _bodies++;
                 Box s = slag.PlayRegion;
-                foreach ((string side, int dir, Vector3 start) in Sides(s, s.MaxY, s.MaxY + Lip, solids, $"{name}/{slag.Name}"))
+                foreach ((string side, int dir, Vector3 start) in Sides(s, s.MaxY, s.MaxY + Lip, solids, $"{name}/{slag.NameText()}"))
                 {
                     foreach (bool plated in new[] { false, true })
                     {
-                        _cases.Add(new(name, $"walking into slag {slag.Name} from its {side} bank, {(plated ? "plated" : "unplated")}", start, dir, plated, true, s));
+                        _cases.Add(new(name, $"walking into slag {slag.NameText()} from its {side} bank, {(plated ? "plated" : "unplated")}", start, dir, plated, true, s));
                     }
                 }
             }
@@ -130,11 +130,11 @@ public partial class BurnProbe : Node
             {
                 _bodies++;
                 Box h = heat.Region;
-                foreach ((string side, int dir, Vector3 start) in Sides(h, h.MinY, h.MaxY, solids, $"{name}/{heat.Name}"))
+                foreach ((string side, int dir, Vector3 start) in Sides(h, h.MinY, h.MaxY, solids, $"{name}/{heat.NameText()}"))
                 {
                     foreach (bool plated in new[] { false, true })
                     {
-                        _cases.Add(new(name, $"walking into heat {heat.Name} from its {side}, {(plated ? "plated" : "unplated")}", start, dir, plated, !plated, h));
+                        _cases.Add(new(name, $"walking into heat {heat.NameText()} from its {side}, {(plated ? "plated" : "unplated")}", start, dir, plated, !plated, h));
                     }
                 }
             }

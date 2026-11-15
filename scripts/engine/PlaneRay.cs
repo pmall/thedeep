@@ -10,10 +10,12 @@ namespace TheDeep;
 /// </summary>
 public partial class PlaneRay : RayCast3D
 {
+    private static readonly StringName RayName = nameof(PlaneRay);
+
     /// <summary>A new ray hitting bodies on <paramref name="mask"/>; it casts once <see cref="Attach"/>ed to a node in the tree.</summary>
     public static PlaneRay For(uint mask) => new()
     {
-        Name = nameof(PlaneRay),
+        Name = RayName,
         TopLevel = true,
         Enabled = false,
         ExcludeParent = false,

@@ -11,9 +11,9 @@ namespace TheDeep;
 public partial class MachineLeg : Resource
 {
     /// <summary>The hip (thigh's joint), the knee (shin's joint), and the foot at the end of the shin.</summary>
-    [Export] public StringName Upper { get; set; } = "";
-    [Export] public StringName Lower { get; set; } = "";
-    [Export] public StringName Foot { get; set; } = "";
+    [Export] public StringName Upper { get; set; } = Names.None;
+    [Export] public StringName Lower { get; set; } = Names.None;
+    [Export] public StringName Foot { get; set; } = Names.None;
 
     /// <summary>Where this leg is in the gait cycle, 0 to 1 (alternate legs half a cycle apart).</summary>
     [Export] public float Phase { get; set; }

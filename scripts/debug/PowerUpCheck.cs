@@ -61,7 +61,7 @@ public partial class PowerUpCheck : Node
         }
 
         var strength = GD.Load<PackedScene>("res://scenes/props/PowerUp.tscn").Instantiate<PowerUp>();
-        strength.Name = "CheckStrength";
+        strength.Named("CheckStrength");
         strength.Stat = PowerStat.Strength;
         strength.Amount = StrengthAmount;
         strength.Position = new Vector3(StrengthX, 0f, 0f);
@@ -125,7 +125,7 @@ public partial class PowerUpCheck : Node
         {
             _problems.Add($"step {_index + 1} \"{step.What}\" failed in {step.Seconds} s (at {Player.GlobalPosition}, damage " +
                           $"{Player.AttackDamage}, health {Player.Vitality.Current}/{Player.Vitality.Max}, taken {_taken.Count}, banner " +
-                          $"{Banner.Current?.Head ?? "none"} at {Banner.Opacity:0.00}, {Banner.Waiting} waiting, read " +
+                          $"{Banner.Current?.Head.ToString() ?? "none"} at {Banner.Opacity:0.00}, {Banner.Waiting} waiting, read " +
                           $"{string.Join(", ", _read.Select(r => $"{r.Said.Head} {r.Seconds:0.00} s"))})");
             Finish();
         }

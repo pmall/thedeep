@@ -29,7 +29,7 @@ worlds/<name>/         one world's content: world.tres (its WorldDefinition), it
 resources/             the live tuning, biomes, part assemblies, machine species, the game's own line book (lines.tres)
 assets/                shaders (shared code in shaders/lib/), materials, particle materials, baked textures (textures/)
 tests/TheDeep.Tests/   xUnit over the core
-tools/                 the check, look-dev captures, the map report, authoring helpers
+tools/                 the check, look-dev captures, the map report, authoring helpers; analyzers/, the build's own rules
 ```
 
 ## Where systems start <a id="entry-points"></a>

@@ -118,7 +118,7 @@ public partial class KeyCheck : Node
 
         _steps.Add(new($"and the {Checked.DoorRoom} loaded again finds it open, remembered", 1f,
             () => { Input.ActionRelease(Toward); Input.ActionRelease(Back); Load(Checked.DoorRoom); },
-            () => Door is { Opened: true } door && door.Gate.Raised && Session.Save.Collected.Contains($"{Checked.DoorRoom}/{door.Name}")));
+            () => Door is { Opened: true } door && door.Gate.Raised && Session.Save.Collected.Contains($"{Checked.DoorRoom}/{door.NameText()}")));
         Next();
     }
 

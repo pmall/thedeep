@@ -74,7 +74,7 @@ public partial class DrillCheck : Node
     private static Block Cracked(string name, Vector3 center, Vector3 size)
     {
         var block = GD.Load<PackedScene>("res://scenes/kit/Block.tscn").Instantiate<Block>();
-        block.Name = name;
+        block.Named(name);
         block.Size = size;
         block.Cracked = true;
         block.Position = center;

@@ -16,6 +16,9 @@ namespace TheDeep;
 /// </summary>
 public partial class Machine : CharacterBody3D
 {
+    private static readonly StringName FrameName = "Frame";
+    private static readonly StringName BodyName = "Body";
+
     // Instance shader parameters of assets/shaders/machine.gdshader.
     private static readonly StringName WearParameter = "wear";
     private static readonly StringName ToneParameter = "palette_tone";
@@ -40,11 +43,11 @@ public partial class Machine : CharacterBody3D
     [Export] public int Seed { get; set; }
 
     private Node3D? _frame;
-    private Node3D FrameNode => _frame ??= new Node3D() { Name = "Frame" };
+    private Node3D FrameNode => _frame ??= new Node3D() { Name = FrameName };
     private PlaneRay? _ray;
     private PlaneRay Ray => _ray ??= PlaneRay.For(PhysicsLayers.Solid);
     private PartBody? _body;
-    private PartBody BodyNode => _body ??= new PartBody() { Name = "Body" };
+    private PartBody BodyNode => _body ??= new PartBody() { Name = BodyName };
     private readonly MachineGait _gait = new();
     private MachineAnimator? _animator;
     private Vector3 _spawn;
@@ -370,7 +373,7 @@ public partial class Machine : CharacterBody3D
 
         if (perch is null)
         {
-            GD.PushWarning($"{Name}: a crawler with no metal block within {PerchSearch} m; it stays put");
+            GD.PushWarning($"{this.NameText()}: a crawler with no metal block within {PerchSearch} m; it stays put");
             return;
         }
 
@@ -398,14 +401,15 @@ public partial class Machine : CharacterBody3D
     private bool FaceIsFree(Block perch, Vector3 center, Vector3 size)
     {
         using var box = new BoxShape3D { Size = size };
+        using var exclude = EngineArrays.Own(new Godot.Collections.Array<Rid> { perch.GetRid() });
         using var query = new PhysicsShapeQueryParameters3D
         {
             Shape = box,
             Transform = new Transform3D(Basis.Identity, center),
             CollisionMask = PhysicsLayers.Solid,
-            Exclude = new Godot.Collections.Array<Rid> { perch.GetRid() },
+            Exclude = exclude.Value,
         };
-        return GetWorld3D().DirectSpaceState.IntersectShape(query, 1).Count == 0;
+        return EngineArrays.Count(GetWorld3D().DirectSpaceState.IntersectShape(query, 1)) == 0;
     }
 
     private Room? FindRoom()

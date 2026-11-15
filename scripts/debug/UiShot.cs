@@ -25,6 +25,9 @@ namespace TheDeep;
 /// </summary>
 public partial class UiShot : Node
 {
+    private static readonly StringName GripNameLine = "ability.mag_grip.name";
+    private static readonly StringName GripHintLine = "ability.mag_grip.hint";
+
     /// <summary>The running game's world: its rooms, and the one loaded.</summary>
     public required World World { get; init; }
     /// <summary>The running game's pilgrim.</summary>
@@ -260,7 +263,7 @@ public partial class UiShot : Node
                 Stand(plate);
             }
 
-            Banner.Show(_stood is ScripturePlate read ? read.Said : new Announcement("ability.mag_grip.name", "ability.mag_grip.hint"));
+            Banner.Show(_stood is ScripturePlate read ? read.Said : new Announcement(GripNameLine, GripHintLine));
             _banner = 0.0;
         }
         else if (_tick > 230 && _tick % 20 == 0 && _hops < Hops)

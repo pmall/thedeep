@@ -17,6 +17,8 @@ namespace TheDeep;
 /// </summary>
 public partial class GripCheck : Node
 {
+    private static readonly StringName TankName = "Tank";
+
     /// <summary>The running game's pilgrim.</summary>
     public required Player Player { get; init; }
     /// <summary>The running game's world: its rooms, and the one loaded.</summary>
@@ -60,7 +62,7 @@ public partial class GripCheck : Node
                  })
         {
             Block block = blocks.Instantiate<Block>();
-            block.Name = name;
+            block.Named(name);
             block.Surface = surface;
             block.Size = new Vector3(x1 - x0, top - bottom, 4f);
             block.Position = new Vector3(0.5f * (x0 + x1), 0.5f * (bottom + top), 0f);
@@ -69,7 +71,7 @@ public partial class GripCheck : Node
 
         World.Room.AddChild(new WaterBody
         {
-            Name = "Tank",
+            Name = TankName,
             Swim = true,
             Size = new Vector2(2f, 4f),
             Depth = TankSurface,

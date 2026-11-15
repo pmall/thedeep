@@ -101,12 +101,11 @@ public partial class DashTrail : MeshInstance3D
             indices[i * 6 + 5] = a + 3;
         }
 
-        var arrays = new Godot.Collections.Array();
-        arrays.Resize((int)Mesh.ArrayType.Max);
-        arrays[(int)Mesh.ArrayType.Vertex] = vertices;
-        arrays[(int)Mesh.ArrayType.Color] = colors;
-        arrays[(int)Mesh.ArrayType.TexUV] = uvs;
-        arrays[(int)Mesh.ArrayType.Index] = indices;
-        _mesh.AddSurfaceFromArrays(Mesh.PrimitiveType.Triangles, arrays);
+        using var arrays = new NativeMeshArrays();
+        arrays.Set(Mesh.ArrayType.Vertex, vertices);
+        arrays.Set(Mesh.ArrayType.Color, colors);
+        arrays.Set(Mesh.ArrayType.TexUV, uvs);
+        arrays.Set(Mesh.ArrayType.Index, indices);
+        _mesh.AddSurfaceFromArrays(Mesh.PrimitiveType.Triangles, arrays.Managed);
     }
 }

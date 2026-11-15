@@ -178,7 +178,7 @@ public sealed class LineCheck
             {
                 foreach (StringName id in hints.HintLines)
                 {
-                    if (id != "")
+                    if (!id.IsEmpty)
                     {
                         _hinted.TryAdd(id, target is Node ? scene + where : where);
                     }
@@ -192,7 +192,7 @@ public sealed class LineCheck
 
             foreach (StringName id in names.LineIds)
             {
-                if (id != "")
+                if (!id.IsEmpty)
                 {
                     _named.TryAdd(id, target is Node ? scene + where : where);
                 }

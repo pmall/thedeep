@@ -59,7 +59,7 @@ public partial class PowerUps : Node
         Player.Frozen = true;
         await power.Sink(Player, new Vector3(0f, 1.05f, 0f));
         Player.Strengthen(Player.Prowess.With(power.Stat, power.Amount));
-        Session.Remember(power.Name);
+        Session.Remember(power.NameText());
         Player.Frozen = false;
         _taking = false;
         Taken?.Invoke(power);
@@ -70,7 +70,7 @@ public partial class PowerUps : Node
     {
         foreach (PowerUp power in room.All<PowerUp>())
         {
-            if (Session.Done(World.NameOf(room.SceneFilePath), power.Name))
+            if (Session.Done(World.NameOf(room.SceneFilePath), power.NameText()))
             {
                 power.Empty();
             }

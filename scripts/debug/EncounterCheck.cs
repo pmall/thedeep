@@ -28,6 +28,10 @@ namespace TheDeep;
 /// </summary>
 public partial class EncounterCheck : Node
 {
+    private static readonly StringName PrecentorId = "precentor";
+    private static readonly StringName ChoristerId = "chorister";
+    private static readonly StringName ArchivistId = "archivist";
+
     /// <summary>The running game's pilgrim.</summary>
     public required Player Player { get; init; }
     /// <summary>The running game's world: its rooms, and the one loaded.</summary>
@@ -54,11 +58,11 @@ public partial class EncounterCheck : Node
     }
 
     private BossSeal Seal => World.Room.First<BossSeal>() ?? throw new InvalidOperationException("no BossSeal in the room");
-    private Machine Precentor => World.Room.All<Machine>().First(m => m.Species.Id == "precentor");
+    private Machine Precentor => World.Room.All<Machine>().First(m => m.Species.Id == PrecentorId);
     private LawBreak Law => World.Room.First<LawBreak>() ?? throw new InvalidOperationException("no LawBreak in the room");
-    private IEnumerable<Machine> Choristers => World.Room.All<Machine>().Where(m => m.Species.Id == "chorister");
+    private IEnumerable<Machine> Choristers => World.Room.All<Machine>().Where(m => m.Species.Id == ChoristerId);
     private Lift Cage => World.Room.First<Lift>() ?? throw new InvalidOperationException("no Lift in the room");
-    private Machine Archivist => World.Room.All<Machine>().First(m => m.Species.Id == "archivist");
+    private Machine Archivist => World.Room.All<Machine>().First(m => m.Species.Id == ArchivistId);
     private bool _ordered;
     private float X => Player.GlobalPosition.X;
     private float _rodeTo;
@@ -175,8 +179,8 @@ public partial class EncounterCheck : Node
             () => Hold(InputActions.MoveRight, X < 20.5f)));
         _steps.Add(new("a hard landing beside one wakes it", 3f,
             () => { Hold(InputActions.MoveRight, false); Player.Respawn(new Vector3(24f, 3f, 0f), 1); },
-            () => Choristers.Single(c => c.Name == "Chorister1").Brain.Act != MachineAct.Sleep
-                  && Choristers.Single(c => c.Name == "Chorister0").Brain.Act == MachineAct.Sleep));
+            () => Choristers.Single(c => c.NameText() == "Chorister1").Brain.Act != MachineAct.Sleep
+                  && Choristers.Single(c => c.NameText() == "Chorister0").Brain.Act == MachineAct.Sleep));
         _steps.Add(new("in the Counterweight, standing in the cage lets go of its brake", 4f,
             () =>
             {
@@ -403,7 +407,7 @@ public partial class EncounterCheck : Node
     /// <summary>The Hierarch's order heard: the banner speaks it, its speaker named over the words, no title.</summary>
     private void OnSpoke(Proclamation proclamation)
     {
-        if (proclamation.Name != "Order")
+        if (proclamation.NameText() != "Order")
         {
             return;
         }

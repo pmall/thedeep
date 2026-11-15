@@ -16,8 +16,8 @@ public partial class MapGoal : Marker3D, IAnnounces
     /// <summary>The end of the game (the Heart): reaching it, once the room's boss is broken, closes the run with the end card.</summary>
     [Export] public bool Ending { get; set; }
 
-    [Export] public StringName TitleLine { get; set; } = "";
-    [Export] public StringName HintLine { get; set; } = "";
+    [Export] public StringName TitleLine { get; set; } = Names.None;
+    [Export] public StringName HintLine { get; set; } = Names.None;
 
     /// <inheritdoc/>
     public System.Collections.Generic.IEnumerable<StringName> LineIds => new[] { TitleLine, HintLine };

@@ -47,7 +47,7 @@ public partial class SecretCheck : Node
             () => Wall is { Found: false } && World.Map.WaysOf("Sacristy").Any(w => w.Hidden && w.Exit == "West")));
         _steps.Add(new("walking west into it finds it", 3f,
             () => { Player.Respawn(new Vector3(5f, 0f, 0f), -1); Input.ActionPress(InputActions.MoveLeft); },
-            () => _found && Wall is { Found: true } && Session.Save.Collected.Contains($"Sacristy/{Wall.Name}")));
+            () => _found && Wall is { Found: true } && Session.Save.Collected.Contains($"Sacristy/{Wall.NameText()}")));
         _steps.Add(new("walking on crosses into the Cell", 3f, () => { }, () => World.RoomName == "Cell" && Player.InControl));
         _steps.Add(new("walking back, the wall is gone for good", 5f,
             () => { Input.ActionRelease(InputActions.MoveLeft); Input.ActionPress(InputActions.MoveRight); },

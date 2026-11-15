@@ -56,7 +56,7 @@ public sealed class ButtonGlyph
     /// <summary>The main button of <paramref name="action"/> on <paramref name="device"/>: its first binding there; none if it has none.</summary>
     public static ButtonGlyph? Main(StringName action, ButtonNames.Device device)
     {
-        foreach (InputEvent e in InputMap.ActionGetEvents(action))
+        foreach (InputEvent e in InputActions.Bindings(action))
         {
             if (Of(e, device == ButtonNames.Device.Gamepad, action) is { } glyph)
             {
@@ -69,7 +69,7 @@ public sealed class ButtonGlyph
 
     /// <summary>The device the player starts on: the pad when one is connected.</summary>
     public static ButtonNames.Device FirstDevice() =>
-        Input.GetConnectedJoypads().Count > 0 ? ButtonNames.Device.Gamepad : ButtonNames.Device.Keyboard;
+        EngineArrays.Count(Input.GetConnectedJoypads()) > 0 ? ButtonNames.Device.Gamepad : ButtonNames.Device.Keyboard;
 
     /// <summary>The device after <paramref name="e"/> (<see cref="ButtonNames.Next"/>).</summary>
     public static ButtonNames.Device DeviceAfter(ButtonNames.Device current, InputEvent e) => e switch

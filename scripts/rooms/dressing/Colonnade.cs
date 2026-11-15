@@ -86,11 +86,10 @@ public partial class Colonnade : Node3D
     {
         AddChild(new MeshInstance3D
         {
-            Name = name,
             Mesh = mesh,
             MaterialOverride = material,
             Position = position,
             CastShadow = cast ? GeometryInstance3D.ShadowCastingSetting.On : GeometryInstance3D.ShadowCastingSetting.Off,
-        });
+        }.Named(name));
     }
 }

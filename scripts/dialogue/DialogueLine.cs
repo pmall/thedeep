@@ -10,8 +10,8 @@ namespace TheDeep;
 public partial class DialogueLine : Resource
 {
     /// <summary>The line naming who speaks (its caption over the words).</summary>
-    [Export] public StringName Speaker { get; set; } = "";
+    [Export] public StringName Speaker { get; set; } = Names.None;
 
     /// <summary>What they say.</summary>
-    [Export] public StringName Line { get; set; } = "";
+    [Export] public StringName Line { get; set; } = Names.None;
 }

@@ -10,6 +10,10 @@ namespace TheDeep;
 /// </summary>
 public static class ItemKinds
 {
+    private static readonly StringName LockWord = "map.gate.lock";
+    private static readonly StringName SealWord = "map.gate.seal";
+    private static readonly StringName MechanismWord = "map.gate.mechanism";
+
     /// <summary>The color of an item of <paramref name="kind"/> and of the lock it opens, on the pickup, the door and
     /// the map.</summary>
     public static Color ColorOf(ItemKind kind) => kind switch
@@ -26,9 +30,9 @@ public static class ItemKinds
     /// <summary>The door's word on the map's legend.</summary>
     public static StringName MapWord(ItemKind kind) => kind switch
     {
-        ItemKind.Key => "map.gate.lock",
-        ItemKind.Code => "map.gate.seal",
-        ItemKind.Mechanism => "map.gate.mechanism",
-        _ => "map.gate.lock",
+        ItemKind.Key => LockWord,
+        ItemKind.Code => SealWord,
+        ItemKind.Mechanism => MechanismWord,
+        _ => LockWord,
     };
 }

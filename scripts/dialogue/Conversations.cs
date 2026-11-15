@@ -128,7 +128,7 @@ public partial class Conversations : Node
         if (conversation.Once)
         {
             conversation.Spent = true;
-            Session.Remember(conversation.Name);
+            Session.Remember(conversation.NameText());
         }
 
         Ended?.Invoke(conversation);
@@ -163,7 +163,7 @@ public partial class Conversations : Node
         string name = World.NameOf(room.SceneFilePath);
         foreach (Conversation conversation in room.All<Conversation>())
         {
-            conversation.Spent = conversation.Once && Session.Done(name, conversation.Name);
+            conversation.Spent = conversation.Once && Session.Done(name, conversation.NameText());
         }
     }
 }

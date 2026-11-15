@@ -51,7 +51,7 @@ public partial class Lever : Node3D
         Pulled = true;
         Prompt.Offer(false);
         Tween tween = CreateTween();
-        tween.TweenProperty(Handle, "rotation_degrees:z", PulledAngle, 0.35f).SetTrans(Tween.TransitionType.Back).SetEase(Tween.EaseType.Out);
+        tween.TweenProperty(Handle, Names.RollDegrees, PulledAngle, 0.35f).SetTrans(Tween.TransitionType.Back).SetEase(Tween.EaseType.Out);
         foreach (GeometryInstance3D glow in Glows)
         {
             TokenGlow.FlareOut(tween, glow, 2.2f, 1f);

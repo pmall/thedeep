@@ -1,0 +1,24 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <!-- The project's own Roslyn analyzers (EngineObjectAnalyzer: instructions/godot-csharp.md#no-finalizer), run by the game's
+       build (TheDeep.csproj references this project as an analyzer). They compile against the Roslyn the SDK itself runs, so
+       they need no package and always match the compiler that loads them. -->
+  <PropertyGroup>
+    <!-- The runtime the SDK's compiler runs on, which its Roslyn is built for: moves with the SDK (instructions/toolchain.md). -->
+    <TargetFramework>net10.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
+    <IsPackable>false</IsPackable>
+    <RootNamespace>TheDeep.Analyzers</RootNamespace>
+    <EnforceExtendedAnalyzerRules>false</EnforceExtendedAnalyzerRules>
+  </PropertyGroup>
+  <ItemGroup>
+    <Reference Include="Microsoft.CodeAnalysis">
+      <HintPath>$(RoslynTargetsPath)/bincore/Microsoft.CodeAnalysis.dll</HintPath>
+      <Private>false</Private>
+    </Reference>
+    <Reference Include="Microsoft.CodeAnalysis.CSharp">
+      <HintPath>$(RoslynTargetsPath)/bincore/Microsoft.CodeAnalysis.CSharp.dll</HintPath>
+      <Private>false</Private>
+    </Reference>
+  </ItemGroup>
+</Project>

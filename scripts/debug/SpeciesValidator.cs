@@ -65,7 +65,7 @@ public partial class SpeciesValidator : Node
         var observed = new Dictionary<StringName, SortedSet<MachineAct>>();
         foreach (MachineSpecies s in species.Where(s => s.Behavior is not null && s.Assembly is not null))
         {
-            var machine = new Machine { Name = $"Check_{s.Id}", Species = s, Position = SpawnFor(s) };
+            var machine = new Machine { Species = s, Position = SpawnFor(s) }.Named($"Check_{s.Id}");
             Room.AddChild(machine);
             Machines.Add(machine);
             var acts = observed[s.Id] = new SortedSet<MachineAct>();
@@ -116,7 +116,7 @@ public partial class SpeciesValidator : Node
                 continue;
             }
 
-            if (s.Id != file.GetBaseName())
+            if (s.Id.ToString() != file.GetBaseName())
             {
                 _problems.Add($"{path}: id {s.Id} is not its file name");
             }
@@ -233,7 +233,7 @@ public partial class SpeciesValidator : Node
                 Block? metal = Room.Blocks().FirstOrDefault(b => b.Surface == SurfaceKind.Metal);
                 if (metal is null)
                 {
-                    _problems.Add($"{s.Id}: a crawler, but {Room.Name} has no metal block to try it on");
+                    _problems.Add($"{s.Id}: a crawler, but {Room.NameText()} has no metal block to try it on");
                     return floor;
                 }
 

@@ -13,6 +13,9 @@ namespace TheDeep;
 /// </summary>
 public partial class DebugHud : CanvasLayer
 {
+    private static readonly NodePath InfoPath = "%Info";
+    private static readonly NodePath RoomPath = "%Room";
+
     [Export] public Player Player { get; set; } = null!;
     [Export] public World World { get; set; } = null!;
 
@@ -21,8 +24,8 @@ public partial class DebugHud : CanvasLayer
     private Label? _room;
 
     // The scene's unique labels.
-    private Label Info => _info ??= GetNode<Label>("%Info");
-    private Label RoomLabel => _room ??= GetNode<Label>("%Room");
+    private Label Info => _info ??= GetNode<Label>(InfoPath);
+    private Label RoomLabel => _room ??= GetNode<Label>(RoomPath);
 
     /// <summary>The gameplay controls (built in <see cref="_Ready"/>, debug builds only; null in release).</summary>
     public ControlsManual? Manual { get; private set; }

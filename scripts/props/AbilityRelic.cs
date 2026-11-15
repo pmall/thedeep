@@ -66,8 +66,8 @@ public partial class AbilityRelic : Node3D, IAnnounces, IWalkedThrough
             Core.GlobalPosition = start.Lerp(target.GlobalPosition + offset, e) + new Vector3(0f, 0.6f * Mathf.Sin(Mathf.Pi * t), 0f);
             Core.Scale = Vector3.One * (1f + 0.6f * Mathf.Sin(Mathf.Pi * t) - 0.9f * e * e);
         }), 0f, 1f, 1.1f);
-        tween.Parallel().TweenProperty(Light, "light_energy", Light.LightEnergy * 3f, 0.5f);
-        tween.TweenProperty(Light, "light_energy", 0f, 0.6f);
+        tween.Parallel().TweenProperty(Light, Names.LightEnergy, Light.LightEnergy * 3f, 0.5f);
+        tween.TweenProperty(Light, Names.LightEnergy, 0f, 0.6f);
         await ToSignal(tween, Tween.SignalName.Finished);
         Core.Visible = false;
     }

@@ -292,7 +292,7 @@ public partial class ControlsManual : Control
         {
             case Kind.Any when spec.Actions.Length == 1:
                 // The main button only (the first bound for the device): the manual stays small.
-                foreach (InputEvent e in InputMap.ActionGetEvents(spec.Actions[0]))
+                foreach (InputEvent e in InputActions.Bindings(spec.Actions[0]))
                 {
                     if (GlyphOf(e, pad, spec.Actions[0]) is { } glyph)
                     {
@@ -305,7 +305,7 @@ public partial class ControlsManual : Control
             case Kind.Join:
                 foreach (StringName action in spec.Actions)
                 {
-                    foreach (InputEvent e in InputMap.ActionGetEvents(action))
+                    foreach (InputEvent e in InputActions.Bindings(action))
                     {
                         if (GlyphOf(e, pad, action) is { } glyph)
                         {
@@ -338,12 +338,12 @@ public partial class ControlsManual : Control
     /// <summary>Movement: the n-th binding of each direction makes a group (W A S D, then the arrows); a stick or a d-pad is one glyph.</summary>
     private static void BuildSet(List<Item> items, StringName[] actions, bool pad)
     {
-        var events = new Godot.Collections.Array<InputEvent>[actions.Length];
+        var events = new InputEvent[actions.Length][];
         int count = 0;
         for (int i = 0; i < actions.Length; i++)
         {
-            events[i] = InputMap.ActionGetEvents(actions[i]);
-            count = Mathf.Max(count, events[i].Count);
+            events[i] = InputActions.Bindings(actions[i]);
+            count = Mathf.Max(count, events[i].Length);
         }
 
         // The first group only (W A S D; the left stick): the manual stays small.
@@ -353,7 +353,7 @@ public partial class ControlsManual : Control
             var group = new List<Glyph>();
             for (int i = 0; i < actions.Length; i++)
             {
-                if (n >= events[i].Count || GlyphOf(events[i][n], pad, actions[i]) is not { } glyph)
+                if (n >= events[i].Length || GlyphOf(events[i][n], pad, actions[i]) is not { } glyph)
                 {
                     continue;
                 }

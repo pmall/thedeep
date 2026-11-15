@@ -190,7 +190,7 @@ public partial class MachineDirector : Node
 
     private void Collect(Node parent)
     {
-        foreach (Node child in parent.GetChildren())
+        foreach (Node child in parent.Children())
         {
             if (child is Machine machine)
             {

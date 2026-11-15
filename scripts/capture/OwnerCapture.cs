@@ -296,10 +296,10 @@ public partial class OwnerCapture : CanvasLayer
         Toast.Text = text;
         _toastTween?.Kill();
         _toastTween = CreateTween();
-        _toastTween.TweenProperty(Toast, CanvasItem.PropertyName.Modulate.ToString(), Colors.White, 0.25)
+        _toastTween.TweenProperty(Toast, Names.Modulate, Colors.White, 0.25)
             .SetTrans(Tween.TransitionType.Sine).SetEase(Tween.EaseType.Out);
         _toastTween.TweenInterval(2.5);
-        _toastTween.TweenProperty(Toast, CanvasItem.PropertyName.Modulate.ToString(), Colors.Transparent, 0.8)
+        _toastTween.TweenProperty(Toast, Names.Modulate, Colors.Transparent, 0.8)
             .SetTrans(Tween.TransitionType.Sine).SetEase(Tween.EaseType.InOut);
     }
 
@@ -332,7 +332,7 @@ public partial class OwnerCapture : CanvasLayer
         Vector2I window = DisplayServer.WindowGetSize();
         return new CaptureReport(title)
             .Add("time", DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss", CultureInfo.InvariantCulture))
-            .Add("room", $"{World.Room.Name} ({World.Room.SceneFilePath})")
+            .Add("room", $"{World.Room.NameText()} ({World.Room.SceneFilePath})")
             .Add("position", FormatVector(position))
             .Add("velocity", FormatVector(velocity))
             .Add("state", Player.CurrentState.Name)
@@ -342,7 +342,7 @@ public partial class OwnerCapture : CanvasLayer
             .Add("camera", camera is null ? "none" : FormatVector(camera.GlobalPosition))
             .Add("fps", Engine.GetFramesPerSecond().ToString("0", CultureInfo.InvariantCulture))
             .Add("window", $"{window.X}x{window.Y}")
-            .Add("build", $"Godot {Engine.GetVersionInfo()["string"]}, {(OS.IsDebugBuild() ? "debug" : "release")}");
+            .Add("build", $"Godot {EngineVersion.Text}, {(OS.IsDebugBuild() ? "debug" : "release")}");
     }
 
     /// <summary>captures/ at the project root when run from source, next to the executable when exported.</summary>

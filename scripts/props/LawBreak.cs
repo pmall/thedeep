@@ -27,15 +27,15 @@ public partial class LawBreak : Node3D, IAnnounces, IHints
     [Export] public ActionPrompt Prompt { get; set; } = null!;
 
     /// <summary>The law's words (shown at the lip), and the banner when it breaks.</summary>
-    [Export] public StringName LawLine { get; set; } = "";
-    [Export] public StringName BrokenLine { get; set; } = "";
-    [Export] public StringName BrokenHintLine { get; set; } = "";
+    [Export] public StringName LawLine { get; set; } = Names.None;
+    [Export] public StringName BrokenLine { get; set; } = Names.None;
+    [Export] public StringName BrokenHintLine { get; set; } = Names.None;
 
     /// <summary>What the pilgrim says, once, the first time it presses on: why it may not.</summary>
-    [Export] public StringName RefusalLine { get; set; } = "";
+    [Export] public StringName RefusalLine { get; set; } = Names.None;
 
     /// <summary>The act the prompt names ("Break the third law").</summary>
-    [Export] public StringName ActLine { get; set; } = "";
+    [Export] public StringName ActLine { get; set; } = Names.None;
 
     /// <inheritdoc/>
     public System.Collections.Generic.IEnumerable<StringName> LineIds => new[] { LawLine, BrokenLine, BrokenHintLine, RefusalLine, ActLine };

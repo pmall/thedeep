@@ -59,7 +59,7 @@ public partial class LockedDoor : Node3D
         Opened = true;
         Gate.Open();
         _lock?.Release();
-        CreateTween().TweenProperty(Light, "light_energy", 0f, 1.2f).SetTrans(Tween.TransitionType.Sine);
+        CreateTween().TweenProperty(Light, Names.LightEnergy, 0f, 1.2f).SetTrans(Tween.TransitionType.Sine);
     }
 
     /// <summary>Opened before (from the save): up already.</summary>

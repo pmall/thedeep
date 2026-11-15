@@ -76,7 +76,7 @@ public partial class ItemPickup : Node3D, IWalkedThrough
             Token.GlobalPosition = start.Lerp(target.GlobalPosition + offset, e) + new Vector3(0f, 0.4f * Mathf.Sin(Mathf.Pi * t), 0f);
             Token.Scale = Vector3.One * (1f - 0.8f * e * e);
         }), 0f, 1f, 0.6f);
-        tween.Parallel().TweenProperty(Light, "light_energy", 0f, 0.6f);
+        tween.Parallel().TweenProperty(Light, Names.LightEnergy, 0f, 0.6f);
         TokenGlow.FlareOut(tween, Rim, 2.5f, 0.6f);
         await ToSignal(tween, Tween.SignalName.Finished);
         Token.Visible = false;

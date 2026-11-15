@@ -19,7 +19,7 @@ public static class RoomShapes
         var solids = room.Blocks().Select(BoxOf).ToList();
         var sound = room.Blocks().Where(b => !b.Cracked).Select(BoxOf).ToList();
         var exits = room.Exits().Where(e => e.TargetRoom == "" || ResourceLoader.Exists(e.TargetRoom))
-            .Select(e => new ExitShape(e.Name, e.Threshold, e.Requires, e.ArrivalSide, e.TargetRoom == "")).ToList();
+            .Select(e => new ExitShape(e.NameText(), e.Threshold, e.Requires, e.ArrivalSide, e.TargetRoom == "")).ToList();
         var wakes = room.All<Shrine>().Select(s => s.GlobalPosition.Flat()).ToList();
         if (start)
         {

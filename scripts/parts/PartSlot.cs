@@ -9,7 +9,7 @@ namespace TheDeep;
 [GlobalClass]
 public partial class PartSlot : Resource
 {
-    [Export] public StringName Joint { get; set; } = "";
+    [Export] public StringName Joint { get; set; } = Names.None;
     [Export] public PartCategory Category { get; set; } = PartCategory.Chassis;
     [Export] public Mesh? Mesh { get; set; }
     [Export] public Material? Material { get; set; }

@@ -11,7 +11,7 @@ namespace TheDeep;
 [GlobalClass]
 public partial class TextLine : Resource
 {
-    [Export] public StringName Id { get; set; } = "";
+    [Export] public StringName Id { get; set; } = Names.None;
     [Export] public string Speaker { get; set; } = "";
     [Export(PropertyHint.MultilineText)] public string Text { get; set; } = "";
     [Export] public string Notes { get; set; } = "";

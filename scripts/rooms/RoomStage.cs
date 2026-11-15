@@ -15,6 +15,11 @@ namespace TheDeep;
 /// </summary>
 public partial class RoomStage : Node3D
 {
+    private static readonly StringName FrameAboveName = "FrameAbove";
+    private static readonly StringName FrameBelowName = "FrameBelow";
+    private static readonly StringName ArchitectureName = "Architecture";
+    private static readonly StringName UnderglowName = "Underglow";
+
     /// <summary>Distance from the camera to the play plane (the gameplay camera); used to size the backdrop.</summary>
     public const float CameraDistance = 22f;
 
@@ -92,7 +97,7 @@ public partial class RoomStage : Node3D
         {
             AddChild(new BackdropScatter
             {
-                Name = "FrameBelow",
+                Name = FrameBelowName,
                 Material = FrameMaterial,
                 Count = Mathf.Max(1, Mathf.RoundToInt(frameWidth / 9.5f)),
                 AreaMin = new Vector2(min.X - 4f, min.Y - 4f),
@@ -108,7 +113,7 @@ public partial class RoomStage : Node3D
         {
             AddChild(new BackdropScatter
             {
-                Name = "FrameAbove",
+                Name = FrameAboveName,
                 Material = FrameMaterial,
                 Count = Mathf.Max(1, Mathf.RoundToInt(frameWidth / 15f)),
                 AreaMin = new Vector2(min.X - 4f, max.Y + 2f),
@@ -124,7 +129,7 @@ public partial class RoomStage : Node3D
         if (Dust is not null && DustDensity > 0f)
         {
             var dust = Dust.Instantiate<AmbientParticles>();
-            dust.Name = "Dust";
+            dust.Named("Dust");
             dust.Position = new Vector3(centerX, (min.Y + max.Y) * 0.5f - 1f, -5.5f);
             dust.Extents = new Vector3(size.X * 0.5f, size.Y * 0.4f, 6.5f);
             dust.Density = DustDensity;
@@ -137,7 +142,7 @@ public partial class RoomStage : Node3D
         {
             if (light is SpotLight3D { LightVolumetricFogEnergy: > 0f } spot)
             {
-                AddChild(new LightShaft { Name = $"Beam{spot.Name}", Light = spot, Material = ShaftMaterial, Solids = solids, FloorY = min.Y });
+                AddChild(new LightShaft { Light = spot, Material = ShaftMaterial, Solids = solids, FloorY = min.Y }.Named($"Beam{spot.NameText()}"));
             }
         }
     }
@@ -174,7 +179,7 @@ public partial class RoomStage : Node3D
 
         _architecture = new BackdropArchitecture
         {
-            Name = "Architecture",
+            Name = ArchitectureName,
             Style = biome.Architecture,
             Stone = PillarMaterial,
             Metal = ArchitectureMetal,
@@ -220,7 +225,7 @@ public partial class RoomStage : Node3D
         {
             _underglow = new DirectionalLight3D
             {
-                Name = "Underglow",
+                Name = UnderglowName,
                 ShadowEnabled = false,
                 SkyMode = DirectionalLight3D.SkyModeEnum.LightOnly,
             };
@@ -242,12 +247,11 @@ public partial class RoomStage : Node3D
         float height = Mathf.Max(minHeight, roomSize.Y + minHeight * 0.6f);
         var skyline = new MeshInstance3D
         {
-            Name = name,
             Mesh = new QuadMesh { Size = new Vector2(width, height), CenterOffset = new Vector3(0f, height * 0.5f, 0f) },
             CastShadow = GeometryInstance3D.ShadowCastingSetting.Off,
             Position = new Vector3(centerX, bottom, -depth),
             Visible = false,
-        };
+        }.Named(name);
         AddChild(skyline);
         return skyline;
     }

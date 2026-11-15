@@ -147,7 +147,7 @@ public partial class WaterBody : Node3D
         if (!Swim || passage.MinX < region.MinX || passage.MaxX > region.MaxX || passage.MinY < region.MinY || passage.MaxY > region.MaxY)
         {
             throw new System.InvalidOperationException(
-                $"{GetPath()} doesn't fill the flooded passage {passage}: it must be swum and reach the frame's outer face (docs/gameplay.md#seam-rule)");
+                $"{this.PathText()} doesn't fill the flooded passage {passage}: it must be swum and reach the frame's outer face (docs/gameplay.md#seam-rule)");
         }
 
         var front = new Rect2(passage.MinX - GlobalPosition.X, passage.MinY - SurfaceY, passage.MaxX - passage.MinX, passage.MaxY - passage.MinY);

@@ -106,8 +106,8 @@ public partial class Lift : Node3D
             return;
         }
 
-        SeamEnd frame = Through.GetChildren().OfType<SeamEnd>().FirstOrDefault()
-            ?? throw new InvalidOperationException($"lift {Name} rides through {Through.Name}, an exit no seam brick frames");
+        SeamEnd frame = Through.Children().OfType<SeamEnd>().FirstOrDefault()
+            ?? throw new InvalidOperationException($"lift {this.NameText()} rides through {Through.NameText()}, an exit no seam brick frames");
         (System.Numerics.Vector2 stop, float rise) = frame.Profile.Frame.Lift(Through.Side, Through.RoomPosition.ToCore(), GlobalPosition.Y);
         GlobalPosition = new Vector3(stop.X, stop.Y, GlobalPosition.Z);
         Rise = rise;

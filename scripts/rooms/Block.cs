@@ -14,6 +14,9 @@ namespace TheDeep;
 /// </summary>
 public partial class Block : StaticBody3D
 {
+    private static readonly NodePath ShapePath = "%Shape";
+    private static readonly NodePath MeshPath = "%Mesh";
+
     [Export] public Vector3 Size { get; set; } = Vector3.One;
     [Export] public SurfaceKind Surface { get; set; } = SurfaceKind.Rock;
     [Export] public Material RockMaterial { get; set; } = null!;
@@ -52,7 +55,7 @@ public partial class Block : StaticBody3D
     private CollisionShape3D? _shape;
 
     /// <summary>The scene's collision shape (its unique child).</summary>
-    private CollisionShape3D ShapeNode => _shape ??= GetNode<CollisionShape3D>("%Shape");
+    private CollisionShape3D ShapeNode => _shape ??= GetNode<CollisionShape3D>(ShapePath);
 
     public override void _Ready()
     {
@@ -60,7 +63,7 @@ public partial class Block : StaticBody3D
         CollisionLayer = metal ? PhysicsLayers.WorldMetal : PhysicsLayers.WorldRock;
         CollisionMask = 0;
 
-        var mesh = GetNode<MeshInstance3D>("%Mesh");
+        var mesh = GetNode<MeshInstance3D>(MeshPath);
         if (CollisionOnly)
         {
             mesh.QueueFree();

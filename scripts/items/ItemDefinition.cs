@@ -16,13 +16,13 @@ public partial class ItemDefinition : Resource, IAnnounces, IHints
     [Export] public ItemKind Kind { get; set; } = ItemKind.Key;
 
     /// <summary>The item's name (shown when taken and on the map).</summary>
-    [Export] public StringName NameLine { get; set; } = "";
+    [Export] public StringName NameLine { get; set; } = Names.None;
 
     /// <summary>Shown under the name when it is taken: what it is, where it might fit.</summary>
-    [Export] public StringName TakenLine { get; set; } = "";
+    [Export] public StringName TakenLine { get; set; } = Names.None;
 
     /// <summary>What the pilgrim says seeing its door without it: it names the item and the room it lies in (<see cref="TheDeep.LockedLine"/>).</summary>
-    [Export] public StringName LockedLine { get; set; } = "";
+    [Export] public StringName LockedLine { get; set; } = Names.None;
 
     /// <inheritdoc/>
     public System.Collections.Generic.IEnumerable<StringName> LineIds => new[] { NameLine, TakenLine, LockedLine };

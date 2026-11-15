@@ -85,7 +85,7 @@ public partial class SaveCheck : Node
         {
             case 10:
                 World.Load(GD.Load<PackedScene>(World.RoomPath(Start)));
-                World.Map.Take(Start, World.Room.Exits().First().Name);
+                World.Map.Take(Start, World.Room.Exits().First().NameText());
                 break;
             case 20:
                 Shrine? shrine = World.Room.First<Shrine>();
@@ -125,7 +125,7 @@ public partial class SaveCheck : Node
         }
 
         Expect("the file's room is where it rested", file.Room, Start);
-        Expect("the file's shrine", file.Shrine, World.Room.First<Shrine>()?.Name.ToString() ?? "?");
+        Expect("the file's shrine", file.Shrine, World.Room.First<Shrine>()?.NameText() ?? "?");
         Expect("the room resumed in", World.RoomName, file.Room);
         Expect("abilities", Player.Abilities.Unlocked, Owned);
         Expect("items", string.Join(",", Player.Items.Held.Ids), Item);

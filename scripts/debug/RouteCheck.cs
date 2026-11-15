@@ -123,11 +123,11 @@ public partial class RouteCheck : Node
         Collect(room, bodies);
         foreach (CollisionObject3D body in bodies)
         {
-            foreach (CollisionShape3D shape in body.GetChildren().OfType<CollisionShape3D>().Where(s => !s.Disabled))
+            foreach (CollisionShape3D shape in body.Children().OfType<CollisionShape3D>().Where(s => !s.Disabled))
             {
                 if (shape.Shape is not BoxShape3D cube)
                 {
-                    GD.PushError($"ROUTE CHECK: {room.Name}: {body.Name} is a solid of a shape the check can't keep off ({shape.Shape?.GetClass()})");
+                    GD.PushError($"ROUTE CHECK: {room.NameText()}: {body.NameText()} is a solid of a shape the check can't keep off ({shape.Shape?.GetClass()})");
                     continue;
                 }
 
@@ -154,7 +154,7 @@ public partial class RouteCheck : Node
 
     private static void Collect(Node node, List<CollisionObject3D> bodies)
     {
-        foreach (Node child in node.GetChildren())
+        foreach (Node child in node.Children())
         {
             if (child is CollisionObject3D body and not Block && (body.CollisionLayer & PhysicsLayers.Solid) != 0)
             {

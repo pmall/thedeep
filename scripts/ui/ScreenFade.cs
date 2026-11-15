@@ -39,7 +39,7 @@ public partial class ScreenFade : CanvasLayer
         }
 
         _tween = CreateTween().SetPauseMode(Tween.TweenPauseMode.Process);
-        _tween.TweenProperty(Veil, "color:a", amount, seconds).SetTrans(Tween.TransitionType.Sine).SetEase(Tween.EaseType.InOut);
+        _tween.TweenProperty(Veil, Names.ColorAlpha, amount, seconds).SetTrans(Tween.TransitionType.Sine).SetEase(Tween.EaseType.InOut);
         await ToSignal(_tween, Tween.SignalName.Finished);
     }
 }

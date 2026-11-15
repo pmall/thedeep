@@ -79,7 +79,7 @@ public partial class Room : Node3D
     {
         foreach (RoomExit exit in Exits())
         {
-            if (exit.Name == name)
+            if (exit.NameText() == name)
             {
                 return exit;
             }
@@ -164,7 +164,7 @@ public partial class Room : Node3D
 
     private static IEnumerable<T> Find<T>(Node parent) where T : Node
     {
-        foreach (Node child in parent.GetChildren())
+        foreach (Node child in parent.Children())
         {
             if (child is T match)
             {

@@ -11,9 +11,9 @@ namespace TheDeep;
 public partial class PartChain : Resource
 {
     /// <summary>Lets code find a chain's end (a lantern's light follows it). Unique within the assembly.</summary>
-    [Export] public StringName Name { get; set; } = "";
+    [Export] public StringName Name { get; set; } = Names.None;
 
-    [Export] public StringName Joint { get; set; } = "";
+    [Export] public StringName Joint { get; set; } = Names.None;
     [Export] public PartCategory Category { get; set; } = PartCategory.Ornament;
 
     /// <summary>Where the chain hangs from, on the joint (m).</summary>

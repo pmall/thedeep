@@ -47,7 +47,7 @@ public partial class Arenas : Node
         foreach (Arena arena in room.All<Arena>())
         {
             arena.Player = Player;
-            if (Session.Done(name, arena.Name))
+            if (Session.Done(name, arena.NameText()))
             {
                 arena.Settle();
                 continue;
@@ -73,7 +73,7 @@ public partial class Arenas : Node
     /// <summary>An arena won: remembered (and saved) at once, so its foes never stand again.</summary>
     private void OnCleared(Arena arena)
     {
-        Session.Remember(arena.Name);
+        Session.Remember(arena.NameText());
         switch (arena)
         {
             case BossSeal seal:
@@ -85,7 +85,7 @@ public partial class Arenas : Node
                 Camera.AddShake(ambush.ClearedShake);
                 break;
             default:
-                throw new InvalidOperationException($"arena {arena.Name} is of no kind Arenas knows ({arena.GetType().Name})");
+                throw new InvalidOperationException($"arena {arena.NameText()} is of no kind Arenas knows ({arena.GetType().Name})");
         }
     }
 }

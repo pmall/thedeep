@@ -36,7 +36,7 @@ public partial class EndCard : CanvasLayer
         AddChild(Veil);
         var box = new VBoxContainer { MouseFilter = Control.MouseFilterEnum.Ignore, Alignment = BoxContainer.AlignmentMode.Center };
         box.SetAnchorsPreset(Control.LayoutPreset.FullRect);
-        box.AddThemeConstantOverride("separation", 26);
+        box.AddThemeConstantOverride(ThemeNames.Separation, 26);
         box.AddChild(TitleLabel);
         box.AddChild(LineLabel);
         box.AddChild(ThanksLabel);
@@ -64,19 +64,19 @@ public partial class EndCard : CanvasLayer
         TitleLabel.Text = book.Find(GameLines.EndingTitle)?.Text ?? "";
         LineLabel.Text = book.Find(GameLines.EndingLine)?.Text ?? "";
         ThanksLabel.Text = book.Find(GameLines.EndingThanks)?.Text ?? "";
-        TitleLabel.AddThemeColorOverride("font_color", Style.Accent(World.Room.Biome));
+        TitleLabel.AddThemeColorOverride(ThemeNames.FontColor, Style.Accent(World.Room.Biome));
         Visible = true;
         Tween tween = CreateTween();
-        tween.TweenProperty(Veil, "color:a", 1f, FadeTime).SetTrans(Tween.TransitionType.Sine);
+        tween.TweenProperty(Veil, Names.ColorAlpha, 1f, FadeTime).SetTrans(Tween.TransitionType.Sine);
         float slow = Style.Slow;
-        tween.TweenProperty(TitleLabel, "modulate:a", 1f, slow).SetTrans(Tween.TransitionType.Sine);
-        tween.TweenProperty(LineLabel, "modulate:a", 1f, slow).SetTrans(Tween.TransitionType.Sine);
+        tween.TweenProperty(TitleLabel, Names.ModulateAlpha, 1f, slow).SetTrans(Tween.TransitionType.Sine);
+        tween.TweenProperty(LineLabel, Names.ModulateAlpha, 1f, slow).SetTrans(Tween.TransitionType.Sine);
         tween.TweenInterval(Hold * 0.5f);
-        tween.TweenProperty(ThanksLabel, "modulate:a", 1f, slow).SetTrans(Tween.TransitionType.Sine);
+        tween.TweenProperty(ThanksLabel, Names.ModulateAlpha, 1f, slow).SetTrans(Tween.TransitionType.Sine);
         tween.TweenInterval(Hold * 0.5f);
-        tween.TweenProperty(TitleLabel, "modulate:a", 0f, slow);
-        tween.Parallel().TweenProperty(LineLabel, "modulate:a", 0f, slow);
-        tween.Parallel().TweenProperty(ThanksLabel, "modulate:a", 0f, slow);
+        tween.TweenProperty(TitleLabel, Names.ModulateAlpha, 0f, slow);
+        tween.Parallel().TweenProperty(LineLabel, Names.ModulateAlpha, 0f, slow);
+        tween.Parallel().TweenProperty(ThanksLabel, Names.ModulateAlpha, 0f, slow);
         await ToSignal(tween, Tween.SignalName.Finished);
     }
 }
