@@ -140,4 +140,76 @@ public sealed record NaveWallSpec
 
     /// <summary>What an icicle fringe's length may add to <see cref="IcicleLength"/>.</summary>
     public float IcicleLengthSpread { get; init; } = 0.6f;
+
+    /// <summary>The bevel of the plinth's block (its depth is twice <see cref="PlinthDepth"/>: the block is centered on it).</summary>
+    public float PlinthBevel { get; init; } = 0.08f;
+
+    /// <summary>A shaft's bevel, at most (a slim shaft takes <see cref="ShaftBevelShare"/> of its width).</summary>
+    public float ShaftBevel { get; init; } = 0.06f;
+
+    /// <summary>A slim shaft's bevel as a share of its width.</summary>
+    public float ShaftBevelShare { get; init; } = 0.2f;
+
+    /// <summary>A shaft wider than this has a fillet down its face.</summary>
+    public float FilletMinWidth { get; init; } = 0.4f;
+
+    /// <summary>A fillet's width as a share of its shaft's...</summary>
+    public float FilletShare { get; init; } = 0.4f;
+
+    /// <summary>...this deep...</summary>
+    public float FilletDepth { get; init; } = 0.2f;
+
+    /// <summary>...with this bevel...</summary>
+    public float FilletBevel { get; init; } = 0.04f;
+
+    /// <summary>...and standing this far out of the wall.</summary>
+    public float FilletOffset { get; init; } = 0.3f;
+
+    /// <summary>The bevel of a capital's block (its depth is twice <see cref="CapitalDepth"/>).</summary>
+    public float CapitalBevel { get; init; } = 0.06f;
+
+    /// <summary>An arch's ring is at most this share of its span thick (and <see cref="ArchRing"/>).</summary>
+    public float ArchRingShare { get; init; } = 0.12f;
+
+    /// <summary>An arch's ring is this deep.</summary>
+    public float ArchMeshDepth { get; init; } = 0.45f;
+
+    /// <summary>An arch's ring is cut in this many segments.</summary>
+    public int ArchSegments { get; init; } = 24;
+
+    /// <summary>A recess's block is this deep.</summary>
+    public float RecessMeshDepth { get; init; } = 0.06f;
+
+    /// <summary>The bevel of a recess's block.</summary>
+    public float RecessBevel { get; init; } = 0.01f;
+
+    /// <summary>The bevel of a course's block (its depth is twice <see cref="CourseDepth"/>).</summary>
+    public float CourseBevel { get; init; } = 0.08f;
+
+    /// <summary>The shadowed back of a rose is this thick.</summary>
+    public float RoseBackHeight { get; init; } = 0.06f;
+
+    /// <summary>A rose's ring is this deep.</summary>
+    public float RoseRingHeight { get; init; } = 0.35f;
+
+    /// <summary>A rose's ring is this share of its radius thick.</summary>
+    public float RoseRingShare { get; init; } = 0.16f;
+
+    /// <summary>A rose's rings are cut in this many segments.</summary>
+    public int RoseSegments { get; init; } = 32;
+
+    /// <summary>A rose has this many bars of tracery, evenly turned.</summary>
+    public int TraceryCount { get; init; } = 4;
+
+    /// <summary>A tracery bar is this share of the rose's diameter long...</summary>
+    public float TraceryWidthShare { get; init; } = 0.9f;
+
+    /// <summary>...this thick...</summary>
+    public float TraceryThickness { get; init; } = 0.1f;
+
+    /// <summary>...this deep...</summary>
+    public float TraceryDepth { get; init; } = 0.2f;
+
+    /// <summary>...with this bevel.</summary>
+    public float TraceryBevel { get; init; } = 0.02f;
 }

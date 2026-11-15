@@ -65,4 +65,31 @@ public sealed record ArchiveWallSpec
 
     /// <summary>How many looks a rack has.</summary>
     public int RackVariants { get; init; } = 3;
+
+    /// <summary>A pier's column has this many sides.</summary>
+    public int PierSides { get; init; } = 8;
+
+    /// <summary>A pier's radius as a share of its placement's width.</summary>
+    public float PierRadiusShare { get; init; } = 0.4f;
+
+    /// <summary>A pier's plinth height.</summary>
+    public float PierPlinth { get; init; } = 0.5f;
+
+    /// <summary>A pier's capital height.</summary>
+    public float PierCapital { get; init; } = 0.4f;
+
+    /// <summary>A shelf's block is this deep.</summary>
+    public float ShelfMeshDepth { get; init; } = 1f;
+
+    /// <summary>The bevel of a shelf's block.</summary>
+    public float ShelfBevel { get; init; } = 0.03f;
+
+    /// <summary>A rack's stack is this deep.</summary>
+    public float RackMeshDepth { get; init; } = 0.9f;
+
+    /// <summary>The shelf spacing of the first rack look...</summary>
+    public float RackShelf { get; init; } = 0.45f;
+
+    /// <summary>...and what each next look adds to it.</summary>
+    public float RackShelfStep { get; init; } = 0.12f;
 }

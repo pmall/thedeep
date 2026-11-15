@@ -18,9 +18,9 @@ public partial class SeamProfile : Resource
     /// <summary>How deep the frame's solids reach across the play plane, meters (a block's Z size).</summary>
     [Export] public float Depth { get; set; } = 4f;
 
-    /// <summary>The seam's rule in the core.</summary>
     /// <summary>For a hatch a lift rides up through, how far the shaft's head carries the rider from the frame's top to the floor, meters.</summary>
     [Export] public float HeadRise { get; set; }
 
+    /// <summary>The seam's rule in the core, for these numbers.</summary>
     public SeamFrame Frame => new(Opening, Approach, HeadRise);
 }

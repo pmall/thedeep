@@ -41,8 +41,15 @@ public partial class RoomTravel : Node
 
     public override void _Ready()
     {
-        World.RoomLoaded += _ => Entry = null;
+        World.RoomLoaded += OnRoomLoaded;
     }
+
+    public override void _ExitTree()
+    {
+        World.RoomLoaded -= OnRoomLoaded;
+    }
+
+    private void OnRoomLoaded(Room room) => Entry = null;
 
     public override void _PhysicsProcess(double delta)
     {

@@ -57,7 +57,7 @@ public partial class WorldDefinition : Resource
 
     /// <summary>The scene paths of every room of the world, in name order: the scenes of <see cref="RoomsFolder"/>.</summary>
     public IEnumerable<string> RoomScenes() =>
-        DirAccess.GetFilesAt(RoomsFolder).Where(f => f.EndsWith(".tscn", StringComparison.Ordinal)).Order().Select(f => $"{RoomsFolder}/{f}");
+        DirAccess.GetFilesAt(RoomsFolder).Where(f => f.EndsWith(".tscn", StringComparison.Ordinal)).Order(StringComparer.Ordinal).Select(f => $"{RoomsFolder}/{f}");
 
     /// <summary>Reads and parses the world's network (<see cref="Network"/>).</summary>
     public WorldData<MapDraft> LoadNetwork() => Read(Network, MapDraft.FromMarkdown);

@@ -113,4 +113,37 @@ public sealed record FoundryBackdropSpec
 
     /// <summary>...and what it may add to that.</summary>
     public float DuctLiftSpread { get; init; } = 3f;
+
+    /// <summary>A furnace's bevel, times the row's scale.</summary>
+    public float FurnaceBevel { get; init; } = 0.2f;
+
+    /// <summary>A hood's depth as a share of a furnace's.</summary>
+    public float HoodDepthShare { get; init; } = 0.7f;
+
+    /// <summary>A hood's bevel, times the row's scale.</summary>
+    public float HoodBevel { get; init; } = 0.15f;
+
+    /// <summary>A furnace mouth's depth, times the row's scale.</summary>
+    public float MouthThickness { get; init; } = 0.3f;
+
+    /// <summary>A furnace mouth's bevel, times the row's scale.</summary>
+    public float MouthBevel { get; init; } = 0.05f;
+
+    /// <summary>A stack's flanges stand this far apart, times the row's scale.</summary>
+    public float StackFlange { get; init; } = 3.5f;
+
+    /// <summary>A duct's flanges stand this far apart, times the row's scale.</summary>
+    public float DuctFlange { get; init; } = 2.5f;
+
+    /// <summary>A tank's flanges stand this far apart, times the row's scale.</summary>
+    public float TankFlange { get; init; } = 1.6f;
+
+    /// <summary>A truss member's bevel, meters.</summary>
+    public float BeamBevel { get; init; } = 0.02f;
+
+    /// <summary>A brace's section as a share of a chord's.</summary>
+    public float BraceShare { get; init; } = 0.7f;
+
+    /// <summary>A chain's radius, times the row's scale.</summary>
+    public float ChainRadius { get; init; } = 0.08f;
 }

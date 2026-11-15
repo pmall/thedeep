@@ -95,4 +95,79 @@ public sealed record FoundryWallSpec
 
     /// <summary>How far a chain hangs out of the wall.</summary>
     public float ChainDepth { get; init; } = 0.9f;
+
+    /// <summary>A pilaster's block is this deep (the mesh, centered on its placement).</summary>
+    public float PilasterMeshDepth { get; init; } = 0.7f;
+
+    /// <summary>The bevel of a pilaster's block.</summary>
+    public float PilasterBevel { get; init; } = 0.06f;
+
+    /// <summary>The rib down a pilaster's face is this share of the pilaster's width...</summary>
+    public float PilasterRibShare { get; init; } = 0.45f;
+
+    /// <summary>...this deep...</summary>
+    public float PilasterRibDepth { get; init; } = 0.25f;
+
+    /// <summary>...with this bevel...</summary>
+    public float PilasterRibBevel { get; init; } = 0.04f;
+
+    /// <summary>...and stands this far out of the wall.</summary>
+    public float PilasterRibOffset { get; init; } = 0.45f;
+
+    /// <summary>A girder's block is this deep.</summary>
+    public float GirderMeshDepth { get; init; } = 0.5f;
+
+    /// <summary>The bevel of a girder's block.</summary>
+    public float GirderBevel { get; init; } = 0.05f;
+
+    /// <summary>The lip along a girder's top is this share of its thickness high...</summary>
+    public float GirderLipShare { get; init; } = 0.3f;
+
+    /// <summary>...this deep...</summary>
+    public float GirderLipDepth { get; init; } = 0.7f;
+
+    /// <summary>...with this bevel.</summary>
+    public float GirderLipBevel { get; init; } = 0.03f;
+
+    /// <summary>A furnace grate's thickness.</summary>
+    public float GrateThickness { get; init; } = 0.12f;
+
+    /// <summary>The bars of a furnace grate stand this far apart.</summary>
+    public float GrateSpacing { get; init; } = 0.45f;
+
+    /// <summary>A furnace grate's bar thickness.</summary>
+    public float GrateBar { get; init; } = 0.12f;
+
+    /// <summary>A furnace mouth's lintel and jambs are this deep.</summary>
+    public float FrameDepth { get; init; } = 0.7f;
+
+    /// <summary>A furnace mouth's lintel and jambs stand this far out of the wall.</summary>
+    public float FrameOffset { get; init; } = 0.1f;
+
+    /// <summary>A furnace mouth's lintel height.</summary>
+    public float LintelHeight { get; init; } = 0.6f;
+
+    /// <summary>A lintel is this much wider than its mouth, in all.</summary>
+    public float LintelOverhang { get; init; } = 1f;
+
+    /// <summary>The bevel of a lintel.</summary>
+    public float LintelBevel { get; init; } = 0.06f;
+
+    /// <summary>A furnace mouth's jamb width.</summary>
+    public float JambWidth { get; init; } = 0.5f;
+
+    /// <summary>The bevel of a jamb.</summary>
+    public float JambBevel { get; init; } = 0.05f;
+
+    /// <summary>A pipe's flanges stand this far apart.</summary>
+    public float PipeFlangeSpacing { get; init; } = 2.5f;
+
+    /// <summary>The weight at a chain's end is this wide and deep...</summary>
+    public float ChainWeightWidth { get; init; } = 0.45f;
+
+    /// <summary>...this high...</summary>
+    public float ChainWeightHeight { get; init; } = 0.6f;
+
+    /// <summary>...with this bevel.</summary>
+    public float ChainWeightBevel { get; init; } = 0.08f;
 }

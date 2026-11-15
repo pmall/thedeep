@@ -33,6 +33,27 @@ public abstract partial class SeamEnd : Node3D
     /// </summary>
     [Export] public bool Flooded { get; set; }
 
+    /// <summary>How far a through piece of trim runs into the frame past each face, meters: never sharing a face's plane with it.</summary>
+    private const float TrimOverlap = 0.04f;
+
+    /// <summary>The most a trim piece's edges are bevelled, meters (a thin piece takes a quarter of its thinnest side: <see cref="TrimBevelShare"/>).</summary>
+    private const float TrimBevel = 0.04f;
+
+    /// <summary>A trim piece's bevel is at most this share of its thinnest side.</summary>
+    private const float TrimBevelShare = 0.25f;
+
+    /// <summary>A trim piece whose top is this near a water surface counts as lying on it.</summary>
+    private const float WaterTouch = 0.1f;
+
+    /// <summary>How far such a piece is lowered, meters: more than <see cref="WaterTouch"/>, so its top is clear of the surface.</summary>
+    private const float WaterLower = 0.15f;
+
+    /// <summary>
+    /// How much deeper than the frame a water sheet through it is, meters: it reaches past both faces, so no seam of the frame
+    /// shows against the water.
+    /// </summary>
+    protected const float WaterSheetExtra = 0.1f;
+
     /// <summary>The block the frame is built of (<c>scenes/kit/Block.tscn</c>).</summary>
     [Export] public PackedScene BlockScene { get; set; } = null!;
 
@@ -201,7 +222,7 @@ public abstract partial class SeamEnd : Node3D
     /// <summary>The frame's trim (<see cref="SeamFrame.Trim"/>) as bevelled kit pieces on its front face: no collision.</summary>
     private void BuildTrim(IReadOnlyList<TrimPiece> pieces, Material look, Material metal)
     {
-        float front = Profile.Depth * 0.5f, overlap = 0.04f;
+        float front = Profile.Depth * 0.5f, overlap = TrimOverlap;
         List<WaterBody> waters = Owner is null ? new() : Waters(Owner).ToList();
         for (int i = 0; i < pieces.Count; i++)
         {
@@ -210,7 +231,7 @@ public abstract partial class SeamEnd : Node3D
             var size = new Vector3(p.Face.MaxX - p.Face.MinX, p.Face.MaxY - p.Face.MinY, z1 - z0);
             AddChild(new MeshInstance3D
             {
-                Mesh = new BlockMesh { Size = size, Bevel = MathF.Min(0.04f, MathF.Min(size.X, size.Y) * 0.25f) },
+                Mesh = new BlockMesh { Size = size, Bevel = MathF.Min(TrimBevel, MathF.Min(size.X, size.Y) * TrimBevelShare) },
                 MaterialOverride = p.Lining ? metal : look,
                 Position = new Vector3((p.Face.MinX + p.Face.MaxX) * 0.5f, (p.Face.MinY + p.Face.MaxY) * 0.5f, (z0 + z1) * 0.5f),
             }.Named($"Trim{i}"));
@@ -222,8 +243,8 @@ public abstract partial class SeamEnd : Node3D
     {
         Vector3 at = GlobalPosition;
         float top = at.Y + piece.Face.MaxY;
-        bool onSurface = waters.Any(w => Mathf.Abs(top - w.SurfaceY) < 0.1f && w.PlayRegion.MinX < at.X + piece.Face.MaxX && at.X + piece.Face.MinX < w.PlayRegion.MaxX);
-        return onSurface ? piece with { Face = piece.Face with { MaxY = piece.Face.MaxY - 0.15f } } : piece;
+        bool onSurface = waters.Any(w => Mathf.Abs(top - w.SurfaceY) < WaterTouch && w.PlayRegion.MinX < at.X + piece.Face.MaxX && at.X + piece.Face.MinX < w.PlayRegion.MaxX);
+        return onSurface ? piece with { Face = piece.Face with { MaxY = piece.Face.MaxY - WaterLower } } : piece;
     }
 
     /// <summary>A block's box on the play plane, in world meters.</summary>

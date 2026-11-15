@@ -200,4 +200,28 @@ public sealed record MachineryWallSpec
 
     /// <summary>The small gear's turn is this share of a tooth short of the line back to the great one (a gap facing it).</summary>
     public float SmallToothPhase { get; init; } = 0.77f;
+
+    /// <summary>A piston's column has this many sides.</summary>
+    public int PistonSides { get; init; } = 10;
+
+    /// <summary>A piston's plinth height.</summary>
+    public float PistonPlinth { get; init; } = 0.6f;
+
+    /// <summary>A piston's capital height.</summary>
+    public float PistonCapital { get; init; } = 0.5f;
+
+    /// <summary>A gear's thickness.</summary>
+    public float GearThickness { get; init; } = 0.25f;
+
+    /// <summary>A hub's column has this many sides.</summary>
+    public int HubSides { get; init; } = 12;
+
+    /// <summary>A hub's length along its axle.</summary>
+    public float HubLength { get; init; } = 0.7f;
+
+    /// <summary>A hub's plinth height.</summary>
+    public float HubPlinth { get; init; } = 0.15f;
+
+    /// <summary>A hub's capital height.</summary>
+    public float HubCapital { get; init; } = 0.15f;
 }

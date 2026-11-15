@@ -55,7 +55,7 @@ public partial class Hatch : SeamEnd
         AddChild(new WaterBody
         {
             Name = StandpipeName,
-            Size = new Vector2(c.MaxX - c.MinX, Profile.Depth + 0.1f),
+            Size = new Vector2(c.MaxX - c.MinX, Profile.Depth + WaterSheetExtra),
             Depth = c.MaxY - c.MinY,
             Murk = pool.Murk,
             Reflection = pool.Reflection,
