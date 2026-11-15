@@ -86,7 +86,7 @@ transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 20, 0, 0)
 [node name="Stage" parent="." instance=ExtResource("20_stage")]
 Seed = 291
 DustDensity = 0
-PillarDensity = 1
+Pillars = 1
 FrameBelow = false
 FrameAbove = false
 

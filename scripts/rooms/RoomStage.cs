@@ -42,11 +42,21 @@ public partial class RoomStage : Node3D
     /// <summary>Its ice.</summary>
     [Export] public Material ArchitectureIce { get; set; } = null!;
 
-    /// <summary>
-    /// How much architecture stands behind the room: 0 for none (a closed shaft), under 2 for all its rows but the nearest,
-    /// else all of them (the name is older than the architecture: it once counted boxes per 10 m).
-    /// </summary>
-    [Export] public float PillarDensity { get; set; } = 3.8f;
+    /// <summary>How much architecture stands behind the room.</summary>
+    public enum PillarRows
+    {
+        /// <summary>None (a closed shaft).</summary>
+        None,
+
+        /// <summary>All its rows but the nearest.</summary>
+        ExceptNearest,
+
+        /// <summary>All of them.</summary>
+        All,
+    }
+
+    /// <summary>How much architecture stands behind the room.</summary>
+    [Export] public PillarRows Pillars { get; set; } = PillarRows.All;
 
     /// <summary>This room's rows of architecture, nearest first; empty for its layer's (<see cref="BiomeProfile.ArchitectureRows"/>).</summary>
     [Export] public BackdropRowData[] ArchitectureRows { get; set; } = [];
@@ -160,14 +170,14 @@ public partial class RoomStage : Node3D
         ShowSkyline(_nearSkyline, biome.NearSkyline);
 
         BackdropRowData[] rows = ArchitectureRows.Length > 0 ? ArchitectureRows : biome.ArchitectureRows;
-        if (_architecture is not null && ((_architecture.Style == biome.Architecture && _architecture.Rows == rows) || PillarDensity <= 0f))
+        if (_architecture is not null && ((_architecture.Style == biome.Architecture && _architecture.Rows == rows) || Pillars == PillarRows.None))
         {
             return;
         }
 
         _architecture?.Free();
         _architecture = null;
-        if (PillarDensity <= 0f)
+        if (Pillars == PillarRows.None)
         {
             return;
         }
@@ -183,7 +193,7 @@ public partial class RoomStage : Node3D
             BoundsMin = _min,
             BoundsMax = _max,
             Rows = rows,
-            OmitNearest = PillarDensity < 2f,
+            OmitNearest = Pillars == PillarRows.ExceptNearest,
             Seed = Spec.Seed(Seed, Spec.ArchitectureSalt),
         };
         AddChild(_architecture);
@@ -225,8 +235,7 @@ public partial class RoomStage : Node3D
                 SkyMode = DirectionalLight3D.SkyModeEnum.LightOnly,
             };
             AddChild(_underglow);
-            // Shining up, a little sideways, and into the scene: onto undersides and the faces of the walls behind.
-            _underglow.LookAt(_underglow.GlobalPosition + new Vector3(0.25f, 0.8f, -0.55f), Vector3.Forward);
+            _underglow.LookAt(_underglow.GlobalPosition + Spec.UnderglowDirection.ToGodot(), Vector3.Forward);
         }
 
         _underglow.Visible = true;
