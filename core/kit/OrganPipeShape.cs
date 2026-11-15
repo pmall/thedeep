@@ -73,8 +73,7 @@ public static class OrganPipeShape
             return (r, t is >= 0f and < 1f ? halfMouth * (1f - t) * (1f + 0.6f * t) : 0f);
         });
 
-        // Around the back of the mouth the pipe stays round. Its V runs on from the rest of the girth (the front's wrap
-        // adds a girth), so the panels and seams stay in phase across the band.
+        // Around the back of the mouth the pipe stays round.
         var back = new List<float>();
         foreach (float a in angles)
         {
@@ -96,7 +95,7 @@ public static class OrganPipeShape
                 var radial = new Vector3(MathF.Sin(back[k]), 0f, MathF.Cos(back[k]));
                 points[j, k] = radial * r + new Vector3(0f, y, 0f);
                 outward[j, k] = radial;
-                uv[j, k] = new Vector2(y, r * (back[k] + MathF.PI * 0.5f));
+                uv[j, k] = new Vector2(y, r * back[k]);
             }
         }
 
