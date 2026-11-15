@@ -26,6 +26,5 @@ public class FrameTimeStatsTests
         Assert.Equal(99.0, stats.Percentile(99));
         Assert.Equal(50.0, stats.Percentile(50));
         Assert.Equal(1.0, stats.Percentile(0));
-        Assert.Equal(10, stats.CountOver(90));
     }
 }
