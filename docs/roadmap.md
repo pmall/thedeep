@@ -33,7 +33,6 @@ The open items, in order (owner: the world, its bricks and its look are finished
    - `core/map/`: the reach planner and the ground (`ReachPlanner`, `GroundRoutes`, `GroundRules`, `SolidGrid`, `RoomShape`, `GridSnap`, `ExitMath`, `ExitSide`).
    - `core/map/`: the graph and its proof (`MapSolver`, `WorldCheck`, `MapDraft`, `MapGraph`, `MapState`, `Requirement`, `ItemSet`, `Need`, `MapTargets`, `RoomTable`, `MapLayout`, `MapDrawing`).
    - `core/map/` seams and hazards (`SeamFrame`, `SeamCheck`, `Threshold`, `HeatGate`, `SlagBasin`, `SealedArena`, `Standpipe`) and `core/kit/`.
-   - `core/rooms/`, `core/props/`, `core/util/`, `core/surfaces/`, `core/biome/`.
    - `core/machines/`, `core/parts/`.
    - `core/ui/`, `core/dialogue/`, `core/items/`, `core/game/`, `core/capture/`, with `scripts/text/`, `scripts/dialogue/`, `scripts/items/`.
    - `scripts/player/`, `scripts/camera/`, `scripts/abilities/`, `scripts/combat/`, `scripts/tuning/`.
