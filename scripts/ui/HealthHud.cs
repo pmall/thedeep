@@ -23,7 +23,7 @@ public partial class HealthHud : CanvasLayer
     [Export] public float RestOpacity { get; set; } = 0.8f;
     [Export] public float BrightTime { get; set; } = 2.5f;
 
-    /// <summary>A diamond's half height and the step between two, in pixels at 1080p.</summary>
+    /// <summary>A diamond's half height and the step between two, in pixels written for <see cref="TextStyle.HudDesignHeight"/> rows (scaled by <see cref="TextStyle.HudScale"/>).</summary>
     [Export] public float PipSize { get; set; } = 13f;
     [Export] public float PipGap { get; set; } = 34f;
 
@@ -53,11 +53,11 @@ public partial class HealthHud : CanvasLayer
 
     public override void _Ready()
     {
-        Layer = 70;
+        Layer = UiLayers.Health;
         Canvas.SetAnchorsPreset(Control.LayoutPreset.FullRect);
         Canvas.Draw += DrawHud;
         AddChild(Canvas);
-        _shown = Player.Vitality?.Current ?? 0;
+        _shown = Player.Vitality.Current;
     }
 
     public override void _Process(double delta)
@@ -95,7 +95,7 @@ public partial class HealthHud : CanvasLayer
         }
 
         Vitality v = Player.Vitality;
-        float ui = Canvas.Size.Y / 1080f;
+        float ui = TextStyle.HudScale(Canvas.Size.Y);
         bool lastHit = LastHit(v);
         float opacity = lastHit ? 1f : Mathf.Lerp(RestOpacity, 1f, Mathf.Clamp(_bright / 0.6f, 0f, 1f));
         float size = PipSize * ui, gap = PipGap * ui;

@@ -341,10 +341,34 @@ public partial class BiomeProfile : Resource
         Shares = [(nameof(Frost), Frost), (nameof(Masonry), Masonry), (nameof(ShaftLight), ShaftLight), (nameof(Vignette), Vignette)],
     };
 
-    /// <summary>A 1D lookup from <see cref="Lift"/> to <see cref="Gain"/>: a per-channel lift/gain grade.</summary>
-    private GradientTexture1D GradeLookup() => new()
+    private GradientTexture1D? _grade;
+    private Gradient? _gradeRamp;
+    private Color _gradeLift;
+    private Color _gradeGain;
+
+    public override void _Notification(int what)
     {
-        Width = 256,
-        Gradient = new Gradient { Offsets = new[] { 0f, 1f }, Colors = new[] { Lift, Gain } },
-    };
+        if (what == NotificationPredelete)
+        {
+            _grade?.Dispose();
+            _gradeRamp?.Dispose();
+        }
+    }
+
+    /// <summary>A 1D lookup from <see cref="Lift"/> to <see cref="Gain"/>: a per-channel lift/gain grade. One per profile, rebuilt only
+    /// when the lift or the gain changes, never left to the finalizer (instructions/godot-csharp.md#no-finalizer).</summary>
+    private GradientTexture1D GradeLookup()
+    {
+        if (_grade is null || _gradeLift != Lift || _gradeGain != Gain)
+        {
+            _grade?.Dispose();
+            _gradeRamp?.Dispose();
+            _gradeLift = Lift;
+            _gradeGain = Gain;
+            _gradeRamp = new Gradient { Offsets = new[] { 0f, 1f }, Colors = new[] { Lift, Gain } };
+            _grade = new GradientTexture1D { Width = 256, Gradient = _gradeRamp };
+        }
+
+        return _grade;
+    }
 }

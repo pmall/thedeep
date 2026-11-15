@@ -4,7 +4,7 @@ using Godot;
 namespace TheDeep;
 
 /// <summary>
-/// The line ids the code names itself, whatever the world: the map's legend, the end card, and those its kinds name
+/// The line ids the code names itself, whatever the world: the map's legend, the end card, the owner capture's words (<see cref="CaptureLines"/>), and those its kinds name
 /// (<see cref="GateKinds"/>, <see cref="ItemKinds"/>, <see cref="PowerStats"/>, the <see cref="ControlsManual"/>). The room check
 /// holds every world's book to <see cref="Named"/> (<see cref="LineCheck"/>). The end card's lines are each world's to give; the
 /// others are in the game's own book.
@@ -69,6 +69,11 @@ public static class GameLines
         {
             yield return PowerStats.NameLine(stat);
             yield return PowerStats.HintLine(stat);
+        }
+
+        foreach (StringName id in CaptureLines.All())
+        {
+            yield return id;
         }
 
         foreach (ControlsManual.Spec spec in ControlsManual.Gameplay)

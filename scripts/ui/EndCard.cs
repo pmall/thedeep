@@ -30,7 +30,7 @@ public partial class EndCard : CanvasLayer
 
     public override void _Ready()
     {
-        Layer = 90;
+        Layer = UiLayers.EndCard;
         ProcessMode = ProcessModeEnum.Always;
         Veil.SetAnchorsPreset(Control.LayoutPreset.FullRect);
         AddChild(Veil);

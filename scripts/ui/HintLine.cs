@@ -54,7 +54,7 @@ public partial class HintLine : CanvasLayer
 
     public override void _Ready()
     {
-        Layer = 74;
+        Layer = UiLayers.HintLine;
         Row.SetAnchorsPreset(Control.LayoutPreset.TopWide);
         Mark.CustomMinimumSize = new Vector2(MarkSize, MarkSize);
         Mark.Draw += () => Mark.DrawCircle(Mark.Size * 0.5f, MarkSize * 0.5f, _color);

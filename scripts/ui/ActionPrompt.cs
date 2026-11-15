@@ -33,9 +33,6 @@ public partial class ActionPrompt : Node3D, INamesLines
     /// <summary>How far it rises as it fades in, meters.</summary>
     [Export] public float Rise { get; set; } = 0.08f;
 
-    /// <summary>The canvas layer it is drawn on: over the health, under the hint line, the banner and the dialogue.</summary>
-    private const int ScreenLayer = 72;
-
     /// <summary>How far inside the canvas's edges it is kept, pixels.</summary>
     private const float Margin = 16f;
 
@@ -59,7 +56,7 @@ public partial class ActionPrompt : Node3D, INamesLines
     private StringName _drawnVerb = Names.None;
     private float _shown;
 
-    private CanvasLayer Screen => _layer ??= new CanvasLayer { Layer = ScreenLayer, Visible = false };
+    private CanvasLayer Screen => _layer ??= new CanvasLayer { Layer = UiLayers.ActionPrompt, Visible = false };
 
     private PromptFace Face => _face ??= new PromptFace { MouseFilter = Control.MouseFilterEnum.Ignore };
 

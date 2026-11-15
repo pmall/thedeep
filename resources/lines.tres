@@ -447,6 +447,132 @@ Speaker = "UI"
 Text = "Lamplighter"
 Notes = "A Lamplighter named as it speaks: the caption over its words in a conversation."
 
+[sub_resource type="Resource" id="capture_screenshot_unavailable"]
+script = ExtResource("2_line")
+Id = &"capture.screenshot.unavailable"
+Speaker = "UI"
+Text = "Screenshot unavailable here"
+Notes = "Toast of F12 where nothing can be read back (headless)."
+
+[sub_resource type="Resource" id="capture_screenshot_failed"]
+script = ExtResource("2_line")
+Id = &"capture.screenshot.failed"
+Speaker = "UI"
+Text = "Screenshot failed: {0}"
+Notes = "Toast; {0} is the reason."
+
+[sub_resource type="Resource" id="capture_screenshot_saved"]
+script = ExtResource("2_line")
+Id = &"capture.screenshot.saved"
+Speaker = "UI"
+Text = "Screenshot saved   captures/{0}.png"
+Notes = "Toast; {0} is the file's base name."
+
+[sub_resource type="Resource" id="capture_video_unavailable"]
+script = ExtResource("2_line")
+Id = &"capture.video.unavailable"
+Speaker = "UI"
+Text = "Video unavailable here"
+Notes = "Toast of F10 where nothing can be read back (headless)."
+
+[sub_resource type="Resource" id="capture_video_not_ready"]
+script = ExtResource("2_line")
+Id = &"capture.video.not_ready"
+Speaker = "UI"
+Text = "Video not ready yet, try again in a second"
+Notes = "Toast while the encoder is being looked for."
+
+[sub_resource type="Resource" id="capture_video_needs_ffmpeg"]
+script = ExtResource("2_line")
+Id = &"capture.video.needs_ffmpeg"
+Speaker = "UI"
+Text = "Video needs ffmpeg, which was not found"
+Notes = "Toast."
+
+[sub_resource type="Resource" id="capture_video_format"]
+script = ExtResource("2_line")
+Id = &"capture.video.format"
+Speaker = "UI"
+Text = "Video unavailable: {0}"
+Notes = "Toast; {0} is why the frame cannot be read."
+
+[sub_resource type="Resource" id="capture_video_start_failed"]
+script = ExtResource("2_line")
+Id = &"capture.video.start_failed"
+Speaker = "UI"
+Text = "Video failed to start: {0}"
+Notes = "Toast; {0} is the reason."
+
+[sub_resource type="Resource" id="capture_recording_stopped"]
+script = ExtResource("2_line")
+Id = &"capture.recording.stopped"
+Speaker = "UI"
+Text = "Recording stopped: {0}"
+Notes = "Toast; {0} is one of the capture.stop. lines."
+
+[sub_resource type="Resource" id="capture_stop_ffmpeg"]
+script = ExtResource("2_line")
+Id = &"capture.stop.ffmpeg"
+Speaker = "UI"
+Text = "ffmpeg stopped"
+Notes = "Why a recording ended."
+
+[sub_resource type="Resource" id="capture_stop_resized"]
+script = ExtResource("2_line")
+Id = &"capture.stop.resized"
+Speaker = "UI"
+Text = "the window size changed"
+Notes = "Why a recording ended."
+
+[sub_resource type="Resource" id="capture_stop_closed"]
+script = ExtResource("2_line")
+Id = &"capture.stop.closed"
+Speaker = "UI"
+Text = "game closed"
+Notes = "Why a recording ended."
+
+[sub_resource type="Resource" id="capture_stop_key"]
+script = ExtResource("2_line")
+Id = &"capture.stop.key"
+Speaker = "UI"
+Text = "F10"
+Notes = "Why a recording ended, in its report: the key pressed."
+
+[sub_resource type="Resource" id="capture_video_saved"]
+script = ExtResource("2_line")
+Id = &"capture.video.saved"
+Speaker = "UI"
+Text = "Video saved   captures/{0}.mp4   {1}"
+Notes = "Toast; {0} the base name, {1} the length."
+
+[sub_resource type="Resource" id="capture_video_failed"]
+script = ExtResource("2_line")
+Id = &"capture.video.failed"
+Speaker = "UI"
+Text = "Video failed: ffmpeg exit code {0} (see captures/{1}.txt)"
+Notes = "Toast."
+
+[sub_resource type="Resource" id="capture_yes"]
+script = ExtResource("2_line")
+Id = &"capture.yes"
+Speaker = "UI"
+Text = "yes"
+Notes = "A report's answer."
+
+[sub_resource type="Resource" id="capture_no"]
+script = ExtResource("2_line")
+Id = &"capture.no"
+Speaker = "UI"
+Text = "no"
+Notes = "A report's answer."
+
+[sub_resource type="Resource" id="capture_none"]
+script = ExtResource("2_line")
+Id = &"capture.none"
+Speaker = "UI"
+Text = "none"
+Notes = "A report's answer: nothing to list."
+
 [resource]
 script = ExtResource("1_book")
-Lines = [SubResource("creed_votary"), SubResource("creed_gleaner"), SubResource("creed_lamplighter"), SubResource("creed_limpet"), SubResource("ui_rest"), SubResource("ability_mag_grip_name"), SubResource("ability_mag_grip_hint"), SubResource("ability_harpoon_name"), SubResource("ability_harpoon_hint"), SubResource("ability_drill_name"), SubResource("ability_drill_hint"), SubResource("creed_precentor"), SubResource("ui_read"), SubResource("creed_chorister"), SubResource("ability_ballast_name"), SubResource("ability_ballast_hint"), SubResource("creed_archivist"), SubResource("creed_hierarch"), SubResource("ability_heat_plating_name"), SubResource("ability_heat_plating_hint"), SubResource("hint_gate_metal"), SubResource("hint_gate_rings"), SubResource("hint_gate_cracked"), SubResource("hint_gate_water"), SubResource("hint_gate_heat"), SubResource("map_gate_metal"), SubResource("map_gate_rings"), SubResource("map_gate_cracked"), SubResource("map_gate_water"), SubResource("map_gate_heat"), SubResource("map_way_open"), SubResource("map_way_unbuilt"), SubResource("creed_founder"), SubResource("creed_nirvanary"), SubResource("ui_manual_move"), SubResource("ui_manual_jump"), SubResource("ui_manual_dash"), SubResource("ui_manual_attack"), SubResource("ui_manual_interact"), SubResource("ui_manual_map"), SubResource("ui_manual_mag_grip"), SubResource("ui_manual_harpoon"), SubResource("ui_manual_drill"), SubResource("ui_manual_ballast"), SubResource("ui_manual_debug"), SubResource("ui_manual_screenshot"), SubResource("ui_manual_video"), SubResource("ui_manual_respawn"), SubResource("ui_manual_toggle_abilities"), SubResource("ui_manual_biome"), SubResource("ui_manual_readout"), SubResource("ui_manual_hide"), SubResource("map_gate_lock"), SubResource("map_gate_seal"), SubResource("powerup_strength_name"), SubResource("powerup_strength_hint"), SubResource("powerup_defense_name"), SubResource("powerup_defense_hint"), SubResource("ui_talk"), SubResource("ui_pull"), SubResource("map_gate_mechanism"), SubResource("speaker_pilgrim"), SubResource("speaker_lamplighter")]
+Lines = [SubResource("creed_votary"), SubResource("creed_gleaner"), SubResource("creed_lamplighter"), SubResource("creed_limpet"), SubResource("ui_rest"), SubResource("ability_mag_grip_name"), SubResource("ability_mag_grip_hint"), SubResource("ability_harpoon_name"), SubResource("ability_harpoon_hint"), SubResource("ability_drill_name"), SubResource("ability_drill_hint"), SubResource("creed_precentor"), SubResource("ui_read"), SubResource("creed_chorister"), SubResource("ability_ballast_name"), SubResource("ability_ballast_hint"), SubResource("creed_archivist"), SubResource("creed_hierarch"), SubResource("ability_heat_plating_name"), SubResource("ability_heat_plating_hint"), SubResource("hint_gate_metal"), SubResource("hint_gate_rings"), SubResource("hint_gate_cracked"), SubResource("hint_gate_water"), SubResource("hint_gate_heat"), SubResource("map_gate_metal"), SubResource("map_gate_rings"), SubResource("map_gate_cracked"), SubResource("map_gate_water"), SubResource("map_gate_heat"), SubResource("map_way_open"), SubResource("map_way_unbuilt"), SubResource("creed_founder"), SubResource("creed_nirvanary"), SubResource("ui_manual_move"), SubResource("ui_manual_jump"), SubResource("ui_manual_dash"), SubResource("ui_manual_attack"), SubResource("ui_manual_interact"), SubResource("ui_manual_map"), SubResource("ui_manual_mag_grip"), SubResource("ui_manual_harpoon"), SubResource("ui_manual_drill"), SubResource("ui_manual_ballast"), SubResource("ui_manual_debug"), SubResource("ui_manual_screenshot"), SubResource("ui_manual_video"), SubResource("ui_manual_respawn"), SubResource("ui_manual_toggle_abilities"), SubResource("ui_manual_biome"), SubResource("ui_manual_readout"), SubResource("ui_manual_hide"), SubResource("map_gate_lock"), SubResource("map_gate_seal"), SubResource("powerup_strength_name"), SubResource("powerup_strength_hint"), SubResource("powerup_defense_name"), SubResource("powerup_defense_hint"), SubResource("ui_talk"), SubResource("ui_pull"), SubResource("map_gate_mechanism"), SubResource("speaker_pilgrim"), SubResource("speaker_lamplighter"), SubResource("capture_screenshot_unavailable"), SubResource("capture_screenshot_failed"), SubResource("capture_screenshot_saved"), SubResource("capture_video_unavailable"), SubResource("capture_video_not_ready"), SubResource("capture_video_needs_ffmpeg"), SubResource("capture_video_format"), SubResource("capture_video_start_failed"), SubResource("capture_recording_stopped"), SubResource("capture_stop_ffmpeg"), SubResource("capture_stop_resized"), SubResource("capture_stop_closed"), SubResource("capture_stop_key"), SubResource("capture_video_saved"), SubResource("capture_video_failed"), SubResource("capture_yes"), SubResource("capture_no"), SubResource("capture_none")]

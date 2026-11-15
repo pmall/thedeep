@@ -125,8 +125,10 @@ public partial class ControlsManual : Control
     {
         /// <summary>What the row is made from.</summary>
         public Spec Spec { get; } = spec;
-        /// <summary>What the row says its buttons do.</summary>
-        public string Words { get; } = words;
+        /// <summary>What the row says its buttons do (a header's in capitals).</summary>
+        public string Words { get; } = header ? words.ToUpperInvariant() : words;
+        /// <summary>The words' width on screen, measured once the row is built.</summary>
+        public float WordsWidth;
         /// <summary>A title row, not a control.</summary>
         public bool Header { get; } = header;
         /// <summary>The row's buttons and separators, one list per device.</summary>
@@ -134,6 +136,10 @@ public partial class ControlsManual : Control
     }
 
     private readonly List<Row> _rows = new();
+    // What the rows measure, once built: the panel's size never changes, so drawing measures nothing.
+    private readonly float[] _buttonsWidth = new float[2];
+    private float _wordsWidth;
+    private float _rowsHeight;
     private ButtonNames.Device _shown;
     private float _alpha = 1f;
     private Vector2 _stick;
@@ -158,8 +164,11 @@ public partial class ControlsManual : Control
                 keys.AddRange(buttons);
             }
 
+            row.WordsWidth = Width(font, row.Words, Style.Caption);
             _rows.Add(row);
         }
+
+        Measure();
 
         Device = _shown = BothDevices ? ButtonNames.Device.Keyboard : ButtonGlyph.FirstDevice();
     }
@@ -225,18 +234,9 @@ public partial class ControlsManual : Control
         int device = (int)_shown;
         float a = _alpha * _alpha * (3f - 2f * _alpha);
 
-        float buttons = 0f;
-        float wordsWidth = 0f;
-        float height = 0f;
-        foreach (Row row in _rows)
-        {
-            buttons = Mathf.Max(buttons, ItemsWidth(row.Items[device]));
-            wordsWidth = Mathf.Max(wordsWidth, Width(font, row.Header ? row.Words.ToUpperInvariant() : row.Words, words));
-            height += row.Header ? headerHeight : rowHeight;
-        }
-
+        float buttons = _buttonsWidth[device];
         Vector2 pad = style.Padding;
-        Vector2 size = new(pad.X * 2f + buttons + Column + wordsWidth, pad.Y * 2f + height);
+        Vector2 size = new(pad.X * 2f + buttons + Column + _wordsWidth, pad.Y * 2f + _rowsHeight);
         Vector2 origin = new(16f, Top ? TopOffset : Size.Y - 16f - size.Y);
         DrawStyleBox(PanelBox, new Rect2(origin, size));
 
@@ -247,9 +247,9 @@ public partial class ControlsManual : Control
             if (row.Header)
             {
                 float line = y + headerHeight * 0.5f + 1f;
-                DrawString(font, new Vector2(origin.X + pad.X, line + centered), row.Words.ToUpperInvariant(), HorizontalAlignment.Left, -1f, words,
+                DrawString(font, new Vector2(origin.X + pad.X, line + centered), row.Words, HorizontalAlignment.Left, -1f, words,
                     style.Dim with { A = 0.7f * a });
-                float after = origin.X + pad.X + Width(font, row.Words.ToUpperInvariant(), words) + Column;
+                float after = origin.X + pad.X + row.WordsWidth + Column;
                 DrawLine(new Vector2(Mathf.Max(wordsX, after), line), new Vector2(origin.X + size.X - pad.X, line), style.Dim with { A = 0.2f * a }, 1f, true);
                 y += headerHeight;
                 continue;
@@ -285,6 +285,24 @@ public partial class ControlsManual : Control
     }
 
     // ---- building the rows ----
+
+    /// <summary>Measures what the panel needs from its rows: each device's widest buttons, the widest words, the rows' total height.</summary>
+    private void Measure()
+    {
+        float height = 0f;
+        foreach (Row row in _rows)
+        {
+            for (int device = 0; device < _buttonsWidth.Length; device++)
+            {
+                _buttonsWidth[device] = Mathf.Max(_buttonsWidth[device], ItemsWidth(row.Items[device]));
+            }
+
+            _wordsWidth = Mathf.Max(_wordsWidth, row.WordsWidth);
+            height += row.Header ? HeaderHeight : RowHeight;
+        }
+
+        _rowsHeight = height;
+    }
 
     private void Build(List<Item> items, Spec spec, bool pad, Font font)
     {

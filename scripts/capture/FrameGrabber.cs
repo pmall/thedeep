@@ -1,16 +1,10 @@
 using System;
 using System.Buffers;
+using System.Collections.Generic;
 using Godot;
 using Godot.NativeInterop;
 
 namespace TheDeep;
-
-/// <summary>Size and byte layout of a grabbed frame. <see cref="PixelFormat"/> is the ffmpeg name.</summary>
-public readonly record struct FrameFormat(int Width, int Height, string PixelFormat)
-{
-    /// <summary>Bytes in one frame: four per pixel.</summary>
-    public int ByteCount => Width * Height * 4;
-}
 
 /// <summary>
 /// Copies a viewport's finished image back from the GPU without stalling the frame: the copy is
@@ -19,7 +13,8 @@ public readonly record struct FrameFormat(int Width, int Height, string PixelFor
 ///
 /// Frames are copied into arrays rented from <see cref="Buffers"/> rather than marshalled into
 /// new ones: at 60 frames per second, fresh multi-megabyte arrays would make the .NET garbage
-/// collector run full collections several times a second.
+/// collector run full collections several times a second. The readback's callable and the frame's format are made once (the format
+/// again when the window's size changes), so a request allocates nothing.
 /// </summary>
 public sealed class FrameGrabber
 {
@@ -29,10 +24,18 @@ public sealed class FrameGrabber
     private readonly Viewport _viewport;
     private readonly RenderingDevice _device;
 
+    // Readbacks arrive in the order they were asked for; each waits here with what to call and the number to call it with.
+    private readonly Queue<(Action<byte[], int> OnFrame, int Argument)> _waiting = new();
+    private readonly Callable _onData;
+    private Vector2I _formatWindow;
+    private FrameFormat? _format;
+    private Rid _texture;
+
     private FrameGrabber(Viewport viewport, RenderingDevice device)
     {
         _viewport = viewport;
         _device = device;
+        _onData = Callable.From<Variant>(OnData);
     }
 
     /// <summary>Frames requested whose bytes have not arrived yet.</summary>
@@ -51,7 +54,14 @@ public sealed class FrameGrabber
     /// </summary>
     public FrameFormat? CurrentFormat(out string error)
     {
-        Rid texture = Texture();
+        Vector2I window = DisplayServer.WindowGetSize();
+        if (_format is not null && window == _formatWindow)
+        {
+            error = "";
+            return _format;
+        }
+
+        Rid texture = RenderingServer.TextureGetRdTexture(_viewport.GetTexture().GetRid());
         if (!texture.IsValid)
         {
             error = "no viewport texture";
@@ -66,24 +76,32 @@ public sealed class FrameGrabber
         }
 
         error = "";
-        return new FrameFormat((int)format.Width, (int)format.Height, "rgba");
+        _formatWindow = window;
+        _texture = texture;
+        _format = new FrameFormat((int)format.Width, (int)format.Height, "rgba");
+        return _format;
     }
 
     /// <summary>
     /// Asks for the frame's bytes, delivered to <paramref name="onFrame"/> in an array from
     /// <see cref="Buffers"/>: the first Width × Height × 4 bytes, top row first. The array may be
-    /// longer; the receiver must return it to <see cref="Buffers"/>.
+    /// longer; the receiver must return it to <see cref="Buffers"/>. <paramref name="argument"/> is handed back with it, so a
+    /// caller needs no closure per frame. Call <see cref="CurrentFormat"/> first (it finds the texture).
     /// </summary>
-    public void Request(Action<byte[]> onFrame)
+    public void Request(Action<byte[], int> onFrame, int argument = 0)
     {
         InFlight++;
-        _device.TextureGetDataAsync(Texture(), 0, Callable.From((Variant data) =>
-        {
-            InFlight--;
-            byte[] frame = CopyToBuffer(data);
-            data.Dispose();
-            onFrame(frame);
-        }));
+        _waiting.Enqueue((onFrame, argument));
+        _device.TextureGetDataAsync(_texture, 0, _onData);
+    }
+
+    private void OnData(Variant data)
+    {
+        InFlight--;
+        byte[] frame = CopyToBuffer(data);
+        data.Dispose();
+        (Action<byte[], int> onFrame, int argument) = _waiting.Dequeue();
+        onFrame(frame, argument);
     }
 
     private static unsafe byte[] CopyToBuffer(Variant data)
@@ -102,6 +120,4 @@ public sealed class FrameGrabber
             variant.Dispose();
         }
     }
-
-    private Rid Texture() => RenderingServer.TextureGetRdTexture(_viewport.GetTexture().GetRid());
 }
