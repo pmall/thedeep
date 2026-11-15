@@ -29,12 +29,12 @@ public static class HeatGate
         var ends = solids.Concat(openings).ToList();
         foreach ((float from, float to) in Across(ends, column.MaxY + Probe, column))
         {
-            yield return $"it stops short of what is above it from x {from:0.##} to {to:0.##}: heat rises to the roof, hood or exit over its whole width";
+            yield return $"it stops short of what is above it from x {Fmt.Num(from)} to {Fmt.Num(to)}: heat rises to the roof, hood or exit over its whole width";
         }
 
         foreach ((float from, float to) in Across(ends, column.MinY - Probe, column))
         {
-            yield return $"its foot is open from x {from:0.##} to {to:0.##}: heat rises from its source on rock";
+            yield return $"its foot is open from x {Fmt.Num(from)} to {Fmt.Num(to)}: heat rises from its source on rock";
         }
 
         if (WayRound(column, solids, bounds, body))
@@ -45,7 +45,7 @@ public static class HeatGate
 
     /// <summary>The stretches of the column's width that no box covers at height <paramref name="y"/>.</summary>
     private static IEnumerable<(float From, float To)> Across(IReadOnlyList<Box> boxes, float y, Box column) =>
-        SlagBasin.Gaps(boxes.Where(b => b.MinY <= y && y <= b.MaxY).Select(b => (b.MinX, b.MaxX)), column.MinX, column.MaxX);
+        Spans.Gaps(boxes.Where(b => b.MinY <= y && y <= b.MaxY).Select(b => (b.MinX, b.MaxX)), column.MinX, column.MaxX);
 
     /// <summary>
     /// Whether a body, kept off the solids and the column, can go from beside the column's west side to beside its east side
@@ -107,7 +107,7 @@ public static class HeatGate
                 return true;
             }
 
-            foreach ((int di, int dj) in new[] { (1, 0), (-1, 0), (0, 1), (0, -1) })
+            foreach ((int di, int dj) in Neighbours)
             {
                 int a = i + di, b = j + dj;
                 if (a >= 0 && a < nx && b >= 0 && b < ny && !seen[a, b] && !blocked[a, b])
@@ -120,6 +120,8 @@ public static class HeatGate
 
         return false;
     }
+
+    private static readonly (int, int)[] Neighbours = { (1, 0), (-1, 0), (0, 1), (0, -1) };
 
     private static int Index(float v, float min, int n) => Math.Clamp((int)MathF.Floor((v - min) / Cell), 0, n - 1);
 

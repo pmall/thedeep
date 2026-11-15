@@ -4,7 +4,7 @@ namespace TheDeep;
 
 /// <summary>
 /// Prop piece: a code's seal, a square plate with cut corners facing the camera, its back on the origin's plane, with a raised frame and a stud at each cut corner.
-/// <see cref="Size"/> is the plate's width, <see cref="Depth"/> its thickness (<see cref="PropShapes.Seal"/>).
+/// <see cref="Size"/> is the plate's width, <see cref="Depth"/> its thickness (<see cref="LockShapes.Seal"/>).
 /// </summary>
 [GlobalClass]
 public partial class SealMesh : KitMesh
@@ -15,5 +15,5 @@ public partial class SealMesh : KitMesh
     [Export] public float Size { get => _size; set { _size = value; RequestUpdate(); } }
     [Export] public float Depth { get => _depth; set { _depth = value; RequestUpdate(); } }
 
-    protected override void Build(MeshBuilder builder) => PropShapes.Seal(builder, Size, Depth);
+    protected override void Build(MeshBuilder builder) => LockShapes.Seal(builder, Size, Depth);
 }

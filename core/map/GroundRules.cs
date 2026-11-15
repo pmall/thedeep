@@ -64,7 +64,7 @@ public static class GroundRules
         {
             var over = Enumerable.Range(0, solids.Count)
                 .Where(k => solids[k].MinY > y + Eps && solids[k].MinY < y + reach - Eps && solids[k].MinX - radius < to && from < solids[k].MaxX + radius).ToList();
-            if (SlagBasin.Gaps(over.Select(k => (solids[k].MinX - radius, solids[k].MaxX + radius)), from, to).Any(s => s.To - s.From >= Least))
+            if (Spans.Gaps(over.Select(k => (solids[k].MinX - radius, solids[k].MaxX + radius)), from, to).Any(s => s.To - s.From >= Least))
             {
                 continue; // a free place to jump from
             }
@@ -149,7 +149,7 @@ public static class GroundRules
     public static IEnumerable<(float From, float To)> OpenSpans(Box mesh, IReadOnlyList<Box> solids)
     {
         float y = 0.5f * (mesh.MinY + mesh.MaxY);
-        return SlagBasin.Gaps(solids.Where(s => s.MinY <= y && y <= s.MaxY).Select(s => (s.MinX, s.MaxX)), mesh.MinX, mesh.MaxX)
+        return Spans.Gaps(solids.Where(s => s.MinY <= y && y <= s.MaxY).Select(s => (s.MinX, s.MaxX)), mesh.MinX, mesh.MaxX)
             .Where(s => s.To - s.From >= Least);
     }
 
@@ -186,7 +186,7 @@ public static class GroundRules
 
     /// <summary>The stretches of solid <paramref name="g"/>'s top at <paramref name="y"/> that no other solid buries.</summary>
     private static IEnumerable<(float From, float To)> Open(IReadOnlyList<Box> solids, int g, float y) =>
-        SlagBasin.Gaps(solids.Where((s, k) => k != g && s.MinY < y + Eps && y + Eps < s.MaxY).Select(s => (s.MinX, s.MaxX)), solids[g].MinX, solids[g].MaxX)
+        Spans.Gaps(solids.Where((s, k) => k != g && s.MinY < y + Eps && y + Eps < s.MaxY).Select(s => (s.MinX, s.MaxX)), solids[g].MinX, solids[g].MaxX)
             .Where(s => s.To - s.From >= Least);
 
     private static bool Inside(IReadOnlyList<Box> boxes, float x, float y) => boxes.Any(s => s.MinX < x && x < s.MaxX && s.MinY < y && y < s.MaxY);
@@ -240,6 +240,6 @@ public static class GroundRules
         var cover = alongX
             ? solids.Where(s => s.MinY < across && across < s.MaxY).Select(s => (s.MinX, s.MaxX))
             : solids.Where(s => s.MinX < across && across < s.MaxX).Select(s => (s.MinY, s.MaxY));
-        return SlagBasin.Gaps(cover, Math.Max(from, viewFrom), Math.Min(to, viewTo)).Where(g => g.To - g.From >= Least).Sum(g => g.To - g.From);
+        return Spans.Gaps(cover, Math.Max(from, viewFrom), Math.Min(to, viewTo)).Where(g => g.To - g.From >= Least).Sum(g => g.To - g.From);
     }
 }

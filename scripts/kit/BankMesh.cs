@@ -2,7 +2,7 @@ using Godot;
 
 namespace TheDeep;
 
-/// <summary>Kit piece: a bank of an old machine's organ pipes on a wind chest, standing on its origin (<see cref="KitShapes.Bank"/>).</summary>
+/// <summary>Kit piece: a bank of an old machine's organ pipes on a wind chest, standing on its origin (<see cref="ShelfShapes.Bank"/>).</summary>
 [GlobalClass]
 public partial class BankMesh : KitMesh
 {
@@ -17,5 +17,5 @@ public partial class BankMesh : KitMesh
 
     [Export] public int Seed { get => _seed; set { _seed = value; RequestUpdate(); } }
 
-    protected override void Build(MeshBuilder builder) => KitShapes.Bank(builder, Size.ToCore(), Chest, Seed);
+    protected override void Build(MeshBuilder builder) => ShelfShapes.Bank(builder, Size.ToCore(), Chest, Seed);
 }

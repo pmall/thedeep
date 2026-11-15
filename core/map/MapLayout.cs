@@ -49,8 +49,8 @@ public static class MapLayout
                 {
                     if (Vector2.Distance(known, placed) > Tolerance)
                     {
-                        problems.Add($"{link.From}:{link.FromExit} → {link.To}:{link.ToExit} puts {other} at {Fmt(placed)}, " +
-                                     $"but another way puts it at {Fmt(known)} (the exits around this loop don't line up)");
+                        problems.Add($"{link.From}:{link.FromExit} → {link.To}:{link.ToExit} puts {other} at {Fmt.Point(placed)}, " +
+                                     $"but another way puts it at {Fmt.Point(known)} (the exits around this loop don't line up)");
                     }
                 }
                 else
@@ -81,6 +81,4 @@ public static class MapLayout
 
     private static (Vector2, Vector2) Shrink((Vector2 Min, Vector2 Max) b, Vector2 offset, float by) =>
         (b.Min + offset + new Vector2(by), b.Max + offset - new Vector2(by));
-
-    private static string Fmt(Vector2 v) => $"({v.X:0.##}, {v.Y:0.##})";
 }

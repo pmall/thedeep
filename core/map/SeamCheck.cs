@@ -1,6 +1,5 @@
 using System;
 using System.Collections.Generic;
-using System.Globalization;
 using System.Linq;
 using System.Numerics;
 
@@ -133,7 +132,7 @@ public sealed class SeamCheck
         if (MathF.Abs(a - b) > Tolerance)
         {
             yield return new SeamProblem(s.Name, SeamRule.Opening,
-                $"the opening is {F(a)} m {what} in {s.RoomA}, {F(b)} m in {s.RoomB}");
+                $"the opening is {Fmt.Num(a)} m {what} in {s.RoomA}, {Fmt.Num(b)} m in {s.RoomB}");
         }
     }
 
@@ -188,7 +187,7 @@ public sealed class SeamCheck
         foreach (((Fill a, Fill b), List<Vector2> cells) in differ)
         {
             yield return new SeamProblem(s.Name, SeamRule.Solids,
-                $"{Word(a)} in {s.RoomA} but {Word(b)} in {s.RoomB} over {string.Join(", ", Rectangles(cells).Select(D))} ({s.RoomA}'s positions)");
+                $"{Word(a)} in {s.RoomA} but {Word(b)} in {s.RoomB} over {string.Join(", ", Rectangles(cells).Select(Fmt.Rect))} ({s.RoomA}'s positions)");
         }
     }
 
@@ -243,6 +242,17 @@ public sealed class SeamCheck
     /// </summary>
     private IEnumerable<SeamProblem> Water(string name, SeamRoom room)
     {
+        // The holes in the floor and the seams beyond them are looked up once for the room, not for every sample.
+        var holes = new List<(string Exit, Box Trigger)>();
+        foreach ((string exit, Threshold at) in room.Exits)
+        {
+            if (at.Side == ExitSide.Down)
+            {
+                holes.Add((exit, at.Trigger));
+            }
+        }
+
+        var beyonds = new Dictionary<string, Seam?>();
         foreach ((string water, Box region) in room.Waters)
         {
             var bare = new Dictionary<string, List<Vector2>>();
@@ -254,9 +264,16 @@ public sealed class SeamCheck
                 }
 
                 string seam = name;
-                if (room.Exits.FirstOrDefault(x => x.Value.Side == ExitSide.Down && Inside(x.Value.Trigger, under)) is { Key: { } exit })
+                int hole = holes.FindIndex(h => Inside(h.Trigger, under));
+                if (hole >= 0)
                 {
-                    if (Beyond(name, exit) is not { } beyond)
+                    string exit = holes[hole].Exit;
+                    if (!beyonds.TryGetValue(exit, out Seam? found))
+                    {
+                        beyonds[exit] = found = Beyond(name, exit);
+                    }
+
+                    if (found is not { } beyond)
                     {
                         continue; // a hole to a room not built yet
                     }
@@ -273,7 +290,7 @@ public sealed class SeamCheck
 
             foreach ((string seam, List<Vector2> cells) in bare)
             {
-                string where = string.Join(", ", Rectangles(cells).Select(D));
+                string where = string.Join(", ", Rectangles(cells).Select(Fmt.Rect));
                 yield return new SeamProblem(seam, SeamRule.Water, seam == name
                     ? $"{name}'s water {water} has no floor under {where}"
                     : $"{name}'s water {water} lies over the hole, but nothing holds it on the far side under {where} ({name}'s positions)");
@@ -301,8 +318,8 @@ public sealed class SeamCheck
                                     && Swept(l, reach).Overlaps(s.Other.Trigger)))
             {
                 yield return new SeamProblem(s.Name, SeamRule.Lift,
-                    $"{s.RoomA}'s lift (its car {F(lift.Platform.MinX)}..{F(lift.Platform.MaxX)}) passes {s.ExitA}, but {s.RoomB} has no car " +
-                    $"as wide and in line ({F(car.MinX)}..{F(car.MaxX)} in its positions) at {s.ExitB}");
+                    $"{s.RoomA}'s lift (its car {Fmt.Num(lift.Platform.MinX)}..{Fmt.Num(lift.Platform.MaxX)}) passes {s.ExitA}, but {s.RoomB} has no car " +
+                    $"as wide and in line ({Fmt.Num(car.MinX)}..{Fmt.Num(car.MaxX)} in its positions) at {s.ExitB}");
             }
         }
     }
@@ -314,8 +331,4 @@ public sealed class SeamCheck
 
     private static Box Intersect(Box a, Box b) =>
         new(MathF.Max(a.MinX, b.MinX), MathF.Max(a.MinY, b.MinY), MathF.Min(a.MaxX, b.MaxX), MathF.Min(a.MaxY, b.MaxY));
-
-    private static string F(float v) => v.ToString("0.##", CultureInfo.InvariantCulture);
-
-    private static string D(Box b) => $"({F(b.MinX)}, {F(b.MinY)})..({F(b.MaxX)}, {F(b.MaxY)})";
 }

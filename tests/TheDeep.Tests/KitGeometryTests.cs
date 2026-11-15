@@ -199,6 +199,37 @@ public class KitGeometryTests
     }
 
     [Fact]
+    public void PolylineIgnoresRepeatedPoints()
+    {
+        Vector3[] points = { Vector3.Zero, Vector3.Zero, new(4f, 0f, 0f), new(4f, 0f, 0f), new(4f, 4f, 0f) };
+        List<PathFrame> path = SweepPath.Polyline(points, Vector3.UnitZ, 0.8f);
+
+        Assert.All(path, f => Assert.True(float.IsFinite(f.Position.X + f.Position.Y + f.Tangent.X + f.Tangent.Y + f.Distance)));
+        AssertClose(points[0], path[0].Position);
+        AssertClose(points[^1], path[^1].Position);
+    }
+
+    [Fact]
+    public void ArchWithNoRiseIsAFlatBeamAndAnArchBelowItsSpringingLineIsRefused()
+    {
+        List<List<PathFrame>> flat = SweepPath.Arch(6f, 0f, 12);
+
+        List<PathFrame> beam = Assert.Single(flat);
+        AssertClose(new Vector3(-3f, 0f, 0f), beam[0].Position);
+        AssertClose(new Vector3(3f, 0f, 0f), beam[^1].Position);
+        AssertClose(Vector3.UnitY, beam[0].Side);
+        Assert.Throws<ArgumentOutOfRangeException>(() => SweepPath.Arch(6f, -1f, 12));
+    }
+
+    [Fact]
+    public void TaperRunsEvenlyFromOneToItsEnd()
+    {
+        Assert.Equal(1f, SweepPath.TaperAt(0, 5, 0.4f), 5);
+        Assert.Equal(0.7f, SweepPath.TaperAt(2, 5, 0.4f), 5);
+        Assert.Equal(0.4f, SweepPath.TaperAt(4, 5, 0.4f), 5);
+    }
+
+    [Fact]
     public void HangingCableDipsBySagAtItsMiddle()
     {
         List<PathFrame> path = SweepPath.Hanging(Vector3.Zero, new Vector3(6f, 0f, 0f), 1.5f, 24);
@@ -272,7 +303,7 @@ public class KitGeometryTests
         foreach (float height in new[] { 1.4f, 2.5f, 5.4f })
         {
             var b = new MeshBuilder();
-            KitShapes.Bank(b, new Vector3(3f, height, 0.7f), MachineryWall.BankChest(height), 2);
+            ShelfShapes.Bank(b, new Vector3(3f, height, 0.7f), MachineryWall.BankChest(height), 2);
             (Vector3 min, Vector3 max) = b.Finish().Bounds();
             Assert.True(MathF.Abs(min.Y) < 1e-3f && max.Y <= height + 1e-3f, $"a bank {height} m tall spans {min.Y}..{max.Y}");
             Assert.True(min.X >= -1.5f - 0.05f && max.X <= 1.5f + 0.05f);
@@ -293,6 +324,53 @@ public class KitGeometryTests
         Assert.Contains(Enumerable.Range(0, mesh.VertexCount), i =>
             mesh.Cavities[i] == 1f && mesh.Normals[i].Z > 0.3f && mesh.Normals[i].Y < -0.5f && MathF.Abs(mesh.Positions[i].X) < 0.25f
             && mesh.Positions[i].Z < 0.3f * 0.3f && mesh.Positions[i].Y is > 1f and < 2f);
+    }
+
+    [Fact]
+    public void WreckKeepsTheCallersPlacement()
+    {
+        var placement = Matrix4x4.CreateTranslation(100f, 5f, 0f);
+        var b = new MeshBuilder { Transform = placement };
+        DebrisShapes.Wreck(b, 3f, 1);
+        (Vector3 min, Vector3 max) = b.Finish().Bounds();
+
+        Assert.Equal(placement, b.Transform);
+        Assert.InRange(min.X, 95f, 100f);
+        Assert.InRange(max.X, 100f, 105f);
+        Assert.True(min.Y >= 5f - 0.5f, $"the heap starts at {min.Y}");
+    }
+
+    [Fact]
+    public void OrganPipeGirthPhaseIsTheSameWhereTheBackStripMeetsTheRest()
+    {
+        const float radius = 0.3f;
+        var b = new MeshBuilder();
+        OrganPipeShape.Pipe(b, 4f, radius);
+        MeshData mesh = b.Finish();
+        float girth = MathF.Tau * radius;
+        var seen = new Dictionary<(int, int, int), float>();
+        int compared = 0;
+        for (int i = 0; i < mesh.VertexCount; i++)
+        {
+            Vector3 p = mesh.Positions[i], n = mesh.Normals[i];
+            if (mesh.Cavities[i] != 0f || MathF.Abs(n.Y) > 0.01f || MathF.Abs(p.X * n.X + p.Z * n.Z) < radius * 0.99f)
+            {
+                continue;
+            }
+
+            var key = ((int)MathF.Round(p.X * 1000f), (int)MathF.Round(p.Y * 1000f), (int)MathF.Round(p.Z * 1000f));
+            float v = mesh.Uvs[i].Y;
+            if (seen.TryGetValue(key, out float other))
+            {
+                float turns = (v - other) / girth;
+                Assert.True(MathF.Abs(turns - MathF.Round(turns)) < 1e-3f, $"V {v} against {other} at {p}");
+                compared++;
+            }
+
+            seen[key] = v;
+        }
+
+        Assert.True(compared > 0, "no vertices shared between the strips");
     }
 
     [Fact]
@@ -436,20 +514,20 @@ public class KitGeometryTests
             case "arch": KitShapes.Arch(b, 6f, 3f, 0.6f, 1f, 0f, 24); break;
             case "rib": KitShapes.Arch(b, 10f, 8f, 0.35f, 0.4f, 0.3f, 32); break;
             case "grate": KitShapes.Grate(b, new Vector3(4f, 0.25f, 3f), 0.15f, 0.04f); break;
-            case "rack": KitShapes.Rack(b, new Vector3(1f, 2.4f, 1f), 12, seed); break;
-            case "wreck": KitShapes.Wreck(b, 3f, seed); break;
-            case "icicles": KitShapes.Icicles(b, 3f, 1.5f, 9, seed); break;
+            case "rack": ShelfShapes.Rack(b, new Vector3(1f, 2.4f, 1f), 12, seed); break;
+            case "wreck": DebrisShapes.Wreck(b, 3f, seed); break;
+            case "icicles": DebrisShapes.Icicles(b, 3f, 1.5f, 9, seed); break;
             case "organ": OrganPipeShape.Rank(b, new[] { 4f, 6f, 5f }, 0.8f, 0.3f); break;
-            case "bank": KitShapes.Bank(b, new Vector3(3f, 4f, 0.7f), 0.6f, seed); break;
+            case "bank": ShelfShapes.Bank(b, new Vector3(3f, 4f, 0.7f), 0.6f, seed); break;
             case "curtain": IceCurtainShape.Build(b, 4f, 6f, 0.8f, seed); break;
             case "key": PropShapes.Key(b, 0.6f, 0.13f, 0.04f); break;
             case "crystal": PropShapes.Crystal(b, 0.15f, 6, 0.1f, 0.3f, 0.2f); break;
-            case "boss": PropShapes.Boss(b, 0.25f, 0.08f, 8); break;
-            case "keyhole": PropShapes.Keyhole(b, 0.2f, 0.02f); break;
-            case "seal": PropShapes.Seal(b, 0.42f, 0.07f); break;
-            case "cog": PropShapes.Cog(b, 0.25f, 12, 0.07f); break;
-            case "lever": PropShapes.LeverBase(b, new Vector3(0.62f, 0.34f, 0.5f), 0.5f, 0.55f, MathF.PI / 4f); break;
-            case "handle": PropShapes.LeverHandle(b, 0.9f, 0.035f); break;
+            case "boss": LockShapes.Boss(b, 0.25f, 0.08f, 8); break;
+            case "keyhole": LockShapes.Keyhole(b, 0.2f, 0.02f); break;
+            case "seal": LockShapes.Seal(b, 0.42f, 0.07f); break;
+            case "cog": LockShapes.Cog(b, 0.25f, 12, 0.07f); break;
+            case "lever": LeverShapes.LeverBase(b, new Vector3(0.62f, 0.34f, 0.5f), 0.5f, 0.55f, MathF.PI / 4f); break;
+            case "handle": LeverShapes.LeverHandle(b, 0.9f, 0.035f); break;
             case "cradle": PropShapes.Cradle(b, 0.22f, 0.4f, 3); break;
             case "mooring": AnchorShapes.Ring(b, 0.48f, 0.08f, 4); break;
             case "hoop": AnchorShapes.Hoop(b, 0.4f, 0.05f, 0.06f); break;

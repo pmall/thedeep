@@ -58,10 +58,20 @@ public static class SweepPath
 
     /// <summary>
     /// A polyline with each inner corner rounded over about <paramref name="bendRadius"/> meters
-    /// (a pipe's bends), using <paramref name="bendSegments"/> segments per bend.
+    /// (a pipe's bends), using <paramref name="bendSegments"/> segments per bend. Consecutive points on the same spot count once
+    /// (a leg of no length has no direction to round a corner by).
     /// </summary>
-    public static List<PathFrame> Polyline(IReadOnlyList<Vector3> points, Vector3 upHint, float bendRadius, int bendSegments = 6)
+    public static List<PathFrame> Polyline(IReadOnlyList<Vector3> input, Vector3 upHint, float bendRadius, int bendSegments = 6)
     {
+        var points = new List<Vector3>(input.Count);
+        foreach (Vector3 p in input)
+        {
+            if (points.Count == 0 || Vector3.DistanceSquared(p, points[^1]) > 1e-10f)
+            {
+                points.Add(p);
+            }
+        }
+
         var smoothed = new List<Vector3> { points[0] };
         for (int i = 1; i < points.Count - 1; i++)
         {
@@ -109,12 +119,23 @@ public static class SweepPath
     /// The center line of an arch in the XY plane, springing from (±span/2, 0) and rising to (0, rise),
     /// left to right. Up to a semicircle (rise ≤ span/2) it is one circular arc; higher, it is a pointed
     /// (Gothic) arch of two arcs meeting at the apex, with both halves mitred on the vertical plane there.
-    /// The frames' side axis points out of the arch (radially), their up axis along +Z.
+    /// The frames' side axis points out of the arch (radially), their up axis along +Z. With no rise it is flat: a straight
+    /// beam, its side axis up.
     /// </summary>
     public static List<List<PathFrame>> Arch(float span, float rise, int segments)
     {
+        if (rise < 0f)
+        {
+            throw new ArgumentOutOfRangeException(nameof(rise), rise, "an arch cannot rise below its springing line");
+        }
+
         float half = span * 0.5f;
         segments = Math.Max(2, segments);
+        if (rise < 1e-4f)
+        {
+            return new List<List<PathFrame>> { Line(new Vector3(-half, 0f, 0f), new Vector3(half, 0f, 0f), Vector3.UnitZ) };
+        }
+
         if (rise <= half + 1e-4f)
         {
             // Circle through both springing points and the crown: center (0, c) below the springing line.
@@ -148,11 +169,17 @@ public static class SweepPath
     public static List<PathFrame> Arc(Vector2 center, float radius, float from, float to, int segments) =>
         ArcFrames(center, radius, from, to, Math.Max(2, segments), 0f);
 
+    /// <summary>
+    /// The scale of station <paramref name="station"/> of <paramref name="stations"/> (two or more) along a taper that runs evenly from 1
+    /// at the first to <paramref name="end"/> at the last (see <see cref="MeshBuilder.Sweep"/>'s scales). Allocates nothing.
+    /// </summary>
+    public static float TaperAt(int station, int stations, float end) => 1f + (end - 1f) * station / (stations - 1);
+
     /// <summary>Total length of a path.</summary>
     public static float Length(IReadOnlyList<PathFrame> frames) => frames[^1].Distance;
 
     /// <summary>The frame <paramref name="distance"/> meters along the path, interpolated between stations.</summary>
-    public static PathFrame At(IReadOnlyList<PathFrame> frames, float distance)
+    private static PathFrame At(IReadOnlyList<PathFrame> frames, float distance)
     {
         distance = Math.Clamp(distance, 0f, frames[^1].Distance);
         for (int i = 1; i < frames.Count; i++)
