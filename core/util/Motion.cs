@@ -40,4 +40,19 @@ public static class Motion
         velocity = (velocity - omega * temp) * decay;
         return target + (change + temp) * decay;
     }
+
+    /// <summary>The value <paramref name="t"/> of the way from <paramref name="a"/> to <paramref name="b"/> (not clamped: 0 to 1 is
+    /// between them).</summary>
+    public static float Lerp(float a, float b, float t) => a + (b - a) * t;
+
+    /// <summary>As <see cref="Lerp"/>, with <paramref name="t"/> held to 0 to 1.</summary>
+    public static float LerpClamped(float a, float b, float t) => a + (b - a) * Math.Clamp(t, 0f, 1f);
+
+    /// <summary>0 below <paramref name="from"/>, 1 above <paramref name="to"/>, eased (3x² − 2x³) between; <paramref name="from"/> may
+    /// be above <paramref name="to"/> for a fall.</summary>
+    public static float SmoothStep(float from, float to, float x)
+    {
+        float t = Math.Clamp((x - from) / (to - from), 0f, 1f);
+        return t * t * (3f - 2f * t);
+    }
 }

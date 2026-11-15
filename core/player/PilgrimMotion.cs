@@ -1,5 +1,6 @@
 using System;
 using System.Numerics;
+using static TheDeep.Motion;
 
 namespace TheDeep;
 
@@ -980,15 +981,7 @@ public sealed class PilgrimMotion
 
     private static float Wrap(float angle) => angle - MathF.Tau * MathF.Floor((angle + MathF.PI) / MathF.Tau);
 
-    private static float Lerp(float a, float b, float t) => a + (b - a) * t;
-
     private static float Fraction(float x) => x - MathF.Floor(x);
-
-    private static float SmoothStep(float from, float to, float x)
-    {
-        float t = Math.Clamp((x - from) / (to - from), 0f, 1f);
-        return t * t * (3f - 2f * t);
-    }
 
     private static float SmootherStep(float t)
     {

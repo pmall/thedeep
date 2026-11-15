@@ -79,7 +79,7 @@ public static class IceCurtainShape
             float x = X(k);
             float side = x / (width * 0.5f);
             float taper = 1f - 0.85f * MathF.Pow(side * side, 2f);
-            float shoulder = MathF.Sqrt(SmoothStep(0f, x < 0f ? shoulderLeft : shoulderRight, width * 0.5f - MathF.Abs(x)));
+            float shoulder = MathF.Sqrt(Motion.SmoothStep(0f, x < 0f ? shoulderLeft : shoulderRight, width * 0.5f - MathF.Abs(x)));
             float hem = 0.8f + 0.2f * MathF.Sin(x * 2.3f + hemPhase) + 0.12f * MathF.Sin(x * 6.1f + hemPhase2);
             bottoms[k] = MathF.Max(0.02f, sheet * taper * shoulder * hem);
             for (int i = 0; i < icicles; i++)
@@ -105,7 +105,7 @@ public static class IceCurtainShape
         {
             float x = X(k), bottom = bottoms[k] / longest, section = sections[k];
             // Thin at the sides, where the curtain meets the rock.
-            float edge = SmoothStep(0f, MathF.Min(0.8f, width * 0.15f), width * 0.5f - MathF.Abs(x));
+            float edge = Motion.SmoothStep(0f, MathF.Min(0.8f, width * 0.15f), width * 0.5f - MathF.Abs(x));
             for (int j = 0; j < rows; j++)
             {
                 float s = j / (float)(rows - 1);
@@ -146,10 +146,4 @@ public static class IceCurtainShape
     }
 
     private static float Square(float v) => v * v;
-
-    private static float SmoothStep(float from, float to, float v)
-    {
-        float t = Math.Clamp((v - from) / (to - from), 0f, 1f);
-        return t * t * (3f - 2f * t);
-    }
 }

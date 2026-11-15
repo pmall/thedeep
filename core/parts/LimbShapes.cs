@@ -73,10 +73,10 @@ public static class LimbShapes
         for (int k = 0; k < bands; k++)
         {
             float t0 = spec.From + k * band * (1f - overlap), t1 = t0 + band;
-            float wTop = Lerp(spec.WidthTop, spec.WidthBottom, (t0 - spec.From) / span);
-            float wLip = Lerp(spec.WidthTop, spec.WidthBottom, (t1 - spec.From) / span);
-            float dTop = Lerp(spec.DepthTop, spec.DepthBottom, (t0 - spec.From) / span);
-            float dLip = Lerp(spec.DepthTop, spec.DepthBottom, (t1 - spec.From) / span);
+            float wTop = Motion.LerpClamped(spec.WidthTop, spec.WidthBottom, (t0 - spec.From) / span);
+            float wLip = Motion.LerpClamped(spec.WidthTop, spec.WidthBottom, (t1 - spec.From) / span);
+            float dTop = Motion.LerpClamped(spec.DepthTop, spec.DepthBottom, (t0 - spec.From) / span);
+            float dLip = Motion.LerpClamped(spec.DepthTop, spec.DepthBottom, (t1 - spec.From) / span);
             float grow = 1f + spec.Flare * 0.5f, shrink = 1f - spec.Flare * 0.5f;
             var stations = new[]
             {
@@ -131,6 +131,4 @@ public static class LimbShapes
         var across = new Vector3(-dir.Y, dir.X, 0f);
         return across.LengthSquared() > 1e-6f ? Vector3.Normalize(across) : Vector3.UnitX;
     }
-
-    private static float Lerp(float a, float b, float t) => a + (b - a) * Math.Clamp(t, 0f, 1f);
 }

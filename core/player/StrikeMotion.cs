@@ -1,5 +1,6 @@
 using System;
 using System.Numerics;
+using static TheDeep.Motion;
 
 namespace TheDeep;
 
@@ -258,7 +259,7 @@ public sealed class StrikeMotion
             HoldTime: 0.06f, LetGo: 0.22f),
 
         // The dash strike: the blade drawn from the hip, low along the dash, up through the front, the far hand thrown back.
-        _ => new Keys(
+        StrikeKind.Dash => new Keys(
             KeyPose(new Key(Lean: -0.8f, HipsYaw: -0.2f, ChestYaw: -0.7f, Hips: new(0.04f, -0.1f), Arm: -0.9f, Elbow: 0.6f, Wrist: 0.1f,
                 Off: 0.9f, OffElbow: 0.8f, Front: 0.45f, Back: -0.45f, Head: -0.15f)),
             KeyPose(new Key(Lean: -0.65f, HipsYaw: 0.2f, ChestYaw: 0.4f, Hips: new(0.06f, -0.12f), Arm: 1.4f, Elbow: 0.1f, Wrist: 0.05f,
@@ -268,6 +269,7 @@ public sealed class StrikeMotion
             KeyPose(new Key(Lean: -0.45f, HipsYaw: 0.25f, ChestYaw: 0.6f, Hips: new(0.06f, -0.1f), Arm: 2.1f, Elbow: 0.35f, Wrist: 0.15f,
                 Off: -1.3f, OffElbow: 0.4f, Front: 0.5f, Back: -0.5f, Head: -0.1f)),
             HoldTime: 0.05f, LetGo: 0.2f),
+        _ => throw new ArgumentOutOfRangeException(nameof(kind), kind, null),
     };
 
     /// <summary>A key's whole-body pose: the trunk curved into its lean and turned, the arms in the side plane, the feet planted (or tucked).</summary>
@@ -314,14 +316,6 @@ public sealed class StrikeMotion
         pose[thigh] = upper;
         pose[shin] = lower;
         pose[foot] = footAngle;
-    }
-
-    private static float Lerp(float a, float b, float t) => a + (b - a) * t;
-
-    private static float SmoothStep(float from, float to, float x)
-    {
-        float t = Math.Clamp((x - from) / (to - from), 0f, 1f);
-        return t * t * (3f - 2f * t);
     }
 
     /// <summary>
