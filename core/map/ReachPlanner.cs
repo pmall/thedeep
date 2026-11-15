@@ -1043,29 +1043,11 @@ public sealed class ReachPlanner
     private List<Ledge> FindLedges()
     {
         var ledges = new List<Ledge>();
-        float half = _m.Width * 0.5f;
         foreach (Box s in _solids)
         {
-            var free = new List<(float A, float B)> { (s.MinX, s.MaxX) };
-            var room = new Box(s.MinX - half, s.MaxY + Skin, s.MaxX + half, s.MaxY + _m.Height);
-            foreach (Box o in _solids.Concat(_hazards))
+            foreach ((float from, float to) in Clear(s.MinX, s.MaxX, s.MaxY))
             {
-                if (!o.Overlaps(room))
-                {
-                    continue;
-                }
-
-                // Feet can't be where the body would overlap o.
-                float cutA = o.MinX - half, cutB = o.MaxX + half;
-                free = free.SelectMany(f => Cut(f, cutA, cutB)).ToList();
-            }
-
-            foreach ((float a, float b) in free)
-            {
-                if (b - a > 0.05f)
-                {
-                    ledges.Add(new Ledge(s.MaxY, a, b));
-                }
+                ledges.Add(new Ledge(s.MaxY, from, to));
             }
         }
 
@@ -1081,21 +1063,25 @@ public sealed class ReachPlanner
             return ledges;
         }
 
-        float half = _m.Width * 0.5f;
         foreach (Box water in wet.Bodies)
         {
             float y = WaterMotion.FloatLine(water.MaxY, wet.Limits);
-            var free = new List<(float A, float B)> { (water.MinX, water.MaxX) };
-            var body = new Box(water.MinX - half, y + Skin, water.MaxX + half, y + _m.Height);
-            foreach (Box o in _solids.Concat(_hazards).Where(o => o.Overlaps(body)))
-            {
-                free = free.SelectMany(f => Cut(f, o.MinX - half, o.MaxX + half)).ToList();
-            }
-
-            ledges.AddRange(free.Where(f => f.B - f.A > 0.05f).Select(f => new Ledge(y, f.A, f.B, Swim: true)));
+            ledges.AddRange(Clear(water.MinX, water.MaxX, y).Select(f => new Ledge(y, f.From, f.To, Swim: true)));
         }
 
         return ledges;
+    }
+
+    /// <summary>
+    /// The stretches of [<paramref name="from"/>, <paramref name="to"/>] where feet at height <paramref name="y"/> keep the body clear
+    /// of every solid and hazard, wider than 5 cm.
+    /// </summary>
+    private IEnumerable<(float From, float To)> Clear(float from, float to, float y)
+    {
+        float half = _m.Width * 0.5f;
+        var body = new Box(from - half, y + Skin, to + half, y + _m.Height);
+        IEnumerable<(float, float)> blocked = _solids.Concat(_hazards).Where(o => o.Overlaps(body)).Select(o => (o.MinX - half, o.MaxX + half));
+        return Spans.Gaps(blocked, from, to).Where(f => f.To - f.From > 0.05f);
     }
 
     /// <summary>
@@ -1185,24 +1171,5 @@ public sealed class ReachPlanner
         }
 
         return -1;
-    }
-
-    private static IEnumerable<(float, float)> Cut((float A, float B) f, float a, float b)
-    {
-        if (b <= f.A || a >= f.B)
-        {
-            yield return f;
-            yield break;
-        }
-
-        if (a > f.A)
-        {
-            yield return (f.A, a);
-        }
-
-        if (b < f.B)
-        {
-            yield return (b, f.B);
-        }
     }
 }
