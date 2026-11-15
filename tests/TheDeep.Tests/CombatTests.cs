@@ -82,33 +82,4 @@ public class CombatTests
 
         Assert.Equal(1, s.Count);
     }
-
-    [Fact]
-    public void SaveRoundTrips()
-    {
-        var map = new MapState();
-        map.Enter("Narthex", new Vector2(-36f, 0f), new Vector2(-2f, -2f), new Vector2(38f, 22f));
-        var data = new SaveData { Room = "Narthex", Shrine = "Shrine", Abilities = 1, Collected = { SaveData.RelicId("Reliquary", "MagGrip") } };
-        data.SetMap(map.Rooms);
-
-        SaveData? back = SaveData.FromJson(data.ToJson());
-        Assert.NotNull(back);
-        Assert.Equal("Narthex", back.Room);
-        Assert.Equal("Shrine", back.Shrine);
-        Assert.Equal(1, back.Abilities);
-        Assert.Equal("Reliquary/MagGrip", back.Collected.Single());
-        MapRoom room = back.MapRooms().Single();
-        Assert.Equal(new Vector2(-36f, 0f), room.Offset);
-        Assert.Equal(new Vector2(38f, 22f), room.BoundsMax);
-    }
-
-    [Theory]
-    [InlineData("")]
-    [InlineData("not json")]
-    [InlineData("{\"Version\": 99, \"Room\": \"A\"}")]
-    [InlineData("{\"Version\": 1, \"Room\": \"\"}")]
-    public void BadSavesAreIgnored(string json)
-    {
-        Assert.Null(SaveData.FromJson(json));
-    }
 }

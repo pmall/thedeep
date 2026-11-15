@@ -16,7 +16,9 @@ public class EdgePointerTests
     [Fact]
     public void NearTheEdgeIsPointedAt()
     {
-        Assert.NotNull(EdgePointer.For(new Vector2(1900f, 540f), Screen, 40f));
+        EdgePointer.Mark mark = EdgePointer.For(new Vector2(1900f, 540f), Screen, 40f) ?? throw new Xunit.Sdk.XunitException("no mark");
+        Assert.Equal(new Vector2(1880f, 540f), mark.Position);
+        Assert.Equal(new Vector2(1f, 0f), mark.Direction);
     }
 
     [Fact]

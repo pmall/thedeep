@@ -142,6 +142,17 @@ public class PilgrimTransitionTests
         shake.Tick(10f, 2f);
         Assert.Equal(0f, shake.Trauma);
         Assert.Equal(Vector2.Zero, shake.Offset(0.12f));
+
+        var full = new CameraShake();
+        var half = new CameraShake();
+        full.Add(1f);
+        half.Add(0.5f);
+        full.Tick(0.1f, 0f);
+        half.Tick(0.1f, 0f);
+        Vector2 big = full.Offset(0.12f);
+        Assert.NotEqual(Vector2.Zero, big);
+        Assert.Equal(big.X * 0.25f, half.Offset(0.12f).X, 4);
+        Assert.Equal(big.Y * 0.25f, half.Offset(0.12f).Y, 4);
     }
 
     [Fact]

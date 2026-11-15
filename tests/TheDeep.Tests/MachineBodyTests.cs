@@ -1,9 +1,10 @@
+using System;
 using System.Numerics;
 using Xunit;
 
 namespace TheDeep.Tests;
 
-/// <summary>A machine's condition, crawl and gait (MachineVitals, CrawlMotion, MachineGait).</summary>
+/// <summary>A machine's condition, crawl, gait and surface path (MachineVitals, CrawlMotion, MachineGait, LegGait, SurfacePath).</summary>
 public class MachineBodyTests
 {
     private const float Tick = 1f / 60f;
@@ -153,9 +154,9 @@ public class MachineBodyTests
     }
 
     [Theory]
-    [InlineData(0f, 0f, 1)]
-    [InlineData(10f, 2f, 145)]
-    [InlineData(-10f, 0f, 9844)]
+    [InlineData(0f, 0f, 1)]         // 0 -> 0, plus 1
+    [InlineData(10f, 2f, 145)]      // 13*10 + 7*2 = 144, plus 1
+    [InlineData(-10f, 0f, 9844)]    // -130, below zero so + 9973 = 9843, plus 1
     public void TheSeedComesFromWhereAMachineStands(float x, float y, int seed)
     {
         Assert.Equal(seed, MachineGait.SeedAt(x, y));
@@ -172,5 +173,53 @@ public class MachineBodyTests
             float jitter = MachineGait.Jitter(seed, 1);
             Assert.InRange(jitter, 0f, 0.99999994f);
         }
+    }
+
+    [Fact]
+    public void ClosedSurfacePathGoesAroundTheBox()
+    {
+        SurfacePath? path = SurfacePath.AroundBox(new Vector2(0f, 0f), new Vector2(2f, 4f), new[] { true, true, true, true }, 0.1f);
+        Assert.NotNull(path);
+        Assert.True(path.Closed);
+        // Four faces plus four quarter circles of radius 0.1.
+        Assert.Equal(12f + MathF.Tau * 0.1f, path.Length, 1);
+        (Vector2 point, Vector2 normal) = path.At(path.Closest(new Vector2(3f, 2f)));
+        Assert.Equal(new Vector2(2.1f, 2f), point);
+        Assert.Equal(Vector2.UnitX, normal);
+        Assert.Equal(path.At(0f).Point, path.At(path.Length).Point);
+    }
+
+    [Fact]
+    public void OpenSurfacePathLeavesOutTheFaceOnTheFloor()
+    {
+        SurfacePath? path = SurfacePath.AroundBox(new Vector2(0f, 0f), new Vector2(2f, 4f), new[] { false, true, true, true }, 0f);
+        Assert.NotNull(path);
+        Assert.False(path.Closed);
+        Assert.Equal(10f, path.Length, 2);
+        // Up the right face, over the top, down the left face.
+        Assert.Equal(new Vector2(2f, 0f), path.At(0f).Point);
+        Assert.Equal(new Vector2(0f, 0f), path.At(path.Length).Point);
+        Assert.Equal(new Vector2(0f, 1f), path.Tangent(1f));
+        Assert.Equal(path.Length, path.Wrap(path.Length + 3f));
+        Assert.True(path.AtEnd(path.Length, 1));
+    }
+
+    [Fact]
+    public void PlantedFootStaysStillWhileTheBodyWalks()
+    {
+        const float Stride = 0.4f, Stance = 0.6f;
+        float body = 0f, phase = 0.05f;
+        float planted = body + LegGait.Foot(phase, Stance, Stride, 0.1f).X;
+        for (int i = 0; i < 20; i++)
+        {
+            float step = 0.01f;
+            body += step;
+            phase += LegGait.Advance(step, Stride, Stance);
+            Vector2 foot = LegGait.Foot(phase, Stance, Stride, 0.1f);
+            Assert.Equal(0f, foot.Y);
+            Assert.Equal(planted, body + foot.X, 4);
+        }
+
+        Assert.True(LegGait.Foot(Stance + (1f - Stance) * 0.5f, Stance, Stride, 0.1f).Y > 0.09f, "lifted mid-swing");
     }
 }

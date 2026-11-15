@@ -1,4 +1,5 @@
 using System.Linq;
+using System.Numerics;
 using Xunit;
 
 namespace TheDeep.Tests;
@@ -35,6 +36,28 @@ public class SaveTests
         Assert.Equal(save.Map, back.Map);
         Assert.Equal(save.Ways, back.Ways);
         Assert.Equal(save.Taken, back.Taken);
+    }
+
+    [Fact]
+    public void TheMapRoomsSurviveARoundTrip()
+    {
+        var map = new MapState();
+        map.Enter("Narthex", new Vector2(-36f, 0f), new Vector2(-2f, -2f), new Vector2(38f, 22f));
+        var data = new SaveData { Room = "Narthex" };
+        data.SetMap(map.Rooms);
+
+        SaveData? back = SaveData.FromJson(data.ToJson());
+
+        Assert.NotNull(back);
+        MapRoom room = back.MapRooms().Single();
+        Assert.Equal(new Vector2(-36f, 0f), room.Offset);
+        Assert.Equal(new Vector2(38f, 22f), room.BoundsMax);
+    }
+
+    [Fact]
+    public void ASaveOfAVersionFarAheadIsNotLoaded()
+    {
+        Assert.Null(SaveData.FromJson("{\"Version\": 99, \"Room\": \"A\"}"));
     }
 
     [Fact]
@@ -103,6 +126,7 @@ public class SaveTests
     [InlineData("null")]
     [InlineData("[1,2]")]
     [InlineData("{\"Version\":1}")]
+    [InlineData("{\"Version\":1,\"Room\":\"\"}")]
     [InlineData("{\"Version\":1,\"Room\":\"Hall\",\"Abilities\":\"many\"}")]
     public void ATextThatIsNoSaveIsReportedAsCorrupt(string text)
     {

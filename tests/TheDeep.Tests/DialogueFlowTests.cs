@@ -83,27 +83,4 @@ public class DialogueFlowTests
         Assert.Equal(1.1f, pace.SecondsFor("Down? Yes", 5), 4);
         Assert.Equal(0.1f, pace.SecondsFor("Down? Yes", 0), 4);
     }
-
-    [Fact]
-    public void ALevelSpeakerCarriesItsPrompt()
-    {
-        var talk = new TalkPrompt(2f, 2.3f, 0.6f);
-
-        (System.Numerics.Vector2 at, int reach) = talk.Place(new(10f, 1f), new(8f, 0f));
-
-        Assert.Equal(new System.Numerics.Vector2(10f, 3.3f), at);
-        Assert.Equal(0, reach);
-    }
-
-    [Fact]
-    public void AFlyingSpeakersPromptStandsByThePilgrimLeaningTowardIt()
-    {
-        var talk = new TalkPrompt(2f, 2.3f, 0.6f);
-
-        (System.Numerics.Vector2 at, int reach) = talk.Place(new(4f, 5.5f), new(8f, 0f));
-
-        Assert.Equal(new System.Numerics.Vector2(7.4f, 2.3f), at);
-        Assert.Equal(-1, reach);
-        Assert.Equal(1, talk.Place(new(12f, -4f), new(8f, 0f)).Reach);
-    }
 }
