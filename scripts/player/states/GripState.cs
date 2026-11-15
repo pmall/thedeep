@@ -15,21 +15,6 @@ namespace TheDeep.States;
 /// </summary>
 public sealed class GripState : PlayerState
 {
-    /// <summary>Speed pressing the body into the surface, so it stays in contact through small steps.</summary>
-    private const float StickSpeed = 2f;
-
-    /// <summary>How far ahead of the feet, past a surface's end, the edge is searched for.</summary>
-    private const float EdgeSearch = 1f;
-
-    /// <summary>How far past the feet the surface under the body's middle is looked for.</summary>
-    private const float SurfaceProbe = 0.3f;
-
-    /// <summary>The least speed into the surface the body clamps on with, as the animation's landing sees it (m/s).</summary>
-    private const float ClampKick = 7f;
-
-    /// <summary>A corner's swing onto the next surface, as the animation's landing sees it (m/s).</summary>
-    private const float CornerKick = 4f;
-
     private float _speed;
     private NVector2? _lockedInput;
     private float _lockedAlong;
@@ -56,7 +41,7 @@ public sealed class GripState : PlayerState
         // The way it was going along the surface carries on (a jump up into a wall climbs on, a run under a ceiling runs on).
         _speed = Mathf.Clamp(NVector2.Dot(v, GripMath.Tangent(_attach.Up)), -Tuning.GripSpeed, Tuning.GripSpeed);
         Player.Orient(_attach);
-        Player.Visual.Land(Mathf.Max(into, ClampKick));
+        Player.Visual.Land(Mathf.Max(into, Tuning.GripClampKick));
         Player.Velocity = Vector3.Zero;
         NVector2 t = GripMath.Tangent(_attach.Up);
         NVector2 facingWay = _attach.Up.X != 0f ? new NVector2(0f, 1f) : new NVector2(Player.WorldFacing, 0f);
@@ -124,7 +109,7 @@ public sealed class GripState : PlayerState
         }
 
         NVector2 t = GripMath.Tangent(up);
-        NVector2 v = t * _speed - up * StickSpeed;
+        NVector2 v = t * _speed - up * Tuning.GripStickSpeed;
         Player.Velocity = v.OnPlane();
         return null;
     }
@@ -146,14 +131,14 @@ public sealed class GripState : PlayerState
         {
             // Under the body's middle, rock going on in the same plane past the metal's end: the metal ended, let go.
             NVector2 center = Player.Center;
-            return Player.SurfaceRay(center, feet - up * SurfaceProbe) == SurfaceKind.Rock ? LetGo() : null;
+            return Player.SurfaceRay(center, feet - up * Tuning.GripSurfaceProbe) == SurfaceKind.Rock ? LetGo() : null;
         }
 
         // The surface ended under the feet: wrap around its edge if the end face is metal.
         if (_speed != 0f)
         {
-            NVector2 from = feet - up * 0.1f;
-            if (Player.MetalRay(from, from - travel * EdgeSearch) is { } edge)
+            NVector2 from = feet - up * Tuning.GripEdgeDip;
+            if (Player.MetalRay(from, from - travel * Tuning.GripEdgeSearch) is { } edge)
             {
                 GripPose pose = GripMath.OuterCorner(feet, up, travel, edge, Player.GripClearance);
                 return Turn(pose, GripMath.TravelAfterOuter(up));
@@ -177,7 +162,7 @@ public sealed class GripState : PlayerState
         }
 
         Player.Orient(pose);
-        Player.Visual.Land(CornerKick);
+        Player.Visual.Land(Tuning.GripCornerKick);
         float sign = NVector2.Dot(travel, GripMath.Tangent(pose.Up)) < 0f ? -1f : 1f;
         _speed = speed * sign;
         _lockedInput = new NVector2(Player.CurrentInput.MoveX, Player.CurrentInput.MoveY);

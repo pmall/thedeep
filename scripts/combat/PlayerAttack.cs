@@ -119,8 +119,8 @@ public partial class PlayerAttack : Node3D
         Vector3 up = Player.GlobalBasis.Y;
         bool down = Strike.Toward.Y < 0f;
         Vector3 along = down ? -up : Player.GlobalBasis.X * _facing;
-        Vector3 from = Player.GlobalPosition + up * (down ? 0.6f : ChestHeight);
-        Vector3 center = from + along * (Strike.Reach * 0.5f + (down ? 0f : 0.1f));
+        Vector3 from = Player.GlobalPosition + up * (down ? Player.Tuning.AttackHipHeight : ChestHeight);
+        Vector3 center = from + along * (Strike.Reach * 0.5f + (down ? 0f : Player.Tuning.AttackForwardOffset));
         bool horizontal = Mathf.Abs(along.X) > 0.5f;
         var size = horizontal ? new Vector2(Strike.Reach, Strike.Width) : new Vector2(Strike.Width, Strike.Reach);
         return new Rect2(new Vector2(center.X, center.Y) - size * 0.5f, size);

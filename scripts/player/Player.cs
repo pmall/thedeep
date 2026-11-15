@@ -202,7 +202,7 @@ public partial class Player : CharacterBody3D
     }
 
     /// <summary>How far the feet stay from a surface the body lies along after a corner: the body's radius and a little air.</summary>
-    public float GripClearance => Capsule.Radius + 0.02f;
+    public float GripClearance => Capsule.Radius + Tuning.GripClearanceGap;
 
     /// <summary>The facing as the world sees it: +1 toward +X, -1 toward -X (on a wall, the way the head points along X, else the local facing).</summary>
     public int WorldFacing
@@ -268,7 +268,7 @@ public partial class Player : CharacterBody3D
         float fallSpeed = -Velocity.Y;
         if (CurrentState.Bores)
         {
-            Bore(Velocity * dt * 2f);
+            Bore(Velocity * dt * Tuning.BoreLookAhead);
         }
 
         PushSpeed = Velocity.X;
@@ -312,7 +312,7 @@ public partial class Player : CharacterBody3D
         Vector3 localVelocity = GlobalBasis.Inverse() * Velocity;
         if (CurrentState is HarpoonState { Anchor: { } anchor })
         {
-            Visual.Reach(anchor.GlobalPosition - GlobalPosition - GlobalBasis.Y * ShoulderHeight);
+            Visual.Reach(anchor.GlobalPosition - GlobalPosition - GlobalBasis.Y * Tuning.ShoulderHeight);
         }
 
         Visual.Animate(dt, localVelocity, CurrentState.Motion, IsOnFloor(), IsUpright ? GlobalPosition.Y : float.NaN);
@@ -542,12 +542,9 @@ public partial class Player : CharacterBody3D
     private bool Fits(GripPose pose)
     {
         var basis = new Basis(Vector3.Back, GripMath.Angle(pose.Up));
-        var origin = new Vector3(pose.Feet.X + pose.Up.X * 0.05f, pose.Feet.Y + pose.Up.Y * 0.05f, 0f);
+        var origin = new Vector3(pose.Feet.X + pose.Up.X * Tuning.FitLift, pose.Feet.Y + pose.Up.Y * Tuning.FitLift, 0f);
         return !Fit.Overlaps(new Transform3D(basis, origin) * new Transform3D(Basis.Identity, CapsuleOffset));
     }
-
-    /// <summary>Height of the shoulders over the feet, meters: the near arm reaches along the Harpoon's line from there.</summary>
-    private const float ShoulderHeight = 1.35f;
 
     /// <summary>
     /// A blow from <paramref name="from"/> (on the play plane): takes <paramref name="damage"/> health unless in the

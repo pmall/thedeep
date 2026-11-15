@@ -138,6 +138,30 @@ public partial class PlayerTuning : Resource
     /// <summary>Seconds a blow that hurts holds the pilgrim and the machine that dealt it still, before the throw.</summary>
     [Export] public float HurtStop { get; set; } = 0.1f;
 
+    /// <summary>How many ticks' motion ahead the Drill looks for cracked rock to break.</summary>
+    [ExportGroup("Body and probes")]
+    [Export] public float BoreLookAhead { get; set; } = 2f;
+    /// <summary>How far (meters) the feet stay off a surface the body lies along after a Mag-grip corner, past the body's radius.</summary>
+    [Export] public float GripClearanceGap { get; set; } = 0.02f;
+    /// <summary>How far (meters) off its surface a pose is tested for the body to fit (Mag-grip, ledge assist).</summary>
+    [Export] public float FitLift { get; set; } = 0.05f;
+    /// <summary>Height of the shoulders over the feet, meters: the near arm reaches along the Harpoon's line from there.</summary>
+    [Export] public float ShoulderHeight { get; set; } = 1.35f;
+    /// <summary>Mag-grip: speed pressing the body into its surface so it stays in contact through small steps (m/s).</summary>
+    [Export] public float GripStickSpeed { get; set; } = 2f;
+    /// <summary>Mag-grip: how far ahead of the feet, past a surface's end, the edge is searched for (meters).</summary>
+    [Export] public float GripEdgeSearch { get; set; } = 1f;
+    /// <summary>Mag-grip: how far a ray dips below the feet to find the surface's end face (meters).</summary>
+    [Export] public float GripEdgeDip { get; set; } = 0.1f;
+    /// <summary>Mag-grip: how far past the feet the surface under the body's middle is looked for (meters).</summary>
+    [Export] public float GripSurfaceProbe { get; set; } = 0.3f;
+    /// <summary>Mag-grip: the least speed into the surface the body clamps on with, and a corner's swing onto the next surface, as the animation's landing sees them (m/s).</summary>
+    [Export] public float GripClampKick { get; set; } = 7f;
+    [Export] public float GripCornerKick { get; set; } = 4f;
+    /// <summary>A down strike's area starts this far above the feet (the hips), and a forward strike's reaches this far past its chest point (meters).</summary>
+    [Export] public float AttackHipHeight { get; set; } = 0.6f;
+    [Export] public float AttackForwardOffset { get; set; } = 0.1f;
+
     /// <summary>Gravity (m/s², positive) that makes the jump peak as tuned, derived from <see cref="JumpHeight"/> and
     /// <see cref="JumpTimeToApex"/>.</summary>
     public float Gravity => JumpMath.Gravity(JumpHeight, JumpTimeToApex);
