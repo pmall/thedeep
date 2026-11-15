@@ -26,6 +26,8 @@ public class CameraMathTests
     [InlineData(13f, 0f, true)]     // inside the margin
     [InlineData(17f, 0f, false)]    // in the margin: not framed
     [InlineData(0f, -9f, false)]    // below the view
+    [InlineData(0f, 5f, true)]      // inside the margin, vertically
+    [InlineData(0f, 7f, false)]     // in the margin, vertically
     [InlineData(40f, 0f, false)]    // far off
     public void FramesAPointOnlyWellInsideTheView(float x, float y, bool framed)
     {
