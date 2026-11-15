@@ -41,6 +41,18 @@ public sealed class SleeperBrain : MachineBrain
     /// <summary>Seconds with nothing to track before it goes back to sleep.</summary>
     public float Patience { get; init; } = 5f;
 
+    /// <summary>How close to its target, meters, it starts slowing to stop on it.</summary>
+    public float ArriveRadius { get; init; } = 0.8f;
+
+    /// <summary>It unfolds in this fraction of <see cref="WakeTime"/>: its limbs rouse ahead of its hunt.</summary>
+    public float RouseFraction { get; init; } = 0.4f;
+
+    /// <summary>How fast it folds back down when it dozes off, per second.</summary>
+    public float DozeRate { get; init; } = 1.2f;
+
+    /// <summary>How alert it looks while unfolding, as a fraction of how far it has risen.</summary>
+    public float DrowseAlert { get; init; } = 0.5f;
+
     public override Intent Think(in Perception p, float delta)
     {
         bool hit = _strike.Update(delta);
@@ -96,18 +108,18 @@ public sealed class SleeperBrain : MachineBrain
                 Act = _strike.Active ? _strike.Act : MachineAct.Hunt;
                 if (!_strike.Active)
                 {
-                    intent.Velocity = Steering.Arrive(p.Position, _target, Speed, 0.8f);
+                    intent.Velocity = Steering.Arrive(p.Position, _target, Speed, ArriveRadius);
                 }
 
                 break;
         }
 
         bool awake = Act != MachineAct.Sleep;
-        _rouse = Motion.Damp(_rouse, awake ? 1f : 0f, awake ? 1f / MathF.Max(WakeTime * 0.4f, 0.05f) : 1.2f, delta);
+        _rouse = Motion.Damp(_rouse, awake ? 1f : 0f, awake ? 1f / MathF.Max(WakeTime * RouseFraction, 0.05f) : DozeRate, delta);
         intent.Act = Act;
         intent.Hit = hit;
         intent.Rouse = _rouse;
-        intent.Alert = Act is MachineAct.Hunt or MachineAct.WindUp or MachineAct.Strike or MachineAct.Recover ? 1f : _rouse * 0.5f;
+        intent.Alert = Act is MachineAct.Hunt or MachineAct.WindUp or MachineAct.Strike or MachineAct.Recover ? 1f : _rouse * DrowseAlert;
         intent.Strike = _strike.Channel;
         intent.LookAt = awake ? _target : null;
         return intent;

@@ -87,6 +87,7 @@ Hostile = true
 CreedLine = &"creed.nirvanary"
 Assembly = ExtResource("5_assembly")
 Locomotion = 1
+HitLift = 1
 BodySize = Vector2(2.8, 3.3)
 SensorHeight = 0
 TurnSharpness = 4

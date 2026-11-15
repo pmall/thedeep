@@ -14,6 +14,10 @@ public partial class ConductorBehavior : MachineBehavior
     [Export] public float Lunge { get; set; } = 7f;
     [Export] public int Flurry { get; set; } = 3;
     [Export] public float BeatPeriod { get; set; } = 1.2f;
+    [Export] public float AlertFall { get; set; } = 3f;
+    [Export] public float AlertRise { get; set; } = 8f;
+    [Export] public float StopFraction { get; set; } = 0.8f;
+    [Export] public float StalkSway { get; set; } = 0.4f;
 
     [ExportGroup("Strike")]
     [Export] public float WindUp { get; set; } = 0.7f;
@@ -39,5 +43,9 @@ public partial class ConductorBehavior : MachineBehavior
             Lunge = Lunge,
             Flurry = Flurry,
             BeatPeriod = BeatPeriod * (0.95f + 0.1f * Jitter(seed, 1)),
+            AlertFall = AlertFall,
+            AlertRise = AlertRise,
+            StopFraction = StopFraction,
+            StalkSway = StalkSway,
         };
 }

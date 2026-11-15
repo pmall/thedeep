@@ -12,6 +12,16 @@ public partial class FollowerBehavior : MachineBehavior
     [Export] public float Shy { get; set; } = 2.2f;
     [Export] public float Speed { get; set; } = 6f;
 
+    [ExportGroup("Bearing")]
+    [Export] public float DartFactor { get; set; } = 1.3f;
+    [Export] public float CrossingLift { get; set; } = 1.8f;
+    [Export] public float SlowRadius { get; set; } = 2.5f;
+    [Export] public float LoiterSize { get; set; } = 2.5f;
+    [Export] public float LoiterSpeed { get; set; } = 1.2f;
+    [Export] public float LoiterSlowRadius { get; set; } = 1f;
+    [Export] public float StartleAlert { get; set; } = 0.35f;
+    [Export] public float AlertRate { get; set; } = 6f;
+
     public override MachineBrain CreateBrain(MachineSpecies species, int seed) => new FollowerBrain
     {
         SightRange = SightRange,
@@ -19,5 +29,13 @@ public partial class FollowerBehavior : MachineBehavior
         Height = Height,
         Shy = Shy,
         Speed = Speed,
+        DartFactor = DartFactor,
+        CrossingLift = CrossingLift,
+        SlowRadius = SlowRadius,
+        LoiterSize = LoiterSize,
+        LoiterSpeed = LoiterSpeed,
+        LoiterSlowRadius = LoiterSlowRadius,
+        StartleAlert = StartleAlert,
+        AlertRate = AlertRate,
     };
 }

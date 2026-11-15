@@ -5,7 +5,7 @@ namespace TheDeep;
 /// <summary>
 /// The strike of the behavior vocabulary: a readable wind-up, a fast blow, a slow recovery, then a cooldown.
 /// The wind-up is the player's warning, so it is never skipped. <see cref="Channel"/> drives the animation
-/// (about 0.6 at the end of the wind-up, 1 at the blow); <see cref="Update"/> reports the tick the blow lands.
+/// (<see cref="WindChannel"/> at the end of the wind-up, 1 at the blow); <see cref="Update"/> reports the tick the blow lands.
 /// </summary>
 public sealed class StrikeAction
 {
@@ -20,6 +20,9 @@ public sealed class StrikeAction
     public float Recover { get; init; } = 0.6f;
     /// <summary>Seconds after the recovery before another strike can start.</summary>
     public float Cooldown { get; init; } = 0.8f;
+
+    /// <summary>How far the channel has risen, 0 to 1, when the wind-up ends and the blow begins.</summary>
+    public float WindChannel { get; init; } = 0.6f;
 
     /// <summary>Between the start of the wind-up and the end of the recovery.</summary>
     public bool Active => _time >= 0f;
@@ -65,11 +68,11 @@ public sealed class StrikeAction
         if (_time < WindUp)
         {
             float t = _time / WindUp;
-            Channel = 0.6f * t * t * (3f - 2f * t);
+            Channel = WindChannel * t * t * (3f - 2f * t);
         }
         else if (_time < blowEnd)
         {
-            Channel = 0.6f + 0.4f * (_time - WindUp) / Blow;
+            Channel = WindChannel + (1f - WindChannel) * (_time - WindUp) / Blow;
         }
         else if (_time < blowEnd + Recover)
         {

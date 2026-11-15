@@ -19,11 +19,12 @@ public sealed class PrayerBrain : MachineBrain
     private float _calm;
 
     /// <summary>A praying machine of species <paramref name="kind"/> that bows every <paramref name="period"/> seconds,
-    /// starting <paramref name="phase"/> (0 to 1) through the cycle, and strikes with <paramref name="strike"/>.</summary>
-    public PrayerBrain(string kind, float period, float phase, StrikeAction strike)
+    /// starting <paramref name="phase"/> (0 to 1) through the cycle, pulled into step with its neighbors by <paramref name="coupling"/>
+    /// (cycles per second at most, see <see cref="PrayerCycle.Coupling"/>), and strikes with <paramref name="strike"/>.</summary>
+    public PrayerBrain(string kind, float period, float phase, StrikeAction strike, float coupling = 0.12f)
     {
         Kind = kind;
-        _prayer = new PrayerCycle(period, phase) { Coupling = 0.12f };
+        _prayer = new PrayerCycle(period, phase) { Coupling = coupling };
         _strike = strike;
     }
 
@@ -44,6 +45,30 @@ public sealed class PrayerBrain : MachineBrain
 
     /// <summary>Seconds without an intruder before it prays again.</summary>
     public float Calm { get; init; } = 1.6f;
+
+    /// <summary>The nearest an intruder can be ahead of it and still be struck, meters (behind its back is safe).</summary>
+    public float MinAhead { get; init; } = 0.1f;
+
+    /// <summary>How fast it bows down into its prayer, per second.</summary>
+    public float BowRate { get; init; } = 6f;
+
+    /// <summary>How fast it stands up from its bow when it stops praying, per second.</summary>
+    public float RiseRate { get; init; } = 12f;
+
+    /// <summary>How fast its alertness rises as it strikes, per second.</summary>
+    public float AlertRise { get; init; } = 14f;
+
+    /// <summary>How fast its alertness fades once it is calm, per second.</summary>
+    public float AlertFall { get; init; } = 3f;
+
+    /// <summary>Above this alertness (0 to 1) it watches the player, and otherwise gazes ahead.</summary>
+    public float WatchAlert { get; init; } = 0.3f;
+
+    /// <summary>Where it gazes while praying: this far ahead of its chest, meters.</summary>
+    public float GazeAhead { get; init; } = 3f;
+
+    /// <summary>and this far below it, meters (negative is down).</summary>
+    public float GazeDrop { get; init; } = -1.2f;
 
     public override Intent Think(in Perception p, float delta)
     {
@@ -70,8 +95,8 @@ public sealed class PrayerBrain : MachineBrain
 
         // The prayer goes on underneath, so it stays in step with the others while it watches.
         _prayer.Step(delta, _neighborPhases);
-        _bow = Motion.Damp(_bow, praying ? _prayer.Bow : 0f, praying ? 6f : 12f, delta);
-        _alert = Motion.Damp(_alert, _strike.Active || _calm > 0f ? 1f : 0f, _strike.Active ? 14f : 3f, delta);
+        _bow = Motion.Damp(_bow, praying ? _prayer.Bow : 0f, praying ? BowRate : RiseRate, delta);
+        _alert = Motion.Damp(_alert, _strike.Active || _calm > 0f ? 1f : 0f, _strike.Active ? AlertRise : AlertFall, delta);
 
         Act = _strike.Active ? _strike.Act : praying ? MachineAct.Pray : MachineAct.Watch;
         Vector2 chest = p.Position + new Vector2(0f, ChestHeight);
@@ -83,7 +108,7 @@ public sealed class PrayerBrain : MachineBrain
             Pray = _bow,
             Strike = _strike.Channel,
             Alert = _alert,
-            LookAt = _alert > 0.3f && p.Player is { } player ? player.Position : chest + new Vector2(p.Facing * 3f, -1.2f),
+            LookAt = _alert > WatchAlert && p.Player is { } player ? player.Position : chest + new Vector2(p.Facing * GazeAhead, GazeDrop),
         };
     }
 
@@ -95,6 +120,6 @@ public sealed class PrayerBrain : MachineBrain
         }
 
         float ahead = Senses.Ahead(p, player.Position);
-        return ahead > 0.1f && ahead <= Reach && MathF.Abs(player.Position.Y - (p.Position.Y + ChestHeight)) <= Band;
+        return ahead > MinAhead && ahead <= Reach && MathF.Abs(player.Position.Y - (p.Position.Y + ChestHeight)) <= Band;
     }
 }

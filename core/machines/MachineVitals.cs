@@ -91,10 +91,10 @@ public sealed class MachineVitals
 
     /// <summary>
     /// The velocity a blow from <paramref name="fromX"/> pushes a machine at <paramref name="x"/> with: away from it and a little up,
-    /// scaled by its <paramref name="heft"/> (a flyer is lifted less). A crawler is never pushed: null.
+    /// scaled by its <paramref name="heft"/>, the lift being <paramref name="lift"/> m/s. A crawler is never pushed: null.
     /// </summary>
-    public static Vector2? Knockback(Locomotion locomotion, float x, float fromX, float knockback, float heft) =>
+    public static Vector2? Knockback(Locomotion locomotion, float x, float fromX, float knockback, float heft, float lift) =>
         locomotion == Locomotion.Crawl
             ? null
-            : new Vector2((x >= fromX ? 1f : -1f) * knockback * heft, (locomotion == Locomotion.Hover ? 1f : 2f) * heft);
+            : new Vector2((x >= fromX ? 1f : -1f) * knockback * heft, lift * heft);
 }
