@@ -20,7 +20,14 @@ public partial class TextStyle : Resource
     /// <summary>The game's own style, used by every world that gives none.</summary>
     public const string GamePath = "res://resources/ui/text_style.tres";
 
+    /// <summary>The screen height, in rows, the HUD's pixel sizes (pips, chevron, margins) are written for. The canvas is shorter
+    /// (900 rows), so <see cref="HudScale"/> draws them at 5/6 of their written size.</summary>
+    public const float HudDesignHeight = 1080f;
+
     private static TextStyle? _shared;
+
+    /// <summary>The factor that turns a HUD size written for <see cref="HudDesignHeight"/> rows into canvas pixels.</summary>
+    public static float HudScale(float canvasHeight) => canvasHeight / HudDesignHeight;
 
     /// <summary>The style of the world being played (the game's own until a world says otherwise).</summary>
     public static TextStyle Shared => _shared ??= ResourceLoader.Load<TextStyle>(GamePath);

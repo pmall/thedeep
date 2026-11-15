@@ -16,7 +16,7 @@ public partial class AnchorPointer : CanvasLayer
     [Export] public Color Tint { get; set; } = GateKinds.ColorOf(Ability.Harpoon);
     [Export] public Color Backing { get; set; } = new(0.06f, 0.04f, 0.1f, 0.55f);
 
-    /// <summary>How far inside the screen's edge the chevron sits, and its size (pixels at 1080 rows).</summary>
+    /// <summary>How far inside the screen's edge the chevron sits, and its size (pixels written for <see cref="TextStyle.HudDesignHeight"/> rows, scaled by <see cref="TextStyle.HudScale"/>).</summary>
     [Export] public float Margin { get; set; } = 46f;
     [Export] public float Size { get; set; } = 15f;
 
@@ -51,7 +51,7 @@ public partial class AnchorPointer : CanvasLayer
         if (Player.AnchorInSight is { } anchor && Player.Abilities.Has(Ability.Harpoon) && IsInstanceValid(anchor))
         {
             Vector2 screen = Camera.GetViewport().GetVisibleRect().Size;
-            _scale = screen.Y / 1080f;
+            _scale = TextStyle.HudScale(screen.Y);
             Vector2 at = Camera.UnprojectPosition(anchor.GlobalPosition);
             if (EdgePointer.For(at.ToCore(), screen.ToCore(), Margin * _scale) is { } mark)
             {
