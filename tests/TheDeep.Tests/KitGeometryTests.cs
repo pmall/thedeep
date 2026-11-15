@@ -296,6 +296,39 @@ public class KitGeometryTests
     }
 
     [Fact]
+    public void OrganPipeGirthPhaseIsTheSameWhereTheBackStripMeetsTheRest()
+    {
+        const float radius = 0.3f;
+        var b = new MeshBuilder();
+        OrganPipeShape.Pipe(b, 4f, radius);
+        MeshData mesh = b.Finish();
+        float girth = MathF.Tau * radius;
+        var seen = new Dictionary<(int, int, int), float>();
+        int compared = 0;
+        for (int i = 0; i < mesh.VertexCount; i++)
+        {
+            Vector3 p = mesh.Positions[i], n = mesh.Normals[i];
+            if (mesh.Cavities[i] != 0f || MathF.Abs(n.Y) > 0.01f || MathF.Abs(p.X * n.X + p.Z * n.Z) < radius * 0.99f)
+            {
+                continue;
+            }
+
+            var key = ((int)MathF.Round(p.X * 1000f), (int)MathF.Round(p.Y * 1000f), (int)MathF.Round(p.Z * 1000f));
+            float v = mesh.Uvs[i].Y;
+            if (seen.TryGetValue(key, out float other))
+            {
+                float turns = (v - other) / girth;
+                Assert.True(MathF.Abs(turns - MathF.Round(turns)) < 1e-3f, $"V {v} against {other} at {p}");
+                compared++;
+            }
+
+            seen[key] = v;
+        }
+
+        Assert.True(compared > 0, "no vertices shared between the strips");
+    }
+
+    [Fact]
     public void IceCurtainHangsFromItsRootToItsLengthInFrontOfItsBack()
     {
         MeshData a = BuildPiece("curtain", seed: 3), other = BuildPiece("curtain", seed: 4);
