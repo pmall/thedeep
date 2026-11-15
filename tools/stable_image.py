@@ -216,7 +216,7 @@ def frame_randoms(shaders: list[Shader]) -> Iterator[tuple[Shader, int, str]]:
                     yield f.shader, line_of(f.shader, f.body_start + offset), f'{call}() {what} TIME in {f.name}()'
 
 
-def cs_problems(path: str, text: str) -> Iterator[tuple[str, int, str]]:
+def cs_problems(text: str) -> Iterator[tuple[str, int, str]]:
     text = strip_comments(text)
     for m in COMPOSITOR.finditer(text):
         yield 'screen-read', text.count('\n', 0, m.start()) + 1, 'a CompositorEffect is a pass over the finished image'
@@ -245,7 +245,7 @@ def scan(files: dict[str, str]) -> tuple[list[str], list[str]]:
             for m in BACK_BUFFER.finditer(text):
                 found.append(('screen-read', path, text.count('\n', 0, m.start()) + 1, 'a BackBufferCopy node'))
         elif suffix == '.cs':
-            found += [(rule, path, line, msg) for rule, line, msg in cs_problems(path, text)]
+            found += [(rule, path, line, msg) for rule, line, msg in cs_problems(text)]
     for s in shaders:
         s.waivers = {m.group(1): m.group(2).strip() for m in WAIVER.finditer(s.text)}
         found += [('screen-read', s.path, line, msg) for line, msg in screen_reads(s)]
