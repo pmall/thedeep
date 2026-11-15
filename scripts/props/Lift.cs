@@ -1,5 +1,4 @@
 using System;
-using System.Linq;
 using Godot;
 
 namespace TheDeep;
@@ -106,8 +105,7 @@ public partial class Lift : Node3D
             return;
         }
 
-        SeamEnd frame = Through.Children().OfType<SeamEnd>().FirstOrDefault()
-            ?? throw new InvalidOperationException($"lift {this.NameText()} rides through {Through.NameText()}, an exit no seam brick frames");
+        SeamEnd frame = Through.FramingSeam(this);
         (System.Numerics.Vector2 stop, float rise) = frame.Profile.Frame.Lift(Through.Side, Through.RoomPosition.ToCore(), GlobalPosition.Y);
         GlobalPosition = new Vector3(stop.X, stop.Y, GlobalPosition.Z);
         Rise = rise;

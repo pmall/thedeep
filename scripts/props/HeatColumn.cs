@@ -1,4 +1,3 @@
-using System.Linq;
 using Godot;
 
 namespace TheDeep;
@@ -99,8 +98,7 @@ public partial class HeatColumn : Node3D
             return;
         }
 
-        SeamEnd frame = Through.Children().OfType<SeamEnd>().FirstOrDefault()
-            ?? throw new System.InvalidOperationException($"heat {this.NameText()} rises through {Through.NameText()}, an exit no seam brick frames");
+        SeamEnd frame = Through.FramingSeam(this);
         float end = Through.Side == ExitSide.Up ? GlobalPosition.Y : GlobalPosition.Y + Size.Y;
         Box column = frame.Profile.Frame.Heat(Through.Side, Through.RoomPosition.ToCore(), end);
         GlobalPosition = new Vector3(0.5f * (column.MinX + column.MaxX), column.MinY, GlobalPosition.Z);
