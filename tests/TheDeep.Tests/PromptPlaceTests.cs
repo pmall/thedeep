@@ -38,4 +38,27 @@ public class PromptPlaceTests
     {
         Assert.Equal(new Vector2(-100f, 372f), PromptPlace.TopLeft(new Vector2(30f, 400f), new Vector2(1800f, 56f), 0, Canvas, 16f));
     }
+
+    [Fact]
+    public void ALevelSpeakerCarriesItsPrompt()
+    {
+        var talk = new TalkPrompt(2f, 2.3f, 0.6f);
+
+        (Vector2 at, int reach) = talk.Place(new(10f, 1f), new(8f, 0f));
+
+        Assert.Equal(new Vector2(10f, 3.3f), at);
+        Assert.Equal(0, reach);
+    }
+
+    [Fact]
+    public void AFlyingSpeakersPromptStandsByThePilgrimLeaningTowardIt()
+    {
+        var talk = new TalkPrompt(2f, 2.3f, 0.6f);
+
+        (Vector2 at, int reach) = talk.Place(new(4f, 5.5f), new(8f, 0f));
+
+        Assert.Equal(new Vector2(7.4f, 2.3f), at);
+        Assert.Equal(-1, reach);
+        Assert.Equal(1, talk.Place(new(12f, -4f), new(8f, 0f)).Reach);
+    }
 }
