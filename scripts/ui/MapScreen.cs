@@ -134,6 +134,9 @@ public partial class MapScreen : CanvasLayer
         }
     }
 
+    /// <summary>The kind of the item <paramref name="id"/>; a key when the world doesn't define it.</summary>
+    private ItemKind KindOf(string id) => World.Definition.Item(id)?.Kind ?? ItemKind.Key;
+
     /// <summary>Lays the map out for what the pilgrim knows, owns and holds now (the map doesn't change while it shows).</summary>
     private void Lay()
     {
@@ -143,17 +146,18 @@ public partial class MapScreen : CanvasLayer
         _held.Clear();
         foreach (string id in held.Ids)
         {
-            ItemDefinition? item = World.Definition.Item(id);
-            if ((item?.Kind ?? ItemKind.Key).Carried())
+            ItemKind kind = KindOf(id);
+            if (kind.Carried())
             {
-                _held.Add((item is null ? id : Words(item.NameLine), ItemKinds.ColorOf(item?.Kind ?? ItemKind.Key)));
+                ItemDefinition? item = World.Definition.Item(id);
+                _held.Add((item is null ? id : Words(item.NameLine), ItemKinds.ColorOf(kind)));
             }
         }
 
         var places = new MapPlaces(MaxScale, Margin, Baseline, Row, Clear, Gap, Mark, Spacing);
         Vector2 canvas = GetViewport().GetVisibleRect().Size;
         MapSheet sheet = MapSheet.Lay(World.Map, canvas.ToCore(), places, _held.Count, Player.Abilities.Unlocked, held,
-            id => World.Definition.Item(id)?.Kind ?? ItemKind.Key);
+            KindOf);
         Sheet = sheet;
 
         _legend.Clear();

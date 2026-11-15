@@ -94,7 +94,7 @@ public partial class DebugHud : CanvasLayer
             {
                 // Rebuilt only when what it shows changes: a new string every frame is garbage.
                 _roomShown = shown;
-                RoomLabel.Text = $"{World.RoomName}   {at.X:0.0}, {at.Y:0.0}";
+                RoomLabel.Text = string.Create(CultureInfo.InvariantCulture, $"{World.RoomName}   {at.X:0.0}, {at.Y:0.0}");
             }
         }
 
@@ -110,9 +110,9 @@ public partial class DebugHud : CanvasLayer
         _text.Append("state  ").Append(Player.CurrentState.Name).Append('\n');
         _text.Append("vel    ").Append(v.X.ToString("+0.0;-0.0", CultureInfo.InvariantCulture)).Append(", ").Append(v.Y.ToString("+0.0;-0.0", CultureInfo.InvariantCulture)).Append('\n');
         _text.Append("floor  ").Append(Player.IsOnFloor() ? "yes" : "no").Append('\n');
-        _text.Append("dash   ").Append(Player.DashCooldownRemaining > 0f ? $"cooldown {Player.DashCooldownRemaining:0.00}s" : "ready")
+        _text.Append("dash   ").Append(Player.DashCooldownRemaining > 0f ? string.Create(CultureInfo.InvariantCulture, $"cooldown {Player.DashCooldownRemaining:0.00}s") : "ready")
              .Append(", air dashes ").Append(Player.AirDashesLeft).Append('\n');
-        _text.Append("water  ").Append(Player.WaterSurface is { } surface ? $"surface {surface:0.0}, {(Player.Sunk ? "sunk" : "floating")}" : "none")
+        _text.Append("water  ").Append(Player.WaterSurface is { } surface ? string.Create(CultureInfo.InvariantCulture, $"surface {surface:0.0}, {(Player.Sunk ? "sunk" : "floating")}") : "none")
              .Append('\n');
         _text.Append("abilities ");
         foreach (Ability ability in AbilitySet.All)
