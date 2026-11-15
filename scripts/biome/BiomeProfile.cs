@@ -267,7 +267,8 @@ public partial class BiomeProfile : Resource
             lamp.LightColor = LampColor;
         }
 
-        Color shaftLight = (ShaftColor.SrgbToLinear() * ShaftLight).LinearToSrgb();
+        System.Numerics.Vector3 tint = BiomeLight.ShaftTint(ShaftColor.ToCore(), ShaftLight);
+        Color shaftLight = new(tint.X, tint.Y, tint.Z);
         foreach (Light3D shaft in shafts)
         {
             shaft.LightColor = shaftLight with { A = 1f };
@@ -305,7 +306,14 @@ public partial class BiomeProfile : Resource
     public const float GlyphWhiten = 0.35f;
 
     /// <summary>The faith glyphs' light: the accent toward white, as the glyph shader draws it.</summary>
-    public Color GlyphLightColor => Accent.Lerp(Colors.White, GlyphWhiten);
+    public Color GlyphLightColor
+    {
+        get
+        {
+            System.Numerics.Vector3 light = BiomeLight.Whiten(Accent.ToCore(), GlyphWhiten);
+            return new Color(light.X, light.Y, light.Z);
+        }
+    }
 
     /// <summary>The murk the architecture behind a room sinks into (<see cref="BackdropVeil.Color"/>): the haze, darker than the rock.</summary>
     public Color BackdropVeilColor
