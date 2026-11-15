@@ -34,10 +34,23 @@ public partial class Machine : CharacterBody3D
     /// <summary>A walker probes this far beyond its body for walls and drops, meters.</summary>
     private const float ProbeAhead = 0.35f;
 
+    /// <summary>A walker's wall probe runs this high above its feet (or half its body, if lower), and its drop probe looks this far below them, meters.</summary>
+    private const float ProbeKnee = 0.4f, ProbeDrop = 0.6f;
+
+    /// <summary>How fast a crawler's body turns to lie along its surface, per second.</summary>
+    private const float RollSharpness = 14f;
+
+    /// <summary>A walker's feet are held this far above the floor (meters) when the chains settle onto it.</summary>
+    private const float FootLift = 0.02f;
+
+    /// <summary>The golden ratio's fraction: spreads machine seeds evenly over [0, 1) for the shader's per-machine variation.</summary>
+    private const float GoldenFraction = 0.618034f;
+
+
     [Export] public MachineSpecies Species { get; set; } = null!;
 
-    /// <summary>+1 facing right, -1 facing left, at spawn.</summary>
-    [Export] public int StartFacing { get; set; } = 1;
+    /// <summary>The side it faces at spawn.</summary>
+    [Export] public Side StartFacing { get; set; } = Side.Right;
 
     /// <summary>Varies this machine from others of its species (0: taken from its position).</summary>
     [Export] public int Seed { get; set; }
@@ -60,6 +73,9 @@ public partial class Machine : CharacterBody3D
     private float _yaw;
     private float _time;
     private bool _blockedLeft, _blockedRight;
+
+    /// <summary>Seconds still to hold, after a blow (its hit stop).</summary>
+    private float _halt;
     private MachineVitals? _vitals;
     private MachineBrain? _brain;
     private Vector3 _frameScale = Vector3.One;
@@ -134,7 +150,7 @@ public partial class Machine : CharacterBody3D
 
         BodyNode.SetShaderParameter(WearParameter, Species.Wear);
         BodyNode.SetShaderParameter(ToneParameter, Species.Tone);
-        BodyNode.SetShaderParameter(SeedParameter, Seed * 0.618034f % 1f);
+        BodyNode.SetShaderParameter(SeedParameter, Seed * GoldenFraction % 1f);
         Reset();
     }
 
@@ -148,9 +164,12 @@ public partial class Machine : CharacterBody3D
         BodyNode.SetShaderParameter(HurtParameter, 0f);
         GlobalPosition = _spawn;
         Velocity = Vector3.Zero;
-        Facing = StartFacing < 0 ? -1 : 1;
+        Facing = (int)StartFacing;
         _yaw = TargetYaw;
         _time = 0f;
+        _halt = 0f;
+        _blockedLeft = false;
+        _blockedRight = false;
         _gait.Reset();
         Intent = default;
         if (_crawl is not null)
@@ -165,8 +184,6 @@ public partial class Machine : CharacterBody3D
         BodyNode.ResetChains();
         ResetPhysicsInterpolation();
     }
-
-    private float _halt;
 
     /// <summary>Holds still for <paramref name="seconds"/> (a blow's hit stop), then goes on as it was.</summary>
     public void Halt(float seconds) => _halt = Mathf.Max(_halt, seconds);
@@ -244,12 +261,12 @@ public partial class Machine : CharacterBody3D
 
         Facing = MachineGait.Facing(intent.Facing, travelled, ForwardSign(), Facing);
         _yaw = Motion.Damp(_yaw, TargetYaw, Species.TurnSharpness, delta);
-        _roll = Mathf.LerpAngle(_roll, Mathf.Atan2(-_normal.X, _normal.Y), 1f - Mathf.Exp(-14f * delta));
+        _roll = Mathf.LerpAngle(_roll, Mathf.Atan2(-_normal.X, _normal.Y), 1f - Mathf.Exp(-RollSharpness * delta));
         Place();
 
         float speed = _gait.Moved(travelled, delta);
         Animator.Update(delta, _time, intent, Mathf.Clamp(speed / Mathf.Max(Species.MaxSpeed, 0.1f), 0f, 1f), _gait.Walked, _gait.Stepping);
-        BodyNode.StepChains(delta, Species.Locomotion == Locomotion.Walk && IsOnFloor() ? GlobalPosition.Y + 0.02f : float.NaN);
+        BodyNode.StepChains(delta, Species.Locomotion == Locomotion.Walk && IsOnFloor() ? GlobalPosition.Y + FootLift : float.NaN);
         // Eyes take the hazard color only on machines that can hurt: color means gameplay.
         BodyNode.SetShaderParameter(AlertParameter, Species.Hostile ? intent.Alert : 0f);
         BodyNode.SetShaderParameter(RouseParameter, intent.Rouse);
@@ -336,13 +353,13 @@ public partial class Machine : CharacterBody3D
     private bool Probe(int direction)
     {
         float edge = GlobalPosition.X + direction * (Species.BodySize.X * 0.5f + ProbeAhead);
-        float knee = GlobalPosition.Y + Mathf.Min(0.4f, Species.BodySize.Y * 0.5f);
+        float knee = GlobalPosition.Y + Mathf.Min(ProbeKnee, Species.BodySize.Y * 0.5f);
         if (Ray.Cast(new Vector3(GlobalPosition.X, knee, 0f), new Vector3(edge, knee, 0f)))
         {
             return true;
         }
 
-        return !Ray.Cast(new Vector3(edge, knee, 0f), new Vector3(edge, GlobalPosition.Y - 0.6f, 0f));
+        return !Ray.Cast(new Vector3(edge, knee, 0f), new Vector3(edge, GlobalPosition.Y - ProbeDrop, 0f));
     }
 
     /// <summary>A crawler's surface: the faces of the nearest metal block that nothing else touches.</summary>

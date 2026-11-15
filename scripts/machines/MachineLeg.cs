@@ -27,6 +27,6 @@ public partial class MachineLeg : Resource
     /// <summary>Share of the cycle the foot is planted.</summary>
     [Export(PropertyHint.Range, "0.1,0.9")] public float Stance { get; set; } = 0.6f;
 
-    /// <summary>+1 bends the knee forward (+X), -1 backward.</summary>
-    [Export] public int Bend { get; set; } = 1;
+    /// <summary>The side the knee bends toward: right (+X, forward for a machine facing right) or left.</summary>
+    [Export] public Side Bend { get; set; } = Side.Right;
 }
