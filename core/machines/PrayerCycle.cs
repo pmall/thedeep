@@ -34,9 +34,9 @@ public sealed class PrayerCycle
     public void Step(float delta, IReadOnlyList<float> neighbors)
     {
         float pull = 0f;
-        foreach (float other in neighbors)
+        for (int i = 0; i < neighbors.Count; i++)
         {
-            pull += MathF.Sin(MathF.Tau * (other - Phase));
+            pull += MathF.Sin(MathF.Tau * (neighbors[i] - Phase));
         }
 
         if (neighbors.Count > 0)

@@ -59,8 +59,9 @@ public sealed class PrayerBrain : MachineBrain
         bool praying = !_strike.Active && _calm <= 0f;
 
         _neighborPhases.Clear();
-        foreach (Neighbor n in p.Neighbors)
+        for (int i = 0; i < p.Neighbors.Count; i++)
         {
+            Neighbor n = p.Neighbors[i];
             if (n.Kind == Kind && Vector2.Distance(n.Position, p.Position) <= Congregation)
             {
                 _neighborPhases.Add(n.Signal);

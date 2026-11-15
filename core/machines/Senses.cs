@@ -42,8 +42,10 @@ public static class Senses
     {
         Impact? loudest = null;
         float best = threshold;
-        foreach (Impact impact in p.Impacts)
+        // Index loops: foreach over the interface would box the list's enumerator every tick.
+        for (int i = 0; i < p.Impacts.Count; i++)
         {
+            Impact impact = p.Impacts[i];
             float heard = impact.Strength * (1f - Vector2.Distance(impact.Position, p.Position) / MathF.Max(range, 1e-3f));
             if (heard >= best)
             {
