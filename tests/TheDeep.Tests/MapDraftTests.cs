@@ -154,6 +154,30 @@ public class MapDraftTests
         Assert.All(report.Orders, o => Assert.True(Array.IndexOf(o, Ability.HeatPlating) > Math.Min(Array.IndexOf(o, Ability.Drill), Array.IndexOf(o, Ability.Ballast))));
     }
 
+    [Fact]
+    public void APowerUpLineNamesItsRoomAndStat()
+    {
+        MapDraft d = MapDraft.Parse("start A\nroom A L\nroom C L\nway A <-> C\npowerup C strength\npowerup C Defense\n");
+        Assert.Equal(new[] { ("C", PowerStat.Strength), ("C", PowerStat.Defense) }, d.PowerUps);
+    }
+
+    [Theory]
+    [InlineData("powerup A speed\n")]     // not a stat
+    [InlineData("powerup A 1\n")]         // a number, not a stat
+    [InlineData("powerup A\n")]           // no stat
+    [InlineData("powerup Z strength\n")]  // an undeclared room
+    public void AMalformedPowerUpLineIsAnError(string line)
+    {
+        Assert.Throws<FormatException>(() => MapDraft.Parse("start A\nroom A L\n" + line));
+    }
+
+    [Fact]
+    public void AHiddenWayMustJoinTwoRoomsAWayJoins()
+    {
+        Assert.Throws<FormatException>(() => MapDraft.Parse("start A\nroom A L\nroom B L\nway A -> B\nhidden A C\n"));
+        Assert.Throws<FormatException>(() => MapDraft.Parse("start A\nroom A L\nroom B L\nroom C L\nway A -> B\nhidden A C\n"));
+    }
+
     /// <summary>A world may use fewer than the five abilities: only the ones its ways need must lie in a relic, and none in two.</summary>
     [Fact]
     public void AWorldUsesTheAbilitiesItPlaces()

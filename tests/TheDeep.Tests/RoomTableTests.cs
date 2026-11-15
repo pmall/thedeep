@@ -83,30 +83,6 @@ public class RoomTableTests
         Assert.Contains(problems, p => p.StartsWith(problem, StringComparison.Ordinal));
     }
 
-    [Fact]
-    public void APowerUpLineNamesItsRoomAndStat()
-    {
-        MapDraft d = MapDraft.Parse(Network);
-        Assert.Equal(new[] { ("C", PowerStat.Strength), ("C", PowerStat.Defense) }, d.PowerUps);
-    }
-
-    [Theory]
-    [InlineData("powerup A speed\n")]     // not a stat
-    [InlineData("powerup A 1\n")]         // a number, not a stat
-    [InlineData("powerup A\n")]           // no stat
-    [InlineData("powerup Z strength\n")]  // an undeclared room
-    public void AMalformedPowerUpLineIsAnError(string line)
-    {
-        Assert.Throws<FormatException>(() => MapDraft.Parse("start A\nroom A L\n" + line));
-    }
-
-    [Fact]
-    public void AHiddenWayMustJoinTwoRoomsAWayJoins()
-    {
-        Assert.Throws<FormatException>(() => MapDraft.Parse("start A\nroom A L\nroom B L\nway A -> B\nhidden A C\n"));
-        Assert.Throws<FormatException>(() => MapDraft.Parse("start A\nroom A L\nroom B L\nroom C L\nway A -> B\nhidden A C\n"));
-    }
-
     [Theory]
     [InlineData("prototype")]
     [InlineData("sequel")]
