@@ -7,8 +7,8 @@
 set -euo pipefail
 
 cd "$(dirname "$0")/.."
-export DOTNET_ROOT="${DOTNET_ROOT:-$HOME/.dotnet}"
-export PATH="$DOTNET_ROOT:$HOME/.local/bin:$PATH"
+# shellcheck source=tools/env.sh
+source tools/env.sh
 GODOT="${GODOT:-godot}"
 
 dotnet build TheDeep.sln -v q -nologo >/dev/null || {
