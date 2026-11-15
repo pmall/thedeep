@@ -93,6 +93,48 @@ public sealed record BasaltSurface : ISurfacePattern
     /// <summary>How far the roughness departs from the rock's with the mottling, either way.</summary>
     public double RoughnessSpread { get; init; } = 0.05;
 
+    /// <summary>Cells per tile of the noise that picks which stretches of the hairline cracks show.</summary>
+    public int CrackShowCells { get; init; } = 8;
+
+    /// <summary>How softly a hairline crack fades in and out along its length, as a share of the noise's range.</summary>
+    public double CrackSoftness { get; init; } = 0.04;
+
+    /// <summary>How far the chisel marks move the rock's tone.</summary>
+    public double ChiselTone { get; init; } = 0.06;
+
+    /// <summary>How much darker the rock is at the bottom of a small vesicle, a share of its tone.</summary>
+    public double SmallVesicleTone { get; init; } = 0.15;
+
+    /// <summary>How much darker the rock is at the bottom of a large vesicle, a share of its tone.</summary>
+    public double LargeVesicleTone { get; init; } = 0.3;
+
+    /// <summary>How much darker the rock is in a hairline crack, a share of its tone.</summary>
+    public double CrackTone { get; init; } = 0.3;
+
+    /// <summary>How much of a small vesicle's depth counts as cavity (0 to 1).</summary>
+    public double SmallVesicleCavity { get; init; } = 0.5;
+
+    /// <summary>How much of a large vesicle's depth counts as cavity (0 to 1).</summary>
+    public double LargeVesicleCavity { get; init; } = 0.8;
+
+    /// <summary>How much of a hairline crack's depth counts as cavity (0 to 1).</summary>
+    public double CrackCavity { get; init; } = 0.8;
+
+    /// <summary>How much rougher the rock is where there is cavity (roughness runs 0 to 1).</summary>
+    public double CavityRoughness { get; init; } = 0.08;
+
+    /// <summary>How softly the edge of where vesicles gather fades, as a share of the field's range.</summary>
+    public double VesicleFieldSoftness { get; init; } = 0.1;
+
+    /// <summary>A vesicle's radius at least, a share of its cell.</summary>
+    public double VesicleMinRadius { get; init; } = 0.1;
+
+    /// <summary>How much larger than its least a vesicle's radius may be, a share of its cell.</summary>
+    public double VesicleRadiusSpread { get; init; } = 0.25;
+
+    /// <summary>The gap kept between a vesicle and its cell's edge, a share of the cell, so none is cut.</summary>
+    public double VesicleMargin { get; init; } = 0.03;
+
     /// <summary>The seed of every noise of the pattern: another seed gives another face of the same character.</summary>
     public int Seed { get; init; } = 31;
 
@@ -112,16 +154,16 @@ public sealed record BasaltSurface : ISurfacePattern
 
         // Hairline cracks, in short stretches.
         VoronoiCell web = TileNoise.Voronoi(u * CrackCells, v * CrackCells, CrackCells, Seed + 6);
-        double showsNoise = TileNoise.Fractal(u, v, 8, 2, Seed + 7);
-        double shows = TileNoise.Shows(showsNoise, CrackShare, 0.04);
+        double showsNoise = TileNoise.Fractal(u, v, CrackShowCells, 2, Seed + 7);
+        double shows = TileNoise.Shows(showsNoise, CrackShare, CrackSoftness);
         double crack = TileNoise.Line(web.Border * tile / CrackCells, CrackMeters) * shows;
 
         double height = (undulation * 2.0 * UndulationMeters) + (chisel * 2.0 * ChiselMeters) + (grain * 2.0 * GrainMeters)
             - (small * VesicleMeters) - (large * LargeVesicleMeters) - (crack * CrackDepthMeters);
-        double tone = 1.0 + (mottle * 2.0 * MottleTone) + (chisel * 0.06) + (grain * GrainTone) - (small * 0.15) - (large * 0.3)
-            - (crack * 0.3);
-        double cavity = Math.Max(Math.Max(small * 0.5, large * 0.8), crack * 0.8);
-        double rough = Roughness + (mottle * 2.0 * RoughnessSpread) + (cavity * 0.08);
+        double tone = 1.0 + (mottle * 2.0 * MottleTone) + (chisel * ChiselTone) + (grain * GrainTone) - (small * SmallVesicleTone)
+            - (large * LargeVesicleTone) - (crack * CrackTone);
+        double cavity = Math.Max(Math.Max(small * SmallVesicleCavity, large * LargeVesicleCavity), crack * CrackCavity);
+        double rough = Roughness + (mottle * 2.0 * RoughnessSpread) + (cavity * CavityRoughness);
         return new SurfacePoint(height, tone, cavity, Math.Clamp(rough, 0.0, 1.0));
     }
 
@@ -135,14 +177,14 @@ public sealed record BasaltSurface : ISurfacePattern
         LatticeCell cell = TileNoise.Locate(u, v, cells);
         double field = TileNoise.Fractal(
             (cell.Wx + 0.5) / cells * VesicleFieldCells, (cell.Wy + 0.5) / cells * VesicleFieldCells, VesicleFieldCells, VesicleFieldCells, 2, Seed + 9);
-        double gathered = TileNoise.Shows(field, VesicleFieldShare, 0.1);
+        double gathered = TileNoise.Shows(field, VesicleFieldShare, VesicleFieldSoftness);
         if (TileNoise.Hash(cell.Wx, cell.Wy, seed) >= share * gathered)
         {
             return 0.0;
         }
 
-        double radius = 0.1 + (0.25 * TileNoise.Hash(cell.Wx, cell.Wy, seed + 3));
-        double room = 1.0 - (2.0 * (radius + 0.03));
+        double radius = VesicleMinRadius + (VesicleRadiusSpread * TileNoise.Hash(cell.Wx, cell.Wy, seed + 3));
+        double room = 1.0 - (2.0 * (radius + VesicleMargin));
         double distance = cell.DistanceToCenter(TileNoise.Hash(cell.Wx, cell.Wy, seed + 1), TileNoise.Hash(cell.Wx, cell.Wy, seed + 2), room);
         return TileNoise.Line(distance, radius);
     }

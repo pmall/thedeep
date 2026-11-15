@@ -75,8 +75,32 @@ public sealed record GlyphBandSurface : ISurfacePattern
     /// <summary>The roughness (0 to 1) of a rim (polished).</summary>
     public double RimRoughness { get; init; } = 0.22;
 
+    // The glyph's shape rules below mirror glyph_distance in assets/shaders/lib/glyph.gdshaderinc, which draws the same script
+    // live: they are not knobs, since changing one here alone would bake glyphs the shader's do not match.
+
     /// <summary>A glyph's width in glyph heights.</summary>
     private const double GlyphWidth = 0.6;
+
+    /// <summary>Share of glyphs mirrored about their spine (0 to 1).</summary>
+    private const double MirrorShare = 0.6;
+
+    /// <summary>Rows of nodes a glyph's strokes run between, up its height.</summary>
+    private const int NodeRows = 4;
+
+    /// <summary>Columns of nodes a stroke starts from (each runs on to the next column), across the glyph.</summary>
+    private const int NodeColumns = 2;
+
+    /// <summary>Share of nodes (0 to 1) with a stroke running across from them.</summary>
+    private const double AcrossShare = 0.42;
+
+    /// <summary>Share of nodes (0 to 1) with a stroke running up from them.</summary>
+    private const double UpShare = 0.3;
+
+    /// <summary>Share of nodes (0 to 1) with a stroke running up and across, after the ones that run straight up.</summary>
+    private const double DiagonalShare = 0.12;
+
+    /// <summary>Share of glyphs (0 to 1) under a halo.</summary>
+    private const double HaloShare = 0.3;
 
     public SurfacePoint At(double alongMeters, double upMeters)
     {
@@ -119,7 +143,7 @@ public sealed record GlyphBandSurface : ISurfacePattern
     private static double GlyphDistance(double x, double y, int column, int row)
     {
         double shape = TileNoise.Hash(column, row, 73);
-        if (shape < 0.6)
+        if (shape < MirrorShare)
         {
             // Mirrored about the spine.
             x = (GlyphWidth / 2.0) - Math.Abs(x - (GlyphWidth / 2.0));
@@ -130,26 +154,26 @@ public sealed record GlyphBandSurface : ISurfacePattern
         const double originX = 0.06;
         const double originY = 0.1;
         double d = Segment(x, y, originX + stepX, originY, originX + stepX, originY + (3.0 * stepY));
-        for (int r = 0; r < 4; r++)
+        for (int r = 0; r < NodeRows; r++)
         {
-            for (int c = 0; c < 2; c++)
+            for (int c = 0; c < NodeColumns; c++)
             {
                 double ax = originX + (c * stepX);
                 double ay = originY + (r * stepY);
-                int node = (((column * 4) + r) * 2) + c;
-                if (TileNoise.Hash(node, row, 79) < 0.42)
+                int node = (((column * NodeRows) + r) * NodeColumns) + c;
+                if (TileNoise.Hash(node, row, 79) < AcrossShare)
                 {
                     d = Math.Min(d, Segment(x, y, ax, ay, ax + stepX, ay));
                 }
 
-                if (r < 3)
+                if (r < NodeRows - 1)
                 {
                     double v = TileNoise.Hash(node, row, 83);
-                    if (v < 0.3)
+                    if (v < UpShare)
                     {
                         d = Math.Min(d, Segment(x, y, ax, ay, ax, ay + stepY));
                     }
-                    else if (v < 0.42)
+                    else if (v < UpShare + DiagonalShare)
                     {
                         d = Math.Min(d, Segment(x, y, ax, ay, ax + stepX, ay + stepY));
                     }
@@ -157,7 +181,7 @@ public sealed record GlyphBandSurface : ISurfacePattern
             }
         }
 
-        if (TileNoise.Hash(column, row, 89) < 0.3)
+        if (TileNoise.Hash(column, row, 89) < HaloShare)
         {
             // A halo over the glyph.
             double hx = x - (GlyphWidth / 2.0);

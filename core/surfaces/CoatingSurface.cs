@@ -84,6 +84,12 @@ public sealed record CoatingSurface : ISurfacePattern
     /// <summary>The roughness (0 to 1) of a scratch's bared metal.</summary>
     public double ScratchRoughness { get; init; } = 0.24;
 
+    /// <summary>The broad noise's level (0 to 1) where runs start to be let through.</summary>
+    public double RunPatchFrom { get; init; } = 0.3;
+
+    /// <summary>The broad noise's level (0 to 1) where runs are let through fully.</summary>
+    public double RunPatchTo { get; init; } = 0.55;
+
     /// <summary>The seed of every noise of the pattern: another seed gives another coating of the same character.</summary>
     public int Seed { get; init; } = 37;
 
@@ -98,7 +104,7 @@ public sealed record CoatingSurface : ISurfacePattern
         double scratch = Scratch(u, v);
 
         double runs = TileNoise.SmoothStep(RunFrom, RunTo, TileNoise.Fractal(u * RunCellsAlong, v * RunCellsUp, RunCellsAlong, RunCellsUp, 3, Seed + 3));
-        runs *= TileNoise.SmoothStep(0.3, 0.55, TileNoise.Fractal(u, v, RunPatchCells, 2, Seed + 4));
+        runs *= TileNoise.SmoothStep(RunPatchFrom, RunPatchTo, TileNoise.Fractal(u, v, RunPatchCells, 2, Seed + 4));
 
         double smudge = (TileNoise.Fractal(u, v, SmudgeCells, 3, Seed + 5) - 0.5) * 2.0;
         double height = -(dent * DentMeters) - (scratch * ScratchDepthMeters);

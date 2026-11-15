@@ -99,6 +99,42 @@ public sealed record StrataSurface : ISurfacePattern
     /// <summary>How far a bed's roughness departs from the dry rock's, either way (roughness runs 0 to 1).</summary>
     public double RoughnessSpread { get; init; } = 0.06;
 
+    /// <summary>Cells per tile along a bed of the noise that makes its thin layers fade in and out.</summary>
+    public int LaminaCells { get; init; } = 8;
+
+    /// <summary>How far up its bed a split joint lies at least, a share of the bed.</summary>
+    public double SplitFrom { get; init; } = 0.3;
+
+    /// <summary>How much farther up its bed a split joint may lie, a share of the bed.</summary>
+    public double SplitSpread { get; init; } = 0.4;
+
+    /// <summary>The noise level (0 to 1) where a split joint starts to show.</summary>
+    public double SplitShowFrom { get; init; } = 0.3;
+
+    /// <summary>The noise level (0 to 1) where a split joint shows fully.</summary>
+    public double SplitShowTo { get; init; } = 0.55;
+
+    /// <summary>The noise level (0 to 1) where a bed joint starts to show.</summary>
+    public double JointShowFrom { get; init; } = 0.25;
+
+    /// <summary>The noise level (0 to 1) where a bed joint shows fully.</summary>
+    public double JointShowTo { get; init; } = 0.55;
+
+    /// <summary>How far the lumps move the rock's tone.</summary>
+    public double LumpTone { get; init; } = 0.2;
+
+    /// <summary>How far the thin layers move the rock's tone.</summary>
+    public double LaminaTone { get; init; } = 0.03;
+
+    /// <summary>How much darker the rock is at the bottom of a pit, a share of its tone.</summary>
+    public double PitTone { get; init; } = 0.08;
+
+    /// <summary>How much of a pit's depth counts as cavity (0 to 1).</summary>
+    public double PitCavity { get; init; } = 0.5;
+
+    /// <summary>How much rougher the rock is where there is cavity (roughness runs 0 to 1).</summary>
+    public double CavityRoughness { get; init; } = 0.05;
+
     /// <summary>The seed of every noise of the pattern: another seed gives another face of the same character.</summary>
     public int Seed { get; init; } = 1;
 
@@ -144,8 +180,8 @@ public sealed record StrataSurface : ISurfacePattern
             JointAt(next, u, toCeiling, JointBelowMeters));
         if (bedHash < SplitShare && thickness > 4.0 * SplitMeters)
         {
-            double split = floor + (thickness * (0.3 + (0.4 * TileNoise.Hash(bed, 3, Seed + 3))));
-            double shows = TileNoise.SmoothStep(0.3, 0.55, TileNoise.Value(u * JointCells, Beds + bed, JointCells, 2 * Beds, Seed + 5));
+            double split = floor + (thickness * (SplitFrom + (SplitSpread * TileNoise.Hash(bed, 3, Seed + 3))));
+            double shows = TileNoise.SmoothStep(SplitShowFrom, SplitShowTo, TileNoise.Value(u * JointCells, Beds + bed, JointCells, 2 * Beds, Seed + 5));
             joint = Math.Max(joint, TileNoise.Line(bedUp - split, SplitMeters) * Split * shows);
         }
 
@@ -156,7 +192,7 @@ public sealed record StrataSurface : ISurfacePattern
 
         // Laminae in the fine beds, fading in and out along them.
         int laminae = 2 + (int)((1.0 - coarse) * (Laminae - 1));
-        double laminaShows = TileNoise.Value(u * 8.0, bed, 8, Beds, Seed + 9) * (1.0 - coarse);
+        double laminaShows = TileNoise.Value(u * LaminaCells, bed, LaminaCells, Beds, Seed + 9) * (1.0 - coarse);
         double lamina = Math.Sin(2.0 * Math.PI * within * laminae) * laminaShows;
 
         // Lumps, a grain stretched along the beds (sediment, not concrete) and pits: the coarse beds take more of each.
@@ -167,10 +203,10 @@ public sealed record StrataSurface : ISurfacePattern
 
         double height = relief + (lamina * LaminaMeters) + (((lumps * LumpMeters) + (grain * GrainMeters)) * roughness)
             - (joint * JointDepthMeters) - (pit * PitMeters);
-        double tone = 1.0 + ((bedHash - 0.5) * 2.0 * BedContrast) + (((grain * GrainTone) + (lumps * 0.2)) * roughness) + (lamina * 0.03)
-            - (pit * 0.08);
-        double cavity = Math.Max(joint, pit * 0.5);
-        double rough = Roughness + ((coarse - 0.5) * 2.0 * RoughnessSpread) + (cavity * 0.05);
+        double tone = 1.0 + ((bedHash - 0.5) * 2.0 * BedContrast) + (((grain * GrainTone) + (lumps * LumpTone)) * roughness) + (lamina * LaminaTone)
+            - (pit * PitTone);
+        double cavity = Math.Max(joint, pit * PitCavity);
+        double rough = Roughness + ((coarse - 0.5) * 2.0 * RoughnessSpread) + (cavity * CavityRoughness);
         return new SurfacePoint(height, tone, cavity, Math.Clamp(rough, 0.0, 1.0));
     }
 
@@ -184,7 +220,7 @@ public sealed record StrataSurface : ISurfacePattern
     /// <summary>A joint's groove at <paramref name="distanceMeters"/> from it on one side: it comes and goes, and its width varies along it.</summary>
     private double JointAt(int joint, double u, double distanceMeters, double halfWidthMeters)
     {
-        double shows = TileNoise.SmoothStep(0.25, 0.55, TileNoise.Value(u * JointCells, joint, JointCells, 2 * Beds, Seed + 5));
+        double shows = TileNoise.SmoothStep(JointShowFrom, JointShowTo, TileNoise.Value(u * JointCells, joint, JointCells, 2 * Beds, Seed + 5));
         double width = halfWidthMeters * (0.6 + (0.8 * TileNoise.Value(u * JointCells * 4, joint, JointCells * 4, Beds, Seed + 6)));
         return TileNoise.Line(distanceMeters, width) * shows;
     }

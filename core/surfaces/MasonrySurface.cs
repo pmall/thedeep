@@ -92,6 +92,33 @@ public sealed record MasonrySurface : ISurfacePattern
     /// <summary>The mortar's roughness (0 to 1).</summary>
     public double MortarRoughness { get; init; } = 0.95;
 
+    /// <summary>The chip noise's level (0 to 1) where a chip starts to bite.</summary>
+    public double ChipFrom { get; init; } = 0.56;
+
+    /// <summary>The chip noise's level (0 to 1) where a chip bites its deepest.</summary>
+    public double ChipTo { get; init; } = 0.8;
+
+    /// <summary>How far from a block's edges its face bulges up to full, meters.</summary>
+    public double BulgeReachMeters { get; init; } = 0.2;
+
+    /// <summary>How much darker the stone is at the bottom of a pit, a share of its tone.</summary>
+    public double PitTone { get; init; } = 0.06;
+
+    /// <summary>How much darker a weathered block is toward its upper edge, a share of its tone.</summary>
+    public double WeatheringTone { get; init; } = 0.05;
+
+    /// <summary>How much of the mortar's recess counts as cavity (0 to 1).</summary>
+    public double MortarCavity { get; init; } = 0.85;
+
+    /// <summary>How much of a chip's scar counts as cavity (0 to 1).</summary>
+    public double ChipCavity { get; init; } = 0.15;
+
+    /// <summary>How much of a pit's depth counts as cavity (0 to 1).</summary>
+    public double PitCavity { get; init; } = 0.5;
+
+    /// <summary>How much rougher a chip's broken stone is (roughness runs 0 to 1).</summary>
+    public double ChipRoughness { get; init; } = 0.08;
+
     /// <summary>The seed of every noise of the pattern: another seed gives another wall of the same character.</summary>
     public int Seed { get; init; } = 2;
 
@@ -127,7 +154,7 @@ public sealed record MasonrySurface : ISurfacePattern
         // chip only ever bites the block, never the mortar).
         double mortar = 1.0 - TileNoise.SmoothStep(JointMeters, JointMeters + ArrisMeters, toJoint);
         double chipNoise = TileNoise.Fractal(u, v, ChipCells, 3, Seed + 7);
-        double bite = ChipMeters * TileNoise.SmoothStep(0.56, 0.8, chipNoise);
+        double bite = ChipMeters * TileNoise.SmoothStep(ChipFrom, ChipTo, chipNoise);
         double chipped = 1.0 - TileNoise.SmoothStep(JointMeters + (0.3 * bite), JointMeters + ArrisMeters + bite, toJoint) - mortar;
 
         // The block's face: tilted its own way, bulging, standing a little proud or back, weathered its own amount.
@@ -135,7 +162,7 @@ public sealed record MasonrySurface : ISurfacePattern
         double tiltUp = (TileNoise.Hash(course, block, Seed + 3) - 0.5) * 2.0 * TiltSlope;
         double proud = (TileNoise.Hash(course, block, Seed + 4) - 0.5) * 2.0 * ReliefMeters;
         double weathered = TileNoise.Hash(course, block, Seed + 5);
-        double bulge = BulgeMeters * TileNoise.SmoothStep(0.0, 0.2, toSide) * TileNoise.SmoothStep(0.0, 0.2, toBed);
+        double bulge = BulgeMeters * TileNoise.SmoothStep(0.0, BulgeReachMeters, toSide) * TileNoise.SmoothStep(0.0, BulgeReachMeters, toBed);
         double blockHeight = proud + bulge + (tiltAlong * (x - ((left + right) / 2.0))) + (tiltUp * (fromFloor - (courseMeters / 2.0)));
 
         double coarse = 0.6 + (0.8 * weathered) + chipped;
@@ -145,10 +172,10 @@ public sealed record MasonrySurface : ISurfacePattern
         double stone = 1.0 - mortar;
         double stoneHeight = blockHeight + (grain * GrainMeters * coarse) - (pit * PitMeters) - (chipped * ChipDepthMeters);
         double height = TileNoise.Lerp(-JointDepthMeters, stoneHeight, stone);
-        double stoneTone = 1.0 + (grain * GrainTone * coarse) + (chipped * ChipTone) - (pit * 0.06) - (0.05 * weathered * (1.0 - (fromFloor / courseMeters)));
+        double stoneTone = 1.0 + (grain * GrainTone * coarse) + (chipped * ChipTone) - (pit * PitTone) - (WeatheringTone * weathered * (1.0 - (fromFloor / courseMeters)));
         double tone = TileNoise.Lerp(MortarTone, stoneTone, stone);
-        double cavity = Math.Max(Math.Max(mortar * 0.85, chipped * 0.15), pit * 0.5 * stone);
-        double stoneRough = Roughness + ((weathered - 0.5) * 2.0 * RoughnessSpread) + (chipped * 0.08);
+        double cavity = Math.Max(Math.Max(mortar * MortarCavity, chipped * ChipCavity), pit * PitCavity * stone);
+        double stoneRough = Roughness + ((weathered - 0.5) * 2.0 * RoughnessSpread) + (chipped * ChipRoughness);
         double rough = TileNoise.Lerp(MortarRoughness, stoneRough, stone);
         return new SurfacePoint(height, tone, cavity, Math.Clamp(rough, 0.0, 1.0), block);
     }

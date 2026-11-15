@@ -121,6 +121,27 @@ public sealed record PanelSurface : ISurfacePattern
     /// <summary>The roughness (0 to 1) of a rivet's head (matte, so its small dome never glints).</summary>
     public double RivetRoughness { get; init; } = 0.48;
 
+    /// <summary>How softly the seam's edge fades, meters either side of its half width.</summary>
+    public double SeamEdgeMeters { get; init; } = 0.003;
+
+    /// <summary>How softly a corner plate's edge fades, meters.</summary>
+    public double PlateEdgeMeters { get; init; } = 0.004;
+
+    /// <summary>How much of the shadow along a corner plate's edge counts as cavity (0 to 1).</summary>
+    public double GussetCavity { get; init; } = 0.3;
+
+    /// <summary>The half width of the shadow along a corner plate's edge, meters.</summary>
+    public double GussetShadowMeters { get; init; } = 0.008;
+
+    /// <summary>How much of the shadow along the sunk middle's chamfer counts as cavity (0 to 1).</summary>
+    public double InsetCavity { get; init; } = 0.35;
+
+    /// <summary>The half width of the shadow along the sunk middle's chamfer, meters.</summary>
+    public double InsetShadowMeters { get; init; } = 0.01;
+
+    /// <summary>How much of the dirt ring round a rivet counts as cavity (0 to 1).</summary>
+    public double RivetCavity { get; init; } = 0.35;
+
     public SurfacePoint At(double alongMeters, double upMeters)
     {
         double side = PanelMeters;
@@ -137,7 +158,7 @@ public sealed record PanelSurface : ISurfacePattern
         y = Math.Min(y, side - y);
         double toSeam = Math.Min(x, y);
 
-        double seam = 1.0 - TileNoise.SmoothStep(SeamMeters - 0.003, SeamMeters + 0.003, toSeam);
+        double seam = 1.0 - TileNoise.SmoothStep(SeamMeters - SeamEdgeMeters, SeamMeters + SeamEdgeMeters, toSeam);
         double rise = TileNoise.SmoothStep(SeamMeters, SeamMeters + BevelMeters, toSeam);
         double height = (rise * BevelRiseMeters) - (seam * SeamDepthMeters);
         double tone = 1.0;
@@ -155,10 +176,10 @@ public sealed record PanelSurface : ISurfacePattern
                 // A plate over the corner, its far corner cut off square across the diagonal.
                 double inner = Math.Min(x, y) - GussetFromMeters;
                 double outer = Math.Min(GussetToMeters - Math.Max(x, y), (GussetToMeters * 1.6) - (x + y));
-                double plate = TileNoise.SmoothStep(0.0, 0.004, Math.Min(inner, outer));
+                double plate = TileNoise.SmoothStep(0.0, PlateEdgeMeters, Math.Min(inner, outer));
                 height += plate * GussetMeters;
                 tone = TileNoise.Lerp(tone, GussetTone, plate);
-                cavity = Math.Max(cavity, 0.3 * TileNoise.Line(Math.Min(inner, outer), 0.008) * (1.0 - plate));
+                cavity = Math.Max(cavity, GussetCavity * TileNoise.Line(Math.Min(inner, outer), GussetShadowMeters) * (1.0 - plate));
                 Rivet(x, y, GussetRivetNearMeters, GussetRivetNearMeters, GussetRivetMeters, ref height, ref cavity, ref head);
                 Rivet(x, y, GussetRivetNearMeters, GussetRivetFarMeters, GussetRivetMeters, ref height, ref cavity, ref head);
                 Rivet(x, y, GussetRivetFarMeters, GussetRivetNearMeters, GussetRivetMeters, ref height, ref cavity, ref head);
@@ -174,7 +195,7 @@ public sealed record PanelSurface : ISurfacePattern
                     : Math.Min(x, y) - InsetMeters;
                 double sunk = TileNoise.SmoothStep(0.0, InsetChamferMeters, inside);
                 height -= sunk * InsetDepthMeters;
-                cavity = Math.Max(cavity, 0.35 * TileNoise.Line(inside - InsetChamferMeters, 0.01));
+                cavity = Math.Max(cavity, InsetCavity * TileNoise.Line(inside - InsetChamferMeters, InsetShadowMeters));
                 break;
             }
         }
@@ -194,7 +215,7 @@ public sealed record PanelSurface : ISurfacePattern
         double on = 1.0 - TileNoise.SmoothStep(0.94, 1.0, t);
         double crown = (1.0 - TileNoise.SmoothStep(0.55, 1.0, t)) * (1.0 - (0.25 * t * t));
         height += RivetHeightMeters * crown;
-        cavity = Math.Max(cavity, 0.35 * TileNoise.Line(d - radius, RingMeters) * (1.0 - on));
+        cavity = Math.Max(cavity, RivetCavity * TileNoise.Line(d - radius, RingMeters) * (1.0 - on));
         head = Math.Max(head, on);
     }
 }

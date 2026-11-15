@@ -77,6 +77,33 @@ public sealed record CracksSurface : ISurfacePattern
     /// <summary>The roughness (0 to 1) in the fissures.</summary>
     public double FissureRoughness { get; init; } = 1.0;
 
+    /// <summary>Cells per tile of the noise that makes the fissures wander.</summary>
+    public int WarpCells { get; init; } = 6;
+
+    /// <summary>Cells per tile of the noise that makes a fissure wider here and narrower there.</summary>
+    public int WidthCells { get; init; } = 10;
+
+    /// <summary>Cells per tile of the noise that makes the chipped edge ragged.</summary>
+    public int ChipRaggedCells { get; init; } = 30;
+
+    /// <summary>Cells per tile of the noise that picks which stretches of the finer cracks show.</summary>
+    public int FineShowCells { get; init; } = 9;
+
+    /// <summary>How softly a finer crack fades in and out along its length, as a share of the noise's range.</summary>
+    public double FineSoftness { get; init; } = 0.05;
+
+    /// <summary>How wide the fissure's darkest core is, a share of the fissure's half width.</summary>
+    public double CoreWidth { get; init; } = 0.75;
+
+    /// <summary>How much of the fissure's darkness its walls take, against its core's full darkness (0 to 1).</summary>
+    public double WallShade { get; init; } = 0.85;
+
+    /// <summary>How much of a finer crack's depth counts as cavity (0 to 1).</summary>
+    public double FineCavity { get; init; } = 0.7;
+
+    /// <summary>How far the grit moves the rock's tone.</summary>
+    public double GritTone { get; init; } = 0.15;
+
     /// <summary>The seed of every noise of the pattern: another seed gives another broken face of the same character.</summary>
     public int Seed { get; init; } = 21;
 
@@ -88,17 +115,17 @@ public sealed record CracksSurface : ISurfacePattern
 
         // The chunks: a warped Voronoi web, so the fissures wander.
         double warp = WarpMeters / tile * ChunkCells;
-        (double wx, double wy) = TileNoise.WarpPair(u, v, 6, 3, Seed + 1, Seed + 2, warp);
+        (double wx, double wy) = TileNoise.WarpPair(u, v, WarpCells, 3, Seed + 1, Seed + 2, warp);
         VoronoiCell chunk = TileNoise.Voronoi((u * ChunkCells) + wx, (v * ChunkCells) + wy, ChunkCells, Seed + 3);
         double meters = chunk.Border * tile / ChunkCells;
 
         // The fissure: its width varies along it, its bottom dark and deep, its sides a V.
-        double width = TileNoise.Lerp(FissureMinMeters, FissureMaxMeters, TileNoise.Fractal(u, v, 10, 2, Seed + 4));
+        double width = TileNoise.Lerp(FissureMinMeters, FissureMaxMeters, TileNoise.Fractal(u, v, WidthCells, 2, Seed + 4));
         double fissure = TileNoise.Line(meters, width);
-        double core = TileNoise.Line(meters, width * 0.75);
+        double core = TileNoise.Line(meters, width * CoreWidth);
 
         // The chipped edge: beyond the fissure, ragged, sloping down into it.
-        double ragged = TileNoise.Fractal(u, v, 30, 2, Seed + 5);
+        double ragged = TileNoise.Fractal(u, v, ChipRaggedCells, 2, Seed + 5);
         double chip = TileNoise.Line(meters - width, ChipMeters * (0.4 + (1.2 * ragged))) * (1.0 - fissure);
         double onChunk = TileNoise.SmoothStep(width, width + ChipMeters, meters);
 
@@ -110,17 +137,17 @@ public sealed record CracksSurface : ISurfacePattern
 
         // Finer cracks running in from the fissures, showing in stretches.
         VoronoiCell fineCell = TileNoise.Voronoi((u * FineCells) + (wx * 2.0), (v * FineCells) + (wy * 2.0), FineCells, Seed + 7);
-        double showsNoise = TileNoise.Fractal(u, v, 9, 2, Seed + 8);
-        double shows = TileNoise.Shows(showsNoise, FineShare, 0.05) * onChunk;
+        double showsNoise = TileNoise.Fractal(u, v, FineShowCells, 2, Seed + 8);
+        double shows = TileNoise.Shows(showsNoise, FineShare, FineSoftness) * onChunk;
         double fine = TileNoise.Line(fineCell.Border * tile / FineCells, FineMeters) * shows;
 
         double grit = TileNoise.Fractal(u, v, GritCells, 3, Seed + 9) - 0.5;
         double height = tilt - (fissure * FissureDepthMeters * (0.5 + (0.5 * core))) - (chip * ChipDropMeters)
             - (fine * FineDepthMeters) + (grit * 2.0 * GritMeters * onChunk);
-        double tone = (1.0 + chunkTone + (grit * 0.15)) * (1.0 + (chip * ChipTone));
-        tone = TileNoise.Lerp(tone, FissureTone, Math.Max(core, fissure * 0.85));
+        double tone = (1.0 + chunkTone + (grit * GritTone)) * (1.0 + (chip * ChipTone));
+        tone = TileNoise.Lerp(tone, FissureTone, Math.Max(core, fissure * WallShade));
         tone *= 1.0 - (fine * (1.0 - FineTone));
-        double cavity = Math.Max(fissure, fine * 0.7);
+        double cavity = Math.Max(fissure, fine * FineCavity);
         double rough = TileNoise.Lerp(Roughness, FissureRoughness, cavity);
         return new SurfacePoint(height, tone, cavity, rough);
     }

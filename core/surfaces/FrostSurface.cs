@@ -115,6 +115,42 @@ public sealed record FrostSurface : ISurfacePattern
     /// <summary>The roughness (0 to 1) of a full crust.</summary>
     public double CrustRoughness { get; init; } = 0.8;
 
+    /// <summary>How much a full crust thickens the coat (thickness runs 0 to 1).</summary>
+    public double CrustThickness { get; init; } = 0.3;
+
+    /// <summary>How much a full frond thickens the coat (thickness runs 0 to 1).</summary>
+    public double FrondThickness { get; init; } = 0.15;
+
+    /// <summary>How fast a gap's rim darkens the rime toward its full darkness: a gap this many times shallower than full already darkens it fully.</summary>
+    public double GapRimGain { get; init; } = 1.5;
+
+    /// <summary>How much of the gaps' share (0 to 1) is left where the coat is thick.</summary>
+    public double GapThickShare { get; init; } = 0.4;
+
+    /// <summary>The mottle level (0 to 1) at and below which the coat is thin enough for the most gaps.</summary>
+    public double GapThin { get; init; } = 0.3;
+
+    /// <summary>The mottle level (0 to 1) at and above which the coat is thick enough for the fewest gaps.</summary>
+    public double GapThick { get; init; } = 0.7;
+
+    /// <summary>The coat's thickness (0 to 1) where crystals start to stand.</summary>
+    public double CrystalThickFrom { get; init; } = 0.45;
+
+    /// <summary>The coat's thickness (0 to 1) where crystals stand at their fullest share.</summary>
+    public double CrystalThickTo { get; init; } = 0.75;
+
+    /// <summary>The hoarfrost patch noise's level (0 to 1) where a patch starts.</summary>
+    public double HoarFrom { get; init; } = 0.5;
+
+    /// <summary>The hoarfrost patch noise's level (0 to 1) where a patch is full.</summary>
+    public double HoarTo { get; init; } = 0.68;
+
+    /// <summary>The frond noise's level (0 to 1) where a frond starts.</summary>
+    public double FrondFrom { get; init; } = 0.52;
+
+    /// <summary>The frond noise's level (0 to 1) where a frond is full.</summary>
+    public double FrondTo { get; init; } = 0.72;
+
     /// <summary>The seed of every noise of the pattern: another seed gives another coat of the same character.</summary>
     public int Seed { get; init; } = 53;
 
@@ -133,14 +169,14 @@ public sealed record FrostSurface : ISurfacePattern
         double crust = TileNoise.SmoothStep(CrustFrom, CrustTo, TileNoise.Fractal(u, v, CrustCells, 3, Seed + 2));
 
         // Hoarfrost fronds on the two diagonals, one way or the other in patches.
-        double hoar = TileNoise.SmoothStep(0.5, 0.68, TileNoise.Fractal(u, v, HoarCells, 2, Seed + 3));
+        double hoar = TileNoise.SmoothStep(HoarFrom, HoarTo, TileNoise.Fractal(u, v, HoarCells, 2, Seed + 3));
         double way = TileNoise.SmoothStep(0.4, 0.6, TileNoise.Value(u * HoarCells, v * HoarCells, HoarCells, HoarCells, Seed + 4));
         double frond = TileNoise.Lerp(Frond(u + v, v - u, Seed + 5), Frond(u - v, u + v, Seed + 6), way) * hoar;
 
         double gap = Gap(u, v, mottle);
-        thick = Math.Clamp(thick + (0.3 * crust) + (0.15 * frond) - (GapDepth * gap), 0.0, 1.0);
+        thick = Math.Clamp(thick + (CrustThickness * crust) + (FrondThickness * frond) - (GapDepth * gap), 0.0, 1.0);
         tone *= 1.0 + (CrustTone * crust) + (FrondTone * frond);
-        tone *= TileNoise.Lerp(1.0, GapRimTone, Math.Min(1.0, gap * 1.5));
+        tone *= TileNoise.Lerp(1.0, GapRimTone, Math.Min(1.0, gap * GapRimGain));
         double height = (crust * CrustMeters) + (frond * FrondMeters) - (gap * CrustMeters);
         double rough = TileNoise.Lerp(Roughness, CrustRoughness, crust);
 
@@ -157,7 +193,7 @@ public sealed record FrostSurface : ISurfacePattern
     private double Frond(double along, double across, int seed)
     {
         double streak = TileNoise.Fractal(along * FrondCellsAlong, across * FrondCellsAcross, FrondCellsAlong, FrondCellsAcross, 3, seed);
-        return TileNoise.SmoothStep(0.52, 0.72, streak);
+        return TileNoise.SmoothStep(FrondFrom, FrondTo, streak);
     }
 
     /// <summary>How deep in a gap the point is (0 to 1): a soft oval, each at its own angle, its outline bent by a noise, from
@@ -169,7 +205,7 @@ public sealed record FrostSurface : ISurfacePattern
         double y = (v * GapCells) + warpY;
         int cx = (int)Math.Floor(x);
         int cy = (int)Math.Floor(y);
-        double share = GapShare * TileNoise.Lerp(0.4, 1.0, TileNoise.SmoothStep(0.7, 0.3, mottle));
+        double share = GapShare * TileNoise.Lerp(GapThickShare, 1.0, TileNoise.SmoothStep(GapThick, GapThin, mottle));
         double best = 0.0;
         for (int j = -1; j <= 1; j++)
         {
@@ -211,7 +247,7 @@ public sealed record FrostSurface : ISurfacePattern
     private (double Facet, double Cover) Crystal(double u, double v, double thick)
     {
         LatticeCell cell = TileNoise.Locate(u, v, CrystalCells);
-        if (TileNoise.Hash(cell.Wx, cell.Wy, Seed + 13) >= CrystalShare * TileNoise.SmoothStep(0.45, 0.75, thick))
+        if (TileNoise.Hash(cell.Wx, cell.Wy, Seed + 13) >= CrystalShare * TileNoise.SmoothStep(CrystalThickFrom, CrystalThickTo, thick))
         {
             return (0.0, 0.0);
         }
