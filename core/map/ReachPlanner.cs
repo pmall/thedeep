@@ -1022,14 +1022,21 @@ public sealed class ReachPlanner
     /// <summary>Whether another floor than <paramref name="l"/>, at its height, holds feet at <paramref name="x"/>.</summary>
     private bool GoesOn(Ledge l, float x) => _ledges.Any(o => o != l && !o.Swim && MathF.Abs(o.Y - l.Y) < 0.01f && x >= o.MinX && x <= o.MaxX);
 
-    /// <summary>The ledge (or with <paramref name="swim"/>, the float line) whose range holds feet at <paramref name="p"/>, or −1.</summary>
+    /// <summary>How far past half the body's width a landing's feet may be beyond a ledge's end and still be on it, meters.</summary>
+    private const float LandingMargin = 0.05f;
+
+    /// <summary>
+    /// The ledge (or with <paramref name="swim"/>, the float line) whose range holds feet at <paramref name="p"/>, or −1: feet within half
+    /// the body's width (and <see cref="LandingMargin"/>) past an end still stand on it, the body's edge over the floor.
+    /// </summary>
     private int LedgeAt(Vector2 p, bool swim = false)
     {
         float tolerance = swim ? 0.1f : 0.01f;
+        float overhang = _m.Width * 0.5f + LandingMargin;
         for (int i = 0; i < _ledges.Count; i++)
         {
             Ledge l = _ledges[i];
-            if (l.Swim == swim && MathF.Abs(l.Y - p.Y) < tolerance && p.X >= l.MinX - 0.4f && p.X <= l.MaxX + 0.4f)
+            if (l.Swim == swim && MathF.Abs(l.Y - p.Y) < tolerance && p.X >= l.MinX - overhang && p.X <= l.MaxX + overhang)
             {
                 return i;
             }
