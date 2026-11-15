@@ -18,13 +18,11 @@ set -euo pipefail
 
 cd "$(dirname "$0")/.."
 
-export DOTNET_ROOT="${DOTNET_ROOT:-$HOME/.dotnet}"
-export PATH="$DOTNET_ROOT:$HOME/.local/bin:$PATH"
-export DOTNET_CLI_TELEMETRY_OPTOUT=1 DOTNET_NOLOGO=1
+# shellcheck source=tools/env.sh
+source tools/env.sh
 GODOT="${GODOT:-godot}"
 ROOT="lookdev"
 SIZE="1920x1080"
-FAIL_PATTERN='ERROR|SCRIPT ERROR|Unhandled exception|System\.[A-Za-z.]*Exception|Failed to load|Parse Error'
 
 fail() {
     printf '\033[31mCAPTURE FAILED: %s\033[0m\n' "$1"
@@ -96,15 +94,17 @@ dotnet build TheDeep.sln -v q -nologo >"$out/build.log" 2>&1 || {
     tail -20 "$out/build.log"
     fail "dotnet build"
 }
-# Running the game does not import: shaders changed since the last import (or their includes) are compiled here.
-tools/glsl_includes.sh
 "$GODOT" --headless --import >"$out/import.log" 2>&1 || {
     tail -20 "$out/import.log"
     fail "godot --import"
 }
 
-# The rooms rendered: the drowned hall first (perf.json, compared run to run), then the slice rooms, the arena and the lab.
-ROOMS=(DrownedHall Narthex Belfry Nave Cistern Reliquary Descent Sluice Undercroft Ossuary Scriptorium Chapterhouse Brink Rimefall Choir Coldstacks Counterweight Calving Bore Mere Sounding Underice Vault Sanctum Kiln Slag Chimney Quench Basalt Crucible Ashfall Pyre Bellows Foundry Threshold Mantle Orrery Lode Effigy Heart MachineArena MechanicsLab)
+# The rooms rendered: the drowned hall first (perf.json, compared run to run), then every other room of the prototype's folder.
+ROOMS=(DrownedHall)
+for scene in worlds/prototype/rooms/*.tscn; do
+    room="$(basename "$scene" .tscn)"
+    [ "$room" = DrownedHall ] || ROOMS+=("$room")
+done
 if [ ${#world_args[@]} -gt 0 ]; then
     [ -d "worlds/${world_args[1]}/rooms" ] || fail "no world ${world_args[1]} (worlds/${world_args[1]}/rooms)"
     ROOMS=()
@@ -133,19 +133,26 @@ for room in "${ROOMS[@]}"; do
     }
     grep -E '^(frame|gpu|cpu) |budget' "$log"
 done
-if [ -d "$out/motion" ]; then python3 -I tools/motion_sheet.py "$out" motion Motion 8x7; fi
-if [ -d "$out/machines" ]; then python3 -I tools/motion_sheet.py "$out" machines Machines 6x6 1440x810; fi
-if [ -d "$out/grip" ]; then python3 -I tools/motion_sheet.py "$out" grip Grip 6x6 1440x810; fi
-if [ -d "$out/harpoon" ]; then python3 -I tools/motion_sheet.py "$out" harpoon Harpoon 5x3 1440x810; fi
-if [ -d "$out/combat" ]; then python3 -I tools/motion_sheet.py "$out" combat Combat 7x4 1440x810; fi
-if [ -d "$out/strikes" ]; then python3 -I tools/motion_sheet.py "$out" strikes Strikes 8x7 1000x640; fi
-if [ -d "$out/bore" ]; then python3 -I tools/motion_sheet.py "$out" bore Bore 5x2 1100x800; fi
-if [ -d "$out/swim" ]; then python3 -I tools/motion_sheet.py "$out" swim Swim 7x4 900x600; fi
-if [ -d "$out/moments" ]; then python3 -I tools/motion_sheet.py "$out" moments Moments 5x2 700x700; fi
-if [ -d "$out/door" ]; then python3 -I tools/motion_sheet.py "$out" door Door 4x2 900x1000; fi
-if [ -d "$out/taking" ]; then python3 -I tools/motion_sheet.py "$out" taking Taking 6x3 800x800; fi
-if [ -d "$out/pickup" ]; then python3 -I tools/motion_sheet.py "$out" pickup Pickup 4x2 800x800; fi
-if [ -d "$out/lever" ]; then python3 -I tools/motion_sheet.py "$out" lever Lever 3x3 1800x1000; fi
+# folder|Sheet|COLSxROWS|CROP (CROP optional): the reels' contact sheets (MotionReel.cs names the folders).
+REELS=(
+    "motion|Motion|8x7"
+    "machines|Machines|6x6|1440x810"
+    "grip|Grip|6x6|1440x810"
+    "harpoon|Harpoon|5x3|1440x810"
+    "combat|Combat|7x4|1440x810"
+    "strikes|Strikes|8x7|1000x640"
+    "bore|Bore|5x2|1100x800"
+    "swim|Swim|7x4|900x600"
+    "moments|Moments|5x2|700x700"
+    "door|Door|4x2|900x1000"
+    "taking|Taking|6x3|800x800"
+    "pickup|Pickup|4x2|800x800"
+    "lever|Lever|3x3|1800x1000"
+)
+for reel in "${REELS[@]}"; do
+    IFS='|' read -r folder sheet grid crop <<<"$reel"
+    if [ -d "$out/$folder" ]; then python3 -I tools/motion_sheet.py "$out" "$folder" "$sheet" "$grid" ${crop:+"$crop"}; fi
+done
 find "$out" -maxdepth 1 -name '*.png' | sort | sed 's/^/  /'
 
 if [ -n "$previous" ] && [ -d "$previous" ]; then
