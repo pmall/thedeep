@@ -168,7 +168,7 @@ public partial class OwnerCapture : CanvasLayer
             return;
         }
 
-        if (_codecProbe.Result is not { } codec)
+        if (_codecProbe.IsFaulted || _codecProbe.Result is not { } codec)
         {
             ShowToast(CaptureLines.VideoNeedsFfmpeg);
             return;
