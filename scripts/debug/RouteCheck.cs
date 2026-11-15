@@ -208,7 +208,7 @@ public partial class RouteCheck : Node
         {
             // The run-up: the take-off comes on the tick whose move starts there (half a step either way). A press is read on the tick
             // after it is made, as a device's is, so the jump is pressed a tick before.
-            float step = Limits.Move.RunSpeed / 60f, behind = m.Dir * (r.Leap.TakeOff.X - Feet.X);
+            float step = Limits.Move.RunSpeed * ReachPlanner.Tick, behind = m.Dir * (r.Leap.TakeOff.X - Feet.X);
             if (m.Dir == 0 ? _tick <= Settle : behind > 0.5f * step)
             {
                 Set(InputActions.Jump, m.JumpTicks != 0 && (m.Dir == 0 ? _tick == Settle : behind <= 1.5f * step));

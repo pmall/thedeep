@@ -36,7 +36,9 @@ namespace TheDeep;
 /// </summary>
 public sealed class ReachPlanner
 {
-    private const float Dt = 1f / 60f;
+    /// <summary>One tick of the simulation, seconds: a physics frame of the game (Godot's default 60 per second).</summary>
+    public const float Tick = 1f / 60f;
+
     private const int MaxTicks = 240;
 
     /// <summary>Longest a body may float before it settles (rising from the bottom of deep water), ticks.</summary>
@@ -371,7 +373,7 @@ public sealed class ReachPlanner
     private void Walk(List<int> part, GripLimits g, IReadOnlyList<Box> triggers, HashSet<int> reachedTriggers, Action<int> land, Action<Vector2> sink,
         Action<GripPose> grab)
     {
-        int regrab = (int)MathF.Ceiling(g.RegrabDelay / Dt);
+        int regrab = (int)MathF.Ceiling(g.RegrabDelay / Tick);
         float centerHeight = _m.Height * 0.5f;
         foreach (int n in part)
         {
@@ -709,7 +711,7 @@ public sealed class ReachPlanner
             if (dashTick >= 0 && tick == dashTick && !dashed && _m.AirDashes > 0 && airborne)
             {
                 dashed = true;
-                dashLeft = (int)MathF.Round(_m.DashDuration / Dt);
+                dashLeft = (int)MathF.Round(_m.DashDuration / Tick);
                 if (trace is not null)
                 {
                     trace.DashedAt = tick;
@@ -732,7 +734,7 @@ public sealed class ReachPlanner
                     cut = true;
                 }
 
-                v.X = MoveRules.Air(v.X, dir, _m.RunSpeed, _m.AirCarrySpeed, _m.AirAcceleration, _m.AirDeceleration, _m.AirDrag, Dt);
+                v.X = MoveRules.Air(v.X, dir, _m.RunSpeed, _m.AirCarrySpeed, _m.AirAcceleration, _m.AirDeceleration, _m.AirDrag, Tick);
                 float g = _m.Gravity;
                 if (jumping && tick == 0)
                 {
@@ -747,13 +749,13 @@ public sealed class ReachPlanner
                     g *= _m.FallGravityMultiplier;
                 }
 
-                v.Y = MathF.Max(v.Y - g * Dt, -_m.MaxFallSpeed);
+                v.Y = MathF.Max(v.Y - g * Tick, -_m.MaxFallSpeed);
             }
 
             // Move X, then Y, stopping at faces.
             bool grips = _grip is not null && dashLeft == 0 && tick >= gripFrom;
             float pushX = v.X;
-            p.X = MoveAxis(p, v.X * Dt, horizontal: true, out bool hitX, out int solidX);
+            p.X = MoveAxis(p, v.X * Tick, horizontal: true, out bool hitX, out int solidX);
             if (hitX && dashLeft == 0 && dir != 0 && MathF.Sign(pushX) == dir && airborne && LedgeAssist(p, dir, _solids[solidX]) is { } lifted)
             {
                 // Just short of a ledge's top: lifted onto it, keeping the way and the speed (Player.LedgeAssist).
@@ -783,7 +785,7 @@ public sealed class ReachPlanner
             }
 
             float pushY = v.Y;
-            p.Y = MoveAxis(p, v.Y * Dt, horizontal: false, out bool hitY, out int solidY);
+            p.Y = MoveAxis(p, v.Y * Tick, horizontal: false, out bool hitY, out int solidY);
             if (hitY && grips && pushY > 0f && _metal.Contains(solidY))
             {
                 // Rising into a metal ceiling: hanging under it; or not, bumping it (as above).
@@ -854,15 +856,15 @@ public sealed class ReachPlanner
     private bool Swim(ref Vector2 p, ref Vector2 v, int dir, WaterHit wet, IReadOnlyList<Box> triggers, HashSet<int> reachedTriggers, Action<int> land)
     {
         (Box water, WaterLimits w) = wet;
-        v.X = WaterMotion.Horizontal(v.X, dir, w, Dt);
-        v.Y = WaterMotion.Vertical(v.Y, p.Y, water.MaxY, sunk: false, w, Dt);
-        p.X = MoveAxis(p, v.X * Dt, horizontal: true, out bool hitX, out _);
+        v.X = WaterMotion.Horizontal(v.X, dir, w, Tick);
+        v.Y = WaterMotion.Vertical(v.Y, p.Y, water.MaxY, sunk: false, w, Tick);
+        p.X = MoveAxis(p, v.X * Tick, horizontal: true, out bool hitX, out _);
         if (hitX)
         {
             v.X = 0f;
         }
 
-        p.Y = MoveAxis(p, v.Y * Dt, horizontal: false, out bool hitY, out _);
+        p.Y = MoveAxis(p, v.Y * Tick, horizontal: false, out bool hitY, out _);
         Touch(p, triggers, reachedTriggers);
         if (InHazard(p))
         {
