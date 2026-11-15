@@ -95,7 +95,7 @@ public partial class WallDressing : Node3D
                 Add(new IcicleMesh { Width = w, Length = h, Count = Mathf.Max(3, (int)(w * 1.6f)), Seed = Seed + index }, looks.Ice, at, shadow: false);
                 break;
             case WallPiece.Rack:
-                int variant = Mathf.Clamp((int)p.Roll, 0, _racks.Length - 1);
+                int variant = Mathf.Clamp(p.Variant, 0, _racks.Length - 1);
                 // Stacks, not full racks: a wall holds hundreds, far back in the fog (racks cost a millisecond on the Sounding's wall).
                 _racks[variant] ??= new StackMesh { Size = new Vector3(w, h, 0.9f), Shelf = 0.45f + 0.12f * variant };
                 Add(_racks[variant], looks.Plate, at, shadow: false); // hundreds against the wall: their shadows cost more than they show

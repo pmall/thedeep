@@ -49,7 +49,7 @@ public class DressingGoldenTests
         {
             foreach (WallPlacement p in WallLayout.Build(style, width, height, seed, frost))
             {
-                h = Mix(h, (int)p.Piece, p.Position, p.Size.X, p.Size.Y, p.Roll);
+                h = Mix(h, (int)p.Piece, p.Position, p.Size.X, p.Size.Y, p.Roll + p.Variant);
             }
         }
 

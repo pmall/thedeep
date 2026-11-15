@@ -75,9 +75,10 @@ public enum WallPiece
 
 /// <summary>
 /// One piece on a wall: its origin (meters, the wall's frame: X along it from its middle, Y up from its foot, Z out of
-/// it toward the camera), its size where the piece is stretched (X, Y), and a roll about Z (radians).
+/// it toward the camera), its size where the piece is stretched (X, Y), a roll about Z (radians) and, for the pieces that
+/// come in several looks (a rack), which <paramref name="Variant"/> to use.
 /// </summary>
-public readonly record struct WallPlacement(WallPiece Piece, Vector3 Position, Vector2 Size, float Roll = 0f);
+public readonly record struct WallPlacement(WallPiece Piece, Vector3 Position, Vector2 Size, float Roll = 0f, int Variant = 0);
 
 /// <summary>
 /// Pure, deterministic dressings for a room's back wall (<see cref="WallDressing"/> builds the meshes): bays between
@@ -217,7 +218,7 @@ public static class WallLayout
                     }
 
                     list.Add(new WallPlacement(WallPiece.Rack, new Vector3(a + (k + 0.5f) * pitch, y + (j > 0 ? 0.09f : 0f), 0.15f),
-                        new Vector2(pitch * 0.92f, ShelfPitch - 0.5f), Roll: (int)(H(seed, 200 + j, i * 37 + k) * 3f)));
+                        new Vector2(pitch * 0.92f, ShelfPitch - 0.5f), Variant: (int)(H(seed, 200 + j, i * 37 + k) * 3f)));
                 }
             }
         }
