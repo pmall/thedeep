@@ -23,9 +23,6 @@ public partial class SideCamera : Camera3D
     /// <summary>Frames the player slightly below the center of the screen: the focus sits this far above its feet when upright.</summary>
     [Export] public float VerticalOffset { get; set; } = 1.5f;
 
-    /// <summary>The body's center above its feet: the camera follows the center, so a pilgrim on a wall or ceiling stays framed.</summary>
-    [Export] public float BodyCenter { get; set; } = 0.8f;
-
     /// <summary>The follow's eases, seconds: about how long the camera lags a body moving steadily (<see cref="CameraFollow"/>).</summary>
     [Export] public float HorizontalTime { get; set; } = 0.2f;
     [Export] public float VerticalTime { get; set; } = 0.24f;
@@ -112,7 +109,8 @@ public partial class SideCamera : Camera3D
         float dt = (float)delta;
         _trauma = Mathf.Max(0f, _trauma - ShakeDecay * dt);
         _shakeTime += dt;
-        Vector3 body = Target.GetGlobalTransformInterpolated() * new Vector3(0f, BodyCenter, 0f) - new Vector3(0f, BodyCenter, 0f);
+        var center = new Vector3(0f, Target.CenterHeight, 0f); // the camera follows the body's center, so a pilgrim on a wall or ceiling stays framed
+        Vector3 body = Target.GetGlobalTransformInterpolated() * center - center;
         CameraFooting footing = CameraFollow.FootingOf(Target.CurrentState.Motion, Target.IsOnFloor(), Target.IsUpright);
         Follow.Step(dt, Framed(body), Target.Velocity.Flat(), footing, View());
         ApplyFocus();
@@ -126,7 +124,8 @@ public partial class SideCamera : Camera3D
             return;
         }
 
-        Vector3 body = Target.GlobalTransform * new Vector3(0f, BodyCenter, 0f) - new Vector3(0f, BodyCenter, 0f);
+        var center = new Vector3(0f, Target.CenterHeight, 0f);
+        Vector3 body = Target.GlobalTransform * center - center;
         Follow.Snap(Framed(body), Target.Facing, View());
         ApplyFocus();
     }
