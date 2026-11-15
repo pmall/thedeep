@@ -5,9 +5,9 @@ The owner's plan and the open items, in order, opened by where the work stands. 
 ## Now <a id="status"></a>
 
 - **Stage:** A, the prototype (`docs/roadmap.md#stage-prototype`).
-- **Current item:** the pilgrim (`docs/roadmap.md#pilgrim`).
-- **Next step:** the environment for top-quality animation, before the character.
-- **Waiting on the owner:** the Blender MCP installed (needed to model and rig the pilgrim), and the stage's sign-off play: `docs/roadmap.md#to-play`.
+- **Current item:** the deep code review (`docs/roadmap.md#code-review`); then the pilgrim (`docs/roadmap.md#pilgrim`).
+- **Next step:** map the code into review areas and review the first: the Godot-free core.
+- **Waiting on the owner:** the Blender MCP installed (needed later to model and rig the pilgrim), and the stage's sign-off play: `docs/roadmap.md#to-play`.
 
 ## The plan <a id="direction"></a>
 
@@ -28,7 +28,8 @@ A room gets the attention its bricks need, no more. Bosses, machines and law bre
 
 The open items, in order (owner: the world, its bricks and its look are finished before the character):
 
-1. **The pilgrim, from zero** <a id="pilgrim"></a> (owner: last, once the world, its bricks and its look are finished). The current character, its procedural animation and its halo are thrown away. The bar is *Ori*'s animation (a 3D-rendered character) with *NieR: Automata*'s dynamism; the look is `docs/art-direction.md#character`. First the environment for top-quality animation, then the character: modeled and rigged in Blender (the owner installs the Blender MCP), animated from real motion capture (free libraries and Mixamo first), keyed by hand, blended in the game with its feet held to the ground. Every move and ability: run, jump, land, dash, air dash, ledge assist, grip and its corners, harpoon throw and zip, bore and dive, swim, sink and rise, the strikes, hurt, death, rest, taking a relic. Its secondary motion is stage D's. Done when every state reads at a glance in motion, in the reels and in the owner's play.
+1. **The deep code review** <a id="code-review"></a> (owner: before the character). Every line of the project read with fresh eyes, area by area (the core, the game layer, the rooms and their bricks, the UI, shaders, tools, tests): correctness bugs, dead code, duplication, logic in the wrong layer, types and names that don't tell the truth, docblocks that don't match the code, all against `instructions/principles.md` and `instructions/godot-csharp.md`. Each finding is verified before it is fixed, and fixed in its own coherent commit; one too big for the review becomes a roadmap item. Done when every area is reviewed, its findings fixed, and the full check passes.
+2. **The pilgrim, from zero** <a id="pilgrim"></a> (owner: last, once the world, its bricks and its look are finished). The current character, its procedural animation and its halo are thrown away. The bar is *Ori*'s animation (a 3D-rendered character) with *NieR: Automata*'s dynamism; the look is `docs/art-direction.md#character`. First the environment for top-quality animation, then the character: modeled and rigged in Blender (the owner installs the Blender MCP), animated from real motion capture (free libraries and Mixamo first), keyed by hand, blended in the game with its feet held to the ground. Every move and ability: run, jump, land, dash, air dash, ledge assist, grip and its corners, harpoon throw and zip, bore and dive, swim, sink and rise, the strikes, hurt, death, rest, taking a relic. Its secondary motion is stage D's. Done when every state reads at a glance in motion, in the reels and in the owner's play.
 
 **To play** <a id="to-play"></a>: what the owner's eye alone can judge, each line deleted once they have said. An item closes on what the agent can verify; the owner's word reopens it.
 
