@@ -71,7 +71,7 @@ public partial class DialogueBox : CanvasLayer
 
     public override void _Ready()
     {
-        Layer = 76;
+        Layer = UiLayers.Dialogue;
         Root.SetAnchorsPreset(Control.LayoutPreset.FullRect);
         AddChild(Root);
         _plate = Style.NewPlate();

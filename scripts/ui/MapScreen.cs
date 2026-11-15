@@ -79,7 +79,7 @@ public partial class MapScreen : CanvasLayer
 
     public override void _Ready()
     {
-        Layer = 80;
+        Layer = UiLayers.Map;
         ProcessMode = ProcessModeEnum.Always;
         _plate = TextStyle.Shared.NewPlate();
         Canvas.SetAnchorsPreset(Control.LayoutPreset.FullRect);

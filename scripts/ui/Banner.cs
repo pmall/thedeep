@@ -69,7 +69,7 @@ public partial class Banner : CanvasLayer
 
     public override void _Ready()
     {
-        Layer = 75;
+        Layer = UiLayers.Banner;
         Column.SetAnchorsPreset(Control.LayoutPreset.TopWide);
         Column.Position = new Vector2(0f, Style.BannerTop);
         var words = new VBoxContainer { MouseFilter = Control.MouseFilterEnum.Ignore };

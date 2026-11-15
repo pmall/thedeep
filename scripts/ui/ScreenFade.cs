@@ -23,7 +23,7 @@ public partial class ScreenFade : CanvasLayer
 
     public override void _Ready()
     {
-        Layer = 90;
+        Layer = UiLayers.Fade;
         ProcessMode = ProcessModeEnum.Always;
         Veil.Color = Color with { A = 0f };
         Veil.SetAnchorsPreset(Control.LayoutPreset.FullRect);

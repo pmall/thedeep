@@ -37,7 +37,7 @@ public partial class AnchorPointer : CanvasLayer
 
     public override void _Ready()
     {
-        Layer = 69;
+        Layer = UiLayers.AnchorPointer;
         Canvas.SetAnchorsPreset(Control.LayoutPreset.FullRect);
         Canvas.Draw += DrawChevron;
         AddChild(Canvas);

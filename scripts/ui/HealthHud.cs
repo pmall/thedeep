@@ -53,7 +53,7 @@ public partial class HealthHud : CanvasLayer
 
     public override void _Ready()
     {
-        Layer = 70;
+        Layer = UiLayers.Health;
         Canvas.SetAnchorsPreset(Control.LayoutPreset.FullRect);
         Canvas.Draw += DrawHud;
         AddChild(Canvas);
