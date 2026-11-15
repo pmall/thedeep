@@ -267,4 +267,51 @@ public class ReachPlannerTests
         Assert.False(Reaches(solids, new Vector2(-3f, 0f), top));
         Assert.True(Grips(solids, new[] { tower }, new Vector2(-3f, 0f), top));
     }
+
+    private static List<Leap> Leaps(ReachPlanner planner, params Vector2[] from)
+    {
+        var leaps = new List<Leap>();
+        planner.Reach(from.Select(f => (f, Vector2.Zero, 0)), Array.Empty<Box>(), leaps.Add);
+        return leaps;
+    }
+
+    [Fact]
+    public void ALeapIsCleanOnlyWhenItLandsTouchingNothing()
+    {
+        // A jump straight up lands where it took off, touching nothing.
+        var open = new[] { B(-10f, -2f, 30f, 0f) };
+        Leap up = Leaps(new ReachPlanner(Limits, open), Vector2.Zero).First(l => l.Move == new GroundMove(0, -1, -1));
+        Assert.True(up.Clean);
+        Assert.Equal(up.From, up.Lands);
+
+        // Under a low roof every full jump bumps it.
+        var roofed = new[] { B(-10f, -2f, 30f, 0f), B(-10f, 2.5f, 30f, 3f) };
+        Assert.All(Leaps(new ReachPlanner(Limits, roofed), Vector2.Zero).Where(l => l.Move.JumpTicks < 0), l => Assert.False(l.Clean));
+
+        // A flight into heat ends there, landing nowhere.
+        List<Leap> burned = Leaps(new ReachPlanner(Limits, open, hazards: new[] { B(2f, 0f, 4f, 10f) }), Vector2.Zero);
+        Assert.Contains(burned, l => l.Lands < 0);
+        Assert.All(burned.Where(l => l.Lands < 0), l => Assert.False(l.Clean));
+    }
+
+    [Fact]
+    public void AClumsyPilgrimTakesOffInsideALedgesEnds()
+    {
+        // A floor 10 m long and a pillar 0.5 m wide over a pit: from 0.3 m inside the floor's ends, and from the pillar's middle.
+        var solids = new[] { B(-10f, -2f, 0f, 0f), B(5f, -2f, 5.5f, 0f), B(-20f, -30f, 20f, -29f) };
+        foreach ((float margin, float from, float to) in new[] { (0f, -10f, 0f), (0.3f, -9.7f, -0.3f) })
+        {
+            var planner = new ReachPlanner(Limits with { EdgeMargin = margin }, solids);
+            List<Leap> leaps = Leaps(planner, new Vector2(-5f, 0f), new Vector2(5.25f, 0f));
+            var floor = leaps.Where(l => planner.Ledges[l.From] is { Y: 0f, MaxX: 0f }).Select(l => l.TakeOff.X).ToList();
+            Assert.Equal(from, floor.Min(), 3);
+            Assert.Equal(to, floor.Max(), 3);
+            var pillar = leaps.Where(l => planner.Ledges[l.From] is { Y: 0f, MinX: 5f }).ToList();
+            Assert.NotEmpty(pillar);
+            if (margin > 0f)
+            {
+                Assert.All(pillar, l => Assert.Equal(5.25f, l.TakeOff.X, 3));
+            }
+        }
+    }
 }
