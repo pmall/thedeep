@@ -213,10 +213,10 @@ public partial class PlaythroughCheck : Node
 
                 if (_ticks == 1)
                 {
-                    Player.Respawn(new Vector3(_law.GlobalPosition.X - _law.Toward * 5f, _law.GlobalPosition.Y + 0.5f, 0f), _law.Toward);
+                    Player.Respawn(new Vector3(_law.GlobalPosition.X - _law.Direction * 5f, _law.GlobalPosition.Y + 0.5f, 0f), _law.Direction);
                 }
 
-                Hold(_law.Toward > 0 ? InputActions.MoveRight : InputActions.MoveLeft, !_law.Broken);
+                Hold(_law.Direction > 0 ? InputActions.MoveRight : InputActions.MoveLeft, !_law.Broken);
                 Hold(InputActions.Interact, _law.Prompt.Offered && !_law.Broken);
                 if (_law.Broken && Player.InControl)
                 {
