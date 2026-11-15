@@ -169,6 +169,12 @@ public static class SweepPath
     public static List<PathFrame> Arc(Vector2 center, float radius, float from, float to, int segments) =>
         ArcFrames(center, radius, from, to, Math.Max(2, segments), 0f);
 
+    /// <summary>
+    /// The scale of station <paramref name="station"/> of <paramref name="stations"/> (two or more) along a taper that runs evenly from 1
+    /// at the first to <paramref name="end"/> at the last (see <see cref="MeshBuilder.Sweep"/>'s scales). Allocates nothing.
+    /// </summary>
+    public static float TaperAt(int station, int stations, float end) => 1f + (end - 1f) * station / (stations - 1);
+
     /// <summary>Total length of a path.</summary>
     public static float Length(IReadOnlyList<PathFrame> frames) => frames[^1].Distance;
 

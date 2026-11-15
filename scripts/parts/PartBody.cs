@@ -261,7 +261,7 @@ public partial class PartBody : Node3D
             Scales = new NVector2[count];
             for (int i = 0; i < count; i++)
             {
-                float k = 1f + (spec.Taper - 1f) * i / (count - 1);
+                float k = SweepPath.TaperAt(i, count, spec.Taper);
                 Scales[i] = new NVector2(k, spec.Shape == ChainShape.Ribbon ? 1f : k);
             }
 

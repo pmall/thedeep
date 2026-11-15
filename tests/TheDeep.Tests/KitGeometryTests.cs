@@ -222,6 +222,14 @@ public class KitGeometryTests
     }
 
     [Fact]
+    public void TaperRunsEvenlyFromOneToItsEnd()
+    {
+        Assert.Equal(1f, SweepPath.TaperAt(0, 5, 0.4f), 5);
+        Assert.Equal(0.7f, SweepPath.TaperAt(2, 5, 0.4f), 5);
+        Assert.Equal(0.4f, SweepPath.TaperAt(4, 5, 0.4f), 5);
+    }
+
+    [Fact]
     public void HangingCableDipsBySagAtItsMiddle()
     {
         List<PathFrame> path = SweepPath.Hanging(Vector3.Zero, new Vector3(6f, 0f, 0f), 1.5f, 24);

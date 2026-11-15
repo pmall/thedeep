@@ -127,7 +127,7 @@ public static class PropShapes
         var scales = new Vector2[stations];
         for (int i = 0; i < stations; i++)
         {
-            float s = 1f + (end - 1f) * i / (stations - 1);
+            float s = SweepPath.TaperAt(i, stations, end);
             scales[i] = new Vector2(s, s);
         }
 
