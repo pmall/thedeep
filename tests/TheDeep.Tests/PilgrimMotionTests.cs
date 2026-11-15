@@ -59,20 +59,22 @@ public class PilgrimMotionTests
         var motion = new PilgrimMotion(Dims, RunSpeed);
         Run(motion, 90, new Vector2(RunSpeed, 0f), MotionMode.Ground);
         // While a foot is on the ground its ankle moves back under the hips as fast as the body moves forward.
-        float bodyX = 0f;
+        int planted = 0;
         Vector2? previousAnkle = null;
-        for (int i = 0; i < 4; i++)
+        for (int i = 0; i < 120; i++)
         {
             motion.Update(Dt, new Vector2(RunSpeed, 0f), 1, MotionMode.Ground);
-            bodyX += RunSpeed * Dt;
             Vector2 ankle = Ankle(motion.Pose, HumanoidBone.ThighR, HumanoidBone.ShinR);
             if (previousAnkle is { } before && ankle.Y < Dims.AnkleHeight + 0.005f && before.Y < Dims.AnkleHeight + 0.005f)
             {
                 Assert.InRange(ankle.X - before.X + RunSpeed * Dt, -0.03f, 0.03f);
+                planted++;
             }
 
             previousAnkle = ankle;
         }
+
+        Assert.True(planted > 0, "the foot was never planted in two ticks running");
     }
 
     [Fact]

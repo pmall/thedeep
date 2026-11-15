@@ -63,7 +63,7 @@ public class MoveRulesTests
     [Fact]
     public void TheLedgeAssistKeepsTheSpeedOrAtLeastMostOfARun()
     {
-        Assert.Equal(0.6f * 7f, LedgeAssist.Speed(1f, 7f), 4);
+        Assert.Equal(LedgeAssist.SpeedShare * 7f, LedgeAssist.Speed(1f, 7f), 4);
         Assert.Equal(9f, LedgeAssist.Speed(-9f, 7f), 4);
     }
 }
