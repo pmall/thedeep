@@ -11,7 +11,6 @@
 [ext_resource type="Material" path="res://assets/materials/rust.tres" id="3_rust"]
 [ext_resource type="Script" path="res://scripts/rooms/RoomExit.cs" id="4_exit"]
 [ext_resource type="PackedScene" path="res://scenes/kit/HeatColumn.tscn" id="5_heatcolumn"]
-[ext_resource type="PackedScene" path="res://scenes/fx/Embers.tscn" id="7_embers"]
 [ext_resource type="PackedScene" path="res://scenes/props/Shrine.tscn" id="8_shrine"]
 [ext_resource type="Script" path="res://scripts/kit/BlockMesh.cs" id="9_blockmesh"]
 [ext_resource type="Material" path="res://assets/materials/wall_far.tres" id="10_wall_far"]

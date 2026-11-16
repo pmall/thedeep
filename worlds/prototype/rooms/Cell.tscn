@@ -11,7 +11,6 @@
 [ext_resource type="PackedScene" path="res://scenes/props/ScripturePlate.tscn" id="5_plate"]
 [ext_resource type="Material" path="res://assets/materials/glyphs.tres" id="6_glyphs"]
 [ext_resource type="Script" path="res://scripts/kit/BlockMesh.cs" id="7_blockmesh"]
-[ext_resource type="Material" path="res://assets/materials/stone_mid.tres" id="8_stone_mid"]
 [ext_resource type="PackedScene" path="res://scenes/fx/Dust.tscn" id="9_dust"]
 [ext_resource type="Script" path="res://scripts/rooms/PhotoSpot.cs" id="10_spot"]
 [ext_resource type="Script" path="res://scripts/rooms/Room.cs" id="11_room"]
