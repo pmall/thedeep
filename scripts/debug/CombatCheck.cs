@@ -1,5 +1,3 @@
-using System;
-using System.Collections.Generic;
 using System.Linq;
 using Godot;
 
@@ -12,28 +10,10 @@ namespace TheDeep;
 /// resting at the shrine heals and makes it the place to come back to; walking into the relic takes its
 /// ability. Prints `COMBAT OK` or `COMBAT CHECK` errors.
 /// </summary>
-public partial class CombatCheck : Node
+public partial class CombatCheck : StepDriver
 {
-    /// <summary>The running game's pilgrim.</summary>
-    public required Player Player { get; init; }
-    /// <summary>The running game's world: its rooms, and the one loaded.</summary>
-    public required World World { get; init; }
     /// <summary>The running game's session.</summary>
     public required Session Session { get; init; }
-
-    private readonly List<Step> _steps = new();
-    private readonly List<string> _problems = new();
-    private int _index = -1;
-    private int _ticks;
-
-    private sealed record Step(string What, float Seconds, Action Start, Func<bool> Done, Action? Tick = null);
-
-    /// <summary>Runs before the pilgrim each frame and each physics tick, so what it presses is read the same tick.</summary>
-    public CombatCheck()
-    {
-        ProcessPriority = -100;
-        ProcessPhysicsPriority = -100;
-    }
 
     private bool _dealt;
 
@@ -48,71 +28,62 @@ public partial class CombatCheck : Node
 
     private Machine? Votary => World.Room.First<Machine>();
 
-    public override void _Ready()
+    protected override void Build()
     {
-        _steps.Add(new("get struck lingering in front of the Votary", 5f,
+        Steps.Add(new("get struck lingering in front of the Votary", 5f,
             () => Player.Respawn(new Vector3(27.5f, 0f, 0f), 1),
             () => Player.Vitality.Current < Player.Vitality.Max));
-        _steps.Add(new("break the Votary with swings", 6f,
+        Steps.Add(new("break the Votary with swings", 6f,
             () => Player.Respawn(new Vector3(27.6f, 0f, 0f), 1),
             () => Votary is { Broken: true },
             () =>
             {
                 // Keep in reach (a hit pushes it back), and press every 21 ticks (a swing and its cooldown is about 20).
-                bool far = Votary is { } v && v.PlanePosition.X - Player.GlobalPosition.X > 1.5f;
-                if (far)
+                Hold(InputActions.MoveRight, Votary is { } v && v.PlanePosition.X - Player.GlobalPosition.X > 1.5f);
+                if (Ticks % 21 == 1)
                 {
-                    Input.ActionPress(InputActions.MoveRight);
+                    Press(InputActions.Attack);
                 }
-                else
+                else if (Ticks % 21 == 3)
                 {
-                    Input.ActionRelease(InputActions.MoveRight);
-                }
-
-                if (_ticks % 21 == 1)
-                {
-                    Input.ActionPress(InputActions.Attack);
-                }
-                else if (_ticks % 21 == 3)
-                {
-                    Input.ActionRelease(InputActions.Attack);
+                    Release(InputActions.Attack);
                 }
             }));
-        _steps.Add(new("die and come back whole at the spawn point, the Votary renewed", 6f,
+        Steps.Add(new("die and come back whole at the spawn point, the Votary renewed", 6f,
             () =>
             {
-                Input.ActionRelease(InputActions.Attack);
-                Input.ActionRelease(InputActions.MoveRight);
+                Release(InputActions.Attack);
+                Release(InputActions.MoveRight);
                 Player.Respawn(new Vector3(20f, 0f, 0f), 1);
                 _dealt = false;
             },
             () => _dealt && Player.Vitality.Current == Player.Vitality.Max && Player.InControl
                   && Player.GlobalPosition.DistanceTo(World.Room.SpawnPoint.GlobalPosition) < 0.6f && Votary is { Broken: false },
             DeadlyBlow));
-        _steps.Add(new("rest at the shrine", 2f,
+        Steps.Add(new("rest at the shrine", 2f,
             () =>
             {
                 Player.Respawn(new Vector3(4.5f, 0f, 0f), 1);
                 Player.TakeHit(1, new System.Numerics.Vector2(10f, 0f));
             },
-            () => Session.RestedShrine == "Shrine" && Player.Vitality.Current == Player.Vitality.Max && _ticks > 57,
+            () => Session.RestedShrine == "Shrine" && Player.Vitality.Current == Player.Vitality.Max && Ticks > 57,
             () =>
             {
                 // Pressed once the pilgrim has landed from the blow's knockback, back by the shrine.
-                if (_ticks == 50)
+                if (Ticks == 50)
                 {
                     Player.Respawn(new Vector3(4.5f, 0f, 0f), 1);
                 }
-                else if (_ticks == 55)
+                else if (Ticks == 55)
                 {
-                    Input.ActionPress(InputActions.Interact);
+                    Press(InputActions.Interact);
                 }
-                else if (_ticks == 57)
+                else if (Ticks == 57)
                 {
-                    Input.ActionRelease(InputActions.Interact);
+                    Release(InputActions.Interact);
                 }
             }));
-        _steps.Add(new("die and come back at the shrine", 6f,
+        Steps.Add(new("die and come back at the shrine", 6f,
             () =>
             {
                 Player.Respawn(new Vector3(20f, 0f, 0f), 1);
@@ -121,74 +92,24 @@ public partial class CombatCheck : Node
             () => _dealt && Player.InControl && Player.Vitality.Current == Player.Vitality.Max
                   && Player.GlobalPosition.DistanceTo(new Vector3(4f, 0f, 0f)) < 0.6f,
             DeadlyBlow));
-        _steps.Add(new("walk into the relic and take its ability", 4f,
-            () => { Player.Respawn(new Vector3(13f, 0f, 0f), 1); Input.ActionPress(InputActions.MoveRight); },
+        Steps.Add(new("walk into the relic and take its ability", 4f,
+            () => { Player.Respawn(new Vector3(13f, 0f, 0f), 1); Press(InputActions.MoveRight); },
             () => Player.Abilities.Has(Ability.Drill),
             () =>
             {
-                if (_ticks == 30)
+                if (Ticks == 30)
                 {
-                    Input.ActionRelease(InputActions.MoveRight);
+                    Release(InputActions.MoveRight);
                 }
             }));
-        Next();
     }
 
-    private void Next()
-    {
-        _index++;
-        _ticks = 0;
-        if (_index >= _steps.Count)
-        {
-            Finish();
-            return;
-        }
+    protected override string Tag => "COMBAT";
 
-        _steps[_index].Start();
-    }
+    protected override string Failed => "did not happen in";
 
-    public override void _PhysicsProcess(double delta)
-    {
-        if (_index < 0 || _index >= _steps.Count)
-        {
-            return;
-        }
+    protected override string Detail =>
+        $"at {Player.GlobalPosition}, health {Player.Vitality.Current}/{Player.Vitality.Max}, state {Player.CurrentState.Name}";
 
-        Step step = _steps[_index];
-        _ticks++;
-        step.Tick?.Invoke();
-        if (step.Done())
-        {
-            Next();
-            return;
-        }
-
-        if (_ticks > step.Seconds * 60f)
-        {
-            _problems.Add($"step {_index + 1} \"{step.What}\" did not happen in {step.Seconds} s (at {Player.GlobalPosition}, " +
-                          $"health {Player.Vitality.Current}/{Player.Vitality.Max}, state {Player.CurrentState.Name})");
-            Finish();
-        }
-    }
-
-    private void Finish()
-    {
-        _index = _steps.Count;
-        foreach (StringName action in new[] { InputActions.Attack, InputActions.MoveRight, InputActions.Interact })
-        {
-            Input.ActionRelease(action);
-        }
-
-        foreach (string problem in _problems)
-        {
-            GD.PushError($"COMBAT CHECK: {problem}");
-        }
-
-        if (_problems.Count == 0)
-        {
-            GD.Print($"COMBAT OK: {_steps.Count} steps (struck, swings break a machine, death and return, rest, relic)");
-        }
-
-        GetTree().Quit(_problems.Count == 0 ? 0 : 1);
-    }
+    protected override string Outcome => $"{StepCount} steps (struck, swings break a machine, death and return, rest, relic)";
 }

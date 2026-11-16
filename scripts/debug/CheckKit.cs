@@ -25,6 +25,27 @@ public static class CheckKit
         }
     }
 
+    /// <summary>One tick of a fight through the real inputs: closes on <paramref name="foe"/> (a hovering one only while it hangs low),
+    /// faces it, jumps for it, and swings every 21 ticks (a swing and its cooldown is about 20) once close; <paramref name="ticks"/>
+    /// counts from the fight's start. The caller keeps the pilgrim alive if the rules, not the balance, are what it checks.</summary>
+    public static void Brawl(Player player, Machine foe, int ticks)
+    {
+        Vector2 at = foe.PlanePosition;
+        float gap = at.X - player.GlobalPosition.X, rise = at.Y - player.GlobalPosition.Y;
+        bool hovers = foe.Species.Locomotion == Locomotion.Hover;
+        bool reachable = !hovers || foe.Intent.Act is MachineAct.Recover or MachineAct.Strike;
+        float near = hovers ? 1.2f : 1.4f;
+        Hold(InputActions.MoveRight, reachable && gap > near);
+        Hold(InputActions.MoveLeft, reachable && gap < -near);
+        if (Mathf.Abs(gap) <= near && Mathf.Sign(gap) != player.WorldFacing && gap != 0f)
+        {
+            Hold(gap > 0f ? InputActions.MoveRight : InputActions.MoveLeft, true);
+        }
+
+        Hold(InputActions.Jump, hovers && reachable && rise > 2.2f && Mathf.Abs(gap) < 2.5f && player.IsOnFloor() && ticks % 30 < 14);
+        Hold(InputActions.Attack, Mathf.Abs(gap) < 2.6f && ticks % 21 is 1 or 2);
+    }
+
     /// <summary>Lets go of every action the pilgrim plays with.</summary>
     public static void ReleaseAll()
     {

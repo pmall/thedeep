@@ -12,10 +12,8 @@ namespace TheDeep;
 /// rooms, it opens over them all (a tile per room visited, the ways taken bridged, sound) and closes. Each step has a time limit.
 /// Prints `MAPSCREEN OK` or `MAPSCREEN CHECK` errors.
 /// </summary>
-public partial class MapScreenCheck : Node
+public partial class MapScreenCheck : StepDriver
 {
-    /// <summary>The running game's world: its rooms, the one loaded, and the map.</summary>
-    public required World World { get; init; }
     /// <summary>The running game's travel between rooms.</summary>
     public required RoomTravel Travel { get; init; }
     /// <summary>The running game's map screen.</summary>
@@ -30,38 +28,36 @@ public partial class MapScreenCheck : Node
     /// <summary>Physics ticks between two exits crossed.</summary>
     private const int HopTicks = 6;
 
-    private readonly List<Step> _steps = new();
-    private readonly List<string> _problems = new();
+    /// <summary>The map pauses the game: the check runs through it, so after the pilgrim rather than before.</summary>
+    public MapScreenCheck() : base(false)
+    {
+    }
+
     private readonly List<string> _seen = new();
     private readonly Dictionary<string, int> _visits = new();
     private readonly InputEventAction _press = new() { Action = InputActions.Map, Pressed = true };
     private readonly InputEventAction _release = new() { Action = InputActions.Map, Pressed = false };
-    private int _index = -1;
-    private int _ticks;
     private int _hops;
 
-    private sealed record Step(string What, float Seconds, Action Start, Func<bool> Done);
-
-    public override void _Ready()
+    protected override void Build()
     {
         // The map pauses the game: the check runs through it.
         ProcessMode = ProcessModeEnum.Always;
         AddMapSteps("over the start room alone");
-        _steps.Add(new($"the pilgrim taken through open exits into {Rooms} rooms", MaxHops * HopTicks / 60f + 2f, () => { }, Walked));
+        Steps.Add(new($"the pilgrim taken through open exits into {Rooms} rooms", MaxHops * HopTicks / 60f + 2f, () => { }, Walked));
         AddMapSteps("over the rooms visited");
-        Next();
     }
 
     /// <summary>Opens the map through the map action and holds it, then closes it the same way.</summary>
     private void AddMapSteps(string over)
     {
-        _steps.Add(new($"the map action opens the map {over}: the game paused, the map eased in and laid out sound", TextStyle.Shared.Panel + 1f,
-            Press, () => Map.IsOpen && GetTree().Paused && Map.Shown >= 1f && Laid(over)));
-        _steps.Add(new("the map action closes it: the game resumed, the map gone", TextStyle.Shared.Panel + 1f,
-            Press, () => !Map.IsOpen && !GetTree().Paused && !Map.Visible));
+        Steps.Add(new($"the map action opens the map {over}: the game paused, the map eased in and laid out sound", TextStyle.Shared.Panel + 1f,
+            Tap, () => Map.IsOpen && GetTree().Paused && Map.Shown >= 1f && Laid(over)));
+        Steps.Add(new("the map action closes it: the game resumed, the map gone", TextStyle.Shared.Panel + 1f,
+            Tap, () => !Map.IsOpen && !GetTree().Paused && !Map.Visible));
     }
 
-    private void Press()
+    private void Tap()
     {
         Input.ParseInputEvent(_press);
         Input.ParseInputEvent(_release);
@@ -72,24 +68,24 @@ public partial class MapScreenCheck : Node
     {
         if (Map.Sheet is not { } sheet)
         {
-            _problems.Add($"{over}: the map shows no layout");
+            Problems.Add($"{over}: the map shows no layout");
             return true;
         }
 
-        _problems.AddRange(sheet.Problems(Map.LegendWidths).Select(p => $"{over}: {p}"));
+        Problems.AddRange(sheet.Problems(Map.LegendWidths).Select(p => $"{over}: {p}"));
         if (sheet.Tiles.Count != World.Map.Rooms.Count)
         {
-            _problems.Add($"{over}: {sheet.Tiles.Count} tiles for the {World.Map.Rooms.Count} rooms visited");
+            Problems.Add($"{over}: {sheet.Tiles.Count} tiles for the {World.Map.Rooms.Count} rooms visited");
         }
 
         if (sheet.Here?.Name != World.RoomName)
         {
-            _problems.Add($"{over}: the pilgrim's tile is the {sheet.Here?.Name ?? "none"}'s, not the {World.RoomName}'s");
+            Problems.Add($"{over}: the pilgrim's tile is the {sheet.Here?.Name ?? "none"}'s, not the {World.RoomName}'s");
         }
 
         if (World.Map.Rooms.Count > 1 && sheet.Marks.OfType<WayMark.Taken>().Count() < 2)
         {
-            _problems.Add($"{over}: {World.Map.Rooms.Count} rooms visited, but no way taken bridges two of them");
+            Problems.Add($"{over}: {World.Map.Rooms.Count} rooms visited, but no way taken bridges two of them");
         }
 
         _seen.Add($"{over}: {sheet.Tiles.Count} rooms, {sheet.Marks.Count} marks, {sheet.Legend.Count} legend entries, {sheet.Scale:0.00} px/m");
@@ -105,14 +101,14 @@ public partial class MapScreenCheck : Node
         }
 
         // A crossing the pilgrim started itself (standing in an exit it arrived on) is finished before the next is forced.
-        if (_ticks % HopTicks == 0 && !Travel.Travelling)
+        if (Ticks % HopTicks == 0 && !Travel.Travelling)
         {
             _visits[World.RoomName] = _visits.GetValueOrDefault(World.RoomName) + 1;
             RoomExit? exit = World.Room.Exits().Where(e => e.Open && ResourceLoader.Exists(e.TargetRoom))
                 .OrderBy(e => _visits.GetValueOrDefault(World.NameOf(e.TargetRoom))).FirstOrDefault();
             if (exit is null)
             {
-                _problems.Add($"the {World.RoomName} has no open exit to cross");
+                Problems.Add($"the {World.RoomName} has no open exit to cross");
                 return true;
             }
 
@@ -123,55 +119,16 @@ public partial class MapScreenCheck : Node
         return false;
     }
 
-    private void Next()
-    {
-        _index++;
-        _ticks = 0;
-        if (_index >= _steps.Count || _problems.Count > 0)
-        {
-            Finish();
-            return;
-        }
+    protected override string Tag => "MAPSCREEN";
 
-        _steps[_index].Start();
-    }
+    protected override bool StopAtFirstProblem => true;
 
-    public override void _PhysicsProcess(double delta)
-    {
-        if (_index < 0 || _index >= _steps.Count)
-        {
-            return;
-        }
+    protected override void Ending() => GetTree().Paused = false;
 
-        Step step = _steps[_index];
-        _ticks++;
-        if (step.Done())
-        {
-            Next();
-        }
-        else if (_ticks > step.Seconds * 60f)
-        {
-            _problems.Add($"step {_index + 1} \"{step.What}\" failed in {step.Seconds} s (in the {World.RoomName}, the map " +
-                          $"{(Map.IsOpen ? "open" : "closed")} at {Map.Shown:0.00}, the game {(GetTree().Paused ? "paused" : "running")})");
-            Finish();
-        }
-    }
+    protected override string Detail =>
+        $"in the {World.RoomName}, the map {(Map.IsOpen ? "open" : "closed")} at {Map.Shown:0.00}, the game {(GetTree().Paused ? "paused" : "running")}";
 
-    private void Finish()
-    {
-        _index = _steps.Count;
-        GetTree().Paused = false;
-        foreach (string problem in _problems)
-        {
-            GD.PushError($"MAPSCREEN CHECK: {problem}");
-        }
-
-        if (_problems.Count == 0)
-        {
-            GD.Print($"MAPSCREEN OK: {World.Definition.ResourcePath.GetBaseDir().GetFile()}, opened and closed through the map action " +
-                     $"({string.Join("; ", _seen)}; {_hops} exits crossed)");
-        }
-
-        GetTree().Quit(_problems.Count == 0 ? 0 : 1);
-    }
+    protected override string Outcome =>
+        $"{World.Definition.ResourcePath.GetBaseDir().GetFile()}, opened and closed through the map action " +
+        $"({string.Join("; ", _seen)}; {_hops} exits crossed)";
 }

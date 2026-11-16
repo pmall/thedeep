@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using Godot;
 using NVector2 = System.Numerics.Vector2;
 
@@ -26,7 +27,7 @@ public partial class GripCheck : StepDriver
     /// <summary>The tank between the metal wall and the pier: its surface (its floor is the lab's).</summary>
     private const float TankSurface = 5f;
 
-    private readonly HashSet<NVector2> _upsSeen = new();
+    private readonly List<NVector2> _ups = new();
     private float _maxAbsZ;
     private float _highestGrip = float.NegativeInfinity;
     private float _lowestGrip = float.PositiveInfinity;
@@ -46,7 +47,7 @@ public partial class GripCheck : StepDriver
 
         World.Room.AddChild(LabProps.Tank(new Vector2(2f, 4f), TankSurface, new Vector3(27f, TankSurface, 0f)));
 
-        NVector2 left = new(-1f, 0f), right = new(1f, 0f), down = new(0f, -1f);
+        NVector2 up = new(0f, 1f), left = new(-1f, 0f), right = new(1f, 0f), down = new(0f, -1f);
         Steps.Add(new("a full jump at a step just higher than a jump lands on its top (the ledge assist)", 2f,
             () => { Player.Abilities.Lock(Ability.MagGrip); Place(StepFace + 1.5f, 0f); Press(InputActions.MoveLeft); Press(InputActions.Jump); },
             () => Player.IsUpright && Player.IsOnFloor() && Player.GlobalPosition.Y > StepTop - 0.05f));
@@ -54,10 +55,10 @@ public partial class GripCheck : StepDriver
             () => { Release(InputActions.MoveLeft); Release(InputActions.Jump); Place(20f, 0f); Player.Abilities.Unlock(Ability.MagGrip); Press(InputActions.MoveRight); },
             () => Player.CurrentState == Player.States.Grip && Player.SurfaceUp == left));
         Steps.Add(new("climb the wall, turn under the slab, wrap its end and stand on its top", 9f,
-            () => { Release(InputActions.MoveRight); Press(InputActions.MoveUp); },
+            () => { Release(InputActions.MoveRight); Press(InputActions.MoveUp); _ups.Clear(); },
             () => Player.IsUpright && Player.IsOnFloor() && Player.GlobalPosition.Y > 12.9f));
-        Steps.Add(new("seen on the way: the wall, the slab's underside, its end face", 0f, () => { }, () =>
-            _upsSeen.Contains(left) && _upsSeen.Contains(down) && _upsSeen.Contains(new NVector2(-1f, 0f))));
+        Steps.Add(new("seen on the way, in turn: the wall, the slab's underside, its end face, its top", 0f, () => { },
+            () => _ups.SequenceEqual(new[] { left, down, left, up })));
         Steps.Add(new("jump into the block's underside and hang from it", 2f,
             () => { Release(InputActions.MoveUp); Place(8f, 0f); Press(InputActions.Jump); },
             () => Player.CurrentState == Player.States.Grip && Player.SurfaceUp == down));
@@ -100,7 +101,11 @@ public partial class GripCheck : StepDriver
 
     protected override void Observe(float delta)
     {
-        _upsSeen.Add(Player.SurfaceUp);
+        if (_ups.Count == 0 || _ups[^1] != Player.SurfaceUp)
+        {
+            _ups.Add(Player.SurfaceUp);
+        }
+
         if (Player.CurrentState == Player.States.Grip)
         {
             _highestGrip = Mathf.Max(_highestGrip, Player.Center.Y);
@@ -118,7 +123,7 @@ public partial class GripCheck : StepDriver
         }
     }
 
-    protected override string Detail => $"at {Player.GlobalPosition}, state {Player.CurrentState.Name}, up {Player.SurfaceUp}";
+    protected override string Detail => $"at {Player.GlobalPosition}, state {Player.CurrentState.Name}, up {Player.SurfaceUp}, faces seen {string.Join(" ", _ups)}";
 
     protected override string Outcome =>
         $"{StepCount} steps (ledge assist, wall, inner corner, outer corners, ceiling, leap, let go, metal's end, water)";

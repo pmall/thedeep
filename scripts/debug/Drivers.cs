@@ -48,7 +48,7 @@ public static class Drivers
             Banner = m.Session.Banner,
         }),
         Run("--plate-check", (m, _) => new PlateCheck { Player = m.Player, World = m.World, Banner = m.Session.Banner }),
-        Run("--map-screen-check", (m, _) => new MapScreenCheck { World = m.World, Travel = m.Travel, Map = m.MapScreen }),
+        Run("--map-screen-check", (m, _) => new MapScreenCheck { Player = m.Player, World = m.World, Travel = m.Travel, Map = m.MapScreen }),
         Run(SaveCheckWrite, (m, _) => new SaveCheck { Write = true, Player = m.Player, World = m.World, Session = m.Session, Machines = m.Machines }),
         new Row("--save-check-read", false, true, (m, _) => new SaveCheck { Write = false, Player = m.Player, World = m.World, Session = m.Session, Machines = m.Machines }),
         Run("--powerup-check", (m, _) => new PowerUpCheck { Player = m.Player, World = m.World, PowerUps = m.PowerUps, Session = m.Session, Banner = m.Session.Banner }),
