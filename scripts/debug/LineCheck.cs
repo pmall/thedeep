@@ -76,14 +76,7 @@ public sealed class LineCheck
     public List<string> Unfit(LineBook book, Banner banner)
     {
         var problems = new List<string>();
-        string longest = "";
-        for (LineBook? b = book; b is not null; b = b.Base)
-        {
-            foreach (TextLine line in b.Lines)
-            {
-                longest = line.Text.Length > longest.Length ? line.Text : longest;
-            }
-        }
+        string longest = Longest(book);
 
         string tooLong = longest;
         while (tooLong.Length < 400 && longest.Length > 0)
@@ -117,14 +110,7 @@ public sealed class LineCheck
     public List<string> Overlong(LineBook book, HintLine hint)
     {
         var problems = new List<string>();
-        string longest = "";
-        for (LineBook? b = book; b is not null; b = b.Base)
-        {
-            foreach (TextLine line in b.Lines)
-            {
-                longest = line.Text.Length > longest.Length ? line.Text : longest;
-            }
-        }
+        string longest = Longest(book);
 
         if (longest.Length > 0 && hint.Fits(longest + " " + longest))
         {
@@ -141,6 +127,21 @@ public sealed class LineCheck
         }
 
         return problems;
+    }
+
+    /// <summary>The longest line text of <paramref name="book"/> or its bases, "" if it has none.</summary>
+    private static string Longest(LineBook book)
+    {
+        string longest = "";
+        for (LineBook? b = book; b is not null; b = b.Base)
+        {
+            foreach (TextLine line in b.Lines)
+            {
+                longest = line.Text.Length > longest.Length ? line.Text : longest;
+            }
+        }
+
+        return longest;
     }
 
     /// <summary>Each letter of a line of <paramref name="book"/> or its bases (in capitals too, as a speaker's name shows) that <paramref name="font"/> lacks.</summary>
