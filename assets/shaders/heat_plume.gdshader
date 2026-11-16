@@ -36,13 +36,6 @@ uniform float edge_strength : hint_range(0.0, 4.0) = 0.5;
 /// The white-hot core over the vent, and the heat pooled under its top (meters).
 uniform float foot_band : hint_range(0.0, 3.0) = 0.5;
 uniform float top_band : hint_range(0.0, 2.0) = 0.3;
-// Heat's ramp, coolest to hottest, linear.
-vec3 ramp(float t) {
-	t = clamp(t, 0.0, 1.0);
-	vec3 molten = srgb_to_linear(biome_molten.rgb);
-	return t < 0.5 ? mix(srgb_to_linear(biome_molten_cool.rgb), molten, t * 2.0)
-			: mix(molten, srgb_to_linear(biome_molten_hot.rgb), t * 2.0 - 1.0);
-}
 
 void fragment() {
 	// Meters from its west side and from its foot (the quad's UV runs down from its top); h is the height's share.
@@ -72,6 +65,6 @@ void fragment() {
 	float glow = 0.9 * tongue * cool + 0.8 * foot + edge_strength * licks + 0.2 * pooled;
 	float cover = 0.65 * tongue * cool + 0.35 * foot + 0.25 * licks + 0.08 * pooled;
 
-	ALBEDO = ramp(temp) * glow * heat * strength;
+	ALBEDO = heat_ramp(temp) * glow * heat * strength;
 	ALPHA = clamp(cover, 0.0, 1.0) * opacity * strength;
 }

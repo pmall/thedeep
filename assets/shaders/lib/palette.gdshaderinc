@@ -41,3 +41,11 @@ vec3 palette_color(int slot) {
 	}
 	return srgb_to_linear(color.rgb);
 }
+
+// Heat's ramp, linear: 0 the hazards' coolest color, 0.5 their glow, 1 white-hot.
+vec3 heat_ramp(float t) {
+	t = clamp(t, 0.0, 1.0);
+	vec3 mid = srgb_to_linear(biome_molten.rgb);
+	return t < 0.5 ? mix(srgb_to_linear(biome_molten_cool.rgb), mid, t * 2.0)
+			: mix(mid, srgb_to_linear(biome_molten_hot.rgb), t * 2.0 - 1.0);
+}
