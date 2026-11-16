@@ -1,5 +1,4 @@
 using System.Linq;
-using TheDeep;
 using Xunit;
 
 namespace TheDeep.Tests;
