@@ -125,7 +125,6 @@ Camera = NodePath("../SideCamera")
 EndCard = NodePath("../EndCard")
 Travel = NodePath("../RoomTravel")
 
-; A gate the pilgrim can't pass yet says so: its line, low on the screen.
 ; The items and the doors they open (Keyring): taking keys and codes, opening locked doors, the line at a door without its item.
 [node name="Keyring" type="Node" parent="." node_paths=PackedStringArray("World", "Player", "Session", "Banner", "Hint", "Camera", "Travel")]
 script = ExtResource("29_keyring")
@@ -170,6 +169,7 @@ World = NodePath("../World")
 Player = NodePath("../Player")
 Session = NodePath("../Session")
 
+; A gate the pilgrim can't pass yet says so: its line, low on the screen.
 [node name="GateHints" type="Node" parent="." node_paths=PackedStringArray("World", "Player", "Harpoon", "Hint")]
 script = ExtResource("22_gates")
 World = NodePath("../World")
