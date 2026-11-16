@@ -866,7 +866,7 @@ public sealed class ReachPlanner
         return _solids.Any(s => s.Overlaps(body)) ? null : lifted;
     }
 
-    /// <summary>One tick floating in <paramref name="water"/>; returns true once settled (on the float line, or wading on a floor).</summary>
+    /// <summary>One tick floating in the water; returns true once settled (on the float line, or wading on a floor).</summary>
     private bool Swim(ref Vector2 p, ref Vector2 v, int dir, WaterHit wet, IReadOnlyList<Box> triggers, HashSet<int> reachedTriggers, Action<int> land)
     {
         (Box water, WaterLimits w) = wet;

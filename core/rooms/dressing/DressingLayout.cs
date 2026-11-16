@@ -4,7 +4,7 @@ using System.Collections.Generic;
 namespace TheDeep;
 
 /// <summary>
-/// Pure, deterministic layouts for the dressing generators (<see cref="Colonnade"/>, <see cref="RackRow"/>):
+/// Pure, deterministic layouts for the dressing generators (<c>Colonnade</c>, <c>RackRow</c>):
 /// which bays carry cables, which slots of a row stay empty, which pieces lie toppled. The same seed always
 /// gives the same room, so captures stay comparable.
 /// </summary>

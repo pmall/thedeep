@@ -4,7 +4,7 @@ using System.Collections.Generic;
 namespace TheDeep;
 
 /// <summary>
-/// Pure, deterministic layouts of the architecture behind a room (<see cref="BackdropArchitecture"/> turns them into meshes):
+/// Pure, deterministic layouts of the architecture behind a room (<c>BackdropArchitecture</c> turns them into meshes):
 /// regular bays with the odd broken pier or fallen arch, so the backdrop reads as built structures receding into the
 /// haze rather than scattered boxes. Each style is rules over its spec (<see cref="NaveBackdropSpec"/>,
 /// <see cref="StacksBackdropSpec"/>, <see cref="FoundryBackdropSpec"/>, <see cref="MachineryBackdropSpec"/>); the piece

@@ -1,6 +1,6 @@
 namespace TheDeep;
 
-/// <summary>What scales a <see cref="JointDriver"/>: always on, the machine's speed, or one of its brain's channels (<see cref="Intent"/>).</summary>
+/// <summary>What scales a <c>JointDriver</c>: always on, the machine's speed, or one of its brain's channels (<see cref="Intent"/>).</summary>
 public enum DriverChannel
 {
     One,

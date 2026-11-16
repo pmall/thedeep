@@ -4,7 +4,7 @@ using System.Collections.Generic;
 namespace TheDeep;
 
 /// <summary>
-/// Pure, deterministic dressings for a room's back wall (<see cref="WallDressing"/> builds the meshes): bays between
+/// Pure, deterministic dressings for a room's back wall (<c>WallDressing</c> builds the meshes): bays between
 /// pilasters, each filled with one motif, so a wide plain wall reads as a built thing at the scale of the room. Each style
 /// is rules over its spec (<see cref="FoundryWallSpec"/>, <see cref="MachineryWallSpec"/>, <see cref="ArchiveWallSpec"/>,
 /// <see cref="NaveWallSpec"/>); this class picks the style and holds what they share.
