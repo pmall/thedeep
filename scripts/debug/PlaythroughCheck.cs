@@ -108,7 +108,7 @@ public partial class PlaythroughCheck : Node
     {
         _task = task;
         _ticks = 0;
-        Release();
+        CheckKit.ReleaseAll();
     }
 
     public override void _PhysicsProcess(double delta)
@@ -216,8 +216,8 @@ public partial class PlaythroughCheck : Node
                     Player.Respawn(new Vector3(_law.GlobalPosition.X - _law.Direction * 5f, _law.GlobalPosition.Y + 0.5f, 0f), _law.Direction);
                 }
 
-                Hold(_law.Direction > 0 ? InputActions.MoveRight : InputActions.MoveLeft, !_law.Broken);
-                Hold(InputActions.Interact, _law.Prompt.Offered && !_law.Broken);
+                CheckKit.Hold(_law.Direction > 0 ? InputActions.MoveRight : InputActions.MoveLeft, !_law.Broken);
+                CheckKit.Hold(InputActions.Interact, _law.Prompt.Offered && !_law.Broken);
                 if (_law.Broken && Player.InControl)
                 {
                     _log.Add($"{World.RoomName}: {_law.LawLine} broken");
@@ -269,10 +269,10 @@ public partial class PlaythroughCheck : Node
                 Begin(Phase.Arrive);
                 if (!threshold.IsHatch)
                 {
-                    Hold(threshold.Side == ExitSide.East ? InputActions.MoveRight : InputActions.MoveLeft, true);
+                    CheckKit.Hold(threshold.Side == ExitSide.East ? InputActions.MoveRight : InputActions.MoveLeft, true);
                 }
 
-                Hold(InputActions.MoveDown, threshold.Side != ExitSide.Up);
+                CheckKit.Hold(InputActions.MoveDown, threshold.Side != ExitSide.Up);
                 break;
             case Phase.Arrive:
                 if (World.RoomName == Hop.To && Player.InControl && _ticks > 30)
@@ -329,7 +329,7 @@ public partial class PlaythroughCheck : Node
             Player.Respawn(lever.GlobalPosition with { Z = 0f });
         }
 
-        Hold(InputActions.Interact, _ticks % 20 == 10);
+        CheckKit.Hold(InputActions.Interact, _ticks % 20 == 10);
         if (_ticks > 600)
         {
             Fail($"in {World.RoomName}, interact at the lever {lever.NameText()} did not pull it");
@@ -339,7 +339,7 @@ public partial class PlaythroughCheck : Node
             _log.Add($"{World.RoomName}: pulled {lever.NameText()} ({lever.Item.Id})");
             _levers++;
             _lever = null;
-            Hold(InputActions.Interact, false);
+            CheckKit.Hold(InputActions.Interact, false);
         }
     }
 
@@ -366,44 +366,10 @@ public partial class PlaythroughCheck : Node
         }
 
         Player.Vitality.Restore();
-        Vector2 at = boss.PlanePosition;
-        float gap = at.X - Player.GlobalPosition.X, rise = at.Y - Player.GlobalPosition.Y;
-        bool hovers = boss.Species.Locomotion == Locomotion.Hover;
-        bool reachable = !hovers || boss.Intent.Act is MachineAct.Recover or MachineAct.Strike;
-        float near = hovers ? 1.2f : 1.4f;
-        Hold(InputActions.MoveRight, reachable && gap > near);
-        Hold(InputActions.MoveLeft, reachable && gap < -near);
-        if (Mathf.Abs(gap) <= near && Math.Sign(gap) != Player.WorldFacing && gap != 0f)
-        {
-            Hold(gap > 0f ? InputActions.MoveRight : InputActions.MoveLeft, true);
-        }
-
-        Hold(InputActions.Jump, hovers && reachable && rise > 2.2f && Mathf.Abs(gap) < 2.5f && Player.IsOnFloor() && _ticks % 30 < 14);
-        Hold(InputActions.Attack, Mathf.Abs(gap) < 2.6f && _ticks % 21 is 1 or 2);
+        CheckKit.Brawl(Player, boss, _ticks);
         if (_ticks > 120 * 60)
         {
             Fail($"in {World.RoomName}, the {boss.Species.DisplayName} did not break in 120 s");
-        }
-    }
-
-    private static void Hold(StringName action, bool held)
-    {
-        if (held)
-        {
-            Input.ActionPress(action);
-        }
-        else
-        {
-            Input.ActionRelease(action);
-        }
-    }
-
-    private static void Release()
-    {
-        foreach (StringName action in new[] { InputActions.Interact, InputActions.Attack, InputActions.MoveRight, InputActions.MoveLeft, InputActions.MoveUp,
-                     InputActions.MoveDown, InputActions.Dash, InputActions.Jump })
-        {
-            Input.ActionRelease(action);
         }
     }
 
@@ -416,7 +382,7 @@ public partial class PlaythroughCheck : Node
     private void Finish()
     {
         _task = Phase.Done;
-        Release();
+        CheckKit.ReleaseAll();
         foreach (string line in _log)
         {
             GD.Print($"  {line}");

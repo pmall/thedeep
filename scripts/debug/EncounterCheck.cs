@@ -69,15 +69,7 @@ public partial class EncounterCheck : StepDriver
             {
                 // Kept alive (the check is about the fight's rules, not its balance), close to it and facing it.
                 Player.Vitality.Restore();
-                float gap = Precentor.PlanePosition.X - X;
-                Hold(InputActions.MoveRight, gap > 1.4f);
-                Hold(InputActions.MoveLeft, gap < -1.4f);
-                if (Mathf.Abs(gap) <= 1.4f && Math.Sign(gap) != Player.WorldFacing && gap != 0f)
-                {
-                    Hold(gap > 0f ? InputActions.MoveRight : InputActions.MoveLeft, true);
-                }
-
-                Hold(InputActions.Attack, Ticks % 21 is 1 or 2);
+                CheckKit.Brawl(Player, Precentor, Ticks);
             }));
         Steps.Add(new("the gates rise and the fight is remembered", 4f,
             () => { Hold(InputActions.MoveRight, false); Hold(InputActions.MoveLeft, false); Hold(InputActions.Attack, false); },
@@ -321,18 +313,7 @@ public partial class EncounterCheck : StepDriver
             {
                 // Kept alive (the rules, not the balance); under it while it hangs low, swinging, jumping to reach it.
                 Player.Vitality.Restore();
-                Vector2 at = Archivist.PlanePosition;
-                float gap = at.X - X, rise = at.Y - Player.GlobalPosition.Y;
-                bool low = Archivist.Intent.Act is MachineAct.Recover or MachineAct.Strike;
-                Hold(InputActions.MoveRight, low && gap > 1.2f);
-                Hold(InputActions.MoveLeft, low && gap < -1.2f);
-                if (Mathf.Abs(gap) <= 1.2f && Math.Sign(gap) != Player.WorldFacing && gap != 0f)
-                {
-                    Hold(gap > 0f ? InputActions.MoveRight : InputActions.MoveLeft, true);
-                }
-
-                Hold(InputActions.Jump, low && rise > 2.2f && Mathf.Abs(gap) < 2.5f && Player.IsOnFloor() && Ticks % 30 < 14);
-                Hold(InputActions.Attack, Mathf.Abs(gap) < 2.6f && Ticks % 21 is 1 or 2);
+                CheckKit.Brawl(Player, Archivist, Ticks);
             }));
         Steps.Add(new("the Vault's gates rise and the fight is remembered", 4f,
             () =>
