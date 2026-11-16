@@ -87,6 +87,12 @@ public partial class Session : Node
     public override void _Ready()
     {
         _held = new HeldMoments(Player);
+
+        // The pilgrim as the run left it (a new run's holds nothing), before the first room is shown: every node that shows a room
+        // as the run left it reads the run from here or from the pilgrim.
+        Player.Abilities.Set((Ability)_pilgrimage.Save.Abilities, true);
+        Player.Items.Restore(_pilgrimage.Held);
+        Player.Strengthen(_pilgrimage.Prowess);
         World.RoomLoaded += OnRoomLoaded;
         Player.Died += OnDied;
         Player.Scorched += SetBack;
@@ -100,20 +106,21 @@ public partial class Session : Node
         Player.Scorched -= SetBack;
     }
 
-    /// <summary>Starts from <paramref name="data"/> (the world already loaded its room): abilities, map, the pilgrim at its shrine.</summary>
+    /// <summary>
+    /// Takes up the run <paramref name="data"/> holds (the save, read at launch) before any node is ready: the map now, so the world
+    /// enters its first room where the save placed it; the pilgrim's abilities, items and power-ups when this node is ready, before the
+    /// first room is shown. Every node that wires a room so sees the first room as the run left it, as it sees every later one. The
+    /// pilgrim wakes at <see cref="RespawnPoint"/>.
+    /// </summary>
     public void Resume(SaveData data)
     {
-        _pilgrimage = new Pilgrimage(data);
-        Player.Abilities.Set((Ability)data.Abilities, true);
-        Player.Items.Restore(_pilgrimage.Held);
-        Player.Strengthen(_pilgrimage.Prowess);
-        World.Map.Restore(data.MapRooms(), World.RoomName, data.MapWays(), data.Taken);
-        // Entered again where the save placed it (or at the origin): its ways out are read afresh from the room.
-        World.Enter(World.Room, World.Map.Find(World.RoomName)?.Offset ?? System.Numerics.Vector2.Zero);
+        if (IsNodeReady())
+        {
+            throw new System.InvalidOperationException("a save is resumed before the session is ready, or its first room would not show it");
+        }
 
-        // The room's nodes are wired already (by _Ready, or the load of the room the world began in): only what the save says is done is applied.
-        RoomBind.Settle(World.Room, Begin(World.Room), _pilgrimage, Player.Abilities.Unlocked);
-        Player.Respawn(RespawnPoint(World.Room), 1);
+        _pilgrimage = new Pilgrimage(data);
+        World.Map.Restore(data.MapRooms(), data.Room, data.MapWays(), data.Taken);
     }
 
     public override void _PhysicsProcess(double delta)
@@ -357,7 +364,8 @@ public partial class Session : Node
         await Fade.To(0f, DeathFadeIn);
     }
 
-    private Vector3 RespawnPoint(Room room) =>
+    /// <summary>Where the pilgrim wakes in <paramref name="room"/>: at the shrine last rested at if it stands there, else at the room's spawn point.</summary>
+    public Vector3 RespawnPoint(Room room) =>
         room.All<Shrine>().FirstOrDefault(s => s.NameText() == _pilgrimage.Shrine)?.GlobalPosition ?? room.SpawnPoint.GlobalPosition;
 
     private void OnRoomLoaded(Room room)
