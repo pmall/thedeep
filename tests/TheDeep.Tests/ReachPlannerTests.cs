@@ -242,6 +242,21 @@ public class ReachPlannerTests
         Assert.False(Grips(solids, new[] { foot }, new Vector2(0f, 0f), B(4.5f, 10.2f, 5.5f, 11f)));
     }
 
+    [Theory]
+    [InlineData(true, true)]
+    [InlineData(false, false)]
+    public void GripCrossesOnlyMetalThatMeets(bool metalBand, bool reachable)
+    {
+        // Two metal ceilings in one plane over a pit, under a rock roof, a 0.5 m band between them: a jump from the floor hangs under
+        // the near one; the spot under the far one is reached only by hanging on across the band, which holds only when it is metal.
+        Box near = B(0f, 4.5f, 8f, 5.5f), band = B(8f, 4.5f, 8.5f, 5.5f), far = B(8.5f, 4.5f, 20f, 5.5f);
+        var solids = new[] { B(-10f, -30f, 4f, 0f), near, band, far, B(-10f, 5.5f, 40f, 30f), B(-10f, -32f, 40f, -30f) };
+        Box underFar = B(17f, 3f, 18f, 4f);
+        Box[] metal = metalBand ? new[] { near, band, far } : new[] { near, far };
+        Assert.True(Grips(solids, metal, new Vector2(0f, 0f), B(5f, 3f, 6f, 4f)));
+        Assert.Equal(reachable, Grips(solids, metal, new Vector2(0f, 0f), underFar));
+    }
+
     [Fact]
     public void WaterLetsGoOfAGrip()
     {

@@ -27,7 +27,8 @@ namespace TheDeep;
 /// dashing) or rising into a metal ceiling grips it, and then walks the whole surface connected to that point: along each face,
 /// around a metal block's corners, onto a metal wall met at an inner corner, standing up on a top; it touches what its body
 /// passes (lying along the normal), and from anywhere on a wall it leaps off or lets go, from anywhere under a ceiling it drops.
-/// Only metal holds (rock going on in the same plane is the surface's end), and water lets go of a body whose center it drowns
+/// Only metal holds (rock going on in the same plane is the surface's end, as in the game, and so, to stay on the safe side, is any gap:
+/// the walk goes on only within one metal solid or onto one it meets), and water lets go of a body whose center it drowns
 /// (<see cref="GripMath.Drowned"/>): no grip pose lies there.
 /// Ledge assist: an airborne body (not dashing) pressing into a wall whose top is at most <see cref="MoveLimits.LedgeAssist"/> above
 /// its feet is lifted onto it, as the pilgrim is.
@@ -76,10 +77,14 @@ public sealed class ReachPlanner
     /// <summary>Spacing of the grip poses along a face, meters.</summary>
     private const float GripStep = 0.25f;
 
-    /// <summary>Two grip poses this close (and not on opposite faces) are one walk apart: along a face, or round a corner.</summary>
+    /// <summary>
+    /// Two grip poses this close (not on opposite faces, and on one metal solid or on two that meet) are one walk apart: along a face,
+    /// or round a corner.
+    /// </summary>
     private const float GripLink = 0.8f;
 
-    private readonly record struct GripNode(Vector2 Feet, Vector2 Up, bool Launch, int Part);
+    /// <summary>A pose on the face of the metal solid <paramref name="Solid"/> (an index into the solids).</summary>
+    private readonly record struct GripNode(Vector2 Feet, Vector2 Up, bool Launch, int Solid, int Part);
 
     /// <summary>With Ballast, the water reachable together (feet positions on a grid where the body fits, by connected part).</summary>
     private readonly Dictionary<(int X, int Y), int> _cellPart = new();
@@ -465,7 +470,8 @@ public sealed class ReachPlanner
 
     /// <summary>
     /// With Mag-grip: every pose on a metal face (every <see cref="GripStep"/>) where the body fits, linked to the poses a short walk
-    /// away (along the face, round a block's outer corner, onto a wall at an inner corner, up onto a top), grouped into parts.
+    /// away on the same metal solid or one sharing an edge with it (along the face, round a block's outer corner, onto a wall at an inner
+    /// corner, up onto a top), grouped into parts.
     /// </summary>
     private void FindGripParts()
     {
@@ -499,12 +505,20 @@ public sealed class ReachPlanner
                     }
 
                     cell.Add(_gripNodes.Count);
-                    _gripNodes.Add(new GripNode(feet, up, k % 4 == 0 || k == steps, -1));
+                    _gripNodes.Add(new GripNode(feet, up, k % 4 == 0 || k == steps, i, -1));
                 }
             }
         }
 
-        // Union the poses a short walk apart.
+        // Whether the grip goes on from one metal solid onto the other: the same, or two sharing an edge (or more), with nothing between.
+        bool Meet(int a, int b)
+        {
+            Box p = _solids[a], q = _solids[b];
+            float x = MathF.Min(p.MaxX, q.MaxX) - MathF.Max(p.MinX, q.MinX), y = MathF.Min(p.MaxY, q.MaxY) - MathF.Max(p.MinY, q.MinY);
+            return a == b || (x >= -Skin && y >= -Skin && (x > Skin || y > Skin));
+        }
+
+        // Union the poses a short walk apart on metal that holds all the way (rock between two solids ends the grip; a gap is taken as its end too).
         int[] root = Enumerable.Range(0, _gripNodes.Count).ToArray();
         int Find(int x)
         {
@@ -532,7 +546,7 @@ public sealed class ReachPlanner
                     foreach (int m in cell.Where(m => m > n))
                     {
                         GripNode b = _gripNodes[m];
-                        if (Vector2.Dot(a.Up, b.Up) > -0.5f && Vector2.Distance(a.Feet, b.Feet) <= GripLink)
+                        if (Vector2.Dot(a.Up, b.Up) > -0.5f && Vector2.Distance(a.Feet, b.Feet) <= GripLink && Meet(a.Solid, b.Solid))
                         {
                             root[Find(m)] = Find(n);
                         }
