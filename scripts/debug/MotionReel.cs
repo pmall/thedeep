@@ -246,7 +246,6 @@ public static class MotionReel
                 new Press[]
                 {
                     new(10, InputActions.MoveRight, true), new(62, InputActions.MoveRight, false), new(62, InputActions.MoveUp, true),
-                    new(370, InputActions.MoveUp, false),
                 },
                 new Shot[]
                 {
