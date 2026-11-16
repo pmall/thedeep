@@ -50,11 +50,7 @@ void fragment() {
 	}
 	vec3 tint = srgb_to_linear(biome_particle.rgb) * COLOR.rgb;
 	if (molten) {
-		float heat = COLOR.r;
-		vec3 cool = srgb_to_linear(biome_molten_cool.rgb);
-		vec3 molten_glow = srgb_to_linear(biome_molten.rgb);
-		vec3 hot = srgb_to_linear(biome_molten_hot.rgb);
-		tint = heat < 0.5 ? mix(cool, molten_glow, heat * 2.0) : mix(molten_glow, hot, heat * 2.0 - 1.0);
+		tint = heat_ramp(COLOR.r);
 	}
 	ALBEDO = tint;
 	EMISSION = tint * glow;
