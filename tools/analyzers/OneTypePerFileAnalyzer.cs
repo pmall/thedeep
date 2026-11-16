@@ -1,14 +1,13 @@
 using System.Collections.Immutable;
 using System.Linq;
 using Microsoft.CodeAnalysis;
-using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.CodeAnalysis.Diagnostics;
 
 namespace TheDeep.Analyzers;
 
 /// <summary>
-/// Holds instructions/principles.md#small-readable in the game's build: one top-level type per file, so a type is found by
+/// Holds instructions/principles.md#small-readable in the game's and the core's builds: one top-level type per file, so a type is found by
 /// its file name and a file never grows a second responsibility unseen. <b>DEEP005</b> is reported on every top-level
 /// class, struct, record, enum or interface after the first in a file (nested types are fine). Generated code is not
 /// analyzed. The tests project does not run this analyzer, so its fixtures may share a file.

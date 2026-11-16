@@ -6,5 +6,11 @@
   <PropertyGroup>
     <EnforceCodeStyleInBuild>true</EnforceCodeStyleInBuild>
     <AnalysisMode>Recommended</AnalysisMode>
+    <!-- IDE0005 (unused usings) only runs in a build when the documentation file is generated; the XML
+         doc checks it switches on (CS1591 every public member documented, CS1573 every parameter of a record or method
+         tagged once any is, CS1574 and CS0419 every cref resolvable) are not rules here: docblocks are prose
+         (instructions/principles.md#small-readable), so they are off. -->
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
+    <NoWarn>$(NoWarn);CS1591;CS1573;CS1574;CS0419;CS1734</NoWarn>
   </PropertyGroup>
 </Project>

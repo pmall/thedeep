@@ -7,7 +7,7 @@ namespace TheDeep;
 
 /// <summary>
 /// Every burn of the world held in play (`-- --burn-probe`, run by tools/check.sh for both worlds; alone:
-/// `godot --headless --path . --fixed-fps 60 --quit-after 20000 -- --burn-probe 2>&1 | grep BURN`), through the real input actions,
+/// `godot --headless --path . --fixed-fps 60 --quit-after 20000 -- --burn-probe 2&gt;&amp;1 | grep BURN`), through the real input actions,
 /// in every room holding a <see cref="SlagBody"/> or a <see cref="HeatColumn"/>. Its cases come from the room's data, never from
 /// coordinates: from each side of each burn, on the lowest open ground beside it with a clear way in at that height (a bank no
 /// higher than <see cref="Lip"/> over a slag's surface, any ground beside a heat column within its height), the pilgrim, on foot

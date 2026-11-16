@@ -1,6 +1,7 @@
 <Project Sdk="Microsoft.NET.Sdk">
-  <!-- The project's own Roslyn analyzers (EngineObjectAnalyzer: instructions/godot-csharp.md#no-finalizer), run by the game's
-       build (TheDeep.csproj references this project as an analyzer). They compile against the Roslyn the SDK itself runs, so
+  <!-- The project's own Roslyn analyzers (EngineObjectAnalyzer: instructions/godot-csharp.md#no-finalizer), and
+       OneTypePerFileAnalyzer (instructions/principles.md#small-readable), run by the game's and the core's builds
+       (TheDeep.csproj and core/TheDeep.Core.csproj reference this project as an analyzer). They compile against the Roslyn the SDK itself runs, so
        they need no package and always match the compiler that loads them. -->
   <PropertyGroup>
     <!-- The runtime the SDK's compiler runs on, which its Roslyn is built for: moves with the SDK (instructions/toolchain.md). -->
