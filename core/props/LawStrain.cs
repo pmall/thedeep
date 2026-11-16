@@ -2,33 +2,6 @@ using System;
 
 namespace TheDeep;
 
-/// <summary>Which side of a law the forbidden way lies on; the values are the direction along X (east +1, west −1).</summary>
-public enum LawSide
-{
-    /// <summary>The forbidden side lies to the west.</summary>
-    West = -1,
-
-    /// <summary>The forbidden side lies to the east.</summary>
-    East = 1,
-}
-
-/// <summary>Where a law stands (<see cref="LawStrain"/>).</summary>
-public enum LawState
-{
-    /// <summary>Holding.</summary>
-    Intact,
-
-    /// <summary>Just broken: the veil is scattering and the words going out.</summary>
-    Breaking,
-
-    /// <summary>Broken for good (also a law broken on an earlier visit).</summary>
-    Broken,
-}
-
-/// <summary>The numbers of a <see cref="LawStrain"/> (lengths in meters, times in seconds, rates per second).</summary>
-public readonly record struct LawStrainTuning(
-    float Near, float Lip, float BehindLip, float Height, float PushStrain, float PushTime, float ShowRate, float ReleaseRate, float BreakTime);
-
 /// <summary>
 /// The rules of a law the pilgrim breaks by an act, pure (docs/gameplay.md#law-act): where the pilgrim stands decides whether the
 /// law's words show, whether pressing on strains it (up to <see cref="LawStrainTuning.PushStrain"/>, never breaking it), when the

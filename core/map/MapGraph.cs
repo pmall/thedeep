@@ -3,15 +3,6 @@ using System.Linq;
 
 namespace TheDeep;
 
-/// <summary>A way from one room to another: leaving <see cref="From"/> through its exit, needing <see cref="Requires"/>.</summary>
-public sealed record MapEdge(string From, string FromExit, string To, string ToExit, Requirement Requires);
-
-/// <summary>An ability relic lying in a room (taken on entering it).</summary>
-public sealed record MapRelic(string Room, string Name, Ability Ability);
-
-/// <summary>An item lying in a room (a key, a code; taken on entering it, held for good), by its id.</summary>
-public sealed record MapItem(string Room, string Name, string Item);
-
 /// <summary>
 /// The world as the solver sees it, pure: rooms, the exits between them (one edge per exit, for leaving
 /// through it), the ability relics in them, where the pilgrim starts and where the journey ends. Built by

@@ -5,31 +5,6 @@ using System.Numerics;
 
 namespace TheDeep;
 
-/// <summary>What must agree across an exit (docs/gameplay.md#leaving-a-room), one closed set: the rule a seam problem breaks.</summary>
-public enum SeamRule
-{
-    /// <summary>The opening is as wide (a hatch) or as tall (a doorway) on both sides.</summary>
-    Opening,
-
-    /// <summary>Around the opening, what both rooms show is solid, water or open in both.</summary>
-    Solids,
-
-    /// <summary>Water rests on a floor, or continues through a hole into water on the other side.</summary>
-    Water,
-
-    /// <summary>A lift that rises through a hatch has its car over the matching hatch on the other side.</summary>
-    Lift,
-}
-
-/// <summary>A room as the seam check sees it, on its play plane (room positions): its camera bounds, solids, water, lifts and exits.</summary>
-public sealed record SeamRoom(Box Bounds, List<Box> Solids, List<(string Name, Box Region)> Waters, List<LiftPath> Lifts, Dictionary<string, Threshold> Exits);
-
-/// <summary>
-/// One disagreement: the seam it lies at (<c>Room:Exit | Room:Exit</c>, the upper or western room first; a room's name for its own
-/// water), the rule it breaks, and what disagrees in words (positions in the first room's).
-/// </summary>
-public sealed record SeamProblem(string Seam, SeamRule Rule, string Detail);
-
 /// <summary>
 /// The rooms held to each other across their exits (docs/gameplay.md#leaving-a-room), pure. The two ends of a way meet at one place
 /// on the map (<see cref="ExitMath.RoomOffset"/>); there

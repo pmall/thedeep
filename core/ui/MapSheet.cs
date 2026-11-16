@@ -5,17 +5,6 @@ using System.Numerics;
 
 namespace TheDeep;
 
-/// <summary>A visited room as the map screen draws it: its name, its tile (screen pixels, y down), and whether the pilgrim is in it.</summary>
-public sealed record MapTile(string Name, Box Rect, bool Here);
-
-/// <summary>
-/// Where the map screen draws, screen pixels on the game's canvas: the largest scale (<see cref="MaxScale"/>, pixels per meter), the
-/// margin the rooms keep from the canvas's sides and top, the legend's baseline above the canvas's bottom (the last of the items held
-/// on it too, the others a row each over it), the room kept between the rooms and the words under them, the gap between two rooms'
-/// tiles, and the legend's mark (its width before the words) and the spacing between its entries.
-/// </summary>
-public readonly record struct MapPlaces(float MaxScale, float Margin, float Baseline, float Row, float Clear, float Gap, float Mark, float Spacing);
-
 /// <summary>
 /// Pure: the map screen's layout, laid once as it opens (the map doesn't change while it shows). The visited rooms are fitted in the
 /// map's area (<see cref="Area"/>: the canvas less its margins and the words under the map), the same scale both ways, the map's up

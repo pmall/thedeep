@@ -4,36 +4,6 @@ using System.Text.Json.Serialization;
 
 namespace TheDeep;
 
-/// <summary>A visited room on the saved map.</summary>
-public sealed record SavedRoom(string Name, float X, float Y, float MinX, float MinY, float MaxX, float MaxY);
-
-/// <summary>
-/// A way out of a visited room on the saved map (<see cref="MapWay"/>). Its side is missing from a save written before it was kept
-/// (<see cref="SaveData.MapWays"/>).
-/// </summary>
-public sealed record SavedWay(string Room, string Exit, float X, float Y, string Requires, bool Built, bool Hidden = false, ExitSide? Side = null);
-
-/// <summary>What reading a save's text gives: the save, or why it cannot be one (<see cref="SaveData.Parse"/>).</summary>
-public abstract record SaveReading
-{
-    /// <summary>A save this build reads.</summary>
-    public sealed record Loaded(SaveData Data) : SaveReading;
-
-    /// <summary>A save written by a newer build (<paramref name="Found"/> is its format, <paramref name="Known"/> the newest this build reads).</summary>
-    public sealed record Newer(int Found, int Known) : SaveReading;
-
-    /// <summary>Text that is not a save, and what is wrong with it.</summary>
-    public sealed record Corrupt(string Why) : SaveReading;
-
-    /// <summary>What is wrong with a save that cannot be read, as one line for the log; empty for a loaded one.</summary>
-    public string Problem => this switch
-    {
-        Newer n => $"it was written by a newer version of the game (save format {n.Found}, this build reads up to {n.Known})",
-        Corrupt c => $"it is corrupt ({c.Why})",
-        _ => "",
-    };
-}
-
 /// <summary>
 /// What a save holds, pure: the shrine the pilgrim last rested at (where it comes back after dying or relaunching), its abilities, items and prowess, what is done for good (relics taken, doors opened...), and the map of visited rooms. Stored as JSON by <see cref="SaveFile"/>, at the path its world gives (<see cref="WorldDefinition.SavePath"/>).
 /// </summary>

@@ -96,15 +96,3 @@ public sealed class Pilgrimage
     /// <summary>Whether feet at <paramref name="y"/> fell <paramref name="depth"/> meters below a room's bottom (<paramref name="floor"/>).</summary>
     public static bool FellOut(float y, float floor, float depth) => y < floor - depth;
 }
-
-/// <summary>What reaching a goal does (<see cref="Pilgrimage.ReachGoal"/>).</summary>
-public enum GoalMoment
-{
-    None,
-
-    /// <summary>The end of what is built: its banner is shown.</summary>
-    Shown,
-
-    /// <summary>The end of the game: the end card, then a new game.</summary>
-    End,
-}

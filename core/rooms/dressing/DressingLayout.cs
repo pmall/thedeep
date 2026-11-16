@@ -3,9 +3,6 @@ using System.Collections.Generic;
 
 namespace TheDeep;
 
-/// <summary>A slot in a row of dressing pieces: its index along the row, the variant to use, and whether it lies toppled.</summary>
-public readonly record struct DressingSlot(int Index, int Variant, bool Toppled);
-
 /// <summary>
 /// Pure, deterministic layouts for the dressing generators (<see cref="Colonnade"/>, <see cref="RackRow"/>):
 /// which bays carry cables, which slots of a row stay empty, which pieces lie toppled. The same seed always

@@ -3,16 +3,6 @@ using System.Globalization;
 
 namespace TheDeep;
 
-/// <summary>H.264 encoders the video capture can use, best first.</summary>
-public enum VideoCodec
-{
-    /// <summary>NVIDIA hardware encoder: nearly free for the CPU.</summary>
-    Nvenc,
-
-    /// <summary>Software fallback, works everywhere ffmpeg does.</summary>
-    X264,
-}
-
 /// <summary>
 /// The ffmpeg command line that turns raw frames on stdin into an MP4. Pure logic, unit tested.
 /// The MP4 is fragmented, so the file stays playable even if the game crashes mid-recording.

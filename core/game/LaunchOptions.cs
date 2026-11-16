@@ -4,19 +4,6 @@ using System.Globalization;
 
 namespace TheDeep;
 
-/// <summary>One argument that runs a check or a tool instead of the game (<see cref="LaunchOptions.Parse"/> tells it from the others); <paramref name="TakesValue"/> if it is followed by a value (`--lookdev &lt;dir&gt;`).</summary>
-public readonly record struct DriverFlag(string Name, bool TakesValue = false);
-
-/// <summary>What reading a command line gives: the options, or the first thing wrong with it (<see cref="LaunchOptions.Parse"/>).</summary>
-public abstract record LaunchParse
-{
-    /// <summary>A command line the game understands.</summary>
-    public sealed record Parsed(LaunchOptions Options) : LaunchParse;
-
-    /// <summary>A command line it does not, said in one line.</summary>
-    public sealed record Invalid(string Message) : LaunchParse;
-}
-
 /// <summary>
 /// The user arguments of a launch (what follows `--` on Godot's command line), read once and pure: every argument is known, every
 /// value present and well formed, no argument given twice, at most one driver. What the values name (a world, a room, an item, a
