@@ -63,7 +63,11 @@ public partial class PowerUps : Node
         {
             Player.Velocity = Vector3.Zero;
             Player.Frozen = true;
-            await power.Sink(Player, Session.AbsorbPoint);
+            if (!await power.Sink(Player, Session.AbsorbPoint))
+            {
+                return; // the room was freed mid-flight (the pilgrim died): nothing is taken, the finally frees the pilgrim
+            }
+
             Player.Strengthen(Player.Prowess.With(stat, amount));
             Session.Remember(name);
         }

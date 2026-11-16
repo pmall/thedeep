@@ -8,6 +8,25 @@ namespace TheDeep;
 /// </summary>
 public static class TokenGlow
 {
+    /// <summary>
+    /// Waits for <paramref name="tween"/> of <paramref name="owner"/>'s use to end: true if it played out, false if the owner left the
+    /// tree first (its room freed), when a killed tween never emits Finished and an awaiter would hang for good.
+    /// </summary>
+    public static async System.Threading.Tasks.Task<bool> Played(Node owner, Tween tween)
+    {
+        var done = new System.Threading.Tasks.TaskCompletionSource<bool>();
+        void Gone() => done.TrySetResult(false);
+        owner.TreeExiting += Gone;
+        tween.Finished += () => done.TrySetResult(true);
+        bool played = await done.Task;
+        if (GodotObject.IsInstanceValid(owner))
+        {
+            owner.TreeExiting -= Gone;
+        }
+
+        return played;
+    }
+
     /// <summary>How lit a spent glow stays: a dark ember, so the piece still reads as the same kind, used.</summary>
     public const float Spent = 0.06f;
 
