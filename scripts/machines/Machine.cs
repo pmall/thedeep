@@ -78,6 +78,11 @@ public partial class Machine : CharacterBody3D
 
     /// <summary>Seconds still to hold, after a blow (its hit stop).</summary>
     private float _halt;
+    /// <summary>The last value pushed to each per-instance uniform (NaN: none yet), so an unchanged one is not written again.</summary>
+    private float _hurt = float.NaN;
+    private float _alert = float.NaN;
+    private float _rouse = float.NaN;
+    private float _scroll = float.NaN;
     private MachineVitals? _vitals;
     private MachineBrain? _brain;
     private Vector3 _frameScale = Vector3.One;
@@ -163,7 +168,7 @@ public partial class Machine : CharacterBody3D
         _vitals = new MachineVitals(Species.Health, Species.StaggerTime);
         Visible = true;
         FrameNode.Scale = Vector3.One;
-        BodyNode.SetShaderParameter(HurtParameter, 0f);
+        Push(HurtParameter, ref _hurt, 0f);
         GlobalPosition = _spawn;
         Velocity = Vector3.Zero;
         Facing = (int)StartFacing;
@@ -250,7 +255,7 @@ public partial class Machine : CharacterBody3D
 
         _time += delta;
         Intent intent = Vitals.Think(Brain, perception, Intent, delta);
-        BodyNode.SetShaderParameter(HurtParameter, Vitals.Flash);
+        Push(HurtParameter, ref _hurt, Vitals.Flash);
         Intent = intent;
         Vector2 wanted = intent.Velocity.ToGodot();
         float travelled = Species.Locomotion switch
@@ -270,10 +275,20 @@ public partial class Machine : CharacterBody3D
         Animator.Update(delta, _time, intent, Mathf.Clamp(speed / Mathf.Max(Species.MaxSpeed, 0.1f), 0f, 1f), _gait.Walked, _gait.Stepping);
         BodyNode.StepChains(delta, Species.Locomotion == Locomotion.Walk && IsOnFloor() ? GlobalPosition.Y + FootLift : float.NaN);
         // Eyes take the hazard color only on machines that can hurt: color means gameplay.
-        BodyNode.SetShaderParameter(AlertParameter, Species.Hostile ? intent.Alert : 0f);
-        BodyNode.SetShaderParameter(RouseParameter, intent.Rouse);
+        Push(AlertParameter, ref _alert, Species.Hostile ? intent.Alert : 0f);
+        Push(RouseParameter, ref _rouse, intent.Rouse);
         // A machine faces the way it moves, so its treads always roll forward.
-        BodyNode.SetShaderParameter(ScrollParameter, _gait.Walked);
+        Push(ScrollParameter, ref _scroll, _gait.Walked);
+    }
+
+    /// <summary>Sets an instance uniform on every part of the body only when its value changed: each write loops all the geometry.</summary>
+    private void Push(StringName parameter, ref float last, float value)
+    {
+        if (value != last)
+        {
+            BodyNode.SetShaderParameter(parameter, value);
+            last = value;
+        }
     }
 
     /// <summary>Breaking apart: the body folds down and sinks, its glow dying, then the machine is gone.</summary>
@@ -282,8 +297,8 @@ public partial class Machine : CharacterBody3D
         Vitals.Fold(delta);
         float ease = Vitals.Folded;
         FrameNode.Scale = new Vector3(_frameScale.X * (1f + 0.15f * ease), _frameScale.Y * (1f - 0.75f * ease), _frameScale.Z);
-        BodyNode.SetShaderParameter(HurtParameter, 1f - ease);
-        BodyNode.SetShaderParameter(RouseParameter, 1f - ease);
+        Push(HurtParameter, ref _hurt, 1f - ease);
+        Push(RouseParameter, ref _rouse, 1f - ease);
         if (Vitals.Gone)
         {
             Visible = false;
