@@ -10,7 +10,7 @@ namespace TheDeep;
 /// </summary>
 public partial class MapGoal : Marker3D, IAnnounces
 {
-    /// <summary>Area on the play plane (width, height), centered on the marker; zero for a marker only.</summary>
+    /// <summary>Area on the play plane (width, height), centered on the marker; never zero (the room check rejects a goal nobody could reach).</summary>
     [Export] public Vector2 Size { get; set; }
 
     /// <summary>The end of the game (the Heart): reaching it, once the room's boss is broken, closes the run with the end card.</summary>
@@ -28,8 +28,7 @@ public partial class MapGoal : Marker3D, IAnnounces
     /// <inheritdoc/>
     public System.Collections.Generic.IEnumerable<Announcement> Announcements => new[] { Said };
 
-    /// <summary>Whether <paramref name="point"/> is inside the goal's area on the play plane; never for a marker
-    /// only.</summary>
+    /// <summary>Whether <paramref name="point"/> is inside the goal's area on the play plane.</summary>
     public bool Contains(Vector3 point) =>
-        Size != Vector2.Zero && Mathf.Abs(point.X - GlobalPosition.X) <= Size.X * 0.5f && Mathf.Abs(point.Y - GlobalPosition.Y) <= Size.Y * 0.5f;
+        Mathf.Abs(point.X - GlobalPosition.X) <= Size.X * 0.5f && Mathf.Abs(point.Y - GlobalPosition.Y) <= Size.Y * 0.5f;
 }

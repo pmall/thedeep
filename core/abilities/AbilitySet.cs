@@ -6,6 +6,9 @@ namespace TheDeep;
 /// <summary>Which abilities the player has unlocked: simple flags. Pure logic, unit tested.</summary>
 public sealed class AbilitySet
 {
+    /// <summary>Every ability together: the flags of a pilgrim who has them all.</summary>
+    public const Ability Every = Ability.MagGrip | Ability.Harpoon | Ability.Drill | Ability.Ballast | Ability.HeatPlating;
+
     /// <summary>Every ability the pilgrim can unlock, one flag each.</summary>
     public static readonly IReadOnlyList<Ability> All = new[]
     {

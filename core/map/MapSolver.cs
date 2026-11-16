@@ -141,20 +141,7 @@ public static class MapSolver
         }
 
         // 2. States that can still reach a goal: grown backward from the goal states until nothing changes.
-        var good = new HashSet<SolverState>(parent.Keys.Where(s => map.Goals.Contains(s.Room)));
-        bool grew = true;
-        while (grew)
-        {
-            grew = false;
-            foreach (SolverState s in parent.Keys)
-            {
-                if (!good.Contains(s) && successors[s].Any(good.Contains))
-                {
-                    good.Add(s);
-                    grew = true;
-                }
-            }
-        }
+        var good = CanReach(parent.Keys, successors, parent.Keys.Where(s => map.Goals.Contains(s.Room)));
 
         var softlocks = parent.Keys.Where(s => !good.Contains(s))
             .OrderBy(s => PathTo(s, parent).Count).ThenBy(s => s.Room, StringComparer.Ordinal).ThenBy(s => s.Owned)
@@ -165,7 +152,7 @@ public static class MapSolver
         var reachedRooms = new HashSet<string>(parent.Keys.Select(s => s.Room));
         (List<Ability[]> orders, int count) = Orders(map);
         var positions = new Dictionary<Ability, SortedSet<int>>();
-        foreach (Ability a in Enum.GetValues<Ability>().Where(a => a != Ability.None && map.AbilitiesOnMap.HasFlag(a)))
+        foreach (Ability a in AbilitySet.All.Where(a => map.AbilitiesOnMap.HasFlag(a)))
         {
             positions[a] = new SortedSet<int>(orders.Select(o => Array.IndexOf(o, a)).Where(i => i >= 0));
         }
@@ -221,7 +208,7 @@ public static class MapSolver
                     goals.Add(s);
                 }
 
-                foreach (Ability gained in Enum.GetValues<Ability>().Where(a => a != Ability.None && (r.Owned & a) != 0 && (s.Owned & a) == 0))
+                foreach (Ability gained in AbilitySet.All.Where(a => (r.Owned & a) != 0 && (s.Owned & a) == 0))
                 {
                     taken.Add((s.Room, gained));
                 }
@@ -249,39 +236,14 @@ public static class MapSolver
             level = next;
         }
 
-        var good = new HashSet<WayState>(goals);
-        bool grew = true;
-        while (grew)
-        {
-            grew = false;
-            foreach (WayState s in parent.Keys)
-            {
-                if (!good.Contains(s) && successors[s].Any(good.Contains))
-                {
-                    good.Add(s);
-                    grew = true;
-                }
-            }
-        }
-
-        List<WayState> PathOf(WayState s)
-        {
-            var path = new List<WayState>();
-            for (WayState? at = s; at is { } a; at = parent[a])
-            {
-                path.Add(a);
-            }
-
-            path.Reverse();
-            return path;
-        }
+        var good = CanReach(parent.Keys, successors, goals);
 
         return new InsideReport
         {
             ReachableStates = parent.Count,
             GoalReachable = good.Contains(start),
             Softlocks = parent.Keys.Where(s => !good.Contains(s))
-                .Select(s => (s, (IReadOnlyList<WayState>)PathOf(s)))
+                .Select(s => (s, (IReadOnlyList<WayState>)PathTo(s, parent)))
                 .OrderBy(p => p.Item2.Count).ThenBy(p => p.s.Room, StringComparer.Ordinal).ThenBy(p => p.s.Entry.ToString(), StringComparer.Ordinal)
                 .ThenBy(p => p.s.Owned).ThenBy(p => p.s.Held.ToString(), StringComparer.Ordinal).ToList(),
             UntakenRelics = map.Relics.Where(relic => !taken.Contains((relic.Room, relic.Ability))).ToList(),
@@ -420,10 +382,34 @@ public static class MapSolver
         : owned == Ability.None ? $" [{held}]"
         : $" [{owned}; {held}]";
 
-    private static List<SolverState> PathTo(SolverState s, Dictionary<SolverState, SolverState?> parent)
+    /// <summary>The states that can still reach one of <paramref name="goals"/>: grown backward from them until nothing changes.</summary>
+    private static HashSet<T> CanReach<T>(IEnumerable<T> states, Dictionary<T, List<T>> successors, IEnumerable<T> goals)
+        where T : struct
     {
-        var path = new List<SolverState>();
-        for (SolverState? at = s; at is { } a; at = parent[a])
+        var good = new HashSet<T>(goals);
+        bool grew = true;
+        while (grew)
+        {
+            grew = false;
+            foreach (T s in states)
+            {
+                if (!good.Contains(s) && successors[s].Any(good.Contains))
+                {
+                    good.Add(s);
+                    grew = true;
+                }
+            }
+        }
+
+        return good;
+    }
+
+    /// <summary>The way the search first reached <paramref name="s"/>, from its start.</summary>
+    private static List<T> PathTo<T>(T s, Dictionary<T, T?> parent)
+        where T : struct
+    {
+        var path = new List<T>();
+        for (T? at = s; at is { } a; at = parent[a])
         {
             path.Add(a);
         }

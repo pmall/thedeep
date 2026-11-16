@@ -13,8 +13,9 @@ namespace TheDeep;
 /// The built world proven as a whole (docs/long-term.md#any-order), pure: given each room's part of the map (its exits as
 /// edges, its relics and goals, its links to the rooms it leads to) and its <see cref="RoomShape"/>, it checks that
 /// - the rooms placed from their exits line up around every loop and don't overlap (<see cref="MapLayout"/>);
-/// - every room is reachable from the start, a goal is, no reachable state is a softlock, and enough ability orders are achievable
-///   (<see cref="MapSolver"/>, the world's <see cref="MapTargets"/>);
+/// - every room is reachable from the start, a goal is, and no reachable state is a softlock
+///   (<see cref="MapSolver"/>; the network's <see cref="MapTargets"/> are held to the draft by <see cref="MapDraft"/>, the built
+///   world to the draft by its differences);
 /// - the geometry agrees with every requirement (<see cref="CheckGeometry"/>), the map holds from inside the rooms
 ///   (<see cref="CheckInside"/>), and a clumsier pilgrim reaches all the same (room for error).
 /// The room check (an adapter) extracts the rooms from their scenes and prints what this finds.
@@ -23,12 +24,6 @@ public sealed class WorldCheck
 {
     /// <summary>Two rooms' bounds may overlap this much on the map (their walls at a shared doorway), meters.</summary>
     public const float DoorwayOverlap = 6f;
-
-    /// <summary>The abilities the geometry check simulates (all five).</summary>
-    public const Ability Simulated = Ability.MagGrip | Ability.Harpoon | Ability.Drill | Ability.Ballast | Ability.HeatPlating;
-
-    /// <summary>Each simulated ability on its own.</summary>
-    private static readonly Ability[] Singles = { Ability.MagGrip, Ability.Harpoon, Ability.Drill, Ability.Ballast, Ability.HeatPlating };
 
     private readonly PlannerLimits _limits;
     private readonly List<string> _problems = new();
@@ -53,10 +48,25 @@ public sealed class WorldCheck
     /// <summary>Everything found wrong so far, one line each; empty when the world passes.</summary>
     public IReadOnlyList<string> Problems => _problems;
 
-    /// <summary>A room in the game, with its camera bounds and its shape.</summary>
+    /// <summary>A room in the game, with its camera bounds and its shape; its relics, items and goals go on the map from the shape.</summary>
     public void AddRoom(string name, Vector2 boundsMin, Vector2 boundsMax, RoomShape shape)
     {
         Graph.AddRoom(name);
+        foreach ((_, Ability ability, string relic) in shape.Relics)
+        {
+            Graph.AddRelic(new MapRelic(name, relic, ability));
+        }
+
+        foreach ((_, string item, string label) in shape.Items)
+        {
+            Graph.AddItem(new MapItem(name, label, item));
+        }
+
+        if (shape.Goals.Count > 0)
+        {
+            Graph.AddGoal(name);
+        }
+
         _bounds[name] = (boundsMin, boundsMax);
         _shapes[name] = shape;
         _matters[name] = Matters(shape);
@@ -81,10 +91,10 @@ public sealed class WorldCheck
     public void AddSealed(string room, Requirement requires) => _sealed.Add((room, requires));
 
     /// <summary>
-    /// Solves the map from <paramref name="start"/> and lays it out, holding it to <paramref name="targets"/>; adds problems and
+    /// Solves the map from <paramref name="start"/> and lays it out; adds problems and
     /// returns the summary (with <paramref name="report"/>, the whole graph and every order too).
     /// </summary>
-    public string Check(string start, MapTargets targets, bool report)
+    public string Check(string start, bool report)
     {
         if (!Graph.Rooms.Contains(start))
         {
@@ -126,11 +136,6 @@ public sealed class WorldCheck
         foreach ((SolverState state, IReadOnlyList<SolverState> path) in solved.Softlocks.Take(5))
         {
             _problems.Add($"map: softlock at {state}: no goal can be reached from there; reached by {string.Join(" → ", path)}");
-        }
-
-        if (solved.AbilityCount == Singles.Length && solved.Orders.Count < targets.Orders)
-        {
-            _problems.Add($"map: only {solved.Orders.Count} of {solved.PossibleOrders} ability orders are achievable (target {targets.Orders})");
         }
 
         var text = new StringBuilder();
@@ -276,7 +281,7 @@ public sealed class WorldCheck
         (Vector2 at, Vector2 velocity, int steer) = x.Entry(_limits, shape.Solids);
         Requirement body = requires.WithoutItems();
         return new WayIn($"arriving through {x.Name}", at, velocity, steer, index, body.IsMetBy(Ability.None),
-            body.Options.Aggregate(Simulated, (all, option) => all & option.Abilities));
+            body.Options.Aggregate(AbilitySet.Every, (all, option) => all & option.Abilities));
     }
 
     private List<WayIn> WaysIn(string room)
@@ -336,7 +341,7 @@ public sealed class WorldCheck
     {
         var problems = new List<string>();
         List<WayIn> ways = WaysIn(room);
-        HashSet<int> Reached(int w, Ability with) => this.Reached(room, ways[w], (with | ways[w].Guaranteed) & Simulated);
+        HashSet<int> Reached(int w, Ability with) => this.Reached(room, ways[w], (with | ways[w].Guaranteed) & AbilitySet.Every);
         for (int i = 0; i < shape.Exits.Count; i++)
         {
             ExitShape x = shape.Exits[i];
@@ -463,7 +468,8 @@ public sealed class WorldCheck
         Parallel.For(0, states.Count, i => clumsy[i] = Inside(states[i], reaches[states[i]].Way, clumsy: true));
         var seen = new HashSet<(string, WayEntry, string)>();
         var lines = new List<string>();
-        foreach (int i in Enumerable.Range(0, states.Count).OrderBy(i => BitOperations.PopCount((uint)states[i].Owned)))
+        foreach (int i in Enumerable.Range(0, states.Count).OrderBy(i => BitOperations.PopCount((uint)states[i].Owned))
+            .ThenBy(i => states[i].ToString(), StringComparer.Ordinal))
         {
             WayState s = states[i];
             RoomReach exact = reaches[s].Reach, loose = clumsy[i];

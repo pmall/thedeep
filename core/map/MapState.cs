@@ -92,7 +92,7 @@ public sealed class MapState
     public static string WayId(string room, string exit) => $"{room}/{exit}";
 
     /// <summary>Restores a saved map.</summary>
-    public void Restore(IEnumerable<MapRoom> rooms, string current, IEnumerable<MapWay>? ways = null, IEnumerable<string>? taken = null)
+    public void Restore(IEnumerable<MapRoom> rooms, string current, IEnumerable<MapWay> ways, IEnumerable<string> taken)
     {
         _rooms.Clear();
         _ways.Clear();
@@ -102,7 +102,7 @@ public sealed class MapState
             _rooms[room.Name] = room;
         }
 
-        foreach (MapWay way in ways ?? System.Array.Empty<MapWay>())
+        foreach (MapWay way in ways)
         {
             if (!_ways.TryGetValue(way.Room, out List<MapWay>? list))
             {
@@ -112,7 +112,7 @@ public sealed class MapState
             list.Add(way);
         }
 
-        _taken.UnionWith(taken ?? System.Array.Empty<string>());
+        _taken.UnionWith(taken);
         Current = current;
     }
 }

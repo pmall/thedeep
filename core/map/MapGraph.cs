@@ -15,7 +15,7 @@ public sealed record MapItem(string Room, string Name, string Item);
 /// <summary>
 /// The world as the solver sees it, pure: rooms, the exits between them (one edge per exit, for leaving
 /// through it), the ability relics in them, where the pilgrim starts and where the journey ends. Built by
-/// the extractor from the room scenes' markers (never by hand), or by tests. Items (keys, codes) lie in rooms like relics and gate
+/// the extractor from the room scenes' markers (never by hand), by <see cref="MapDraft"/> from a network file, or by tests. Items (keys, codes) lie in rooms like relics and gate
 /// exits like abilities.
 /// </summary>
 public sealed class MapGraph

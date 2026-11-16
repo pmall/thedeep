@@ -21,7 +21,7 @@ public class GroundRoutesTests
             new(-21f, -4f, 21f, -3f), new(-21f, -3f, 8f, 0f), new(-21f, 0f, -4f, 3f), new(-22f, -4f, -21f, 20f), new(21f, -4f, 22f, 20f),
         };
         return new RoomShape(solids, exits ?? new List<ExitShape>(), new List<Vector2> { new(-10f, 3f) }, new List<Vector2>(), new List<LiftPath>(),
-            solids, new List<Box>(), new List<Box>(), new List<(Box, Ability)>(), new List<Box>(), new List<Box>(), new Vector2(-10f, 3f));
+            solids, new List<Box>(), new List<Box>(), new List<(Box, Ability, string)>(), new List<Box>(), new List<Box>(), new Vector2(-10f, 3f));
     }
 
     [Fact]
@@ -64,7 +64,7 @@ public class GroundRoutesTests
         var lift = new LiftPath(new Box(0f, -0.5f, 2f, 0f), 0.5f);
         var solids = new List<Box> { new(-20f, -2f, 0f, 0f), new(2f, -2f, 20f, 0f), new(0f, -2f, 2f, -0.5f), new(-21f, -2f, -20f, 20f), new(20f, -2f, 21f, 20f) };
         var shape = new RoomShape(solids, new List<ExitShape>(), new List<Vector2>(), new List<Vector2>(), new List<LiftPath> { lift }, solids,
-            new List<Box>(), new List<Box>(), new List<(Box, Ability)>(), new List<Box>(), new List<Box>(), new Vector2(-10f, 0f));
+            new List<Box>(), new List<Box>(), new List<(Box, Ability, string)>(), new List<Box>(), new List<Box>(), new Vector2(-10f, 0f));
         List<GroundRoute> routes = GroundRoutes.Pick(shape, Limits, 20);
         Assert.Contains(routes, r => r.Leap.Path.Any(p => p.X > 0f && p.X < 2f));
         var carried = new Box(0f, -0.5f, 2f, lift.Rise + 1.6f);
