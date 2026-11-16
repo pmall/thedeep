@@ -73,7 +73,7 @@ public partial class Keyring : Node
         for (int i = 0; i < pickups.Count; i++)
         {
             ItemPickup pickup = pickups[i];
-            if (!pickup.Taken && new Vector2(pickup.GlobalPosition.X - p.X, pickup.GlobalPosition.Y - p.Y).Length() <= PickupReach.Take)
+            if (!pickup.Taken && pickup.GlobalPosition.WithinOnPlane(p, PickupReach.Take))
             {
                 Take(pickup);
                 return;
