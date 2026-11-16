@@ -5,6 +5,7 @@
 //   TANGENT  direction of +U, with the sign that makes BINORMAL the direction of +V
 //   COLOR.r  height above the piece's bottom / 8 m (KitMesh.HeightRange); COLOR.g per-part variation;
 //   COLOR.b  cavity: 0 open, 1 deep in a hollow no light reaches (a pipe's mouth, its bore), for the material to darken
+// Needs lib/noise (hash13).
 // Usage: SURFACE_VERTEX as the body of vertex(), then `Surface f = SURFACE;` in fragment().
 
 // World position of the fragment.
@@ -24,16 +25,10 @@ struct Surface {
 	vec3 bitangent; // view space, direction of +V
 };
 
-float surface_hash(vec3 p) {
-	p = fract(p * 0.1031);
-	p += dot(p, p.zyx + 31.32);
-	return fract((p.x + p.y) * p.z);
-}
-
 // Fills the varyings; use it as the body of vertex() (varyings can only be assigned there).
 #define SURFACE_VERTEX \
 	v_world_pos = (MODEL_MATRIX * vec4(VERTEX, 1.0)).xyz; \
-	v_seed = fract(surface_hash(MODEL_MATRIX[3].xyz * 1.37 + vec3(0.5, 7.3, 2.1)) + COLOR.g * 0.61803);
+	v_seed = fract(hash13(MODEL_MATRIX[3].xyz * 1.37 + vec3(0.5, 7.3, 2.1)) + COLOR.g * 0.61803);
 
 // Built-ins are only readable in fragment() itself, hence the macro.
 #define SURFACE surface_from(UV, UV2, COLOR, NORMAL, TANGENT, BINORMAL)
@@ -58,19 +53,11 @@ vec3 surface_bump(Surface f, vec3 n, vec2 gradient) {
 	return normalize(n - gradient.x * f.tangent - gradient.y * f.bitangent);
 }
 
-// The slope of a height field along the surface's tangent and bitangent (meters per meter, for surface_bump), from the
-// screen-space derivatives of one evaluation (the surface gradient, after Mikkelsen 2010), where finite differences
-// evaluated the whole pattern twice more per pixel. `pos` the view-space position (VERTEX), `n`, `t`, `b` view space.
-vec2 surface_slope(float h, vec3 pos, vec3 n, vec3 t, vec3 b) {
-	vec3 dpdx = dFdxFine(pos);
-	vec3 dpdy = dFdyFine(pos);
-	float dhdx = dFdxFine(h);
-	float dhdy = dFdyFine(h);
-	vec3 r1 = cross(dpdy, n);
-	vec3 r2 = cross(n, dpdx);
-	float det = dot(dpdx, r1);
-	vec3 grad = (r1 * dhdx + r2 * dhdy) / (abs(det) > 1e-12 ? det : 1e-12);
-	return vec2(dot(grad, t), dot(grad, b));
+// The view-space normal of a surface whose baked relief tilts it by `slope` (the normal map's red and green, -1..1: along
+// the face and up it).
+vec3 surface_relief(Surface f, vec2 slope) {
+	vec3 ts = vec3(slope, sqrt(max(0.0, 1.0 - dot(slope, slope))));
+	return normalize(f.tangent * ts.x + f.bitangent * ts.y + f.normal * ts.z);
 }
 
 // View-space direction to world space.

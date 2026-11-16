@@ -467,8 +467,7 @@ void fragment() {
 		chipped = (1.0 - smoothstep(0.0, width * 1.6, f.edge)) * edge_wear;
 		// The relief from the baked normals (tangent space: red along the face, green up it).
 		vec2 slope = r.slope / max(1.0, length(r.slope));
-		vec3 ts = vec3(slope, sqrt(max(0.0, 1.0 - dot(slope, slope))));
-		n = normalize(f.tangent * ts.x + f.bitangent * ts.y + n * ts.z);
+		n = surface_relief(f, slope);
 	}
 	vec3 face_world_n = view_to_world(f.normal, INV_VIEW_MATRIX);
 	bool side = abs(face_world_n.y) < 0.5;

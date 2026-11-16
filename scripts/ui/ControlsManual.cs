@@ -156,8 +156,12 @@ public partial class ControlsManual : Control
             var row = new Row(spec, LineBook.Shared.Find(spec.Line)?.Text ?? "", header: spec.Actions.Length == 0 && spec.Needs == Ability.None);
             List<Item> keys = row.Items[(int)ButtonNames.Device.Keyboard];
             List<Item> buttons = row.Items[(int)ButtonNames.Device.Gamepad];
-            Build(keys, spec, false, font);
-            Build(buttons, spec, true, font);
+            if (!row.Header)
+            {
+                Build(keys, spec, false, font);
+                Build(buttons, spec, true, font);
+            }
+
             if (BothDevices && buttons.Count > 0)
             {
                 keys.Add(new Separator("/") { Width = Width(font, "/", CapFont) });
