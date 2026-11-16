@@ -17,7 +17,7 @@ namespace TheDeep;
 /// speed (or standing on it), it holds the way, jumps at the take-off, lets go of jump when the planner did and dashes when the
 /// planner did. A press is read on the tick after it is made, as a device's is, and a dash moves from the tick after it begins: each
 /// is pressed that much earlier. Each route must land where the planner said, along its path (<see cref="GroundRoutes.Mismatch"/>);
-/// a blow, a loss of control or leaving the room is a problem too. Prints `ROUTES OK` or one `ROUTE CHECK` error per problem.
+/// a blow, a loss of control or leaving the room is a problem too, and so is playing no route at all. Prints `ROUTES OK` or one `ROUTE CHECK` error per problem.
 /// </summary>
 public partial class RouteCheck : Node
 {
@@ -301,6 +301,11 @@ public partial class RouteCheck : Node
     {
         _roomIndex = _rooms.Count;
         Release();
+        if (_played == 0)
+        {
+            _problems.Add("no ground route was played: a check that played nothing proves nothing");
+        }
+
         foreach (string problem in _problems)
         {
             GD.PushError($"ROUTE CHECK: {problem}");
