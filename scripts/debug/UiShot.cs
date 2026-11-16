@@ -237,7 +237,7 @@ public partial class UiShot : Node
             if (First<Conversation>() is Conversation conversation)
             {
                 _talk = conversation;
-                Player.Respawn(DialogueCheck.Porch(conversation), 1);
+                Player.Respawn(CheckKit.Porch(conversation), 1);
             }
         }
         else if (_tick == 150)
