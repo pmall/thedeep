@@ -119,7 +119,7 @@ public partial class RoomValidator : Node
         _problems.AddRange(_lines.Unfit(World.Definition.Lines, Banner));
         _problems.AddRange(_lines.Overlong(World.Definition.Lines, Hint));
         CheckLockedLines(world.Graph);
-        string map = world.Check(World.NameOf(StartRoom), _draft?.Targets ?? MapTargets.None, Report);
+        string map = world.Check(World.NameOf(StartRoom), Report);
         _problems.AddRange(world.Problems);
         if (ReachReport != "")
         {
@@ -339,7 +339,7 @@ public partial class RoomValidator : Node
         {
             var sealedArena = new SealedArena(arena.NameText(), arena.Area, arena.Gates.Select(g => g.ShutBox).ToList(),
                 arena.Foes.Select(f => (f.NameText(), f.PlanePosition.ToCore())).ToList());
-            foreach (string what in sealedArena.Problems(shape, bounds, waysOut, Tuning.Planner(ClimbRise), WorldCheck.Simulated))
+            foreach (string what in sealedArena.Problems(shape, bounds, waysOut, Tuning.Planner(ClimbRise), AbilitySet.Every))
             {
                 problem(what);
             }
@@ -501,7 +501,7 @@ public partial class RoomValidator : Node
         }
     }
 
-    /// <summary>The room's part of the map: its exits (one edge each, for leaving through it), relics, items, goals and shape.</summary>
+    /// <summary>The room's part of the map: its shape (relics, items and goals included) and its exits (one edge each, for leaving through it).</summary>
     private void Extract(Room room, string name, List<RoomExit> exits, WorldCheck world)
     {
         RoomShape shape = RoomShapes.Of(room, World.RoomPath(name) == StartRoom);
@@ -527,24 +527,9 @@ public partial class RoomValidator : Node
         _ambushes.AddRange(room.All<Ambush>().Select(_ => name));
         _hiddenWays.AddRange(exits.Where(e => e.Hidden && e.TargetRoom != "").Select(e => (name, World.NameOf(e.TargetRoom))));
 
-        foreach (AbilityRelic relic in room.All<AbilityRelic>())
+        foreach (MapGoal goal in room.All<MapGoal>().Where(g => g.Size == Godot.Vector2.Zero))
         {
-            world.Graph.AddRelic(new MapRelic(name, relic.NameText(), relic.Ability));
-        }
-
-        foreach (ItemPickup pickup in room.All<ItemPickup>())
-        {
-            world.Graph.AddItem(new MapItem(name, pickup.NameText(), pickup.Item.Id));
-        }
-
-        foreach (Lever lever in room.All<Lever>())
-        {
-            world.Graph.AddItem(new MapItem(name, lever.NameText(), lever.Item.Id));
-        }
-
-        if (room.All<MapGoal>().Any())
-        {
-            world.Graph.AddGoal(name);
+            _problems.Add($"{name}: the goal {goal.NameText()} has no area (Size is zero): the pilgrim could never reach it");
         }
     }
 

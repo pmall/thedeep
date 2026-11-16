@@ -21,7 +21,7 @@ public class SealedArenaTests
     {
         var solids = new List<Box> { new(-10f, -1f, 10f, 0f), new(-10f, 5f, 10f, 6f) };
         return new RoomShape(solids, new List<ExitShape>(), new List<Vector2>(), new List<Vector2>(), new List<LiftPath>(), solids.ToList(),
-            new List<Box>(), new List<Box>(), new List<(Box, Ability)>(), new List<Box>(), new List<Box>(), Vector2.Zero);
+            new List<Box>(), new List<Box>(), new List<(Box, Ability, string)>(), new List<Box>(), new List<Box>(), Vector2.Zero);
     }
 
     /// <summary>A gate of the given height standing on the floor at <paramref name="x"/>.</summary>
@@ -31,7 +31,7 @@ public class SealedArenaTests
         new("Fight", area ?? new Box(-6f, -1f, 6f, 4f), gates.Length > 0 ? gates : new[] { Gate(-7f), Gate(7f) },
             new[] { ("Warden", foe ?? Vector2.Zero) });
 
-    private static List<string> Problems(SealedArena arena) => arena.Problems(Hall(), Bounds, WaysOut, Limits, WorldCheck.Simulated).ToList();
+    private static List<string> Problems(SealedArena arena) => arena.Problems(Hall(), Bounds, WaysOut, Limits, AbilitySet.Every).ToList();
 
     [Fact]
     public void ArenaSealedByItsGatesHoldsUp()

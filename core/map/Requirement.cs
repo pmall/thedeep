@@ -71,7 +71,7 @@ public sealed class Requirement
     public override string ToString() => string.Join(" | ", Options.Select(Text));
 
     private static string Text(Need o) =>
-        string.Join(" & ", Enum.GetValues<Ability>().Where(a => a != Ability.None && o.Abilities.HasFlag(a)).Select(a => a.ToString()).Concat(o.Items.Ids));
+        string.Join(" & ", AbilitySet.All.Where(a => o.Abilities.HasFlag(a)).Select(a => a.ToString()).Concat(o.Items.Ids));
 
     /// <summary>Drops alternatives that need more than another one does, then sorts.</summary>
     private static List<Need> Minimize(List<Need> options)

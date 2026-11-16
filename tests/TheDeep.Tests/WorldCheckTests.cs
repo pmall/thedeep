@@ -26,7 +26,7 @@ public class WorldCheckTests
             Wakes: start ? new List<Vector2> { new(wakeX, 0f) } : new List<Vector2>(),
             Anchors: new List<Vector2>(), Lifts: new List<LiftPath>(),
             Sound: plates.Prepend(new Box(-10f, -1f, 10f, 0f)).ToList(),
-            Waters: new List<Box>(), Heat: new List<Box>(), Relics: new List<(Box, Ability)>(),
+            Waters: new List<Box>(), Heat: new List<Box>(), Relics: new List<(Box, Ability, string)>(),
             Goals: goal ? new List<Box> { Box.Around(new Vector2(0f, 1f), new Vector2(2f, 2f)) } : new List<Box>(),
             Metal: plates, Spawn: new Vector2(wakeX, 0f));
     }
@@ -53,7 +53,7 @@ public class WorldCheckTests
     public void ARoomsideWalkToTheGoalHoldsUp()
     {
         WorldCheck world = TwoRooms();
-        string summary = world.Check("Hall", MapTargets.None, report: false);
+        string summary = world.Check("Hall", report: false);
         Assert.Empty(world.Problems);
         Assert.StartsWith("MAP OK: 2 rooms, 2 exits", summary);
         Assert.Contains("INSIDE OK", summary);
@@ -63,7 +63,7 @@ public class WorldCheckTests
     public void TheStartMustBeARoomOfTheGame()
     {
         WorldCheck world = TwoRooms();
-        world.Check("Narthex", MapTargets.None, report: false);
+        world.Check("Narthex", report: false);
         Assert.Contains("map: the start room Narthex is not a room in the game", world.Problems);
     }
 
@@ -72,7 +72,7 @@ public class WorldCheckTests
     {
         // The hall's way out hangs 12 m up: no jump reaches it, yet it claims to need nothing.
         WorldCheck world = TwoRooms(eastY: 12f);
-        world.Check("Hall", MapTargets.None, report: false);
+        world.Check("Hall", report: false);
         Assert.Contains("Hall: exit East needs nothing, but the base moveset reaches it from no way into the room", world.Problems);
         Assert.Contains(world.Problems, p => p.StartsWith("map inside the rooms: no goal is reached", StringComparison.Ordinal));
     }
@@ -82,7 +82,7 @@ public class WorldCheckTests
     {
         // Mag-grip on a way the base moveset walks through: the requirement is a lie.
         WorldCheck world = TwoRooms(eastNeeds: "MagGrip");
-        world.Check("Hall", MapTargets.None, report: false);
+        world.Check("Hall", report: false);
         Assert.Contains(world.Problems, p => p.StartsWith("Hall: exit East needs MagGrip, but the base moveset reaches it", StringComparison.Ordinal));
         Assert.Contains("map: Sanctum can't be reached from Hall", world.Problems);
     }
@@ -92,7 +92,7 @@ public class WorldCheckTests
     {
         // The way out on top of a metal tower: Mag-grip climbs to it, the Drill and Ballast together don't.
         WorldCheck world = TwoRooms(eastNeeds: "MagGrip | Drill & Ballast", eastY: 11.5f, hallMetal: Tower);
-        world.Check("Hall", MapTargets.None, report: false);
+        world.Check("Hall", report: false);
         Assert.DoesNotContain(world.Problems, p => p.Contains("Mag-grip reaches it from no way", StringComparison.Ordinal));
         Assert.Contains("Hall: exit East needs MagGrip | Drill & Ballast, but Drill, Ballast together reaches it from no way into the room", world.Problems);
     }
@@ -107,7 +107,7 @@ public class WorldCheckTests
         world.AddExit(new MapEdge("Hall", "East", "Sanctum", "West", Requirement.None), new Vector2(9.5f, 12f), new Vector2(-9.5f, 1.5f));
         world.AddExit(new MapEdge("Sanctum", "West", "Hall", "East", Requirement.None), new Vector2(-9.5f, 1.5f), new Vector2(9.5f, 12f));
         world.Graph.AddGoal("Hall");
-        world.Check("Hall", MapTargets.None, report: false);
+        world.Check("Hall", report: false);
         Assert.Contains("map inside the rooms: Sanctum is never entered walking the rooms from where the pilgrim comes in", world.Problems);
         Assert.DoesNotContain(world.Problems, p => p.Contains("no goal", StringComparison.Ordinal));
     }
@@ -117,7 +117,7 @@ public class WorldCheckTests
     {
         // The way out on a 3 m step: the 3.2 m jump clears it, the clumsier pilgrim's doesn't.
         WorldCheck world = TwoRooms(eastY: 4.5f, hallMetal: new Box(5f, 0f, 10f, 3f));
-        string summary = world.Check("Hall", MapTargets.None, report: false);
+        string summary = world.Check("Hall", report: false);
         Assert.Equal("no room for error: Hall via the start : only near-perfect play reaches exit East (a clumsier pilgrim does not; tools: --reach-report Hall --slack-report)",
             Assert.Single(world.Problems));
         Assert.Contains("INSIDE OK", summary);
@@ -132,7 +132,7 @@ public class WorldCheckTests
         world.AddExit(new MapEdge("Hall", "East", "Sanctum", "Nowhere", Requirement.None), new Vector2(9.5f, 1.5f), null);
         world.AddExit(new MapEdge("Sanctum", "West", "Hall", "East", Requirement.None), new Vector2(-9.5f, 1.5f), new Vector2(9.5f, 1.5f));
         world.Graph.AddGoal("Sanctum");
-        world.Check("Hall", MapTargets.None, report: false);
+        world.Check("Hall", report: false);
         Assert.Contains("map: Hall:East leads to Sanctum:Nowhere, which is no exit of Sanctum (the room check walks no way in there)", world.Problems);
         Assert.Contains("map inside the rooms: Sanctum is never entered walking the rooms from where the pilgrim comes in", world.Problems);
     }
@@ -145,7 +145,7 @@ public class WorldCheckTests
         world.AddRoom("Sanctum", Min, Max, Room(new[] { Doorway("West", 0f) }, goal: true));
         world.AddExit(new MapEdge("Hall", "East", "Sanctum", "West", Requirement.None), new Vector2(0f, 1.5f), new Vector2(0f, 1.5f));
         world.Graph.AddGoal("Sanctum");
-        world.Check("Hall", MapTargets.None, report: false);
+        world.Check("Hall", report: false);
         Assert.Contains(world.Problems, p => p.StartsWith("map layout:", StringComparison.Ordinal));
     }
 
@@ -153,7 +153,7 @@ public class WorldCheckTests
     public void TheReachReportSaysWhatEachWayInReaches()
     {
         WorldCheck world = TwoRooms();
-        world.Check("Hall", MapTargets.None, report: false);
+        world.Check("Hall", report: false);
         List<string> lines = world.ReachReport("Hall", with: null, clumsy: false).ToList();
         Assert.Contains(lines, l => l.StartsWith("REACH Hall waking at (0, 0) [None]: exits East", StringComparison.Ordinal));
         Assert.Equal("REACH Atrium: not a room in the game", Assert.Single(world.ReachReport("Atrium", null, false)));

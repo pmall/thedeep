@@ -31,12 +31,12 @@ public static class RoomShapes
         var heat = room.All<HeatColumn>().Select(z => z.Region).ToList();
         // Where walking takes a relic (its range from the feet) and reaches a goal (the feet inside its area), as trigger boxes.
         var relics = room.All<AbilityRelic>()
-            .Select(r => (PickupReach.Area(r.GlobalPosition.Flat(), PickupReach.Take), r.Ability)).ToList();
+            .Select(r => (PickupReach.Area(r.GlobalPosition.Flat(), PickupReach.Take), r.Ability, r.NameText())).ToList();
         var items = room.All<ItemPickup>()
-            .Select(i => (PickupReach.Area(i.GlobalPosition.Flat(), PickupReach.Take), i.Item.Id))
-            .Concat(room.All<Lever>().Select(l => (PickupReach.Area(l.GlobalPosition.Flat(), l.Range), l.Item.Id)))
+            .Select(i => (PickupReach.Area(i.GlobalPosition.Flat(), PickupReach.Take), i.Item.Id, i.NameText()))
+            .Concat(room.All<Lever>().Select(l => (PickupReach.Area(l.GlobalPosition.Flat(), l.Range), l.Item.Id, l.NameText())))
             .ToList();
-        var goals = room.All<MapGoal>().Where(g => g.Size != Vector2.Zero).Select(g => Box.Around(g.GlobalPosition.Flat(), g.Size.ToCore())).ToList();
+        var goals = room.All<MapGoal>().Select(g => Box.Around(g.GlobalPosition.Flat(), g.Size.ToCore())).ToList();
         var metal = room.Blocks().Where(b => b.Surface == SurfaceKind.Metal && !b.Cracked).Select(BoxOf).ToList();
         return new RoomShape(solids, exits, wakes, anchors, room.All<Lift>().Select(l => l.Path).ToList(), sound, waters, heat, relics, goals, metal,
             room.SpawnPoint.GlobalPosition.Flat())
