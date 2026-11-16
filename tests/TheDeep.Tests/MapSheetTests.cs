@@ -147,6 +147,16 @@ public class MapSheetTests
     }
 
     [Fact]
+    public void ALayoutWithNoTileForThePilgrimsRoomIsAProblem()
+    {
+        var map = new MapState();
+        map.Restore(new[] { new MapRoom("Nave", Vector2.Zero, new Vector2(-2f, -2f), new Vector2(42f, 20f)) }, "Nowhere",
+            System.Array.Empty<MapWay>(), System.Array.Empty<string>());
+
+        Assert.Single(Lay(map).Problems(System.Array.Empty<float>()), "no tile is the pilgrim's room");
+    }
+
+    [Fact]
     public void AnEmptyMapHasNoTilesAndNoPilgrim()
     {
         MapSheet sheet = Lay(new MapState());
