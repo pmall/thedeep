@@ -1,6 +1,5 @@
 using System;
 using System.Numerics;
-using TheDeep;
 using Xunit;
 
 namespace TheDeep.Tests;

@@ -1,7 +1,5 @@
-using System.Collections.Generic;
 using System.Linq;
 using Godot;
-using NVector2 = System.Numerics.Vector2;
 
 namespace TheDeep;
 

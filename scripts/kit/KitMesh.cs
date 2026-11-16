@@ -1,6 +1,5 @@
 using Godot;
 using Godot.Collections;
-using NVector3 = System.Numerics.Vector3;
 
 namespace TheDeep;
 

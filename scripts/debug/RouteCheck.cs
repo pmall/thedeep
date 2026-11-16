@@ -8,7 +8,7 @@ namespace TheDeep;
 /// <summary>
 /// Every room's own ground routes, as the reach planner flies them, played in the real game through the real input actions
 /// (`-- --route-check`, run by tools/check.sh for both worlds; `--shard K/N` plays every Nth room; alone:
-/// `godot --headless --path . --fixed-fps 60 --quit-after 20000 -- --route-check 2>&1 | grep ROUTE`), so the planner's model of the
+/// `godot --headless --path . --fixed-fps 60 --quit-after 20000 -- --route-check 2&gt;&amp;1 | grep ROUTE`), so the planner's model of the
 /// moves and the real moves can't drift apart unseen. In each room in the game, <see cref="GroundRoutes.Pick"/> chooses up to
 /// <see cref="PerRoom"/> of the planner's flights from the floors it reaches with no ability (each room starting from the next kind
 /// of move, so every kind is played), keeping off every solid that is not a
