@@ -17,11 +17,8 @@ public partial class BallastCheck : StepDriver
     /// <summary>The running game's gate hints.</summary>
     public required GateHints Hints { get; init; }
 
-
     /// <summary>The tank: its surface, its middle, its floor (the lab's).</summary>
     private const float Surface = 5f, Middle = 12.5f, Bottom = 0f;
-
-    private float _lowest;
 
     private float Y => Player.GlobalPosition.Y;
     private float Line => WaterMotion.FloatLine(Surface, Player.Water);
@@ -36,7 +33,7 @@ public partial class BallastCheck : StepDriver
             () => { Player.Abilities.Lock(Ability.Ballast); Player.Respawn(new Vector3(Middle, Surface + 4f, 0f), 1); },
             () => Swimming && Mathf.Abs(Y - Line) < 0.1f && Mathf.Abs(Player.Velocity.Y) < 0.3f));
         Steps.Add(new("without Ballast, holding down keeps it floating", 1.5f,
-            () => { _lowest = Y; Press(InputActions.MoveDown); },
+            () => Press(InputActions.MoveDown),
             () => !Swimming || Y < Line - 0.5f || Player.Sunk, Hold: true));
         Steps.Add(new("and the pilgrim says it is too light to sink (the gate hint)", 1f,
             () => { },
@@ -56,8 +53,6 @@ public partial class BallastCheck : StepDriver
     }
 
     protected override string Tag => "BALLAST";
-
-    protected override void Observe(float delta) => _lowest = Mathf.Min(_lowest, Y);
 
     protected override string Detail =>
         $"at {Player.GlobalPosition}, velocity {Player.Velocity}, state {Player.CurrentState.Name}, sunk {Player.Sunk}, " +
