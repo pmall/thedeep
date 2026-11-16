@@ -41,6 +41,7 @@ public sealed class DemoInput
         Input.ActionRelease(InputActions.Dash);
         Input.ActionRelease(InputActions.Attack);
         Input.ActionRelease(InputActions.Harpoon);
+        Input.ActionRelease(InputActions.Interact);
     }
 
     private void Pulse(StringName action, int period, int held)
