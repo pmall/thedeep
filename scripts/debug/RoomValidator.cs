@@ -234,7 +234,7 @@ public partial class RoomValidator : Node
             Problem($"spawn point {room.SpawnPoint.GlobalPosition} is outside the camera bounds");
         }
 
-        List<Node> nodes = Descendants(room).Where(n => n.Owner == room).ToList();
+        List<Node> nodes = room.Descendants<Node>().Where(n => n.Owner == room).ToList();
         foreach (Block block in nodes.OfType<Block>())
         {
             Vector3 p = block.GlobalPosition;
@@ -394,7 +394,7 @@ public partial class RoomValidator : Node
                      "a seam frame owns its column (docs/gameplay.md#seam-rule)");
         }
 
-        foreach (MeshInstance3D mesh in Descendants(room).OfType<MeshInstance3D>().Where(m => m.Mesh is not null && m.IsVisibleInTree() && m is not LightShaft))
+        foreach (MeshInstance3D mesh in room.Descendants<Node>().OfType<MeshInstance3D>().Where(m => m.Mesh is not null && m.IsVisibleInTree() && m is not LightShaft))
         {
             if (Ancestors(mesh).Any(n => n is CollisionObject3D or WaterBody or HeatColumn or SlagBody or IWalkedThrough) || mesh.Children().Any(n => n is CollisionObject3D))
             {
@@ -456,7 +456,7 @@ public partial class RoomValidator : Node
 
     /// <summary>The play-plane boxes of the room's machines at rest: every box shape of an <see cref="AnimatableBody3D"/> where the scene places it.</summary>
     private static IEnumerable<Box> Resting(Room room) =>
-        Descendants(room).OfType<CollisionShape3D>().Where(s => s.GetParent() is AnimatableBody3D && s.Shape is BoxShape3D)
+        room.Descendants<Node>().OfType<CollisionShape3D>().Where(s => s.GetParent() is AnimatableBody3D && s.Shape is BoxShape3D)
             .Select(s => Box.Around(s.GlobalPosition.Flat(), new NVector2(((BoxShape3D)s.Shape).Size.X, ((BoxShape3D)s.Shape).Size.Y)));
 
     /// <summary>The ground rules' totals over the world, and the rooms with the most findings.</summary>
@@ -485,7 +485,7 @@ public partial class RoomValidator : Node
     private static void CheckWaterClearance(Room room, System.Action<string> problem)
     {
         IReadOnlyList<WaterBody> waters = room.All<WaterBody>();
-        foreach (MeshInstance3D mesh in Descendants(room).OfType<MeshInstance3D>().Where(m => m.Mesh is not null))
+        foreach (MeshInstance3D mesh in room.Descendants<Node>().OfType<MeshInstance3D>().Where(m => m.Mesh is not null))
         {
             if (waters.Any(w => w.IsAncestorOf(mesh)))
             {
@@ -848,18 +848,6 @@ public partial class RoomValidator : Node
         finally
         {
             target.Free();
-        }
-    }
-
-    private static IEnumerable<Node> Descendants(Node node)
-    {
-        foreach (Node child in node.Children())
-        {
-            yield return child;
-            foreach (Node nested in Descendants(child))
-            {
-                yield return nested;
-            }
         }
     }
 }

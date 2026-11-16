@@ -84,7 +84,7 @@ public partial class TravelValidator : Node
         foreach (string path in World.RoomScenes())
         {
             var room = World.Scene(path).Instantiate<Room>();
-            foreach (RoomExit exit in Find(room).Where(e => e.TargetRoom != ""))
+            foreach (RoomExit exit in room.Exits().Where(e => e.TargetRoom != ""))
             {
                 _todo.Add((World.NameOf(path), exit.NameText()));
             }
@@ -104,22 +104,6 @@ public partial class TravelValidator : Node
 
         Travel.Travelled += _ => _arrived = true;
         NextExit();
-    }
-
-    private static IEnumerable<RoomExit> Find(Node node)
-    {
-        foreach (Node child in node.Children())
-        {
-            if (child is RoomExit exit)
-            {
-                yield return exit;
-            }
-
-            foreach (RoomExit nested in Find(child))
-            {
-                yield return nested;
-            }
-        }
     }
 
     private string What => $"{_current.Room}:{_current.Exit} → {_current.TargetRoom}:{_current.TargetExit}";
