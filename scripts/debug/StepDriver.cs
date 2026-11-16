@@ -41,6 +41,9 @@ public abstract partial class StepDriver : Node
     /// <summary>How many steps the check has.</summary>
     protected int StepCount => Steps.Count;
 
+    /// <summary>The step running, counted from 0 (the step count once the check has ended).</summary>
+    protected int StepIndex => _index;
+
     /// <summary>Runs before the pilgrim each frame and each physics tick, so what it presses is read the same tick
     /// (<paramref name="early"/>: false for a check that runs through a paused game instead).</summary>
     protected StepDriver(bool early = true)
