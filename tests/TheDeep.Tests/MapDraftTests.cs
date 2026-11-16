@@ -49,6 +49,8 @@ public class MapDraftTests
     [InlineData("start A\nroom A Flooded\nrelic A 1", "unknown ability")]
     [InlineData("start A\nroom A Flooded\nwander A", "unknown statement")]
     [InlineData("room A Flooded", "no start room")]
+    [InlineData("start A\nroom B Flooded", "never declared: A")]
+    [InlineData("start A\nstart B\nroom A Flooded\nroom B Flooded", "start is stated twice")]
     [InlineData("start A\nroom A Flooded\nway A => A", "line 3")]
     public void RejectsMistakes(string text, string message)
     {
@@ -103,15 +105,35 @@ public class MapDraftTests
         built.AddRelic(new MapRelic("B", "Relic", Ability.MagGrip));
         var sealedB = new[] { ("B", Requirement.Parse("Harpoon | MagGrip")) };
 
-        Assert.Empty(d.Differences(built, sealedB));
+        Assert.Empty(d.Differences(built, sealedB, Array.Empty<(string, string)>()));
 
         // The scene's sealed way needs Drill; the draft's needs Mag-grip or Harpoon.
-        var problems = d.Differences(built, new[] { ("B", Requirement.Parse("Drill")) });
+        var problems = d.Differences(built, new[] { ("B", Requirement.Parse("Drill")) }, Array.Empty<(string, string)>());
         Assert.Contains("B: the scene has a sealed way (not built) : Drill, the draft doesn't", problems);
         Assert.Contains("B: the draft has a sealed way (not built) : MagGrip | Harpoon, the scene doesn't", problems);
 
         built.AddRoom("D");
-        Assert.Contains("D is built but not in the draft", d.Differences(built, sealedB));
+        Assert.Contains("D is built but not in the draft", d.Differences(built, sealedB, Array.Empty<(string, string)>()));
+    }
+
+    [Fact]
+    public void DifferencesInTheStartAndTheHiddenWays()
+    {
+        MapDraft d = MapDraft.Parse(Small + "\nhidden A B");
+        var built = new MapGraph { Start = "A" };
+        built.AddEdge(new MapEdge("A", "East", "B", "West", Requirement.None));
+        built.AddEdge(new MapEdge("B", "West", "A", "East", Requirement.None));
+        built.AddRelic(new MapRelic("B", "Relic", Ability.MagGrip));
+        var sealedB = new[] { ("B", Requirement.Parse("Harpoon | MagGrip")) };
+
+        // Hidden in the scene from either side is the draft's hidden way; none in the scene is a difference, and so is a start apart.
+        Assert.Empty(d.Differences(built, sealedB, new[] { ("A", "B") }));
+        Assert.Empty(d.Differences(built, sealedB, new[] { ("B", "A") }));
+        Assert.Equal(new[] { "A–B: the draft says this way is hidden, no exit of the scene is" }, d.Differences(built, sealedB, Array.Empty<(string, string)>()));
+        Assert.Equal(new[] { "A–B: the scene hides this way behind a false wall, the draft doesn't say hidden" },
+            MapDraft.Parse(Small).Differences(built, sealedB, new[] { ("A", "B") }));
+        built.Start = "B";
+        Assert.Equal(new[] { "the start is B in the rooms, A in the draft" }, d.Differences(built, sealedB, new[] { ("A", "B") }));
     }
 
     [Fact]

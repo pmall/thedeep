@@ -525,6 +525,7 @@ public partial class RoomValidator : Node
         _powerUps.AddRange(room.All<PowerUp>().Select(p => (name, p.Stat)));
         _bosses.AddRange(room.All<BossSeal>().Select(s => (name, s.Boss.Species.DisplayName)));
         _ambushes.AddRange(room.All<Ambush>().Select(_ => name));
+        _hiddenWays.AddRange(exits.Where(e => e.Hidden && e.TargetRoom != "").Select(e => (name, World.NameOf(e.TargetRoom))));
 
         foreach (AbilityRelic relic in room.All<AbilityRelic>())
         {
@@ -642,6 +643,7 @@ public partial class RoomValidator : Node
     /// <summary>The built rooms' bosses' arenas (the room and the boss's species' name) and ambushes (the room), gathered by <see cref="Extract"/>.</summary>
     private readonly List<(string Room, string Name)> _bosses = new();
     private readonly List<string> _ambushes = new();
+    private readonly List<(string Room, string To)> _hiddenWays = new();
 
     /// <summary>Where the network's <c>powerup</c> lines and the built rooms' <see cref="PowerUp"/> nodes disagree, room by room.</summary>
     private IEnumerable<string> PowerUpDifferences(MapDraft draft)
@@ -672,7 +674,7 @@ public partial class RoomValidator : Node
 
         (MapReport report, List<string> problems) = draft.Check();
         _problems.AddRange(problems.Select(p => $"map draft: {p}"));
-        _problems.AddRange(draft.Differences(world.Graph, world.Sealed).Select(p => $"map draft differs from the rooms: {p}"));
+        _problems.AddRange(draft.Differences(world.Graph, world.Sealed, _hiddenWays).Select(p => $"map draft differs from the rooms: {p}"));
         _problems.AddRange(PowerUpDifferences(draft).Select(p => $"map draft differs from the rooms: {p}"));
         _problems.AddRange(draft.ArenaDifferences(world.Graph.Rooms, _bosses, _ambushes).Select(p => $"map draft differs from the rooms: {p}"));
         _problems.AddRange(draft.LayerOrder.Where(l => World.Definition.Layer(l) is null)

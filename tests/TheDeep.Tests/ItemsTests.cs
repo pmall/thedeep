@@ -162,7 +162,7 @@ public class ItemsTests
 
         var built = new MapGraph { Start = "Hall" };
         built.AddRoom("Crypt");
-        Assert.Contains(d.Differences(built, System.Array.Empty<(string, Requirement)>()), p => p.Contains("an item CryptKey"));
+        Assert.Contains(d.Differences(built, System.Array.Empty<(string, Requirement)>(), System.Array.Empty<(string, string)>()), p => p.Contains("an item CryptKey"));
         Assert.Throws<System.FormatException>(() => MapDraft.Parse("start A\nroom A L\nitem A Drill\n"));
     }
 

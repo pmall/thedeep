@@ -49,7 +49,10 @@ public sealed class MapDraft
     /// <summary>Boss fights and the room they happen in.</summary>
     public List<(string Room, string Name)> Bosses { get; } = new();
 
-    /// <summary>The hidden ways, as the two rooms they join (either way between them is hidden).</summary>
+    /// <summary>
+    /// The hidden ways, as the two rooms they join: a secret passage between them, masked by a false wall in one of the two
+    /// (the room whose exit is marked hidden).
+    /// </summary>
     public List<(string A, string B)> Hidden { get; } = new();
 
     /// <summary>The rooms that hold an ambush.</summary>
@@ -123,7 +126,7 @@ public sealed class MapDraft
             throw new FormatException("no start room");
         }
 
-        var named = draft.Graph.Rooms.Concat(draft.Milestones.Select(m => m.Room)).Concat(draft.Bosses.Select(b => b.Room))
+        var named = draft.Graph.Rooms.Append(draft.Graph.Start).Concat(draft.Milestones.Select(m => m.Room)).Concat(draft.Bosses.Select(b => b.Room))
             .Concat(draft.Ambushes).Concat(draft.PowerUps.Select(p => p.Room)).Concat(draft.Hidden.SelectMany(h => new[] { h.A, h.B }));
         var unknown = named.Where(r => !draft.Layers.ContainsKey(r)).Distinct().ToList();
         if (unknown.Count > 0)
@@ -147,6 +150,11 @@ public sealed class MapDraft
         switch (words[0])
         {
             case "start":
+                if (Graph.Start != "")
+                {
+                    throw new FormatException("the start is stated twice");
+                }
+
                 Graph.Start = Expect(args, 1)[0];
                 break;
             case "room":
@@ -291,7 +299,7 @@ public sealed class MapDraft
 
         // A world needn't use all five abilities (docs/roadmap.md#stage-plan): one it uses lies in one relic, one it doesn't in none.
         Ability needed = Graph.Edges.SelectMany(e => e.Requires.Options).Aggregate(Ability.None, (all, option) => all | option.Abilities);
-        foreach (Ability a in Enum.GetValues<Ability>().Where(a => a != Ability.None))
+        foreach (Ability a in AbilitySet.All)
         {
             int relics = Graph.Relics.Count(i => i.Ability == a);
             if (relics > 1)
@@ -340,10 +348,13 @@ public sealed class MapDraft
     /// <summary>
     /// Where the draft disagrees with the rooms already built (their markers are the truth). For each built room:
     /// its exits to built rooms (target and requirement) must be the draft's ways from it to built rooms, its sealed
-    /// exits (requirement) the draft's ways from it to rooms not built yet, and its relics and items the draft's. Goals are not
-    /// compared: a built slice may end where the whole game does not.
+    /// exits (requirement) the draft's ways from it to rooms not built yet, and its relics and items the draft's. A passage between
+    /// two built rooms is hidden in the scene when an exit of either is (<paramref name="hiddenWays"/>), and in the draft when a
+    /// <c>hidden</c> line says so. The start room is the draft's. Goals are not compared: a built slice may end where the whole game
+    /// does not.
     /// </summary>
-    public List<string> Differences(MapGraph built, IReadOnlyList<(string Room, Requirement Requires)> sealedExits)
+    /// <param name="hiddenWays">The built rooms' hidden exits, as the room and the room each leads to.</param>
+    public List<string> Differences(MapGraph built, IReadOnlyList<(string Room, Requirement Requires)> sealedExits, IEnumerable<(string Room, string To)> hiddenWays)
     {
         var problems = new List<string>();
         static string Way(string to, Requirement r) => r.ToString() == "" ? to : $"{to} : {r}";
@@ -370,6 +381,24 @@ public sealed class MapDraft
             Compare(room, "an item",
                 built.ItemsIn(room).Select(i => i.Item).ToList(),
                 Graph.ItemsIn(room).Select(i => i.Item).ToList());
+        }
+
+        if (built.Start != "" && built.Start != Graph.Start)
+        {
+            problems.Add($"the start is {built.Start} in the rooms, {Graph.Start} in the draft");
+        }
+
+        static (string, string) Pair(string a, string b) => string.CompareOrdinal(a, b) <= 0 ? (a, b) : (b, a);
+        var sceneHidden = hiddenWays.Where(h => built.Rooms.Contains(h.Room) && built.Rooms.Contains(h.To)).Select(h => Pair(h.Room, h.To)).ToHashSet();
+        var draftHidden = Hidden.Where(h => built.Rooms.Contains(h.A) && built.Rooms.Contains(h.B)).Select(h => Pair(h.A, h.B)).ToHashSet();
+        foreach ((string a, string b) in sceneHidden.Except(draftHidden).Order())
+        {
+            problems.Add($"{a}–{b}: the scene hides this way behind a false wall, the draft doesn't say hidden");
+        }
+
+        foreach ((string a, string b) in draftHidden.Except(sceneHidden).Order())
+        {
+            problems.Add($"{a}–{b}: the draft says this way is hidden, no exit of the scene is");
         }
 
         return problems;
