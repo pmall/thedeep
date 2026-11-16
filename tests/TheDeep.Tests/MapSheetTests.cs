@@ -7,7 +7,7 @@ namespace TheDeep.Tests;
 public class MapSheetTests
 {
     private static readonly Vector2 Canvas = new(1600f, 900f);
-    private static readonly MapPlaces Places = new(MaxScale: 6f, Margin: 96f, Baseline: 80f, Row: 24f, Clear: 48f, Gap: 8f, Mark: 18f, Spacing: 30f);
+    private static readonly MapPlaces Places = MapPlaces.Default;
 
     private static ItemKind KindOf(string id) => id.EndsWith("Code", System.StringComparison.Ordinal) ? ItemKind.Code : ItemKind.Key;
 
@@ -32,7 +32,7 @@ public class MapSheetTests
     {
         MapSheet sheet = Lay(TwoRooms());
 
-        Assert.Equal(6f, sheet.Scale);
+        Assert.Equal(Places.MaxScale, sheet.Scale);
         float left = sheet.Tiles.Min(t => t.Rect.MinX), right = sheet.Tiles.Max(t => t.Rect.MaxX);
         Assert.Equal((sheet.Area.MinX + sheet.Area.MaxX) * 0.5f, (left + right) * 0.5f, 0.01f);
         Assert.Empty(sheet.Problems(new[] { 50f }));

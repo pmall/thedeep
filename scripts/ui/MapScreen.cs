@@ -20,27 +20,27 @@ public partial class MapScreen : CanvasLayer
     [Export] public Player Player { get; set; } = null!;
 
     /// <summary>Largest scale, pixels per meter on the game's canvas; smaller when the visited area is large.</summary>
-    [Export] public float MaxScale { get; set; } = 6f;
+    [Export] public float MaxScale { get; set; } = MapPlaces.Default.MaxScale;
 
     /// <summary>The margin the map keeps from the canvas's sides and top, pixels (clear of the health and the room's name).</summary>
-    [Export] public float Margin { get; set; } = 96f;
+    [Export] public float Margin { get; set; } = MapPlaces.Default.Margin;
 
     /// <summary>The legend's baseline, pixels above the canvas's bottom.</summary>
-    [Export] public float Baseline { get; set; } = 80f;
+    [Export] public float Baseline { get; set; } = MapPlaces.Default.Baseline;
 
     /// <summary>Between two rows of the items held, pixels.</summary>
-    [Export] public float Row { get; set; } = 24f;
+    [Export] public float Row { get; set; } = MapPlaces.Default.Row;
 
     /// <summary>Room kept between the map and the words under it, pixels (their plate included).</summary>
-    [Export] public float Clear { get; set; } = 48f;
+    [Export] public float Clear { get; set; } = MapPlaces.Default.Clear;
 
     /// <summary>The gap between two rooms' tiles, which a way taken bridges, pixels.</summary>
-    [Export] public float Gap { get; set; } = 8f;
+    [Export] public float Gap { get; set; } = MapPlaces.Default.Gap;
 
     /// <summary>A legend entry's mark: its width before the words, pixels; and the spacing between two entries.</summary>
-    [Export] public float Mark { get; set; } = 18f;
+    [Export] public float Mark { get; set; } = MapPlaces.Default.Mark;
 
-    [Export] public float Spacing { get; set; } = 30f;
+    [Export] public float Spacing { get; set; } = MapPlaces.Default.Spacing;
 
     /// <summary>The radius of a way's mark, pixels (a gate's ring a little larger).</summary>
     [Export] public float MarkRadius { get; set; } = 4f;
