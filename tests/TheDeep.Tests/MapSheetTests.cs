@@ -50,6 +50,21 @@ public class MapSheetTests
     }
 
     [Fact]
+    public void RoomsOverlappingAboveAndBelowAreCutApartByTheGapToo()
+    {
+        var map = new MapState();
+        map.Enter("Top", new Vector2(0f, 20f), new Vector2(-2f, -2f), new Vector2(42f, 20f));
+        map.Enter("Nave", Vector2.Zero, new Vector2(-2f, -2f), new Vector2(42f, 20f));
+        MapSheet sheet = Lay(map);
+        Box top = sheet.Tiles.Single(t => t.Name == "Top").Rect, nave = sheet.Tiles.Single(t => t.Name == "Nave").Rect;
+
+        Assert.Equal(Places.Gap, nave.MinY - top.MaxY, 0.01f);
+        // Cut at the overlap's middle, the doorway: y 19 on the map.
+        Assert.Equal(sheet.ToScreen(new Vector2(0f, 19f)).Y, (nave.MinY + top.MaxY) * 0.5f, 0.01f);
+        Assert.Empty(sheet.Problems(System.Array.Empty<float>()));
+    }
+
+    [Fact]
     public void AWayTakenIsMarkedOnBothRoomsFacingEdgesAtTheSamePoint()
     {
         MapSheet sheet = Lay(TwoRooms());
