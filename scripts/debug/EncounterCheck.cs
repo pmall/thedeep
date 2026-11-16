@@ -26,36 +26,18 @@ namespace TheDeep;
 /// line says why; holding the act breaks it (remembered), and the refusal leaves the hint line at once. Prints `ENCOUNTER OK` or
 /// `ENCOUNTER CHECK` errors.
 /// </summary>
-public partial class EncounterCheck : Node
+public partial class EncounterCheck : StepDriver
 {
     private static readonly StringName PrecentorId = "precentor";
     private static readonly StringName ChoristerId = "chorister";
     private static readonly StringName ArchivistId = "archivist";
 
-    /// <summary>The running game's pilgrim.</summary>
-    public required Player Player { get; init; }
-    /// <summary>The running game's world: its rooms, and the one loaded.</summary>
-    public required World World { get; init; }
     /// <summary>The running game's session.</summary>
     public required Session Session { get; init; }
     /// <summary>The running game's banner.</summary>
     public required Banner Banner { get; init; }
     /// <summary>The running game's hint line.</summary>
     public required HintLine Hint { get; init; }
-
-    private readonly List<Step> _steps = new();
-    private readonly List<string> _problems = new();
-    private int _index = -1;
-    private int _ticks;
-
-    private sealed record Step(string What, float Seconds, Action Start, Func<bool> Done, Action? Tick = null);
-
-    /// <summary>Runs before the pilgrim each frame and each physics tick, so what it presses is read the same tick.</summary>
-    public EncounterCheck()
-    {
-        ProcessPriority = -100;
-        ProcessPhysicsPriority = -100;
-    }
 
     private BossSeal Seal => World.Room.First<BossSeal>() ?? throw new InvalidOperationException("no BossSeal in the room");
     private Machine Precentor => World.Room.All<Machine>().First(m => m.Species.Id == PrecentorId);
@@ -71,28 +53,16 @@ public partial class EncounterCheck : Node
     private bool _rose;
     private int _brokeAt;
 
-    private static void Hold(StringName action, bool held)
+    protected override void Build()
     {
-        if (held)
-        {
-            Input.ActionPress(action);
-        }
-        else
-        {
-            Input.ActionRelease(action);
-        }
-    }
-
-    public override void _Ready()
-    {
-        _steps.Add(new("walk into the arena: both gates fall", 4f,
+        Steps.Add(new("walk into the arena: both gates fall", 4f,
             () => { Player.Respawn(new Vector3(3f, 0f, 0f), 1); Hold(InputActions.MoveRight, true); },
             () => Seal.Fighting && Seal.Gates.All(g => g.Shut),
             () => Hold(InputActions.MoveRight, X < 12f)));
-        _steps.Add(new("the Precentor strikes the pilgrim lingering before it", 8f,
+        Steps.Add(new("the Precentor strikes the pilgrim lingering before it", 8f,
             () => { Hold(InputActions.MoveRight, false); Player.Respawn(new Vector3(26.5f, 0f, 0f), 1); },
             () => Player.Vitality.Current < Player.Vitality.Max));
-        _steps.Add(new("swings break the Precentor", 40f,
+        Steps.Add(new("swings break the Precentor", 40f,
             () => { },
             () => Precentor.Broken,
             () =>
@@ -107,21 +77,21 @@ public partial class EncounterCheck : Node
                     Hold(gap > 0f ? InputActions.MoveRight : InputActions.MoveLeft, true);
                 }
 
-                Hold(InputActions.Attack, _ticks % 21 is 1 or 2);
+                Hold(InputActions.Attack, Ticks % 21 is 1 or 2);
             }));
-        _steps.Add(new("the gates rise and the fight is remembered", 4f,
+        Steps.Add(new("the gates rise and the fight is remembered", 4f,
             () => { Hold(InputActions.MoveRight, false); Hold(InputActions.MoveLeft, false); Hold(InputActions.Attack, false); },
             () => Seal.Gates.All(g => g.Raised) && Session.Done("Chapterhouse", "Fight")));
-        _steps.Add(new("entering again: the Precentor stays broken, the gates stay up", 3f,
+        Steps.Add(new("entering again: the Precentor stays broken, the gates stay up", 3f,
             () =>
             {
                 World.Load(GD.Load<PackedScene>(World.RoomPath("Chapterhouse")));
                 Player.Respawn(new Vector3(3f, 0f, 0f), 1);
                 Hold(InputActions.MoveRight, true);
             },
-            () => _ticks > 120 && X > 12f && Precentor.Broken && Seal.Gates.All(g => g.Raised) && !Seal.Fighting,
+            () => Ticks > 120 && X > 12f && Precentor.Broken && Seal.Gates.All(g => g.Raised) && !Seal.Fighting,
             () => Hold(InputActions.MoveRight, X < 14f)));
-        _steps.Add(new("at the Brink, the third law holds the pilgrim at the lip, and it says why", 3f,
+        Steps.Add(new("at the Brink, the third law holds the pilgrim at the lip, and it says why", 3f,
             () =>
             {
                 Hold(InputActions.MoveRight, false);
@@ -129,45 +99,45 @@ public partial class EncounterCheck : Node
                 Player.Respawn(new Vector3(18f, 0f, 0f), 1);
                 Hold(InputActions.MoveRight, true);
             },
-            () => _ticks >= 75 && X < 24f && Player.IsOnFloor() && !Law.Broken && Law.Strain > 0.1f && Law.Refused));
-        _steps.Add(new("pressing on three times the old break time never breaks it; the act is offered", 9f,
+            () => Ticks >= 75 && X < 24f && Player.IsOnFloor() && !Law.Broken && Law.Strain > 0.1f && Law.Refused));
+        Steps.Add(new("pressing on three times the old break time never breaks it; the act is offered", 9f,
             () => { },
-            () => _ticks >= 3 * 156 && !Law.Broken && Law.Strain < 1f && Law.Prompt.Offered));
-        _steps.Add(new("tapping the act's button every 0.2 s for 5 s never breaks it", 6f,
+            () => Ticks >= 3 * 156 && !Law.Broken && Law.Strain < 1f && Law.Prompt.Offered));
+        Steps.Add(new("tapping the act's button every 0.2 s for 5 s never breaks it", 6f,
             () => Hold(InputActions.MoveRight, false),
-            () => _ticks >= 300 && !Law.Broken && Law.Prompt.Offered,
-            () => Hold(InputActions.Interact, _ticks % 12 < 6)));
-        _steps.Add(new("a hold let go at half starts from zero; the full hold breaks it, remembered", 5f,
+            () => Ticks >= 300 && !Law.Broken && Law.Prompt.Offered,
+            () => Hold(InputActions.Interact, Ticks % 12 < 6)));
+        Steps.Add(new("a hold let go at half starts from zero; the full hold breaks it, remembered", 5f,
             () => { Hold(InputActions.Interact, false); _brokeAt = -1; },
             () => _brokeAt >= 0 && Session.Done("Brink", "ThirdLaw"),
             () =>
             {
                 int hold = Mathf.RoundToInt(Law.Prompt.HoldSeconds * 60f);
-                Hold(InputActions.Interact, (_ticks <= hold / 2 || _ticks > hold / 2 + 5) && !Law.Broken);
-                if (_ticks == hold / 2 && Law.Prompt.Fill < 0.45f)
+                Hold(InputActions.Interact, (Ticks <= hold / 2 || Ticks > hold / 2 + 5) && !Law.Broken);
+                if (Ticks == hold / 2 && Law.Prompt.Fill < 0.45f)
                 {
-                    _problems.Add($"held to half, the hold filled only {Law.Prompt.Fill:0.00}");
+                    Problems.Add($"held to half, the hold filled only {Law.Prompt.Fill:0.00}");
                 }
 
-                if (_ticks == hold / 2 + 3 && Law.Prompt.Fill > 0f)
+                if (Ticks == hold / 2 + 3 && Law.Prompt.Fill > 0f)
                 {
-                    _problems.Add($"let go at half, the hold kept {Law.Prompt.Fill:0.00}");
+                    Problems.Add($"let go at half, the hold kept {Law.Prompt.Fill:0.00}");
                 }
 
                 if (_brokeAt < 0 && Law.Broken)
                 {
-                    _brokeAt = _ticks;
-                    if (_ticks - (hold / 2 + 5) < hold - 2)
+                    _brokeAt = Ticks;
+                    if (Ticks - (hold / 2 + 5) < hold - 2)
                     {
-                        _problems.Add($"held again after half, the law broke after {_ticks - (hold / 2 + 5)} ticks, short of the full {hold}");
+                        Problems.Add($"held again after half, the law broke after {Ticks - (hold / 2 + 5)} ticks, short of the full {hold}");
                     }
                 }
             }));
-        _steps.Add(new("over the lip, the jump falls on into Rimefall and lands on its shelf", 12f,
+        Steps.Add(new("over the lip, the jump falls on into Rimefall and lands on its shelf", 12f,
             () => { },
             () => World.RoomName == "Rimefall" && Player.InControl && Player.IsOnFloor() && Player.GlobalPosition.Y > 9f,
             () => Hold(InputActions.MoveRight, World.RoomName == "Brink" && Player.GlobalPosition.Y > -2f)));
-        _steps.Add(new("in the Choir, walking past a sleeping Chorister wakes none", 4f,
+        Steps.Add(new("in the Choir, walking past a sleeping Chorister wakes none", 4f,
             () =>
             {
                 Hold(InputActions.MoveRight, false);
@@ -177,11 +147,11 @@ public partial class EncounterCheck : Node
             },
             () => X > 20f && Choristers.All(c => c.Brain.Act == MachineAct.Sleep),
             () => Hold(InputActions.MoveRight, X < 20.5f)));
-        _steps.Add(new("a hard landing beside one wakes it", 3f,
+        Steps.Add(new("a hard landing beside one wakes it", 3f,
             () => { Hold(InputActions.MoveRight, false); Player.Respawn(new Vector3(24f, 3f, 0f), 1); },
             () => Choristers.Single(c => c.NameText() == "Chorister1").Brain.Act != MachineAct.Sleep
                   && Choristers.Single(c => c.NameText() == "Chorister0").Brain.Act == MachineAct.Sleep));
-        _steps.Add(new("in the Counterweight, standing in the cage lets go of its brake", 4f,
+        Steps.Add(new("in the Counterweight, standing in the cage lets go of its brake", 4f,
             () =>
             {
                 World.Load(GD.Load<PackedScene>(World.RoomPath("Counterweight")));
@@ -190,7 +160,7 @@ public partial class EncounterCheck : Node
             },
             () => Cage.Travel.Phase == LiftPhase.Rising,
             () => Hold(InputActions.MoveRight, X < 12.6f)));
-        _steps.Add(new("it carries the pilgrim up the shaft into the Undercroft, its head cage onto the floor", 16f,
+        Steps.Add(new("it carries the pilgrim up the shaft into the Undercroft, its head cage onto the floor", 16f,
             () => { _rodeTo = 0f; },
             () => World.RoomName == "Undercroft" && Player.InControl && Player.IsOnFloor() && Mathf.Abs(X - 42f) < 2.1f
                   && Mathf.Abs(Player.GlobalPosition.Y) < 0.05f && _rodeTo > 23f,
@@ -207,10 +177,10 @@ public partial class EncounterCheck : Node
                 if (Mathf.Abs(above) > 0.25f && !_rideProblem)
                 {
                     _rideProblem = true;
-                    _problems.Add($"the pilgrim left the cage floor on the way up ({above:0.00} m from it, the cage {Cage.Travel.Offset:0.0} m up)");
+                    Problems.Add($"the pilgrim left the cage floor on the way up ({above:0.00} m from it, the cage {Cage.Travel.Offset:0.0} m up)");
                 }
             }));
-        _steps.Add(new("in the Calving, the girder climbs the ice cliff back to the Coldstacks' doorway (Mag-grip)", 10f,
+        Steps.Add(new("in the Calving, the girder climbs the ice cliff back to the Coldstacks' doorway (Mag-grip)", 10f,
             () =>
             {
                 World.Load(GD.Load<PackedScene>(World.RoomPath("Calving")));
@@ -226,7 +196,7 @@ public partial class EncounterCheck : Node
                 Hold(InputActions.MoveUp, climbing);
                 Hold(InputActions.MoveRight, !climbing || Player.GlobalPosition.Y > 15.5f);
             }));
-        _steps.Add(new("in the Bore, the shaft drops into the chamber and the relic gives the Drill", 10f,
+        Steps.Add(new("in the Bore, the shaft drops into the chamber and the relic gives the Drill", 10f,
             () =>
             {
                 Hold(InputActions.MoveUp, false);
@@ -238,13 +208,13 @@ public partial class EncounterCheck : Node
             },
             () => Player.Abilities.Has(Ability.Drill) && Player.InControl,
             () => Hold(InputActions.MoveLeft, Player.InControl && X > 4.5f)));
-        _steps.Add(new("a dash bores through the cracked wall, remembered; the tunnel's steps climb back to the hall", 10f,
+        Steps.Add(new("a dash bores through the cracked wall, remembered; the tunnel's steps climb back to the hall", 10f,
             () => { Hold(InputActions.MoveLeft, false); Hold(InputActions.MoveRight, true); },
             () => X > 43f && X < 46f && Player.IsOnFloor() && Mathf.Abs(Player.GlobalPosition.Y) < 0.05f
                   && Session.Done("Bore", "CrackedWall"),
             () =>
             {
-                Hold(InputActions.Dash, X > 16.5f && X < 19f && _ticks % 20 < 2);
+                Hold(InputActions.Dash, X > 16.5f && X < 19f && Ticks % 20 < 2);
                 // Full jumps up each step: pressed on the floor, held a while.
                 if (X > 26f && X < 41f && Player.IsOnFloor() && _jumpHeld <= 0)
                 {
@@ -253,7 +223,7 @@ public partial class EncounterCheck : Node
 
                 Hold(InputActions.Jump, --_jumpHeld > 0);
             }));
-        _steps.Add(new("in the Sounding, the drop into the well, floating to the shelf: the relic gives Ballast", 10f,
+        Steps.Add(new("in the Sounding, the drop into the well, floating to the shelf: the relic gives Ballast", 10f,
             () =>
             {
                 Hold(InputActions.Jump, false);
@@ -273,7 +243,7 @@ public partial class EncounterCheck : Node
 
                 Hold(InputActions.Jump, --_jumpHeld > 0);
             }));
-        _steps.Add(new("sunk under the well's wall and up the shaft beyond, out onto the east hall", 12f,
+        Steps.Add(new("sunk under the well's wall and up the shaft beyond, out onto the east hall", 12f,
             () => { Hold(InputActions.Jump, false); Hold(InputActions.MoveRight, false); _jumpHeld = 0; },
             () => X > 34.5f && Player.IsOnFloor() && Player.GlobalPosition.Y > -4.1f && Player.CurrentState != Player.States.Swim,
             () =>
@@ -291,7 +261,7 @@ public partial class EncounterCheck : Node
 
                 Hold(InputActions.Jump, --_jumpHeld > 0);
             }));
-        _steps.Add(new("in the Mere, sunk through a lead to the lake bed and down its shaft into the Underice", 12f,
+        Steps.Add(new("in the Mere, sunk through a lead to the lake bed and down its shaft into the Underice", 12f,
             () =>
             {
                 Hold(InputActions.Jump, false);
@@ -307,7 +277,7 @@ public partial class EncounterCheck : Node
                 Hold(InputActions.MoveDown, true);
                 Hold(InputActions.MoveRight, X < 31.5f);
             }));
-        _steps.Add(new("in the Underice, sunk clear of the shaft, then the tanks blown: up the shaft, back into the Mere", 10f,
+        Steps.Add(new("in the Underice, sunk clear of the shaft, then the tanks blown: up the shaft, back into the Mere", 10f,
             () => Hold(InputActions.MoveRight, false),
             () => World.RoomName == "Mere" && Player.InControl,
             () =>
@@ -317,7 +287,7 @@ public partial class EncounterCheck : Node
                 Hold(InputActions.MoveDown, !_rose);
                 Hold(InputActions.MoveUp, _rose);
             }));
-        _steps.Add(new("in the Coldstacks, down and dash on the ice plug: the dive breaks it and drops into the Vault's pool", 8f,
+        Steps.Add(new("in the Coldstacks, down and dash on the ice plug: the dive breaks it and drops into the Vault's pool", 8f,
             () =>
             {
                 Hold(InputActions.MoveUp, false);
@@ -327,8 +297,8 @@ public partial class EncounterCheck : Node
                 Hold(InputActions.MoveDown, true);
             },
             () => World.RoomName == "Vault" && Player.InControl && Player.CurrentState == Player.States.Swim,
-            () => Hold(InputActions.Dash, World.RoomName == "Coldstacks" && _ticks is > 10 and < 14)));
-        _steps.Add(new("out of the pool and west into the arena: both gates fall", 8f,
+            () => Hold(InputActions.Dash, World.RoomName == "Coldstacks" && Ticks is > 10 and < 14)));
+        Steps.Add(new("out of the pool and west into the arena: both gates fall", 8f,
             () => { Hold(InputActions.MoveDown, false); Hold(InputActions.Dash, false); Hold(InputActions.MoveLeft, true); _jumpHeld = 0; },
             () => Seal.Fighting && Seal.Gates.All(g => g.Shut),
             () =>
@@ -341,10 +311,10 @@ public partial class EncounterCheck : Node
                 Hold(InputActions.Jump, --_jumpHeld > 0);
                 Hold(InputActions.MoveLeft, X > 30f);
             }));
-        _steps.Add(new("the Archivist dives at the pilgrim lingering below it", 12f,
+        Steps.Add(new("the Archivist dives at the pilgrim lingering below it", 12f,
             () => { Hold(InputActions.Jump, false); Hold(InputActions.MoveLeft, false); },
             () => Player.Vitality.Current < Player.Vitality.Max));
-        _steps.Add(new("swings break the Archivist while it hangs after its dives", 90f,
+        Steps.Add(new("swings break the Archivist while it hangs after its dives", 90f,
             () => { },
             () => Archivist.Broken,
             () =>
@@ -361,10 +331,10 @@ public partial class EncounterCheck : Node
                     Hold(gap > 0f ? InputActions.MoveRight : InputActions.MoveLeft, true);
                 }
 
-                Hold(InputActions.Jump, low && rise > 2.2f && Mathf.Abs(gap) < 2.5f && Player.IsOnFloor() && _ticks % 30 < 14);
-                Hold(InputActions.Attack, Mathf.Abs(gap) < 2.6f && _ticks % 21 is 1 or 2);
+                Hold(InputActions.Jump, low && rise > 2.2f && Mathf.Abs(gap) < 2.5f && Player.IsOnFloor() && Ticks % 30 < 14);
+                Hold(InputActions.Attack, Mathf.Abs(gap) < 2.6f && Ticks % 21 is 1 or 2);
             }));
-        _steps.Add(new("the Vault's gates rise and the fight is remembered", 4f,
+        Steps.Add(new("the Vault's gates rise and the fight is remembered", 4f,
             () =>
             {
                 foreach (StringName action in new[] { InputActions.MoveRight, InputActions.MoveLeft, InputActions.Attack, InputActions.Jump })
@@ -373,7 +343,7 @@ public partial class EncounterCheck : Node
                 }
             },
             () => Seal.Gates.All(g => g.Raised) && Session.Done("Vault", "Arena")));
-        _steps.Add(new("in the Sanctum, coming near the Hierarch: its order is heard", 6f,
+        Steps.Add(new("in the Sanctum, coming near the Hierarch: its order is heard", 6f,
             () =>
             {
                 Session.Spoke += OnSpoke;
@@ -382,11 +352,11 @@ public partial class EncounterCheck : Node
                 Hold(InputActions.MoveLeft, true);
             },
             () => _ordered));
-        _steps.Add(new("the second law holds the pilgrim at the forbidden door, and it says why", 4f,
+        Steps.Add(new("the second law holds the pilgrim at the forbidden door, and it says why", 4f,
             () => { },
-            () => _ticks >= 90 && X > 7f && Player.IsOnFloor() && !Law.Broken && Law.Strain > 0.1f && Law.Refused
+            () => Ticks >= 90 && X > 7f && Player.IsOnFloor() && !Law.Broken && Law.Strain > 0.1f && Law.Refused
                   && Hint.Current == Law.RefusalLine));
-        _steps.Add(new("holding the act breaks it, remembered, the refusal withdrawn at once; past it, the end of what is built", 6f,
+        Steps.Add(new("holding the act breaks it, remembered, the refusal withdrawn at once; past it, the end of what is built", 6f,
             () => _brokeAt = -1,
             () => Law.Broken && Session.Done("Sanctum", "Law") && X < 6f,
             () =>
@@ -394,14 +364,13 @@ public partial class EncounterCheck : Node
                 Hold(InputActions.Interact, Law.Prompt.Offered && !Law.Broken);
                 if (_brokeAt < 0 && Law.Broken)
                 {
-                    _brokeAt = _ticks;
+                    _brokeAt = Ticks;
                     if (Hint.Current == Law.RefusalLine)
                     {
-                        _problems.Add($"the law broken, the hint line still says the refusal {Law.RefusalLine}");
+                        Problems.Add($"the law broken, the hint line still says the refusal {Law.RefusalLine}");
                     }
                 }
             }));
-        Next();
     }
 
     /// <summary>The Hierarch's order heard: the banner speaks it, its speaker named over the words, no title.</summary>
@@ -417,68 +386,20 @@ public partial class EncounterCheck : Node
         if (Banner.Current != proclamation.Said || proclamation.Said.Voice != Voice.Spoken || Banner.ShownSpeaker != speaker || speaker == ""
             || Banner.ShownTitle != "")
         {
-            _problems.Add($"the order was not spoken: the banner shows {Banner.Current?.ToString() ?? "nothing"}, speaker \"{Banner.ShownSpeaker}\", " +
+            Problems.Add($"the order was not spoken: the banner shows {Banner.Current?.ToString() ?? "nothing"}, speaker \"{Banner.ShownSpeaker}\", " +
                           $"title \"{Banner.ShownTitle}\" (the speaker {proclamation.SpeakerLine} is \"{speaker}\")");
         }
     }
 
-    private void Next()
-    {
-        _index++;
-        _ticks = 0;
-        if (_index >= _steps.Count)
-        {
-            Finish();
-            return;
-        }
+    protected override string Tag => "ENCOUNTER";
 
-        _steps[_index].Start();
-    }
+    protected override string Failed => "did not happen in";
 
-    public override void _PhysicsProcess(double delta)
-    {
-        if (_index < 0 || _index >= _steps.Count)
-        {
-            return;
-        }
+    protected override string Detail =>
+        $"in {World.RoomName} at {Player.GlobalPosition}, health {Player.Vitality.Current}/{Player.Vitality.Max}, state {Player.CurrentState.Name}";
 
-        Step step = _steps[_index];
-        _ticks++;
-        step.Tick?.Invoke();
-        if (step.Done())
-        {
-            Next();
-            return;
-        }
+    protected override void Ending() => Session.Spoke -= OnSpoke;
 
-        if (_ticks > step.Seconds * 60f)
-        {
-            _problems.Add($"step {_index + 1} \"{step.What}\" did not happen in {step.Seconds} s (in {World.RoomName} at {Player.GlobalPosition}, " +
-                          $"health {Player.Vitality.Current}/{Player.Vitality.Max}, state {Player.CurrentState.Name})");
-            Finish();
-        }
-    }
-
-    private void Finish()
-    {
-        _index = _steps.Count;
-        foreach (StringName action in new[] { InputActions.Attack, InputActions.Interact, InputActions.MoveRight, InputActions.MoveLeft, InputActions.MoveUp,
-                     InputActions.MoveDown, InputActions.Dash, InputActions.Jump })
-        {
-            Input.ActionRelease(action);
-        }
-
-        Session.Spoke -= OnSpoke;
-        foreach (string problem in _problems)
-        {
-            GD.PushError($"ENCOUNTER CHECK: {problem}");
-        }
-
-        if (_problems.Count == 0)
-        {
-            GD.Print($"ENCOUNTER OK: {_steps.Count} steps (arena gates, the Precentor struck and broken, remembered; the third law held, refused, never pushed or tapped through, broken by the full hold, the fall into Rimefall; the Choir asleep, woken; the Counterweight's ride up; the Calving's girder; the Bore's relic, its cracked wall, its steps; the Sounding's relic, under its wall; the Mere's lake bed down into the Underice and back; the ice plug into the Vault, its gates, the Archivist broken, remembered; the Hierarch's order spoken, the second law held and refused, broken by the hold, the refusal withdrawn)");
-        }
-
-        GetTree().Quit(_problems.Count == 0 ? 0 : 1);
-    }
+    protected override string Outcome =>
+        $"{StepCount} steps (arena gates, the Precentor struck and broken, remembered; the third law held, refused, never pushed or tapped through, broken by the full hold, the fall into Rimefall; the Choir asleep, woken; the Counterweight's ride up; the Calving's girder; the Bore's relic, its cracked wall, its steps; the Sounding's relic, under its wall; the Mere's lake bed down into the Underice and back; the ice plug into the Vault, its gates, the Archivist broken, remembered; the Hierarch's order spoken, the second law held and refused, broken by the hold, the refusal withdrawn)";
 }
