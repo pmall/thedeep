@@ -52,7 +52,7 @@ public class GroundRoutesTests
         var east = new ExitShape("East", new Threshold(ExitSide.East, new Vector2(20.5f, -3f), new Vector2(1f, 3f)), "", 0, false);
         foreach (GroundRoute r in GroundRoutes.Pick(Step(new List<ExitShape> { east }), Limits, 8))
         {
-            Assert.All(r.Leap.Path, p => Assert.False(Box.Around(p + new Vector2(0f, 0.8f), new Vector2(0.7f, 1.6f)).Grown(GroundRoutes.KeepOff)
+            Assert.All(r.Leap.Path, p => Assert.False(Box.Around(p + new Vector2(0f, TestTuning.Body.Y * 0.5f), TestTuning.Body).Grown(GroundRoutes.KeepOff)
                 .Overlaps(east.Threshold.Trigger)));
         }
     }
@@ -68,7 +68,7 @@ public class GroundRoutesTests
         List<GroundRoute> routes = GroundRoutes.Pick(shape, Limits, 20);
         Assert.Contains(routes, r => r.Leap.Path.Any(p => p.X > 0f && p.X < 2f));
         var carried = new Box(0f, -0.5f, 2f, lift.Rise + 1.6f);
-        Assert.All(routes, r => Assert.All(r.Leap.Path, p => Assert.False(Box.Around(p + new Vector2(0f, 0.8f), new Vector2(0.7f, 1.6f))
+        Assert.All(routes, r => Assert.All(r.Leap.Path, p => Assert.False(Box.Around(p + new Vector2(0f, TestTuning.Body.Y * 0.5f), TestTuning.Body)
             .Grown(GroundRoutes.KeepOff).Overlaps(carried))));
     }
 

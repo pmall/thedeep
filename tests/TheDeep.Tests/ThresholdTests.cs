@@ -7,7 +7,7 @@ namespace TheDeep.Tests;
 
 public class ThresholdTests
 {
-    private static readonly Vector2 Body = new(0.7f, 1.6f);
+    private static readonly Vector2 Body = TestTuning.Body;
 
     // The Chapterhouse's west doorway (4 m tall, its marker on the floor 1 m inside the wall), a hatch 2 m wide in a floor, one in a roof.
     private static readonly Threshold West = new(ExitSide.West, new Vector2(1f, 0f), new Vector2(1f, 4f));
