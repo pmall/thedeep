@@ -107,6 +107,9 @@ public sealed class MapReport
 /// </summary>
 public static class MapSolver
 {
+    /// <summary>How many softlocks a check lists (the shortest paths first): the first ones show the way, the rest repeat them.</summary>
+    public const int SoftlocksShown = 5;
+
     /// <summary>Solves <paramref name="map"/> from its start room: what can be reached, the softlocks, and the orders its
     /// abilities can be collected in.</summary>
     public static MapReport Solve(MapGraph map)

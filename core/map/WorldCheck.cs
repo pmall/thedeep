@@ -139,7 +139,7 @@ public sealed class WorldCheck
             _problems.Add($"map: no goal can be reached from {start}");
         }
 
-        foreach ((SolverState state, IReadOnlyList<SolverState> path) in solved.Softlocks.Take(5))
+        foreach ((SolverState state, IReadOnlyList<SolverState> path) in solved.Softlocks.Take(MapSolver.SoftlocksShown))
         {
             _problems.Add($"map: softlock at {state}: no goal can be reached from there; reached by {string.Join(" → ", path)}");
         }
@@ -419,7 +419,7 @@ public sealed class WorldCheck
             _problems.Add($"map inside the rooms: the {item.Ability} relic in {item.Room} is reached from no way into the room");
         }
 
-        foreach ((WayState state, IReadOnlyList<WayState> path) in report.Softlocks.Take(5))
+        foreach ((WayState state, IReadOnlyList<WayState> path) in report.Softlocks.Take(MapSolver.SoftlocksShown))
         {
             _problems.Add($"map inside the rooms: softlock in {state}: no goal can be reached from there; reached by {string.Join(" → ", path)}");
         }
