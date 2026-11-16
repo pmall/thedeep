@@ -44,7 +44,7 @@ public partial class PowerUps : Node
         for (int i = 0; i < found.Count; i++)
         {
             PowerUp power = found[i];
-            if (!power.Taken && new Vector2(power.GlobalPosition.X - p.X, power.GlobalPosition.Y - p.Y).Length() <= TakeRange)
+            if (!power.Taken && power.GlobalPosition.WithinOnPlane(p, TakeRange))
             {
                 Take(power);
                 return;
