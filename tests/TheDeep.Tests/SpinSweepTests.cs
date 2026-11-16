@@ -22,7 +22,9 @@ public class SpinSweepTests
     public void AWheelTurningRoundTheVerticalSweepsThroughThePlayPlane()
     {
         (Vector3 min, Vector3 max) = SpinSweep.Bounds(Wheel, new Vector3(0f, 0f, -4f), Vector3.UnitY);
-        Assert.True(min.Z < -8.9f && max.Z > 0.9f, $"z {min.Z}..{max.Z}");
+        // Every rim point is 5 m out and 0.5 m off the wheel's center plane, so it sweeps sqrt(5² + 0.5²) ≈ 5.025 m either side of z -4.
+        Assert.Equal(-9.025f, min.Z, 2);
+        Assert.Equal(1.025f, max.Z, 2);
         Assert.Equal(-5f, min.Y, 4);
         Assert.Equal(5f, max.Y, 4);
     }
