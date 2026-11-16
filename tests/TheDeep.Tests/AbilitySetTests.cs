@@ -31,6 +31,14 @@ public class AbilitySetTests
     }
 
     [Fact]
+    public void CountsTheAbilitiesInAFlagSet()
+    {
+        Assert.Equal(0, AbilitySet.Count(Ability.None));
+        Assert.Equal(2, AbilitySet.Count(Ability.Drill | Ability.Ballast));
+        Assert.Equal(AbilitySet.All.Count, AbilitySet.Count(AbilitySet.Every));
+    }
+
+    [Fact]
     public void ChangedFiresOnlyOnRealChanges()
     {
         var set = new AbilitySet();

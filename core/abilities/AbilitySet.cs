@@ -15,6 +15,9 @@ public sealed class AbilitySet
         Ability.MagGrip, Ability.Harpoon, Ability.Drill, Ability.Ballast, Ability.HeatPlating,
     };
 
+    /// <summary>How many abilities are in <paramref name="abilities"/>.</summary>
+    public static int Count(Ability abilities) => System.Numerics.BitOperations.PopCount((uint)abilities);
+
     /// <summary>The flags of the abilities the pilgrim has now.</summary>
     public Ability Unlocked { get; private set; }
 

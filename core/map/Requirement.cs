@@ -79,7 +79,7 @@ public sealed class Requirement
         var distinct = options.Distinct().ToList();
         return distinct
             .Where(o => !distinct.Any(other => !other.Equals(o) && other.IsCoveredBy(o)))
-            .OrderBy(o => System.Numerics.BitOperations.PopCount((uint)o.Abilities) + o.Items.Count).ThenBy(o => o.Abilities)
+            .OrderBy(o => AbilitySet.Count(o.Abilities) + o.Items.Count).ThenBy(o => o.Abilities)
             .ThenBy(o => o.Items.ToString(), StringComparer.Ordinal)
             .ToList();
     }

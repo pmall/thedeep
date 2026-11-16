@@ -292,7 +292,7 @@ public sealed class MapDraft
             problems.Add($"can't be reached from {Graph.Start}: {string.Join(", ", report.UnreachableRooms)}");
         }
 
-        foreach ((SolverState state, IReadOnlyList<SolverState> path) in report.Softlocks.Take(5))
+        foreach ((SolverState state, IReadOnlyList<SolverState> path) in report.Softlocks.Take(MapSolver.SoftlocksShown))
         {
             problems.Add($"softlock at {state}: no goal can be reached from there; reached by {string.Join(" → ", path)}");
         }
