@@ -72,8 +72,6 @@ transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 22, 2, 0)
 script = ExtResource("4_goal")
 Ending = true
 Size = Vector2(8, 4)
-TitleLine = &""
-HintLine = &""
 
 [node name="Shafts" type="Node3D" parent="."]
 

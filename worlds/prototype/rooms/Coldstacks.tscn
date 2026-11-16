@@ -11,7 +11,6 @@
 ;   passes it; down it, the volcanic layer.
 
 [ext_resource type="PackedScene" path="res://scenes/kit/Block.tscn" id="1_block"]
-[ext_resource type="Material" path="res://assets/materials/rust.tres" id="2_rust"]
 [ext_resource type="Material" path="res://assets/materials/ice.tres" id="3_ice"]
 [ext_resource type="Script" path="res://scripts/rooms/RoomExit.cs" id="4_exit"]
 [ext_resource type="PackedScene" path="res://scenes/props/HarpoonAnchor.tscn" id="6_anchor"]
@@ -32,7 +31,6 @@
 [ext_resource type="Script" path="res://scripts/rooms/PhotoSpot.cs" id="21_spot"]
 [ext_resource type="Script" path="res://scripts/rooms/Room.cs" id="22_room"]
 [ext_resource type="PackedScene" path="res://scenes/kit/HeatColumn.tscn" id="40_heatcolumn"]
-[ext_resource type="PackedScene" path="res://scenes/fx/Embers.tscn" id="42_embers"]
 [ext_resource type="Resource" path="res://resources/biomes/frozen.tres" id="23_frozen"]
 [ext_resource type="PackedScene" path="res://scenes/stage/RoomStage.tscn" id="24_stage"]
 [ext_resource type="Script" path="res://scripts/rooms/dressing/WallDressing.cs" id="44_walldressing"]
@@ -497,7 +495,6 @@ Material = ExtResource("9_metal_mid")
 Count = 27
 Pitch = 1.6
 GapChance = 0.12
-ToppleChance = 0.05
 Seed = 111
 
 [node name="FloorBack" type="Node3D" parent="Kit/Racks"]
@@ -508,7 +505,6 @@ Material = ExtResource("9_metal_mid")
 Count = 30
 Pitch = 1.6
 GapChance = 0.08
-ToppleChance = 0.05
 Seed = 112
 
 [node name="Gallery0" type="Node3D" parent="Kit/Racks"]

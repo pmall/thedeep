@@ -19,7 +19,6 @@
 [ext_resource type="Material" path="res://assets/materials/metal_mid.tres" id="12_metal_mid"]
 [ext_resource type="Script" path="res://scripts/rooms/dressing/RackRow.cs" id="13_rackrow"]
 [ext_resource type="Script" path="res://scripts/kit/BlockMesh.cs" id="14_blockmesh"]
-[ext_resource type="Material" path="res://assets/materials/stone_mid.tres" id="15_stone_mid"]
 [ext_resource type="Script" path="res://scripts/kit/IcicleMesh.cs" id="16_icicles"]
 [ext_resource type="Material" path="res://assets/materials/ice.tres" id="17_ice"]
 [ext_resource type="Material" path="res://assets/materials/glyphs.tres" id="18_glyphs"]

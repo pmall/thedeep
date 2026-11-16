@@ -34,15 +34,6 @@
 [ext_resource type="PackedScene" path="res://scenes/kit/Hatch.tscn" id="90_hatch"]
 [ext_resource type="Resource" path="res://resources/seams/hatch.tres" id="91_seam_hatch"]
 
-[sub_resource type="PrimitiveMesh" id="column_1"]
-script = ExtResource("1_column")
-Height = 8.5
-Radius = 0.42
-Sides = 20
-Shafts = 4
-Plinth = 0.6
-Capital = 0.45
-
 [sub_resource type="PrimitiveMesh" id="column_2"]
 script = ExtResource("1_column")
 Height = 6
@@ -52,14 +43,6 @@ Shafts = 1
 Plinth = 0.4
 Capital = 0.35
 
-[sub_resource type="PrimitiveMesh" id="arch_3"]
-script = ExtResource("2_arch")
-Span = 8
-Rise = 5
-Thickness = 0.6
-Depth = 1
-Segments = 32
-
 [sub_resource type="PrimitiveMesh" id="arch_4"]
 script = ExtResource("2_arch")
 Span = 8
@@ -67,14 +50,6 @@ Rise = 4
 Thickness = 0.45
 Depth = 0.8
 Segments = 32
-
-[sub_resource type="PrimitiveMesh" id="cables_5"]
-script = ExtResource("3_cables")
-End = Vector3(8, 0, 0)
-Sag = 1.6
-Radius = 0.035
-Strands = 3
-Seed = 1
 
 [sub_resource type="PrimitiveMesh" id="cables_6"]
 script = ExtResource("3_cables")
@@ -385,7 +360,6 @@ Pier = SubResource("column_18")
 Arch = SubResource("arch_19")
 Material = ExtResource("16_stone_mid")
 Bays = 6
-Span = 8
 ArchHeight = 17
 BeamHeight = 23.5
 BeamSection = Vector2(1.5, 2)
@@ -399,7 +373,6 @@ Pier = SubResource("column_2")
 Arch = SubResource("arch_4")
 Material = ExtResource("16_stone_mid")
 Bays = 5
-Span = 8
 ArchHeight = 6
 BeamHeight = 0
 Cables = SubResource("cables_6")

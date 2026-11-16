@@ -248,7 +248,6 @@ Pier = SubResource("column_3")
 Arch = SubResource("arch_4")
 Material = ExtResource("13_stone_mid")
 Bays = 3
-Span = 8
 ArchHeight = 8
 BeamHeight = 13.5
 Seed = 22

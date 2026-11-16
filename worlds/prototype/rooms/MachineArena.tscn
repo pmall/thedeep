@@ -325,8 +325,6 @@ Pier = SubResource("Column_arcade")
 Arch = SubResource("Arch_arcade")
 Material = ExtResource("8_stone_mid")
 Bays = 7
-Span = 8.0
-ArchHeight = 8.5
 BeamHeight = 14.0
 Cables = SubResource("Cables_low")
 CableMaterial = ExtResource("11_cable")
@@ -465,40 +463,34 @@ cast_shadow = 0
 script = ExtResource("3_spot")
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 9, 2.4, 11)
 PlayerPosition = Vector3(1.5, 0, 0)
-PlayerFacing = 1
 
 ; one Votary up close
 [node name="Votary" type="Marker3D" parent="PhotoSpots"]
 script = ExtResource("3_spot")
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 6, 1.4, 5.5)
 PlayerPosition = Vector3(2, 0, 0)
-PlayerFacing = 1
 
 ; the Gleaner pecking at its scrap
 [node name="Gleaner" type="Marker3D" parent="PhotoSpots"]
 script = ExtResource("3_spot")
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 28, 1, 5.5)
 PlayerPosition = Vector3(16, 0, 0)
-PlayerFacing = 1
 
 ; the Limpet asleep on the reliquary
 [node name="Limpet" type="Marker3D" parent="PhotoSpots"]
 script = ExtResource("3_spot")
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 47, 5.3, 6.5)
 PlayerPosition = Vector3(38, 0, 0)
-PlayerFacing = 1
 
 ; the Lamplighter before it has seen anyone
 [node name="Lamplighter" type="Marker3D" parent="PhotoSpots"]
 script = ExtResource("3_spot")
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 5, 5.2, 5)
 PlayerPosition = Vector3(20, 0, 0)
-PlayerFacing = 1
 
 ; the whole arena, from inside the hall's haze (a wider lens, nearer: from 56 m the flooded fog greyed it out)
 [node name="Wide" type="Marker3D" parent="PhotoSpots"]
 script = ExtResource("3_spot")
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 28, 7, 30)
 PlayerPosition = Vector3(2, 0, 0)
-PlayerFacing = 1
 Fov = 52

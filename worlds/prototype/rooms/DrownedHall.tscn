@@ -473,8 +473,6 @@ Pier = SubResource("Column_arcade")
 Arch = SubResource("Arch_arcade")
 Material = ExtResource("24_stone_mid")
 Bays = 8
-Span = 8.0
-ArchHeight = 8.5
 BeamHeight = 14.25
 Cables = SubResource("Cables_low")
 CableMaterial = ExtResource("15_cable")
@@ -489,12 +487,10 @@ Pier = SubResource("Column_gallery")
 Arch = SubResource("Arch_gallery")
 Material = ExtResource("24_stone_mid")
 Bays = 8
-Span = 8.0
 ArchHeight = 6.0
 BeamHeight = 10.5
 Cables = SubResource("Cables_high")
 CableMaterial = ExtResource("15_cable")
-CableChance = 0.4
 CableOffset = Vector3(0, 5.5, 0.75)
 Seed = 4
 
@@ -512,7 +508,6 @@ GapChance = 0.12
 ToppleChance = 0.04
 ClearEvery = 8.0
 ClearOffset = 5.5
-Seed = 1
 
 [node name="Back" type="Node3D" parent="Kit/Racks"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 1.5, -1.5, -10.5)
@@ -520,7 +515,6 @@ script = ExtResource("38_rackrow")
 Variants = [SubResource("Rack_1"), SubResource("Rack_2"), SubResource("Rack_3")]
 Material = ExtResource("25_metal_mid")
 Count = 61
-GapChance = 0.15
 ToppleChance = 0.0
 ClearEvery = 8.0
 ClearOffset = 6.5
