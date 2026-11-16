@@ -263,7 +263,7 @@ launch() {
         # shellcheck disable=SC2086 # the arguments are split on purpose
         if [ "$args" = "--save-check" ]; then
             # Two fresh runs in turn, the second resuming what the first saved (SaveCheck).
-            nice -n "$nice" "$GODOT" --headless --path . --fixed-fps 60 --quit-after "$frames" -- --room Threshold --save-name "$SAVE_NAME" --save-check-write >"$log" 2>&1 || code=$?
+            nice -n "$nice" "$GODOT" --headless --path . --fixed-fps 60 --quit-after "$frames" -- --room Belfry --save-name "$SAVE_NAME" --save-check-write >"$log" 2>&1 || code=$?
             [ "$code" = 0 ] && { nice -n "$nice" "$GODOT" --headless --path . --fixed-fps 60 --quit-after "$frames" -- --save-name "$SAVE_NAME" --save-check-read >>"$log" 2>&1 || code=$?; }
         elif [ -n "$args" ]; then
             nice -n "$nice" "$GODOT" --headless --path . --fixed-fps 60 --quit-after "$frames" -- $args >"$log" 2>&1 || code=$?

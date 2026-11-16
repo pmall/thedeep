@@ -6,12 +6,14 @@ namespace TheDeep;
 
 /// <summary>
 /// The save, end to end, in two fresh runs (run by tools/check.sh) on a scratch save that is never the owner's
-/// (<see cref="ScratchPrefix"/>; `--save-name`). The write run (`-- --room Threshold --save-name savecheck --save-check-write`) gives the
+/// (<see cref="ScratchPrefix"/>; `--save-name`). The write run (`-- --room Belfry --save-name savecheck --save-check-write`) gives the
 /// pilgrim a state unlike a new game's in every saved field (abilities, an item, power-ups, something done for good, a map of two
-/// rooms, a way taken) with the debug hooks, then rests at the Threshold's shrine through the real Interact action, which saves by the
-/// game's own path. The read run (`-- --save-name savecheck --save-check-read`) is a normal launch: Main reads that file and
-/// <see cref="Session.Resume"/> restores it; the check asserts every field came back, that a save that cannot be read is set aside and
-/// never overwritten (<see cref="SaveFile.SetAside"/>), and removes its scratch files. Prints `SAVE WRITTEN` then `SAVE OK`, or `SAVE CHECK` errors.
+/// rooms, a way taken) with the debug hooks, takes the Belfry's item pickup by the game's own path (the machines blind to the pilgrim),
+/// then rests at the Belfry's shrine through the real Interact action, which saves by the game's own path. The read run
+/// (`-- --save-name savecheck --save-check-read`) is a normal launch: Main reads that file and hands it to the session before any room
+/// is wired (<see cref="Session.Resume"/>); the check asserts every field came back, that the pickup taken in the shrine's room still
+/// lies taken there, that a save that cannot be read is set aside and never overwritten (<see cref="SaveFile.SetAside"/>), and removes
+/// its scratch files. Prints `SAVE WRITTEN` then `SAVE OK`, or `SAVE CHECK` errors.
 /// </summary>
 public partial class SaveCheck : Node
 {
@@ -26,11 +28,13 @@ public partial class SaveCheck : Node
     public required World World { get; init; }
     /// <summary>The running game's session.</summary>
     public required Session Session { get; init; }
+    /// <summary>The running game's machines, kept blind to the pilgrim in the write run so none strikes it while it takes and rests.</summary>
+    public required MachineDirector Machines { get; init; }
 
     private const Ability Owned = Ability.MagGrip | Ability.Harpoon;
     private const string Item = "SacristyKey";
     private const string Done = "CheckDeed";
-    private const string Start = "Threshold";
+    private const string Start = "Belfry";
     private const string Other = "Narthex";
     private static readonly Prowess Gained = new(2, 3);
 
@@ -62,6 +66,7 @@ public partial class SaveCheck : Node
             Player.Items.Restore(ItemSet.Of(new[] { Item }));
             Player.Strengthen(Gained);
             Session.Remember(Done);
+            Machines.PlayerPresent = false;
             World.Load(GD.Load<PackedScene>(World.RoomPath(Other)));
         }
         else
@@ -88,23 +93,34 @@ public partial class SaveCheck : Node
                 World.Map.Take(Start, World.Room.Exits().First().NameText());
                 break;
             case 20:
-                Shrine? shrine = World.Room.First<Shrine>();
-                if (shrine is null)
+                if (World.Room.First<ItemPickup>() is not { } pickup)
                 {
-                    _problems.Add($"{Start} has no shrine");
+                    _problems.Add($"{Start} has no item pickup");
+                    Finish();
+                    return;
+                }
+
+                // Taken by the keyring the next tick, as walking up to it would.
+                Player.Respawn(pickup.GlobalPosition, 1);
+                break;
+            case 100:
+                Shrine? shrine = World.Room.First<Shrine>();
+                if (shrine is null || World.Room.First<ItemPickup>() is not { Taken: true })
+                {
+                    _problems.Add(shrine is null ? $"{Start} has no shrine" : $"the pilgrim did not take the {Start}'s item pickup");
                     Finish();
                     return;
                 }
 
                 Player.Respawn(shrine.GlobalPosition, 1);
                 break;
-            case 60:
+            case 140:
                 Input.ActionPress(InputActions.Interact);
                 break;
-            case 62:
+            case 142:
                 Input.ActionRelease(InputActions.Interact);
                 break;
-            case 200:
+            case 280:
                 if (Session.RestedShrine == "" || !FileAccess.FileExists(Path))
                 {
                     _problems.Add($"resting at the shrine did not save: shrine '{Session.RestedShrine}', file {(FileAccess.FileExists(Path) ? "there" : "missing")}");
@@ -128,10 +144,13 @@ public partial class SaveCheck : Node
         Expect("the file's shrine", file.Shrine, World.Room.First<Shrine>()?.NameText() ?? "?");
         Expect("the room resumed in", World.RoomName, file.Room);
         Expect("abilities", Player.Abilities.Unlocked, Owned);
-        Expect("items", string.Join(",", Player.Items.Held.Ids), Item);
+        ItemPickup? pickup = World.Room.First<ItemPickup>();
+        string pickupName = pickup?.NameText() ?? "?";
+        Expect("items", Names(Player.Items.Held.Ids), Names(new[] { Item, pickup?.Item.Id ?? "?" }));
         Expect("power-ups", Player.Prowess, Gained);
         Expect("the saved thing done for good is done again", Session.Done(Done), true);
-        Expect("the file's collected", string.Join(",", file.Collected), SaveData.RelicId(Start, Done));
+        Expect("the file's collected", Names(file.Collected), Names(new[] { SaveData.RelicId(Start, Done), SaveData.RelicId(Start, pickupName) }));
+        Expect("the pickup taken in the shrine's room lies taken there", pickup?.Taken ?? false, true);
         Expect("the shrine is where the pilgrim stands", World.Room.First<Shrine>() is { } s && s.GlobalPosition.DistanceTo(Player.GlobalPosition) < 1.0f, true);
         Expect("the map's rooms", Names(World.Map.Rooms.Select(r => r.Name)), Names(file.MapRooms().Select(r => r.Name)));
         Expect("the map kept both rooms visited", Names(World.Map.Rooms.Select(r => r.Name)), Names(new[] { Start, Other }));

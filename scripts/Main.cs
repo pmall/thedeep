@@ -40,7 +40,6 @@ public partial class Main : Node3D
     /// <summary>Where a new game starts (the world's start room before a save or `--room` replaces it): the map check's start.</summary>
     public string GameStart { get; private set; } = "";
 
-    private SaveData? _resume;
     private LaunchOptions _options = new();
     private bool _refused;
 
@@ -76,11 +75,12 @@ public partial class Main : Node3D
         bool driven = Drivers.Driven(_options);
         bool pickedRoom = _options.Room is not null;
 
-        // A normal launch resumes from the save: the world starts in the room of the last shrine rested at.
+        // A normal launch resumes from the save: the world starts in the room of the last shrine rested at, and the session holds
+        // the save before any node is ready, so every node that wires that room sees what is done there.
         if (!driven && !pickedRoom && !_options.NewGame && SaveFile.Read(World.Definition.SavePath) is { } save
             && ResourceLoader.Exists(World.RoomPath(save.Room)))
         {
-            _resume = save;
+            Session.Resume(save);
             World.FirstRoom = GD.Load<PackedScene>(World.RoomPath(save.Room));
         }
 
@@ -133,11 +133,7 @@ public partial class Main : Node3D
         }
 
         Room room = World.Room;
-        Player.Respawn(room.SpawnPoint.GlobalPosition);
-        if (_resume is not null)
-        {
-            Session.Resume(_resume);
-        }
+        Player.Respawn(Session.RespawnPoint(room), 1);
 
         // The UI shots see a room as a player comes to it (the Pyre's heat stands at its door).
         if ((!Drivers.Driven(_options) || Drivers.ShowsRoomAsPlayed(_options)) && !GrantStartAbilities())
