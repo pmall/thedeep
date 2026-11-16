@@ -16,6 +16,14 @@ public class BiomeLightTests
     }
 
     [Fact]
+    public void TheDarkEndOfTheScaleHoldsItsLinearPiecesAtBothEnds()
+    {
+        // 0.02 is under the sRGB knee (0.04045), and its linear value under the knee back (0.0031308): both linear pieces run.
+        Vector3 tint = BiomeLight.ShaftTint(new Vector3(0.02f), 1f);
+        Assert.Equal(0.02f, tint.X, 4);
+    }
+
+    [Fact]
     public void ALesserShareDimsInLinearLight()
     {
         // Half of white's linear light is 0.5, which sRGB writes as about 0.735.
