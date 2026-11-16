@@ -4,12 +4,6 @@ using System.Numerics;
 
 namespace TheDeep;
 
-/// <summary>A block a crawler may cling to, as a box on the play plane (room positions); <paramref name="Metal"/> says it can be crawled on.</summary>
-public readonly record struct PerchBox(Vector2 Min, Vector2 Max, bool Metal);
-
-/// <summary>A thin box just off a face, to be tested for anything else touching that face: its center and its size on the play plane.</summary>
-public readonly record struct FaceProbe(Vector2 Center, Vector2 Size);
-
 /// <summary>
 /// Where a crawling machine clings (<see cref="CrawlMotion"/>): the nearest metal block to where it spawns, and the faces of that
 /// block nothing else touches. The machine feeds it boxes and asks the engine only whether each probe meets anything.

@@ -35,14 +35,3 @@ public readonly record struct Perception(
     public static Perception Alone(float time, Vector2 position, int facing) =>
         new(time, position, facing, null, Array.Empty<Impact>(), Array.Empty<Neighbor>());
 }
-
-/// <param name="Position">The player's chest, about a meter above the feet.</param>
-/// <param name="InSight">A clear line from the machine's sensors to the player.</param>
-public readonly record struct PlayerTrace(Vector2 Position, Vector2 Velocity, bool InSight);
-
-/// <param name="Strength">How hard it hit, in m/s of impact speed (a hard landing is 15–20).</param>
-public readonly record struct Impact(Vector2 Position, float Strength);
-
-/// <param name="Kind">The neighbor's species id.</param>
-/// <param name="Signal">What its brain broadcasts (a praying machine's prayer phase).</param>
-public readonly record struct Neighbor(Vector2 Position, string Kind, float Signal);

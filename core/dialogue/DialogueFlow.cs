@@ -3,19 +3,6 @@ using System.Collections.Generic;
 
 namespace TheDeep;
 
-/// <summary>What a press did to a conversation (<see cref="DialogueFlow.Press"/>).</summary>
-public enum DialoguePress
-{
-    /// <summary>The line being revealed is shown whole at once.</summary>
-    Completed,
-
-    /// <summary>On to the next line.</summary>
-    Next,
-
-    /// <summary>That was the last line: the conversation is over.</summary>
-    Ended,
-}
-
 /// <summary>
 /// A conversation in play, pure: its lines in turn, each revealed letter by letter at its <see cref="RevealPace"/>. A press shows the
 /// line being revealed whole at once, or, once it is whole, moves on to the next; after the last, the conversation is over. The texts

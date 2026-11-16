@@ -3,22 +3,6 @@ using System.Numerics;
 
 namespace TheDeep;
 
-/// <summary>A room as the map knows it: where its origin sits on the map and the area it covers (its camera bounds).</summary>
-public sealed record MapRoom(string Name, Vector2 Offset, Vector2 BoundsMin, Vector2 BoundsMax)
-{
-    /// <summary>The minimum corner of the area the room covers, on the map (meters).</summary>
-    public Vector2 MapMin => Offset + BoundsMin;
-    /// <summary>The maximum corner of the area the room covers, on the map (meters).</summary>
-    public Vector2 MapMax => Offset + BoundsMax;
-}
-
-/// <summary>
-/// A way out of a visited room as the map knows it: the exit's name, where it sits in its room and which way it leads out of it, what
-/// it needs (a <see cref="Requirement"/> expression), whether the room behind it is built, and whether it is hidden (a secret's way in:
-/// the map shows it only once taken).
-/// </summary>
-public sealed record MapWay(string Room, string Exit, Vector2 Position, ExitSide Side, string Requires, bool Built, bool Hidden = false);
-
 /// <summary>
 /// The rooms the player has visited and where they sit relative to each other. Nothing is listed by hand:
 /// a room's place comes from the exit the player entered it through (<see cref="ExitMath.RoomOffset"/>),

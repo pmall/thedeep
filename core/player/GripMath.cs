@@ -3,9 +3,6 @@ using System.Numerics;
 
 namespace TheDeep;
 
-/// <summary>A pose on a surface: where the feet are and which way is up (the surface's normal).</summary>
-public readonly record struct GripPose(Vector2 Feet, Vector2 Up);
-
 /// <summary>
 /// The geometry of mag-grip, pure. Gameplay blocks are axis-aligned boxes, so every surface normal is one
 /// of ±X, ±Y; the player stands on a surface with its up along the normal, its local +X (its "forward"

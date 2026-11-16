@@ -2,25 +2,6 @@ using System;
 
 namespace TheDeep;
 
-/// <summary>What a lift is doing (<see cref="LiftMotion"/>).</summary>
-public enum LiftPhase
-{
-    /// <summary>At its lower stop, empty.</summary>
-    Waiting,
-
-    /// <summary>At its lower stop with a rider, about to let go of its brake.</summary>
-    Boarding,
-
-    /// <summary>On its way up.</summary>
-    Rising,
-
-    /// <summary>At its upper stop.</summary>
-    Arrived,
-
-    /// <summary>Empty, sinking back to its lower stop.</summary>
-    Returning,
-}
-
 /// <summary>
 /// The travel of a counterweighted lift that only carries its rider up, pure: standing on it at its lower stop lets go of
 /// the brake after <see cref="BoardDelay"/>; then it gathers speed, rises at <see cref="Speed"/> and eases into its upper

@@ -116,6 +116,3 @@ public sealed record StageSpec
             : new FrameBand(count, new Vector2(min.X - FrameSideMargin, min.Y - FrameBelowFrom), new Vector2(max.X + FrameSideMargin, min.Y - FrameBelowTo));
     }
 }
-
-/// <summary>A row of framing silhouettes: how many, and the area (X, Y) their bases are scattered in.</summary>
-public readonly record struct FrameBand(int Count, Vector2 AreaMin, Vector2 AreaMax);
