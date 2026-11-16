@@ -33,8 +33,7 @@ public partial class HeatCheck : Node
     /// <summary>How long the pilgrim keeps walking into the channel (step 3), seconds.</summary>
     private const float Pressing = 4f;
 
-    /// <summary>The gates the pilgrim has said it can't pass (GateHints).</summary>
-    private readonly HashSet<Ability> _hinted = new();
+    private HintLog? _hinted;
 
     private readonly List<Step> _steps = new();
     private readonly List<string> _problems = new();
@@ -77,7 +76,7 @@ public partial class HeatCheck : Node
 
     public override void _Ready()
     {
-        Hints.Said += kind => _hinted.Add(kind);
+        _hinted = new HintLog(Hints);
         Player.Hurt += () => _hurts.Add(_clock);
         Vector3 bank = new(Channel.MinX - 4f, 1f, 0f);
         Vector3 cavern = new(Vent.MaxX + 3.5f, Vent.MinY, 0f);
@@ -129,7 +128,7 @@ public partial class HeatCheck : Node
                 Player.Respawn(cavern, -1);
                 Input.ActionPress(InputActions.MoveLeft);
             },
-            () => _hurts.Count > 0 && _hurts[^1] >= _clock - _ticks && _hinted.Contains(Ability.HeatPlating)));
+            () => _hurts.Count > 0 && _hurts[^1] >= _clock - _ticks && _hinted!.Said(Ability.HeatPlating)));
         _steps.Add(new("with Heat plating, the pilgrim walks into the vent's heat to the wall behind it and stands there unharmed", 2.5f,
             () =>
             {

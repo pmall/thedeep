@@ -15,15 +15,8 @@ namespace TheDeep;
 /// (climbing past the metal lets go: only metal holds) and a tank of water at the metal wall's foot (walking down into it lets
 /// go, and the pilgrim swims). Each step has a time limit. Prints `GRIP OK` or `GRIP CHECK` errors.
 /// </summary>
-public partial class GripCheck : Node
+public partial class GripCheck : StepDriver
 {
-    private static readonly StringName TankName = "Tank";
-
-    /// <summary>The running game's pilgrim.</summary>
-    public required Player Player { get; init; }
-    /// <summary>The running game's world: its rooms, and the one loaded.</summary>
-    public required World World { get; init; }
-
     /// <summary>The pier east of the metal wall: its east face, the top of its metal foot, its top.</summary>
     private const float PierFace = 30f, PierMetalTop = 4f, PierTop = 10f;
 
@@ -33,27 +26,13 @@ public partial class GripCheck : Node
     /// <summary>The tank between the metal wall and the pier: its surface (its floor is the lab's).</summary>
     private const float TankSurface = 5f;
 
-    private readonly List<Step> _steps = new();
-    private readonly List<string> _problems = new();
     private readonly HashSet<NVector2> _upsSeen = new();
-    private int _index = -1;
-    private int _ticks;
     private float _maxAbsZ;
     private float _highestGrip = float.NegativeInfinity;
     private float _lowestGrip = float.PositiveInfinity;
 
-    private sealed record Step(string What, float Seconds, Action Start, Func<bool> Done);
-
-    /// <summary>Runs before the pilgrim each frame and each physics tick, so what it presses is read the same tick.</summary>
-    public GripCheck()
+    protected override void Build()
     {
-        ProcessPriority = -100;
-        ProcessPhysicsPriority = -100;
-    }
-
-    public override void _Ready()
-    {
-        var blocks = GD.Load<PackedScene>("res://scenes/kit/Block.tscn");
         foreach ((string name, float x0, float x1, float bottom, float top, SurfaceKind surface) in new[]
                  {
                      ("Step", 0f, StepFace, 0f, StepTop, SurfaceKind.Rock),
@@ -61,102 +40,66 @@ public partial class GripCheck : Node
                      ("Pier", PierFace - 2f, PierFace, PierMetalTop, PierTop, SurfaceKind.Rock),
                  })
         {
-            Block block = blocks.Instantiate<Block>();
-            block.Named(name);
-            block.Surface = surface;
-            block.Size = new Vector3(x1 - x0, top - bottom, 4f);
-            block.Position = new Vector3(0.5f * (x0 + x1), 0.5f * (bottom + top), 0f);
-            World.Room.AddChild(block);
+            World.Room.AddChild(LabProps.Block(name, new Vector3(0.5f * (x0 + x1), 0.5f * (bottom + top), 0f),
+                new Vector3(x1 - x0, top - bottom, 4f), surface));
         }
 
-        World.Room.AddChild(new WaterBody
-        {
-            Name = TankName,
-            Swim = true,
-            Size = new Vector2(2f, 4f),
-            Depth = TankSurface,
-            Position = new Vector3(27f, TankSurface, 0f),
-            SurfaceMaterial = GD.Load<Material>("res://assets/materials/water.tres"),
-        });
+        World.Room.AddChild(LabProps.Tank(new Vector2(2f, 4f), TankSurface, new Vector3(27f, TankSurface, 0f)));
 
         NVector2 left = new(-1f, 0f), right = new(1f, 0f), down = new(0f, -1f);
-        _steps.Add(new("a full jump at a step just higher than a jump lands on its top (the ledge assist)", 2f,
+        Steps.Add(new("a full jump at a step just higher than a jump lands on its top (the ledge assist)", 2f,
             () => { Player.Abilities.Lock(Ability.MagGrip); Place(StepFace + 1.5f, 0f); Press(InputActions.MoveLeft); Press(InputActions.Jump); },
             () => Player.IsUpright && Player.IsOnFloor() && Player.GlobalPosition.Y > StepTop - 0.05f));
-        _steps.Add(new("stick to the metal wall when pressing into it", 2f,
+        Steps.Add(new("stick to the metal wall when pressing into it", 2f,
             () => { Release(InputActions.MoveLeft); Release(InputActions.Jump); Place(20f, 0f); Player.Abilities.Unlock(Ability.MagGrip); Press(InputActions.MoveRight); },
             () => Player.CurrentState == Player.States.Grip && Player.SurfaceUp == left));
-        _steps.Add(new("climb the wall, turn under the slab, wrap its end and stand on its top", 9f,
+        Steps.Add(new("climb the wall, turn under the slab, wrap its end and stand on its top", 9f,
             () => { Release(InputActions.MoveRight); Press(InputActions.MoveUp); },
             () => Player.IsUpright && Player.IsOnFloor() && Player.GlobalPosition.Y > 12.9f));
-        _steps.Add(new("seen on the way: the wall, the slab's underside, its end face", 0f, () => { }, () =>
+        Steps.Add(new("seen on the way: the wall, the slab's underside, its end face", 0f, () => { }, () =>
             _upsSeen.Contains(left) && _upsSeen.Contains(down) && _upsSeen.Contains(new NVector2(-1f, 0f))));
-        _steps.Add(new("jump into the block's underside and hang from it", 2f,
+        Steps.Add(new("jump into the block's underside and hang from it", 2f,
             () => { Release(InputActions.MoveUp); Place(8f, 0f); Press(InputActions.Jump); },
             () => Player.CurrentState == Player.States.Grip && Player.SurfaceUp == down));
-        _steps.Add(new("walk out under the block, wrap its end and stand on its top", 5f,
+        Steps.Add(new("walk out under the block, wrap its end and stand on its top", 5f,
             () => { Release(InputActions.Jump); Press(InputActions.MoveRight); },
             () => Player.IsUpright && Player.IsOnFloor() && Mathf.Abs(Player.GlobalPosition.Y - 6.5f) < 0.05f));
-        _steps.Add(new("stick to the wall again", 2f,
+        Steps.Add(new("stick to the wall again", 2f,
             () => { Place(20f, 0f); Press(InputActions.MoveRight); },
             () => Player.CurrentState == Player.States.Grip));
-        _steps.Add(new("leap off the wall, away from it and upright", 1f,
+        Steps.Add(new("leap off the wall, away from it and upright", 1f,
             () => { Release(InputActions.MoveRight); Press(InputActions.Jump); },
             () => Player.IsUpright && Player.Velocity.X < -3f && Player.Velocity.Y > 0f));
-        _steps.Add(new("stick to the wall once more", 2.5f,
+        Steps.Add(new("stick to the wall once more", 2.5f,
             () => { Release(InputActions.Jump); Place(20f, 0f); Press(InputActions.MoveRight); },
             () => Player.CurrentState == Player.States.Grip));
-        _steps.Add(new("let go by pulling away from the wall", 1f,
+        Steps.Add(new("let go by pulling away from the wall", 1f,
             () => { Release(InputActions.MoveRight); Press(InputActions.MoveLeft); },
             () => Player.IsUpright && Player.CurrentState != Player.States.Grip));
-        _steps.Add(new("stick to the pier's metal foot", 2f,
+        Steps.Add(new("stick to the pier's metal foot", 2f,
             () => { Release(InputActions.MoveLeft); _highestGrip = float.NegativeInfinity; Place(PierFace + 1f, 0f); Press(InputActions.MoveLeft); },
             () => Player.CurrentState == Player.States.Grip && Player.SurfaceUp == right));
-        _steps.Add(new("climb past the metal onto the rock above: it lets go", 3f,
+        Steps.Add(new("climb past the metal onto the rock above: it lets go", 3f,
             () => { Release(InputActions.MoveLeft); Press(InputActions.MoveUp); },
             () => Player.IsUpright && Player.CurrentState != Player.States.Grip));
-        _steps.Add(new("let go below the rock (never held by it)", 0f, () => { },
+        Steps.Add(new("let go below the rock (never held by it)", 0f, () => { },
             () => _highestGrip < PierMetalTop + 1f));
-        _steps.Add(new("grip the metal wall above the tank", 2.5f,
+        Steps.Add(new("grip the metal wall above the tank", 2.5f,
             () => { Release(InputActions.MoveUp); _lowestGrip = float.PositiveInfinity; Place(27f, 8f); Press(InputActions.MoveLeft); },
             () => Player.CurrentState == Player.States.Grip && Player.SurfaceUp == right));
-        _steps.Add(new("walk down into the water: it lets go, and the pilgrim swims", 3f,
+        Steps.Add(new("walk down into the water: it lets go, and the pilgrim swims", 3f,
             () => { Release(InputActions.MoveLeft); Press(InputActions.MoveDown); },
             () => Player.CurrentState == Player.States.Swim));
-        _steps.Add(new("never held deep under the water", 0f, () => { },
+        Steps.Add(new("never held deep under the water", 0f, () => { },
             () => _lowestGrip > TankSurface - 1.5f));
-        Next();
     }
 
-    private void Place(float x, float y)
+    protected override string Tag => "GRIP";
+
+    protected override string Failed => "did not happen in";
+
+    protected override void Observe(float delta)
     {
-        Player.Respawn(new Vector3(x, y, 0f), 1);
-    }
-
-    private static void Press(StringName action) => Input.ActionPress(action);
-
-    private static void Release(StringName action) => Input.ActionRelease(action);
-
-    private void Next()
-    {
-        _index++;
-        _ticks = 0;
-        if (_index >= _steps.Count)
-        {
-            Finish();
-            return;
-        }
-
-        _steps[_index].Start();
-    }
-
-    public override void _PhysicsProcess(double delta)
-    {
-        if (_index < 0 || _index >= _steps.Count)
-        {
-            return;
-        }
-
         _upsSeen.Add(Player.SurfaceUp);
         if (Player.CurrentState == Player.States.Grip)
         {
@@ -165,44 +108,18 @@ public partial class GripCheck : Node
         }
 
         _maxAbsZ = Mathf.Max(_maxAbsZ, Mathf.Abs(Player.GlobalPosition.Z));
-        Step step = _steps[_index];
-        if (step.Done())
-        {
-            Next();
-            return;
-        }
-
-        if (++_ticks > step.Seconds * 60f)
-        {
-            _problems.Add($"step {_index + 1} \"{step.What}\" did not happen in {step.Seconds} s (at {Player.GlobalPosition}, " +
-                          $"state {Player.CurrentState.Name}, up {Player.SurfaceUp})");
-            Finish();
-        }
     }
 
-    private void Finish()
+    protected override void Ending()
     {
-        _index = _steps.Count;
-        foreach (StringName action in new[] { InputActions.MoveLeft, InputActions.MoveRight, InputActions.MoveUp, InputActions.MoveDown, InputActions.Jump })
-        {
-            Input.ActionRelease(action);
-        }
-
         if (_maxAbsZ > 0.001f)
         {
-            _problems.Add($"left the play plane (|Z| up to {_maxAbsZ})");
+            Problems.Add($"left the play plane (|Z| up to {_maxAbsZ})");
         }
-
-        foreach (string problem in _problems)
-        {
-            GD.PushError($"GRIP CHECK: {problem}");
-        }
-
-        if (_problems.Count == 0)
-        {
-            GD.Print($"GRIP OK: {_steps.Count} steps (ledge assist, wall, inner corner, outer corners, ceiling, leap, let go, metal's end, water)");
-        }
-
-        GetTree().Quit(_problems.Count == 0 ? 0 : 1);
     }
+
+    protected override string Detail => $"at {Player.GlobalPosition}, state {Player.CurrentState.Name}, up {Player.SurfaceUp}";
+
+    protected override string Outcome =>
+        $"{StepCount} steps (ledge assist, wall, inner corner, outer corners, ceiling, leap, let go, metal's end, water)";
 }

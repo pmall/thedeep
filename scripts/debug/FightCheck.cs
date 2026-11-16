@@ -12,42 +12,12 @@ namespace TheDeep;
 /// landing it bounces the pilgrim up; a strike during a dash is a dash strike, and it lands. Each step has a time limit. Prints
 /// `FIGHT OK` or `FIGHT CHECK` errors.
 /// </summary>
-public partial class FightCheck : Node
+public partial class FightCheck : StepDriver
 {
-    /// <summary>The running game's pilgrim.</summary>
-    public required Player Player { get; init; }
-    /// <summary>The running game's world: its rooms, and the one loaded.</summary>
-    public required World World { get; init; }
-
-    private readonly List<Step> _steps = new();
-    private readonly List<string> _problems = new();
     private readonly List<StrikeKind> _kinds = new();
-    private int _index = -1;
-    private int _ticks;
     private bool _stopped, _bounced, _landed;
 
-    private sealed record Step(string What, float Seconds, Action Start, Func<bool> Done, Action? Tick = null);
-
-    /// <summary>Runs before the pilgrim each frame and each physics tick, so what it presses is read the same tick.</summary>
-    public FightCheck()
-    {
-        ProcessPriority = -100;
-        ProcessPhysicsPriority = -100;
-    }
-
     private Machine Votary => World.Room.First<Machine>() ?? throw new InvalidOperationException("no Machine in the room");
-
-    private static void Hold(StringName action, bool held)
-    {
-        if (held)
-        {
-            Input.ActionPress(action);
-        }
-        else
-        {
-            Input.ActionRelease(action);
-        }
-    }
 
     /// <summary>Renews the Votary and clears what the last step saw.</summary>
     private void Renew()
@@ -57,105 +27,58 @@ public partial class FightCheck : Node
         _stopped = _bounced = _landed = false;
     }
 
-    public override void _Ready()
+    protected override void Build()
     {
         if (World.Room.All<Machine>().Count == 0)
         {
-            _problems.Add("the lab has no machine to strike");
-            Finish();
+            Fail("the lab has no machine to strike");
             return;
         }
 
         Player.Attack.Swung += strike => _kinds.Add(strike.Kind);
         float x = Votary.PlanePosition.X;
-        _steps.Add(new("presses in rhythm chain a swing, a second and the finisher, and a landed blow holds still a moment", 3f,
+        Steps.Add(new("presses in rhythm chain a swing, a second and the finisher, and a landed blow holds still a moment", 3f,
             () => { Renew(); Player.Respawn(new Vector3(x - 1.4f, 0f, 0f), 1); },
             () => _kinds.Take(3).SequenceEqual(new[] { StrikeKind.Swing, StrikeKind.Second, StrikeKind.Finisher }) && _stopped,
-            () => Hold(InputActions.Attack, _ticks % 21 is 1 or 2)));
-        _steps.Add(new("in the air holding down, a down strike; landed, it bounces the pilgrim up", 3f,
+            () => Hold(InputActions.Attack, Ticks % 21 is 1 or 2)));
+        Steps.Add(new("in the air holding down, a down strike; landed, it bounces the pilgrim up", 3f,
             () =>
             {
-                Input.ActionRelease(InputActions.Attack);
+                Release(InputActions.Attack);
                 Renew();
                 Player.Respawn(new Vector3(x, 2.6f, 0f), 1);
-                Input.ActionPress(InputActions.MoveDown);
+                Press(InputActions.MoveDown);
             },
             () => _kinds.Contains(StrikeKind.Down) && _bounced,
-            () => Hold(InputActions.Attack, _ticks % 21 is 4 or 5)));
-        _steps.Add(new("a strike during a dash is a dash strike, and it lands", 3f,
+            () => Hold(InputActions.Attack, Ticks % 21 is 4 or 5)));
+        Steps.Add(new("a strike during a dash is a dash strike, and it lands", 3f,
             () =>
             {
-                Input.ActionRelease(InputActions.Attack);
-                Input.ActionRelease(InputActions.MoveDown);
+                Release(InputActions.Attack);
+                Release(InputActions.MoveDown);
                 Renew();
                 Player.Respawn(new Vector3(x + 4.5f, 0f, 0f), -1); // from behind it: a praying Votary strikes whoever is in front
             },
             () => _kinds.Contains(StrikeKind.Dash) && _landed,
             () =>
             {
-                Hold(InputActions.Dash, _ticks is 10 or 11);
-                Hold(InputActions.Attack, _ticks is 13 or 14);
+                Hold(InputActions.Dash, Ticks is 10 or 11);
+                Hold(InputActions.Attack, Ticks is 13 or 14);
             }));
-        Next();
     }
 
-    private void Next()
+    protected override string Tag => "FIGHT";
+
+    protected override void Observe(float delta)
     {
-        _index++;
-        _ticks = 0;
-        if (_index >= _steps.Count)
-        {
-            Finish();
-            return;
-        }
-
-        _steps[_index].Start();
-    }
-
-    public override void _PhysicsProcess(double delta)
-    {
-        if (_index < 0 || _index >= _steps.Count)
-        {
-            return;
-        }
-
         Player.Vitality.Restore();
         _stopped |= Player.HitStopped;
         _landed |= Player.HitStopped && Player.Attack.Strike.Kind == StrikeKind.Dash;
         _bounced |= _kinds.Contains(StrikeKind.Down) && Player.Velocity.Y > 5f && !Player.IsOnFloor();
-        Step step = _steps[_index];
-        _ticks++;
-        step.Tick?.Invoke();
-        if (step.Done())
-        {
-            Next();
-        }
-        else if (_ticks > step.Seconds * 60f)
-        {
-            _problems.Add($"step {_index + 1} \"{step.What}\" failed in {step.Seconds} s (at {Player.GlobalPosition}, velocity " +
-                          $"{Player.Velocity}, strikes {string.Join(",", _kinds)}, hit stop seen {_stopped}, Votary at {Votary.PlanePosition})");
-            Finish();
-        }
     }
 
-    private void Finish()
-    {
-        _index = _steps.Count;
-        foreach (StringName action in new[] { InputActions.Attack, InputActions.MoveDown, InputActions.Dash })
-        {
-            Input.ActionRelease(action);
-        }
+    protected override string Detail =>
+        $"at {Player.GlobalPosition}, velocity {Player.Velocity}, strikes {string.Join(",", _kinds)}, hit stop seen {_stopped}, Votary at {Votary.PlanePosition}";
 
-        foreach (string problem in _problems)
-        {
-            GD.PushError($"FIGHT CHECK: {problem}");
-        }
-
-        if (_problems.Count == 0)
-        {
-            GD.Print($"FIGHT OK: {_steps.Count} steps (a chain to the finisher with a hit stop, a down strike's bounce, a dash strike)");
-        }
-
-        GetTree().Quit(_problems.Count == 0 ? 0 : 1);
-    }
+    protected override string Outcome => $"{StepCount} steps (a chain to the finisher with a hit stop, a down strike's bounce, a dash strike)";
 }
