@@ -27,7 +27,8 @@ namespace TheDeep;
 /// dashing) or rising into a metal ceiling grips it, and then walks the whole surface connected to that point: along each face,
 /// around a metal block's corners, onto a metal wall met at an inner corner, standing up on a top; it touches what its body
 /// passes (lying along the normal), and from anywhere on a wall it leaps off or lets go, from anywhere under a ceiling it drops.
-/// Only metal holds (rock going on in the same plane is the surface's end), and water lets go of a body whose center it drowns
+/// Only metal holds (rock going on in the same plane is the surface's end, as in the game, and so, to stay on the safe side, is any gap:
+/// the walk goes on only within one metal solid or onto one it meets), and water lets go of a body whose center it drowns
 /// (<see cref="GripMath.Drowned"/>): no grip pose lies there.
 /// Ledge assist: an airborne body (not dashing) pressing into a wall whose top is at most <see cref="MoveLimits.LedgeAssist"/> above
 /// its feet is lifted onto it, as the pilgrim is.
@@ -36,7 +37,9 @@ namespace TheDeep;
 /// </summary>
 public sealed class ReachPlanner
 {
-    private const float Dt = 1f / 60f;
+    /// <summary>One tick of the simulation, seconds: a physics frame of the game (Godot's default 60 per second).</summary>
+    public const float Tick = 1f / 60f;
+
     private const int MaxTicks = 240;
 
     /// <summary>Longest a body may float before it settles (rising from the bottom of deep water), ticks.</summary>
@@ -74,10 +77,14 @@ public sealed class ReachPlanner
     /// <summary>Spacing of the grip poses along a face, meters.</summary>
     private const float GripStep = 0.25f;
 
-    /// <summary>Two grip poses this close (and not on opposite faces) are one walk apart: along a face, or round a corner.</summary>
+    /// <summary>
+    /// Two grip poses this close (not on opposite faces, and on one metal solid or on two that meet) are one walk apart: along a face,
+    /// or round a corner.
+    /// </summary>
     private const float GripLink = 0.8f;
 
-    private readonly record struct GripNode(Vector2 Feet, Vector2 Up, bool Launch, int Part);
+    /// <summary>A pose on the face of the metal solid <paramref name="Solid"/> (an index into the solids).</summary>
+    private readonly record struct GripNode(Vector2 Feet, Vector2 Up, bool Launch, int Solid, int Part);
 
     /// <summary>With Ballast, the water reachable together (feet positions on a grid where the body fits, by connected part).</summary>
     private readonly Dictionary<(int X, int Y), int> _cellPart = new();
@@ -371,7 +378,7 @@ public sealed class ReachPlanner
     private void Walk(List<int> part, GripLimits g, IReadOnlyList<Box> triggers, HashSet<int> reachedTriggers, Action<int> land, Action<Vector2> sink,
         Action<GripPose> grab)
     {
-        int regrab = (int)MathF.Ceiling(g.RegrabDelay / Dt);
+        int regrab = (int)MathF.Ceiling(g.RegrabDelay / Tick);
         float centerHeight = _m.Height * 0.5f;
         foreach (int n in part)
         {
@@ -463,7 +470,8 @@ public sealed class ReachPlanner
 
     /// <summary>
     /// With Mag-grip: every pose on a metal face (every <see cref="GripStep"/>) where the body fits, linked to the poses a short walk
-    /// away (along the face, round a block's outer corner, onto a wall at an inner corner, up onto a top), grouped into parts.
+    /// away on the same metal solid or one sharing an edge with it (along the face, round a block's outer corner, onto a wall at an inner
+    /// corner, up onto a top), grouped into parts.
     /// </summary>
     private void FindGripParts()
     {
@@ -497,12 +505,20 @@ public sealed class ReachPlanner
                     }
 
                     cell.Add(_gripNodes.Count);
-                    _gripNodes.Add(new GripNode(feet, up, k % 4 == 0 || k == steps, -1));
+                    _gripNodes.Add(new GripNode(feet, up, k % 4 == 0 || k == steps, i, -1));
                 }
             }
         }
 
-        // Union the poses a short walk apart.
+        // Whether the grip goes on from one metal solid onto the other: the same, or two sharing an edge (or more), with nothing between.
+        bool Meet(int a, int b)
+        {
+            Box p = _solids[a], q = _solids[b];
+            float x = MathF.Min(p.MaxX, q.MaxX) - MathF.Max(p.MinX, q.MinX), y = MathF.Min(p.MaxY, q.MaxY) - MathF.Max(p.MinY, q.MinY);
+            return a == b || (x >= -Skin && y >= -Skin && (x > Skin || y > Skin));
+        }
+
+        // Union the poses a short walk apart on metal that holds all the way (rock between two solids ends the grip; a gap is taken as its end too).
         int[] root = Enumerable.Range(0, _gripNodes.Count).ToArray();
         int Find(int x)
         {
@@ -530,7 +546,7 @@ public sealed class ReachPlanner
                     foreach (int m in cell.Where(m => m > n))
                     {
                         GripNode b = _gripNodes[m];
-                        if (Vector2.Dot(a.Up, b.Up) > -0.5f && Vector2.Distance(a.Feet, b.Feet) <= GripLink)
+                        if (Vector2.Dot(a.Up, b.Up) > -0.5f && Vector2.Distance(a.Feet, b.Feet) <= GripLink && Meet(a.Solid, b.Solid))
                         {
                             root[Find(m)] = Find(n);
                         }
@@ -709,7 +725,7 @@ public sealed class ReachPlanner
             if (dashTick >= 0 && tick == dashTick && !dashed && _m.AirDashes > 0 && airborne)
             {
                 dashed = true;
-                dashLeft = (int)MathF.Round(_m.DashDuration / Dt);
+                dashLeft = (int)MathF.Round(_m.DashDuration / Tick);
                 if (trace is not null)
                 {
                     trace.DashedAt = tick;
@@ -732,7 +748,7 @@ public sealed class ReachPlanner
                     cut = true;
                 }
 
-                v.X = MoveRules.Air(v.X, dir, _m.RunSpeed, _m.AirCarrySpeed, _m.AirAcceleration, _m.AirDeceleration, _m.AirDrag, Dt);
+                v.X = MoveRules.Air(v.X, dir, _m.RunSpeed, _m.AirCarrySpeed, _m.AirAcceleration, _m.AirDeceleration, _m.AirDrag, Tick);
                 float g = _m.Gravity;
                 if (jumping && tick == 0)
                 {
@@ -747,13 +763,13 @@ public sealed class ReachPlanner
                     g *= _m.FallGravityMultiplier;
                 }
 
-                v.Y = MathF.Max(v.Y - g * Dt, -_m.MaxFallSpeed);
+                v.Y = MathF.Max(v.Y - g * Tick, -_m.MaxFallSpeed);
             }
 
             // Move X, then Y, stopping at faces.
             bool grips = _grip is not null && dashLeft == 0 && tick >= gripFrom;
             float pushX = v.X;
-            p.X = MoveAxis(p, v.X * Dt, horizontal: true, out bool hitX, out int solidX);
+            p.X = MoveAxis(p, v.X * Tick, horizontal: true, out bool hitX, out int solidX);
             if (hitX && dashLeft == 0 && dir != 0 && MathF.Sign(pushX) == dir && airborne && LedgeAssist(p, dir, _solids[solidX]) is { } lifted)
             {
                 // Just short of a ledge's top: lifted onto it, keeping the way and the speed (Player.LedgeAssist).
@@ -783,7 +799,7 @@ public sealed class ReachPlanner
             }
 
             float pushY = v.Y;
-            p.Y = MoveAxis(p, v.Y * Dt, horizontal: false, out bool hitY, out int solidY);
+            p.Y = MoveAxis(p, v.Y * Tick, horizontal: false, out bool hitY, out int solidY);
             if (hitY && grips && pushY > 0f && _metal.Contains(solidY))
             {
                 // Rising into a metal ceiling: hanging under it; or not, bumping it (as above).
@@ -854,15 +870,15 @@ public sealed class ReachPlanner
     private bool Swim(ref Vector2 p, ref Vector2 v, int dir, WaterHit wet, IReadOnlyList<Box> triggers, HashSet<int> reachedTriggers, Action<int> land)
     {
         (Box water, WaterLimits w) = wet;
-        v.X = WaterMotion.Horizontal(v.X, dir, w, Dt);
-        v.Y = WaterMotion.Vertical(v.Y, p.Y, water.MaxY, sunk: false, w, Dt);
-        p.X = MoveAxis(p, v.X * Dt, horizontal: true, out bool hitX, out _);
+        v.X = WaterMotion.Horizontal(v.X, dir, w, Tick);
+        v.Y = WaterMotion.Vertical(v.Y, p.Y, water.MaxY, sunk: false, w, Tick);
+        p.X = MoveAxis(p, v.X * Tick, horizontal: true, out bool hitX, out _);
         if (hitX)
         {
             v.X = 0f;
         }
 
-        p.Y = MoveAxis(p, v.Y * Dt, horizontal: false, out bool hitY, out _);
+        p.Y = MoveAxis(p, v.Y * Tick, horizontal: false, out bool hitY, out _);
         Touch(p, triggers, reachedTriggers);
         if (InHazard(p))
         {
@@ -1020,14 +1036,21 @@ public sealed class ReachPlanner
     /// <summary>Whether another floor than <paramref name="l"/>, at its height, holds feet at <paramref name="x"/>.</summary>
     private bool GoesOn(Ledge l, float x) => _ledges.Any(o => o != l && !o.Swim && MathF.Abs(o.Y - l.Y) < 0.01f && x >= o.MinX && x <= o.MaxX);
 
-    /// <summary>The ledge (or with <paramref name="swim"/>, the float line) whose range holds feet at <paramref name="p"/>, or −1.</summary>
+    /// <summary>How far past half the body's width a landing's feet may be beyond a ledge's end and still be on it, meters.</summary>
+    private const float LandingMargin = 0.05f;
+
+    /// <summary>
+    /// The ledge (or with <paramref name="swim"/>, the float line) whose range holds feet at <paramref name="p"/>, or −1: feet within half
+    /// the body's width (and <see cref="LandingMargin"/>) past an end still stand on it, the body's edge over the floor.
+    /// </summary>
     private int LedgeAt(Vector2 p, bool swim = false)
     {
         float tolerance = swim ? 0.1f : 0.01f;
+        float overhang = _m.Width * 0.5f + LandingMargin;
         for (int i = 0; i < _ledges.Count; i++)
         {
             Ledge l = _ledges[i];
-            if (l.Swim == swim && MathF.Abs(l.Y - p.Y) < tolerance && p.X >= l.MinX - 0.4f && p.X <= l.MaxX + 0.4f)
+            if (l.Swim == swim && MathF.Abs(l.Y - p.Y) < tolerance && p.X >= l.MinX - overhang && p.X <= l.MaxX + overhang)
             {
                 return i;
             }

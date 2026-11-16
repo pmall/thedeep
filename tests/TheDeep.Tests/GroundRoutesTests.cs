@@ -41,7 +41,7 @@ public class GroundRoutesTests
         foreach (GroundRoute r in GroundRoutes.Pick(Step(), Limits, 8).Where(r => r.Leap.Move.Dir != 0))
         {
             Assert.Equal(r.Leap.TakeOff.Y, r.Start.Y);
-            Assert.Equal(-r.Leap.Move.Dir * Limits.Move.RunSpeed * GroundRoutes.RunUpTicks / 60f, r.Start.X - r.Leap.TakeOff.X, 3);
+            Assert.Equal(-r.Leap.Move.Dir * Limits.Move.RunSpeed * GroundRoutes.RunUpTicks * ReachPlanner.Tick, r.Start.X - r.Leap.TakeOff.X, 3);
         }
     }
 

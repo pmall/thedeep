@@ -56,8 +56,6 @@ public static class GroundRoutes
     /// <summary>The farthest the real landing's height may be from the planned one, meters: beyond it, it landed on another floor.</summary>
     public const float FloorTolerance = 0.05f;
 
-    private const float Dt = 1f / 60f;
-
     /// <summary>The kinds of move (a jump's ticks, whether it dashes) in the order routes are picked: those whose drift shows most first.</summary>
     private static readonly (int Jump, bool Dash)[] Preference =
     {
@@ -204,7 +202,7 @@ public static class GroundRoutes
 
         Vector2 takeOff = leap.TakeOff, end = leap.Path[^1];
         int dir = leap.Move.Dir;
-        var start = new Vector2(takeOff.X - dir * m.RunSpeed * Dt * RunUpTicks, takeOff.Y);
+        var start = new Vector2(takeOff.X - dir * m.RunSpeed * ReachPlanner.Tick * RunUpTicks, takeOff.Y);
         bool footing = dir == 0 ? Supported(ledges, takeOff.Y, takeOff.X - Stance, takeOff.X + Stance)
             : Supported(ledges, takeOff.Y, MathF.Min(start.X, takeOff.X), MathF.Max(start.X, takeOff.X));
         if (!footing || !Supported(ledges, landing.Y, end.X - Footing, end.X + Footing))
