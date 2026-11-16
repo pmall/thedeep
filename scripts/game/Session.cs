@@ -243,14 +243,23 @@ public partial class Session : Node
         string name = relic.NameText();
         Ability ability = relic.Ability;
         Announcement said = relic.Said;
+        bool taken = false;
         await _held.Hold(PilgrimMoment.Relic, async () =>
         {
-            await relic.Absorb(Player, AbsorbPoint);
+            if (!await relic.Absorb(Player, AbsorbPoint))
+            {
+                return; // the room was freed mid-flight (the pilgrim died): nothing is taken
+            }
+
             Player.Visual.Moment = PilgrimMoment.None;
             Player.Abilities.Unlock(ability);
             Remember(name);
+            taken = true;
         });
-        Banner.Show(said);
+        if (taken)
+        {
+            Banner.Show(said);
+        }
     }
 
     /// <summary>

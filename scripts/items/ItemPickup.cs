@@ -78,8 +78,8 @@ public partial class ItemPickup : Node3D, IWalkedThrough
         Token.Rotation = new Vector3(0f, Rock * Mathf.Sin(_time * RockSpeed), TiltRadians * Mathf.Sin(_time * TiltSpeed));
     }
 
-    /// <summary>The token flies into <paramref name="target"/> (the pilgrim's chest) and fades; the cradle's rim flares and dies.</summary>
-    public async Task Fly(Node3D target, Vector3 offset)
+    /// <summary>The token flies into <paramref name="target"/> (the pilgrim's chest) and fades; the cradle's rim flares and dies. False if the room was freed before it landed.</summary>
+    public async Task<bool> Fly(Node3D target, Vector3 offset)
     {
         Taken = true;
         Vector3 start = Token.GlobalPosition;
@@ -92,8 +92,13 @@ public partial class ItemPickup : Node3D, IWalkedThrough
         }), 0f, 1f, FlySeconds);
         tween.Parallel().TweenProperty(Light, Names.LightEnergy, 0f, FlySeconds);
         TokenGlow.FlareOut(tween, Rim, FlarePeak, FlySeconds);
-        await ToSignal(tween, Tween.SignalName.Finished);
+        if (!await TokenGlow.Played(this, tween))
+        {
+            return false;
+        }
+
         Token.Visible = false;
+        return true;
     }
 
     /// <summary>Already taken (from the save, or held): only the plinth remains, its rim dark.</summary>

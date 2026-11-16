@@ -159,7 +159,11 @@ public partial class Keyring : Node
         {
             Player.Velocity = Vector3.Zero;
             Player.Frozen = true;
-            await pickup.Fly(Player, Session.AbsorbPoint);
+            if (!await pickup.Fly(Player, Session.AbsorbPoint))
+            {
+                return; // the room was freed mid-flight (the pilgrim died): nothing is taken, the finally frees the pilgrim
+            }
+
             Player.Items.Take(item.Id);
             Session.Remember(name);
         }

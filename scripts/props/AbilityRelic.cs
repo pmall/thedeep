@@ -59,8 +59,8 @@ public partial class AbilityRelic : Node3D, IAnnounces, IWalkedThrough
         Core.RotateY((float)delta * SpinSpeed);
     }
 
-    /// <summary>The core drifts into <paramref name="target"/> (the pilgrim's chest) with a flare, then fades.</summary>
-    public async Task Absorb(Node3D target, Vector3 offset)
+    /// <summary>The core drifts into <paramref name="target"/> (the pilgrim's chest) with a flare, then fades. False if the room was freed before it landed.</summary>
+    public async Task<bool> Absorb(Node3D target, Vector3 offset)
     {
         _taken = true;
         Vector3 start = Core.GlobalPosition;
@@ -73,8 +73,13 @@ public partial class AbilityRelic : Node3D, IAnnounces, IWalkedThrough
         }), 0f, 1f, 1.1f);
         tween.Parallel().TweenProperty(Light, Names.LightEnergy, Light.LightEnergy * 3f, 0.5f);
         tween.TweenProperty(Light, Names.LightEnergy, 0f, 0.6f);
-        await ToSignal(tween, Tween.SignalName.Finished);
+        if (!await TokenGlow.Played(this, tween))
+        {
+            return false;
+        }
+
         Core.Visible = false;
+        return true;
     }
 
     /// <summary>Already taken (from the save): only the empty pedestal remains.</summary>

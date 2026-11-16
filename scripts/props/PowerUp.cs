@@ -73,8 +73,8 @@ public partial class PowerUp : Node3D, IWalkedThrough
         Token.Rotation = new Vector3(0f, Rock * Mathf.Sin(_time * RockSpeed), 0f);
     }
 
-    /// <summary>The token sinks into <paramref name="target"/> (the pilgrim's chest), flaring, and fades; the cradle's rim dies.</summary>
-    public async Task Sink(Node3D target, Vector3 offset)
+    /// <summary>The token sinks into <paramref name="target"/> (the pilgrim's chest), flaring, and fades; the cradle's rim dies. False if the room was freed before it landed.</summary>
+    public async Task<bool> Sink(Node3D target, Vector3 offset)
     {
         Taken = true;
         Vector3 start = Token.GlobalPosition;
@@ -88,8 +88,13 @@ public partial class PowerUp : Node3D, IWalkedThrough
         TokenGlow.FlareOut(tween, Rim, 2.5f, 0.9f);
         tween.Parallel().TweenProperty(Light, Names.LightEnergy, Light.LightEnergy * 2.5f, 0.4f);
         tween.TweenProperty(Light, Names.LightEnergy, 0f, 0.5f);
-        await ToSignal(tween, Tween.SignalName.Finished);
+        if (!await TokenGlow.Played(this, tween))
+        {
+            return false;
+        }
+
         Token.Visible = false;
+        return true;
     }
 
     /// <summary>Already taken (from the save): only the pedestal remains, its rim dark.</summary>
