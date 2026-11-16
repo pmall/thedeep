@@ -32,7 +32,6 @@ The open items, in order (owner: the world, its bricks and its look are finished
    **The areas still to review** <a id="review-areas"></a>, in order, each deleted once its findings are fixed and the full check passes:
    - `core/map/`: the reach planner and the ground (`ReachPlanner`, `GroundRoutes`, `GroundRules`, `SolidGrid`, `RoomShape`, `GridSnap`, `ExitMath`, `ExitSide`).
    - `core/map/`: the graph and its proof (`MapSolver`, `WorldCheck`, `MapDraft`, `MapGraph`, `MapState`, `Requirement`, `ItemSet`, `Need`, `MapTargets`, `RoomTable`, `MapLayout`, `MapDrawing`).
-   - `scripts/rooms/`, `scripts/world/`, `scripts/map/`, `scripts/surfaces/`.
    - `scripts/machines/`, `scripts/game/`, `scripts/Main.cs`.
    - `scripts/ui/`, `scripts/engine/`, `scripts/biome/`, `scripts/capture/`.
    - `scripts/debug/`, the world checks (`RoomValidator`, `TravelValidator`, `RouteCheck`, `BurnProbe`, `HeatCheck`, `SpeciesValidator`, `ExportReach`, `RequiredExports`).
