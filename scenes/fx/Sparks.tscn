@@ -1,5 +1,5 @@
 [gd_scene format=3]
-; One-shot burst for the pilgrim's movement effects, fired by a BurstPool.
+; One-shot burst of sparks, fired by a BurstPool: the pilgrim's movement effects and a machine's hit.
 
 [ext_resource type="Material" path="res://assets/particles/spark_process.tres" id="1_process"]
 [ext_resource type="Material" path="res://assets/particles/spark_material.tres" id="2_material"]
