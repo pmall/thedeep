@@ -12,7 +12,7 @@ namespace TheDeep;
 /// moves and the real moves can't drift apart unseen. In each room in the game, <see cref="GroundRoutes.Pick"/> chooses up to
 /// <see cref="PerRoom"/> of the planner's flights from the floors it reaches with no ability (each room starting from the next kind
 /// of move, so every kind is played), keeping off every solid that is not a
-/// block (a gate, a fence, a lift's cage: the planner doesn't see them) and the power-ups (coming near one takes it). The pilgrim,
+/// block (a gate, a fence, a lift's cage: the planner doesn't see them) and the power-ups and item pickups (coming near one takes it). The pilgrim,
 /// with no ability, the machines blind to it and the arenas never sealing, plays each: set down behind the take-off running at full
 /// speed (or standing on it), it holds the way, jumps at the take-off, lets go of jump when the planner did and dashes when the
 /// planner did. A press is read on the tick after it is made, as a device's is, and a dash moves from the tick after it begins: each
@@ -101,16 +101,21 @@ public partial class RouteCheck : Node
                 arena.ProcessMode = ProcessModeEnum.Disabled; // never sealed: its gates stay up, as the planner sees the room
             }
 
-            _routes.AddRange(GroundRoutes.Pick(RoomShapes.Of(room, start: false), Limits, PerRoom, Unseen(room).Concat(PowerUpAreas(room)), _roomsPlayed));
+            _routes.AddRange(GroundRoutes.Pick(RoomShapes.Of(room, start: false), Limits, PerRoom, Unseen(room).Concat(TakeAreas(room)), _roomsPlayed));
             _roomsPlayed++;
         }
 
         Start();
     }
 
-    /// <summary>Where coming near a power-up takes it (and holds the pilgrim still), as boxes.</summary>
-    private IEnumerable<Box> PowerUpAreas(Room room) =>
-        room.All<PowerUp>().Select(p => Box.Around(p.GlobalPosition.Flat(), new NVector2(2f * PowerUps.TakeRange, 2f * PowerUps.TakeRange)));
+    /// <summary>
+    /// Where coming near a power-up or an item takes it (and holds the pilgrim still), as boxes. A take freezes the pilgrim until its
+    /// fly-in ends; moving on to the next room before then frees the tween and leaves the pilgrim frozen for every route after, so a
+    /// route that grazes the reach (the Scriptorium's key, 1.197 m of 1.2) fails in whichever room follows, by luck of the jitter.
+    /// </summary>
+    private IEnumerable<Box> TakeAreas(Room room) =>
+        room.All<PowerUp>().Select(p => Box.Around(p.GlobalPosition.Flat(), new NVector2(2f * PowerUps.TakeRange, 2f * PowerUps.TakeRange)))
+            .Concat(room.All<ItemPickup>().Select(p => Box.Around(p.GlobalPosition.Flat(), new NVector2(2f * PickupReach.Take, 2f * PickupReach.Take))));
 
     /// <summary>
     /// The room's solids that are not blocks (the planner doesn't see them): their boxes on the play plane. Each is a box shape; another
