@@ -314,8 +314,8 @@ public static class MapSolver
             SolverState s = queue.Dequeue();
             foreach (MapEdge edge in map.From(s.Room).Where(e => e.Requires.IsMetBy(s.Owned, s.Held)))
             {
-                if (edge.To == room && (best is not { } b || Count(s.Owned) < Count(b.Owned)
-                        || (Count(s.Owned) == Count(b.Owned) && s.Held.Count < b.Held.Count)))
+                if (edge.To == room && (best is not { } b || AbilitySet.Count(s.Owned) < AbilitySet.Count(b.Owned)
+                        || (AbilitySet.Count(s.Owned) == AbilitySet.Count(b.Owned) && s.Held.Count < b.Held.Count)))
                 {
                     best = (s.Owned, s.Held);
                 }
@@ -330,8 +330,6 @@ public static class MapSolver
 
         return best;
     }
-
-    private static int Count(Ability a) => System.Numerics.BitOperations.PopCount((uint)a);
 
     /// <summary>
     /// A shortest route (fewest ways taken) from the start to a goal, as the ways to take in order (abilities picked up from
@@ -428,7 +426,7 @@ public static class MapSolver
     private static (List<Ability[]> Orders, int Count) Orders(MapGraph map)
     {
         Ability all = map.AbilitiesOnMap;
-        int count = System.Numerics.BitOperations.PopCount((uint)all);
+        int count = AbilitySet.Count(all);
         var found = new SortedSet<string>(StringComparer.Ordinal);
         var result = new List<Ability[]>();
         if (count == 0)

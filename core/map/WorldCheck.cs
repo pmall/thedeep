@@ -385,7 +385,7 @@ public sealed class WorldCheck
             {
                 // The fewest abilities first: one line per way in.
                 var shorts = ways[w].Arrivals.SelectMany(arrived => Shorts.Select(a => (arrived | a) & AbilitySet.Every)).Distinct()
-                    .Where(with => !r.IsMetBy(with)).OrderBy(with => BitOperations.PopCount((uint)with)).ThenBy(with => with);
+                    .Where(with => !r.IsMetBy(with)).OrderBy(with => AbilitySet.Count(with)).ThenBy(with => with);
                 foreach (Ability with in shorts.Where(with => Reached(w, with).Contains(i)).Take(1))
                 {
                     problems.Add($"{room}: exit {x.Name} needs {x.Requires}, but {Describe(with)} reaches it {ways[w].What}");
@@ -487,7 +487,7 @@ public sealed class WorldCheck
         Parallel.For(0, states.Count, i => clumsy[i] = Inside(states[i], reaches[states[i]].Way, clumsy: true));
         var seen = new HashSet<(string, WayEntry, string)>();
         var lines = new List<string>();
-        foreach (int i in Enumerable.Range(0, states.Count).OrderBy(i => BitOperations.PopCount((uint)states[i].Owned))
+        foreach (int i in Enumerable.Range(0, states.Count).OrderBy(i => AbilitySet.Count(states[i].Owned))
             .ThenBy(i => states[i].ToString(), StringComparer.Ordinal))
         {
             WayState s = states[i];
