@@ -18,7 +18,7 @@
   <ItemGroup>
     <!-- The rules and state, Godot-free (instructions/principles.md#engine-detail): the game is their adapter. -->
     <ProjectReference Include="core/TheDeep.Core.csproj" />
-    <!-- The project's analyzers (instructions/godot-csharp.md#no-finalizer), run on the game's code, not part of it. -->
+    <!-- The project's analyzers (instructions/godot-csharp.md#no-finalizer, instructions/principles.md#small-readable), run on the game's code, not part of it. -->
     <ProjectReference Include="tools/analyzers/TheDeep.Analyzers.csproj" OutputItemType="Analyzer" ReferenceOutputAssembly="false" SkipGetTargetFrameworkProperties="true" />
   </ItemGroup>
 </Project>
