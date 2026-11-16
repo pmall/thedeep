@@ -88,6 +88,16 @@ public class WorldCheckTests
     }
 
     [Fact]
+    public void AnExitMustNotBeReachedWithAnAbilityItDoesNotNeed()
+    {
+        // A Drill way out on top of a metal tower: Mag-grip climbs to it, so the game lets a pilgrim without the Drill through.
+        WorldCheck world = TwoRooms(eastNeeds: "Drill", eastY: 11.5f, hallMetal: Tower);
+        world.Check("Hall", report: false);
+        Assert.Contains("Hall: exit East needs Drill, but Mag-grip reaches it waking at (0, 0)", world.Problems);
+        Assert.DoesNotContain(world.Problems, p => p.Contains("but the base moveset reaches it", StringComparison.Ordinal));
+    }
+
+    [Fact]
     public void EachOptionOfARequirementMustReachTheExit()
     {
         // The way out on top of a metal tower: Mag-grip climbs to it, the Drill and Ballast together don't.
