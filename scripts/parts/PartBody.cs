@@ -109,7 +109,8 @@ public partial class PartBody : Node3D
 
     private void Build()
     {
-        foreach (RigJoint spec in Assembly.Joints)
+        PartAssembly assembly = Assembly.Resolved;
+        foreach (RigJoint spec in assembly.Joints)
         {
             var joint = new Node3D { Name = spec.Name, Position = spec.Offset };
             Node3D parent = this;
@@ -130,7 +131,7 @@ public partial class PartBody : Node3D
             _rest[spec.Name] = spec.Offset;
         }
 
-        foreach (PartSlot slot in Assembly.Parts)
+        foreach (PartSlot slot in assembly.Parts)
         {
             if (Joint(slot.Joint) is not { } joint)
             {
@@ -149,7 +150,7 @@ public partial class PartBody : Node3D
             _geometry.Add(part);
         }
 
-        foreach (PartChain spec in Assembly.Chains)
+        foreach (PartChain spec in assembly.Chains)
         {
             if (Joint(spec.Joint) is not { } joint)
             {
@@ -180,7 +181,7 @@ public partial class PartBody : Node3D
             AddChild(end);
             if (spec.Pendant is not null)
             {
-                var pendant = new MeshInstance3D { Mesh = spec.Pendant, MaterialOverride = spec.PendantMaterial };
+                var pendant = new MeshInstance3D { Mesh = spec.Pendant, MaterialOverride = spec.PendantMaterial, Scale = Vector3.One * spec.PendantScale };
                 end.AddChild(pendant);
                 _geometry.Add(pendant);
             }

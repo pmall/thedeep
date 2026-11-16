@@ -49,7 +49,7 @@ public sealed class MachineAnimator
 
         // Rest positions in the body's frame, from the rig's offsets (no joint is turned at rest).
         var rest = new Dictionary<StringName, Vector3>();
-        foreach (RigJoint joint in species.Assembly.Joints)
+        foreach (RigJoint joint in species.Assembly.Resolved.Joints)
         {
             rest[joint.Name] = (joint.Parent.IsEmpty ? Vector3.Zero : rest.GetValueOrDefault(joint.Parent)) + joint.Offset;
         }
