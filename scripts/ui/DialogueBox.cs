@@ -166,7 +166,7 @@ public partial class DialogueBox : CanvasLayer
         float dt = (float)delta;
         _time += dt;
         _shown = Motion.Approach(_shown, _open ? 1f : 0f, dt / Style.Panel);
-        Root.Modulate = Colors.White with { A = _shown * _shown * (3f - 2f * _shown) };
+        Root.Modulate = Colors.White with { A = Motion.SmoothStep(0f, 1f, _shown) };
         Visible = _shown > 0f;
         if (!Visible)
         {

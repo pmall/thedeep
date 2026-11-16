@@ -104,7 +104,7 @@ public partial class ActionPrompt : Node3D, INamesLines
         Face.Light(dt);
         Face.Fill = Fill;
         Face.QueueRedraw();
-        Face.Modulate = Colors.White with { A = _shown * _shown * (3f - 2f * _shown) };
+        Face.Modulate = Colors.White with { A = Motion.SmoothStep(0f, 1f, _shown) };
         Vector2 at = camera!.UnprojectPosition(place);
         Vector2 canvas = GetViewport().GetVisibleRect().Size;
         System.Numerics.Vector2 corner = PromptPlace.TopLeft(new(at.X, at.Y), new(Face.Size.X, Face.Size.Y), Reach, new(canvas.X, canvas.Y), Margin);
