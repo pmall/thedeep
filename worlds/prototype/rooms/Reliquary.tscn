@@ -306,12 +306,9 @@ Pier = SubResource("column_1")
 Arch = SubResource("arch_3")
 Material = ExtResource("11_stone_mid")
 Bays = 5
-Span = 8
-ArchHeight = 8.5
 BeamHeight = 14.25
 Cables = SubResource("cables_5")
 CableMaterial = ExtResource("13_cable")
-CableChance = 0.4
 CableOffset = Vector3(0, 8.25, 0.75)
 Seed = 15
 

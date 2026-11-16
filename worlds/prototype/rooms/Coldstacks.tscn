@@ -495,7 +495,6 @@ Material = ExtResource("9_metal_mid")
 Count = 27
 Pitch = 1.6
 GapChance = 0.12
-ToppleChance = 0.05
 Seed = 111
 
 [node name="FloorBack" type="Node3D" parent="Kit/Racks"]
@@ -506,7 +505,6 @@ Material = ExtResource("9_metal_mid")
 Count = 30
 Pitch = 1.6
 GapChance = 0.08
-ToppleChance = 0.05
 Seed = 112
 
 [node name="Gallery0" type="Node3D" parent="Kit/Racks"]

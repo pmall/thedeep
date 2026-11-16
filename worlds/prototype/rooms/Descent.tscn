@@ -468,7 +468,6 @@ ArchHeight = 16
 BeamHeight = 20
 Cables = SubResource("cables_5")
 CableMaterial = ExtResource("16_cable")
-CableChance = 0.4
 CableOffset = Vector3(0, 15.5, 0.75)
 Seed = 22
 

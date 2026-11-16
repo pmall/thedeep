@@ -364,7 +364,6 @@ Variants = [SubResource("rack_6"), SubResource("rack_7"), SubResource("rack_8")]
 Material = ExtResource("11_metal_mid")
 Count = 11
 Pitch = 1.6
-GapChance = 0.15
 ToppleChance = 0.08
 ClearEvery = 0
 Seed = 64
@@ -377,7 +376,6 @@ Material = ExtResource("11_metal_mid")
 Count = 14
 Pitch = 1.6
 GapChance = 0.1
-ToppleChance = 0.05
 Seed = 65
 
 [node name="Back" type="Node3D" parent="Kit/Racks"]
@@ -399,7 +397,6 @@ Pier = SubResource("column_9")
 Arch = SubResource("arch_10")
 Material = ExtResource("15_stone_mid")
 Bays = 5
-Span = 8
 ArchHeight = 15
 BeamHeight = 21
 BeamSection = Vector2(1.5, 4)
