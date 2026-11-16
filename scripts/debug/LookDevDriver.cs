@@ -128,16 +128,17 @@ public partial class LookDevDriver : Node
         if (_measuring)
         {
             Rid viewport = GetViewport().GetViewportRid();
-            _frame.Add((now - _lastFrameUsec) / 1000.0);
-            _gpu.Add(RenderingServer.ViewportGetMeasuredRenderTimeGpu(viewport));
-            _cpu.Add(RenderingServer.ViewportGetMeasuredRenderTimeCpu(viewport) + RenderingServer.GetFrameSetupTimeCpu());
-            _process.Add(Performance.GetMonitor(Performance.Monitor.TimeProcess) * 1000.0);
-            _physics.Add(Performance.GetMonitor(Performance.Monitor.TimePhysicsProcess) * 1000.0);
-            int gc0 = GC.CollectionCount(0), gc1 = GC.CollectionCount(1), gc2 = GC.CollectionCount(2);
-            _frames.Add(((now - _lastFrameUsec) / 1000.0, RenderingServer.ViewportGetMeasuredRenderTimeGpu(viewport),
-                RenderingServer.ViewportGetMeasuredRenderTimeCpu(viewport) + RenderingServer.GetFrameSetupTimeCpu(),
-                Performance.GetMonitor(Performance.Monitor.TimeProcess) * 1000.0, Performance.GetMonitor(Performance.Monitor.TimePhysicsProcess) * 1000.0,
-                gc0 - _gc0, gc1 - _gc1, gc2 - _gc2));
+            double frame = (now - _lastFrameUsec) / 1000.0;
+            double gpu = RenderingServer.ViewportGetMeasuredRenderTimeGpu(viewport);
+            double cpu = RenderingServer.ViewportGetMeasuredRenderTimeCpu(viewport) + RenderingServer.GetFrameSetupTimeCpu();
+            double process = Performance.GetMonitor(Performance.Monitor.TimeProcess) * 1000.0;
+            double physics = Performance.GetMonitor(Performance.Monitor.TimePhysicsProcess) * 1000.0;
+            _frame.Add(frame);
+            _gpu.Add(gpu);
+            _cpu.Add(cpu);
+            _process.Add(process);
+            _physics.Add(physics);
+            _frames.Add((frame, gpu, cpu, process, physics, GC.CollectionCount(0) - _gc0, GC.CollectionCount(1) - _gc1, GC.CollectionCount(2) - _gc2));
         }
 
         (_gc0, _gc1, _gc2) = (GC.CollectionCount(0), GC.CollectionCount(1), GC.CollectionCount(2));
