@@ -117,9 +117,7 @@ void fragment() {
 		vec2 gx = duv_x * vec2(1.0, -1.0) * PANEL_SCALE / PANEL_TILE;
 		vec2 gy = duv_y * vec2(1.0, -1.0) * PANEL_SCALE / PANEL_TILE;
 		vec4 relief = textureGrad(panels_surface, puv, gx, gy);
-		vec2 slope = textureGrad(panels_normal, puv, gx, gy).rg * 2.0 - 1.0;
-		vec3 ts = vec3(slope, sqrt(max(0.0, 1.0 - dot(slope, slope))));
-		n = normalize(f.tangent * ts.x + f.bitangent * ts.y + f.normal * ts.z);
+		n = surface_relief(f, textureGrad(panels_normal, puv, gx, gy).rg * 2.0 - 1.0);
 		groove = relief.g;
 		albedo *= relief.r * 2.0;
 	}
