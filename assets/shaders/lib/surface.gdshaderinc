@@ -53,6 +53,13 @@ vec3 surface_bump(Surface f, vec3 n, vec2 gradient) {
 	return normalize(n - gradient.x * f.tangent - gradient.y * f.bitangent);
 }
 
+// The view-space normal of a surface whose baked relief tilts it by `slope` (the normal map's red and green, -1..1: along
+// the face and up it).
+vec3 surface_relief(Surface f, vec2 slope) {
+	vec3 ts = vec3(slope, sqrt(max(0.0, 1.0 - dot(slope, slope))));
+	return normalize(f.tangent * ts.x + f.bitangent * ts.y + f.normal * ts.z);
+}
+
 // View-space direction to world space.
 vec3 view_to_world(vec3 v, mat4 inv_view) {
 	return normalize(mat3(inv_view) * v);

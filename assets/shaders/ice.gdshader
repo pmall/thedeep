@@ -76,8 +76,7 @@ void fragment() {
 
 	// The skin's undulation from the baked normal (tangent space: red along the face, green up it).
 	vec2 slope = texture(ice_normal, uv).rg * 2.0 - 1.0;
-	vec3 ts = vec3(slope, sqrt(max(0.0, 1.0 - dot(slope, slope))));
-	vec3 n = normalize(f.tangent * ts.x + f.bitangent * ts.y + f.normal * ts.z);
+	vec3 n = surface_relief(f, slope);
 	vec3 world_n = view_to_world(n, INV_VIEW_MATRIX);
 
 	// Seen straight on, you look into the dark; at a grazing angle the skin reflects and scatters pale.

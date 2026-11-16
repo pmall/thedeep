@@ -134,8 +134,7 @@ void fragment() {
 	vec4 wear = textureGrad(coating_surface, cuv, dx / COATING_TILE, dy / COATING_TILE);
 	slope += textureGrad(coating_normal, cuv, dx / COATING_TILE, dy / COATING_TILE).rg * 2.0 - 1.0;
 	slope /= max(1.0, length(slope));
-	vec3 ts = vec3(slope, sqrt(max(0.0, 1.0 - dot(slope, slope))));
-	vec3 n = normalize(f.tangent * ts.x + f.bitangent * ts.y + f.normal * ts.z);
+	vec3 n = surface_relief(f, slope);
 	float crease = max(pn.crease, seam);
 
 	vec3 coat = palette_color(slot) * (0.94 + 0.12 * pn.panel) * (0.96 + 0.08 * seed);
