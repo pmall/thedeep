@@ -4,7 +4,7 @@ using Godot;
 namespace TheDeep;
 
 /// <summary>
-/// A full-screen veil for room transitions, respawns and the map: eases to <see cref="Color"/> and back.
+/// A full-screen veil for room transitions and respawns: eases to <see cref="Color"/> and back.
 /// Above the game and its HUD, under the owner capture overlay, so videos show the fades.
 /// A call overtaken by a newer one completes at once, so no awaiter is left hanging.
 /// </summary>

@@ -62,7 +62,6 @@ public partial class Banner : CanvasLayer
 
     private static TextStyle Style => TextStyle.Shared;
 
-    /// <summary>How the line's label wraps, and the same as break flags, so <see cref="Fits"/> measures what the label shows.</summary>
     public override void _Ready()
     {
         Layer = UiLayers.Banner;

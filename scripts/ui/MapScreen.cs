@@ -127,7 +127,7 @@ public partial class MapScreen : CanvasLayer
         if (Visible)
         {
             // Eases in rising a little into place.
-            float ease = _shown * _shown * (3f - 2f * _shown);
+            float ease = Motion.SmoothStep(0f, 1f, _shown);
             Canvas.Modulate = Colors.White with { A = ease };
             Canvas.Position = new Vector2(0f, (1f - ease) * 12f);
             Canvas.QueueRedraw();

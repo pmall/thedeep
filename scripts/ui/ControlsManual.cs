@@ -232,7 +232,7 @@ public partial class ControlsManual : Control
         float centered = 0.5f * (font.GetAscent(words) - font.GetDescent(words));
         float marks = 0.5f * (font.GetAscent(CapFont) - font.GetDescent(CapFont));
         int device = (int)_shown;
-        float a = _alpha * _alpha * (3f - 2f * _alpha);
+        float a = Motion.SmoothStep(0f, 1f, _alpha);
 
         float buttons = _buttonsWidth[device];
         Vector2 pad = style.Padding;
