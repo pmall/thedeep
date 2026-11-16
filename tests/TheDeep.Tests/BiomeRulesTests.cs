@@ -34,14 +34,19 @@ public class BiomeRulesTests
     public void MoltenColorsOutOfOrderAreAProblem() => Assert.Single(BiomeRules.Problems(Good with { MoltenHot = new Vector3(0.6f, 0.2f, 0.05f) }));
 
     [Fact]
+    public void MoltenCoolPaleThanMoltenIsAProblem() => Assert.Single(BiomeRules.Problems(Good with { MoltenCool = new Vector3(1f, 0.5f, 0.2f) }));
+
+    [Fact]
     public void LightAsSaturatedAsTheHazardIsAProblemNamingIt()
     {
         BiomePalette washed = Good with { Light = [.. Good.Light, ("HazeColor", new Vector3(0.7f, 0.12f, 0.06f))] };
         Assert.Contains("HazeColor", Assert.Single(BiomeRules.Problems(washed)));
     }
 
-    [Fact]
-    public void AShareOutsideZeroToOneIsAProblem() => Assert.Single(BiomeRules.Problems(Good with { Shares = [("Frost", 1.2f)] }));
+    [Theory]
+    [InlineData(1.2f)]
+    [InlineData(-0.1f)]
+    public void AShareOutsideZeroToOneIsAProblem(float share) => Assert.Single(BiomeRules.Problems(Good with { Shares = [("Frost", share)] }));
 
     [Fact]
     public void ValueWeighsGreenMostAndChromaIsTheSpreadOfChannels()

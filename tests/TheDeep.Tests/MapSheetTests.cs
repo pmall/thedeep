@@ -7,7 +7,7 @@ namespace TheDeep.Tests;
 public class MapSheetTests
 {
     private static readonly Vector2 Canvas = new(1600f, 900f);
-    private static readonly MapPlaces Places = new(MaxScale: 6f, Margin: 96f, Baseline: 80f, Row: 24f, Clear: 48f, Gap: 8f, Mark: 18f, Spacing: 30f);
+    private static readonly MapPlaces Places = MapPlaces.Default;
 
     private static ItemKind KindOf(string id) => id.EndsWith("Code", System.StringComparison.Ordinal) ? ItemKind.Code : ItemKind.Key;
 
@@ -32,7 +32,7 @@ public class MapSheetTests
     {
         MapSheet sheet = Lay(TwoRooms());
 
-        Assert.Equal(6f, sheet.Scale);
+        Assert.Equal(Places.MaxScale, sheet.Scale);
         float left = sheet.Tiles.Min(t => t.Rect.MinX), right = sheet.Tiles.Max(t => t.Rect.MaxX);
         Assert.Equal((sheet.Area.MinX + sheet.Area.MaxX) * 0.5f, (left + right) * 0.5f, 0.01f);
         Assert.Empty(sheet.Problems(new[] { 50f }));
@@ -47,6 +47,21 @@ public class MapSheetTests
         Assert.Equal(Places.Gap, apse.MinX - nave.MaxX, 0.01f);
         // Cut at the overlap's middle, the doorway: x 40 on the map.
         Assert.Equal(sheet.ToScreen(new Vector2(40f, 0f)).X, (nave.MaxX + apse.MinX) * 0.5f, 0.01f);
+    }
+
+    [Fact]
+    public void RoomsOverlappingAboveAndBelowAreCutApartByTheGapToo()
+    {
+        var map = new MapState();
+        map.Enter("Top", new Vector2(0f, 20f), new Vector2(-2f, -2f), new Vector2(42f, 20f));
+        map.Enter("Nave", Vector2.Zero, new Vector2(-2f, -2f), new Vector2(42f, 20f));
+        MapSheet sheet = Lay(map);
+        Box top = sheet.Tiles.Single(t => t.Name == "Top").Rect, nave = sheet.Tiles.Single(t => t.Name == "Nave").Rect;
+
+        Assert.Equal(Places.Gap, nave.MinY - top.MaxY, 0.01f);
+        // Cut at the overlap's middle, the doorway: y 19 on the map.
+        Assert.Equal(sheet.ToScreen(new Vector2(0f, 19f)).Y, (nave.MinY + top.MaxY) * 0.5f, 0.01f);
+        Assert.Empty(sheet.Problems(System.Array.Empty<float>()));
     }
 
     [Fact]
@@ -129,6 +144,16 @@ public class MapSheetTests
         Assert.Equal(sheet.ToScreen(new Vector2(50f, 5f)), inside);
         Assert.Equal(apse.MinX + 4f, past.X, 0.01f);
         Assert.True(sheet.Here is { Name: "Apse", Here: true });
+    }
+
+    [Fact]
+    public void ALayoutWithNoTileForThePilgrimsRoomIsAProblem()
+    {
+        var map = new MapState();
+        map.Restore(new[] { new MapRoom("Nave", Vector2.Zero, new Vector2(-2f, -2f), new Vector2(42f, 20f)) }, "Nowhere",
+            System.Array.Empty<MapWay>(), System.Array.Empty<string>());
+
+        Assert.Single(Lay(map).Problems(System.Array.Empty<float>()), "no tile is the pilgrim's room");
     }
 
     [Fact]
