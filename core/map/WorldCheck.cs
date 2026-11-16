@@ -16,7 +16,7 @@ namespace TheDeep;
 /// - every room is reachable from the start, a goal is, and no reachable state is a softlock
 ///   (<see cref="MapSolver"/>; the network's <see cref="MapTargets"/> are held to the draft by <see cref="MapDraft"/>, the built
 ///   world to the draft by its differences);
-/// - the geometry agrees with every requirement (<see cref="CheckGeometry"/>), the map holds from inside the rooms
+/// - the geometry agrees with every requirement (<see cref="CheckGeometry()"/>), the map holds from inside the rooms
 ///   (<see cref="CheckInside"/>), and a clumsier pilgrim reaches all the same (room for error).
 /// The room check (an adapter) extracts the rooms from their scenes and prints what this finds.
 /// </summary>

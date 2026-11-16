@@ -40,6 +40,10 @@ SHELLCHECK=(uvx --from shellcheck-py==0.11.0.1 shellcheck)
 # The C# style rules dotnet format can fix but its whitespace pass leaves: braces, the file-scoped namespace, usings outside, no unused usings.
 STYLE_FIXES=(IDE0011 IDE0161 IDE0065 IDE0005)
 
+# Wall-clock limit, in seconds, of each headless Godot run (the import, each check; --quit-after only counts frames, so a hung
+# Godot would never end). Eight times the longest step's normal time (about 75s in the parallel run); override with HEADLESS_TIMEOUT.
+HEADLESS_TIMEOUT="${HEADLESS_TIMEOUT:-600}"
+
 LOG_DIR=".godot/check"
 mkdir -p "$LOG_DIR"
 rm -f "$LOG_DIR"/*.log "$LOG_DIR"/*.status
@@ -173,9 +177,9 @@ echo "ok"
 took
 
 step "4 headless import"
-"$GODOT" --headless --import >"$LOG_DIR/import.log" 2>&1 || {
+timeout -k 10 "$HEADLESS_TIMEOUT" "$GODOT" --headless --import >"$LOG_DIR/import.log" 2>&1 || {
     tail -20 "$LOG_DIR/import.log"
-    fail "godot --import exited non-zero (full log: $(keep_failed import "$LOG_DIR/import.log"))"
+    fail "godot --import exited non-zero or timed out after ${HEADLESS_TIMEOUT}s (exit 124) (full log: $(keep_failed import "$LOG_DIR/import.log"))"
 }
 scan_log "$LOG_DIR/import.log" "import"
 echo "ok"
@@ -263,12 +267,12 @@ launch() {
         # shellcheck disable=SC2086 # the arguments are split on purpose
         if [ "$args" = "--save-check" ]; then
             # Two fresh runs in turn, the second resuming what the first saved (SaveCheck).
-            nice -n "$nice" "$GODOT" --headless --path . --fixed-fps 60 --quit-after "$frames" -- --room Belfry --save-name "$SAVE_NAME" --save-check-write >"$log" 2>&1 || code=$?
-            [ "$code" = 0 ] && { nice -n "$nice" "$GODOT" --headless --path . --fixed-fps 60 --quit-after "$frames" -- --save-name "$SAVE_NAME" --save-check-read >>"$log" 2>&1 || code=$?; }
+            nice -n "$nice" timeout -k 10 "$HEADLESS_TIMEOUT" "$GODOT" --headless --path . --fixed-fps 60 --quit-after "$frames" -- --room Belfry --save-name "$SAVE_NAME" --save-check-write >"$log" 2>&1 || code=$?
+            [ "$code" = 0 ] && { nice -n "$nice" timeout -k 10 "$HEADLESS_TIMEOUT" "$GODOT" --headless --path . --fixed-fps 60 --quit-after "$frames" -- --save-name "$SAVE_NAME" --save-check-read >>"$log" 2>&1 || code=$?; }
         elif [ -n "$args" ]; then
-            nice -n "$nice" "$GODOT" --headless --path . --fixed-fps 60 --quit-after "$frames" -- $args >"$log" 2>&1 || code=$?
+            nice -n "$nice" timeout -k 10 "$HEADLESS_TIMEOUT" "$GODOT" --headless --path . --fixed-fps 60 --quit-after "$frames" -- $args >"$log" 2>&1 || code=$?
         else
-            nice -n "$nice" "$GODOT" --headless --path . --fixed-fps 60 --quit-after "$frames" >"$log" 2>&1 || code=$?
+            nice -n "$nice" timeout -k 10 "$HEADLESS_TIMEOUT" "$GODOT" --headless --path . --fixed-fps 60 --quit-after "$frames" >"$log" 2>&1 || code=$?
         fi
         echo "$code $((SECONDS - t0))" >"$LOG_DIR/$name.status"
     ) &
@@ -296,6 +300,7 @@ for entry in "${CHECKS[@]}"; do
     log="$LOG_DIR/$name.log"
     read -r code secs <"$LOG_DIR/$name.status" || { code=missing secs=0; }
     if [ "$code" != 0 ] || grep -E "$FAIL_PATTERN" "$log" >/dev/null || { [ -n "$ok" ] && ! grep -q "$ok" "$log"; }; then
+        [ "$code" = 124 ] && code="124: timed out, no result after ${HEADLESS_TIMEOUT}s"
         printf '\033[31m%s FAILED\033[0m (exit %s, %ss; full log: %s)\n' "$name" "$code" "$secs" "$(keep_failed "$name" "$log")"
         { grep -n -E -A3 "$problem|$FAIL_PATTERN" "$log" || tail -20 "$log"; } | head -40
         failed+=("$name")

@@ -5,7 +5,7 @@ using System.Text.Json.Serialization;
 namespace TheDeep;
 
 /// <summary>
-/// What a save holds, pure: the shrine the pilgrim last rested at (where it comes back after dying or relaunching), its abilities, items and prowess, what is done for good (relics taken, doors opened...), and the map of visited rooms. Stored as JSON by <see cref="SaveFile"/>, at the path its world gives (<see cref="WorldDefinition.SavePath"/>).
+/// What a save holds, pure: the shrine the pilgrim last rested at (where it comes back after dying or relaunching), its abilities, items and prowess, what is done for good (relics taken, doors opened...), and the map of visited rooms. Stored as JSON by <c>SaveFile</c>, at the path its world gives (<c>WorldDefinition.SavePath</c>).
 /// </summary>
 public sealed class SaveData
 {

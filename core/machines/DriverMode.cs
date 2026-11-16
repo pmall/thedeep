@@ -1,6 +1,6 @@
 namespace TheDeep;
 
-/// <summary>How a <see cref="JointDriver"/> moves its joint.</summary>
+/// <summary>How a <c>JointDriver</c> moves its joint.</summary>
 public enum DriverMode
 {
     /// <summary>Turns by Angle (and moves by Offset) in proportion to its channel: bowing, raising a blade.</summary>

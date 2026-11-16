@@ -1,6 +1,6 @@
 namespace TheDeep;
 
-/// <summary>How a room's back wall is dressed (<see cref="WallDressing"/>).</summary>
+/// <summary>How a room's back wall is dressed (<c>WallDressing</c>).</summary>
 public enum WallStyle
 {
     /// <summary>A foundry's wall: iron pilasters, girders, grated furnace mouths glowing, pipes, chains hanging (volcanic).</summary>

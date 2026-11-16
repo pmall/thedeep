@@ -1,6 +1,6 @@
 namespace TheDeep;
 
-/// <summary>The architecture standing behind a room, by depth layer (a <see cref="BiomeProfile"/> choice).</summary>
+/// <summary>The architecture standing behind a room, by depth layer (a <c>BiomeProfile</c> choice).</summary>
 public enum BackdropStyle
 {
     /// <summary>Cathedral naves: clustered piers carrying pointed arches, slimmer arcaded tiers above, a few shafts running

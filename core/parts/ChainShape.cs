@@ -1,6 +1,6 @@
 namespace TheDeep;
 
-/// <summary>How a <see cref="PartChain"/> is drawn along its points.</summary>
+/// <summary>How a <c>PartChain</c> is drawn along its points.</summary>
 public enum ChainShape
 {
     /// <summary>A flat strip, broad face toward +Z of its joint: coat tails, ribbons, fins.</summary>

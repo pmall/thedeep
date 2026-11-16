@@ -6,11 +6,13 @@
   <PropertyGroup>
     <EnforceCodeStyleInBuild>true</EnforceCodeStyleInBuild>
     <AnalysisMode>Recommended</AnalysisMode>
-    <!-- IDE0005 (unused usings) only runs in a build when the documentation file is generated; the XML
-         doc checks it switches on (CS1591 every public member documented, CS1573 every parameter of a record or method
-         tagged once any is, CS1574 and CS0419 every cref resolvable) are not rules here: docblocks are prose
-         (instructions/principles.md#small-readable), so they are off. -->
+    <!-- IDE0005 (unused usings) only runs in a build when the documentation file is generated, which also switches on the
+         XML doc checks. The ones that catch a doc contradicting the code stay on (CS1574 and CS0419 a cref that does not
+         resolve, CS1734 a paramref to a missing parameter). Two stay off because they demand boilerplate, and docblocks are
+         prose (instructions/principles.md#small-readable, AGENTS.md#doc-rules): CS1591 (every public member documented)
+         and CS1573 (every parameter tagged once one is, which records' positional parameters, described in the summary,
+         never satisfy). -->
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
-    <NoWarn>$(NoWarn);CS1591;CS1573;CS1574;CS0419;CS1734</NoWarn>
+    <NoWarn>$(NoWarn);CS1591;CS1573</NoWarn>
   </PropertyGroup>
 </Project>

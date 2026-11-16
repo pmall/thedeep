@@ -1,6 +1,6 @@
 namespace TheDeep;
 
-/// <summary>What a waving <see cref="JointDriver"/> keeps time with.</summary>
+/// <summary>What a waving <c>JointDriver</c> keeps time with.</summary>
 public enum DriverClock
 {
     /// <summary>Seconds: Rate is in waves per second.</summary>
