@@ -135,6 +135,7 @@ public class PartsTests
         PartShapes.Ring(b, 0.1f, 0.12f, 0.04f, 0.01f, MathF.Tau, 24);
         MeshData mesh = b.Finish();
         AssertValidFrames(mesh);
+        Assert.NotEmpty(mesh.PatchSizes);
         Assert.All(mesh.PatchSizes, s => Assert.True(s.X < 0f));
         (Vector3 min, Vector3 max) = mesh.Bounds();
         Assert.InRange(max.X, 0.1f, 0.11f);

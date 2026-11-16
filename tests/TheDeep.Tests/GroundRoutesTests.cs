@@ -38,7 +38,9 @@ public class GroundRoutesTests
     [Fact]
     public void ARunningTakeOffStartsARunUpBehindIt()
     {
-        foreach (GroundRoute r in GroundRoutes.Pick(Step(), Limits, 8).Where(r => r.Leap.Move.Dir != 0))
+        List<GroundRoute> running = GroundRoutes.Pick(Step(), Limits, 8).Where(r => r.Leap.Move.Dir != 0).ToList();
+        Assert.NotEmpty(running);
+        foreach (GroundRoute r in running)
         {
             Assert.Equal(r.Leap.TakeOff.Y, r.Start.Y);
             Assert.Equal(-r.Leap.Move.Dir * Limits.Move.RunSpeed * GroundRoutes.RunUpTicks * ReachPlanner.Tick, r.Start.X - r.Leap.TakeOff.X, 3);
@@ -50,7 +52,9 @@ public class GroundRoutesTests
     {
         // A doorway at the pit's east end: no route comes near it.
         var east = new ExitShape("East", new Threshold(ExitSide.East, new Vector2(20.5f, -3f), new Vector2(1f, 3f)), "", 0, false);
-        foreach (GroundRoute r in GroundRoutes.Pick(Step(new List<ExitShape> { east }), Limits, 8))
+        List<GroundRoute> routes = GroundRoutes.Pick(Step(new List<ExitShape> { east }), Limits, 8);
+        Assert.NotEmpty(routes);
+        foreach (GroundRoute r in routes)
         {
             Assert.All(r.Leap.Path, p => Assert.False(Box.Around(p + new Vector2(0f, 0.8f), new Vector2(0.7f, 1.6f)).Grown(GroundRoutes.KeepOff)
                 .Overlaps(east.Threshold.Trigger)));
