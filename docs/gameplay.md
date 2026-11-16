@@ -74,7 +74,7 @@ These gate the map. Every ability is one simple state or rule: no systemic or em
 | **Ballast** <a id="ballast"></a> | Without it the pilgrim floats; with it, in water, hold down to sink and walk the bottom, up or jump to rise | Exits under water, under walls that reach into it |
 | **Heat plating** <a id="heat-plating"></a> | Passive: heat no longer burns (`docs/gameplay.md#heat`). Slag burns all the same (`docs/gameplay.md#slag`) | Vents and molten mouths |
 
-Rules for rooms: only the physics layer makes metal (`docs/art-direction.md#visuals-never-gameplay`); keep a body's height of air below a ring; deep water beside metal stays Ballast's gate, since water lets go of a grip. Each ability has its lab check (`instructions/testing.md#check`).
+Rules for rooms: only the physics layer makes metal (`docs/art-direction.md#visuals-never-gameplay`); no gap of up to a body's width between metal solids facing each other in one plane (`GripGaps`: the grip bridges it, the planner does not), build them touching; keep a body's height of air below a ring; deep water beside metal stays Ballast's gate, since water lets go of a grip. Each ability has its lab check (`instructions/testing.md#check`).
 
 ## Controls <a id="controls"></a>
 
