@@ -15,15 +15,11 @@ namespace TheDeep;
 /// Throughout, control is never gone longer than <see cref="ControlLoss"/>. Each step has a time limit. Prints `HEAT OK` or
 /// `HEAT CHECK` errors.
 /// </summary>
-public partial class HeatCheck : Node
+public partial class HeatCheck : StepDriver
 {
     private static readonly NodePath SlagPath = "Slag";
     private static readonly NodePath VentPath = "Heat/Vent";
 
-    /// <summary>The running game's pilgrim.</summary>
-    public required Player Player { get; init; }
-    /// <summary>The running game's world: its rooms, and the one loaded.</summary>
-    public required World World { get; init; }
     /// <summary>The running game's gate hints.</summary>
     public required GateHints Hints { get; init; }
 
@@ -35,16 +31,11 @@ public partial class HeatCheck : Node
 
     private HintLog? _hinted;
 
-    private readonly List<Step> _steps = new();
-    private readonly List<string> _problems = new();
-
     /// <summary>The physics ticks at which a blow hurt the pilgrim, since the check began.</summary>
     private readonly List<int> _hurts = new();
 
     private SlagBody? _slag;
     private HeatColumn? _vent;
-    private int _index = -1;
-    private int _ticks;
     private int _clock;
     private int _lostSince = -1;
     private int _heldTicks;
@@ -53,15 +44,6 @@ public partial class HeatCheck : Node
     private const int RegainTicks = 6;
     private int _longestLoss;
     private bool _crossed;
-
-    private sealed record Step(string What, float Seconds, Action Start, Func<bool> Done);
-
-    /// <summary>Runs before the pilgrim each frame and each physics tick, so what it presses is read the same tick.</summary>
-    public HeatCheck()
-    {
-        ProcessPriority = -100;
-        ProcessPhysicsPriority = -100;
-    }
 
     private Vector2 P => new(Player.GlobalPosition.X, Player.GlobalPosition.Y);
 
@@ -74,108 +56,108 @@ public partial class HeatCheck : Node
     /// <summary>Standing on the west bank, clear of the channel, in control.</summary>
     private bool OnWestBank => Player.InControl && Player.IsOnFloor() && P.X < Channel.MinX - 0.4f && P.Y > Channel.MaxY - 1f;
 
-    public override void _Ready()
+    protected override void Build()
     {
         _hinted = new HintLog(Hints);
         Player.Hurt += () => _hurts.Add(_clock);
         Vector3 bank = new(Channel.MinX - 4f, 1f, 0f);
         Vector3 cavern = new(Vent.MaxX + 3.5f, Vent.MinY, 0f);
-        int pressingFrom = 0;
+        int pressingFrom = 0, ventFrom = 0;
 
-        _steps.Add(new("without Heat plating, walking off the bank into the slag burns", 2f,
+        Steps.Add(new("without Heat plating, walking off the bank into the slag burns", 2f,
             () =>
             {
                 Player.Abilities.Lock(Ability.HeatPlating);
                 Player.Vitality.Restore();
                 Player.Respawn(bank, 1);
-                Input.ActionPress(InputActions.MoveRight);
+                Press(InputActions.MoveRight);
             },
             () => _hurts.Count == 1 && Player.Vitality.Current == Player.Vitality.Max - 1));
-        _steps.Add(new("and the pilgrim is soon back on the bank it came from, in control (holding toward it and jumping)", 1.5f,
+        Steps.Add(new("and the pilgrim is soon back on the bank it came from, in control (holding toward it and jumping)", 1.5f,
             () =>
             {
-                Input.ActionRelease(InputActions.MoveRight);
-                Input.ActionPress(InputActions.MoveLeft);
+                Release(InputActions.MoveRight);
+                Press(InputActions.MoveLeft);
             },
             () =>
             {
                 Tap(InputActions.Jump);
                 return OnWestBank;
             }));
-        _steps.Add(new($"walking into it for {Pressing} s: one health per touch, never faster than the grace, never across nor stuck", Pressing + 0.5f,
+        Steps.Add(new($"walking into it for {Pressing} s: one health per touch, never faster than the grace, never across nor stuck", Pressing + 0.5f,
             () =>
             {
-                Input.ActionRelease(InputActions.MoveLeft);
-                Input.ActionRelease(InputActions.Jump);
+                Release(InputActions.MoveLeft);
+                Release(InputActions.Jump);
                 Player.Vitality.Restore();
-                Input.ActionPress(InputActions.MoveRight);
+                Press(InputActions.MoveRight);
                 pressingFrom = _clock;
             },
             () => _clock - pressingFrom >= Pressing * 60f && Burned(pressingFrom)));
-        _steps.Add(new("dropped onto the slag past its middle, it comes back to the bank it came from", 1.5f,
+        Steps.Add(new("dropped onto the slag past its middle, it comes back to the bank it came from", 1.5f,
             () =>
             {
-                Input.ActionRelease(InputActions.MoveRight);
+                Release(InputActions.MoveRight);
                 Player.Vitality.Restore();
                 Player.GlobalPosition = new Vector3(0.5f * (Channel.MinX + Channel.MaxX) + 1f, Channel.MaxY + 0.5f, 0f);
                 Player.Velocity = Vector3.Zero;
             },
-            () => _ticks > 2 && OnWestBank));
-        _steps.Add(new("the vent's heat burns too, and the pilgrim says its plating would not bear it (the gate hint)", 2f,
+            () => Ticks > 2 && OnWestBank));
+        Steps.Add(new("the vent's heat burns too, and the pilgrim says its plating would not bear it (the gate hint)", 2f,
             () =>
             {
                 Player.Vitality.Restore();
                 Player.Respawn(cavern, -1);
-                Input.ActionPress(InputActions.MoveLeft);
+                Press(InputActions.MoveLeft);
+                ventFrom = _clock;
             },
-            () => _hurts.Count > 0 && _hurts[^1] >= _clock - _ticks && _hinted!.Said(Ability.HeatPlating)));
-        _steps.Add(new("with Heat plating, the pilgrim walks into the vent's heat to the wall behind it and stands there unharmed", 2.5f,
+            () => _hurts.Count > 0 && _hurts[^1] >= ventFrom && _hinted!.Said(Ability.HeatPlating)));
+        Steps.Add(new("with Heat plating, the pilgrim walks into the vent's heat to the wall behind it and stands there unharmed", 2.5f,
             () =>
             {
                 Player.Vitality.Restore();
                 Player.Abilities.Unlock(Ability.HeatPlating);
                 Player.Respawn(cavern, -1);
             },
-            () => _ticks > 60 && P.X < Vent.MinX && Player.Vitality.Current == Player.Vitality.Max));
-        _steps.Add(new("with Heat plating, walking off the bank into the slag burns all the same", 2f,
+            () => Ticks > 60 && P.X < Vent.MinX && Player.Vitality.Current == Player.Vitality.Max));
+        Steps.Add(new("with Heat plating, walking off the bank into the slag burns all the same", 2f,
             () =>
             {
-                Input.ActionRelease(InputActions.MoveLeft);
+                Release(InputActions.MoveLeft);
                 Player.Vitality.Restore();
                 Player.Respawn(bank, 1);
-                Input.ActionPress(InputActions.MoveRight);
+                Press(InputActions.MoveRight);
             },
-            () => _ticks > 2 && Player.Vitality.Current == Player.Vitality.Max - 1));
-        _steps.Add(new("and sets the pilgrim back on its bank, in control (holding toward it and jumping)", 1.5f,
+            () => Ticks > 2 && Player.Vitality.Current == Player.Vitality.Max - 1));
+        Steps.Add(new("and sets the pilgrim back on its bank, in control (holding toward it and jumping)", 1.5f,
             () =>
             {
-                Input.ActionRelease(InputActions.MoveRight);
-                Input.ActionPress(InputActions.MoveLeft);
+                Release(InputActions.MoveRight);
+                Press(InputActions.MoveLeft);
             },
             () =>
             {
                 Tap(InputActions.Jump);
                 return OnWestBank;
             }));
-        _steps.Add(new("with Heat plating, a running jump from the bank's edge lands on the far bank unharmed", 3f,
+        Steps.Add(new("with Heat plating, a running jump from the bank's edge lands on the far bank unharmed", 3f,
             () =>
             {
-                Input.ActionRelease(InputActions.MoveLeft);
-                Input.ActionRelease(InputActions.Jump);
+                Release(InputActions.MoveLeft);
+                Release(InputActions.Jump);
                 Player.Vitality.Restore();
                 Player.Respawn(bank, 1);
-                Input.ActionPress(InputActions.MoveRight);
+                Press(InputActions.MoveRight);
             },
             () =>
             {
                 if (P.X > Channel.MinX - 0.35f && Player.IsOnFloor())
                 {
-                    Input.ActionPress(InputActions.Jump); // held: a full jump over the slag
+                    Press(InputActions.Jump); // held: a full jump over the slag
                 }
 
                 return P.X > Channel.MaxX + 0.5f && Player.IsOnFloor() && Player.Vitality.Current == Player.Vitality.Max;
             }));
-        Next();
     }
 
     /// <summary>
@@ -190,13 +172,13 @@ public partial class HeatCheck : Node
         {
             if (hurts[i] - hurts[i - 1] < grace)
             {
-                _problems.Add($"two blows {hurts[i] - hurts[i - 1]} ticks apart, under the grace ({grace})");
+                Problems.Add($"two blows {hurts[i] - hurts[i - 1]} ticks apart, under the grace ({grace})");
             }
         }
 
         if (hurts.Count < 2)
         {
-            _problems.Add($"only {hurts.Count} blows in {Pressing} s of walking into the heat");
+            Problems.Add($"only {hurts.Count} blows in {Pressing} s of walking into the heat");
         }
 
         return true;
@@ -206,36 +188,20 @@ public partial class HeatCheck : Node
     {
         if (_clock % 12 == 0)
         {
-            Input.ActionPress(action);
+            Press(action);
         }
         else if (_clock % 12 == 4)
         {
-            Input.ActionRelease(action);
+            Release(action);
         }
     }
 
-    private void Next()
+    protected override string Tag => "HEAT";
+
+    protected override void Observe(float delta)
     {
-        _index++;
-        _ticks = 0;
-        if (_index >= _steps.Count)
-        {
-            Finish();
-            return;
-        }
-
-        _steps[_index].Start();
-    }
-
-    public override void _PhysicsProcess(double delta)
-    {
-        if (_index < 0 || _index >= _steps.Count)
-        {
-            return;
-        }
-
         _clock++;
-        if (_index < _steps.Count - 1 && P.X > Channel.MaxX)
+        if (StepIndex < StepCount - 1 && P.X > Channel.MaxX)
         {
             _crossed = true;
         }
@@ -254,47 +220,26 @@ public partial class HeatCheck : Node
             _lostSince = _lostSince < 0 ? _clock : _lostSince;
             _longestLoss = Math.Max(_longestLoss, _clock - _lostSince + 1);
         }
-
-        Step step = _steps[_index];
-        if (step.Done())
-        {
-            Next();
-        }
-        else if (++_ticks > step.Seconds * 60f)
-        {
-            _problems.Add($"step {_index + 1} \"{step.What}\" failed in {step.Seconds} s (at {Player.GlobalPosition}, velocity {Player.Velocity}, " +
-                          $"health {Player.Vitality.Current}/{Player.Vitality.Max}, in control {Player.InControl}, blows {_hurts.Count})");
-            Finish();
-        }
     }
 
-    private void Finish()
+    protected override void Ending()
     {
-        _index = _steps.Count;
-        Input.ActionRelease(InputActions.MoveRight);
-        Input.ActionRelease(InputActions.MoveLeft);
-        Input.ActionRelease(InputActions.Jump);
         if (_crossed)
         {
-            _problems.Add("the pilgrim got across the slag other than by the jump over it");
+            Problems.Add("the pilgrim got across the slag other than by the jump over it");
         }
 
         if (_longestLoss > ControlLoss * 60f)
         {
-            _problems.Add($"control was gone for {_longestLoss / 60f:0.00} s at once (at most {ControlLoss} s)");
+            Problems.Add($"control was gone for {_longestLoss / 60f:0.00} s at once (at most {ControlLoss} s)");
         }
-
-        foreach (string problem in _problems)
-        {
-            GD.PushError($"HEAT CHECK: {problem}");
-        }
-
-        if (_problems.Count == 0)
-        {
-            GD.Print($"HEAT OK: {_steps.Count} steps (slag: burned and back on its bank, plated or not, one blow per grace, " +
-                     $"never across but by the jump; the vent: burned, the gate hint, in it unharmed with plating; control gone at most {_longestLoss / 60f:0.00} s)");
-        }
-
-        GetTree().Quit(_problems.Count == 0 ? 0 : 1);
     }
+
+    protected override string Detail =>
+        $"at {Player.GlobalPosition}, velocity {Player.Velocity}, health {Player.Vitality.Current}/{Player.Vitality.Max}, " +
+        $"in control {Player.InControl}, blows {_hurts.Count}";
+
+    protected override string Outcome =>
+        $"{StepCount} steps (slag: burned and back on its bank, plated or not, one blow per grace, " +
+        $"never across but by the jump; the vent: burned, the gate hint, in it unharmed with plating; control gone at most {_longestLoss / 60f:0.00} s)";
 }
