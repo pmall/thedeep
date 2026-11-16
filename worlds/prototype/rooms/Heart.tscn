@@ -170,8 +170,6 @@ transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 53.5, 2, 0)
 script = ExtResource("8_goal")
 Ending = true
 Size = Vector2(9, 4)
-TitleLine = &""
-HintLine = &""
 
 [node name="Kit" type="Node3D" parent="."]
 
