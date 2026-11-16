@@ -8,7 +8,7 @@ namespace TheDeep.Tests;
 public class PilgrimMotionTests
 {
     private const float Dt = 1f / 60f;
-    private const float RunSpeed = 7f;
+    private static readonly float RunSpeed = TestTuning.Move.RunSpeed;
 
     private static readonly HumanoidDims Dims = TestTuning.Dims;
 

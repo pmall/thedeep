@@ -110,7 +110,7 @@ public class PilgrimControlTests
         c.EndDash();
         c.Read(Held(dash: true), landed: true);
         Assert.False(c.WantsDash(onFloor: true));
-        Assert.Equal(0.4f, c.DashCooldownRemaining, 3);
+        Assert.Equal(Limits.DashCooldown, c.DashCooldownRemaining, 3);
     }
 
     [Fact]
