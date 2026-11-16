@@ -104,6 +104,10 @@ public sealed class VideoEncoder : IDisposable
             {
                 return null; // ffmpeg is not installed.
             }
+            catch (Exception e) when (e is InvalidOperationException or IOException)
+            {
+                continue; // the probe exited or broke its pipes while being read or killed: try the next codec.
+            }
         }
 
         return null;
