@@ -162,7 +162,7 @@ public partial class SpeciesValidator : Node
         }
 
         var joints = new HashSet<StringName>();
-        foreach (RigJoint joint in s.Assembly.Joints)
+        foreach (RigJoint joint in s.Assembly.Resolved.Joints)
         {
             if (!joints.Add(joint.Name))
             {
@@ -175,7 +175,7 @@ public partial class SpeciesValidator : Node
             }
         }
 
-        foreach (PartSlot part in s.Assembly.Parts)
+        foreach (PartSlot part in s.Assembly.Resolved.Parts)
         {
             if (!joints.Contains(part.Joint))
             {
@@ -188,7 +188,7 @@ public partial class SpeciesValidator : Node
             }
         }
 
-        foreach (PartChain chain in s.Assembly.Chains.Where(c => !joints.Contains(c.Joint)))
+        foreach (PartChain chain in s.Assembly.Resolved.Chains.Where(c => !joints.Contains(c.Joint)))
         {
             Problem($"chain {chain.Name} hangs from unknown joint {chain.Joint}");
         }

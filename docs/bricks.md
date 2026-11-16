@@ -59,7 +59,7 @@ All ready.
 | Brick | Status | Item |
 | -- | -- | -- |
 | `Machine` + `MachineSpecies` | ready (framework) | — |
-| Parts (`docs/art-direction.md#shared-parts`): a body is a `PartAssembly` resource (`RigJoint`s, rigid `PartSlot`s, flowing `PartChain`s, `resources/parts/`) built by a `PartBody`, posed by behavior code (`HumanoidRig` for the pilgrim); the part meshes `PodMesh`, `PlateMesh`, `RingMesh`, `RotorMesh`, `DrillMesh`, `TreadMesh`, `LimbMesh`, `SleeveMesh` | working (the machines' and the pilgrim's bodies are placeholders) | `docs/roadmap.md#pilgrim`, `docs/roadmap.md#stage-polish` |
+| Parts (`docs/art-direction.md#shared-parts`): a body is a `PartAssembly` resource (`RigJoint`s, rigid `PartSlot`s, flowing `PartChain`s, `resources/parts/`) built by a `PartBody`; a variant names its `Base`, `Scale`, `MaterialSwaps` and the joints, parts and chains it replaces or adds instead of copying it; posed by behavior code (`HumanoidRig` for the pilgrim); the part meshes `PodMesh`, `PlateMesh`, `RingMesh`, `RotorMesh`, `DrillMesh`, `TreadMesh`, `LimbMesh`, `SleeveMesh` | working (the machines' and the pilgrim's bodies are placeholders) | `docs/roadmap.md#pilgrim`, `docs/roadmap.md#stage-polish` |
 | Brains (`core/machines/brains/`) | working placeholders | `docs/roadmap.md#stage-polish` (the bestiary) |
 | Species (`resources/machines/`, 10 placeholders) | working placeholders | `docs/roadmap.md#stage-polish` |
 | `BossSeal` | ready | — |

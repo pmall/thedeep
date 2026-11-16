@@ -47,6 +47,9 @@ public partial class PartChain : Resource
     [Export] public Mesh? Pendant { get; set; }
     [Export] public Material? PendantMaterial { get; set; }
 
+    /// <summary>The pendant's size: a variant's scale (<see cref="PartAssembly.Scale"/>) grows the pendant with it.</summary>
+    [Export] public float PendantScale { get; set; } = 1f;
+
     [ExportGroup("Motion")]
     [Export] public float Gravity { get; set; } = 9.8f;
 

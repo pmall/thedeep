@@ -355,6 +355,7 @@ Position = Vector3(0.17, 0.16, 0)
 
 [sub_resource type="Resource" id="Part_Halo"]
 script = ExtResource("3_PartSlot")
+Name = &"Halo"
 Joint = &"Head"
 Category = 4
 Mesh = SubResource("Mesh_halo")
@@ -408,6 +409,7 @@ Material = ExtResource("9_frame")
 
 [sub_resource type="Resource" id="Part_Blade"]
 script = ExtResource("3_PartSlot")
+Name = &"Blade"
 Joint = &"ElbowN"
 Category = 3
 Mesh = SubResource("Mesh_blade")

@@ -9,6 +9,9 @@ namespace TheDeep;
 [GlobalClass]
 public partial class PartSlot : Resource
 {
+    /// <summary>Lets a variant assembly replace this part (<see cref="PartAssembly.Base"/>); empty for a part nothing replaces. Unique within the assembly.</summary>
+    [Export] public StringName Name { get; set; } = Names.None;
+
     [Export] public StringName Joint { get; set; } = Names.None;
     [Export] public PartCategory Category { get; set; } = PartCategory.Chassis;
     [Export] public Mesh? Mesh { get; set; }
