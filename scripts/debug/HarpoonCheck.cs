@@ -1,5 +1,3 @@
-using System;
-using System.Collections.Generic;
 using System.Linq;
 using Godot;
 
@@ -12,169 +10,82 @@ namespace TheDeep;
 /// just left is skipped); an anchor behind a solid or out of range is never in sight; a jump during the pull
 /// cancels into a jump; the edge pointer shows the anchor in sight only when it is off screen. Each step has a time limit. Prints `HARPOON OK` or `HARPOON CHECK` errors.
 /// </summary>
-public partial class HarpoonCheck : Node
+public partial class HarpoonCheck : StepDriver
 {
-    /// <summary>The running game's pilgrim.</summary>
-    public required Player Player { get; init; }
-    /// <summary>The running game's world: its rooms, and the one loaded.</summary>
-    public required World World { get; init; }
     /// <summary>The running game's pointer to a Harpoon target off screen.</summary>
     public required AnchorPointer Pointer { get; init; }
 
-    private readonly List<Step> _steps = new();
-    private readonly List<string> _problems = new();
-    private int _index = -1;
-    private int _ticks;
     private float _maxAbsZ;
     private float _closest = float.MaxValue;
-
-    private sealed record Step(string What, float Seconds, Action Start, Func<bool> Done, bool Hold = false);
 
     private HarpoonAnchor A => World.Room.All<HarpoonAnchor>().First(a => a.NameText() == "AnchorA");
 
     private HarpoonAnchor B => World.Room.All<HarpoonAnchor>().First(a => a.NameText() == "AnchorB");
 
-    /// <summary>Runs before the pilgrim each frame and each physics tick, so what it presses is read the same tick.</summary>
-    public HarpoonCheck()
-    {
-        ProcessPriority = -100;
-        ProcessPhysicsPriority = -100;
-    }
-
-    public override void _Ready()
+    protected override void Build()
     {
         float margin = Pointer.Margin;
-        _steps.Add(new("no anchor in sight without the Harpoon", 0.3f,
+        Steps.Add(new("no anchor in sight without the Harpoon", 0.3f,
             () => { Player.Abilities.Lock(Ability.Harpoon); Place(11f, 0f); },
             () => Player.AnchorInSight is not null, Hold: true));
-        _steps.Add(new("with it, the near anchor is in sight", 0.3f,
+        Steps.Add(new("with it, the near anchor is in sight", 0.3f,
             () => Player.Abilities.Unlock(Ability.Harpoon),
             () => Player.AnchorInSight == A));
-        _steps.Add(new("the anchor framed: no pointer at the screen's edge", 0.3f,
+        Steps.Add(new("the anchor framed: no pointer at the screen's edge", 0.3f,
             () => { },
             () => Pointer.Pointing, Hold: true));
-        _steps.Add(new("the anchor unframed (an edge wider than the screen): the pointer shows", 0.3f,
+        Steps.Add(new("the anchor unframed (an edge wider than the screen): the pointer shows", 0.3f,
             () => Pointer.Margin = 100000f,
             () => Pointer.Pointing && Player.AnchorInSight == A));
-        _steps.Add(new("fire: the line flies out and the pull begins", 0.3f,
+        Steps.Add(new("fire: the line flies out and the pull begins", 0.3f,
             () => { Pointer.Margin = margin; Press(InputActions.Harpoon); },
             () => Player.CurrentState == Player.States.Harpoon && Player.States.Harpoon.Bitten));
-        _steps.Add(new("reach the anchor, let go rising with the air dash back", 1.5f,
+        Steps.Add(new("reach the anchor, let go rising with the air dash back", 1.5f,
             () => { Release(InputActions.Harpoon); _closest = float.MaxValue; },
             () => Player.LastAnchor == A && Player.CurrentState == Player.States.Fall && Player.Velocity.Y > 0f
                   && Player.AirDashesLeft == Player.Tuning.AirDashes && _closest < 0.3f));
-        _steps.Add(new("the next anchor is in sight (the one just left is skipped)", 0.2f,
+        Steps.Add(new("the next anchor is in sight (the one just left is skipped)", 0.2f,
             () => { },
             () => Player.AnchorInSight == B));
-        _steps.Add(new("fire again: chain to the next anchor", 1.5f,
+        Steps.Add(new("fire again: chain to the next anchor", 1.5f,
             () => Press(InputActions.Harpoon),
             () => Player.LastAnchor == B));
-        _steps.Add(new("an anchor behind a solid is not in sight", 0.3f,
+        Steps.Add(new("an anchor behind a solid is not in sight", 0.3f,
             () => { Release(InputActions.Harpoon); Place(14f, 13f); },
             () => Player.AnchorInSight is not null, Hold: true));
-        _steps.Add(new("an anchor out of range is not in sight", 0.3f,
+        Steps.Add(new("an anchor out of range is not in sight", 0.3f,
             () => Place(2f, 0f),
             () => Player.AnchorInSight is not null, Hold: true));
-        _steps.Add(new("fire, and jump during the pull: a jump", 1f,
+        Steps.Add(new("fire, and jump during the pull: a jump", 1f,
             () => { Place(11f, 0f); Press(InputActions.Harpoon); },
             () => Player.CurrentState == Player.States.Harpoon && Player.States.Harpoon.Bitten));
-        _steps.Add(new("…cancels the pull into a jump", 0.3f,
+        Steps.Add(new("…cancels the pull into a jump", 0.3f,
             () => { Release(InputActions.Harpoon); Press(InputActions.Jump); },
             () => Player.CurrentState == Player.States.Jump));
-        Next();
     }
 
-    private void Place(float x, float y) => Player.Respawn(new Vector3(x, y, 0f), 1);
+    protected override string Tag => "HARPOON";
 
-    private static void Press(StringName action) => Input.ActionPress(action);
-
-    private static void Release(StringName action) => Input.ActionRelease(action);
-
-    private void Next()
+    protected override void Observe(float delta)
     {
-        _index++;
-        _ticks = 0;
-        if (_index >= _steps.Count)
-        {
-            Finish();
-            return;
-        }
-
-        _steps[_index].Start();
-    }
-
-    public override void _PhysicsProcess(double delta)
-    {
-        if (_index < 0 || _index >= _steps.Count)
-        {
-            return;
-        }
-
         _maxAbsZ = Mathf.Max(_maxAbsZ, Mathf.Abs(Player.GlobalPosition.Z));
         if (Player.CurrentState == Player.States.Harpoon)
         {
             _closest = Player.States.Harpoon.Anchor is { } anchor ? Mathf.Min(_closest, (anchor.Point - Player.Center).Length()) : _closest;
         }
-
-        Step step = _steps[_index];
-        bool timeUp = ++_ticks > step.Seconds * 60f;
-        if (step.Hold)
-        {
-            // A step that must NOT happen for its whole time.
-            if (step.Done())
-            {
-                Fail(step);
-                return;
-            }
-
-            if (timeUp)
-            {
-                Next();
-            }
-
-            return;
-        }
-
-        if (step.Done())
-        {
-            Next();
-        }
-        else if (timeUp)
-        {
-            Fail(step);
-        }
     }
 
-    private void Fail(Step step)
+    protected override void Ending()
     {
-        _problems.Add($"step {_index + 1} \"{step.What}\" failed in {step.Seconds} s (at {Player.GlobalPosition}, state {Player.CurrentState.Name}, " +
-                      $"in sight {Player.AnchorInSight?.NameText() ?? "none"}, last {Player.LastAnchor?.NameText() ?? "none"}, closest {_closest:0.00} m)");
-        Finish();
-    }
-
-    private void Finish()
-    {
-        _index = _steps.Count;
-        foreach (StringName action in new[] { InputActions.Harpoon, InputActions.Jump })
-        {
-            Input.ActionRelease(action);
-        }
-
         if (_maxAbsZ > 0.001f)
         {
-            _problems.Add($"left the play plane (|Z| up to {_maxAbsZ})");
+            Problems.Add($"left the play plane (|Z| up to {_maxAbsZ})");
         }
-
-        foreach (string problem in _problems)
-        {
-            GD.PushError($"HARPOON CHECK: {problem}");
-        }
-
-        if (_problems.Count == 0)
-        {
-            GD.Print($"HARPOON OK: {_steps.Count} steps (sight, fire, pull, release, chain, blocked, range, jump cancel)");
-        }
-
-        GetTree().Quit(_problems.Count == 0 ? 0 : 1);
     }
+
+    protected override string Detail =>
+        $"at {Player.GlobalPosition}, state {Player.CurrentState.Name}, in sight {Player.AnchorInSight?.NameText() ?? "none"}, " +
+        $"last {Player.LastAnchor?.NameText() ?? "none"}, closest {_closest:0.00} m";
+
+    protected override string Outcome => $"{StepCount} steps (sight, fire, pull, release, chain, blocked, range, jump cancel)";
 }
