@@ -25,6 +25,12 @@ public sealed class WorldCheck
     /// <summary>Two rooms' bounds may overlap this much on the map (their walls at a shared doorway), meters.</summary>
     public const float DoorwayOverlap = 6f;
 
+    /// <summary>What the geometry check adds to what a pilgrim arrives with, to find what falls short of a requirement: nothing, or one ability.</summary>
+    private static readonly Ability[] Shorts = AbilitySet.All.Prepend(Ability.None).ToArray();
+
+    /// <summary>The only arrival of a way the base moveset takes.</summary>
+    private static readonly Ability[] BaseArrival = { Ability.None };
+
     private readonly PlannerLimits _limits;
     private readonly List<string> _problems = new();
     private readonly List<(string Room, Requirement Requires)> _sealed = new();
@@ -269,10 +275,14 @@ public sealed class WorldCheck
 
     /// <summary>
     /// A way into a room: arriving through an exit (<see cref="Exit"/>, its index) by an edge needing a requirement, or waking
-    /// (Exit −1); where and how the body enters, and the abilities every option of the requirement holds (<see cref="Guaranteed"/>:
-    /// whoever arrives through a way only the Drill opens has the Drill, and bores what it reaches there).
+    /// (Exit −1); where and how the body enters, and the abilities each option of the requirement holds (<see cref="Arrivals"/>: only
+    /// none for a way the base moveset takes).
     /// </summary>
-    private sealed record WayIn(string What, Vector2 At, Vector2 Velocity, int Steer, int Exit, bool Base, Ability Guaranteed);
+    private sealed record WayIn(string What, Vector2 At, Vector2 Velocity, int Steer, int Exit, IReadOnlyList<Ability> Arrivals)
+    {
+        /// <summary>The abilities every option holds: whoever arrives through a way only the Drill opens has the Drill, and bores what it reaches there.</summary>
+        public Ability Guaranteed { get; } = Arrivals.Aggregate(AbilitySet.Every, (all, a) => all & a);
+    }
 
     /// <summary>Arriving through an exit (<see cref="ExitShape.Entry"/>), by an edge needing <paramref name="requires"/>.</summary>
     private WayIn Arriving(RoomShape shape, int index, Requirement requires)
@@ -280,8 +290,7 @@ public sealed class WorldCheck
         ExitShape x = shape.Exits[index];
         (Vector2 at, Vector2 velocity, int steer) = x.Entry(_limits, shape.Solids);
         Requirement body = requires.WithoutItems();
-        return new WayIn($"arriving through {x.Name}", at, velocity, steer, index, body.IsMetBy(Ability.None),
-            body.Options.Aggregate(AbilitySet.Every, (all, option) => all & option.Abilities));
+        return new WayIn($"arriving through {x.Name}", at, velocity, steer, index, body.Options.Select(o => o.Abilities & AbilitySet.Every).ToList());
     }
 
     private List<WayIn> WaysIn(string room)
@@ -299,7 +308,7 @@ public sealed class WorldCheck
 
         foreach (Vector2 wake in shape.Wakes)
         {
-            ways.Add(new WayIn($"waking at {Fmt.Point(wake)}", wake, Vector2.Zero, 0, -1, true, Ability.None));
+            ways.Add(new WayIn($"waking at {Fmt.Point(wake)}", wake, Vector2.Zero, 0, -1, BaseArrival));
         }
 
         return ways;
@@ -307,6 +316,7 @@ public sealed class WorldCheck
 
     private static string Describe(Ability a) => a switch
     {
+        Ability.None => "the base moveset",
         Ability.MagGrip => "Mag-grip",
         Ability.Harpoon => "the Harpoon",
         Ability.Drill => "the Drill",
@@ -316,11 +326,14 @@ public sealed class WorldCheck
     };
 
     /// <summary>
-    /// The geometry sanity check: the base moveset, simulated with the live tuning (<see cref="ReachPlanner"/>), must reach every
-    /// exit marked for the base moveset from some way into its room, and must not reach an exit that needs an ability from a way in
-    /// that needed none (that requirement would be a lie, or the geometry drifted from it). An exit an ability opens must be reached
-    /// by the planner with that ability (and what the way in guarantees: abilities accumulate) from some way in; for a requirement
-    /// with several options, by each option on its own; for abilities needed together, by all of them. All five are simulated:
+    /// The geometry sanity check, which makes each exit's requirement the truth: the game doesn't hold the pilgrim to it, and the inside
+    /// check (<see cref="CheckInside"/>) leaves only through the exits whose requirement it meets. The base moveset, simulated with the
+    /// live tuning (<see cref="ReachPlanner"/>), must reach every exit marked for the base moveset from some way into its room. An exit
+    /// an ability opens must be reached by the planner with that ability (and what the way in guarantees: abilities accumulate) from
+    /// some way in; for a requirement with several options, by each option on its own; for abilities needed together, by all of them.
+    /// And it must not be reached short of its requirement (that requirement would be a lie, or the geometry drifted from it): from no
+    /// way in by the pilgrim as it arrives there (each option of the way's own requirement), with nothing more or with any one more
+    /// ability, where that still doesn't meet the exit's requirement. All five are simulated:
     /// Mag-grip walks metal, the Harpoon zips between anchors, the Drill bores cracked rock, Ballast sinks and rises in water, Heat
     /// plating walks through heat. Sealed exits (rooms not built yet) are held to their requirement too, so a gate is right before
     /// the room behind it exists. Lifts are ridden from their lower stop.
@@ -368,9 +381,15 @@ public sealed class WorldCheck
                 problems.Add($"{room}: exit {x.Name} needs {x.Requires}, but {Describe(option.Abilities)} reaches it from no way into the room");
             }
 
-            foreach (int w in others.Where(w => ways[w].Base && Reached(w, Ability.None).Contains(i)))
+            foreach (int w in others)
             {
-                problems.Add($"{room}: exit {x.Name} needs {x.Requires}, but the base moveset reaches it {ways[w].What}");
+                // The fewest abilities first: one line per way in.
+                var shorts = ways[w].Arrivals.SelectMany(arrived => Shorts.Select(a => (arrived | a) & AbilitySet.Every)).Distinct()
+                    .Where(with => !r.IsMetBy(with)).OrderBy(with => BitOperations.PopCount((uint)with)).ThenBy(with => with);
+                foreach (Ability with in shorts.Where(with => Reached(w, with).Contains(i)).Take(1))
+                {
+                    problems.Add($"{room}: exit {x.Name} needs {x.Requires}, but {Describe(with)} reaches it {ways[w].What}");
+                }
             }
         }
 
@@ -425,7 +444,7 @@ public sealed class WorldCheck
         RoomShape shape = _shapes[state.Room];
         return state.Entry switch
         {
-            WayEntry.Waking => new WayIn("waking", shape.Spawn, Vector2.Zero, 0, -1, true, Ability.None),
+            WayEntry.Waking => new WayIn("waking", shape.Spawn, Vector2.Zero, 0, -1, BaseArrival),
             WayEntry.Through through when shape.Exits.FindIndex(x => x.Name == through.Exit) is var index and >= 0 => Arriving(shape, index, Requirement.None),
             _ => null,
         };
