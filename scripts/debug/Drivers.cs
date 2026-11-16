@@ -148,8 +148,12 @@ public static class Drivers
             Machines = main.Machines,
             Overlays = new CanvasLayer[] { main.Hud, main.Capture, main.Health, main.Session.Banner, main.Hint },
             OutputDir = options.DriverValue ?? "",
-            PerfFile = options.Perf ?? "perf.json",
         };
+        if (options.Perf is { } perf)
+        {
+            driver.PerfFile = perf;
+        }
+
         if (options.Size is { } size)
         {
             driver.RenderSize = new Vector2I(size.Width, size.Height);
