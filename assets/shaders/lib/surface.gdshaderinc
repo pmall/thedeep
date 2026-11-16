@@ -5,6 +5,7 @@
 //   TANGENT  direction of +U, with the sign that makes BINORMAL the direction of +V
 //   COLOR.r  height above the piece's bottom / 8 m (KitMesh.HeightRange); COLOR.g per-part variation;
 //   COLOR.b  cavity: 0 open, 1 deep in a hollow no light reaches (a pipe's mouth, its bore), for the material to darken
+// Needs lib/noise (hash13).
 // Usage: SURFACE_VERTEX as the body of vertex(), then `Surface f = SURFACE;` in fragment().
 
 // World position of the fragment.
@@ -24,16 +25,10 @@ struct Surface {
 	vec3 bitangent; // view space, direction of +V
 };
 
-float surface_hash(vec3 p) {
-	p = fract(p * 0.1031);
-	p += dot(p, p.zyx + 31.32);
-	return fract((p.x + p.y) * p.z);
-}
-
 // Fills the varyings; use it as the body of vertex() (varyings can only be assigned there).
 #define SURFACE_VERTEX \
 	v_world_pos = (MODEL_MATRIX * vec4(VERTEX, 1.0)).xyz; \
-	v_seed = fract(surface_hash(MODEL_MATRIX[3].xyz * 1.37 + vec3(0.5, 7.3, 2.1)) + COLOR.g * 0.61803);
+	v_seed = fract(hash13(MODEL_MATRIX[3].xyz * 1.37 + vec3(0.5, 7.3, 2.1)) + COLOR.g * 0.61803);
 
 // Built-ins are only readable in fragment() itself, hence the macro.
 #define SURFACE surface_from(UV, UV2, COLOR, NORMAL, TANGENT, BINORMAL)
