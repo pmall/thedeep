@@ -15,7 +15,7 @@ namespace TheDeep;
 /// the burn, in control within <see cref="ControlLoss"/> of the blow, and not burned again while it stands there
 /// (`docs/gameplay.md#slag`, `docs/gameplay.md#heat`). Into heat plated, it stands in the column unharmed. A death, a burn
 /// that never comes, a set-back that never comes or leaving the room is an error. A side with no such ground (a column walled in a
-/// shaft, a mould entered from above) is listed, not failed: the room check holds those shapes (<see cref="SlagBasin"/>,
+/// shaft, a mould entered from above) is listed, not failed (unless no side of any burn could be walked: nothing was proven): the room check holds those shapes (<see cref="SlagBasin"/>,
 /// <see cref="HeatGate"/>). Prints `BURN CHECK` errors, or `BURN OK` and the sides it could not walk in from.
 /// </summary>
 public partial class BurnProbe : Node
@@ -296,6 +296,11 @@ public partial class BurnProbe : Node
     {
         _roomIndex = _rooms.Count;
         Hold(0);
+        if (_bodies > 0 && _walked == 0)
+        {
+            _problems.Add($"none of the world's {_bodies} burns was walked into (no open ground beside any): {string.Join(", ", _unprobed)}");
+        }
+
         foreach (string problem in _problems)
         {
             GD.PushError($"BURN CHECK: {problem}");

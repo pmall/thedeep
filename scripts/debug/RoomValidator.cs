@@ -112,6 +112,11 @@ public partial class RoomValidator : Node
             System.GC.WaitForPendingFinalizers();
         }
 
+        if (rooms == 0)
+        {
+            _problems.Add($"no room scene in {World.Definition.RoomsFolder}");
+        }
+
         CheckBiomes();
         _lines.Add(World.Definition);
         _problems.AddRange(_lines.Problems(World.Definition.Lines));

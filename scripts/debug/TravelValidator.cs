@@ -351,6 +351,11 @@ public partial class TravelValidator : Node
 
     private void Finish()
     {
+        if (_exits == 0)
+        {
+            _problems.Add("no exit was crossed: a check that crossed nothing proves nothing");
+        }
+
         foreach (string problem in _problems)
         {
             GD.PushError($"TRAVEL CHECK: {problem}");
