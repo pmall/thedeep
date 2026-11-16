@@ -37,7 +37,7 @@ public partial class ControlsManual : Control
     /// <summary>How a row's actions become buttons.</summary>
     public enum Kind
     {
-        /// <summary>Every binding of the one action, "/" between.</summary>
+        /// <summary>The main button of the one action.</summary>
         Any,
         /// <summary>The first binding of each action, joined by the row's separator.</summary>
         Join,
@@ -308,29 +308,19 @@ public partial class ControlsManual : Control
     {
         switch (spec.Kind)
         {
-            case Kind.Any when spec.Actions.Length == 1:
-                // The main button only (the first bound for the device): the manual stays small.
-                foreach (InputEvent e in InputActions.Bindings(spec.Actions[0]))
+            case Kind.Any:
+                // The main button only: the manual stays small.
+                if (spec.Actions.Length != 1)
                 {
-                    if (GlyphOf(e, pad, spec.Actions[0]) is { } glyph)
-                    {
-                        Add(items, glyph, "/");
-                        break;
-                    }
+                    throw new System.InvalidOperationException($"A {nameof(Kind.Any)} row names one action, not {spec.Actions.Length}.");
                 }
 
+                AddMain(items, spec.Actions[0], pad, "/");
                 break;
             case Kind.Join:
                 foreach (StringName action in spec.Actions)
                 {
-                    foreach (InputEvent e in InputActions.Bindings(action))
-                    {
-                        if (GlyphOf(e, pad, action) is { } glyph)
-                        {
-                            Add(items, glyph, spec.Separator);
-                            break;
-                        }
-                    }
+                    AddMain(items, action, pad, spec.Separator);
                 }
 
                 break;
@@ -415,6 +405,14 @@ public partial class ControlsManual : Control
         }
 
         items.Add(glyph);
+    }
+
+    private static void AddMain(List<Item> items, StringName action, bool pad, string separator)
+    {
+        if (ButtonGlyph.Main(action, pad ? ButtonNames.Device.Gamepad : ButtonNames.Device.Keyboard) is { } button)
+        {
+            Add(items, new Glyph(button), separator);
+        }
     }
 
     private static Glyph? GlyphOf(InputEvent e, bool pad, StringName action) =>

@@ -22,6 +22,9 @@ public sealed class ButtonGlyph
     /// <summary>A stick pushed one way (a direction on the stick), or zero for the live stick.</summary>
     public Vector2 Push { get; set; }
 
+    /// <summary>How lit a button stands unheld: a pale cap with dark letters reads on any ground.</summary>
+    public const float RestLit = 0.8f;
+
     /// <summary>The glyph of binding <paramref name="e"/> of <paramref name="action"/> on the pad or the keyboard; none if it is the other device's.</summary>
     public static ButtonGlyph? Of(InputEvent e, bool pad, StringName action)
     {

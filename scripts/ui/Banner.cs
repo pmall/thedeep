@@ -63,10 +63,6 @@ public partial class Banner : CanvasLayer
     private static TextStyle Style => TextStyle.Shared;
 
     /// <summary>How the line's label wraps, and the same as break flags, so <see cref="Fits"/> measures what the label shows.</summary>
-    private const TextServer.AutowrapMode Wrap = TextServer.AutowrapMode.WordSmart;
-
-    private const TextServer.LineBreakFlag Breaks = TextServer.LineBreakFlag.Mandatory | TextServer.LineBreakFlag.WordBound | TextServer.LineBreakFlag.Adaptive;
-
     public override void _Ready()
     {
         Layer = UiLayers.Banner;
@@ -86,7 +82,7 @@ public partial class Banner : CanvasLayer
 
     private static Label MakeLabel(int size, Color ink)
     {
-        var label = new Label { HorizontalAlignment = HorizontalAlignment.Center, AutowrapMode = Wrap, MouseFilter = Control.MouseFilterEnum.Ignore };
+        var label = new Label { HorizontalAlignment = HorizontalAlignment.Center, AutowrapMode = TextStyle.Wrap, MouseFilter = Control.MouseFilterEnum.Ignore };
         Style.Dress(label, size, ink);
         return label;
     }
@@ -151,19 +147,10 @@ public partial class Banner : CanvasLayer
     private static int HeadSize(Voice voice) => voice == Voice.Spoken ? Style.Caption : Style.Title;
 
     /// <summary>How many rows <paramref name="text"/> takes at <paramref name="size"/> within <paramref name="width"/> (none: the plate's widest text).</summary>
-    private int RowsOf(string text, int size, float? width = null)
-    {
-        if (text.Length == 0)
-        {
-            return 0;
-        }
-
-        Vector2 measured = Style.Font.GetMultilineStringSize(text, HorizontalAlignment.Center, width ?? TextWidth, size, -1, Breaks);
-        return Mathf.RoundToInt(measured.Y / Style.Font.GetHeight(size));
-    }
+    private int RowsOf(string text, int size, float? width = null) => Style.RowsOf(text, size, width ?? TextWidth);
 
     /// <summary>The widest the text stands within the plate, pixels.</summary>
-    private float TextWidth => MaxWidth - 2f * Style.Padding.X;
+    private float TextWidth => Style.TextWidth(MaxWidth);
 
     /// <summary>The banner showing leaves once read; the plate keeps clear of the pilgrim.</summary>
     public override void _Process(double delta)

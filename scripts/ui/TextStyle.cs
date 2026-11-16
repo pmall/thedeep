@@ -120,6 +120,27 @@ public partial class TextStyle : Resource
     /// <summary>Where the banner and the hint line stand, one layout for both.</summary>
     public TextPlaces Places => new(BannerTop, HintBottom, PlaceGap);
 
+    /// <summary>How a label wraps its text: at word bounds, so a measure and the label agree.</summary>
+    public const TextServer.AutowrapMode Wrap = TextServer.AutowrapMode.WordSmart;
+
+    /// <summary>The break flags matching <see cref="Wrap"/>, for measuring text before a label shows it.</summary>
+    public const TextServer.LineBreakFlag Breaks = TextServer.LineBreakFlag.Mandatory | TextServer.LineBreakFlag.WordBound | TextServer.LineBreakFlag.Adaptive;
+
+    /// <summary>The widest text stands on a plate of <paramref name="maxWidth"/>, its padding taken off, pixels.</summary>
+    public float TextWidth(float maxWidth) => maxWidth - 2f * Padding.X;
+
+    /// <summary>How many rows <paramref name="text"/> takes at <paramref name="size"/> wrapped within <paramref name="width"/>; none for no text.</summary>
+    public int RowsOf(string text, int size, float width)
+    {
+        if (text.Length == 0)
+        {
+            return 0;
+        }
+
+        Vector2 measured = Font.GetMultilineStringSize(text, HorizontalAlignment.Left, width, size, -1, Breaks);
+        return Mathf.RoundToInt(measured.Y / Font.GetHeight(size));
+    }
+
     /// <summary>How tall a plate holding one row of text at <paramref name="size"/> stands, its padding included, pixels.</summary>
     public float RowPlate(int size) => Font.GetHeight(size) + 2f * Padding.Y;
 

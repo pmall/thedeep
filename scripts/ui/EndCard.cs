@@ -15,6 +15,7 @@ public partial class EndCard : CanvasLayer
 
     /// <summary>Seconds for the screen to fade to the veil.</summary>
     [Export] public float FadeTime { get; set; } = 2.5f;
+    /// <summary>Seconds the lines stay up in all: half before the thanks line comes in, half after it, before they all leave.</summary>
     [Export] public float Hold { get; set; } = 6f;
 
     private ColorRect? _veil;
