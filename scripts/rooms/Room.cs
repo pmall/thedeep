@@ -69,10 +69,10 @@ public partial class Room : Node3D
     }
 
     /// <summary>The room's look-dev camera spots (tools/capture.sh), in scene order.</summary>
-    public IEnumerable<PhotoSpot> PhotoSpots() => Find<PhotoSpot>(this);
+    public IEnumerable<PhotoSpot> PhotoSpots() => this.Descendants<PhotoSpot>();
 
     /// <summary>The room's connection markers, in scene order.</summary>
-    public IEnumerable<RoomExit> Exits() => Find<RoomExit>(this);
+    public IEnumerable<RoomExit> Exits() => this.Descendants<RoomExit>();
 
     /// <summary>The exit named <paramref name="name"/>, or null.</summary>
     public RoomExit? FindExit(string name)
@@ -89,7 +89,7 @@ public partial class Room : Node3D
     }
 
     /// <summary>The room's gameplay blocks, in scene order.</summary>
-    public IEnumerable<Block> Blocks() => Find<Block>(this);
+    public IEnumerable<Block> Blocks() => this.Descendants<Block>();
 
     /// <summary>The room's gameplay blocks as boxes on the play plane (room positions).</summary>
     public List<Box> Solids()
@@ -97,7 +97,7 @@ public partial class Room : Node3D
         var solids = new List<Box>();
         foreach (Block b in Blocks())
         {
-            solids.Add(Box.Around(b.GlobalPosition.Flat(), new System.Numerics.Vector2(b.Size.X, b.Size.Y)));
+            solids.Add(b.PlayBox);
         }
 
         return solids;
@@ -127,7 +127,7 @@ public partial class Room : Node3D
             return (List<T>)kept;
         }
 
-        var found = new List<T>(Find<T>(this));
+        var found = new List<T>(this.Descendants<T>());
         _found[typeof(T)] = found;
         return found;
     }
@@ -159,22 +159,6 @@ public partial class Room : Node3D
         if (_found.Count > 0 && IsAncestorOf(node))
         {
             _found.Clear();
-        }
-    }
-
-    private static IEnumerable<T> Find<T>(Node parent) where T : Node
-    {
-        foreach (Node child in parent.Children())
-        {
-            if (child is T match)
-            {
-                yield return match;
-            }
-
-            foreach (T nested in Find<T>(child))
-            {
-                yield return nested;
-            }
         }
     }
 }

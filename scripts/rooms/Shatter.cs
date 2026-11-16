@@ -120,6 +120,17 @@ public partial class Shatter : Node3D
     {
         float dt = (float)delta;
         _age += dt;
+        if (_age >= Life && _chunks.Count > 0)
+        {
+            // Shrunk to nothing: the chunks are done, and only the dust remains for the rest of the Linger.
+            foreach ((Node3D node, _, _, _) in _chunks)
+            {
+                node.QueueFree();
+            }
+
+            _chunks.Clear();
+        }
+
         float fade = Mathf.Clamp((Life - _age) / (Life * Shrink), 0f, 1f);
         for (int i = 0; i < _chunks.Count; i++)
         {

@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using Godot;
 
 namespace TheDeep;
@@ -18,6 +19,24 @@ public static class NodeTree
         }
 
         return children;
+    }
+
+    /// <summary>Every node of type <typeparamref name="T"/> under <paramref name="node"/>, at any depth, in scene order.</summary>
+    public static IEnumerable<T> Descendants<T>(this Node node)
+        where T : Node
+    {
+        foreach (Node child in node.Children())
+        {
+            if (child is T match)
+            {
+                yield return match;
+            }
+
+            foreach (T nested in child.Descendants<T>())
+            {
+                yield return nested;
+            }
+        }
     }
 
     /// <summary>The nearest ancestor of <paramref name="node"/> that is a <typeparamref name="T"/>, or null.</summary>

@@ -22,9 +22,6 @@ public partial class Keyring : Node
     [Export] public SideCamera Camera { get; set; } = null!;
     [Export] public RoomTravel Travel { get; set; } = null!;
 
-    /// <summary>How close (meters, on the play plane) the pilgrim must stand to take an item.</summary>
-    [Export] public float TakeRange { get; set; } = 1.2f;
-
     /// <summary>The camera's shake when a lever is pulled and when a door opens (a unit of <see cref="SideCamera.AddShake"/>).</summary>
     [Export] public float LeverShake { get; set; } = 0.1f;
     [Export] public float DoorShake { get; set; } = 0.15f;
@@ -76,7 +73,7 @@ public partial class Keyring : Node
         for (int i = 0; i < pickups.Count; i++)
         {
             ItemPickup pickup = pickups[i];
-            if (!pickup.Taken && new Vector2(pickup.GlobalPosition.X - p.X, pickup.GlobalPosition.Y - p.Y).Length() <= TakeRange)
+            if (!pickup.Taken && new Vector2(pickup.GlobalPosition.X - p.X, pickup.GlobalPosition.Y - p.Y).Length() <= PickupReach.Take)
             {
                 Take(pickup);
                 return;

@@ -41,6 +41,13 @@ public class SlagTests
     }
 
     [Fact]
+    public void TheKeepOffIsTheMarginAllRoundWithItsOwnReachOver()
+    {
+        Assert.Equal(Slag.Grown(0.75f), Burn.KeepOff(Slag, 0.75f, 0.75f));
+        Assert.Equal(new Box(17.25f, -2.75f, 22.75f, 2.5f), Burn.KeepOff(Slag, 0.75f, 2.5f));
+    }
+
+    [Fact]
     public void AFullBasinHolds()
     {
         Assert.Empty(SlagBasin.Problems(Slag, Basin()));

@@ -31,10 +31,10 @@ public static class RoomShapes
         var heat = room.All<HeatColumn>().Select(z => z.Region).ToList();
         // Where walking takes a relic (its range from the feet) and reaches a goal (the feet inside its area), as trigger boxes.
         var relics = room.All<AbilityRelic>()
-            .Select(r => (Box.Around(r.GlobalPosition.Flat() + new NVector2(0f, 0.1f), new NVector2(1.6f, 0.4f)), r.Ability)).ToList();
+            .Select(r => (PickupReach.Area(r.GlobalPosition.Flat(), PickupReach.Take), r.Ability)).ToList();
         var items = room.All<ItemPickup>()
-            .Select(i => (Box.Around(i.GlobalPosition.Flat() + new NVector2(0f, 0.1f), new NVector2(1.6f, 0.4f)), i.Item.Id))
-            .Concat(room.All<Lever>().Select(l => (Box.Around(l.GlobalPosition.Flat() + new NVector2(0f, 0.1f), new NVector2(2f * l.Range, 0.4f)), l.Item.Id)))
+            .Select(i => (PickupReach.Area(i.GlobalPosition.Flat(), PickupReach.Take), i.Item.Id))
+            .Concat(room.All<Lever>().Select(l => (PickupReach.Area(l.GlobalPosition.Flat(), l.Range), l.Item.Id)))
             .ToList();
         var goals = room.All<MapGoal>().Where(g => g.Size != Vector2.Zero).Select(g => Box.Around(g.GlobalPosition.Flat(), g.Size.ToCore())).ToList();
         var metal = room.Blocks().Where(b => b.Surface == SurfaceKind.Metal && !b.Cracked).Select(BoxOf).ToList();
@@ -47,5 +47,5 @@ public static class RoomShapes
     }
 
     /// <summary>A block as a box on the play plane.</summary>
-    public static Box BoxOf(Block b) => Box.Around(b.GlobalPosition.Flat(), new NVector2(b.Size.X, b.Size.Y));
+    public static Box BoxOf(Block b) => b.PlayBox;
 }

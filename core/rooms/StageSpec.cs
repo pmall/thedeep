@@ -84,6 +84,12 @@ public sealed record StageSpec
     /// <summary>...and this for the architecture.</summary>
     public int ArchitectureSalt { get; init; } = 11;
 
+    /// <summary>
+    /// Where the underglow shines, as a direction: up, a little sideways, and into the scene (onto undersides and the faces of the
+    /// walls behind).
+    /// </summary>
+    public Vector3 UnderglowDirection { get; init; } = new(0.25f, 0.8f, -0.55f);
+
     /// <summary>The dust's middle is this far under the room's middle, and this far behind the play plane.</summary>
     public Vector2 DustSink { get; init; } = new(1f, 5.5f);
 
