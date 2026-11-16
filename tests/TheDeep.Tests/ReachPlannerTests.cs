@@ -258,6 +258,17 @@ public class ReachPlannerTests
     }
 
     [Fact]
+    public void GripStopsAtAGapBetweenMetalSolids()
+    {
+        // The same ceilings with a 0.5 m air gap instead of the band: the planner ends the walk there, stricter than a game grip that
+        // might bridge it (ReachPlanner's docblock): never an over-claim.
+        Box near = B(0f, 4.5f, 8f, 5.5f), far = B(8.5f, 4.5f, 20f, 5.5f);
+        var solids = new[] { B(-10f, -30f, 4f, 0f), near, far, B(-10f, 5.5f, 40f, 30f), B(-10f, -32f, 40f, -30f) };
+        Assert.True(Grips(solids, new[] { near, far }, new Vector2(0f, 0f), B(5f, 3f, 6f, 4f)));
+        Assert.False(Grips(solids, new[] { near, far }, new Vector2(0f, 0f), B(17f, 3f, 18f, 4f)));
+    }
+
+    [Fact]
     public void WaterLetsGoOfAGrip()
     {
         // The far bank's face is metal down into the pool: a grip holds only above the water, so the doorway low in the far wall stays

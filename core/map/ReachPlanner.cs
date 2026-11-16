@@ -27,9 +27,10 @@ namespace TheDeep;
 /// dashing) or rising into a metal ceiling grips it, and then walks the whole surface connected to that point: along each face,
 /// around a metal block's corners, onto a metal wall met at an inner corner, standing up on a top; it touches what its body
 /// passes (lying along the normal), and from anywhere on a wall it leaps off or lets go, from anywhere under a ceiling it drops.
-/// Only metal holds (rock going on in the same plane is the surface's end, as in the game, and so, to stay on the safe side, is any gap:
-/// the walk goes on only within one metal solid or onto one it meets), and water lets go of a body whose center it drowns
-/// (<see cref="GripMath.Drowned"/>): no grip pose lies there.
+/// Only metal holds (rock going on in the same plane is the surface's end, as in the game, and so is any gap, which the game's grip may
+/// bridge when narrow: the walk goes on only within one metal solid or onto one it meets). That never over-claims, which the world proof
+/// needs; it can under-claim, so the exit check would miss a bypass over such a gap: no built room has one, and an authored one must
+/// be built as touching solids. Water lets go of a body whose center it drowns (<see cref="GripMath.Drowned"/>): no grip pose lies there.
 /// Ledge assist: an airborne body (not dashing) pressing into a wall whose top is at most <see cref="MoveLimits.LedgeAssist"/> above
 /// its feet is lifted onto it, as the pilgrim is.
 /// Hazards (heat zones, for a planner without Heat plating) are space the body never enters: a trajectory that touches one
