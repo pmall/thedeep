@@ -506,6 +506,7 @@ public partial class RoomValidator : Node
     {
         RoomShape shape = RoomShapes.Of(room, World.RoomPath(name) == StartRoom);
         world.AddRoom(name, room.BoundsMin.ToCore(), room.BoundsMax.ToCore(), shape);
+        _problems.AddRange(GripGaps.Problems(shape.Metal, Tuning.Move.Width).Select(p => $"{name}: {p}"));
 
         foreach (RoomExit exit in exits.Where(e => e.TargetRoom != "" && ResourceLoader.Exists(e.TargetRoom)))
         {
