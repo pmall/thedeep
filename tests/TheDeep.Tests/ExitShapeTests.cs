@@ -20,6 +20,6 @@ public class ExitShapeTests
         Assert.Equal((Vector2.Zero, 0), (door.Entry(Limits, solids).Velocity, door.Entry(Limits, solids).Steer));
         Assert.Equal((new Vector2(0f, Limits.Rise), -1), (floor.Entry(Limits, solids).Velocity, floor.Entry(Limits, solids).Steer));
         Assert.Equal((new Vector2(0f, -ExitShape.FallInSpeed), 0), (roof.Entry(Limits, solids).Velocity, roof.Entry(Limits, solids).Steer));
-        Assert.Equal(door.Threshold.Arrival(new Vector2(0.7f, 1.6f), solids), door.Entry(Limits, solids).At);
+        Assert.Equal(door.Threshold.Arrival(TestTuning.Body, solids), door.Entry(Limits, solids).At);
     }
 }

@@ -29,7 +29,7 @@ public class BackdropVeilTests
         Vector3 veil = BackdropVeil.Color(fog, new Vector3(rock));
         Assert.True(BiomeRules.Value(veil) <= BackdropVeil.UnderRock * rock + 1e-4f);
         // The fog's own hue, only dimmed.
-        Assert.Equal(Vector3.Normalize(fog).X, Vector3.Normalize(veil).X, 3);
+        Assert.True(Vector3.Distance(Vector3.Normalize(fog), Vector3.Normalize(veil)) < 1e-3f);
     }
 
     [Fact]

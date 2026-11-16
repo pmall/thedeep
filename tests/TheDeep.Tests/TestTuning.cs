@@ -17,6 +17,9 @@ public static class TestTuning
         FallGravityMultiplier: 1.6f, ApexHangThreshold: 1.5f, ApexGravityMultiplier: 0.55f, MaxFallSpeed: 20f,
         DashDistance: 4.5f, DashDuration: 0.16f, DashExitSpeedFactor: 1f, AirDashes: 1, Width: 0.7f, Height: 1.6f);
 
+    /// <summary>The pilgrim's body box: its width by its height.</summary>
+    public static readonly Vector2 Body = new(Move.Width, Move.Height);
+
     /// <summary>The Harpoon group.</summary>
     public static readonly HarpoonLimits Harpoon = new(Range: 9f, MinDistance: 1.2f, ZipSpeed: 17f, ZipAcceleration: 110f, ExitSpeedFactor: 0.65f, ExitLift: 6f);
 

@@ -32,7 +32,7 @@ public class SeamFrameTests
         IReadOnlyList<Box> frame = Door.Solids(ExitSide.East, new Vector2(37f, 0f));
         float reach = SeamCheck.Around + 0.5f;
         Assert.Equal(new[] { new Box(37f - reach, -SeamCheck.Around, 37f + reach, 0f), new Box(37f - reach, 4f, 37f + reach, 4f + SeamCheck.Around) }, frame);
-        Assert.Empty(Door.Exit(ExitSide.East, new Vector2(37f, 0f)).Problems(frame, Wide, new Vector2(0.7f, 1.6f)));
+        Assert.Empty(Door.Exit(ExitSide.East, new Vector2(37f, 0f)).Problems(frame, Wide, TestTuning.Body));
     }
 
     [Fact]
