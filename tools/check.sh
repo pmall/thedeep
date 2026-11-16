@@ -37,8 +37,8 @@ MYPY=(uvx --with pillow==12.1.1 mypy@2.4.1)
 MDFORMAT=(uvx --from mdformat==0.7.22 --with mdformat-tables==1.0.0 mdformat --compact-tables)
 SHFMT=(uvx --from shfmt-py==4.2.0 shfmt)
 SHELLCHECK=(uvx --from shellcheck-py==0.11.0.1 shellcheck)
-# The C# style rules dotnet format can fix but its whitespace pass leaves: braces, the file-scoped namespace, usings.
-STYLE_FIXES=(IDE0011 IDE0161 IDE0065)
+# The C# style rules dotnet format can fix but its whitespace pass leaves: braces, the file-scoped namespace, usings outside, no unused usings.
+STYLE_FIXES=(IDE0011 IDE0161 IDE0065 IDE0005)
 
 LOG_DIR=".godot/check"
 mkdir -p "$LOG_DIR"
