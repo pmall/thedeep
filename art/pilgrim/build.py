@@ -1,5 +1,5 @@
 """Builds the pilgrim: its skeleton (skeleton.py), its body (mannequin.py, until the model exists), every clip of
-clips.py retargeted from motion capture (mocap.py) and every clip of poses.py keyed by hand (keyed.py), exported as one
+clips.py retargeted from motion capture (mocap.py) and every clip of strikes.py and moves.py keyed by hand (keyed.py), exported as one
 glTF scene the game imports.
 
     blender --background --factory-startup --python art/pilgrim/build.py              writes assets/pilgrim/pilgrim.glb
@@ -24,8 +24,9 @@ import clips
 import keyed
 import mannequin
 import mocap
-import poses
+import moves
 import skeleton
+import strikes
 
 ROOT = os.path.dirname(os.path.dirname(HERE))
 OUTPUT = os.path.join(ROOT, 'assets', 'pilgrim', 'pilgrim.glb')
@@ -37,7 +38,7 @@ def main(args: list[str]) -> None:
     assert scene is not None
     scene.render.fps = mocap.FPS
 
-    output, table, by_hand = OUTPUT, clips.CLIPS, poses.KEYED
+    output, table, by_hand = OUTPUT, clips.CLIPS, strikes.KEYED + moves.KEYED
     if '--survey' in args:
         at = args.index('--survey')
         output = args[at + 1]

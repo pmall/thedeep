@@ -1,13 +1,13 @@
-"""The pilgrim's clips keyed by hand (keyed.py), for what motion capture doesn't give: the sword strikes.
+"""The pilgrim's sword strikes, keyed by hand (keyed.py): motion capture's swordplay cuts across the camera, these in the
+side plane.
 
 A strike's clip lasts one second for its whole progress: the game plays it scrubbed to the strike's own progress
 (gameplay timing, docs/gameplay.md#fight: the coil ends at 0.14, the cut at 0.5), so the keys sit at those shares. The
-blade is on the right forearm, the arm toward the camera; an arm's angle is written as how far it swings forward from
-hanging (`forward`). Each strike starts where the one before ends, and the finisher is the biggest, deepest and longest
+blade is on the right forearm, the arm toward the camera. Each strike starts where the one before ends, and the finisher is the biggest, deepest and longest
 held (docs/art-direction.md#strikes).
 """
 
-from keyed import Key, Keyed, Pose, Turn
+from keyed import ANKLE, Key, Keyed, Pose, Turn, bend, forward, trunk
 
 COIL = 0.14
 """The strike's progress where the wind-up ends and the cut begins."""
@@ -17,25 +17,6 @@ CUT = 0.36
 
 THROUGH = 0.55
 """Where the follow-through ends and the end pose holds."""
-
-ANKLE = 0.085
-
-
-def forward(degrees: float) -> Turn:
-    """An upper arm swung `degrees` forward from hanging at the side (180: straight up; more: behind the head)."""
-    return (-degrees, 0.0, 0.0)
-
-
-def bend(degrees: float) -> Turn:
-    """A forearm bent `degrees` at the elbow, the way it folds: toward the front of the upper arm."""
-    return (-degrees, 0.0, 0.0)
-
-
-def trunk(lean: float, twist: float = 0.0) -> dict[str, Turn]:
-    """The spine and the chest leaning `lean` degrees forward between them, the chest turned `twist` degrees toward the
-    near (right) shoulder going forward."""
-    return {'Spine': (lean * 0.5, -twist * 0.4, 0.0), 'Chest': (lean * 0.5, -twist * 0.6, 0.0)}
-
 
 GUARD = Pose(
     turns={

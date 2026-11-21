@@ -8,10 +8,11 @@ public class PilgrimAnimationTests
 {
     private const float Dt = 1f / 60f;
     private const float RunClipSpeed = 5.5f;
+    private static readonly ClipSpeeds Speeds = new(RunClipSpeed, Grip: 3.6f, Swim: 2.6f);
 
     private static PilgrimAnimation Steady(Vector2 velocity, MotionMode mode, float seconds = 1f)
     {
-        var animation = new PilgrimAnimation(RunClipSpeed);
+        var animation = new PilgrimAnimation(Speeds);
         animation.Reset();
         for (float t = 0f; t < seconds; t += Dt)
         {
@@ -42,7 +43,7 @@ public class PilgrimAnimationTests
     [Fact]
     public void TheGaitEasesInsteadOfSnapping()
     {
-        var animation = new PilgrimAnimation(RunClipSpeed);
+        var animation = new PilgrimAnimation(Speeds);
         animation.Reset();
         animation.Update(Dt, new Vector2(7f, 0f), MotionMode.Ground);
         Assert.InRange(animation.Gait, 0.05f, 0.5f);
@@ -125,7 +126,7 @@ public class PilgrimAnimationTests
     [Fact]
     public void TheFallStartsOverAtTheApex()
     {
-        var animation = new PilgrimAnimation(RunClipSpeed);
+        var animation = new PilgrimAnimation(Speeds);
         animation.Reset();
         animation.Update(Dt, new Vector2(0f, 5f), MotionMode.Air);
         Assert.False(animation.FallBegan);
@@ -185,5 +186,14 @@ public class PilgrimAnimationTests
         }
 
         Assert.True(animation.StrikeWhole > 0.95f);
+    }
+
+    [Fact]
+    public void TheCrawlAndTheStrokeKeepPaceAndTheStrokeTreadsWaterStill()
+    {
+        Assert.Equal(1f, Steady(new Vector2(3.6f, 0f), MotionMode.Grip).PoseRate, 3);
+        Assert.Equal(0f, Steady(Vector2.Zero, MotionMode.Grip).PoseRate);
+        Assert.Equal(0.45f, Steady(Vector2.Zero, MotionMode.Swim).PoseRate, 3);
+        Assert.Equal(1f, Steady(new Vector2(3f, 0f), MotionMode.Dive).PoseRate);
     }
 }

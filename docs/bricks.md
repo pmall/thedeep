@@ -47,7 +47,7 @@ All ready.
 
 | Brick | Status | Item |
 | -- | -- | -- |
-| Body, look and animation (`PlayerVisual` over the core's `PilgrimAnimation`: the model and clips built by `art/pilgrim/build.py`) | working (a stand-in mannequin; the ground, the air, the dashes, rest and death from capture, the strikes keyed by hand; the other poses show a stand-in clip) | `docs/roadmap.md#pilgrim` |
+| Body, look and animation (`PlayerVisual` over the core's `PilgrimAnimation`: the model and clips built by `art/pilgrim/build.py`) | working (a stand-in mannequin with a clip for every state; the feet not yet held to uneven ground) | `docs/roadmap.md#pilgrim` |
 | Base moveset (`docs/gameplay.md#moveset`) | ready | — |
 | Abilities (`docs/gameplay.md#abilities`) | ready | — |
 | Fight moves (`PlayerAttack` over the core's `Combo` and `Swing`; each strike's numbers in `player_tuning.tres`) | ready (their look is the pilgrim's) | — |

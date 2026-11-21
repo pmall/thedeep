@@ -62,10 +62,33 @@ class Key:
 
 @dataclass(frozen=True)
 class Keyed:
-    """A clip keyed by hand: its keys in time order, the first at 0; it holds its last pose at its end."""
+    """A clip keyed by hand: its keys in time order, the first at 0; it holds its last pose at its end, or a loop (named
+    "_loop") comes back to its first. A clip whose feet walk travels `travel` meters per second forward on its root, so
+    the game can match its rate to the body's speed as it does the run's."""
 
     name: str
     keys: list[Key]
+    travel: float = 0.0
+
+
+ANKLE = skeleton.ANKLE_HEIGHT
+"""An ankle's height over the ground, for a foot planted on it."""
+
+
+def forward(degrees: float) -> Turn:
+    """An upper arm (or a thigh) swung `degrees` forward from hanging (180: straight up; more: behind the head)."""
+    return (-degrees, 0.0, 0.0)
+
+
+def bend(degrees: float) -> Turn:
+    """A forearm bent `degrees` at the elbow, the way it folds: toward the front of the upper arm."""
+    return (-degrees, 0.0, 0.0)
+
+
+def trunk(lean: float, twist: float = 0.0) -> dict[str, Turn]:
+    """The spine and the chest leaning `lean` degrees forward between them, the chest turned `twist` degrees toward the
+    near (right) shoulder going forward."""
+    return {'Spine': (lean * 0.5, -twist * 0.4, 0.0), 'Chest': (lean * 0.5, -twist * 0.6, 0.0)}
 
 
 def turn(t: Turn) -> Quaternion:
@@ -178,5 +201,5 @@ def bake(rig: bpy.types.Object, clip: Keyed) -> bpy.types.Action:
         for name, local in mocap.local_turns(rest, deltas).items():
             turns[name].append(local)
         hips.append(rest['Hips'].inverted() @ offset)
-    zero = [Vector() for _ in hips]
-    return mocap.write_action(rig, clip.name, turns, {'Hips': hips, 'Root': zero})
+    root = [rest['Root'].inverted() @ Vector((0.0, -clip.travel * k / mocap.FPS, 0.0)) for k in range(frames + 1)]
+    return mocap.write_action(rig, clip.name, turns, {'Hips': hips, 'Root': root})

@@ -43,6 +43,8 @@ public partial class PlayerVisual : Node3D
     private static readonly NameCache<PilgrimPose> PoseNames = new(pose => pose.ToString());
     private static readonly NameCache<PilgrimPose> ClipNodeNames = new(pose => "clip_" + pose);
     private static readonly NameCache<PilgrimPose> ClipNames = new(PilgrimClips.Of);
+    private static readonly NameCache<PilgrimPose> RateNodeNames = new(pose => "rate_" + pose);
+    private static readonly NameCache<PilgrimPose> RateParameters = new(pose => $"parameters/rate_{pose}/scale");
     private static readonly NameCache<PilgrimCue> CueClips = new(PilgrimClips.Of);
     private static readonly NameCache<PilgrimCue> CueNodes = new(cue => "cue_" + cue);
     private static readonly NameCache<PilgrimCue> CueRequests = new(cue => $"parameters/cue_{cue}/request");
@@ -116,7 +118,8 @@ public partial class PlayerVisual : Node3D
     /// <summary>How much the run shows, 0 standing to 1 running.</summary>
     public float Gait => _animation?.Gait ?? 0f;
 
-    private PilgrimAnimation Animation => _animation ??= new PilgrimAnimation(RunClipSpeed());
+    private PilgrimAnimation Animation => _animation ??= new PilgrimAnimation(
+        new ClipSpeeds(ClipSpeed(RunClip), ClipSpeed(ClipNames[PilgrimPose.Grip]), ClipSpeed(ClipNames[PilgrimPose.Swim])));
 
     public override void _Ready()
     {
@@ -180,7 +183,9 @@ public partial class PlayerVisual : Node3D
 
             // Each input its own clip node: a node fed into two inputs would be advanced twice.
             root.AddNode(ClipNodeNames[pose], new AnimationNodeAnimation { Animation = ShownClip(pose) });
-            root.ConnectNode(PoseNode, (int)pose, ClipNodeNames[pose]);
+            root.AddNode(RateNodeNames[pose], new AnimationNodeTimeScale());
+            root.ConnectNode(RateNodeNames[pose], 0, ClipNodeNames[pose]);
+            root.ConnectNode(PoseNode, (int)pose, RateNodeNames[pose]);
         }
 
         StringName under = _strikes.Build(root, PoseNode, Clips, RootTrack.GetConcatenatedNames());
@@ -222,19 +227,23 @@ public partial class PlayerVisual : Node3D
         return IdleClip;
     }
 
-    /// <summary>How fast the run clip travels at its own rate, m/s: its root bone's travel over its length.</summary>
-    private float RunClipSpeed()
+    /// <summary>How fast a clip travels at its own rate, m/s: its root bone's travel over its length (0 for none, or no clip).</summary>
+    private float ClipSpeed(StringName name)
     {
-        Animation run = Clips.GetAnimation(RunClip);
-        int track = run.FindTrack(RootTrack, Godot.Animation.TrackType.Position3D);
-        if (track < 0 || run.Length <= 0f)
+        if (!Clips.HasAnimation(name))
         {
-            GD.PushError($"PlayerVisual: the run clip has no travel on {RootTrack}");
-            return 1f;
+            return 0f;
         }
 
-        Vector3 travel = run.PositionTrackInterpolate(track, run.Length) - run.PositionTrackInterpolate(track, 0.0);
-        return travel.Length() / (float)run.Length;
+        Animation clip = Clips.GetAnimation(name);
+        int track = clip.FindTrack(RootTrack, Godot.Animation.TrackType.Position3D);
+        if (track < 0 || clip.Length <= 0f)
+        {
+            return 0f;
+        }
+
+        Vector3 travel = clip.PositionTrackInterpolate(track, clip.Length) - clip.PositionTrackInterpolate(track, 0.0);
+        return travel.Length() / (float)clip.Length;
     }
 
     /// <summary>A pale shimmer over the body while the pilgrim can't be hurt (after a hit); false clears it. Per physics tick.</summary>
@@ -328,6 +337,11 @@ public partial class PlayerVisual : Node3D
     {
         Tree.Set(GaitParameter, animation.Gait);
         Tree.Set(RunRateParameter, animation.RunRate);
+        if (animation.Pose is not PilgrimPose.Ground and not PilgrimPose.Air)
+        {
+            Tree.Set(RateParameters[animation.Pose], animation.PoseRate);
+        }
+
         Tree.Set(LeapParameter, animation.Leap);
         Tree.Set(FallParameter, animation.Fall);
         if (animation.FallBegan)

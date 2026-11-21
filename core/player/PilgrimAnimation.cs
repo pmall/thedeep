@@ -7,7 +7,7 @@ namespace TheDeep;
 /// <summary>
 /// The pilgrim's animation decided from its movement, Godot-free: which <see cref="PilgrimPose"/> the body shows, how the
 /// idle gives way to the run (<see cref="Gait"/>) and how fast the run plays so its feet keep pace with the ground
-/// (<see cref="RunRate"/>); in the air, how far the jump is a leap (<see cref="Leap"/>) and how far it has turned into a
+/// (<see cref="RunRate"/>), as the grip's crawl and the swim's stroke do (<see cref="PoseRate"/>); in the air, how far the jump is a leap (<see cref="Leap"/>) and how far it has turned into a
 /// fall (<see cref="Fall"/>, restarted at the apex: <see cref="FallBegan"/>); the short moves played once over the pose
 /// (<see cref="Cue"/>) and the sword strike's (<see cref="Strike"/>). The clips themselves are motion capture, played by the body's adapter (PlayerVisual). The feel
 /// numbers here shape the animation only, never the movement.
@@ -47,12 +47,16 @@ public sealed class PilgrimAnimation
     private const float FallFrom = 1.5f;
     private const float FallFull = -3f;
 
-    private readonly float _runClipSpeed;
+    /// <summary>The swim's stroke never slows below this rate: still, it treads water.</summary>
+    private const float MinStrokeRate = 0.45f;
 
-    /// <param name="runClipSpeed">How fast the run clip travels at its own rate, m/s (its root's travel over its length).</param>
-    public PilgrimAnimation(float runClipSpeed)
+    private readonly float _runClipSpeed;
+    private readonly ClipSpeeds _speeds;
+
+    public PilgrimAnimation(ClipSpeeds speeds)
     {
-        _runClipSpeed = MathF.Max(runClipSpeed, 0.1f);
+        _speeds = speeds;
+        _runClipSpeed = MathF.Max(speeds.Run, 0.1f);
     }
 
     /// <summary>The pose the body shows.</summary>
@@ -63,6 +67,9 @@ public sealed class PilgrimAnimation
 
     /// <summary>The rate the run clip plays at, so its feet keep pace with the ground.</summary>
     public float RunRate { get; private set; } = 1f;
+
+    /// <summary>The rate the pose's clip plays at: matched to the speed for the grip's crawl and the swim, 1 otherwise.</summary>
+    public float PoseRate { get; private set; } = 1f;
 
     /// <summary>In the air, how much the jump shows the leap over the tuck, 0 to 1 (from the speed across).</summary>
     public float Leap { get; private set; }
@@ -142,6 +149,12 @@ public sealed class PilgrimAnimation
         float target = walking ? Math.Clamp(speed / (_runClipSpeed * FullGaitShare), 0f, 1f) : 0f;
         Gait = Damp(Gait, target, GaitSharpness, dt);
         RunRate = Math.Clamp(speed / _runClipSpeed, MinRunRate, MaxRunRate);
+        PoseRate = Pose switch
+        {
+            PilgrimPose.Grip => Matched(speed, _speeds.Grip, 0f),
+            PilgrimPose.Swim => Matched(speed, _speeds.Swim, MinStrokeRate),
+            _ => 1f,
+        };
         // A landing shows only standing on the ground: running, the run carries through it; elsewhere it is no landing.
         bool landing = _pending is PilgrimCue.Land or PilgrimCue.HardLand;
         Cue = landing && (Pose != PilgrimPose.Ground || speed >= RunningLanding) ? PilgrimCue.None : _pending;
@@ -150,6 +163,10 @@ public sealed class PilgrimAnimation
         bool whole = Strike.Kind is StrikeKind.Down or StrikeKind.Dash || Pose == PilgrimPose.Ground && Gait < WholeStrikeGait;
         StrikeWhole = Damp(StrikeWhole, whole ? 1f : 0f, StrikeWholeSharpness, dt);
     }
+
+    /// <summary>The rate a clip traveling <paramref name="clipSpeed"/> plays at to keep pace with <paramref name="speed"/>.</summary>
+    private static float Matched(float speed, float clipSpeed, float slowest) =>
+        clipSpeed > 0f ? Math.Clamp(speed / clipSpeed, slowest, MaxRunRate) : 1f;
 
     /// <summary>Back to a still stance (spawn, teleport).</summary>
     public void Reset()
