@@ -33,7 +33,7 @@ TESTS=tests/TheDeep.Tests/TheDeep.Tests.csproj
 # they were on UV_EXCLUDE_NEWER, so every machine runs the same code; move the date when upgrading a pin.
 export UV_EXCLUDE_NEWER=2026-11-08
 RUFF=(uvx ruff@0.17.4)
-MYPY=(uvx --with pillow==12.1.1 mypy@2.4.1)
+MYPY=(uvx --with pillow==12.1.1 --with fake-bpy-module-5.2==20260730 mypy@2.4.1)
 MDFORMAT=(uvx --from mdformat==0.7.22 --with mdformat-tables==1.0.0 mdformat --compact-tables)
 SHFMT=(uvx --from shfmt-py==4.2.0 shfmt)
 SHELLCHECK=(uvx --from shellcheck-py==0.11.0.1 shellcheck)

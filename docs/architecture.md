@@ -27,6 +27,8 @@ scenes/                shared scenes: the main scene, the player, the room stage
                        text written in the game's TextStyle, resources/ui/text_style.tres, its font in assets/fonts/)
 worlds/<name>/         one world's content: world.tres (its WorldDefinition), its network, its line book, rooms/
 resources/             the live tuning, biomes, part assemblies, machine species, the game's own line book (lines.tres)
+art/                   the authored assets' sources, built by Blender into assets/: the pilgrim's build scripts
+                       (art/pilgrim/build.py leads) and the motion capture they read (art/mocap/) (ignored by Godot)
 assets/                shaders (shared code in shaders/lib/), materials, particle materials, baked textures (textures/)
 tests/TheDeep.Tests/   xUnit over the core
 tools/                 the check, look-dev captures, the map report, authoring helpers; analyzers/, the build's own rules
@@ -39,7 +41,7 @@ The type to open first for each system; its docblock leads on.
 | System | Start at |
 | -- | -- |
 | Boot, command-line arguments, the table of checks and tools | `Main`, `LaunchOptions`, `Drivers` |
-| The pilgrim | `Player` (over the core's `PilgrimControl` and `MoveRules`), its states in `scripts/player/states/`, its look `PlayerVisual` |
+| The pilgrim | `Player` (over the core's `PilgrimControl` and `MoveRules`), its states in `scripts/player/states/`, its look `PlayerVisual`; its model and clips are built by `art/pilgrim/build.py` |
 | A world, its rooms and travel | `WorldDefinition`, `World`, `Room`, `RoomExit` (over the core's `Threshold`), `RoomTravel`, `RoomStage` |
 | The run and the save | `Session` (over `Pilgrimage`), `SaveFile` |
 | Items (keys, codes, mechanisms) and their doors, levers | `ItemDefinition`, `Keyring` (over `Inventory`); in the requirement language, `Requirement` |

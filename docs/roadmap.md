@@ -6,7 +6,7 @@ The owner's plan and the open items, in order, opened by where the work stands. 
 
 - **Stage:** A, the prototype (`docs/roadmap.md#stage-prototype`).
 - **Current item:** the pilgrim, from zero (`docs/roadmap.md#pilgrim`).
-- **Next step:** the environment for top-quality animation, before the character.
+- **Next step:** the environment for top-quality animation, before the character (`docs/roadmap.md#animation-env`): its Blender half is built (the stand-in mannequin, idle and run from CMU capture); next, the game half.
 - **Waiting on the owner:** the stage's sign-off play: `docs/roadmap.md#to-play`.
 
 ## The plan <a id="direction"></a>
@@ -29,6 +29,12 @@ A room gets the attention its bricks need, no more. Bosses, machines and law bre
 The open items, in order (owner: the world, its bricks and its look are finished before the character):
 
 1. **The pilgrim, from zero** <a id="pilgrim"></a> (owner: last, once the world, its bricks and its look are finished). The current character, its procedural animation and its halo are thrown away. The bar is *Ori*'s animation (a 3D-rendered character) with *NieR: Automata*'s dynamism; the look is `docs/art-direction.md#character`. First the environment for top-quality animation, then the character: modeled and rigged in Blender (`instructions/toolchain.md#blender-mcp`), animated from real motion capture (free libraries and Mixamo first), keyed by hand, blended in the game with its feet held to the ground. Every move and ability: run, jump, land, dash, air dash, ledge assist, grip and its corners, harpoon throw and zip, bore and dive, swim, sink and rise, the strikes, hurt, death, rest, taking a relic. Its secondary motion is stage D's. Done when every state reads at a glance in motion, in the reels and in the owner's play.
+
+   **The environment, in order** <a id="animation-env"></a>, each step proven on the stand-in mannequin (`art/pilgrim/mannequin.py`) before the pilgrim is modeled:
+
+   1. In the game: `pilgrim.glb` replaces the part body under `PlayerVisual` (same calls from `Player`), its clips played by an `AnimationTree` from what the core decides (which pose, the blend between them, the run's rate matched to the speed so the feet don't slide), the feet held to the ground by `TwoBoneIK3D`, the blade on the near forearm and its slash, the footfalls from the clip. The old procedural animation (`PilgrimMotion`, `StrikeMotion`, `resources/parts/pilgrim.tres`) goes.
+   2. A clip for every state that capture covers (CMU first: subject 127's runs, jumps and rolls, 02's swordplay, 125–126's swimming), the rest keyed by hand in the build's scripts; Mixamo only for what neither gives (it needs the owner's account).
+   3. The reels (`MotionReel`) judged at gameplay size and close up.
 
 **To play** <a id="to-play"></a>: what the owner's eye alone can judge, each line deleted once they have said. An item closes on what the agent can verify; the owner's word reopens it.
 
