@@ -39,4 +39,16 @@ public static class PilgrimPoses
         PilgrimPose.Swim or PilgrimPose.Dive or PilgrimPose.Throw or PilgrimPose.Zip => PilgrimPose.Air,
         _ => PilgrimPose.Ground,
     };
+
+    /// <summary>
+    /// How long the body takes to go from <paramref name="from"/> to <paramref name="to"/>, seconds: slow out of a held
+    /// moment (standing up from a rest), quick into a dash (it lasts a fraction of a second), brisk otherwise.
+    /// </summary>
+    public static float Crossfade(PilgrimPose from, PilgrimPose to) => (from, to) switch
+    {
+        (PilgrimPose.Rest or PilgrimPose.Relic or PilgrimPose.Death, _) => 0.4f,
+        (_, PilgrimPose.Rest or PilgrimPose.Relic or PilgrimPose.Death) => 0.25f,
+        (_, PilgrimPose.Dash or PilgrimPose.AirDash or PilgrimPose.Bore) => 0.04f,
+        _ => 0.1f,
+    };
 }

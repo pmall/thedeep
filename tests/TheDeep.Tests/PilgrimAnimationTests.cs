@@ -203,4 +203,11 @@ public class PilgrimAnimationTests
         Assert.True(Steady(new Vector2(10f, 10f), MotionMode.Zip).ReachWeight > 0.99f);
         Assert.True(Steady(new Vector2(10f, 10f), MotionMode.Air).ReachWeight < 0.01f);
     }
+
+    [Fact]
+    public void StandingUpFromARestIsSlowAndADashIsQuick()
+    {
+        Assert.True(PilgrimPoses.Crossfade(PilgrimPose.Rest, PilgrimPose.Ground) > PilgrimPoses.Crossfade(PilgrimPose.Ground, PilgrimPose.Air));
+        Assert.True(PilgrimPoses.Crossfade(PilgrimPose.Ground, PilgrimPose.Dash) < PilgrimPoses.Crossfade(PilgrimPose.Ground, PilgrimPose.Air));
+    }
 }

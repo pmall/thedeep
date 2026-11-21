@@ -7,7 +7,8 @@ namespace TheDeep;
 /// The pilgrim's body: the model built in Blender (art/pilgrim/build.py, imported from assets/pilgrim/pilgrim.glb), its
 /// clips played by an <see cref="AnimationTree"/> from what the core's <see cref="PilgrimAnimation"/> decides each physics
 /// tick: the pose (crossfaded), the idle giving way to the run, the run's rate matched to the speed. A pose whose clip isn't
-/// made yet shows its <see cref="PilgrimPoses.Fallback"/>'s. The tree is built here from the clips the model holds, and
+/// made yet shows its <see cref="PilgrimPoses.Fallback"/>'s; a change of pose crossfades for as long as
+/// <see cref="PilgrimPoses.Crossfade"/> says. The tree is built here from the clips the model holds, and
 /// advanced on physics ticks (<see cref="Animate"/>), so a hit stop, which skips them, holds the body still. The clips'
 /// travel is on the skeleton's root bone, taken out as root motion (the movement moves the body): the run's sets its speed.
 /// A strike draws the blade out of the near forearm (<see cref="Blade"/>, slid out along its length) and its sweep leaves
@@ -80,9 +81,6 @@ public partial class PlayerVisual : Node3D
     /// <summary>The slash the blade's sweep leaves, or none.</summary>
     [Export] public SlashTrail? Slash { get; set; }
 
-    /// <summary>How long a change of pose crossfades, seconds.</summary>
-    [Export] public float Crossfade { get; set; } = 0.08f;
-
     /// <summary>How long a cue (a landing, a recoil) takes to come in over the pose and to give it back, seconds.</summary>
     [Export] public float CueFadeIn { get; set; } = 0.05f;
 
@@ -107,6 +105,7 @@ public partial class PlayerVisual : Node3D
     private PilgrimAnimation? _animation;
     private readonly Footfalls _footfalls = new();
     private readonly StrikeLayer _strikes = new();
+    private AnimationNodeTransition? _transition;
     private PilgrimPose _shownPose;
     private int _footR = -1, _footL = -1, _toesR = -1, _toesL = -1;
     private float _bladeLength;
@@ -174,7 +173,8 @@ public partial class PlayerVisual : Node3D
         root.ConnectNode(AirFallNode, 0, AirLeapNode);
         root.ConnectNode(AirFallNode, 1, FallSeekNode);
 
-        var transition = new AnimationNodeTransition { XfadeTime = Crossfade };
+        var transition = new AnimationNodeTransition();
+        _transition = transition;
         PilgrimPose[] poses = Enum.GetValues<PilgrimPose>();
         transition.InputCount = poses.Length;
         root.AddNode(PoseNode, transition);
@@ -370,6 +370,11 @@ public partial class PlayerVisual : Node3D
 
         if (animation.Pose != _shownPose)
         {
+            if (_transition is not null)
+            {
+                _transition.XfadeTime = PilgrimPoses.Crossfade(_shownPose, animation.Pose);
+            }
+
             _shownPose = animation.Pose;
             using Variant request = PoseNames[animation.Pose];
             Tree.Set(PoseParameter, request);
