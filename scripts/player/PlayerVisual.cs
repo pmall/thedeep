@@ -22,6 +22,18 @@ public partial class PlayerVisual : Node3D
     private static readonly StringName RunNode = "run";
     private static readonly StringName IdleNode = "idle";
     private static readonly StringName OutputNode = "output";
+    private static readonly StringName JumpNode = "jump";
+    private static readonly StringName LeapNode = "leap";
+    private static readonly StringName AirLeapNode = "air_leap";
+    private static readonly StringName FallNode = "fall";
+    private static readonly StringName FallSeekNode = "fall_seek";
+    private static readonly StringName AirFallNode = "air_fall";
+    private static readonly StringName JumpClip = PilgrimClips.Jump;
+    private static readonly StringName LeapClip = PilgrimClips.Leap;
+    private static readonly StringName FallClip = PilgrimClips.Fall;
+    private static readonly StringName LeapParameter = "parameters/air_leap/blend_amount";
+    private static readonly StringName FallParameter = "parameters/air_fall/blend_amount";
+    private static readonly StringName FallSeekParameter = "parameters/fall_seek/seek_request";
     private static readonly StringName GaitParameter = "parameters/gait/blend_amount";
     private static readonly StringName RunRateParameter = "parameters/run_rate/scale";
     private static readonly StringName PoseParameter = "parameters/pose/transition_request";
@@ -31,6 +43,10 @@ public partial class PlayerVisual : Node3D
     private static readonly NameCache<PilgrimPose> PoseNames = new(pose => pose.ToString());
     private static readonly NameCache<PilgrimPose> ClipNodeNames = new(pose => "clip_" + pose);
     private static readonly NameCache<PilgrimPose> ClipNames = new(PilgrimClips.Of);
+    private static readonly NameCache<PilgrimCue> CueClips = new(PilgrimClips.Of);
+    private static readonly NameCache<PilgrimCue> CueNodes = new(cue => "cue_" + cue);
+    private static readonly NameCache<PilgrimCue> CueRequests = new(cue => $"parameters/cue_{cue}/request");
+    private bool[] _cueShown = Array.Empty<bool>();
 
     /// <summary>The model's player, which holds the clips (inside the imported scene).</summary>
     [Export] public AnimationPlayer Clips { get; set; } = null!;
@@ -58,6 +74,11 @@ public partial class PlayerVisual : Node3D
 
     /// <summary>How long a change of pose crossfades, seconds.</summary>
     [Export] public float Crossfade { get; set; } = 0.12f;
+
+    /// <summary>How long a cue (a landing, a recoil) takes to come in over the pose and to give it back, seconds.</summary>
+    [Export] public float CueFadeIn { get; set; } = 0.05f;
+
+    [Export] public float CueFadeOut { get; set; } = 0.2f;
 
     /// <summary>How fast the body turns around when the facing flips, 1/s (higher is snappier).</summary>
     [Export] public float TurnSharpness { get; set; } = 20f;
@@ -115,8 +136,9 @@ public partial class PlayerVisual : Node3D
     }
 
     /// <summary>
-    /// The tree: the idle and the rated run blended by the gait for the ground, a clip for every other pose (its fallback's
-    /// while it has none), all into one crossfading transition.
+    /// The tree: the idle and the rated run blended by the gait for the ground; the jump and the leap blended by the speed
+    /// across, then into the fall (started over at the apex) for the air; a clip for every other pose (its fallback's while
+    /// it has none); all into one crossfading transition, under a one-shot for each cue that has a clip.
     /// </summary>
     private void BuildTree()
     {
@@ -129,6 +151,18 @@ public partial class PlayerVisual : Node3D
         root.ConnectNode(GaitNode, 0, IdleNode);
         root.ConnectNode(GaitNode, 1, RunRateNode);
 
+        root.AddNode(JumpNode, new AnimationNodeAnimation { Animation = JumpClip });
+        root.AddNode(LeapNode, new AnimationNodeAnimation { Animation = Clips.HasAnimation(LeapClip) ? LeapClip : JumpClip });
+        root.AddNode(AirLeapNode, new AnimationNodeBlend2());
+        root.AddNode(FallNode, new AnimationNodeAnimation { Animation = Clips.HasAnimation(FallClip) ? FallClip : JumpClip });
+        root.AddNode(FallSeekNode, new AnimationNodeTimeSeek());
+        root.AddNode(AirFallNode, new AnimationNodeBlend2());
+        root.ConnectNode(AirLeapNode, 0, JumpNode);
+        root.ConnectNode(AirLeapNode, 1, LeapNode);
+        root.ConnectNode(FallSeekNode, 0, FallNode);
+        root.ConnectNode(AirFallNode, 0, AirLeapNode);
+        root.ConnectNode(AirFallNode, 1, FallSeekNode);
+
         var transition = new AnimationNodeTransition { XfadeTime = Crossfade };
         PilgrimPose[] poses = Enum.GetValues<PilgrimPose>();
         transition.InputCount = poses.Length;
@@ -136,9 +170,9 @@ public partial class PlayerVisual : Node3D
         foreach (PilgrimPose pose in poses)
         {
             transition.SetInputName((int)pose, PoseNames[pose]);
-            if (pose == PilgrimPose.Ground)
+            if (pose is PilgrimPose.Ground or PilgrimPose.Air)
             {
-                root.ConnectNode(PoseNode, (int)pose, GaitNode);
+                root.ConnectNode(PoseNode, (int)pose, pose == PilgrimPose.Ground ? GaitNode : AirFallNode);
                 continue;
             }
 
@@ -147,7 +181,25 @@ public partial class PlayerVisual : Node3D
             root.ConnectNode(PoseNode, (int)pose, ClipNodeNames[pose]);
         }
 
-        root.ConnectNode(OutputNode, 0, PoseNode);
+        StringName under = PoseNode;
+        PilgrimCue[] cues = Enum.GetValues<PilgrimCue>();
+        _cueShown = new bool[cues.Length];
+        foreach (PilgrimCue cue in cues)
+        {
+            if (cue == PilgrimCue.None || !Clips.HasAnimation(CueClips[cue]))
+            {
+                continue;
+            }
+
+            _cueShown[(int)cue] = true;
+            root.AddNode(CueClips[cue], new AnimationNodeAnimation { Animation = CueClips[cue] });
+            root.AddNode(CueNodes[cue], new AnimationNodeOneShot { FadeInTime = CueFadeIn, FadeOutTime = CueFadeOut });
+            root.ConnectNode(CueNodes[cue], 0, under);
+            root.ConnectNode(CueNodes[cue], 1, CueClips[cue]);
+            under = CueNodes[cue];
+        }
+
+        root.ConnectNode(OutputNode, 0, under);
         Tree.TreeRoot = root;
         Tree.RootMotionTrack = RootTrack;
         Tree.CallbackModeProcess = AnimationMixer.AnimationCallbackModeProcess.Manual;
@@ -274,6 +326,18 @@ public partial class PlayerVisual : Node3D
     {
         Tree.Set(GaitParameter, animation.Gait);
         Tree.Set(RunRateParameter, animation.RunRate);
+        Tree.Set(LeapParameter, animation.Leap);
+        Tree.Set(FallParameter, animation.Fall);
+        if (animation.FallBegan)
+        {
+            Tree.Set(FallSeekParameter, 0.0);
+        }
+
+        if (animation.Cue != PilgrimCue.None && _cueShown[(int)animation.Cue])
+        {
+            Tree.Set(CueRequests[animation.Cue], (int)AnimationNodeOneShot.OneShotRequest.Fire);
+        }
+
         if (animation.Pose != _shownPose)
         {
             _shownPose = animation.Pose;

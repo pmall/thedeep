@@ -114,4 +114,45 @@ public class PilgrimAnimationTests
 
         Assert.DoesNotContain(PilgrimClips.Run, names);
     }
+
+    [Fact]
+    public void ARunningJumpLeapsAndAStandingOneTucks()
+    {
+        Assert.True(Steady(new Vector2(7f, 8f), MotionMode.Air, 0.05f).Leap > 0.99f);
+        Assert.True(Steady(new Vector2(0f, 8f), MotionMode.Air, 0.05f).Leap < 0.01f);
+    }
+
+    [Fact]
+    public void TheFallStartsOverAtTheApex()
+    {
+        var animation = new PilgrimAnimation(RunClipSpeed);
+        animation.Reset();
+        animation.Update(Dt, new Vector2(0f, 5f), MotionMode.Air);
+        Assert.False(animation.FallBegan);
+        Assert.Equal(0f, animation.Fall);
+        animation.Update(Dt, new Vector2(0f, -0.1f), MotionMode.Air);
+        Assert.True(animation.FallBegan);
+        animation.Update(Dt, new Vector2(0f, -5f), MotionMode.Air);
+        Assert.False(animation.FallBegan);
+        Assert.Equal(1f, animation.Fall);
+    }
+
+    [Fact]
+    public void ALandingShowsOnlyStandingOnTheGround()
+    {
+        var running = Steady(new Vector2(7f, 0f), MotionMode.Ground);
+        running.Land(10f);
+        running.Update(Dt, new Vector2(7f, 0f), MotionMode.Ground);
+        Assert.Equal(PilgrimCue.None, running.Cue);
+
+        var gripping = Steady(Vector2.Zero, MotionMode.Grip);
+        gripping.Land(10f);
+        gripping.Update(Dt, Vector2.Zero, MotionMode.Grip);
+        Assert.Equal(PilgrimCue.None, gripping.Cue);
+
+        var standing = Steady(Vector2.Zero, MotionMode.Ground);
+        standing.Land(10f);
+        standing.Update(Dt, Vector2.Zero, MotionMode.Ground);
+        Assert.Equal(PilgrimCue.Land, standing.Cue);
+    }
 }

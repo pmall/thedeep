@@ -11,6 +11,6 @@ public enum PilgrimMoment
     /// <summary>Taking a relic: chest lifted, head back, arms open to receive it.</summary>
     Relic,
 
-    /// <summary>Dying: collapsed onto the knees, slumped.</summary>
+    /// <summary>Dying: thrown down on the face.</summary>
     Death,
 }

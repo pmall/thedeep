@@ -1,10 +1,10 @@
 """Contact sheets of the pilgrim's clips, rendered from the built export (build.py) so they show what the game imports.
 
-    blender --background --factory-startup --python art/pilgrim/preview.py -- OUT_DIR [CLIP ...]
+    blender --background --factory-startup --python art/pilgrim/preview.py -- OUT_DIR [--glb FILE] [--frames N] [CLIP ...]
 
 Writes OUT_DIR/<clip>.png for every clip (or those named): the top row from the side, as the game's camera sees the
-body, the bottom one from three quarters in front, each of `FRAMES` instants evenly over the clip, on a ground with a
-mark every half meter. Put OUT_DIR under lookdev/ (git-ignored, emptied when the work is done:
+body, the bottom one from three quarters in front, each of N instants (10 by default) evenly over the clip, its time in seconds on it, on a ground with a
+mark every half meter, the camera following the clip's travel. Put OUT_DIR under lookdev/ (git-ignored, emptied when the work is done:
 instructions/testing.md#lookdev-clear).
 """
 
@@ -22,13 +22,13 @@ sys.path.insert(0, HERE)
 import mannequin
 
 GLB = os.path.join(os.path.dirname(os.path.dirname(HERE)), 'assets', 'pilgrim', 'pilgrim.glb')
-FRAMES = 10
 WIDTH, HEIGHT = 240, 330
 VIEWS = (
-    (Vector((-6.0, 0.0, 0.95)), True),
-    (Vector((-3.6, -4.8, 1.3)), False),
+    (Vector((-6.0, 0.0, 0.95)), True, Vector((-0.78, 1.0, -2.0)), 0.13),
+    (Vector((-3.6, -4.8, 1.3)), False, Vector((-0.48, 0.62, -2.0)), 0.08),
 )
-"""Where each row's camera stands, and whether it is orthographic; both look at the body's middle."""
+"""Each row's camera: where it stands, whether it is orthographic, and where its time label sits in its frame and how
+big; both look at the body's middle."""
 
 
 def _scene() -> bpy.types.Scene:
@@ -53,9 +53,10 @@ def _box(
     box.data.materials.append(surface)
 
 
-def _setup() -> tuple[bpy.types.Object, bpy.types.Object]:
+def _setup(glb: str) -> tuple[bpy.types.Object, bpy.types.Object]:
     bpy.ops.wm.read_factory_settings(use_empty=True)
-    bpy.ops.import_scene.gltf(filepath=GLB)
+    _scene().render.fps = 60
+    bpy.ops.import_scene.gltf(filepath=glb)
     rigs = [o for o in bpy.data.objects if o.type == 'ARMATURE']
     assert len(rigs) == 1, 'one armature in the export'
     scene = _scene()
@@ -73,18 +74,31 @@ def _setup() -> tuple[bpy.types.Object, bpy.types.Object]:
     sun = _add(bpy.data.objects.new('Sun', bpy.data.lights.new('Sun', 'SUN')))
     sun.rotation_euler = (math.radians(50.0), math.radians(10.0), math.radians(-40.0))
 
-    _box('Ground', (0.0, 0.0, -0.05), (12.0, 12.0, 0.1), mannequin.material('Ground', (0.4, 0.41, 0.43), 0.8, 0.0))
+    _box('Ground', (0.0, 0.0, -0.05), (80.0, 80.0, 0.1), mannequin.material('Ground', (0.4, 0.41, 0.43), 0.8, 0.0))
     mark = mannequin.material('Mark', (0.12, 0.12, 0.14), 0.8, 0.0)
-    for i in range(-8, 9):
-        _box(f'Mark{i}', (0.0, i * 0.5, 0.0), (6.0, 0.012, 0.004), mark)
+    for i in range(-60, 61):
+        _box(f'Mark{i}', (0.0, i * 0.5, 0.0), (80.0, 0.012, 0.004), mark)
 
     camera = _add(bpy.data.objects.new('Camera', bpy.data.cameras.new('Camera')))
     scene.camera = camera
+    label = _add(bpy.data.objects.new('Label', bpy.data.curves.new('Label', 'FONT')))
+    label.parent = camera
+    assert isinstance(label.data, bpy.types.TextCurve)
+    label.data.materials.append(mark)
     return rigs[0], camera
 
 
-def _aim(camera: bpy.types.Object, at: Vector, orthographic: bool) -> None:
-    camera.location = at
+def _label(text: str, at: Vector, size: float) -> None:
+    label = bpy.data.objects['Label']
+    assert isinstance(label.data, bpy.types.TextCurve)
+    label.data.body = text
+    label.data.size = size
+    label.location = at
+
+
+def _aim(camera: bpy.types.Object, at: Vector, orthographic: bool, follow: Vector) -> None:
+    """The camera at `at` from the body, which has travelled `follow` on the ground (the clip's root motion)."""
+    camera.location = at + follow
     camera.rotation_euler = (Vector((0.0, 0.0, 0.9)) - at).to_track_quat('-Z', 'Y').to_euler()
     data = camera.data
     assert isinstance(data, bpy.types.Camera)
@@ -106,7 +120,7 @@ def _render(path: str) -> array.array[float]:
     return pixels
 
 
-def _sheet(rows: list[list[array.array[float]]]) -> array.array[float]:
+def _sheet(rows: list[list[array.array[float]]], frames: int) -> array.array[float]:
     """The tiles laid out, `rows[0]` on top (Blender's images run bottom row first)."""
     sheet = array.array('f')
     for tiles in reversed(rows):
@@ -116,8 +130,8 @@ def _sheet(rows: list[list[array.array[float]]]) -> array.array[float]:
     return sheet
 
 
-def main(out: str, only: list[str]) -> None:
-    rig, camera = _setup()
+def main(out: str, glb: str, frames: int, only: list[str]) -> None:
+    rig, camera = _setup(glb)
     os.makedirs(out, exist_ok=True)
     scene = _scene()
     for action in [a for a in bpy.data.actions if not only or a.name in only]:
@@ -128,17 +142,21 @@ def main(out: str, only: list[str]) -> None:
             data.action_slot = action.slots[0]
         first, last = float(action.frame_range[0]), float(action.frame_range[1])
         rows: list[list[array.array[float]]] = []
-        for at, orthographic in VIEWS:
-            _aim(camera, at, orthographic)
+        for at, orthographic, label_at, label_size in VIEWS:
             tiles = []
-            for k in range(FRAMES):
-                frame = first + (last - first) * k / FRAMES
+            for k in range(frames):
+                frame = first + (last - first) * k / frames
                 whole = math.floor(frame)
                 scene.frame_set(whole, subframe=frame - whole)
+                pose = rig.pose
+                assert pose is not None
+                root = rig.matrix_world @ pose.bones['Root'].head
+                _aim(camera, at, orthographic, Vector((root.x, root.y, 0.0)))
+                _label(f'{(frame - first) / scene.render.fps:.2f}', label_at, label_size)
                 tiles.append(_render(os.path.join(out, '_tile.png')))
             rows.append(tiles)
-        image = bpy.data.images.new(action.name, WIDTH * FRAMES, HEIGHT * len(VIEWS), alpha=True)
-        image.pixels.foreach_set(_sheet(rows))
+        image = bpy.data.images.new(action.name, WIDTH * frames, HEIGHT * len(VIEWS), alpha=True)
+        image.pixels.foreach_set(_sheet(rows, frames))
         image.filepath_raw = os.path.join(out, f'{action.name}.png')
         image.file_format = 'PNG'
         image.save()
@@ -146,4 +164,11 @@ def main(out: str, only: list[str]) -> None:
 
 
 arguments = sys.argv[sys.argv.index('--') + 1 :]
-main(arguments[0], arguments[1:])
+glb_path, frame_count = GLB, 10
+if '--glb' in arguments:
+    glb_path = arguments.pop(arguments.index('--glb') + 1)
+    arguments.remove('--glb')
+if '--frames' in arguments:
+    frame_count = int(arguments.pop(arguments.index('--frames') + 1))
+    arguments.remove('--frames')
+main(arguments[0], glb_path, frame_count, arguments[1:])

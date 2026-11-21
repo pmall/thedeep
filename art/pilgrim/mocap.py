@@ -7,14 +7,15 @@ rotation from its T-pose in the capture is turned by the same rotation from its 
 skeletons' bone axes. The hips' sway is scaled by the ratio of the two legs' lengths, and set on the ground where the clip's feet plant. The capture is first turned
 about the vertical so that the actor's travel (or, standing, its front) faces the pilgrim's front.
 
-The game moves the body, so the body never carries the actor's travel: the hips' ground track between the clip's two
-ends goes onto the Root bone (the game measures a clip's speed from it and never shows it), leaving the hips only the
+The game moves the body, so the body never carries the actor's travel: the hips' ground track (`_ground_track`) goes
+onto the Root bone (the game measures a clip's speed from it and never shows it), leaving the hips only the
 sway around it. A looping clip is cut where the pose comes back to its start and the
 small difference left is spread over the cycle, so it loops without a pop.
 """
 
 import math
-from dataclasses import dataclass
+import os
+from dataclasses import dataclass, replace
 
 import bpy
 import skeleton
@@ -76,6 +77,17 @@ class Source:
         assert len(imported) == 1 and imported[0].type == 'ARMATURE', path
         self.rig = imported[0]
         self.tpose = self.at_frame(1.0)
+        pose = self.rig.pose
+        assert pose is not None
+        bones = pose.bones
+        self.leg_length = float((bones['LeftUpLeg'].head - bones['LeftFoot'].head).length)
+        """Hip joint to ankle in the T-pose, capture units."""
+        self.ankle_height = float(bones['LeftFoot'].head.z - bones['LeftToeBase'].head.z)
+        """How high the ankle stands over the ground on a flat foot: its height over the toe in the T-pose."""
+        action = self.rig.animation_data.action if self.rig.animation_data else None
+        last = action.frame_range[1] if action else 2.0
+        self.duration = (float(last) - 2.0) / self.fps
+        """Seconds of motion after the T-pose frame."""
 
     def at(self, seconds: float) -> Pose:
         """The capture `seconds` after its T-pose frame."""
@@ -93,18 +105,6 @@ class Source:
         left, right = (world @ pose.bones[f'{side}UpLeg'].head for side in ('Left', 'Right'))
         ankle = min((world @ pose.bones[f'{side}Foot'].head).z for side in ('Left', 'Right'))
         return Pose(turns, (left + right) / 2, right - left, ankle)
-
-    def ankle_height(self) -> float:
-        """How high the ankle stands over the ground on a flat foot (its height over the toe in the T-pose)."""
-        pose = self.rig.pose
-        assert pose is not None
-        return float(pose.bones['LeftFoot'].head.z - pose.bones['LeftToeBase'].head.z)
-
-    def leg_length(self) -> float:
-        """Hip joint to ankle in the T-pose, capture units."""
-        pose = self.rig.pose
-        assert pose is not None
-        return float((pose.bones['LeftUpLeg'].head - pose.bones['LeftFoot'].head).length)
 
     def remove(self) -> None:
         """Takes the imported armature out of the file, its motion too, so the export holds only the pilgrim's clips."""
@@ -134,7 +134,7 @@ def _heading(source: Source, start: float, end: float) -> Quaternion:
     """The turn about Z that brings the actor's travel over [start, end] (or, standing, its front at the start) onto -Y."""
     travel = source.at(end).hips - source.at(start).hips
     travel.z = 0.0
-    if travel.length < 0.2 * source.leg_length():
+    if travel.length < 0.2 * source.leg_length:
         return _yaw_to_front(source.at(start).front())
     return _yaw_to_front(travel)
 
@@ -163,7 +163,7 @@ def _loop_span(source: Source, clip: Clip) -> tuple[float, float]:
     """The clip's span: for a loop, the start near `clip.start` and the cycle in `clip.cycle` that meet best."""
     if clip.cycle is None:
         return clip.start, clip.end
-    units = source.leg_length()
+    units = source.leg_length
     step = 1.0 / source.fps
     shortest, longest = clip.cycle
     best = (math.inf, clip.start, clip.start + shortest)
@@ -184,13 +184,14 @@ def _loop_span(source: Source, clip: Clip) -> tuple[float, float]:
 
 def bake(rig: bpy.types.Object, clip: Clip, mocap_root: str) -> bpy.types.Action:
     """The clip retargeted onto `rig` as an action named after it, with a slot for `rig`."""
-    source = Source(f'{mocap_root}/{clip.source}')
+    source = Source(os.path.join(mocap_root, clip.source))
+    clip = replace(clip, end=min(clip.end, source.duration))
     start, end = _loop_span(source, clip)
     # The actor is turned whole about the vertical (heading); its T-pose, the reference every bone's turn is taken
     # from, is turned to face the pilgrim's rest (upright).
     heading = _heading(source, start, end)
     upright = _yaw_to_front(source.tpose.front())
-    scale = (skeleton.HIP_HEIGHT - skeleton.ANKLE_HEIGHT) / source.leg_length()
+    scale = (skeleton.HIP_HEIGHT - skeleton.ANKLE_HEIGHT) / source.leg_length
     frames = max(2, round((end - start) * FPS))
     poses = [source.at(start + (end - start) * k / frames) for k in range(frames + 1)]
 
@@ -198,11 +199,13 @@ def bake(rig: bpy.types.Object, clip: Clip, mocap_root: str) -> bpy.types.Action
     assert isinstance(armature, bpy.types.Armature)
     rest = {b.name: b.matrix_local.to_quaternion() for b in armature.bones}
     tpose = source.tpose
-    hips_start, hips_end = poses[0].hips, poses[-1].hips
+    tracks = _ground_track([p.hips for p in poses], looping=clip.cycle is not None)
     # The ground is where the feet plant: the lowest ankle of the clip, a flat foot's ankle height above it (the T-pose
     # frame is not standing on it).
-    ankle = source.ankle_height()
+    ankle = source.ankle_height
     ground = min(p.ankle for p in poses) - ankle
+    # In the air, the hips hold the height that puts the clip's lowest sole on the root.
+    reach = max(p.hips.z - p.ankle for p in poses)
 
     turns: dict[str, list[Quaternion]] = {b.name: [] for b in skeleton.BONES if b.name in SOURCE_OF}
     hips: list[Vector] = []
@@ -219,12 +222,15 @@ def bake(rig: bpy.types.Object, clip: Clip, mocap_root: str) -> bpy.types.Action
                 turns[bone.name].append(local)
             else:
                 world[bone.name] = parent_world @ parent_rest.inverted() @ rest[bone.name]
-        # The ground track between the two ends comes out; what is left is the sway around it.
-        track = hips_start.lerp(hips_end, k / frames)
-        ground_track = heading @ ((track - hips_start) * scale)
+        # The ground track goes onto the root; what is left is the sway around it.
+        track = tracks[k]
+        ground_track = heading @ ((track - tracks[0]) * scale)
         travel.append(Vector((ground_track.x, ground_track.y, 0.0)))
         sway = heading @ ((pose.hips - track) * scale)
-        height = skeleton.ANKLE_HEIGHT + (pose.hips.z - ground - ankle) * scale
+        if clip.airborne:
+            height = skeleton.ANKLE_HEIGHT + reach * scale
+        else:
+            height = skeleton.ANKLE_HEIGHT + (pose.hips.z - ground - ankle) * scale
         hips.append(Vector((sway.x, sway.y, height - skeleton.HIP_HEIGHT)))
 
     if clip.cycle is not None:
@@ -235,6 +241,26 @@ def bake(rig: bpy.types.Object, clip: Clip, mocap_root: str) -> bpy.types.Action
         'Root': [rest['Root'].inverted() @ t for t in travel],
     }
     return _write_action(rig, clip.name, turns, locations)
+
+
+TRACK_SMOOTHING = 0.25
+"""Seconds either side of an instant a one-shot clip's ground track averages the hips over."""
+
+
+def _ground_track(hips: list[Vector], looping: bool) -> list[Vector]:
+    """The ground track the hips sway around: for a loop, the straight line between its two ends (a cycle travels
+    evenly); otherwise the hips' own way over the ground, smoothed, so a clip that slows or stops keeps its body over
+    the root."""
+    n = len(hips) - 1
+    if looping:
+        return [hips[0].lerp(hips[n], k / n) for k in range(n + 1)]
+    reach = max(1, round(TRACK_SMOOTHING * FPS))
+    track = []
+    for k in range(n + 1):
+        window = hips[max(0, k - reach) : min(n, k + reach) + 1]
+        mean = sum(window, Vector()) / len(window)
+        track.append(Vector((mean.x, mean.y, hips[k].z)))
+    return track
 
 
 def _close_loop(turns: dict[str, list[Quaternion]], hips: list[Vector]) -> None:
