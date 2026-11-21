@@ -36,7 +36,7 @@ Blender's own MCP (Blender Lab, `projects.blender.org/lab/blender_mcp`; the offi
 - **The add-on** `mcp`, from the Blender Lab extension repository (id `lab_blender_org`, `https://lab.blender.org/`), enabled with auto-start: opening Blender starts its socket on `localhost:9876`. Blender's online access is off, so updating it takes the flag for that run: `blender --online-mode -c extension sync && blender --online-mode -c extension update`.
 - **The server** `blender-mcp`, which Claude Code launches over stdio from `.mcp.json`, pinned to a commit of the repository. To upgrade it, move the pin to the commit matching the add-on's version.
 
-Its tools reach Blender only while the owner has it open; the session must be restarted to pick up a change to `.mcp.json`. It runs whatever Python it is sent with no guard, so it only opens this project's files. What is kept (a model, a rig, an export) is built by a script in the repository run with `blender --background`, so it can be rebuilt and reviewed; the MCP is for looking, trying and checking.
+**Blender is used sparingly** (owner): only for what can't be done without it; everything else stays in code (`docs/art-direction.md#procedural-first`). Its tools reach Blender only while the owner has it open; the session must be restarted to pick up a change to `.mcp.json`. It runs whatever Python it is sent with no guard, so it only opens this project's files. What is kept (a model, a rig, an export) is built by a script in the repository run with `blender --background`, so it can be rebuilt and reviewed; the MCP is for looking, trying and checking.
 
 ## What needs the GPU <a id="gpu"></a>
 

@@ -14,7 +14,7 @@ Every task, rule and doc line answers to this goal. Before adding one, ask wheth
 
 1. Read this file, then where the work stands (`docs/roadmap.md#status`) and the current item in [docs/roadmap.md](docs/roadmap.md).
 2. Read only the doc sections the task needs (`AGENTS.md#read-when`).
-3. For any visual change, capture before and after and look at the images (`docs/art-direction.md#judge-images`).
+3. For any visual change, capture before and after and look at the images (`docs/art-direction.md#judge-images`); empty `lookdev/` when the work is done (`instructions/testing.md#lookdev-clear`).
 4. Run the checks (`AGENTS.md#checks`). Keep `godot --path .` working: it is the owner's launch command.
 5. Update the roadmap (its `docs/roadmap.md#status` included) and `docs/bricks.md` as `AGENTS.md#doc-rules` says.
 6. Hand over with **one command that reaches the new content with the abilities it needs**, and what to try there (`instructions/testing.md#playtest`). Never one that drops the owner somewhere they can't move.
