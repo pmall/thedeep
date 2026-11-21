@@ -6,7 +6,7 @@ The owner's plan and the open items, in order, opened by where the work stands. 
 
 - **Stage:** A, the prototype (`docs/roadmap.md#stage-prototype`).
 - **Current item:** the pilgrim, from zero (`docs/roadmap.md#pilgrim`).
-- **Next step:** the environment for top-quality animation, before the character (`docs/roadmap.md#animation-env`): its Blender half is built (the stand-in mannequin, idle and run from CMU capture); next, the game half.
+- **Next step:** the environment for top-quality animation, before the character (`docs/roadmap.md#animation-env`): the stand-in mannequin plays its idle and run in the game; next, the feet held to the ground, then the clips for the other states.
 - **Waiting on the owner:** the stage's sign-off play: `docs/roadmap.md#to-play`.
 
 ## The plan <a id="direction"></a>
@@ -32,7 +32,7 @@ The open items, in order (owner: the world, its bricks and its look are finished
 
    **The environment, in order** <a id="animation-env"></a>, each step proven on the stand-in mannequin (`art/pilgrim/mannequin.py`) before the pilgrim is modeled:
 
-   1. In the game: `pilgrim.glb` replaces the part body under `PlayerVisual` (same calls from `Player`), its clips played by an `AnimationTree` from what the core decides (which pose, the blend between them, the run's rate matched to the speed so the feet don't slide), the feet held to the ground by `TwoBoneIK3D`, the blade on the near forearm and its slash, the footfalls from the clip. The old procedural animation (`PilgrimMotion`, `StrikeMotion`, `resources/parts/pilgrim.tres`) goes.
+   1. The feet held to the ground by `TwoBoneIK3D` (a ledge, a step), the hips lowered to reach.
    2. A clip for every state that capture covers (CMU first: subject 127's runs, jumps and rolls, 02's swordplay, 125–126's swimming), the rest keyed by hand in the build's scripts; Mixamo only for what neither gives (it needs the owner's account).
    3. The reels (`MotionReel`) judged at gameplay size and close up.
 

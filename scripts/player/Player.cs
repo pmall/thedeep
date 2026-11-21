@@ -207,7 +207,6 @@ public partial class Player : CharacterBody3D
         Ray.Attach(this);
         Fit.Attach(this, Capsule);
         CurrentState.Enter();
-        Visual.Setup(Tuning.RunSpeed);
         Visual.Snap();
     }
 

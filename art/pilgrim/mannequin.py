@@ -106,8 +106,8 @@ def material(
 
 def build(rig: bpy.types.Object) -> bpy.types.Object:
     """The mannequin's mesh, bound to `rig` by an armature modifier, one vertex group per bone."""
-    mesh = bpy.data.meshes.new('Pilgrim')
-    body = bpy.data.objects.new('Pilgrim', mesh)
+    mesh = bpy.data.meshes.new('Body')
+    body = bpy.data.objects.new('Body', mesh)
     scene = bpy.context.scene
     assert scene is not None
     scene.collection.objects.link(body)

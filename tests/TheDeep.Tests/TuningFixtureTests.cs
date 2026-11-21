@@ -1,13 +1,12 @@
 using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
-using System.Numerics;
 using System.Text.RegularExpressions;
 using Xunit;
 
 namespace TheDeep.Tests;
 
-/// <summary>The tests' tuning fixtures (<see cref="TestTuning"/>) held to the files they claim to copy: player_tuning.tres and parts/pilgrim.tres.</summary>
+/// <summary>The tests' tuning fixtures (<see cref="TestTuning"/>) held to the files they claim to copy: player_tuning.tres.</summary>
 public class TuningFixtureTests
 {
     private static Dictionary<string, float> Tuning()
@@ -73,34 +72,5 @@ public class TuningFixtureTests
                 c.Gravity, c.ApexHangThreshold, c.ApexGravityMultiplier, c.FallGravityMultiplier,
                 c.MaxFallSpeed, c.CoyoteTime, c.JumpBufferTime, c.DashBufferTime, c.DashCooldown, c.HarpoonBufferTime, c.GripRegrabDelay,
                 c.AirDashes, c.HurtKnockback, c.HurtLift, c.HurtStun, c.StickThreshold });
-    }
-
-    [Fact]
-    public void TheRigFixtureIsThePilgrimsParts()
-    {
-        // Joint offsets from the sub-resources: `Name = &"X"` then `Offset = Vector3(x, y, z)`.
-        string text = File.ReadAllText(RepoPaths.Of("resources/parts/pilgrim.tres"));
-        var rest = new Dictionary<string, Vector3>();
-        foreach (Match m in Regex.Matches(text, @"Name = &""(\w+)""\r?\nParent = [^\r\n]*\r?\nOffset = Vector3\(([^)]*)\)"))
-        {
-            string[] p = m.Groups[2].Value.Split(',');
-            rest[m.Groups[1].Value] = new Vector3(F(p[0]), F(p[1]), F(p[2]));
-        }
-
-        HumanoidDims d = TestTuning.Dims;
-        Assert.Equal(
-            new[] { rest["Hips"].Y, rest["ThighR"].X, rest["ThighR"].Y, rest["ThighR"].Z, rest["ShinR"].Length(), rest["FootR"].Length(),
-                rest["Spine"].Y + rest["Chest"].Y + rest["UpperArmR"].Y, rest["ForearmR"].Length(), rest["HandR"].Length() },
-            new[] { d.HipsHeight, d.HipJoint.X, d.HipJoint.Y, d.HipSpread, d.Thigh, d.Shin, d.ShoulderHeight, d.UpperArm, d.Forearm },
-            new FloatComparer());
-
-        static float F(string s) => float.Parse(s.Trim(), CultureInfo.InvariantCulture);
-    }
-
-    private sealed class FloatComparer : IEqualityComparer<float>
-    {
-        public bool Equals(float a, float b) => System.MathF.Abs(a - b) < 1e-5f;
-
-        public int GetHashCode(float f) => 0;
     }
 }

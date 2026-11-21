@@ -6,7 +6,7 @@ namespace TheDeep;
 [GlobalClass]
 public partial class RigJoint : Resource
 {
-    /// <summary>Unique within the assembly. Humanoid rigs use the <see cref="HumanoidBone"/> names.</summary>
+    /// <summary>Unique within the assembly.</summary>
     [Export] public StringName Name { get; set; } = Names.None;
 
     /// <summary>The joint this one hangs from; empty for a root joint (on the assembly's origin).</summary>

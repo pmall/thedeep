@@ -1,36 +1,63 @@
 using System;
 using Godot;
-using NVector2 = System.Numerics.Vector2;
 
 namespace TheDeep;
 
 /// <summary>
-/// The pilgrim's body: a <see cref="PartBody"/> built from its part assembly, animated procedurally by
-/// <see cref="PilgrimMotion"/> (run cycle with planted feet, leaps, dash lunge, leaning, landing
-/// compression; clinging on Mag-grip, swimming, the dive's spin, the harpoon's reach, strikes, the recoil when hurt and the
-/// ledge vault), its coat, braid and lantern flowing behind, turning smoothly through a glance at the
-/// camera when the facing flips. A strike draws the blade out of the near forearm (the part on <see cref="BladeJoint"/>, slid out
-/// along its length) and its sweep leaves the <see cref="Slash"/>. Pivot is at the feet. <see cref="Player"/> calls <see cref="Animate"/>
-/// after each physics move, so physics interpolation keeps it smooth.
+/// The pilgrim's body: the model built in Blender (art/pilgrim/build.py, imported from assets/pilgrim/pilgrim.glb), its
+/// clips played by an <see cref="AnimationTree"/> from what the core's <see cref="PilgrimAnimation"/> decides each physics
+/// tick: the pose (crossfaded), the idle giving way to the run, the run's rate matched to the speed. A pose whose clip isn't
+/// made yet shows its <see cref="PilgrimPoses.Fallback"/>'s. The tree is built here from the clips the model holds, and
+/// advanced on physics ticks (<see cref="Animate"/>), so a hit stop, which skips them, holds the body still. The clips'
+/// travel is on the skeleton's root bone, taken out as root motion (the movement moves the body): the run's sets its speed.
+/// A strike draws the blade out of the near forearm (<see cref="Blade"/>, slid out along its length) and its sweep leaves
+/// the <see cref="Slash"/>. Footfalls are read from where the soles are (<see cref="Footfalls"/>). The body turns smoothly
+/// through a glance at the camera when the facing flips. Pivot is at the feet.
 /// </summary>
 public partial class PlayerVisual : Node3D
 {
-    private static readonly StringName UpperArmR = nameof(HumanoidBone.UpperArmR);
-    private static readonly StringName FootR = "FootR";
-    private static readonly StringName FootL = "FootL";
+    private static readonly StringName PoseNode = "pose";
+    private static readonly StringName GaitNode = "gait";
+    private static readonly StringName RunRateNode = "run_rate";
+    private static readonly StringName RunNode = "run";
+    private static readonly StringName IdleNode = "idle";
+    private static readonly StringName OutputNode = "output";
+    private static readonly StringName GaitParameter = "parameters/gait/blend_amount";
+    private static readonly StringName RunRateParameter = "parameters/run_rate/scale";
+    private static readonly StringName PoseParameter = "parameters/pose/transition_request";
+    private static readonly StringName HurtParameter = "hurt";
+    private static readonly StringName IdleClip = PilgrimClips.Idle;
+    private static readonly StringName RunClip = PilgrimClips.Run;
+    private static readonly NameCache<PilgrimPose> PoseNames = new(pose => pose.ToString());
+    private static readonly NameCache<PilgrimPose> ClipNodeNames = new(pose => "clip_" + pose);
+    private static readonly NameCache<PilgrimPose> ClipNames = new(PilgrimClips.Of);
 
-    [Export] public PartBody Body { get; set; } = null!;
+    /// <summary>The model's player, which holds the clips (inside the imported scene).</summary>
+    [Export] public AnimationPlayer Clips { get; set; } = null!;
 
-    /// <summary>The light the pilgrim carries; it moves into the lantern at the end of <see cref="LanternChain"/>.</summary>
-    [Export] public OmniLight3D? CarriedLight { get; set; }
+    /// <summary>The tree that plays them, built in <see cref="_Ready"/>.</summary>
+    [Export] public AnimationTree Tree { get; set; } = null!;
 
-    [Export] public StringName LanternChain { get; set; } = "Lantern";
+    /// <summary>The model's skeleton.</summary>
+    [Export] public Skeleton3D Skeleton { get; set; } = null!;
 
-    /// <summary>The joint the blade part hangs from (down its -Y axis), on the near forearm.</summary>
-    [Export] public StringName BladeJoint { get; set; } = "Blade";
+    /// <summary>The model's mesh, which shimmers while the pilgrim can't be hurt.</summary>
+    [Export] public GeometryInstance3D Mesh { get; set; } = null!;
+
+    /// <summary>The track of the skeleton's root bone in the clips, relative to the tree's root node: the clips' travel.</summary>
+    [Export] public NodePath RootTrack { get; set; } = new("Pilgrim/Skeleton3D:Root");
+
+    /// <summary>What the blade swings around: the near shoulder.</summary>
+    [Export] public Node3D Shoulder { get; set; } = null!;
+
+    /// <summary>The blade, on the near forearm, hanging down its -Y axis.</summary>
+    [Export] public Node3D Blade { get; set; } = null!;
 
     /// <summary>The slash the blade's sweep leaves, or none.</summary>
     [Export] public SlashTrail? Slash { get; set; }
+
+    /// <summary>How long a change of pose crossfades, seconds.</summary>
+    [Export] public float Crossfade { get; set; } = 0.12f;
 
     /// <summary>How fast the body turns around when the facing flips, 1/s (higher is snappier).</summary>
     [Export] public float TurnSharpness { get; set; } = 20f;
@@ -38,11 +65,21 @@ public partial class PlayerVisual : Node3D
     /// <summary>How fast the body eases into a new pose after the collider snapped (a Mag-grip corner), 1/s.</summary>
     [Export] public float CarrySharpness { get; set; } = 16f;
 
-    private HumanoidRig? _rig;
-    private Node3D? _blade;
-    private Node3D? _shoulder;
+    /// <summary>The soles' height over their bones at rest (ankle, ball of the foot), meters: the model's (art/pilgrim/skeleton.py).</summary>
+    [Export] public float AnkleHeight { get; set; } = 0.085f;
+
+    [Export] public float BallHeight { get; set; } = 0.025f;
+
+    private static readonly StringName FootR = "RightFoot";
+    private static readonly StringName FootL = "LeftFoot";
+    private static readonly StringName ToesR = "RightToes";
+    private static readonly StringName ToesL = "LeftToes";
+
+    private PilgrimAnimation? _animation;
+    private readonly Footfalls _footfalls = new();
+    private PilgrimPose _shownPose;
+    private int _footR = -1, _footL = -1, _toesR = -1, _toesL = -1;
     private float _bladeLength;
-    private PilgrimMotion? _motion;
     private int _facing = 1;
     private float _yaw;
     private int _blinkTime;
@@ -51,48 +88,100 @@ public partial class PlayerVisual : Node3D
     /// <summary>Where the visible body still is relative to the collider after a snap; eases back to identity.</summary>
     private Transform3D _carry = Transform3D.Identity;
 
-    /// <summary>A foot was planted at this world position, on the near (+1) or far (-1) side.</summary>
+    /// <summary>A foot was planted at this world position, the right (+1) or the left (-1).</summary>
     public event Action<Vector3, int>? Footfall;
 
-    /// <summary>How much the run cycle shows, 0 standing to 1 at run speed.</summary>
-    public float Gait => _motion?.Gait ?? 0f;
+    /// <summary>How much the run shows, 0 standing to 1 running.</summary>
+    public float Gait => _animation?.Gait ?? 0f;
+
+    private PilgrimAnimation Animation => _animation ??= new PilgrimAnimation(RunClipSpeed());
 
     public override void _Ready()
     {
-        _rig = HumanoidRig.From(Body);
-        _shoulder = Body.Joint(UpperArmR);
-        _blade = Body.Joint(BladeJoint);
-        if (_blade is not null)
+        _footR = Skeleton.FindBone(FootR);
+        _footL = Skeleton.FindBone(FootL);
+        _toesR = Skeleton.FindBone(ToesR);
+        _toesL = Skeleton.FindBone(ToesL);
+        foreach (Node child in Blade.Children())
         {
-            // The blade's length is its part's: whatever mesh the assembly hangs there.
-            foreach (Node child in _blade.Children())
+            if (child is MeshInstance3D part && part.Mesh is not null)
             {
-                if (child is MeshInstance3D part && part.Mesh is not null)
-                {
-                    _bladeLength = Mathf.Max(_bladeLength, part.Mesh.GetAabb().Size.Y);
-                }
+                _bladeLength = Mathf.Max(_bladeLength, part.Mesh.GetAabb().Size.Y);
+            }
+        }
+
+        BuildTree();
+        ShowBlade(0f);
+    }
+
+    /// <summary>
+    /// The tree: the idle and the rated run blended by the gait for the ground, a clip for every other pose (its fallback's
+    /// while it has none), all into one crossfading transition.
+    /// </summary>
+    private void BuildTree()
+    {
+        var root = new AnimationNodeBlendTree();
+        root.AddNode(IdleNode, new AnimationNodeAnimation { Animation = IdleClip });
+        root.AddNode(RunNode, new AnimationNodeAnimation { Animation = RunClip });
+        root.AddNode(RunRateNode, new AnimationNodeTimeScale());
+        root.AddNode(GaitNode, new AnimationNodeBlend2());
+        root.ConnectNode(RunRateNode, 0, RunNode);
+        root.ConnectNode(GaitNode, 0, IdleNode);
+        root.ConnectNode(GaitNode, 1, RunRateNode);
+
+        var transition = new AnimationNodeTransition { XfadeTime = Crossfade };
+        PilgrimPose[] poses = Enum.GetValues<PilgrimPose>();
+        transition.InputCount = poses.Length;
+        root.AddNode(PoseNode, transition);
+        foreach (PilgrimPose pose in poses)
+        {
+            transition.SetInputName((int)pose, PoseNames[pose]);
+            if (pose == PilgrimPose.Ground)
+            {
+                root.ConnectNode(PoseNode, (int)pose, GaitNode);
+                continue;
             }
 
-            ShowBlade(0f);
+            // Each input its own clip node: a node fed into two inputs would be advanced twice.
+            root.AddNode(ClipNodeNames[pose], new AnimationNodeAnimation { Animation = ShownClip(pose) });
+            root.ConnectNode(PoseNode, (int)pose, ClipNodeNames[pose]);
         }
-        if (CarriedLight is not null && Body.ChainEnd(LanternChain) is { } lantern)
-        {
-            Vector3 offset = CarriedLight.Position;
-            CarriedLight.Reparent(lantern, false);
-            CarriedLight.Position = offset;
-        }
+
+        root.ConnectNode(OutputNode, 0, PoseNode);
+        Tree.TreeRoot = root;
+        Tree.RootMotionTrack = RootTrack;
+        Tree.CallbackModeProcess = AnimationMixer.AnimationCallbackModeProcess.Manual;
+        Tree.Active = true;
     }
 
-    /// <summary>Sizes the animation for the player's run speed (the gait's stride scales with it).</summary>
-    public void Setup(float runSpeed)
+    /// <summary>The clip a pose shows: its own, or its nearest fallback's that exists (the idle in the end).</summary>
+    private StringName ShownClip(PilgrimPose pose)
     {
-        if (_rig is not null)
+        for (PilgrimPose? p = pose; p is { } shown; p = PilgrimPoses.Fallback(shown))
         {
-            _motion = new PilgrimMotion(_rig.Dims, runSpeed);
+            if (Clips.HasAnimation(ClipNames[shown]))
+            {
+                return ClipNames[shown];
+            }
         }
+
+        return IdleClip;
     }
 
-    private static readonly StringName HurtParameter = "hurt";
+    /// <summary>How fast the run clip travels at its own rate, m/s: its root bone's travel over its length.</summary>
+    private float RunClipSpeed()
+    {
+        Animation run = Clips.GetAnimation(RunClip);
+        int track = run.FindTrack(RootTrack, Godot.Animation.TrackType.Position3D);
+        if (track < 0 || run.Length <= 0f)
+        {
+            GD.PushError($"PlayerVisual: the run clip has no travel on {RootTrack}");
+            return 1f;
+        }
+
+        Vector3 travel = run.PositionTrackInterpolate(track, run.Length) - run.PositionTrackInterpolate(track, 0.0);
+        return travel.Length() / (float)run.Length;
+    }
 
     /// <summary>A pale shimmer over the body while the pilgrim can't be hurt (after a hit); false clears it. Per physics tick.</summary>
     public void Blink(bool on)
@@ -101,7 +190,7 @@ public partial class PlayerVisual : Node3D
         float shimmer = on ? 0.05f + 0.05f * Mathf.Sin(_blinkTime * 0.45f) : 0f;
         if (on || _blinkTime == 0 && _shimmer != 0f)
         {
-            Body.SetShaderParameter(HurtParameter, shimmer);
+            Mesh.SetInstanceShaderParameter(HurtParameter, shimmer);
         }
 
         _shimmer = shimmer;
@@ -110,44 +199,35 @@ public partial class PlayerVisual : Node3D
     /// <summary>The side the body turns to: +1 right, -1 left.</summary>
     public void SetFacing(int facing) => _facing = facing < 0 ? -1 : 1;
 
-    /// <summary>A strike under way (<see cref="PilgrimMotion.Strike"/>); each physics tick it lasts.</summary>
+    /// <summary>A strike under way (<see cref="StrikeShow.Strike"/>); each physics tick it lasts.</summary>
     public void Strike(float progress, float windUpEnd, float activeEnd, StrikeKind kind) =>
-        _motion?.Strike(progress, windUpEnd, activeEnd, kind);
+        Animation.Strike.Strike(progress, windUpEnd, activeEnd, kind);
 
-    /// <summary>The strike is over (<see cref="PilgrimMotion.EndStrike"/>).</summary>
-    public void EndStrike() => _motion?.EndStrike();
+    /// <summary>The strike is over (<see cref="StrikeShow.End"/>).</summary>
+    public void EndStrike() => Animation.Strike.End();
 
     /// <summary>The held moment the body plays (resting, taking a relic, dying); None lets it go.</summary>
     public PilgrimMoment Moment
     {
-        get => _motion?.Moment ?? PilgrimMoment.None;
-        set
-        {
-            if (_motion is not null)
-            {
-                _motion.Moment = value;
-            }
-        }
+        get => Animation.Moment;
+        set => Animation.Moment = value;
     }
 
     /// <summary>A blow landed on the pilgrim: the body recoils.</summary>
-    public void Hurt() => _motion?.Hurt();
+    public void Hurt() => Animation.Hurt();
 
     /// <summary>The ledge assist lifted the body onto a top: it vaults the edge.</summary>
-    public void Vault() => _motion?.Vault();
+    public void Vault() => Animation.Vault();
 
     /// <summary>Where the Harpoon's line pulls, in the world: the near arm reaches along it while on the line.</summary>
     public void Reach(Vector3 toward)
     {
-        if (_motion is not null)
-        {
-            Vector3 local = GetParentNode3D().GlobalBasis.Inverse() * toward;
-            _motion.Reach = new NVector2(local.X * _facing, local.Y);
-        }
+        Vector3 local = GetParentNode3D().GlobalBasis.Inverse() * toward;
+        Animation.Reach = new System.Numerics.Vector2(local.X * _facing, local.Y);
     }
 
-    /// <summary>Kicks the landing compression; <paramref name="impactSpeed"/> is the downward speed at touchdown.</summary>
-    public void Land(float impactSpeed) => _motion?.Land(impactSpeed);
+    /// <summary>The body touched down; <paramref name="impactSpeed"/> is the downward speed at touchdown.</summary>
+    public void Land(float impactSpeed) => Animation.Land(impactSpeed);
 
     /// <summary>
     /// The body (the parent) just snapped to a new pose: the visible body starts from
@@ -169,26 +249,36 @@ public partial class PlayerVisual : Node3D
         _yaw = Motion.Damp(_yaw, TargetYaw, TurnSharpness, delta);
         float k = 1f - Mathf.Exp(-CarrySharpness * delta);
         _carry = new Transform3D(new Basis(_carry.Basis.GetRotationQuaternion().Slerp(Quaternion.Identity, k)), _carry.Origin.Lerp(Vector3.Zero, k));
-        if (_rig is null || _motion is null)
+        Transform = _carry * new Transform3D(new Basis(Vector3.Up, _yaw), Vector3.Zero);
+
+        PilgrimAnimation animation = Animation;
+        animation.Update(delta, velocity.Flat(), mode);
+        Show(animation);
+        Tree.Advance(delta);
+
+        ShowBlade(animation.Strike.Blade);
+        Slash?.Track(Shoulder, Blade, _bladeLength, animation.Strike.Edge * animation.Strike.Blade, GlobalPosition, delta);
+
+        bool grounded = onFloor && !float.IsNaN(floorY) && animation.Pose == PilgrimPose.Ground && animation.Gait > 0.3f;
+        float floor = float.IsNaN(floorY) ? 0f : floorY;
+        int planted = _footfalls.Update(SoleHeight(_footR, _toesR, floor), SoleHeight(_footL, _toesL, floor), grounded);
+        if (planted != 0)
         {
-            Transform = _carry * new Transform3D(new Basis(Vector3.Up, _yaw), Vector3.Zero);
-            return;
+            Vector3 foot = BoneWorld(planted > 0 ? _footR : _footL);
+            Footfall?.Invoke(foot with { Y = floor }, planted);
         }
+    }
 
-        _motion.Update(delta, velocity.Flat(), _facing, mode);
-        Transform = _carry * new Transform3D(new Basis(Vector3.Up, _yaw + _motion.Spin), Vector3.Zero);
-        _rig.Apply(_motion.Pose);
-        ShowBlade(_motion.Blade);
-        if (Slash is not null && _blade is not null && _shoulder is not null)
+    /// <summary>Hands the core's decisions to the tree.</summary>
+    private void Show(PilgrimAnimation animation)
+    {
+        Tree.Set(GaitParameter, animation.Gait);
+        Tree.Set(RunRateParameter, animation.RunRate);
+        if (animation.Pose != _shownPose)
         {
-            Slash.Track(_shoulder, _blade, _bladeLength, _motion.Edge * _motion.Blade, GlobalPosition, delta);
-        }
-
-        Body.StepChains(delta, onFloor && !float.IsNaN(floorY) ? floorY + 0.02f : float.NaN);
-
-        if (_motion.Footfall != 0 && Body.Joint(_motion.Footfall > 0 ? FootR : FootL) is { } foot)
-        {
-            Footfall?.Invoke(float.IsNaN(floorY) ? foot.GlobalPosition : foot.GlobalPosition with { Y = floorY }, _motion.Footfall);
+            _shownPose = animation.Pose;
+            using Variant request = PoseNames[animation.Pose];
+            Tree.Set(PoseParameter, request);
         }
     }
 
@@ -198,29 +288,26 @@ public partial class PlayerVisual : Node3D
         _yaw = TargetYaw;
         _carry = Transform3D.Identity;
         Transform = new Transform3D(new Basis(Vector3.Up, _yaw), Vector3.Zero);
-        if (_rig is not null && _motion is not null)
-        {
-            _motion.Reset();
-            _rig.Apply(_motion.Pose);
-            ShowBlade(0f);
-            Body.ResetChains();
-        }
-
+        Animation.Reset();
+        Show(Animation);
+        Tree.Advance(0.0);
+        ShowBlade(0f);
         Slash?.Clear();
-
         ResetPhysicsInterpolation();
     }
+
+    /// <summary>A bone's head in the world.</summary>
+    private Vector3 BoneWorld(int bone) => Skeleton.GlobalTransform * Skeleton.GetBoneGlobalPose(bone).Origin;
+
+    /// <summary>How high a sole is over <paramref name="floor"/>: the lower of its heel and its ball.</summary>
+    private float SoleHeight(int foot, int toes, float floor) =>
+        Mathf.Min(BoneWorld(foot).Y - AnkleHeight, BoneWorld(toes).Y - BallHeight) - floor;
 
     /// <summary>The blade slid <paramref name="out"/> of the forearm (0 folded away, hidden; 1 all out), narrowing as it folds.</summary>
     private void ShowBlade(float @out)
     {
-        if (_blade is null)
-        {
-            return;
-        }
-
-        _blade.Visible = @out > 0.02f;
-        _blade.Scale = new Vector3(Mathf.Lerp(0.4f, 1f, @out), Mathf.Max(@out, 0.01f), 1f);
+        Blade.Visible = @out > 0.02f;
+        Blade.Scale = new Vector3(Mathf.Lerp(0.4f, 1f, @out), Mathf.Max(@out, 0.01f), 1f);
     }
 
     /// <summary>Facing +X is yaw 0; facing -X is -π, so a turn either way passes through facing the camera.</summary>

@@ -7,8 +7,9 @@ rotation from its T-pose in the capture is turned by the same rotation from its 
 skeletons' bone axes. The hips' sway is scaled by the ratio of the two legs' lengths, and set on the ground where the clip's feet plant. The capture is first turned
 about the vertical so that the actor's travel (or, standing, its front) faces the pilgrim's front.
 
-The game moves the body, so a clip never carries the actor's travel: the hips' ground track between the clip's two ends
-is taken out, leaving only the sway around it. A looping clip is cut where the pose comes back to its start and the
+The game moves the body, so the body never carries the actor's travel: the hips' ground track between the clip's two
+ends goes onto the Root bone (the game measures a clip's speed from it and never shows it), leaving the hips only the
+sway around it. A looping clip is cut where the pose comes back to its start and the
 small difference left is spread over the cycle, so it loops without a pop.
 """
 
@@ -205,6 +206,7 @@ def bake(rig: bpy.types.Object, clip: Clip, mocap_root: str) -> bpy.types.Action
 
     turns: dict[str, list[Quaternion]] = {b.name: [] for b in skeleton.BONES if b.name in SOURCE_OF}
     hips: list[Vector] = []
+    travel: list[Vector] = []
     for k, pose in enumerate(poses):
         world: dict[str, Quaternion] = {}
         for bone in skeleton.BONES:
@@ -219,6 +221,8 @@ def bake(rig: bpy.types.Object, clip: Clip, mocap_root: str) -> bpy.types.Action
                 world[bone.name] = parent_world @ parent_rest.inverted() @ rest[bone.name]
         # The ground track between the two ends comes out; what is left is the sway around it.
         track = hips_start.lerp(hips_end, k / frames)
+        ground_track = heading @ ((track - hips_start) * scale)
+        travel.append(Vector((ground_track.x, ground_track.y, 0.0)))
         sway = heading @ ((pose.hips - track) * scale)
         height = skeleton.ANKLE_HEIGHT + (pose.hips.z - ground - ankle) * scale
         hips.append(Vector((sway.x, sway.y, height - skeleton.HIP_HEIGHT)))
@@ -226,7 +230,11 @@ def bake(rig: bpy.types.Object, clip: Clip, mocap_root: str) -> bpy.types.Action
     if clip.cycle is not None:
         _close_loop(turns, hips)
     source.remove()
-    return _write_action(rig, clip.name, turns, [rest['Hips'].inverted() @ h for h in hips])
+    locations = {
+        'Hips': [rest['Hips'].inverted() @ h for h in hips],
+        'Root': [rest['Root'].inverted() @ t for t in travel],
+    }
+    return _write_action(rig, clip.name, turns, locations)
 
 
 def _close_loop(turns: dict[str, list[Quaternion]], hips: list[Vector]) -> None:
@@ -242,9 +250,10 @@ def _close_loop(turns: dict[str, list[Quaternion]], hips: list[Vector]) -> None:
 
 
 def _write_action(
-    rig: bpy.types.Object, name: str, turns: dict[str, list[Quaternion]], hips: list[Vector]
+    rig: bpy.types.Object, name: str, turns: dict[str, list[Quaternion]], locations: dict[str, list[Vector]]
 ) -> bpy.types.Action:
-    """The action: each followed bone's local turn, and the hips' offset from their rest in their own frame."""
+    """The action: each followed bone's local turn, and the bones that move (the hips, the root) offset from their rest
+    in their own frame."""
     action = bpy.data.actions.new(name)
     action.use_fake_user = True
     slot = action.slots.new(id_type='OBJECT', name=rig.name)
@@ -261,9 +270,10 @@ def _write_action(
                 values[i].append(q[i])
         for i in range(4):
             _curve(bag.fcurves.new(path, index=i, group_name=bone), values[i])
-    path = 'pose.bones["Hips"].location'
-    for i in range(3):
-        _curve(bag.fcurves.new(path, index=i, group_name='Hips'), [h[i] for h in hips])
+    for bone, offsets in locations.items():
+        path = f'pose.bones["{bone}"].location'
+        for i in range(3):
+            _curve(bag.fcurves.new(path, index=i, group_name=bone), [o[i] for o in offsets])
     return action
 
 

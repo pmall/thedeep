@@ -30,9 +30,9 @@ public enum MotionMode
     /// <summary>The Drill's dive, straight down.</summary>
     Dive,
 
-    /// <summary>The Harpoon's line flying out, before it bites: the arm casting it toward <see cref="PilgrimMotion.Reach"/>.</summary>
+    /// <summary>The Harpoon's line flying out, before it bites: the arm casting it toward <see cref="PilgrimAnimation.Reach"/>.</summary>
     Throw,
 
-    /// <summary>The Harpoon's pull along the bitten line, toward <see cref="PilgrimMotion.Reach"/>.</summary>
+    /// <summary>The Harpoon's pull along the bitten line, toward <see cref="PilgrimAnimation.Reach"/>.</summary>
     Zip,
 }

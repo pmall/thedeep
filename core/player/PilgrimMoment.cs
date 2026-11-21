@@ -1,6 +1,6 @@
 namespace TheDeep;
 
-/// <summary>A held moment the pilgrim's animation plays over whatever the body is doing (<see cref="PilgrimMotion.Moment"/>).</summary>
+/// <summary>A held moment the pilgrim's animation plays over whatever the body is doing (<see cref="PilgrimAnimation.Moment"/>).</summary>
 public enum PilgrimMoment
 {
     None,
