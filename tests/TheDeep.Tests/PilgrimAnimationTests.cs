@@ -131,6 +131,26 @@ public class PilgrimAnimationTests
     }
 
     [Fact]
+    public void TheBodyLeansIntoAStartAndBackAgainstAStop()
+    {
+        var animation = new PilgrimAnimation(Speeds);
+        animation.Reset();
+        for (int i = 1; i <= 6; i++)
+        {
+            animation.Update(Dt, new Vector2(i * 1.2f, 0f), MotionMode.Ground);
+        }
+
+        Assert.True(animation.Lean > 0.05f);
+        for (int i = 5; i >= 0; i--)
+        {
+            animation.Update(Dt, new Vector2(i * 1.2f, 0f), MotionMode.Ground);
+        }
+
+        Assert.True(animation.Lean < -0.05f);
+        Assert.True(Steady(new Vector2(7f, 0f), MotionMode.Ground).Lean < 0.01f); // steady, upright
+    }
+
+    [Fact]
     public void TheAirFollowsTheArc()
     {
         var animation = new PilgrimAnimation(Speeds);

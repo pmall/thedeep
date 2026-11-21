@@ -13,7 +13,7 @@ namespace TheDeep;
 /// travel is on the skeleton's root bone, taken out as root motion (the movement moves the body): the run's sets its speed.
 /// A strike draws the blade out of the near forearm (<see cref="Blade"/>, slid out along its length) and its sweep leaves
 /// the <see cref="Slash"/>. Footfalls are read from where the soles are (<see cref="Footfalls"/>). The body turns smoothly
-/// through a glance at the camera when the facing flips; the hair swings after it on springs. Pivot is at the feet.
+/// through a glance at the camera when the facing flips, and leans into a change of speed (<see cref="PilgrimAnimation.Lean"/>); the hair swings after it on springs. Pivot is at the feet.
 /// </summary>
 public partial class PlayerVisual : Node3D
 {
@@ -368,10 +368,11 @@ public partial class PlayerVisual : Node3D
         _yaw = Motion.Damp(_yaw, TargetYaw, TurnSharpness, delta);
         float k = 1f - Mathf.Exp(-CarrySharpness * delta);
         _carry = new Transform3D(new Basis(_carry.Basis.GetRotationQuaternion().Slerp(Quaternion.Identity, k)), _carry.Origin.Lerp(Vector3.Zero, k));
-        Transform = _carry * new Transform3D(new Basis(Vector3.Up, _yaw), Vector3.Zero);
-
         PilgrimAnimation animation = Animation;
+        animation.Facing = _facing;
         animation.Update(delta, velocity.Flat(), mode);
+        // The lean tips the body about its feet in its own side plane (its local x is the way it faces).
+        Transform = _carry * new Transform3D(new Basis(Vector3.Up, _yaw) * new Basis(Vector3.Back, -animation.Lean), Vector3.Zero);
         Show(animation);
         Tree.Advance(delta);
 

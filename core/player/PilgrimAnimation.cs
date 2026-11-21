@@ -68,6 +68,13 @@ public sealed class PilgrimAnimation
     /// <summary>How fast the swim's stroke follows the speed, 1/s.</summary>
     private const float StrokeSharpness = 6f;
 
+    /// <summary>How far the body leans per m/s² of change in its speed forward on the ground (radians), and at most.</summary>
+    private const float LeanPerAcceleration = 0.0045f;
+    private const float MaxLean = 0.3f;
+
+    /// <summary>How fast the lean follows, 1/s.</summary>
+    private const float LeanSharpness = 12f;
+
     private readonly float _runClipSpeed;
     private readonly ClipSpeeds _speeds;
 
@@ -110,6 +117,15 @@ public sealed class PilgrimAnimation
     /// <summary>How much the near arm aims along <see cref="Reach"/>, 0 to 1: all the way on the line, not at all off it.</summary>
     public float ReachWeight { get; private set; }
 
+    /// <summary>The way the body faces: +1 or -1 along the frame's x (set by the adapter).</summary>
+    public int Facing { get; set; } = 1;
+
+    /// <summary>
+    /// How far the whole body tips forward about the feet on the ground (radians, back negative): into a start, back
+    /// against a stop or a reversal, so a change of speed reads as a push and a skid.
+    /// </summary>
+    public float Lean { get; private set; }
+
     /// <summary>The sword strike shown over the pose.</summary>
     public StrikeShow Strike { get; } = new();
 
@@ -120,6 +136,8 @@ public sealed class PilgrimAnimation
     public float StrikeWhole { get; private set; }
 
     private PilgrimCue _pending;
+    private float _lastForward;
+    private int _lastFacing = 1;
 
     /// <summary>The body touched down at <paramref name="impactSpeed"/> m/s downward.</summary>
     public void Land(float impactSpeed)
@@ -167,6 +185,12 @@ public sealed class PilgrimAnimation
         RunRate = Math.Clamp(speed / _runClipSpeed, MinRunRate, MaxRunRate);
         float stroke = Pose == PilgrimPose.Swim && _speeds.Swim > 0f ? Math.Clamp(speed / (_speeds.Swim * FullStrokeShare), 0f, 1f) : 0f;
         Stroke = Damp(Stroke, stroke, StrokeSharpness, dt);
+        float forward = velocity.X * Facing;
+        float push = dt > 0f && Facing == _lastFacing ? (forward - _lastForward) / dt : 0f;
+        _lastForward = forward;
+        _lastFacing = Facing;
+        float lean = walking ? Math.Clamp(push * LeanPerAcceleration, -MaxLean, MaxLean) : 0f;
+        Lean = Damp(Lean, lean, LeanSharpness, dt);
         PoseRate = Pose switch
         {
             PilgrimPose.Grip => Matched(speed, _speeds.Grip, 0f),
@@ -196,6 +220,9 @@ public sealed class PilgrimAnimation
         Leap = 0f;
         Climb = 0.5f;
         Stroke = 0f;
+        Lean = 0f;
+        _lastForward = 0f;
+        _lastFacing = Facing;
         _pending = PilgrimCue.None;
         Strike.Reset();
         StrikeWhole = 0f;

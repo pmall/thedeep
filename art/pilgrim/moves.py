@@ -232,17 +232,33 @@ ZIP = Pose(
 
 RECOIL = Pose(
     turns={
-        **trunk(-24.0, -15.0),
-        'Head': (-20.0, 0.0, 0.0),
-        'RightUpperArm': (-70.0, 0.0, 35.0),
-        'RightLowerArm': bend(35.0),
-        'LeftUpperArm': (-60.0, 0.0, -30.0),
-        'LeftLowerArm': bend(30.0),
+        **trunk(-36.0, -20.0),
+        'Hips': (-8.0, 0.0, 0.0),
+        'Neck': (-14.0, 0.0, 0.0),
+        'Head': (-30.0, 10.0, 0.0),
+        'RightUpperArm': (-95.0, 0.0, 40.0),
+        'RightLowerArm': bend(25.0),
+        'LeftUpperArm': (-75.0, 0.0, -35.0),
+        'LeftLowerArm': bend(35.0),
     },
-    hips=(-0.06, -0.08),
-    feet={'Right': (0.12, ANKLE), 'Left': (-0.2, ANKLE)},
+    hips=(-0.12, -0.1),
+    feet={'Right': (0.3, 0.3), 'Left': (-0.22, ANKLE)},
+    soles={'Right': 20.0},
 )
-"""Hurt: thrown back by the blow, arms flung up."""
+DOUBLED = Pose(
+    turns={
+        **trunk(26.0, 10.0),
+        'Head': (-10.0, 0.0, 0.0),
+        'RightUpperArm': forward(20.0),
+        'RightLowerArm': bend(50.0),
+        'LeftUpperArm': forward(30.0),
+        'LeftLowerArm': bend(60.0),
+    },
+    hips=(-0.05, -0.16),
+    feet={'Right': (0.16, ANKLE), 'Left': (-0.2, ANKLE)},
+)
+"""Hurt: snapped back by the blow, the head thrown, the arms flung up and the front foot off the ground; then doubled
+over it, and back."""
 
 VAULT_HAND = Pose(
     turns={**trunk(35.0), 'Head': (-15.0, 0.0, 0.0), 'RightUpperArm': forward(40.0), 'LeftUpperArm': forward(45.0)},
@@ -281,7 +297,16 @@ KEYED: list[Keyed] = [
     Keyed('bore', [Key(0.0, BORE)]),
     Keyed('throw', [Key(0.0, THROW_COCKED), Key(0.12, THROW_COCKED), Key(0.26, THROW_CAST)]),
     Keyed('zip', [Key(0.0, ZIP)]),
-    Keyed('hurt', [Key(0.0, STAND), Key(0.07, RECOIL), Key(0.45, STAND)]),
+    Keyed(
+        'hurt',
+        [
+            Key(0.0, STAND),
+            Key(0.05, RECOIL),
+            Key(0.16, RECOIL.but(hips=(-0.14, -0.12))),
+            Key(0.3, DOUBLED),
+            Key(0.55, STAND, 'stop'),
+        ],
+    ),
     Keyed('vault', [Key(0.0, STAND), Key(0.1, VAULT_HAND), Key(0.3, VAULT_OVER), Key(0.42, STAND)]),
     Keyed('relic', [Key(0.0, STAND), Key(0.8, RELIC)]),
 ]
