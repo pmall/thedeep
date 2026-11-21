@@ -9,14 +9,18 @@ A clip's name is the animation's name in the game; one that loops ends in "_loop
 looping animation.
 """
 
-from dataclasses import dataclass
+from dataclasses import dataclass, field
+
+type Turn = tuple[float, float, float]
 
 
 @dataclass(frozen=True)
 class Clip:
     """One animation: its source file (under art/mocap/), the span used in seconds after the T-pose frame, and, for a loop,
-    the range of cycle lengths (seconds) searched from `start` for the cut where the pose meets itself again. An airborne
-    clip's hips hold one height over its root (the game makes the rise and the fall), its lowest sole at the root."""
+        the range of cycle lengths (seconds) searched from `start` for the cut where the pose meets itself again. An airborne
+        clip's hips hold one height over its root (the game makes the rise and the fall), its lowest sole at the root. `adjust`
+    corrects the actor's posture: each bone named turned further (pitch, yaw, roll in degrees, as keyed.py turns them),
+    carrying the bones below it."""
 
     name: str
     source: str
@@ -24,10 +28,19 @@ class Clip:
     end: float
     cycle: tuple[float, float] | None = None
     airborne: bool = False
+    adjust: dict[str, Turn] = field(default_factory=dict)
 
 
 CLIPS: list[Clip] = [
-    Clip('idle_loop', 'cmu/77_02.bvh', 1.0, 7.5, cycle=(2.5, 5.0)),
+    # Standing, the actor's head droops: the pilgrim holds it up.
+    Clip(
+        'idle_loop',
+        'cmu/77_02.bvh',
+        1.0,
+        7.5,
+        cycle=(2.5, 5.0),
+        adjust={'Chest': (-4.0, 0.0, 0.0), 'Neck': (-14.0, 0.0, 0.0), 'Head': (-10.0, 0.0, 0.0)},
+    ),
     Clip('run_loop', 'cmu/127_08.bvh', 0.15, 1.1, cycle=(0.55, 0.85)),
     # The air: a jump from standing tucks the knees up, one from a run splits into a leap; both reach for the ground
     # falling. Landing from standing sinks and rises.

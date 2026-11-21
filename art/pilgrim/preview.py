@@ -1,6 +1,8 @@
 """Contact sheets of the pilgrim's clips, rendered from the built export (build.py) so they show what the game imports.
 
     blender --background --factory-startup --python art/pilgrim/preview.py -- OUT_DIR [--glb FILE] [--frames N] [CLIP ...]
+    blender ... preview.py -- OUT_DIR --turnaround CLIP    OUT_DIR/turnaround.png: the body on CLIP's first frame, close,
+                                                            from the front, three quarters, the side and the back
 
 Writes OUT_DIR/<clip>.png for every clip (or those named): the top row from the side, as the game's camera sees the
 body, the bottom one from three quarters in front, each of N instants (10 by default) evenly over the clip, its time in seconds on it, on a ground with a
@@ -19,7 +21,7 @@ from mathutils import Vector
 HERE = os.path.dirname(os.path.abspath(__file__))
 sys.path.insert(0, HERE)
 
-import mannequin
+import body
 
 GLB = os.path.join(os.path.dirname(os.path.dirname(HERE)), 'assets', 'pilgrim', 'pilgrim.glb')
 WIDTH, HEIGHT = 240, 330
@@ -74,8 +76,8 @@ def _setup(glb: str) -> tuple[bpy.types.Object, bpy.types.Object]:
     sun = _add(bpy.data.objects.new('Sun', bpy.data.lights.new('Sun', 'SUN')))
     sun.rotation_euler = (math.radians(50.0), math.radians(10.0), math.radians(-40.0))
 
-    _box('Ground', (0.0, 0.0, -0.05), (80.0, 80.0, 0.1), mannequin.material('Ground', (0.4, 0.41, 0.43), 0.8, 0.0))
-    mark = mannequin.material('Mark', (0.12, 0.12, 0.14), 0.8, 0.0)
+    _box('Ground', (0.0, 0.0, -0.05), (80.0, 80.0, 0.1), body.material('Ground', (0.4, 0.41, 0.43), 0.8, 0.0))
+    mark = body.material('Mark', (0.12, 0.12, 0.14), 0.8, 0.0)
     for i in range(-60, 61):
         _box(f'Mark{i}', (0.0, i * 0.5, 0.0), (80.0, 0.012, 0.004), mark)
 
@@ -113,20 +115,20 @@ def _render(path: str) -> array.array[float]:
     scene.render.filepath = path
     bpy.ops.render.render(write_still=True)
     image = bpy.data.images.load(path)
-    pixels = array.array('f', bytes(4 * WIDTH * HEIGHT * 4))
+    pixels: array.array[float] = array.array('f', bytes(4 * scene.render.resolution_x * scene.render.resolution_y * 4))
     image.pixels.foreach_get(pixels)
     bpy.data.images.remove(image)
     os.remove(path)
     return pixels
 
 
-def _sheet(rows: list[list[array.array[float]]], frames: int) -> array.array[float]:
-    """The tiles laid out, `rows[0]` on top (Blender's images run bottom row first)."""
+def _sheet(rows: list[list[array.array[float]]], width: int = WIDTH, height: int = HEIGHT) -> array.array[float]:
+    """The tiles (each `width` by `height`) laid out, `rows[0]` on top (Blender's images run bottom row first)."""
     sheet = array.array('f')
     for tiles in reversed(rows):
-        for y in range(HEIGHT):
+        for y in range(height):
             for tile in tiles:
-                sheet.extend(tile[y * WIDTH * 4 : (y + 1) * WIDTH * 4])
+                sheet.extend(tile[y * width * 4 : (y + 1) * width * 4])
     return sheet
 
 
@@ -156,11 +158,50 @@ def main(out: str, glb: str, frames: int, only: list[str]) -> None:
                 tiles.append(_render(os.path.join(out, '_tile.png')))
             rows.append(tiles)
         image = bpy.data.images.new(action.name, WIDTH * frames, HEIGHT * len(VIEWS), alpha=True)
-        image.pixels.foreach_set(_sheet(rows, frames))
+        image.pixels.foreach_set(_sheet(rows))
         image.filepath_raw = os.path.join(out, f'{action.name}.png')
         image.file_format = 'PNG'
         image.save()
         print(f'sheet {image.filepath_raw}')
+
+
+TURNAROUND = (
+    Vector((0.0, -3.4, 1.0)),
+    Vector((-2.4, -2.4, 1.0)),
+    Vector((-3.4, 0.0, 1.0)),
+    Vector((0.0, 3.4, 1.0)),
+)
+"""The turnaround's cameras: the front, three quarters, the side the game's camera sees, the back."""
+
+
+def turnaround(out: str, glb: str, clip: str) -> None:
+    rig, camera = _setup(glb)
+    os.makedirs(out, exist_ok=True)
+    scene = _scene()
+    data = rig.animation_data or rig.animation_data_create()
+    assert data is not None
+    action = bpy.data.actions[clip]
+    data.action = action
+    if action.slots:
+        data.action_slot = action.slots[0]
+    scene.frame_set(int(action.frame_range[0]))
+    _label('', Vector(), 0.01)
+    scene.render.resolution_x, scene.render.resolution_y = 2 * WIDTH, 2 * HEIGHT
+    tiles = []
+    for at in TURNAROUND:
+        camera.location = at
+        camera.rotation_euler = (Vector((0.0, 0.0, 0.9)) - at).to_track_quat('-Z', 'Y').to_euler()
+        lens = camera.data
+        assert isinstance(lens, bpy.types.Camera)
+        lens.type = 'ORTHO'
+        lens.ortho_scale = 2.0
+        tiles.append(_render(os.path.join(out, '_tile.png')))
+    image = bpy.data.images.new('turnaround', 2 * WIDTH * len(tiles), 2 * HEIGHT, alpha=True)
+    image.pixels.foreach_set(_sheet([tiles], 2 * WIDTH, 2 * HEIGHT))
+    image.filepath_raw = os.path.join(out, 'turnaround.png')
+    image.file_format = 'PNG'
+    image.save()
+    print(f'sheet {image.filepath_raw}')
 
 
 arguments = sys.argv[sys.argv.index('--') + 1 :]
@@ -171,4 +212,7 @@ if '--glb' in arguments:
 if '--frames' in arguments:
     frame_count = int(arguments.pop(arguments.index('--frames') + 1))
     arguments.remove('--frames')
-main(arguments[0], glb_path, frame_count, arguments[1:])
+if '--turnaround' in arguments:
+    turnaround(arguments[0], glb_path, arguments[arguments.index('--turnaround') + 1])
+else:
+    main(arguments[0], glb_path, frame_count, arguments[1:])

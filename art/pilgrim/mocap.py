@@ -205,12 +205,14 @@ def bake(rig: bpy.types.Object, clip: Clip, mocap_root: str) -> bpy.types.Action
     # In the air, the hips hold the height that puts the clip's lowest sole on the root.
     reach = max(p.hips.z - p.ankle for p in poses)
 
+    corrections = _corrections(clip)
     turns: dict[str, list[Quaternion]] = {b.name: [] for b in skeleton.BONES if b.name in SOURCE_OF}
     hips: list[Vector] = []
     travel: list[Vector] = []
     for k, pose in enumerate(poses):
         deltas = {
-            name: heading @ pose.turns[name] @ tpose.turns[name].inverted() @ upright.inverted() for name in SOURCE_OF
+            name: corrections[name] @ heading @ pose.turns[name] @ tpose.turns[name].inverted() @ upright.inverted()
+            for name in SOURCE_OF
         }
         for name, local in local_turns(rest, deltas).items():
             turns[name].append(local)
@@ -233,6 +235,18 @@ def bake(rig: bpy.types.Object, clip: Clip, mocap_root: str) -> bpy.types.Action
         'Root': [rest['Root'].inverted() @ t for t in travel],
     }
     return write_action(rig, clip.name, turns, locations)
+
+
+def _corrections(clip: Clip) -> dict[str, Quaternion]:
+    """Each bone's posture correction in the world: its own `clip.adjust` after its parent's, so a bone turned carries
+    the bones below it."""
+    out: dict[str, Quaternion] = {}
+    for bone in skeleton.BONES:
+        parent = out[bone.parent] if bone.parent else Quaternion()
+        pitch, yaw, roll = (math.radians(a) for a in clip.adjust.get(bone.name, (0.0, 0.0, 0.0)))
+        own = Quaternion((0.0, 0.0, 1.0), yaw) @ Quaternion((1.0, 0.0, 0.0), pitch) @ Quaternion((0.0, 1.0, 0.0), roll)
+        out[bone.name] = parent @ own
+    return out
 
 
 TRACK_SMOOTHING = 0.25

@@ -41,20 +41,35 @@ materials/extract_format=0
 materials/extract_path=""
 _subresources={
 "materials": {
-"Glow": {
+"Hair": {
 "use_external/enabled": true,
-"use_external/fallback_path": "res://assets/materials/pilgrim/glow.tres",
-"use_external/path": "res://assets/materials/pilgrim/glow.tres"
+"use_external/fallback_path": "res://assets/materials/pilgrim/hair.tres",
+"use_external/path": "res://assets/materials/pilgrim/hair.tres"
+},
+"Joint": {
+"use_external/enabled": true,
+"use_external/fallback_path": "res://assets/materials/pilgrim/joint.tres",
+"use_external/path": "res://assets/materials/pilgrim/joint.tres"
 },
 "Shell": {
 "use_external/enabled": true,
 "use_external/fallback_path": "res://assets/materials/pilgrim/shell.tres",
 "use_external/path": "res://assets/materials/pilgrim/shell.tres"
 },
-"Trim": {
+"ShellTrim": {
 "use_external/enabled": true,
-"use_external/fallback_path": "res://assets/materials/pilgrim/trim.tres",
-"use_external/path": "res://assets/materials/pilgrim/trim.tres"
+"use_external/fallback_path": "res://assets/materials/pilgrim/shell_trim.tres",
+"use_external/path": "res://assets/materials/pilgrim/shell_trim.tres"
+},
+"Suit": {
+"use_external/enabled": true,
+"use_external/fallback_path": "res://assets/materials/pilgrim/suit.tres",
+"use_external/path": "res://assets/materials/pilgrim/suit.tres"
+},
+"Visor": {
+"use_external/enabled": true,
+"use_external/fallback_path": "res://assets/materials/pilgrim/visor.tres",
+"use_external/path": "res://assets/materials/pilgrim/visor.tres"
 }
 }
 }

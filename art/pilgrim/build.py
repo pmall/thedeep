@@ -1,4 +1,4 @@
-"""Builds the pilgrim: its skeleton (skeleton.py), its body (mannequin.py, until the model exists), every clip of
+"""Builds the pilgrim: its skeleton (skeleton.py), its body (body.py), every clip of
 clips.py retargeted from motion capture (mocap.py) and every clip of strikes.py and moves.py keyed by hand (keyed.py), exported as one
 glTF scene the game imports.
 
@@ -20,9 +20,9 @@ import bpy
 HERE = os.path.dirname(os.path.abspath(__file__))
 sys.path.insert(0, HERE)
 
+import body
 import clips
 import keyed
-import mannequin
 import mocap
 import moves
 import skeleton
@@ -47,7 +47,7 @@ def main(args: list[str]) -> None:
         by_hand = []
 
     rig = skeleton.build('Pilgrim')
-    mannequin.build(rig)
+    body.build(rig)
     for clip in table:
         print(f'clip {clip.name} from {clip.source}')
         mocap.bake(rig, clip, os.path.join(ROOT, 'art', 'mocap'))

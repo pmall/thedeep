@@ -2,7 +2,7 @@
 
 The rest pose is a T-pose facing -Y (Blender's front), the left side at +X, Z up, in meters, feet on the ground at the
 origin. Motion capture is retargeted onto it from its own T-pose (mocap.py), and the meshes are bound to it rigidly
-(mannequin.py). Its proportions are a slender human android a little taller than the body the game collides with
+(body.py). Its proportions are a slender human android a little taller than the body the game collides with
 (resources/player_tuning.tres: BodyHeight).
 """
 
