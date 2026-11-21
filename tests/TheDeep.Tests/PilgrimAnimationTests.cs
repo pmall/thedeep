@@ -196,4 +196,11 @@ public class PilgrimAnimationTests
         Assert.Equal(0.45f, Steady(Vector2.Zero, MotionMode.Swim).PoseRate, 3);
         Assert.Equal(1f, Steady(new Vector2(3f, 0f), MotionMode.Dive).PoseRate);
     }
+
+    [Fact]
+    public void TheArmAimsAlongTheLineOnlyOnIt()
+    {
+        Assert.True(Steady(new Vector2(10f, 10f), MotionMode.Zip).ReachWeight > 0.99f);
+        Assert.True(Steady(new Vector2(10f, 10f), MotionMode.Air).ReachWeight < 0.01f);
+    }
 }

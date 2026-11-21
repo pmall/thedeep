@@ -31,6 +31,9 @@ public sealed class PilgrimAnimation
     /// <summary>How fast the strike's hold on the legs follows, 1/s.</summary>
     private const float StrikeWholeSharpness = 20f;
 
+    /// <summary>How fast the arm takes up the Harpoon's line and lets it go, 1/s.</summary>
+    private const float ReachSharpness = 18f;
+
     /// <summary>A landing at this downward speed (m/s) or more is a hard one.</summary>
     public const float HardLanding = 14f;
 
@@ -88,6 +91,9 @@ public sealed class PilgrimAnimation
 
     /// <summary>Where the Harpoon's line pulls, in the body's frame (x forward along the facing, y up).</summary>
     public Vector2 Reach { get; set; } = Vector2.UnitX;
+
+    /// <summary>How much the near arm aims along <see cref="Reach"/>, 0 to 1: all the way on the line, not at all off it.</summary>
+    public float ReachWeight { get; private set; }
 
     /// <summary>The sword strike shown over the pose.</summary>
     public StrikeShow Strike { get; } = new();
@@ -162,6 +168,7 @@ public sealed class PilgrimAnimation
         Strike.Update(dt);
         bool whole = Strike.Kind is StrikeKind.Down or StrikeKind.Dash || Pose == PilgrimPose.Ground && Gait < WholeStrikeGait;
         StrikeWhole = Damp(StrikeWhole, whole ? 1f : 0f, StrikeWholeSharpness, dt);
+        ReachWeight = Damp(ReachWeight, Pose == PilgrimPose.Zip ? 1f : 0f, ReachSharpness, dt);
     }
 
     /// <summary>The rate a clip traveling <paramref name="clipSpeed"/> plays at to keep pace with <paramref name="speed"/>.</summary>
@@ -180,6 +187,7 @@ public sealed class PilgrimAnimation
         _pending = PilgrimCue.None;
         Strike.Reset();
         StrikeWhole = 0f;
+        ReachWeight = 0f;
         Update(0f, Vector2.Zero, MotionMode.Ground);
     }
 }

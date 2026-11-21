@@ -6,7 +6,7 @@ The owner's plan and the open items, in order, opened by where the work stands. 
 
 - **Stage:** A, the prototype (`docs/roadmap.md#stage-prototype`).
 - **Current item:** the pilgrim, from zero (`docs/roadmap.md#pilgrim`).
-- **Next step:** the environment for top-quality animation, before the character (`docs/roadmap.md#animation-env`): the stand-in mannequin has a clip for every state, from capture (ground, air, dashes, rest, death) or keyed by hand (`art/pilgrim/strikes.py`, `art/pilgrim/moves.py`); next, the near arm aimed along the Harpoon's line, then the feet held to the ground.
+- **Next step:** the environment for top-quality animation, before the character (`docs/roadmap.md#animation-env`): the stand-in mannequin has a clip for every state, from capture (ground, air, dashes, rest, death) or keyed by hand (`art/pilgrim/strikes.py`, `art/pilgrim/moves.py`); next, the feet held to uneven ground (`TwoBoneIK3D`), the last step before the character.
 - **Waiting on the owner:** the stage's sign-off play: `docs/roadmap.md#to-play`.
 
 ## The plan <a id="direction"></a>

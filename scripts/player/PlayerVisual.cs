@@ -71,6 +71,12 @@ public partial class PlayerVisual : Node3D
     /// <summary>The blade, on the near forearm, hanging down its -Y axis.</summary>
     [Export] public Node3D Blade { get; set; } = null!;
 
+    /// <summary>Turns the near upper arm toward <see cref="ReachTarget"/> while on the Harpoon's line (its influence faded in and out).</summary>
+    [Export] public LookAtModifier3D Aim { get; set; } = null!;
+
+    /// <summary>What <see cref="Aim"/> looks at: placed along the line from the shoulder.</summary>
+    [Export] public Node3D ReachTarget { get; set; } = null!;
+
     /// <summary>The slash the blade's sweep leaves, or none.</summary>
     [Export] public SlashTrail? Slash { get; set; }
 
@@ -318,6 +324,13 @@ public partial class PlayerVisual : Node3D
         animation.Update(delta, velocity.Flat(), mode);
         Show(animation);
         Tree.Advance(delta);
+
+        Aim.Influence = animation.ReachWeight;
+        if (animation.ReachWeight > 0f)
+        {
+            Vector3 along = new Vector3(animation.Reach.X, animation.Reach.Y, 0f).Normalized();
+            ReachTarget.Position = ToLocal(Shoulder.GlobalPosition) + along * 2f;
+        }
 
         ShowBlade(animation.Strike.Blade);
         Slash?.Track(Shoulder, Blade, _bladeLength, animation.Strike.Edge * animation.Strike.Blade, GlobalPosition, delta);

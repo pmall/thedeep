@@ -39,7 +39,7 @@ Collision = NodePath("Collision")
 shape = SubResource("CapsuleShape3D_body")
 
 ; The pilgrim's body: the model built in Blender, played by PlayerVisual (its blade too, and the slash it leaves).
-[node name="Visual" type="Node3D" parent="." node_paths=PackedStringArray("Clips", "Tree", "Skeleton", "Mesh", "Shoulder", "Blade", "Slash")]
+[node name="Visual" type="Node3D" parent="." node_paths=PackedStringArray("Clips", "Tree", "Skeleton", "Mesh", "Shoulder", "Blade", "Aim", "ReachTarget", "Slash")]
 script = ExtResource("3_visual")
 Clips = NodePath("Model/AnimationPlayer")
 Tree = NodePath("Tree")
@@ -47,11 +47,22 @@ Skeleton = NodePath("Model/Pilgrim/Skeleton3D")
 Mesh = NodePath("Model/Pilgrim/Skeleton3D/Body")
 Shoulder = NodePath("Shoulder")
 Blade = NodePath("Forearm/Blade")
+Aim = NodePath("Model/Pilgrim/Skeleton3D/Aim")
+ReachTarget = NodePath("ReachTarget")
 Slash = NodePath("Slash")
 
 ; The model faces +Z: turned to face +X, its right side (the blade's arm) toward the camera.
 [node name="Model" parent="Visual" instance=ExtResource("5_model")]
 transform = Transform3D(0, 0, 1, 0, 1, 0, -1, 0, 0, 0, 0, 0)
+
+; Aims the near arm along the Harpoon's line (its bone points down its +Y), after the clips are applied.
+[node name="Aim" type="LookAtModifier3D" parent="Visual/Model/Pilgrim/Skeleton3D"]
+bone_name = "RightUpperArm"
+forward_axis = 2
+target_node = NodePath("../../../../ReachTarget")
+influence = 0.0
+
+[node name="ReachTarget" type="Marker3D" parent="Visual"]
 
 ; Built by PlayerVisual from the model's clips.
 [node name="Tree" type="AnimationTree" parent="Visual"]
