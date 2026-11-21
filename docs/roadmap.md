@@ -6,7 +6,7 @@ The owner's plan and the open items, in order, opened by where the work stands. 
 
 - **Stage:** A, the prototype (`docs/roadmap.md#stage-prototype`).
 - **Current item:** the pilgrim, from zero (`docs/roadmap.md#pilgrim`).
-- **Next step:** the environment for top-quality animation, before the character (`docs/roadmap.md#animation-env`): the stand-in mannequin has a clip for every state, from capture (ground, air, dashes, rest, death) or keyed by hand (`art/pilgrim/strikes.py`, `art/pilgrim/moves.py`); next, the feet held to uneven ground (`TwoBoneIK3D`), the last step before the character.
+- **Next step:** the character (`docs/roadmap.md#animation-env`): the pilgrim modeled in place of the stand-in mannequin.
 - **Waiting on the owner:** the stage's sign-off play: `docs/roadmap.md#to-play`.
 
 ## The plan <a id="direction"></a>
@@ -30,14 +30,15 @@ The open items, in order (owner: the world, its bricks and its look are finished
 
 1. **The pilgrim, from zero** <a id="pilgrim"></a> (owner: last, once the world, its bricks and its look are finished). The current character, its procedural animation and its halo are thrown away. The bar is *Ori*'s animation (a 3D-rendered character) with *NieR: Automata*'s dynamism; the look is `docs/art-direction.md#character`. First the environment for top-quality animation, then the character: modeled and rigged in Blender (`instructions/toolchain.md#blender-mcp`), animated from real motion capture (free libraries and Mixamo first), keyed by hand, blended in the game with its feet held to the ground. Every move and ability: run, jump, land, dash, air dash, ledge assist, grip and its corners, harpoon throw and zip, bore and dive, swim, sink and rise, the strikes, hurt, death, rest, taking a relic. Its secondary motion is stage D's. Done when every state reads at a glance in motion, in the reels and in the owner's play.
 
-   **The environment, in order** <a id="animation-env"></a>, each step proven on the stand-in mannequin (`art/pilgrim/mannequin.py`) before the pilgrim is modeled:
+   **The character, in order** <a id="animation-env"></a> (the environment is built: `art/pilgrim/build.py` makes the model and every clip, from capture or keyed by hand, and `PlayerVisual` plays them; the stand-in mannequin, `art/pilgrim/mannequin.py`, has a clip for every state):
 
-   1. The feet held to the ground by `TwoBoneIK3D` (a ledge, a step), the hips lowered to reach.
-   2. A clip for every state: capture where CMU has it (`art/pilgrim/build.py --survey` to find a span), the rest keyed by hand (`art/pilgrim/keyed.py`); Mixamo only for what neither gives (it needs the owner's account).
-   3. The reels (`MotionReel`) judged at gameplay size and close up.
+   1. The pilgrim modeled in place of the mannequin, by script in `art/pilgrim/`, bound to the same skeleton so every clip carries over: a slender android of `docs/art-direction.md#character`, its materials the project's android ones (`assets/materials/pilgrim/`). Front, side and back renders and the reels at gameplay size, for the owner's sign-off on the look.
+   2. The clips judged on it, close up and at gameplay size, and keyed further where a state doesn't read (`art/pilgrim/moves.py`, `art/pilgrim/strikes.py`); Mixamo only for what neither capture nor keys give (it needs the owner's account).
+   3. The feet held to uneven ground by `TwoBoneIK3D` once the world has any (its floors are flat boxes: the clips plant the feet, and the run's, the crawl's and the stroke's rates match the speed so they never slide).
 
 **To play** <a id="to-play"></a>: what the owner's eye alone can judge, each line deleted once they have said. An item closes on what the agent can verify; the owner's word reopens it.
 
+- The pilgrim's moves on the stand-in mannequin (`docs/roadmap.md#pilgrim`): `godot --path . -- --room MechanicsLab --abilities all`. Run, jump, dash, grip, harpoon, strike (the chain to the finisher, a down strike, a dash strike); `--room Quench --abilities all` for the water. Say which move reads wrong or stiff.
 - The transitions: `godot --path . -- --room Nave --abilities all` (west and east doorways, the hatch down to the Cistern); the Brink's leap, `--room Brink`. Every doorway now stands in a wall its brick builds (most were never looked at): say where one reads wrong.
 - The gates that speak (`docs/gameplay.md#gate-says`): `--room Ashfall --abilities none` (the Pyre's door names its litany and the Belfry as soon as it is on screen, the heat's line read after it), `--room Narthex` (the Sacristy door), `--room Kiln` (its gate). Say whether the lines come too early, too late or too fast.
 - The law breaks (`docs/gameplay.md#law-act`): `--room Brink --abilities all`, walk into the law, then hold the prompt. Say whether the hold's length and the refusal read right.

@@ -81,7 +81,7 @@ public partial class PlayerVisual : Node3D
     [Export] public SlashTrail? Slash { get; set; }
 
     /// <summary>How long a change of pose crossfades, seconds.</summary>
-    [Export] public float Crossfade { get; set; } = 0.12f;
+    [Export] public float Crossfade { get; set; } = 0.08f;
 
     /// <summary>How long a cue (a landing, a recoil) takes to come in over the pose and to give it back, seconds.</summary>
     [Export] public float CueFadeIn { get; set; } = 0.05f;
