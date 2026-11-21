@@ -25,6 +25,12 @@ public sealed class PilgrimAnimation
     private const float MinRunRate = 0.7f;
     private const float MaxRunRate = 1.8f;
 
+    /// <summary>Below this gait, standing, a strike drives the whole body; above it the legs keep running.</summary>
+    private const float WholeStrikeGait = 0.5f;
+
+    /// <summary>How fast the strike's hold on the legs follows, 1/s.</summary>
+    private const float StrikeWholeSharpness = 20f;
+
     /// <summary>A landing at this downward speed (m/s) or more is a hard one.</summary>
     public const float HardLanding = 14f;
 
@@ -78,6 +84,12 @@ public sealed class PilgrimAnimation
 
     /// <summary>The sword strike shown over the pose.</summary>
     public StrikeShow Strike { get; } = new();
+
+    /// <summary>
+    /// How much of the body the strike drives, 0 the trunk and arms only (over a run, a jump) to 1 the whole body (standing;
+    /// the down strike and the dash strike, which are whole-body moves wherever they are).
+    /// </summary>
+    public float StrikeWhole { get; private set; }
 
     private PilgrimCue _pending;
     private float _lastVelocityY;
@@ -135,6 +147,8 @@ public sealed class PilgrimAnimation
         Cue = landing && (Pose != PilgrimPose.Ground || speed >= RunningLanding) ? PilgrimCue.None : _pending;
         _pending = PilgrimCue.None;
         Strike.Update(dt);
+        bool whole = Strike.Kind is StrikeKind.Down or StrikeKind.Dash || Pose == PilgrimPose.Ground && Gait < WholeStrikeGait;
+        StrikeWhole = Damp(StrikeWhole, whole ? 1f : 0f, StrikeWholeSharpness, dt);
     }
 
     /// <summary>Back to a still stance (spawn, teleport).</summary>
@@ -148,6 +162,7 @@ public sealed class PilgrimAnimation
         _lastVelocityY = 0f;
         _pending = PilgrimCue.None;
         Strike.Reset();
+        StrikeWhole = 0f;
         Update(0f, Vector2.Zero, MotionMode.Ground);
     }
 }

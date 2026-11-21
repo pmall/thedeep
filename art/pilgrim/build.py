@@ -1,5 +1,6 @@
-"""Builds the pilgrim: its skeleton (skeleton.py), its body (mannequin.py, until the model exists) and every clip of
-clips.py retargeted from motion capture (mocap.py), exported as one glTF scene the game imports.
+"""Builds the pilgrim: its skeleton (skeleton.py), its body (mannequin.py, until the model exists), every clip of
+clips.py retargeted from motion capture (mocap.py) and every clip of poses.py keyed by hand (keyed.py), exported as one
+glTF scene the game imports.
 
     blender --background --factory-startup --python art/pilgrim/build.py              writes assets/pilgrim/pilgrim.glb
     blender --background --factory-startup --python art/pilgrim/build.py -- --blend X  also saves the scene to X to look at
@@ -20,8 +21,10 @@ HERE = os.path.dirname(os.path.abspath(__file__))
 sys.path.insert(0, HERE)
 
 import clips
+import keyed
 import mannequin
 import mocap
+import poses
 import skeleton
 
 ROOT = os.path.dirname(os.path.dirname(HERE))
@@ -34,18 +37,22 @@ def main(args: list[str]) -> None:
     assert scene is not None
     scene.render.fps = mocap.FPS
 
-    output, table = OUTPUT, clips.CLIPS
+    output, table, by_hand = OUTPUT, clips.CLIPS, poses.KEYED
     if '--survey' in args:
         at = args.index('--survey')
         output = args[at + 1]
         sources = args[at + 2 :]
         table = [clips.Clip(os.path.splitext(os.path.basename(s))[0], s, 0.0, math.inf) for s in sources]
+        by_hand = []
 
     rig = skeleton.build('Pilgrim')
     mannequin.build(rig)
     for clip in table:
         print(f'clip {clip.name} from {clip.source}')
         mocap.bake(rig, clip, os.path.join(ROOT, 'art', 'mocap'))
+    for keys in by_hand:
+        print(f'clip {keys.name} keyed by hand')
+        keyed.bake(rig, keys)
 
     # The exporter offers an action to the rig only once the rig has animation data.
     rig.animation_data_create()

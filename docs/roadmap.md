@@ -6,7 +6,7 @@ The owner's plan and the open items, in order, opened by where the work stands. 
 
 - **Stage:** A, the prototype (`docs/roadmap.md#stage-prototype`).
 - **Current item:** the pilgrim, from zero (`docs/roadmap.md#pilgrim`).
-- **Next step:** the environment for top-quality animation, before the character (`docs/roadmap.md#animation-env`): the stand-in mannequin plays capture for the ground, the air (jump, leap, fall, landing), the dashes, resting and death; next, the strikes from capture, then the clips no capture covers keyed by hand (grip, swim, dive, harpoon, hurt, vault, relic), then the feet held to the ground.
+- **Next step:** the environment for top-quality animation, before the character (`docs/roadmap.md#animation-env`): the stand-in mannequin plays capture for the ground, the air (jump, leap, fall, landing), the dashes, resting and death; the strikes are keyed by hand (`art/pilgrim/poses.py`); next, the other clips no capture covers keyed the same way (grip, swim, sink and rise, dive, bore, harpoon throw and zip, hurt, vault, relic), then the feet held to the ground.
 - **Waiting on the owner:** the stage's sign-off play: `docs/roadmap.md#to-play`.
 
 ## The plan <a id="direction"></a>
@@ -33,7 +33,7 @@ The open items, in order (owner: the world, its bricks and its look are finished
    **The environment, in order** <a id="animation-env"></a>, each step proven on the stand-in mannequin (`art/pilgrim/mannequin.py`) before the pilgrim is modeled:
 
    1. The feet held to the ground by `TwoBoneIK3D` (a ledge, a step), the hips lowered to reach.
-   2. A clip for every state that capture covers (CMU first: subject 127's runs, jumps and rolls, 02's swordplay, 125–126's swimming), the rest keyed by hand in the build's scripts; Mixamo only for what neither gives (it needs the owner's account).
+   2. A clip for every state: capture where CMU has it (`art/pilgrim/build.py --survey` to find a span), the rest keyed by hand (`art/pilgrim/keyed.py`); Mixamo only for what neither gives (it needs the owner's account).
    3. The reels (`MotionReel`) judged at gameplay size and close up.
 
 **To play** <a id="to-play"></a>: what the owner's eye alone can judge, each line deleted once they have said. An item closes on what the agent can verify; the owner's word reopens it.

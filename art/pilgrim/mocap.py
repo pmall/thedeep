@@ -195,9 +195,7 @@ def bake(rig: bpy.types.Object, clip: Clip, mocap_root: str) -> bpy.types.Action
     frames = max(2, round((end - start) * FPS))
     poses = [source.at(start + (end - start) * k / frames) for k in range(frames + 1)]
 
-    armature = rig.data
-    assert isinstance(armature, bpy.types.Armature)
-    rest = {b.name: b.matrix_local.to_quaternion() for b in armature.bones}
+    rest = rest_turns(rig)
     tpose = source.tpose
     tracks = _ground_track([p.hips for p in poses], looping=clip.cycle is not None)
     # The ground is where the feet plant: the lowest ankle of the clip, a flat foot's ankle height above it (the T-pose
@@ -211,17 +209,11 @@ def bake(rig: bpy.types.Object, clip: Clip, mocap_root: str) -> bpy.types.Action
     hips: list[Vector] = []
     travel: list[Vector] = []
     for k, pose in enumerate(poses):
-        world: dict[str, Quaternion] = {}
-        for bone in skeleton.BONES:
-            parent_world = world[bone.parent] if bone.parent else Quaternion()
-            parent_rest = rest[bone.parent] if bone.parent else Quaternion()
-            if bone.name in SOURCE_OF:
-                delta = heading @ pose.turns[bone.name] @ tpose.turns[bone.name].inverted() @ upright.inverted()
-                world[bone.name] = delta @ rest[bone.name]
-                local = rest[bone.name].inverted() @ parent_rest @ parent_world.inverted() @ world[bone.name]
-                turns[bone.name].append(local)
-            else:
-                world[bone.name] = parent_world @ parent_rest.inverted() @ rest[bone.name]
+        deltas = {
+            name: heading @ pose.turns[name] @ tpose.turns[name].inverted() @ upright.inverted() for name in SOURCE_OF
+        }
+        for name, local in local_turns(rest, deltas).items():
+            turns[name].append(local)
         # The ground track goes onto the root; what is left is the sway around it.
         track = tracks[k]
         ground_track = heading @ ((track - tracks[0]) * scale)
@@ -240,7 +232,7 @@ def bake(rig: bpy.types.Object, clip: Clip, mocap_root: str) -> bpy.types.Action
         'Hips': [rest['Hips'].inverted() @ h for h in hips],
         'Root': [rest['Root'].inverted() @ t for t in travel],
     }
-    return _write_action(rig, clip.name, turns, locations)
+    return write_action(rig, clip.name, turns, locations)
 
 
 TRACK_SMOOTHING = 0.25
@@ -275,7 +267,30 @@ def _close_loop(turns: dict[str, list[Quaternion]], hips: list[Vector]) -> None:
         hips[k] = hips[k] + error_v * (k / n)
 
 
-def _write_action(
+def rest_turns(rig: bpy.types.Object) -> dict[str, Quaternion]:
+    """Each bone's rest orientation in the armature."""
+    armature = rig.data
+    assert isinstance(armature, bpy.types.Armature)
+    return {b.name: b.matrix_local.to_quaternion() for b in armature.bones}
+
+
+def local_turns(rest: dict[str, Quaternion], deltas: dict[str, Quaternion]) -> dict[str, Quaternion]:
+    """Each bone's turn in its parent's frame (its pose channel) that turns it by `deltas[bone]` from its rest, in
+    the world; a bone without a delta keeps its rest relative to its parent (and so follows it)."""
+    world: dict[str, Quaternion] = {}
+    local: dict[str, Quaternion] = {}
+    for bone in skeleton.BONES:
+        parent_world = world[bone.parent] if bone.parent else Quaternion()
+        parent_rest = rest[bone.parent] if bone.parent else Quaternion()
+        if bone.name in deltas:
+            world[bone.name] = deltas[bone.name] @ rest[bone.name]
+            local[bone.name] = rest[bone.name].inverted() @ parent_rest @ parent_world.inverted() @ world[bone.name]
+        else:
+            world[bone.name] = parent_world @ parent_rest.inverted() @ rest[bone.name]
+    return local
+
+
+def write_action(
     rig: bpy.types.Object, name: str, turns: dict[str, list[Quaternion]], locations: dict[str, list[Vector]]
 ) -> bpy.types.Action:
     """The action: each followed bone's local turn, and the bones that move (the hips, the root) offset from their rest

@@ -3,7 +3,8 @@ namespace TheDeep;
 /// <summary>
 /// The names of the pilgrim's animation clips, as the build names them (art/pilgrim/clips.py; Godot's importer drops a
 /// looping clip's "_loop"). A pose's clip is its name in snake case (<see cref="Of(PilgrimPose)"/>); the ground's are the idle and the run,
-/// the air's the jump, the leap and the fall; the cues' are theirs (<see cref="Of(PilgrimCue)"/>).
+/// the air's the jump, the leap and the fall; the cues' and the strikes' are theirs (<see cref="Of(PilgrimCue)"/>,
+/// <see cref="Of(StrikeKind)"/>).
 /// </summary>
 public static class PilgrimClips
 {
@@ -48,5 +49,16 @@ public static class PilgrimClips
         PilgrimCue.Hurt => "hurt",
         PilgrimCue.Vault => "vault",
         _ => "none",
+    };
+
+    /// <summary>The clip of a sword strike, keyed over its whole progress (one second for all of it).</summary>
+    public static string Of(StrikeKind kind) => kind switch
+    {
+        StrikeKind.Swing => "strike_swing",
+        StrikeKind.Second => "strike_second",
+        StrikeKind.Finisher => "strike_finisher",
+        StrikeKind.Down => "strike_down",
+        StrikeKind.Dash => "strike_dash",
+        _ => "strike_swing",
     };
 }

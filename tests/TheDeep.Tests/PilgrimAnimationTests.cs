@@ -155,4 +155,35 @@ public class PilgrimAnimationTests
         standing.Update(Dt, Vector2.Zero, MotionMode.Ground);
         Assert.Equal(PilgrimCue.Land, standing.Cue);
     }
+
+    [Fact]
+    public void AStrikeDrivesTheWholeBodyStandingAndTheTrunkOverARun()
+    {
+        var standing = Steady(Vector2.Zero, MotionMode.Ground);
+        var running = Steady(new Vector2(7f, 0f), MotionMode.Ground);
+        foreach (PilgrimAnimation body in new[] { standing, running })
+        {
+            for (int i = 0; i < 20; i++)
+            {
+                body.Strike.Strike(0.3f, 0.14f, 0.5f, StrikeKind.Swing);
+                body.Update(Dt, body == running ? new Vector2(7f, 0f) : Vector2.Zero, MotionMode.Ground);
+            }
+        }
+
+        Assert.True(standing.StrikeWhole > 0.95f);
+        Assert.True(running.StrikeWhole < 0.05f);
+    }
+
+    [Fact]
+    public void TheDownStrikeIsAlwaysWholeBody()
+    {
+        var animation = Steady(new Vector2(7f, -3f), MotionMode.Air);
+        for (int i = 0; i < 20; i++)
+        {
+            animation.Strike.Strike(0.3f, 0.14f, 0.5f, StrikeKind.Down);
+            animation.Update(Dt, new Vector2(7f, -3f), MotionMode.Air);
+        }
+
+        Assert.True(animation.StrikeWhole > 0.95f);
+    }
 }

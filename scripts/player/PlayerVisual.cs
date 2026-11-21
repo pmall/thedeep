@@ -98,6 +98,7 @@ public partial class PlayerVisual : Node3D
 
     private PilgrimAnimation? _animation;
     private readonly Footfalls _footfalls = new();
+    private readonly StrikeLayer _strikes = new();
     private PilgrimPose _shownPose;
     private int _footR = -1, _footL = -1, _toesR = -1, _toesL = -1;
     private float _bladeLength;
@@ -138,7 +139,8 @@ public partial class PlayerVisual : Node3D
     /// <summary>
     /// The tree: the idle and the rated run blended by the gait for the ground; the jump and the leap blended by the speed
     /// across, then into the fall (started over at the apex) for the air; a clip for every other pose (its fallback's while
-    /// it has none); all into one crossfading transition, under a one-shot for each cue that has a clip.
+    /// it has none); all into one crossfading transition, under the strikes (<see cref="StrikeLayer"/>) and a one-shot for
+    /// each cue that has a clip.
     /// </summary>
     private void BuildTree()
     {
@@ -181,7 +183,7 @@ public partial class PlayerVisual : Node3D
             root.ConnectNode(PoseNode, (int)pose, ClipNodeNames[pose]);
         }
 
-        StringName under = PoseNode;
+        StringName under = _strikes.Build(root, PoseNode, Clips, RootTrack.GetConcatenatedNames());
         PilgrimCue[] cues = Enum.GetValues<PilgrimCue>();
         _cueShown = new bool[cues.Length];
         foreach (PilgrimCue cue in cues)
@@ -333,6 +335,7 @@ public partial class PlayerVisual : Node3D
             Tree.Set(FallSeekParameter, 0.0);
         }
 
+        _strikes.Show(Tree, animation.Strike, animation.StrikeWhole);
         if (animation.Cue != PilgrimCue.None && _cueShown[(int)animation.Cue])
         {
             Tree.Set(CueRequests[animation.Cue], (int)AnimationNodeOneShot.OneShotRequest.Fire);
