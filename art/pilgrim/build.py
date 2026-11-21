@@ -1,5 +1,5 @@
 """Builds the pilgrim: its skeleton (skeleton.py), its body (body.py), every clip of
-clips.py retargeted from motion capture (mocap.py) and every clip of strikes.py and moves.py keyed by hand (keyed.py), exported as one
+clips.py retargeted from motion capture (mocap.py) and every clip of locomotion.py, strikes.py and moves.py keyed by hand (keyed.py), exported as one
 glTF scene the game imports.
 
     blender --background --factory-startup --python art/pilgrim/build.py              writes assets/pilgrim/pilgrim.glb
@@ -23,6 +23,7 @@ sys.path.insert(0, HERE)
 import body
 import clips
 import keyed
+import locomotion
 import mocap
 import moves
 import skeleton
@@ -38,7 +39,7 @@ def main(args: list[str]) -> None:
     assert scene is not None
     scene.render.fps = mocap.FPS
 
-    output, table, by_hand = OUTPUT, clips.CLIPS, strikes.KEYED + moves.KEYED
+    output, table, by_hand = OUTPUT, clips.CLIPS, locomotion.KEYED + strikes.KEYED + moves.KEYED
     if '--survey' in args:
         at = args.index('--survey')
         output = args[at + 1]

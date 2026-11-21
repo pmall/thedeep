@@ -3,7 +3,7 @@ namespace TheDeep;
 /// <summary>
 /// The names of the pilgrim's animation clips, as the build names them (art/pilgrim/clips.py; Godot's importer drops a
 /// looping clip's "_loop"). A pose's clip is its name in snake case (<see cref="Of(PilgrimPose)"/>); the ground's are the idle and the run,
-/// the air's the jump, the leap and the fall; the cues' and the strikes' are theirs (<see cref="Of(PilgrimCue)"/>,
+/// the air's the jump and the leap; the cues' and the strikes' are theirs (<see cref="Of(PilgrimCue)"/>,
 /// <see cref="Of(StrikeKind)"/>).
 /// </summary>
 public static class PilgrimClips
@@ -11,14 +11,14 @@ public static class PilgrimClips
     public const string Idle = "idle";
     public const string Run = "run";
 
-    /// <summary>Rising from a standing jump: the knees tucked up.</summary>
+    /// <summary>A standing jump's arc, one second for all of it (scrubbed by <see cref="PilgrimAnimation.Climb"/>): the knees tucked.</summary>
     public const string Jump = "jump";
 
-    /// <summary>Rising from a running jump: split into a leap.</summary>
+    /// <summary>A running jump's arc, the same way: a stride through the air.</summary>
     public const string Leap = "leap";
 
-    /// <summary>Falling: reaching down for the ground.</summary>
-    public const string Fall = "fall";
+    /// <summary>Treading water, which the swim's stroke fades into when still.</summary>
+    public const string Tread = "tread";
 
     /// <summary>The clip of a pose made of one (the ground and the air are made of several: their first).</summary>
     public static string Of(PilgrimPose pose) => pose switch

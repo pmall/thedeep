@@ -13,7 +13,7 @@ namespace TheDeep;
 /// travel is on the skeleton's root bone, taken out as root motion (the movement moves the body): the run's sets its speed.
 /// A strike draws the blade out of the near forearm (<see cref="Blade"/>, slid out along its length) and its sweep leaves
 /// the <see cref="Slash"/>. Footfalls are read from where the soles are (<see cref="Footfalls"/>). The body turns smoothly
-/// through a glance at the camera when the facing flips. Pivot is at the feet.
+/// through a glance at the camera when the facing flips; the hair swings after it on springs. Pivot is at the feet.
 /// </summary>
 public partial class PlayerVisual : Node3D
 {
@@ -26,15 +26,17 @@ public partial class PlayerVisual : Node3D
     private static readonly StringName JumpNode = "jump";
     private static readonly StringName LeapNode = "leap";
     private static readonly StringName AirLeapNode = "air_leap";
-    private static readonly StringName FallNode = "fall";
-    private static readonly StringName FallSeekNode = "fall_seek";
-    private static readonly StringName AirFallNode = "air_fall";
+    private static readonly StringName TreadNode = "tread";
+    private static readonly StringName StrokeNode = "stroke";
+    private static readonly StringName TreadClip = PilgrimClips.Tread;
+    private static readonly StringName StrokeParameter = "parameters/stroke/blend_amount";
+    private static readonly StringName JumpSeekNode = "jump_seek";
+    private static readonly StringName LeapSeekNode = "leap_seek";
     private static readonly StringName JumpClip = PilgrimClips.Jump;
     private static readonly StringName LeapClip = PilgrimClips.Leap;
-    private static readonly StringName FallClip = PilgrimClips.Fall;
     private static readonly StringName LeapParameter = "parameters/air_leap/blend_amount";
-    private static readonly StringName FallParameter = "parameters/air_fall/blend_amount";
-    private static readonly StringName FallSeekParameter = "parameters/fall_seek/seek_request";
+    private static readonly StringName JumpSeekParameter = "parameters/jump_seek/seek_request";
+    private static readonly StringName LeapSeekParameter = "parameters/leap_seek/seek_request";
     private static readonly StringName GaitParameter = "parameters/gait/blend_amount";
     private static readonly StringName RunRateParameter = "parameters/run_rate/scale";
     private static readonly StringName PoseParameter = "parameters/pose/transition_request";
@@ -97,6 +99,19 @@ public partial class PlayerVisual : Node3D
 
     [Export] public float BallHeight { get; set; } = 0.025f;
 
+    /// <summary>The locks of the hair (art/pilgrim/skeleton.py: LOCKS), each two bones swung on springs.</summary>
+    private static readonly string[] Locks = { "HairBack", "HairLeft", "HairRight" };
+
+    /// <summary>How the hair swings: how fast a lock springs back to where the clip holds it, how much its swing is damped,
+    /// and how hard it hangs down.</summary>
+    [Export] public float HairStiffness { get; set; } = 0.7f;
+
+    [Export] public float HairDrag { get; set; } = 0.35f;
+
+    [Export] public float HairGravity { get; set; } = 0.4f;
+
+    private SpringBoneSimulator3D? _hair;
+
     private static readonly StringName FootR = "RightFoot";
     private static readonly StringName FootL = "LeftFoot";
     private static readonly StringName ToesR = "RightToes";
@@ -141,13 +156,39 @@ public partial class PlayerVisual : Node3D
         }
 
         BuildTree();
+        BuildHair();
         ShowBlade(0f);
     }
 
+    /// <summary>The hair's locks swung on springs over the clips, after them (a modifier added last runs last).</summary>
+    private void BuildHair()
+    {
+        if (Skeleton.FindBone(Locks[0] + "1") < 0)
+        {
+            return;
+        }
+
+        _hair = new SpringBoneSimulator3D { SettingCount = Locks.Length };
+        for (int i = 0; i < Locks.Length; i++)
+        {
+            _hair.SetRootBoneName(i, Locks[i] + "1");
+            _hair.SetEndBoneName(i, Locks[i] + "2");
+            _hair.SetExtendEndBone(i, true);
+            _hair.SetEndBoneDirection(i, SkeletonModifier3D.BoneDirection.PlusY);
+            _hair.SetEndBoneLength(i, 0.05f);
+            _hair.SetStiffness(i, HairStiffness);
+            _hair.SetDrag(i, HairDrag);
+            _hair.SetGravity(i, HairGravity);
+            _hair.SetRadius(i, 0.015f);
+        }
+
+        Skeleton.AddChild(_hair);
+    }
+
     /// <summary>
-    /// The tree: the idle and the rated run blended by the gait for the ground; the jump and the leap blended by the speed
-    /// across, then into the fall (started over at the apex) for the air; a clip for every other pose (its fallback's while
-    /// it has none); all into one crossfading transition, under the strikes (<see cref="StrikeLayer"/>) and a one-shot for
+    /// The tree: the idle and the rated run blended by the gait for the ground; the jump and the leap, both scrubbed along
+    /// the arc (<see cref="PilgrimAnimation.Climb"/>), blended by the speed across for the air; the swim's stroke over treading
+    /// water by the speed; a clip for every other pose (its fallback's while it has none); all into one crossfading transition, under the strikes (<see cref="StrikeLayer"/>) and a one-shot for
     /// each cue that has a clip.
     /// </summary>
     private void BuildTree()
@@ -163,15 +204,13 @@ public partial class PlayerVisual : Node3D
 
         root.AddNode(JumpNode, new AnimationNodeAnimation { Animation = JumpClip });
         root.AddNode(LeapNode, new AnimationNodeAnimation { Animation = Clips.HasAnimation(LeapClip) ? LeapClip : JumpClip });
+        root.AddNode(JumpSeekNode, new AnimationNodeTimeSeek());
+        root.AddNode(LeapSeekNode, new AnimationNodeTimeSeek());
         root.AddNode(AirLeapNode, new AnimationNodeBlend2());
-        root.AddNode(FallNode, new AnimationNodeAnimation { Animation = Clips.HasAnimation(FallClip) ? FallClip : JumpClip });
-        root.AddNode(FallSeekNode, new AnimationNodeTimeSeek());
-        root.AddNode(AirFallNode, new AnimationNodeBlend2());
-        root.ConnectNode(AirLeapNode, 0, JumpNode);
-        root.ConnectNode(AirLeapNode, 1, LeapNode);
-        root.ConnectNode(FallSeekNode, 0, FallNode);
-        root.ConnectNode(AirFallNode, 0, AirLeapNode);
-        root.ConnectNode(AirFallNode, 1, FallSeekNode);
+        root.ConnectNode(JumpSeekNode, 0, JumpNode);
+        root.ConnectNode(LeapSeekNode, 0, LeapNode);
+        root.ConnectNode(AirLeapNode, 0, JumpSeekNode);
+        root.ConnectNode(AirLeapNode, 1, LeapSeekNode);
 
         var transition = new AnimationNodeTransition();
         _transition = transition;
@@ -183,7 +222,7 @@ public partial class PlayerVisual : Node3D
             transition.SetInputName((int)pose, PoseNames[pose]);
             if (pose is PilgrimPose.Ground or PilgrimPose.Air)
             {
-                root.ConnectNode(PoseNode, (int)pose, pose == PilgrimPose.Ground ? GaitNode : AirFallNode);
+                root.ConnectNode(PoseNode, (int)pose, pose == PilgrimPose.Ground ? GaitNode : AirLeapNode);
                 continue;
             }
 
@@ -191,6 +230,17 @@ public partial class PlayerVisual : Node3D
             root.AddNode(ClipNodeNames[pose], new AnimationNodeAnimation { Animation = ShownClip(pose) });
             root.AddNode(RateNodeNames[pose], new AnimationNodeTimeScale());
             root.ConnectNode(RateNodeNames[pose], 0, ClipNodeNames[pose]);
+            if (pose == PilgrimPose.Swim && Clips.HasAnimation(TreadClip))
+            {
+                // Still in the water, the stroke fades into treading it.
+                root.AddNode(TreadNode, new AnimationNodeAnimation { Animation = TreadClip });
+                root.AddNode(StrokeNode, new AnimationNodeBlend2());
+                root.ConnectNode(StrokeNode, 0, TreadNode);
+                root.ConnectNode(StrokeNode, 1, RateNodeNames[pose]);
+                root.ConnectNode(PoseNode, (int)pose, StrokeNode);
+                continue;
+            }
+
             root.ConnectNode(PoseNode, (int)pose, RateNodeNames[pose]);
         }
 
@@ -356,11 +406,9 @@ public partial class PlayerVisual : Node3D
         }
 
         Tree.Set(LeapParameter, animation.Leap);
-        Tree.Set(FallParameter, animation.Fall);
-        if (animation.FallBegan)
-        {
-            Tree.Set(FallSeekParameter, 0.0);
-        }
+        Tree.Set(StrokeParameter, animation.Stroke);
+        Tree.Set(JumpSeekParameter, (double)animation.Climb);
+        Tree.Set(LeapSeekParameter, (double)animation.Climb);
 
         _strikes.Show(Tree, animation.Strike, animation.StrikeWhole);
         if (animation.Cue != PilgrimCue.None && _cueShown[(int)animation.Cue])
@@ -390,6 +438,7 @@ public partial class PlayerVisual : Node3D
         Animation.Reset();
         Show(Animation);
         Tree.Advance(0.0);
+        _hair?.Reset();
         ShowBlade(0f);
         Slash?.Clear();
         ResetPhysicsInterpolation();

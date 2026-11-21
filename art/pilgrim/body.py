@@ -1,5 +1,6 @@
 """The pilgrim's body (docs/art-direction.md#character): a slender android of shells, one or more per bone, each bound
-wholly to its bone, so it bends like a machine at its joints and every clip of the skeleton (skeleton.py) carries over.
+wholly to its bone (but the hair, which sways), so it bends like a machine at its joints and every clip of the skeleton
+(skeleton.py) carries over.
 
 A shell is lofted along its bone through rings (`Ring`: where along the bone, how deep front to back and how wide), the
 rings in between smoothed; its ends are capped or left open where another shell covers them. Its UVs are the surface
@@ -49,7 +50,8 @@ class Ring:
 class Shell:
     """A loft along `bone` through `rings`, of `material`, capped at its start and end or not; `arc` the share of the
     way around it covers, from behind its center, (0, 360) all round (an open shell has edges at its sides); `around`
-    lays its UV the other way (U around it), for a band whose material draws along it."""
+    lays its UV the other way (U around it), for a band whose material draws along it. A shell that `sways` (the hair's
+    drape) is bound below the crown to the locks of hair (skeleton.LOCKS), so the game swings it."""
 
     bone: str
     rings: list[Ring]
@@ -57,6 +59,7 @@ class Shell:
     caps: tuple[bool, bool] = (True, True)
     arc: tuple[float, float] = (0.0, 360.0)
     around: bool = False
+    sways: bool = False
 
 
 def _both(shells: list[Shell]) -> list[Shell]:
@@ -138,6 +141,7 @@ SHELLS: list[Shell] = [
         'Hair',
         caps=(False, False),
         arc=(-75.0, 75.0),
+        sways=True,
     ),
     *_both(
         [
@@ -265,8 +269,30 @@ def material(name: str, color: tuple[float, float, float], roughness: float, met
     return made
 
 
-def _loft(bm: bmesh.types.BMesh, shell: Shell, slot: int, layers: tuple[object, object, object], group: int) -> None:
+def _smooth(edge0: float, edge1: float, x: float) -> float:
+    t = max(0.0, min(1.0, (x - edge0) / (edge1 - edge0)))
+    return t * t * (3.0 - 2.0 * t)
+
+
+def _swaying(point: Vector, around: float, groups: dict[str, int]) -> dict[int, float]:
+    """How a point of the hair's drape, `around` degrees from behind, is shared between the head and the locks: the
+    crown held by the head, below it the nearest locks, their lower bone toward the nape."""
+    hair = _smooth(1.665, 1.6, point.z)
+    lower = _smooth(1.625, 1.56, point.z)
+    near = {name: max(0.0, 1.0 - abs(around - a) / 52.0) for name, a in skeleton.LOCKS.items()}
+    total = sum(near.values()) or 1.0
+    weights = {groups['Head']: 1.0 - hair}
+    for name, w in near.items():
+        weights[groups[f'Hair{name}1']] = hair * (1.0 - lower) * w / total
+        weights[groups[f'Hair{name}2']] = hair * lower * w / total
+    return weights
+
+
+def _loft(
+    bm: bmesh.types.BMesh, shell: Shell, slot: int, layers: tuple[object, object, object], groups: dict[str, int]
+) -> None:
     deform, uv, uv2 = layers
+    group = groups[shell.bone]
     bone = skeleton.BY_NAME[shell.bone]
     head, axis, front, side, length = _frame(bone)
     rings = _smoothed(shell.rings)
@@ -290,7 +316,10 @@ def _loft(bm: bmesh.types.BMesh, shell: Shell, slot: int, layers: tuple[object, 
             a = angle(j)
             point = center - front * (ring.front * math.cos(a)) + side * (ring.side * math.sin(a))
             vert = bm.verts.new(point.to_tuple())
-            vert[deform][group] = 1.0  # type: ignore[index]
+            weights = _swaying(point, math.degrees(a), groups) if shell.sways else {group: 1.0}
+            for index, weight in weights.items():
+                if weight > 0.0:
+                    vert[deform][index] = weight  # type: ignore[index]
             column.append(vert)
         columns.append(column)
 
@@ -356,7 +385,7 @@ def build(rig: bpy.types.Object) -> bpy.types.Object:
     bm = bmesh.new()
     layers = (bm.verts.layers.deform.verify(), bm.loops.layers.uv.new('UVMap'), bm.loops.layers.uv.new('UV2'))
     for shell in SHELLS:
-        _loft(bm, shell, slots.index(shell.material), layers, groups[shell.bone])
+        _loft(bm, shell, slots.index(shell.material), layers, groups)
     bm.normal_update()
     bm.to_mesh(mesh)
     bm.free()

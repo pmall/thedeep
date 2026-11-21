@@ -6,7 +6,7 @@ The owner's plan and the open items, in order, opened by where the work stands. 
 
 - **Stage:** A, the prototype (`docs/roadmap.md#stage-prototype`).
 - **Current item:** the pilgrim, from zero (`docs/roadmap.md#pilgrim`).
-- **Next step:** the character (`docs/roadmap.md#animation-env`): the pilgrim's first model is in (`art/pilgrim/body.py`), waiting on the owner's word on its look; meanwhile, its clips judged on it.
+- **Next step:** the clips to the owner's bar (`docs/roadmap.md#animation-env`, step 2): the run, the air, the dashes, the landings, the strikes, the swim and the hair are redone; next, the moves still on the first pass.
 - **Waiting on the owner:** the stage's sign-off play: `docs/roadmap.md#to-play`.
 
 ## The plan <a id="direction"></a>
@@ -28,17 +28,17 @@ A room gets the attention its bricks need, no more. Bosses, machines and law bre
 
 The open items, in order (owner: the world, its bricks and its look are finished before the character):
 
-1. **The pilgrim, from zero** <a id="pilgrim"></a> (owner: last, once the world, its bricks and its look are finished). The current character, its procedural animation and its halo are thrown away. The bar is *Ori*'s animation (a 3D-rendered character) with *NieR: Automata*'s dynamism; the look is `docs/art-direction.md#character`. First the environment for top-quality animation, then the character: modeled and rigged in Blender (`instructions/toolchain.md#blender-mcp`), animated from real motion capture (free libraries and Mixamo first), keyed by hand, blended in the game with its feet held to the ground. Every move and ability: run, jump, land, dash, air dash, ledge assist, grip and its corners, harpoon throw and zip, bore and dive, swim, sink and rise, the strikes, hurt, death, rest, taking a relic. Its secondary motion is stage D's. Done when every state reads at a glance in motion, in the reels and in the owner's play.
+1. **The pilgrim, from zero** <a id="pilgrim"></a> (owner: last, once the world, its bricks and its look are finished). The current character, its procedural animation and its halo are thrown away. The bar is *Ori*'s animation (a 3D-rendered character) with *NieR: Automata*'s dynamism; the look is `docs/art-direction.md#character`. First the environment for top-quality animation, then the character: modeled and rigged in Blender (`instructions/toolchain.md#blender-mcp`), keyed by hand past what capture gives (owner: dynamic, precise, *virevoltant*: capture read stiff and slow), capture kept only where it serves, blended in the game with its feet held to the ground. Every move and ability: run, jump, land, dash, air dash, ledge assist, grip and its corners, harpoon throw and zip, bore and dive, swim, sink and rise, the strikes, hurt, death, rest, taking a relic. Its hair swings on springs; the rest of its secondary motion is stage D's. Done when every state reads at a glance in motion, in the reels and in the owner's play.
 
-   **The character, in order** <a id="animation-env"></a> (the environment is built: `art/pilgrim/build.py` makes the model and every clip, from capture or keyed by hand, and `PlayerVisual` plays them; every state has its clip):
+   **The character, in order** <a id="animation-env"></a> (the environment is built: `art/pilgrim/build.py` makes the model and every clip, keyed by hand in `art/pilgrim/keyed.py`'s splines or cut from capture, and `PlayerVisual` plays them; every state has its clip):
 
-   1. The pilgrim modeled by script (`art/pilgrim/body.py`), bound to the skeleton so every clip carries over: a slender android of `docs/art-direction.md#character`, its materials the project's android ones (`assets/materials/pilgrim/`). Its look is the owner's to sign off (`docs/roadmap.md#to-play`); `art/pilgrim/preview.py --turnaround` renders it from four sides.
-   2. The clips judged on it, close up and at gameplay size, and keyed further where a state doesn't read (`art/pilgrim/moves.py`, `art/pilgrim/strikes.py`); Mixamo only for what neither capture nor keys give (it needs the owner's account).
+   1. The pilgrim modeled by script (`art/pilgrim/body.py`), bound to the skeleton so every clip carries over, its hair on springs: a slender android of `docs/art-direction.md#character`. Its look is the owner's to sign off (`docs/roadmap.md#to-play`); `art/pilgrim/preview.py --turnaround` renders it from four sides.
+   2. Every clip to the owner's bar: wide, fast, whole-body moves with overlap, never a pose that stops dead or a clip that fights the control (the air is scrubbed along the arc, not played in time). Redone: the run, the air, the dashes and landings (`art/pilgrim/locomotion.py`), the strikes (`art/pilgrim/strikes.py`), the swim and treading water. Still on the first pass: the idle, rest and death (capture), the grip's crawl, sink and rise, dive and bore, the Harpoon's throw and zip, hurt, the vault and taking a relic (`art/pilgrim/moves.py`); then a skid and a turn for stopping and reversing at speed.
    3. The feet held to uneven ground by `TwoBoneIK3D` once the world has any (its floors are flat boxes: the clips plant the feet, and the run's, the crawl's and the stroke's rates match the speed so they never slide).
 
 **To play** <a id="to-play"></a>: what the owner's eye alone can judge, each line deleted once they have said. An item closes on what the agent can verify; the owner's word reopens it.
 
-- The pilgrim (`docs/roadmap.md#pilgrim`), its first model and every move: `godot --path . -- --room MechanicsLab --abilities all`. Say what its look lacks (proportions, hair, the visor, the shell and trims). Run, jump, dash, grip, harpoon, strike (the chain to the finisher, a down strike, a dash strike); `--room Quench --abilities all` for the water. Say which move reads wrong or stiff.
+- The pilgrim (`docs/roadmap.md#pilgrim`), redone after its first play: `godot --path . -- --room MechanicsLab --abilities all`. Run, jump standing and running (the pose follows the arc), dash and air dash, and strike: the chain to the finisher (a somersault), a down strike, a dash strike; `--room Quench --abilities all` for the swim. Say which move still reads stiff, slow or wrong, and what the look lacks (proportions, the hair, the visor, the shell and trims).
 - The transitions: `godot --path . -- --room Nave --abilities all` (west and east doorways, the hatch down to the Cistern); the Brink's leap, `--room Brink`. Every doorway now stands in a wall its brick builds (most were never looked at): say where one reads wrong.
 - The gates that speak (`docs/gameplay.md#gate-says`): `--room Ashfall --abilities none` (the Pyre's door names its litany and the Belfry as soon as it is on screen, the heat's line read after it), `--room Narthex` (the Sacristy door), `--room Kiln` (its gate). Say whether the lines come too early, too late or too fast.
 - The law breaks (`docs/gameplay.md#law-act`): `--room Brink --abilities all`, walk into the law, then hold the prompt. Say whether the hold's length and the refusal read right.
@@ -68,7 +68,7 @@ Built from the approved plan, in its own world folder beside the prototype, whic
 
 Only once the real game plays from start to end:
 
-- **The pilgrim's secondary motion**: coat, braid, cables.
+- **The pilgrim's secondary motion**: coat tails, cables (its hair already swings).
 - **The bestiary**: species grown toward 150–200 behaviorally distinct machines (`docs/long-term.md#machines-distinct`), the real bosses, NPCs.
 - **Every room made rich**: its secrets, its swarms, its secret passages, its enigma, the paths toward the end.
 - **Story**: the law breaks as real moments, scenes where the player, as the pilgrim's conscience, makes it break the law (owner), on the act of `docs/gameplay.md#law-act`; then the ending, dialogue, scripture and creeds written for real ([theme.md](theme.md)), cutscenes. All text stays data in the line books.

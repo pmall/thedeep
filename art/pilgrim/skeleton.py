@@ -6,6 +6,7 @@ origin. Motion capture is retargeted onto it from its own T-pose (mocap.py), and
 (resources/player_tuning.tres: BodyHeight).
 """
 
+import math
 from dataclasses import dataclass
 
 import bpy
@@ -59,6 +60,23 @@ BONES: list[Bone] = [
     *_side('Foot', 'LeftLowerLeg', (0.09, 0.0, ANKLE_HEIGHT), (0.09, -0.13, 0.025)),
     *_side('Toes', 'LeftFoot', (0.09, -0.13, 0.025), (0.09, -0.20, 0.025)),
 ]
+
+
+def _lock(name: str, around: float) -> list[Bone]:
+    """A lock of hair hanging from the crown to the nape, `around` degrees from straight behind toward the left: two bones
+    the game swings on springs (its SpringBoneSimulator3D), so the hair trails the head's moves."""
+    a = math.radians(around)
+    x, y = math.sin(a), math.cos(a)
+    crown = (0.085 * x, 0.085 * y - 0.005, 1.67)
+    middle = (0.098 * x, 0.098 * y, 1.6)
+    tip = (0.1 * x, 0.104 * y, 1.52)
+    return [Bone(f'Hair{name}1', 'Head', crown, middle), Bone(f'Hair{name}2', f'Hair{name}1', middle, tip)]
+
+
+LOCKS: dict[str, float] = {'Back': 0.0, 'Left': 52.0, 'Right': -52.0}
+"""The locks of the hair, each its angle around the head from straight behind."""
+
+BONES += [bone for name, around in LOCKS.items() for bone in _lock(name, around)]
 
 BY_NAME: dict[str, Bone] = {bone.name: bone for bone in BONES}
 

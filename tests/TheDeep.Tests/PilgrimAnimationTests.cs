@@ -124,18 +124,21 @@ public class PilgrimAnimationTests
     }
 
     [Fact]
-    public void TheFallStartsOverAtTheApex()
+    public void StillInTheWaterItTreadsAndSwimmingItStrokes()
+    {
+        Assert.True(Steady(Vector2.Zero, MotionMode.Swim).Stroke < 0.01f);
+        Assert.True(Steady(new Vector2(4.5f, 0f), MotionMode.Swim).Stroke > 0.99f);
+    }
+
+    [Fact]
+    public void TheAirFollowsTheArc()
     {
         var animation = new PilgrimAnimation(Speeds);
         animation.Reset();
-        animation.Update(Dt, new Vector2(0f, 5f), MotionMode.Air);
-        Assert.False(animation.FallBegan);
-        Assert.Equal(0f, animation.Fall);
-        animation.Update(Dt, new Vector2(0f, -0.1f), MotionMode.Air);
-        Assert.True(animation.FallBegan);
-        animation.Update(Dt, new Vector2(0f, -5f), MotionMode.Air);
-        Assert.False(animation.FallBegan);
-        Assert.Equal(1f, animation.Fall);
+        animation.Update(Dt, new Vector2(0f, 16f), MotionMode.Air);
+        Assert.Equal(0f, animation.Climb, 3); // taken at once on leaving the ground
+        Assert.InRange(Steady(new Vector2(0f, 0f), MotionMode.Air).Climb, 0.49f, 0.51f);
+        Assert.True(Steady(new Vector2(0f, -30f), MotionMode.Air).Climb > 0.99f);
     }
 
     [Fact]

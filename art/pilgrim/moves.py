@@ -1,13 +1,11 @@
 """The pilgrim's moves keyed by hand (keyed.py) where motion capture has nothing to give: the Mag-grip's crawl, the water,
-the Drill's dive and bore, the Harpoon's throw and zip, the recoil when hurt, the ledge vault, taking a relic and the
-hard landing. Each names the pose or cue it shows (PilgrimClips in the game); a walking loop travels on its root so the
+the Drill's dive and bore, the Harpoon's throw and zip, the recoil when hurt, the ledge vault and taking a relic. Each names the pose or cue it shows (PilgrimClips in the game); a walking loop travels on its root so the
 game matches its rate to the speed.
 """
 
 import math
-from collections.abc import Callable
 
-from keyed import ANKLE, Key, Keyed, Pose, Turn, bend, forward, trunk
+from keyed import ANKLE, Key, Keyed, Pose, Turn, bend, cycle, forward, trunk
 
 STAND = Pose(
     turns={
@@ -24,13 +22,6 @@ STAND = Pose(
 def _arms_out(degrees: float, ahead: float = 0.0) -> dict[str, Turn]:
     """Both arms raised `degrees` out to the sides from hanging, swung `ahead` degrees forward."""
     return {'RightUpperArm': (-ahead, 0.0, degrees), 'LeftUpperArm': (-ahead, 0.0, -degrees)}
-
-
-def _cycle(name: str, length: float, travel: float, pose_at: Callable[[float], Pose], samples: int = 12) -> Keyed:
-    """A loop of `length` seconds sampled from `pose_at(phase)` (phase 0 to 1), its keys linear, its end its start."""
-    keys = [Key(length * k / samples, pose_at(k / samples), 'linear') for k in range(samples)]
-    keys.append(Key(length, pose_at(0.0), 'linear'))
-    return Keyed(name, keys, travel)
 
 
 # The Mag-grip: a low, clinging crawl along the metal (in the body's own frame, so a wall or a ceiling is the floor).
@@ -66,31 +57,78 @@ def _crawl(phase: float) -> Pose:
     )
 
 
-# The water: a crawl stroke leaning into it, the legs fluttering.
-STROKE_CYCLE = 1.0
-STROKE_TRAVEL = 2.6
+# The water: lying on it in a front crawl, the body rolling to each stroke, the head turned to breathe, the legs
+# fluttering; still, upright, treading it.
+STROKE_CYCLE = 0.9
+STROKE_TRAVEL = 4.5
+"""Seconds per stroke cycle (both arms), and its speed, m/s: the game's swimming speed (player_tuning.tres: SwimSpeed)."""
+
+PULL = 0.55
+"""The share of the cycle an arm pulls under the water; it recovers over it, faster, for the rest."""
+
+
+def _stroke_arm(phase: float) -> tuple[float, float]:
+    """An arm's swing forward from along the body (180: reaching ahead; under the body as it falls, over it, negative,
+    as it comes back) and its elbow's bend, `phase` through its own stroke (0: entering ahead)."""
+    if phase < PULL:
+        q = phase / PULL
+        eased = q * q * (3.0 - 2.0 * q)
+        return 180.0 - 180.0 * eased, 10.0 + 70.0 * math.sin(math.pi * q)
+    q = (phase - PULL) / (1.0 - PULL)
+    return -180.0 * q, 20.0 + 85.0 * math.sin(math.pi * q)
 
 
 def _stroke(phase: float) -> Pose:
-    turn_ = 360.0 * phase
-    kick = math.sin(4.0 * math.pi * phase)
+    right, right_elbow = _stroke_arm(phase)
+    left, left_elbow = _stroke_arm((phase + 0.5) % 1.0)
+    left -= 360.0 if phase >= 0.5 else 0.0  # wound on round, never back
+    roll = 38.0 * math.sin(2.0 * math.pi * (phase - 0.15))
+    breathe = 45.0 * max(0.0, math.sin(2.0 * math.pi * (phase - 0.6))) ** 2
+    kick = math.sin(6.0 * math.pi * phase)
     return Pose(
         turns={
-            'Hips': (62.0, 0.0, 0.0),
-            **trunk(10.0, 12.0 * math.sin(2.0 * math.pi * phase)),
-            'Neck': (-30.0, 0.0, 0.0),
-            'Head': (-30.0, 0.0, 0.0),
-            'RightUpperArm': forward(180.0 + turn_),
-            'RightLowerArm': bend(20.0),
-            'LeftUpperArm': forward(360.0 + turn_),
-            'LeftLowerArm': bend(20.0),
-            'RightUpperLeg': (8.0 + 14.0 * kick, 0.0, 0.0),
-            'RightLowerLeg': (12.0, 0.0, 0.0),
-            'LeftUpperLeg': (8.0 - 14.0 * kick, 0.0, 0.0),
-            'LeftLowerLeg': (12.0, 0.0, 0.0),
-            'RightFoot': (35.0, 0.0, 0.0),
-            'LeftFoot': (35.0, 0.0, 0.0),
+            'Hips': (76.0, 0.0, 0.0),
+            **trunk(6.0, roll),
+            'Neck': (-26.0, -0.3 * roll, 0.0),
+            'Head': (-24.0, -breathe, 0.0),
+            'RightUpperArm': (-right, 0.0, 14.0),
+            'RightLowerArm': bend(right_elbow),
+            'LeftUpperArm': (-left, 0.0, -14.0),
+            'LeftLowerArm': bend(left_elbow),
+            'RightUpperLeg': (6.0 + 16.0 * kick, 0.0, 0.0),
+            'RightLowerLeg': (14.0 + 12.0 * kick, 0.0, 0.0),
+            'LeftUpperLeg': (6.0 - 16.0 * kick, 0.0, 0.0),
+            'LeftLowerLeg': (14.0 - 12.0 * kick, 0.0, 0.0),
+            'RightFoot': (50.0, 0.0, 0.0),
+            'LeftFoot': (50.0, 0.0, 0.0),
         },
+        hips=(-0.1, -0.02),
+    )
+
+
+def _tread(phase: float) -> Pose:
+    """Treading water: upright, the legs turning in alternate circles, the hands sculling under the surface."""
+    a = 2.0 * math.pi * phase
+    scull = math.sin(2.0 * a)
+    return Pose(
+        turns={
+            **trunk(10.0, 6.0 * math.sin(a)),
+            'Neck': (-6.0, 0.0, 0.0),
+            'Head': (-8.0, 0.0, 0.0),
+            'RightUpperArm': (-15.0, 0.0, 62.0),
+            'RightLowerArm': (-30.0 - 20.0 * scull, 25.0 * scull, 0.0),
+            'RightHand': (0.0, 0.0, 20.0 * scull),
+            'LeftUpperArm': (-15.0, 0.0, -62.0),
+            'LeftLowerArm': (-30.0 - 20.0 * scull, -25.0 * scull, 0.0),
+            'LeftHand': (0.0, 0.0, -20.0 * scull),
+            'RightUpperLeg': (-(35.0 + 20.0 * math.sin(a)), 0.0, 8.0 * math.cos(a)),
+            'RightLowerLeg': (70.0 + 25.0 * math.cos(a), 0.0, 0.0),
+            'LeftUpperLeg': (-(35.0 - 20.0 * math.sin(a)), 0.0, -8.0 * math.cos(a)),
+            'LeftLowerLeg': (70.0 - 25.0 * math.cos(a), 0.0, 0.0),
+            'RightFoot': (-10.0, 0.0, 0.0),
+            'LeftFoot': (-10.0, 0.0, 0.0),
+        },
+        hips=(0.0, 0.03 * math.sin(2.0 * a)),
     )
 
 
@@ -233,30 +271,17 @@ RELIC = Pose(
 )
 """Taking a relic: the chest lifted, the head back, the arms open to receive it."""
 
-CROUCH = Pose(
-    turns={
-        **trunk(38.0),
-        'Head': (-25.0, 0.0, 0.0),
-        'RightUpperArm': forward(35.0),
-        'LeftUpperArm': forward(-15.0),
-        'RightLowerArm': bend(30.0),
-    },
-    hips=(0.04, -0.36),
-    feet={'Right': (0.2, ANKLE), 'Left': (-0.18, ANKLE)},
-)
-"""The hard landing: the knees taking it, deep."""
-
 KEYED: list[Keyed] = [
-    _cycle('grip_loop', CRAWL_CYCLE, CRAWL_STRIDE / (CRAWL_CYCLE / 2.0), _crawl),
-    _cycle('swim_loop', STROKE_CYCLE, STROKE_TRAVEL, _stroke, samples=16),
-    _cycle('sink_loop', 2.4, 0.0, _sink, samples=8),
-    Keyed('rise', [Key(0.0, RISE_GATHERED), Key(0.35, RISE_PUSHED, 'out')]),
+    cycle('grip_loop', CRAWL_CYCLE, CRAWL_STRIDE / (CRAWL_CYCLE / 2.0), _crawl),
+    cycle('swim_loop', STROKE_CYCLE, STROKE_TRAVEL, _stroke, samples=36),
+    cycle('tread_loop', 1.4, 0.0, _tread, samples=16),
+    cycle('sink_loop', 2.4, 0.0, _sink, samples=8),
+    Keyed('rise', [Key(0.0, RISE_GATHERED), Key(0.35, RISE_PUSHED)]),
     Keyed('dive', [Key(0.0, DIVE)]),
     Keyed('bore', [Key(0.0, BORE)]),
-    Keyed('throw', [Key(0.0, THROW_COCKED), Key(0.12, THROW_COCKED), Key(0.26, THROW_CAST, 'in')]),
+    Keyed('throw', [Key(0.0, THROW_COCKED), Key(0.12, THROW_COCKED), Key(0.26, THROW_CAST)]),
     Keyed('zip', [Key(0.0, ZIP)]),
-    Keyed('hurt', [Key(0.0, STAND), Key(0.07, RECOIL, 'out'), Key(0.45, STAND)]),
-    Keyed('vault', [Key(0.0, STAND), Key(0.1, VAULT_HAND, 'out'), Key(0.3, VAULT_OVER), Key(0.42, STAND)]),
+    Keyed('hurt', [Key(0.0, STAND), Key(0.07, RECOIL), Key(0.45, STAND)]),
+    Keyed('vault', [Key(0.0, STAND), Key(0.1, VAULT_HAND), Key(0.3, VAULT_OVER), Key(0.42, STAND)]),
     Keyed('relic', [Key(0.0, STAND), Key(0.8, RELIC)]),
-    Keyed('hard_land', [Key(0.0, CROUCH), Key(0.12, CROUCH), Key(0.5, STAND)]),
 ]
