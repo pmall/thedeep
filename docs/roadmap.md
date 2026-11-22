@@ -6,7 +6,7 @@ The owner's plan and the open items, in order, opened by where the work stands. 
 
 - **Stage:** A, the prototype (`docs/roadmap.md#stage-prototype`).
 - **Current item:** the pilgrim, from zero (`docs/roadmap.md#pilgrim`).
-- **Next step:** a new way to animate (`docs/roadmap.md#animation-method`), proven first on the run alone: three variants for the owner to pick from.
+- **Next step:** the drawn look (`docs/roadmap.md#drawn-look`), then a new way to animate (`docs/roadmap.md#animation-method`), proven first on the run alone.
 - **Waiting on the owner:** the stage's sign-off play: `docs/roadmap.md#to-play`.
 
 ## The plan <a id="direction"></a>
@@ -35,6 +35,8 @@ The open items, in order (owner: the world, its bricks and its look are finished
    1. The pilgrim modeled by script (`art/pilgrim/body.py`), bound to the skeleton so every clip carries over, its hair on springs: a slender android of `docs/art-direction.md#character`. Its look is the owner's to sign off (`docs/roadmap.md#to-play`); `art/pilgrim/preview.py --turnaround` renders it from four sides.
    2. Every clip to the owner's bar, by a method found here (`docs/roadmap.md#animation-method`). Where it stands, in the owner's play: the run is unacceptable (clownish), the jump is good (keep its arc scrubbing and its poses), the strikes are better but not enough; the rest is a first pass. The owner's aim is a way of animating that an agent can carry, not a pile of downloaded clips: this is a training project.
    3. The feet held to uneven ground by `TwoBoneIK3D` once the world has any (its floors are flat boxes: the clips plant the feet, and the run's, the crawl's and the stroke's rates match the speed so they never slide).
+
+   **The drawn look** <a id="drawn-look"></a> (owner: the toon render is close; the world and the pilgrim must blend into one drawn image, the world less clean, the pilgrim less cartoon). `ToonLook` and `lib/look.gdshaderinc` hold it, off unless switched on, every piece of it in its own files so it can be kept, changed or removed whole without touching the rest. Next: bring what is still smooth into the same drawing (the skylines, the fog, the water, the particles), tune the pilgrim's bands, ink and grain against the world's, and judge it by side-by-side captures and the owner's play. Once the owner keeps it, it becomes the game's look: on by default, and `docs/art-direction.md` rewritten to it.
 
    **The animation method** <a id="animation-method"></a>. Keying poses as numbers and judging still frames is dead (the run came out clownish): invented motion has no anchor. Studios start from reference and stylize it, with an eye on a live preview; the agent does the same in steps it can measure:
 
