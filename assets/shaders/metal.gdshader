@@ -13,6 +13,7 @@ shader_type spatial;
 #include "res://assets/shaders/lib/surface.gdshaderinc"
 #include "res://assets/shaders/lib/water.gdshaderinc"
 #include "res://assets/shaders/lib/frost.gdshaderinc"
+#include "res://assets/shaders/lib/look.gdshaderinc"
 
 uniform int slot : hint_enum("Rock", "Metal", "Backdrop", "Backdrop accent", "Foreground") = 1;
 
@@ -201,6 +202,7 @@ void fragment() {
 	// Deep in a hollow (a pipe's mouth): dark, whatever the ambient light.
 	albedo *= 1.0 - 0.9 * f.cavity;
 	albedo = mix(albedo, vec3(dot(albedo, vec3(0.2126, 0.7152, 0.0722))), dull);
+	albedo = look_drawn(albedo, f.uv, f.edge);
 	ALBEDO = albedo * shade;
 	EMISSION = ALBEDO * caustics_at(v_world_pos, view_to_world(f.normal, INV_VIEW_MATRIX), TIME);
 	ROUGHNESS = clamp(rough, 0.05, 1.0);

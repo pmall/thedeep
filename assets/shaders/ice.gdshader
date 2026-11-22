@@ -14,6 +14,7 @@ shader_type spatial;
 #include "res://assets/shaders/lib/water.gdshaderinc"
 #include "res://assets/shaders/lib/surface.gdshaderinc"
 #include "res://assets/shaders/lib/frost.gdshaderinc"
+#include "res://assets/shaders/lib/look.gdshaderinc"
 
 
 /// The baked ice set (assets/textures/surfaces/, SurfaceMaps): every ice material sets both.
@@ -100,6 +101,7 @@ void fragment() {
 	rough = mix(rough, fr.rough, fr.cover);
 	n = frost_bump(n, fr, VIEW_MATRIX);
 
+	albedo = look_drawn(albedo, f.uv, f.edge);
 	ALBEDO = albedo * shade;
 	EMISSION = rime * glow * (0.4 + graze + white) * shade * (1.0 - fr.cover);
 	ROUGHNESS = rough;

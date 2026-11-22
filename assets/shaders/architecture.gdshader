@@ -12,6 +12,7 @@ render_mode cull_back;
 #include "res://assets/shaders/lib/haze.gdshaderinc"
 #include "res://assets/shaders/lib/water.gdshaderinc"
 #include "res://assets/shaders/lib/frost.gdshaderinc"
+#include "res://assets/shaders/lib/look.gdshaderinc"
 
 uniform int slot : hint_enum("Rock", "Metal", "Backdrop", "Backdrop accent", "Foreground") = 2;
 uniform float roughness : hint_range(0.0, 1.0) = 0.85;
@@ -53,7 +54,10 @@ void fragment() {
 	// Rime, when the layer is frosted: duller than on the play plane (frost_value).
 	Frost fr = frost_at(p, n, n, 0.0, 1e3, frost_share);
 	albedo = mix(albedo, frost_color(0.0) * frost_value * fr.tone, fr.cover);
-	ALBEDO = albedo * shade;
+	// The drawn look's paper grain, on the veil too: the murk is painted on the same paper as the rest.
+	vec2 face = vec2(along, up);
+	float paper = look_paper(face, look_pixel(face));
+	ALBEDO = albedo * shade * paper;
 	EMISSION = srgb_to_linear(biome_molten.rgb) * glow;
 	ROUGHNESS = mix(roughness, fr.rough, fr.cover);
 	METALLIC = metallic * (1.0 - fr.cover);
@@ -61,7 +65,7 @@ void fragment() {
 	RIM_TINT = 0.6;
 	HAZE
 	ALBEDO *= 1.0 - veil;
-	EMISSION = EMISSION * (1.0 - veil) + srgb_to_linear(biome_backdrop_veil.rgb) * veil;
+	EMISSION = EMISSION * (1.0 - veil) + srgb_to_linear(biome_backdrop_veil.rgb) * veil * paper;
 	UNDERWATER
 	RIM *= uw_keep;
 }

@@ -16,6 +16,7 @@ shader_type spatial;
 #include "res://assets/shaders/lib/water.gdshaderinc"
 #include "res://assets/shaders/lib/surface.gdshaderinc"
 #include "res://assets/shaders/lib/frost.gdshaderinc"
+#include "res://assets/shaders/lib/look.gdshaderinc"
 
 // The part's own position: rime is laid on in the machine's frame, so it rides along when it moves.
 varying vec3 v_local_pos;
@@ -215,6 +216,7 @@ void fragment() {
 	// Dormant machines barely glow; alert ones glow hotter.
 	glow *= (0.08 + 0.92 * rouse) * (1.0 + 0.6 * alert);
 
+	albedo = look_drawn(albedo, f.uv, f.edge);
 	ALBEDO = mix(mix(albedo, glow_color, min(glow, 1.0) * 0.6), vec3(1.0), hurt * 0.35);
 	NORMAL = n;
 	ROUGHNESS = rough;

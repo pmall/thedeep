@@ -9,6 +9,14 @@ namespace TheDeep;
 /// </summary>
 public static class ShaderGlobals
 {
+    /// <summary>How strong the drawn look's ink along the world's edges is, 0–1 (<see cref="ToonLook"/>).</summary>
+    public static readonly StringName LookInk = "look_ink";
+    /// <summary>The drawn look's ink width, pixels (<see cref="ToonLook"/>).</summary>
+    public static readonly StringName LookInkPixels = "look_ink_pixels";
+    /// <summary>The drawn look's ink color (<see cref="ToonLook"/>).</summary>
+    public static readonly StringName LookInkColor = "look_ink_color";
+    /// <summary>How strong the drawn look's paper grain is, 0–1 (<see cref="ToonLook"/>).</summary>
+    public static readonly StringName LookGrain = "look_grain";
     /// <summary>The biome's rock color (<see cref="BiomeProfile.Rock"/>).</summary>
     public static readonly StringName BiomeRock = "biome_rock";
     /// <summary>The biome's metal color (<see cref="BiomeProfile.Metal"/>).</summary>

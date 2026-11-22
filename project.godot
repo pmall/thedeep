@@ -183,6 +183,23 @@ common/physics_interpolation=true
 
 [shader_globals]
 
+look_ink={
+"type": "float",
+"value": 0.0
+}
+look_ink_pixels={
+"type": "float",
+"value": 1.5
+}
+look_ink_color={
+"type": "color",
+"value": Color(0.012, 0.012, 0.016, 1)
+}
+look_grain={
+"type": "float",
+"value": 0.0
+}
+
 biome_rock={
 "type": "color",
 "value": Color(0.36, 0.31, 0.27, 1)

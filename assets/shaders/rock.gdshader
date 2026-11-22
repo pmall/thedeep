@@ -20,6 +20,7 @@ shader_type spatial;
 #include "res://assets/shaders/lib/surface.gdshaderinc"
 #include "res://assets/shaders/lib/water.gdshaderinc"
 #include "res://assets/shaders/lib/frost.gdshaderinc"
+#include "res://assets/shaders/lib/look.gdshaderinc"
 
 uniform int slot : hint_enum("Rock", "Metal", "Backdrop", "Backdrop accent", "Foreground") = 0;
 
@@ -507,6 +508,7 @@ void fragment() {
 	rough = mix(rough, fr.rough, fr.cover);
 	n = detail ? frost_bump(n, fr, VIEW_MATRIX) : n;
 
+	albedo = look_drawn(albedo, f.uv, f.edge);
 	ALBEDO = albedo * shade;
 	EMISSION = ALBEDO * caustics_at(v_world_pos, view_to_world(f.normal, INV_VIEW_MATRIX), TIME);
 	ROUGHNESS = rough;

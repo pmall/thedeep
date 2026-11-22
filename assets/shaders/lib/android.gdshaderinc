@@ -4,6 +4,7 @@
 
 #include "res://assets/shaders/lib/noise.gdshaderinc"
 #include "res://assets/shaders/lib/surface.gdshaderinc"
+#include "res://assets/shaders/lib/look.gdshaderinc"
 
 uniform vec3 base_color : source_color = vec3(0.03, 0.03, 0.035);
 uniform float roughness : hint_range(0.0, 1.0) = 0.35;
@@ -61,6 +62,8 @@ varying float toon_rough;
 // several pixels wide at the play camera, so it never shimmers (docs/art-direction.md#stable-image).
 uniform float toon_grain : hint_range(0.0, 0.5) = 0.14;
 uniform float toon_grain_size : hint_range(0.005, 0.2) = 0.035;
+// How bright the drawn rim is, as a share of the smooth look's edge light.
+uniform float toon_edge : hint_range(0.0, 1.0) = 0.2;
 
 float toon_noise(vec2 uv) {
 	return value_noise2(uv / toon_grain_size) - 0.5;
@@ -126,6 +129,8 @@ void fragment() {
 	}
 	glow *= 1.0 - pulse * (0.5 + 0.5 * sin(TIME * 1.3));
 
+	// Grain only: the ink outline (ink_outline.gdshader) draws the figure's edges, not each part's.
+	albedo = look_drawn(albedo, f.uv, 1e3);
 	ALBEDO = mix(mix(albedo, glow_color, glow * 0.6), vec3(1.0), hurt * 0.5);
 	ROUGHNESS = rough;
 	METALLIC = metal;
@@ -145,8 +150,8 @@ void fragment() {
 		float tight = mix(edge_power, edge_far_power, smoothstep(edge_far_pixel / 3.0, edge_far_pixel, pixel));
 		float edge = pow(1.0 - facing, tight);
 #ifdef ANDROID_TOON
-		// One crisp band instead of a glow fading in: an inked rim.
-		edge = smoothstep(0.3, 0.36, edge + toon_noise(f.uv) * toon_grain);
+		// Drawn: a crisp painted line instead of a glow fading in, too dim for the bloom (its threshold is 0.9) to halo.
+		edge = smoothstep(0.3, 0.36, edge + toon_noise(f.uv) * toon_grain) * toon_edge;
 #endif
 		EMISSION += edge_color * edge_light * edge * (1.0 - trim);
 	}
