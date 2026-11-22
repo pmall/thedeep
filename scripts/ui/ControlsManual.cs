@@ -81,6 +81,7 @@ public partial class ControlsManual : Control
             InputActions.DebugToggleBallast, InputActions.DebugToggleHeatPlating,
         }, Ability.None, ""),
         new("ui.manual.biome", Kind.Any, new[] { InputActions.DebugCycleBiome }),
+        new("ui.manual.look", Kind.Any, new[] { InputActions.DebugToggleLook }),
         new("ui.manual.readout", Kind.Any, new[] { InputActions.DebugToggleHud }),
         new("ui.manual.hide", Kind.Any, new[] { InputActions.DebugToggleManual }),
         new("ui.manual.screenshot", Kind.Any, new[] { InputActions.CaptureScreenshot }),

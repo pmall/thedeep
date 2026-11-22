@@ -47,8 +47,9 @@ height = 0.3
 radial_segments = 8
 rings = 1
 
-[node name="Main" type="Node3D" node_paths=PackedStringArray("World", "Player", "Machines", "Capture", "Camera", "Hud", "Travel", "Session", "Health", "Hint", "MapScreen", "Hints", "Keyring", "PowerUps", "Conversations", "DialogueBox", "Secrets", "Pointer")]
+[node name="Main" type="Node3D" node_paths=PackedStringArray("World", "Player", "Machines", "Capture", "Camera", "Hud", "Travel", "Session", "Health", "Hint", "MapScreen", "Hints", "Keyring", "PowerUps", "Conversations", "DialogueBox", "Secrets", "Pointer", "Look")]
 script = ExtResource("1_main")
+Look = NodePath("Player/Visual/Look")
 World = NodePath("World")
 Player = NodePath("Player")
 Machines = NodePath("Machines")
@@ -224,10 +225,11 @@ Player = NodePath("../Player")
 Player = NodePath("../Player")
 World = NodePath("../World")
 
-[node name="DebugCheats" type="Node" parent="." node_paths=PackedStringArray("Player", "World")]
+[node name="DebugCheats" type="Node" parent="." node_paths=PackedStringArray("Player", "World", "Look")]
 script = ExtResource("5_cheats")
 Player = NodePath("../Player")
 World = NodePath("../World")
+Look = NodePath("../Player/Visual/Look")
 
 [node name="OwnerCapture" parent="." node_paths=PackedStringArray("Player", "World") instance=ExtResource("7_capture")]
 Player = NodePath("../Player")

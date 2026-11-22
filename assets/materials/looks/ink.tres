@@ -1,0 +1,9 @@
+[gd_resource type="ShaderMaterial" format=3]
+
+; The ink line around a figure drawn by ToonLook (assets/shaders/ink_outline.gdshader).
+[ext_resource type="Shader" path="res://assets/shaders/ink_outline.gdshader" id="1_shader"]
+
+[resource]
+shader = ExtResource("1_shader")
+shader_parameter/ink_color = Color(0.012, 0.012, 0.016, 1)
+shader_parameter/ink_pixels = 2.0

@@ -4,12 +4,15 @@ namespace TheDeep;
 
 /// <summary>
 /// Debug keys for playtesting: R / pad Back respawns, F1–F5 toggle each ability, F6 cycles the
-/// room's biome through the world's layers. Removed from release builds.
+/// room's biome through the world's layers, F9 switches the pilgrim's cartoon look. Removed from release builds.
 /// </summary>
 public partial class DebugCheats : Node
 {
     [Export] public Player Player { get; set; } = null!;
     [Export] public World World { get; set; } = null!;
+
+    /// <summary>The pilgrim's cartoon look, switched by F9, or none.</summary>
+    [Export] public ToonLook? Look { get; set; }
 
     private static readonly (StringName Action, Ability Ability)[] Toggles =
     {
@@ -33,6 +36,14 @@ public partial class DebugCheats : Node
         if (@event.IsActionPressed(InputActions.DebugRespawn))
         {
             Player.Respawn(World.Room.SpawnPoint.GlobalPosition);
+            GetViewport().SetInputAsHandled();
+            return;
+        }
+
+        if (@event.IsActionPressed(InputActions.DebugToggleLook) && Look is not null)
+        {
+            Look.Toggle();
+            GD.Print($"[debug] cartoon look: {(Look.On ? "on" : "off")}");
             GetViewport().SetInputAsHandled();
             return;
         }

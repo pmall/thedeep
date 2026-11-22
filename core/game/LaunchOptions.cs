@@ -35,6 +35,9 @@ public sealed record LaunchOptions
     /// <summary>`--shot`: one screenshot after a moment of play, then quit.</summary>
     public bool Shot { get; init; }
 
+    /// <summary>`--toon`: the pilgrim starts in its cartoon look (ToonLook).</summary>
+    public bool Toon { get; init; }
+
     /// <summary>`--shard K/N`: the Kth part (1-based) of N of a check's list; the whole list (1/1) when not given.</summary>
     public (int Index, int Count) Shard { get; init; } = (1, 1);
 
@@ -173,7 +176,7 @@ public sealed record LaunchOptions
             : null;
     }
 
-    private static readonly HashSet<string> Switches = new() { "--new", "--shot", "--map-report", "--slack-report" };
+    private static readonly HashSet<string> Switches = new() { "--new", "--shot", "--toon", "--map-report", "--slack-report" };
 
     private static readonly HashSet<string> ValueFlags = new()
     {
@@ -202,6 +205,8 @@ public sealed record LaunchOptions
                 return options with { NewGame = true };
             case "--shot":
                 return options with { Shot = true };
+            case "--toon":
+                return options with { Toon = true };
             case "--map-report":
                 return options with { MapReport = true };
             case "--slack-report":

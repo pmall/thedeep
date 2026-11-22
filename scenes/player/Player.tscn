@@ -15,6 +15,10 @@
 [ext_resource type="Script" path="res://scripts/combat/PlayerAttack.cs" id="13_attack"]
 [ext_resource type="Material" path="res://assets/materials/pilgrim/slash.tres" id="15_slash"]
 [ext_resource type="Script" path="res://scripts/player/SlashTrail.cs" id="16_slash_trail"]
+[ext_resource type="Script" path="res://scripts/look/ToonLook.cs" id="17_toon"]
+[ext_resource type="Shader" path="res://assets/shaders/android.gdshader" id="18_android"]
+[ext_resource type="Shader" path="res://assets/shaders/android_toon.gdshader" id="19_android_toon"]
+[ext_resource type="Material" path="res://assets/materials/looks/ink.tres" id="20_ink"]
 
 ; Sized and placed over the feet from the tuning's body (Player._Ready).
 [sub_resource type="CapsuleShape3D" id="CapsuleShape3D_body"]
@@ -140,3 +144,12 @@ script = ExtResource("8_trail")
 [node name="Attack" type="Node3D" parent="." node_paths=PackedStringArray("Player")]
 script = ExtResource("13_attack")
 Player = NodePath("..")
+
+; The cartoon look, off unless switched on (F9 in debug builds, `--toon` at launch): a layer over the body, removable whole.
+[node name="Look" type="Node" parent="Visual" node_paths=PackedStringArray("Figure", "Poses")]
+script = ExtResource("17_toon")
+Figure = NodePath("..")
+Poses = NodePath("..")
+From = ExtResource("18_android")
+To = ExtResource("19_android_toon")
+Ink = ExtResource("20_ink")

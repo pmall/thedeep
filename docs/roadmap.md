@@ -47,6 +47,7 @@ The open items, in order (owner: the world, its bricks and its look are finished
 
 **To play** <a id="to-play"></a>: what the owner's eye alone can judge, each line deleted once they have said. An item closes on what the agent can verify; the owner's word reopens it.
 
+- The pilgrim drawn as a cartoon (`ToonLook`): `godot --path . -- --room DrownedHall --abilities all --toon`, F9 switching it with the current look. Say whether to keep it (then it becomes the pilgrim's look, tuned further), keep only part of it (the ink, the flat light, the poses on twos), or drop it (the node and its two shaders deleted).
 - The transitions: `godot --path . -- --room Nave --abilities all` (west and east doorways, the hatch down to the Cistern); the Brink's leap, `--room Brink`. Every doorway now stands in a wall its brick builds (most were never looked at): say where one reads wrong.
 - The gates that speak (`docs/gameplay.md#gate-says`): `--room Ashfall --abilities none` (the Pyre's door names its litany and the Belfry as soon as it is on screen, the heat's line read after it), `--room Narthex` (the Sacristy door), `--room Kiln` (its gate). Say whether the lines come too early, too late or too fast.
 - The law breaks (`docs/gameplay.md#law-act`): `--room Brink --abilities all`, walk into the law, then hold the prompt. Say whether the hold's length and the refusal read right.

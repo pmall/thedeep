@@ -26,7 +26,7 @@ public class LaunchOptionsTests
     [Fact]
     public void ReadsEveryOptionOnce()
     {
-        LaunchOptions options = Ok("--world", "sequel", "--room", "Quay", "--abilities", "MagGrip,drill", "--items", "A,B", "--biome", "volcanic", "--new", "--shot", "--shard", "2/4");
+        LaunchOptions options = Ok("--world", "sequel", "--room", "Quay", "--abilities", "MagGrip,drill", "--items", "A,B", "--biome", "volcanic", "--new", "--shot", "--toon", "--shard", "2/4");
         Assert.Equal("sequel", options.World);
         Assert.Equal("Quay", options.Room);
         Assert.Equal(Ability.MagGrip | Ability.Drill, options.Abilities);
@@ -34,6 +34,7 @@ public class LaunchOptionsTests
         Assert.Equal("volcanic", options.Biome);
         Assert.True(options.NewGame);
         Assert.True(options.Shot);
+        Assert.True(options.Toon);
         Assert.Equal((2, 4), options.Shard);
     }
 

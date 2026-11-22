@@ -30,6 +30,7 @@ A check that crashes in `GodotObject.Finalize` (`gchandle.is_released`, "Handle 
 | Start in a room, with the abilities and items a route there needs | `godot --path . -- --room <Name>` (`--abilities all`, `none` or `MagGrip,Drill` says otherwise; `--items SacristyKey` adds items) |
 | Another world | `godot --path . -- --world <name>` (`worlds/<name>/world.tres`; every check takes it too): `--world sequel --new` plays the sequel world |
 | Start with another biome | `godot --path . -- --biome volcanic` |
+| The pilgrim in its cartoon look (`ToonLook`; F9 switches it in debug builds) | `godot --path . -- --room Nave --toon` |
 | One screenshot of a room's start, then quit (to captures/, as F12) | `godot --path . -- --room Undercroft --shot` |
 | Re-bake the materials' texture sets after changing a pattern (`SurfaceBake`), then import them | `godot --headless --path . -- --bake-surfaces && godot --headless --import` |
 | Print the map (built rooms and the network: ways, placements, orders) and draw it | `tools/map.sh` |

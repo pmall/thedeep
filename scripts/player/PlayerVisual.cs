@@ -99,6 +99,16 @@ public partial class PlayerVisual : Node3D
 
     [Export] public float BallHeight { get; set; } = 0.025f;
 
+    /// <summary>How long each shown pose holds before the next, seconds: 0 shows every tick (smooth), more shows the pose on
+    /// twos or threes as drawn animation is (set by a look: <see cref="ToonLook"/>). The body still travels every tick.</summary>
+    public float PoseHoldSeconds
+    {
+        get => _poseClock.HoldSeconds;
+        set => _poseClock.HoldSeconds = value;
+    }
+
+    private readonly PoseClock _poseClock = new();
+
     /// <summary>The locks of the hair (art/pilgrim/skeleton.py: LOCKS), each two bones swung on springs.</summary>
     private static readonly string[] Locks = { "HairBack", "HairLeft", "HairRight" };
 
@@ -371,10 +381,18 @@ public partial class PlayerVisual : Node3D
         PilgrimAnimation animation = Animation;
         animation.Facing = _facing;
         animation.Update(delta, velocity.Flat(), mode);
-        // The lean tips the body about its feet in its own side plane (its local x is the way it faces).
-        Transform = _carry * new Transform3D(new Basis(Vector3.Up, _yaw) * new Basis(Vector3.Back, -animation.Lean), Vector3.Zero);
+        float shown = _poseClock.Tick(delta, animation.Pose != _shownPose || animation.Cue != PilgrimCue.None);
+        if (shown > 0f)
+        {
+            // The lean tips the body about its feet in its own side plane (its local x is the way it faces).
+            Transform = _carry * new Transform3D(new Basis(Vector3.Up, _yaw) * new Basis(Vector3.Back, -animation.Lean), Vector3.Zero);
+        }
+
         Show(animation);
-        Tree.Advance(delta);
+        if (shown > 0f)
+        {
+            Tree.Advance(shown);
+        }
 
         Aim.Influence = animation.ReachWeight;
         if (animation.ReachWeight > 0f)
@@ -437,6 +455,7 @@ public partial class PlayerVisual : Node3D
         _carry = Transform3D.Identity;
         Transform = new Transform3D(new Basis(Vector3.Up, _yaw), Vector3.Zero);
         Animation.Reset();
+        _poseClock.Reset();
         Show(Animation);
         Tree.Advance(0.0);
         _hair?.Reset();

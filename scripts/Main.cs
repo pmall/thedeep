@@ -29,6 +29,9 @@ public partial class Main : Node3D
     [Export] public HintLine Hint { get; set; } = null!;
     [Export] public AnchorPointer Pointer { get; set; } = null!;
 
+    /// <summary>The pilgrim's cartoon look, switched on by `--toon`, or none.</summary>
+    [Export] public ToonLook? Look { get; set; }
+
     [Export] public MapScreen MapScreen { get; set; } = null!;
     [Export] public GateHints Hints { get; set; } = null!;
     [Export] public Keyring Keyring { get; set; } = null!;
@@ -150,6 +153,11 @@ public partial class Main : Node3D
             }
 
             room.ApplyBiome(biome);
+        }
+
+        if (_options.Toon && Look is not null)
+        {
+            Look.On = true;
         }
 
         if (_options.Shot)
