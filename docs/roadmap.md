@@ -6,7 +6,7 @@ The owner's plan and the open items, in order, opened by where the work stands. 
 
 - **Stage:** A, the prototype (`docs/roadmap.md#stage-prototype`).
 - **Current item:** the pilgrim, from zero (`docs/roadmap.md#pilgrim`).
-- **Next step:** the drawn look (`docs/roadmap.md#drawn-look`), then a new way to animate (`docs/roadmap.md#animation-method`), proven first on the run alone.
+- **Next step:** looks side by side (`docs/roadmap.md#look-presets`), to blend the pilgrim into the drawn look (`docs/roadmap.md#drawn-look`); then a new way to animate (`docs/roadmap.md#animation-method`), proven first on the run alone.
 - **Waiting on the owner:** the stage's sign-off play: `docs/roadmap.md#to-play`.
 
 ## The plan <a id="direction"></a>
@@ -36,7 +36,13 @@ The open items, in order (owner: the world, its bricks and its look are finished
    2. Every clip to the owner's bar, by a method found here (`docs/roadmap.md#animation-method`). Where it stands, in the owner's play: the run is unacceptable (clownish), the jump is good (keep its arc scrubbing and its poses), the strikes are better but not enough; the rest is a first pass. The owner's aim is a way of animating that an agent can carry, not a pile of downloaded clips: this is a training project.
    3. The feet held to uneven ground by `TwoBoneIK3D` once the world has any (its floors are flat boxes: the clips plant the feet, and the run's, the crawl's and the stroke's rates match the speed so they never slide).
 
-   **The drawn look** <a id="drawn-look"></a> (owner: the toon render is close; the world and the pilgrim must blend into one drawn image, the world less clean, the pilgrim less cartoon). `ToonLook`, `lib/look.gdshaderinc` and `lib/dirt.gdshaderinc` hold it, off unless switched on, every piece of it in its own files and behind its own switch so it can be kept, changed or removed alone without touching the rest; `tools/capture.sh --toon` captures it. Next, after the owner's word on the dirt: bring what is still smooth into the same drawing (the skylines, the fog, the water, the particles, the machines' shells), tune the pilgrim's bands, ink and grain against the world's, and judge it by side-by-side captures and the owner's play. Once the owner keeps it, it becomes the game's look: on by default, and `docs/art-direction.md` rewritten to it.
+   **The drawn look** <a id="drawn-look"></a> (owner: the toon render is close; the world and the pilgrim must blend into one drawn image, the world less clean, the pilgrim less cartoon). `ToonLook`, `lib/look.gdshaderinc` and `lib/dirt.gdshaderinc` hold it, off unless switched on, every piece of it in its own files and behind its own switch so it can be kept, changed or removed alone without touching the rest; `tools/capture.sh --toon` captures it. The world's dirt blends well (owner); the pilgrim is still a bit off beside it. Next, in order:
+
+   1. **Looks side by side** <a id="look-presets"></a> (owner): a look becomes a preset (a resource holding every switch and value of `ToonLook`), several kept at once, F9 cycling them in play and `--look <name>` and `tools/capture.sh --look <name>` choosing one, so directions are compared in play, not by rewriting one look.
+   2. **The pilgrim blended into the drawing**: find what still sets it apart from the world (its flat black, its outline, its poses on twos, its value against the world's darks) by variants as presets, judged side by side in captures and by the owner.
+   3. Bring what is still smooth into the same drawing (the skylines, the fog, the water, the particles, the machines' shells).
+
+   Once the owner keeps it, it becomes the game's look: on by default, and `docs/art-direction.md` rewritten to it.
 
    **The animation method** <a id="animation-method"></a>. Keying poses as numbers and judging still frames is dead (the run came out clownish): invented motion has no anchor. Studios start from reference and stylize it, with an eye on a live preview; the agent does the same in steps it can measure:
 
@@ -49,7 +55,7 @@ The open items, in order (owner: the world, its bricks and its look are finished
 
 **To play** <a id="to-play"></a>: what the owner's eye alone can judge, each line deleted once they have said. An item closes on what the agent can verify; the owner's word reopens it.
 
-- The drawn look (`ToonLook`), the world and the pilgrim drawn alike and dirtied alike: `godot --path . -- --room DrownedHall --abilities all --toon`, F9 switching it with the current look (`--room Slag` for the volcanic stone). Say whether the pilgrim and the place now feel of one piece, and for each new part whether it stays, goes or needs more or less: the watercolor stains with their tide lines, the drips down the slabs' fronts, the hatching under ledges and at the walls' feet, the pilgrim's dust and worn edges (its gloss is now smaller). Also whether the poses on twos stay.
+- The drawn look (`ToonLook`): `godot --path . -- --room DrownedHall --abilities all --toon`, F9 switching it with the current look. Once the pilgrim's variants exist (`docs/roadmap.md#look-presets`), say which blends best.
 - The transitions: `godot --path . -- --room Nave --abilities all` (west and east doorways, the hatch down to the Cistern); the Brink's leap, `--room Brink`. Every doorway now stands in a wall its brick builds (most were never looked at): say where one reads wrong.
 - The gates that speak (`docs/gameplay.md#gate-says`): `--room Ashfall --abilities none` (the Pyre's door names its litany and the Belfry as soon as it is on screen, the heat's line read after it), `--room Narthex` (the Sacristy door), `--room Kiln` (its gate). Say whether the lines come too early, too late or too fast.
 - The law breaks (`docs/gameplay.md#law-act`): `--room Brink --abilities all`, walk into the law, then hold the prompt. Say whether the hold's length and the refusal read right.
