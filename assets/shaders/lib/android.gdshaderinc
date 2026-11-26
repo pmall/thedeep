@@ -66,13 +66,13 @@ uniform float toon_lift : hint_range(0.0, 0.2) = 0.035;
 // the parts, as on a pilgrim who walked far.
 uniform float toon_dust : hint_range(0.0, 1.0) = 0.8;
 // How far the worn chips along the parts' edges reach, meters (with the wash, look_wash).
-uniform float toon_chips : hint_range(0.0, 0.03) = 0.012;
+uniform float toon_chips : hint_range(0.0, 0.03) = 0.009;
 // How ragged the bands' edges are (a cosine's worth), and the grain's cell, meters: a still grain fixed to the parts,
 // several pixels wide at the play camera, so it never shimmers (docs/art-direction.md#stable-image).
 uniform float toon_grain : hint_range(0.0, 0.5) = 0.14;
 uniform float toon_grain_size : hint_range(0.005, 0.2) = 0.035;
 // How bright the drawn rim is, as a share of the smooth look's edge light.
-uniform float toon_edge : hint_range(0.0, 1.0) = 0.2;
+uniform float toon_edge : hint_range(0.0, 1.0) = 0.1;
 
 float toon_noise(vec2 uv) {
 	return value_noise2(uv / toon_grain_size) - 0.5;
@@ -156,7 +156,7 @@ void fragment() {
 	rough = mix(rough, 1.0, dust * dusted);
 	// Chips along the parts' edges, where the black wears to the pale primer under it: a ragged band, broken along.
 	float ragged = value_noise2(dust_uv / 0.02) * 0.6 + value_noise2(dust_uv / 0.06 + 9.0) * 0.4;
-	float chip_width = toon_chips * (ragged - 0.55) * 2.0;
+	float chip_width = toon_chips * (ragged - 0.62) * 2.5;
 	float chip = (1.0 - smoothstep(chip_width - aa, chip_width + aa, f.edge)) * step(0.0, chip_width);
 	albedo = mix(albedo, silt * 0.55, chip * look_wash * dark_part * (1.0 - trim));
 #endif

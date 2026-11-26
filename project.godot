@@ -211,10 +211,6 @@ look_hatch={
 "type": "float",
 "value": 0.0
 }
-look_frame={
-"type": "float",
-"value": 0.0
-}
 
 biome_rock={
 "type": "color",

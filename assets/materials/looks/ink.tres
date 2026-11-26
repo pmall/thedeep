@@ -5,3 +5,4 @@
 
 [resource]
 shader = ExtResource("1_shader")
+shader_parameter/width_share = 0.7

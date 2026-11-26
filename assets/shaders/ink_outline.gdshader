@@ -9,6 +9,8 @@ render_mode unshaded, cull_front, depth_draw_opaque, shadows_disabled;
 // edges (lib/look).
 global uniform float look_ink_pixels;
 global uniform vec4 look_ink_color;
+/// The line's width as a share of the drawn look's: a figure's may be finer than the world's edges.
+uniform float width_share : hint_range(0.0, 2.0) = 1.0;
 
 void vertex() {
 	vec4 clip = PROJECTION_MATRIX * MODELVIEW_MATRIX * vec4(VERTEX, 1.0);
@@ -17,7 +19,7 @@ void vertex() {
 	float len = length(out_dir);
 	if (len > 1e-6) {
 		// Clip space spans 2 across the viewport; times w so the push survives the perspective divide.
-		clip.xy += out_dir / len * look_ink_pixels * 2.0 / VIEWPORT_SIZE * clip.w;
+		clip.xy += out_dir / len * look_ink_pixels * width_share * 2.0 / VIEWPORT_SIZE * clip.w;
 	}
 	POSITION = clip;
 }

@@ -10,10 +10,10 @@ shader_type spatial;
 group_uniforms toon;
 /// Where the lit side turns to shade: the cosine between the surface and the light.
 uniform float toon_threshold : hint_range(-1.0, 1.0) = 0.1;
-/// How soft that cut is, in cosine: just enough not to alias.
-uniform float toon_softness : hint_range(0.0, 0.2) = 0.07;
+/// How soft that cut and the highlight's edge are, in cosine: wide enough that the turn reads painted, not cel-shaded.
+uniform float toon_softness : hint_range(0.0, 0.5) = 0.2;
 /// The light left in the shade, as a share of the lit side's.
-uniform float toon_shade : hint_range(0.0, 1.0) = 0.3;
+uniform float toon_shade : hint_range(0.0, 1.0) = 0.42;
 /// The hard highlight's strength (it is white on any finish: the light's color, not the surface's).
 uniform float toon_gloss : hint_range(0.0, 4.0) = 0.18;
 /// The highlight's size on a smooth finish and on a rough one, as the cosine of the half angle where it starts.
