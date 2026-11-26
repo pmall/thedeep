@@ -15,7 +15,7 @@ uniform float toon_softness : hint_range(0.0, 0.2) = 0.07;
 /// The light left in the shade, as a share of the lit side's.
 uniform float toon_shade : hint_range(0.0, 1.0) = 0.3;
 /// The hard highlight's strength (it is white on any finish: the light's color, not the surface's).
-uniform float toon_gloss : hint_range(0.0, 4.0) = 0.45;
+uniform float toon_gloss : hint_range(0.0, 4.0) = 0.18;
 /// The highlight's size on a smooth finish and on a rough one, as the cosine of the half angle where it starts.
 uniform float toon_gloss_smooth : hint_range(0.5, 1.0) = 0.97;
 uniform float toon_gloss_rough : hint_range(0.5, 1.0) = 0.86;

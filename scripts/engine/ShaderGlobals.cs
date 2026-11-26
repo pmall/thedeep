@@ -17,6 +17,14 @@ public static class ShaderGlobals
     public static readonly StringName LookInkColor = "look_ink_color";
     /// <summary>How strong the drawn look's paper grain is, 0–1 (<see cref="ToonLook"/>).</summary>
     public static readonly StringName LookGrain = "look_grain";
+    /// <summary>How strong the drawn look's watercolor stains are, 0–1 (<see cref="ToonLook"/>, lib/dirt).</summary>
+    public static readonly StringName LookWash = "look_wash";
+    /// <summary>How strong the drawn look's drips down side faces are, 0–1 (<see cref="ToonLook"/>, lib/dirt).</summary>
+    public static readonly StringName LookDrips = "look_drips";
+    /// <summary>How strong the drawn look's ink hatching is, 0–1 (<see cref="ToonLook"/>, lib/dirt).</summary>
+    public static readonly StringName LookHatch = "look_hatch";
+    /// <summary>How far the vignette's edge is drawn as charcoal, 0–1 (<see cref="ToonLook"/>, vignette.gdshader).</summary>
+    public static readonly StringName LookFrame = "look_frame";
     /// <summary>The biome's rock color (<see cref="BiomeProfile.Rock"/>).</summary>
     public static readonly StringName BiomeRock = "biome_rock";
     /// <summary>The biome's metal color (<see cref="BiomeProfile.Metal"/>).</summary>

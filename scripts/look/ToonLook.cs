@@ -6,7 +6,8 @@ namespace TheDeep;
 /// <summary>
 /// The drawn look, kept or dropped as one piece. The world and the figure share its ink and paper grain (global
 /// uniforms read by lib/look.gdshaderinc: <see cref="WorldInk"/>, <see cref="InkPixels"/>, <see cref="InkColor"/>,
-/// <see cref="Grain"/>), so the figure is drawn like the place it walks in. Over the figure: each of its materials drawn by
+/// <see cref="Grain"/>), so the figure is drawn like the place it walks in; the world is dirtied by lib/dirt (<see cref="Wash"/>,
+/// <see cref="Drips"/>, <see cref="Hatch"/>) and framed in charcoal (<see cref="Frame"/>), each part 0 to drop it. Over the figure: each of its materials drawn by
 /// <see cref="From"/> is shown by a twin under <see cref="To"/> (the same finish and knobs, lit in flat bands:
 /// android_toon.gdshader), with <see cref="Ink"/> as its next pass (an outline), and the figure's pose held on twos
 /// (<see cref="PoseHoldSeconds"/>, through <see cref="Poses"/>). <see cref="On"/> switches it at any time; off, the figure is
@@ -36,10 +37,22 @@ public partial class ToonLook : Node
     [Export] public float InkPixels { get; set; } = 1.5f;
 
     /// <summary>The ink's color (linear: the global uniform arrives unconverted).</summary>
-    [Export] public Color InkColor { get; set; } = new(0.012f, 0.012f, 0.016f);
+    [Export] public Color InkColor { get; set; } = new(0.018f, 0.01f, 0.032f);
 
     /// <summary>How strong the paper grain is on the world and the figure, 0–1.</summary>
     [Export(PropertyHint.Range, "0,1")] public float Grain { get; set; } = 0.6f;
+
+    /// <summary>How strong the watercolor stains on the world are, 0–1 (lib/dirt; 0 drops them).</summary>
+    [Export(PropertyHint.Range, "0,1")] public float Wash { get; set; } = 1f;
+
+    /// <summary>How strong the drips down the world's side faces are, 0–1 (lib/dirt; 0 drops them).</summary>
+    [Export(PropertyHint.Range, "0,1")] public float Drips { get; set; } = 1f;
+
+    /// <summary>How strong the ink hatching in the world's dark and dirty places is, 0–1 (lib/dirt; 0 drops it).</summary>
+    [Export(PropertyHint.Range, "0,1")] public float Hatch { get; set; } = 1f;
+
+    /// <summary>How far the vignette's edge is drawn as charcoal around the image, 0–1 (vignette.gdshader; 0 drops it).</summary>
+    [Export(PropertyHint.Range, "0,1")] public float Frame { get; set; } = 1f;
 
     /// <summary>How long each shown pose holds while the look is on, seconds (0: smooth, as without it).</summary>
     [Export] public float PoseHoldSeconds { get; set; } = 1f / 15f;
@@ -98,6 +111,10 @@ public partial class ToonLook : Node
 
         RenderingServer.GlobalShaderParameterSet(ShaderGlobals.LookInk, _on ? WorldInk : 0f);
         RenderingServer.GlobalShaderParameterSet(ShaderGlobals.LookGrain, _on ? Grain : 0f);
+        RenderingServer.GlobalShaderParameterSet(ShaderGlobals.LookWash, _on ? Wash : 0f);
+        RenderingServer.GlobalShaderParameterSet(ShaderGlobals.LookDrips, _on ? Drips : 0f);
+        RenderingServer.GlobalShaderParameterSet(ShaderGlobals.LookHatch, _on ? Hatch : 0f);
+        RenderingServer.GlobalShaderParameterSet(ShaderGlobals.LookFrame, _on ? Frame : 0f);
         RenderingServer.GlobalShaderParameterSet(ShaderGlobals.LookInkPixels, InkPixels);
         RenderingServer.GlobalShaderParameterSet(ShaderGlobals.LookInkColor, InkColor);
         if (Poses is not null)

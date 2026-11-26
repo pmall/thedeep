@@ -55,9 +55,18 @@ uniform float pulse : hint_range(0.0, 1.0) = 0.0;
 group_uniforms;
 
 #ifdef ANDROID_TOON
+#include "res://assets/shaders/lib/palette.gdshaderinc"
+#include "res://assets/shaders/lib/dirt.gdshaderinc"
 // What the toon light reads of the surface (android_toon.gdshader): where on the part, and how rough.
 varying vec2 toon_uv;
 varying float toon_rough;
+// How much the black lifts toward a dark grey, so the drawn figure shows its light and shade as the world's dark pieces do.
+uniform float toon_lift : hint_range(0.0, 0.2) = 0.035;
+// How much of the world's dust (lib/dirt's wash, look_wash) the dark parts carry: pale blooms of the biome's silt, fixed to
+// the parts, as on a pilgrim who walked far.
+uniform float toon_dust : hint_range(0.0, 1.0) = 0.8;
+// How far the worn chips along the parts' edges reach, meters (with the wash, look_wash).
+uniform float toon_chips : hint_range(0.0, 0.03) = 0.012;
 // How ragged the bands' edges are (a cosine's worth), and the grain's cell, meters: a still grain fixed to the parts,
 // several pixels wide at the play camera, so it never shimmers (docs/art-direction.md#stable-image).
 uniform float toon_grain : hint_range(0.0, 0.5) = 0.14;
@@ -129,6 +138,28 @@ void fragment() {
 	}
 	glow *= 1.0 - pulse * (0.5 + 0.5 * sin(TIME * 1.3));
 
+#ifdef ANDROID_TOON
+	float dark_part = 1.0 - smoothstep(0.05, 0.2, dot(albedo, vec3(0.2126, 0.7152, 0.0722)));
+	albedo += toon_lift * dark_part * (1.0 - trim);
+	vec3 silt = srgb_to_linear(biome_silt.rgb);
+	float dusted = toon_dust * look_wash * dark_part * (1.0 - trim);
+	// Dust gathers where a part meets the next (its ends and seams), ragged, with the darker tide line its edge dried to;
+	// laid on each part from its own corner shifted by its size.
+	vec2 dust_uv = f.uv + f.size * 3.7;
+	float bloom = value_noise2(dust_uv / 0.05) * 0.6 + value_noise2(dust_uv / 0.02 + 5.0) * 0.4;
+	bloom += (1.0 - smoothstep(0.0, 0.06, f.edge)) * 0.45;
+	float bloom_aa = fwidth(bloom) + 1e-4;
+	float dust = smoothstep(0.8 - bloom_aa, 0.8 + bloom_aa, bloom);
+	float tide = 1.0 - smoothstep(0.0, 0.015 + bloom_aa * 1.5, abs(bloom - 0.8));
+	albedo = mix(albedo, silt * 0.3, dust * 0.55 * dusted);
+	albedo = mix(albedo, silt * 0.45, tide * 0.3 * dusted);
+	rough = mix(rough, 1.0, dust * dusted);
+	// Chips along the parts' edges, where the black wears to the pale primer under it: a ragged band, broken along.
+	float ragged = value_noise2(dust_uv / 0.02) * 0.6 + value_noise2(dust_uv / 0.06 + 9.0) * 0.4;
+	float chip_width = toon_chips * (ragged - 0.55) * 2.0;
+	float chip = (1.0 - smoothstep(chip_width - aa, chip_width + aa, f.edge)) * step(0.0, chip_width);
+	albedo = mix(albedo, silt * 0.55, chip * look_wash * dark_part * (1.0 - trim));
+#endif
 	// Grain only: the ink outline (ink_outline.gdshader) draws the figure's edges, not each part's.
 	albedo = look_drawn(albedo, f.uv, 1e3);
 	ALBEDO = mix(mix(albedo, glow_color, glow * 0.6), vec3(1.0), hurt * 0.5);

@@ -199,6 +199,22 @@ look_grain={
 "type": "float",
 "value": 0.0
 }
+look_wash={
+"type": "float",
+"value": 0.0
+}
+look_drips={
+"type": "float",
+"value": 0.0
+}
+look_hatch={
+"type": "float",
+"value": 0.0
+}
+look_frame={
+"type": "float",
+"value": 0.0
+}
 
 biome_rock={
 "type": "color",

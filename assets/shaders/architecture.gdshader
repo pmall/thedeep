@@ -13,6 +13,7 @@ render_mode cull_back;
 #include "res://assets/shaders/lib/water.gdshaderinc"
 #include "res://assets/shaders/lib/frost.gdshaderinc"
 #include "res://assets/shaders/lib/look.gdshaderinc"
+#include "res://assets/shaders/lib/dirt.gdshaderinc"
 
 uniform int slot : hint_enum("Rock", "Metal", "Backdrop", "Backdrop accent", "Foreground") = 2;
 uniform float roughness : hint_range(0.0, 1.0) = 0.85;
@@ -54,7 +55,9 @@ void fragment() {
 	// Rime, when the layer is frosted: duller than on the play plane (frost_value).
 	Frost fr = frost_at(p, n, n, 0.0, 1e3, frost_share);
 	albedo = mix(albedo, frost_color(0.0) * frost_value * fr.tone, fr.cover);
-	// The drawn look's paper grain, on the veil too: the murk is painted on the same paper as the rest.
+	// The drawn look's wash (lib/dirt) and paper grain, on the veil too: the murk is painted on the same paper as the rest.
+	float stain;
+	albedo = look_wash_at(albedo, p, stain);
 	vec2 face = vec2(along, up);
 	float paper = look_paper(face, look_pixel(face));
 	ALBEDO = albedo * shade * paper;

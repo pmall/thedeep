@@ -38,7 +38,7 @@ A check that crashes in `GodotObject.Finalize` (`gchandle.is_released`, "Handle 
 | The ground rules' findings per room, each failing the room check (small steps, a solid in a seam frame's column, meshes across the play plane (a spinner's over its whole turn), pockets under low ceilings, faces in one plane the camera sees) | `godot --headless --path . -- --room MechanicsLab --validate-rooms 2>&1 \| grep GROUND` (`--world sequel --room Strongroom` for the sequel) |
 | Every room's ground routes as the reach planner flies them, played through the real inputs; each must land where the planner said along its path | `godot --headless --path . --fixed-fps 60 --quit-after 20000 -- --route-check 2>&1 \| grep ROUTE` (`--world sequel` for the sequel; `--shard K/N` plays every Nth room) |
 | Every slag body and heat column walked into, plated and not (burned once, set back on rock, in control; plated, through heat unharmed), each fault an error | `godot --headless --path . --fixed-fps 60 --quit-after 20000 -- --burn-probe 2>&1 \| grep BURN` (`--world sequel` for the sequel) |
-| Look-dev captures and frame times | `tools/capture.sh [label]` (`instructions/testing.md#lookdev`; `--world sequel` for another world's rooms) |
+| Look-dev captures and frame times | `tools/capture.sh [label]` (`instructions/testing.md#lookdev`; `--world sequel` for another world's rooms, `--toon` in the drawn look) |
 | UI screens to PNGs (windowed) | `godot --path . --disable-vsync -- --room Undercroft --ui-shot <dir>` (`--hops 18` shows the map after more rooms) |
 | Windowed capture check (needs a GPU; after touching capture code) | `godot --path . -- --capture-test` (add `--disable-vsync` before `--` for the raw cost) |
 
