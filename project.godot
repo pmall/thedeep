@@ -211,6 +211,26 @@ look_hatch={
 "type": "float",
 "value": 0.0
 }
+look_brush={
+"type": "float",
+"value": 0.0
+}
+look_mark={
+"type": "float",
+"value": 0.0
+}
+look_mark_kind={
+"type": "float",
+"value": 0.0
+}
+look_mark_cell={
+"type": "float",
+"value": 0.09
+}
+look_mark_gain={
+"type": "float",
+"value": 1.0
+}
 look_band_steps={
 "type": "float",
 "value": 3.0

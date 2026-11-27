@@ -210,6 +210,7 @@ void fragment() {
 	rough = mix(rough, 1.0, dirt.matte);
 	coat_amount *= 1.0 - dirt.matte;
 	albedo = look_drawn(albedo, f.uv, f.edge);
+	look_mark_at(f.uv);
 	ALBEDO = albedo * shade;
 	EMISSION = ALBEDO * caustics_at(v_world_pos, view_to_world(f.normal, INV_VIEW_MATRIX), TIME);
 	ROUGHNESS = clamp(rough, 0.05, 1.0);

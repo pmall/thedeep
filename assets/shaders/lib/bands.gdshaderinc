@@ -8,6 +8,13 @@
 // no light() of its own), so the plain look is untouched. Each term is a smooth step of the light's own values: nothing is
 // decided per pixel from noise or time (docs/art-direction.md#stable-image).
 
+// A shader that draws nothing of the look itself (the foreground silhouettes) takes it here, for the marks; its surface
+// coordinates are never recorded, so its marks lie flat as one tone.
+#ifndef LOOK_INCLUDED
+#include "res://assets/shaders/lib/noise.gdshaderinc"
+#include "res://assets/shaders/lib/look.gdshaderinc"
+#endif
+
 // How many steps of light, and how soft the edge between two is, as a share of a step.
 global uniform float look_band_steps;
 global uniform float look_band_softness;
@@ -29,7 +36,9 @@ void light() {
 	float amount = clamp(dot(NORMAL, LIGHT), 0.0, 1.0) * ATTENUATION;
 	float reached = smoothstep(0.005, 0.02, amount);
 	float banded = max(look_band(amount), look_band_shade * reached);
-	DIFFUSE_LIGHT += LIGHT_COLOR / PI * banded;
+	// Or drawn in the look's marks (lib/look): the light's amount read as dots or hatching laid on the surface.
+	float drawn = look_mark > 0.0 ? mix(banded, look_marked(amount, look_uv, look_px, 1.0), look_mark) : banded;
+	DIFFUSE_LIGHT += LIGHT_COLOR / PI * drawn;
 
 	float ndh = dot(NORMAL, normalize(VIEW + LIGHT));
 	float at = mix(0.985, 0.9, ROUGHNESS);

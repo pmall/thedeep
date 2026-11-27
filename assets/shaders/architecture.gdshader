@@ -60,6 +60,8 @@ void fragment() {
 	albedo = look_wash_at(albedo, p, stain);
 	vec2 face = vec2(along, up);
 	float paper = look_paper(face, look_pixel(face));
+	paper *= look_strokes(face, look_pixel(face));
+	look_mark_at(face);
 	ALBEDO = albedo * shade * paper;
 	EMISSION = srgb_to_linear(biome_molten.rgb) * glow;
 	ROUGHNESS = mix(roughness, fr.rough, fr.cover);

@@ -1,0 +1,27 @@
+[gd_resource type="Resource" script_class="LookPreset" format=3]
+; Painted: heavy brush strokes laid through every surface, the world lit in flat steps, thick ink, a violet-and-paper grade; the pilgrim a lifted violet-black in the same strokes.
+
+[ext_resource type="Script" path="res://scripts/look/LookPreset.cs" id="1_look"]
+
+[resource]
+script = ExtResource("1_look")
+WorldBands = true
+BandSoftness = 0.1
+BandShade = 0.15
+BandGloss = 0.15
+Brush = 1.0
+Ambient = 0.8
+Hatch = 0.4
+Wash = 1.0
+Lift = 0.1
+InkBody = 0.6
+Softness = 0.06
+Gloss = 0.0
+ToneAmount = 0.5
+ToneShadow = Color(0.1, 0.06, 0.18, 1)
+ToneMid = Color(0.42, 0.4, 0.55, 1)
+ToneLight = Color(0.96, 0.93, 0.88, 1)
+ToneKeep = 0.9
+ToneContrast = 1.2
+InkPixels = 2.2
+WorldInk = 1.0

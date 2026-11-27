@@ -1,9 +1,13 @@
 // The drawn look, shared by the world's materials and the pilgrim's so the figure and the place it walks in are drawn
-// alike: ink along every piece's edges and a still paper grain. Global uniforms (project.godot [shader_globals]), set by
+// alike: ink along every piece's edges, a still paper grain, brush strokes through the paint, and the marks (dots or
+// hatching) the light may be drawn in. Global uniforms (project.godot [shader_globals]), set by
 // ToonLook: all 0 and the materials are exactly as without it. Both are fixed to the surface and fade before they get
 // finer than a few pixels, so the image stays still (docs/art-direction.md#stable-image).
-// Needs lib/noise (value_noise2). Usage, last in fragment() before ALBEDO is set: `albedo = look_drawn(albedo, f.uv, f.edge);`;
+// Needs lib/noise (value_noise2). Usage, last in fragment() before ALBEDO is set: `albedo = look_drawn(albedo, f.uv, f.edge);`
+// and `look_mark_at(f.uv);` so the light can draw its marks (lib/bands);
 // a surface with no edges to ink takes the grain alone: `albedo *= look_paper(uv, look_pixel(uv));`.
+
+#define LOOK_INCLUDED
 
 // How strong the ink along the edges is, 0 to 1.
 global uniform float look_ink;
@@ -12,6 +16,20 @@ global uniform float look_ink_pixels;
 global uniform vec4 look_ink_color;
 // How strong the paper grain is, 0 to 1.
 global uniform float look_grain;
+// How strong the brush strokes laid through every surface's paint are, 0 to 1.
+global uniform float look_brush;
+// How much of the light is drawn as marks instead of shaded (0: none, 1: all), which marks (0: halftone dots, 1: hatching
+// that crosses itself in the darks), their cell at the finest, meters, and how far the light is pushed toward full before
+// it is drawn (above 1, faces in plain light come out clean and only the shade and shadows carry marks).
+global uniform float look_mark;
+global uniform float look_mark_kind;
+global uniform float look_mark_cell;
+global uniform float look_mark_gain;
+
+// Where on the surface the marks are laid (meters) and how many meters a pixel covers there: written in fragment() by
+// look_mark_at, read by the light (lib/bands, android_toon.gdshader).
+varying vec2 look_uv;
+varying float look_px;
 
 // The grain's two cells, meters: the coarse one carries it at the play camera, the fine one close up.
 const float LOOK_GRAIN_COARSE = 0.045;
@@ -25,9 +43,65 @@ float look_paper(vec2 uv, float pixel) {
 	return 1.0 + (coarse * 0.8 + fine * 0.5) * look_grain;
 }
 
+// Brush strokes through the paint: long strokes along the surface's first axis, each slanted a little its own way, in a
+// few flat values with crisp edges, as a painter lays a fill. A factor around 1 for the albedo, faded out before a stroke
+// gets under four pixels wide.
+float look_strokes(vec2 uv, float pixel) {
+	const float WIDTH = 0.12;
+	const float LENGTH = 0.9;
+	float slant = (value_noise2(uv * 0.35 + 4.0) - 0.5) * 0.9;
+	vec2 q = vec2(cos(slant) * uv.x - sin(slant) * uv.y, sin(slant) * uv.x + cos(slant) * uv.y);
+	float n = value_noise2(q / vec2(LENGTH, WIDTH)) * 0.75 + value_noise2(q / vec2(LENGTH * 0.5, WIDTH * 0.6) + 9.0) * 0.25;
+	float x = n * 4.0;
+	float below = floor(x);
+	float edge = fwidth(x) + 1e-4;
+	float level = (below + smoothstep(0.5 - edge, 0.5 + edge, x - below)) / 4.0;
+	float fade = 1.0 - smoothstep(WIDTH / 6.0, WIDTH / 4.0, pixel);
+	return 1.0 + (level - 0.5) * 0.9 * look_brush * fade;
+}
+
+// How much of a cell is lit for a light of `tone` (0–1), in one of the look's marks, at `uv` (meters) with cells
+// `cell` meters wide: halftone dots growing from each cell's middle, or lines thinning as the light grows, a second family
+// across them in the darks.
+float look_mark_cover(float tone, vec2 uv, float cell, float pixel) {
+	float aa = pixel / cell * 1.5 + 1e-3;
+	if (look_mark_kind < 0.5) {
+		// A grid turned 45 degrees, as a printer's screen.
+		vec2 q = vec2(uv.x + uv.y, uv.y - uv.x) * 0.7071 / cell;
+		float d = length(fract(q) - 0.5) / 0.7071;
+		return smoothstep(d - aa, d + aa, tone);
+	}
+	vec2 q = uv / cell;
+	float wobble = (value_noise2(q * 0.25) - 0.5) * 0.35;
+	float a = abs(fract(q.x * 0.7071 + q.y * 0.7071 + wobble) - 0.5) * 2.0;
+	float b = abs(fract(q.x * 0.7071 - q.y * 0.7071 - wobble) - 0.5) * 2.0;
+	float first = smoothstep(1.0 - tone - aa, 1.0 - tone + aa, a);
+	float second = smoothstep((0.5 - tone) * 2.0 - aa, (0.5 - tone) * 2.0 + aa, b);
+	return first * second;
+}
+
+// A light of `amount` (what smooth shading would give, 0 and up) drawn as the look's marks at `uv` (meters), `pixel`
+// meters a pixel, the cells `scale` times the look's (a figure's limbs take finer ones): the share of the light the point
+// takes. Cells grow with distance in doublings, blended between the two
+// nearest, so they never get under seven pixels and none pops (docs/art-direction.md#stable-image).
+float look_marked(float amount, vec2 uv, float pixel, float scale) {
+	float gain = max(look_mark_gain, 1.0);
+	float tone = clamp(amount * gain, 0.0, 1.0);
+	float cell = max(look_mark_cell * scale, 0.005);
+	float level = max(log2(pixel * 7.0 / cell), 0.0);
+	float octave = floor(level);
+	float near = look_mark_cover(tone, uv, cell * exp2(octave), pixel);
+	float far = look_mark_cover(tone, uv, cell * exp2(octave + 1.0), pixel);
+	return mix(near, far, fract(level)) / gain;
+}
+
+// Records where the marks are laid, for the light; a statement for fragment(), before ALBEDO is set.
+#define look_mark_at(uv) look_uv = uv; look_px = look_pixel(uv)
+
 // The albedo drawn: grained, and inked within `look_ink_pixels` of the piece's edge (`edge`, meters; 1e3 where none).
 vec3 look_drawn_at(vec3 albedo, vec2 uv, float edge, float pixel) {
 	albedo *= look_paper(uv, pixel);
+	albedo *= look_strokes(uv, pixel);
 	float width = look_ink_pixels * pixel;
 	// The line wavers a little along its length, as drawn by hand.
 	width *= 0.75 + 0.5 * value_noise2(uv / 0.3);

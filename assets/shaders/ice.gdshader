@@ -102,6 +102,7 @@ void fragment() {
 	n = frost_bump(n, fr, VIEW_MATRIX);
 
 	albedo = look_drawn(albedo, f.uv, f.edge);
+	look_mark_at(f.uv);
 	ALBEDO = albedo * shade;
 	EMISSION = rime * glow * (0.4 + graze + white) * shade * (1.0 - fr.cover);
 	ROUGHNESS = rough;

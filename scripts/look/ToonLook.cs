@@ -137,6 +137,7 @@ public partial class ToonLook : Node
         RenderingServer.GlobalShaderParameterSet(ShaderGlobals.Vignette, Current is null ? room.Biome.Vignette : 0f);
         Band(room, Current?.WorldBands ?? false);
         Environment environment = room.Stage.Environment.Environment;
+        environment.AmbientLightEnergy = room.Biome.AmbientEnergy * (Current?.Ambient ?? 1f);
         if (Current?.Tone is { } tone)
         {
             environment.AdjustmentEnabled = true;
@@ -166,8 +167,13 @@ public partial class ToonLook : Node
         RenderingServer.GlobalShaderParameterSet(ShaderGlobals.LookWash, look?.Wash ?? 0f);
         RenderingServer.GlobalShaderParameterSet(ShaderGlobals.LookDrips, look?.Drips ?? 0f);
         RenderingServer.GlobalShaderParameterSet(ShaderGlobals.LookHatch, look?.Hatch ?? 0f);
+        RenderingServer.GlobalShaderParameterSet(ShaderGlobals.LookBrush, look?.Brush ?? 0f);
+        RenderingServer.GlobalShaderParameterSet(ShaderGlobals.LookMark, look?.Mark ?? 0f);
         if (look is not null)
         {
+            RenderingServer.GlobalShaderParameterSet(ShaderGlobals.LookMarkKind, (float)look.MarkKind);
+            RenderingServer.GlobalShaderParameterSet(ShaderGlobals.LookMarkCell, look.MarkCell);
+            RenderingServer.GlobalShaderParameterSet(ShaderGlobals.LookMarkGain, look.MarkGain);
             RenderingServer.GlobalShaderParameterSet(ShaderGlobals.LookBandSteps, look.BandSteps);
             RenderingServer.GlobalShaderParameterSet(ShaderGlobals.LookBandSoftness, look.BandSoftness);
             RenderingServer.GlobalShaderParameterSet(ShaderGlobals.LookBandShade, look.BandShade);

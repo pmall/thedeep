@@ -23,6 +23,16 @@ public static class ShaderGlobals
     public static readonly StringName LookDrips = "look_drips";
     /// <summary>How strong the drawn look's ink hatching is, 0–1 (<see cref="ToonLook"/>, lib/dirt).</summary>
     public static readonly StringName LookHatch = "look_hatch";
+    /// <summary>How strong the drawn look's brush strokes through the paint are, 0–1 (<see cref="ToonLook"/>, lib/look).</summary>
+    public static readonly StringName LookBrush = "look_brush";
+    /// <summary>How much of the light the drawn look draws as marks, 0–1 (<see cref="ToonLook"/>, lib/look).</summary>
+    public static readonly StringName LookMark = "look_mark";
+    /// <summary>Which marks: 0 halftone dots, 1 hatching (<see cref="ToonLook"/>, lib/look).</summary>
+    public static readonly StringName LookMarkKind = "look_mark_kind";
+    /// <summary>The marks' cell at the finest, meters (<see cref="ToonLook"/>, lib/look).</summary>
+    public static readonly StringName LookMarkCell = "look_mark_cell";
+    /// <summary>How far the light is pushed toward full before it is drawn in marks (<see cref="ToonLook"/>, lib/look).</summary>
+    public static readonly StringName LookMarkGain = "look_mark_gain";
     /// <summary>How many steps of light the world is painted in under the drawn look's bands (<see cref="ToonLook"/>, lib/bands).</summary>
     public static readonly StringName LookBandSteps = "look_band_steps";
     /// <summary>How soft the world's band edges are (<see cref="ToonLook"/>, lib/bands).</summary>

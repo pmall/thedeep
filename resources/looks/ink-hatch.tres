@@ -1,0 +1,25 @@
+[gd_resource type="Resource" script_class="LookPreset" format=3]
+; The first drawn look with its light drawn in crosshatching on the world and the pilgrim alike: faces in plain light clean, shade and shadow hatched, crossed in the darks; brush strokes through the paint; the pilgrim's lit side hatched in pale lines out of its black.
+
+[ext_resource type="Script" path="res://scripts/look/LookPreset.cs" id="1_look"]
+
+[resource]
+script = ExtResource("1_look")
+WorldBands = true
+BandSoftness = 0.1
+BandShade = 0.15
+BandGloss = 0.15
+Mark = 1.0
+MarkKind = 1
+MarkCell = 0.09
+MarkGain = 1.6
+Ambient = 0.55
+Brush = 0.6
+WorldInk = 1.0
+InkPixels = 2.0
+Hatch = 0.6
+Scratch = 1.2
+Lift = 0.05
+Gloss = 0.0
+Softness = 0.08
+Dust = 0.5

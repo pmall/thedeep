@@ -73,13 +73,11 @@ uniform float toon_grain : hint_range(0.0, 0.5) = 0.14;
 uniform float toon_grain_size : hint_range(0.005, 0.2) = 0.035;
 // How bright the drawn rim is, as a share of the smooth look's edge light.
 uniform float toon_edge : hint_range(0.0, 1.0) = 0.1;
-// How strong the pale lines scratched across the parts on their lit side are, as on a scratchboard: the world's hatching
-// drawn inverted, light out of the black (0: none). Drawn in android_toon.gdshader's light().
+// How strong the light drawn out of the black on the lit side is, in the look's marks (lib/look: dots or hatching), as on a
+// scratchboard: the world's marks, light on dark (0: none). Drawn in android_toon.gdshader's light().
 uniform float toon_scratch : hint_range(0.0, 2.0) = 0.0;
 // How far the black takes the drawn look's ink color, so the figure is made of the ink the world's lines are drawn in.
 uniform float toon_ink_body : hint_range(0.0, 1.0) = 0.0;
-// Meters per pixel on the part, for the scratches' spacing (fragment() writes it, light() reads it).
-varying float toon_pixel;
 
 float toon_noise(vec2 uv) {
 	return value_noise2(uv / toon_grain_size) - 0.5;
@@ -171,6 +169,7 @@ void fragment() {
 #endif
 	// Grain only: the ink outline (ink_outline.gdshader) draws the figure's edges, not each part's.
 	albedo = look_drawn(albedo, f.uv, 1e3);
+	look_mark_at(f.uv);
 	ALBEDO = mix(mix(albedo, glow_color, glow * 0.6), vec3(1.0), hurt * 0.5);
 	ROUGHNESS = rough;
 	METALLIC = metal;
@@ -202,6 +201,5 @@ void fragment() {
 	CLEARCOAT = 0.0;
 	toon_uv = f.uv;
 	toon_rough = rough;
-	toon_pixel = look_pixel(f.uv);
 #endif
 }

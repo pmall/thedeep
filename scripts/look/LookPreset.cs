@@ -43,6 +43,27 @@ public partial class LookPreset : Resource
     /// the merely shaded).</summary>
     [Export(PropertyHint.Range, "0,2")] public float Hatch { get; set; } = 1f;
 
+    /// <summary>How strong the brush strokes through every surface's paint are, 0–1 (lib/look).</summary>
+    [Export(PropertyHint.Range, "0,1")] public float Brush { get; set; }
+
+    /// <summary>How much of the light on the world is drawn as marks instead of shaded, 0–1 (lib/look; needs
+    /// <see cref="WorldBands"/>, whose light draws them). The figure's lit side takes the same marks by <see cref="Scratch"/>.</summary>
+    [Export(PropertyHint.Range, "0,1")] public float Mark { get; set; }
+
+    /// <summary>Which marks the light is drawn in.</summary>
+    [Export] public LookMarks MarkKind { get; set; }
+
+    /// <summary>The marks' cell at the finest, meters (they grow with distance to stay seven pixels wide at least).</summary>
+    [Export(PropertyHint.Range, "0.02,0.3")] public float MarkCell { get; set; } = 0.09f;
+
+    /// <summary>How far the light is pushed toward full before it is drawn: above 1, faces in plain light come out clean and
+    /// only the shade and the shadows carry marks.</summary>
+    [Export(PropertyHint.Range, "1,4")] public float MarkGain { get; set; } = 1f;
+
+    /// <summary>The room's ambient light as a share of its biome's: under 1, the direct light (and its marks) carries more of
+    /// the image.</summary>
+    [Export(PropertyHint.Range, "0,2")] public float Ambient { get; set; } = 1f;
+
     /// <summary>Whether the world is lit in flat bands as the figure is (lib/bands), instead of smoothly.</summary>
     [Export] public bool WorldBands { get; set; }
 
@@ -92,8 +113,8 @@ public partial class LookPreset : Resource
     /// <summary>How bright the drawn rim of the smooth look's edge light is (toon_edge).</summary>
     [Export(PropertyHint.Range, "0,1")] public float Edge { get; set; } = 0.1f;
 
-    /// <summary>How strong the pale lines scratched along the lit side are, as on a scratchboard: the figure drawn with
-    /// the world's hatching, inverted (toon_scratch; 0: none).</summary>
+    /// <summary>How strong the light drawn out of the figure's black on its lit side is, in the world's marks
+    /// (<see cref="MarkKind"/>), as on a scratchboard (toon_scratch; 0: none).</summary>
     [Export(PropertyHint.Range, "0,2")] public float Scratch { get; set; }
 
     /// <summary>How far the figure's black takes the ink's color, so it is made of the same ink as the world's lines

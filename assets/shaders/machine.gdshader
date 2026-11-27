@@ -217,6 +217,7 @@ void fragment() {
 	glow *= (0.08 + 0.92 * rouse) * (1.0 + 0.6 * alert);
 
 	albedo = look_drawn(albedo, f.uv, f.edge);
+	look_mark_at(f.uv);
 	ALBEDO = mix(mix(albedo, glow_color, min(glow, 1.0) * 0.6), vec3(1.0), hurt * 0.35);
 	NORMAL = n;
 	ROUGHNESS = rough;
