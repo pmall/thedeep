@@ -58,15 +58,22 @@ public partial class Conversations : Node
     {
         if (_talking is { } talking && _flow is { } flow)
         {
+            Session.Prompts.Set(InteractionPriority.Conversation, null);
             Play(talking, flow, (float)delta);
             return;
         }
 
-        Conversation? near = Player.InControl && Player.IsUpright && Player.IsOnFloor() && !Session.Prompting ? Nearest() : null;
+        Conversation? candidate = Player.InControl && Player.IsUpright && Player.IsOnFloor() ? Nearest() : null;
+        Session.Prompts.Set(
+            InteractionPriority.Conversation,
+            candidate,
+            candidate is null ? 0f : System.Numerics.Vector2.Distance(candidate.GlobalPosition.Flat(), Player.GlobalPosition.Flat()));
+        Conversation? near = candidate is not null && Session.Prompts.IsActive(candidate) ? candidate : null;
         Prompt(near);
         near?.Place(Player.GlobalPosition);
-        if (near is not null && Input.IsActionJustPressed(InputActions.Interact))
+        if (near is not null && Input.IsActionJustPressed(InputActions.Interact) && Session.Prompts.TryUse(near, Engine.GetPhysicsFrames()))
         {
+            Session.Prompts.Set(InteractionPriority.Conversation, null);
             Begin(near);
         }
     }

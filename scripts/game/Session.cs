@@ -54,7 +54,8 @@ public partial class Session : Node
     /// <summary>Where, above the pilgrim's feet, a relic's core, an item or a shard drifts to be taken in (meters).</summary>
     public static readonly Vector3 AbsorbPoint = new(0f, 1.05f, 0f);
 
-    private HeldMoments _held = null!;
+    private HeldMoments? _held;
+    private HeldMoments Held => _held ??= new HeldMoments(Player);
     private Shrine? _prompted;
     private ScripturePlate? _plate;
 
@@ -62,6 +63,9 @@ public partial class Session : Node
     private readonly HashSet<Proclamation> _spoken = new();
 
     private Pilgrimage _pilgrimage = new(new SaveData());
+
+    /// <summary>Arbitrates overlapping interact prompts across shrines, plates, law breaks, levers and conversations.</summary>
+    public PromptArbiter Prompts { get; } = new();
 
     /// <summary>The shrine last rested at (empty before the first rest), kept in the save.</summary>
     public string RestedShrine => _pilgrimage.Shrine;
@@ -75,8 +79,8 @@ public partial class Session : Node
     /// <summary>What the pilgrimage has done so far, as the text written to disk.</summary>
     public string SaveText() => _pilgrimage.Save.ToJson();
 
-    /// <summary>A shrine or a plate is offered (interact would rest or read): nothing else takes the press.</summary>
-    public bool Prompting => _prompted is not null || _plate is not null;
+    /// <summary>Any interactable currently owns the interact prompt.</summary>
+    public bool Prompting => Prompts.Any;
 
     /// <summary>Raised when a <see cref="Proclamation"/> speaks to the pilgrim.</summary>
     public event System.Action<Proclamation>? Spoke;
@@ -86,8 +90,6 @@ public partial class Session : Node
 
     public override void _Ready()
     {
-        _held = new HeldMoments(Player);
-
         // The pilgrim as the run left it (a new run's holds nothing), before the first room is shown: every node that shows a room
         // as the run left it reads the run from here or from the pilgrim.
         Player.Abilities.Set((Ability)_pilgrimage.Save.Abilities, true);
@@ -125,8 +127,10 @@ public partial class Session : Node
 
     public override void _PhysicsProcess(double delta)
     {
-        if (_held.Busy || !Player.InControl)
+        if (Held.Busy || !Player.InControl)
         {
+            Prompts.Set(InteractionPriority.Shrine, null);
+            Prompts.Set(InteractionPriority.Plate, null);
             Prompt(null);
             PromptPlate(null);
             return;
@@ -163,19 +167,30 @@ public partial class Session : Node
         }
 
         bool standing = Player.IsUpright && Player.IsOnFloor();
-        Shrine? near = standing ? RoomLookups.Near(room.All<Shrine>(), p, RestRange) : null;
+        Shrine? nearCandidate = standing ? RoomLookups.Near(room.All<Shrine>(), p, RestRange) : null;
+        Prompts.Set(
+            InteractionPriority.Shrine,
+            nearCandidate,
+            nearCandidate is null ? 0f : System.Numerics.Vector2.Distance(nearCandidate.GlobalPosition.Flat(), p.Flat()));
+        ScripturePlate? plateCandidate = standing ? RoomLookups.Near(room.All<ScripturePlate>(), p, ReadRange) : null;
+        Prompts.Set(
+            InteractionPriority.Plate,
+            plateCandidate,
+            plateCandidate is null ? 0f : System.Numerics.Vector2.Distance(plateCandidate.GlobalPosition.Flat(), p.Flat()));
+
+        Shrine? near = nearCandidate is not null && Prompts.IsActive(nearCandidate) ? nearCandidate : null;
+        ScripturePlate? plate = plateCandidate is not null && Prompts.IsActive(plateCandidate) ? plateCandidate : null;
         Prompt(near);
-        ScripturePlate? plate = standing && near is null
-            ? RoomLookups.Near(room.All<ScripturePlate>(), p, ReadRange)
-            : null;
         PromptPlate(plate);
-        if (near is not null && Input.IsActionJustPressed(InputActions.Interact))
+        ulong tick = Engine.GetPhysicsFrames();
+        if (near is not null && Input.IsActionJustPressed(InputActions.Interact) && Prompts.TryUse(near, tick))
         {
+            Prompts.Set(InteractionPriority.Shrine, null);
             Rest(near);
             return;
         }
 
-        if (plate is not null && Input.IsActionJustPressed(InputActions.Interact))
+        if (plate is not null && Input.IsActionJustPressed(InputActions.Interact) && Prompts.TryUse(plate, tick))
         {
             Banner.Show(plate.Said);
         }
@@ -226,7 +241,7 @@ public partial class Session : Node
     /// <summary>Resting: full health, the shrine flares, and the game is saved here.</summary>
     private async void Rest(Shrine shrine)
     {
-        await _held.Hold(PilgrimMoment.Rest, async () =>
+        await Held.Hold(PilgrimMoment.Rest, async () =>
         {
             Player.Vitality.Restore();
             _pilgrimage.Rest(World.RoomName, shrine.NameText());
@@ -244,7 +259,7 @@ public partial class Session : Node
         Ability ability = relic.Ability;
         Announcement said = relic.Said;
         bool taken = false;
-        await _held.Hold(PilgrimMoment.Relic, async () =>
+        await Held.Hold(PilgrimMoment.Relic, async () =>
         {
             if (!await relic.Absorb(Player, AbsorbPoint))
             {
@@ -268,7 +283,7 @@ public partial class Session : Node
     /// </summary>
     private async void End()
     {
-        _held.Begin();
+        Held.Begin();
         bool reloaded = false;
         try
         {
@@ -289,7 +304,7 @@ public partial class Session : Node
             // A reload frees the pilgrim with the scene; a pilgrim that stays (something failed) is let go.
             if (!reloaded)
             {
-                _held.Let();
+                Held.Let();
             }
         }
     }
@@ -336,7 +351,7 @@ public partial class Session : Node
     /// </summary>
     private async void SetBack()
     {
-        _held.Begin();
+        Held.Begin();
         try
         {
             Player.Frozen = true;
@@ -345,7 +360,7 @@ public partial class Session : Node
         }
         finally
         {
-            _held.Let();
+            Held.Let();
         }
 
         await Fade.To(0f, ScorchFadeIn);
@@ -353,7 +368,7 @@ public partial class Session : Node
 
     private async void Return()
     {
-        _held.Begin();
+        Held.Begin();
         try
         {
             await Fade.To(1f, DeathFadeOut);
@@ -367,7 +382,7 @@ public partial class Session : Node
         }
         finally
         {
-            _held.Let();
+            Held.Let();
         }
 
         await Fade.To(0f, DeathFadeIn);
@@ -387,6 +402,7 @@ public partial class Session : Node
     /// <summary>A room is entered: its prompts, banner and spoken lines are cleared and the pilgrimage notes the visit; the room's name.</summary>
     private string Begin(Room room)
     {
+        Prompts.Clear();
         Prompt(null);
         PromptPlate(null);
         Banner.Clear();
@@ -399,7 +415,7 @@ public partial class Session : Node
     /// <summary>Connects the room's bricks to the pilgrim and to what the session keeps; once per room, when it loads.</summary>
     private void Wire(Room room, string name)
     {
-        RoomBind.Give(room, Player, Banner);
+        RoomBind.Give(room, Player, Banner, Prompts);
         foreach (Block block in room.Blocks().Where(b => b.Cracked && !_pilgrimage.Done(name, b.NameText())))
         {
             block.Shattered += OnShattered;
@@ -434,7 +450,7 @@ public partial class Session : Node
         Announcement said = law.Said;
         Remember(law.NameText());
         Camera.AddShake(LawShake);
-        await _held.Hold(PilgrimMoment.None, async () =>
+        await Held.Hold(PilgrimMoment.None, async () =>
             await ToSignal(GetTree().CreateTimer(LawHold, processAlways: false), SceneTreeTimer.SignalName.Timeout));
         Banner.Show(said);
     }

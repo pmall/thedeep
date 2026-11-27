@@ -20,17 +20,17 @@ public partial class Player : CharacterBody3D
     /// <summary>The body's capsule (its shape is a <see cref="CapsuleShape3D"/>), sized and placed from the tuning's body on ready.</summary>
     [Export] public CollisionShape3D Collision { get; set; } = null!;
 
+    /// <summary>The dot product under which a surface's normal faces the way the body heads (<see cref="MetalContact"/>): more than 60 degrees past square-on.</summary>
+    public const float HeadOn = -0.5f;
+
     private PlayerState? _state;
     private PilgrimControl? _control;
     private ControlLimits? _limits;
     private Vitality? _vitality;
     private PlayerStateSet? _states;
     private CapsuleShape3D? _capsule;
-    private PlaneRay? _ray;
-    private PlaneRay Ray => _ray ??= PlaneRay.For(PhysicsLayers.Solid);
-    private ShapeProbe? _fit;
-    private ShapeProbe Fit => _fit ??= ShapeProbe.For(PhysicsLayers.Solid);
-    private readonly KinematicCollision3D _moveHit = new();
+    private PlayerProbes? _probes;
+    private PlayerProbes Probes => _probes ??= new PlayerProbes(this);
 
     // Built from the exports on first use (they are set before the node enters the tree).
     private PilgrimControl Control => _control ??= new PilgrimControl(Limits);
@@ -204,11 +204,12 @@ public partial class Player : CharacterBody3D
         Capsule.Height = Tuning.BodyHeight;
         Collision.Position = new Vector3(0f, 0.5f * Tuning.BodyHeight, 0f);
         _capsuleOffset = null;
-        Ray.Attach(this);
-        Fit.Attach(this, Capsule);
+        Probes.Attach(Capsule);
         CurrentState.Enter();
         Visual.Snap();
     }
+
+    public override void _ExitTree() => _probes?.Dispose();
 
     public override void _PhysicsProcess(double delta)
     {
@@ -253,7 +254,7 @@ public partial class Player : CharacterBody3D
         float fallSpeed = -Velocity.Y;
         if (CurrentState.Bores)
         {
-            Bore(Velocity * dt * Tuning.BoreLookAhead);
+            Probes.Bore(Velocity * dt * Tuning.BoreLookAhead);
         }
 
         PushSpeed = Velocity.X;
@@ -277,7 +278,7 @@ public partial class Player : CharacterBody3D
         if (IsOnFloor() && IsUpright)
         {
             Control.Stood();
-            FloorSurface = FloorSurfaceKind();
+            FloorSurface = Probes.FloorSurfaceKind(Feet, FloorSurface);
             if (!wasOnFloor)
             {
                 Visual.Land(fallSpeed);
@@ -346,33 +347,28 @@ public partial class Player : CharacterBody3D
         Arrived?.Invoke();
     }
 
+    /// <summary>A contact from the last move with a metal surface facing <paramref name="heading"/> within <paramref name="maxDot"/>.</summary>
+    public (NVector2 Normal, NVector2 Point)? MetalContact(NVector2 heading, float maxDot) => Probes.MetalContact(heading, maxDot);
+
+    /// <summary>What a ray on the play plane first hits: metal, rock, or null (nothing).</summary>
+    public SurfaceKind? SurfaceRay(NVector2 from, NVector2 to) => Probes.SurfaceRay(from, to);
+
+    /// <summary>Where a ray on the play plane first hits metal, or null (rock, or nothing, in the way).</summary>
+    public NVector2? MetalRay(NVector2 from, NVector2 to) => Probes.MetalRay(from, to);
+
     /// <summary>
     /// Mag-grip, if it applies now: rising into a metal ceiling, or pressing into a metal wall. Returns the
     /// grip state, prepared to attach, or null. Called by the upright states before they move.
     /// </summary>
     public GripState? GripAttach()
     {
-        if (!Abilities.Has(Ability.MagGrip) || Control.GripHeldOff || !IsUpright)
+        if (!Abilities.Has(Ability.MagGrip) || Control.GripHeldOff || !IsUpright
+            || Probes.FindGripPose(CapsuleOffset) is not { } pose)
         {
             return null;
         }
 
-        GripPose? pose = null;
-        if (IsOnCeiling() && Velocity.Y >= 0f && MetalContact(new NVector2(0f, 1f), HeadOn) is { } ceiling)
-        {
-            pose = GripMath.OntoCeiling(Feet, ceiling.Point.Y);
-        }
-        else if (IsOnWall() && CurrentInput.MoveX != 0 && MetalContact(new NVector2(CurrentInput.MoveX, 0f), HeadOn) is { } wall)
-        {
-            pose = GripMath.OntoWall(Feet, CenterHeight, wall.Point.X, wall.Normal);
-        }
-
-        if (pose is not { } p || !Fits(p))
-        {
-            return null;
-        }
-
-        States.Grip.Prepare(p);
+        States.Grip.Prepare(pose);
         return States.Grip;
     }
 
@@ -445,36 +441,14 @@ public partial class Player : CharacterBody3D
     /// </summary>
     public bool LedgeAssist()
     {
-        int dir = CurrentInput.MoveX;
-        if (!IsUpright || dir == 0 || !IsOnWall() || GetWallNormal().X * dir > -0.5f || Mathf.Sign(PushSpeed) != dir)
+        if (Probes.FindLedgeVault(PushSpeed, Capsule.Radius, CapsuleOffset) is not { } vault)
         {
             return false;
         }
 
-        // The top of the wall, looked for from above the reach, just past its face.
-        float probeX = GlobalPosition.X + dir * (Capsule.Radius + TheDeep.LedgeAssist.Reach);
-        float assist = Tuning.LedgeAssistHeight;
-        if (!Ray.Cast(new Vector3(probeX, GlobalPosition.Y + assist + 0.05f, 0f), new Vector3(probeX, GlobalPosition.Y, 0f))
-            || Ray.GetCollisionNormal().Y < 0.5f)
-        {
-            return false;
-        }
-
-        float top = Ray.GetCollisionPoint().Y;
-        if (top - GlobalPosition.Y > assist)
-        {
-            return false;
-        }
-
-        var feet = new NVector2(GlobalPosition.X + dir * TheDeep.LedgeAssist.Reach, top + 0.01f);
-        if (!Fits(new GripPose(feet, new NVector2(0f, 1f))))
-        {
-            return false;
-        }
-
-        Orient(new GripPose(feet, new NVector2(0f, 1f)));
+        Orient(vault.Pose);
         Visual.Vault();
-        Velocity = new Vector3(dir * TheDeep.LedgeAssist.Speed(PushSpeed, Tuning.RunSpeed), 0f, 0f);
+        Velocity = vault.Velocity;
         return true;
     }
 
@@ -515,7 +489,7 @@ public partial class Player : CharacterBody3D
     {
         bool onFloor = IsOnFloor();
         return DashRules.AsksForDive(Abilities.Has(Ability.Drill), CurrentInput.MoveY, IsUpright, WaterSurface is not null, Sunk)
-            && DashRules.CanDiveFrom(onFloor, onFloor && CrackedAt(Vector3.Down * 0.1f) is not null)
+            && DashRules.CanDiveFrom(onFloor, onFloor && Probes.CrackedAt(Vector3.Down * 0.1f) is not null)
                 ? States.Dive
                 : States.Dash;
     }
@@ -526,32 +500,11 @@ public partial class Player : CharacterBody3D
         Control.BeginDash(IsOnFloor());
     }
 
-    /// <summary>With the Drill, breaks the cracked rock the body would run into moving by <paramref name="motion"/>.</summary>
-    private void Bore(Vector3 motion)
-    {
-        if (!Abilities.Has(Ability.Drill) || motion.LengthSquared() < 1e-6f)
-        {
-            return;
-        }
-
-        // A few in a row: breaking one may show another right behind it.
-        for (int i = 0; i < 3 && CrackedAt(motion) is { } block; i++)
-        {
-            block.Break(motion.Normalized());
-        }
-    }
-
     /// <summary>With the Drill, whether the body moving by <paramref name="motion"/> would run into cracked rock it can bore.</summary>
-    public bool FacesCrack(Vector3 motion) => Abilities.Has(Ability.Drill) && motion.LengthSquared() > 1e-6f && CrackedAt(motion) is not null;
+    public bool FacesCrack(Vector3 motion) => Abilities.Has(Ability.Drill) && motion.LengthSquared() > 1e-6f && Probes.CrackedAt(motion) is not null;
 
     /// <summary>The surface height of the swimmable water at <paramref name="point"/>, or null.</summary>
     private static float? WaterAt(Vector3 point) => WaterBody.SurfaceAt(point.X, point.Y);
-
-    /// <summary>The unbroken cracked rock the body would hit first moving by <paramref name="motion"/>, or null.</summary>
-    private Block? CrackedAt(Vector3 motion)
-    {
-        return TestMove(GlobalTransform, motion, _moveHit) && _moveHit.GetCollider() is Block { Cracked: true, Broken: false } block ? block : null;
-    }
 
     private void ReadInput()
     {

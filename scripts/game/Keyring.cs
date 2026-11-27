@@ -63,6 +63,7 @@ public partial class Keyring : Node
     {
         if (_taking || !Player.InControl)
         {
+            Session.Prompts.Set(InteractionPriority.Lever, null);
             PromptLever(null);
             return;
         }
@@ -80,10 +81,16 @@ public partial class Keyring : Node
             }
         }
 
-        Lever? lever = Player.IsUpright && Player.IsOnFloor() && !Session.Prompting ? NearLever(room, p) : null;
+        Lever? candidate = Player.IsUpright && Player.IsOnFloor() ? NearLever(room, p) : null;
+        Session.Prompts.Set(
+            InteractionPriority.Lever,
+            candidate,
+            candidate is null ? 0f : System.Numerics.Vector2.Distance(candidate.GlobalPosition.Flat(), p.Flat()));
+        Lever? lever = candidate is not null && Session.Prompts.IsActive(candidate) ? candidate : null;
         PromptLever(lever);
-        if (lever is not null && Input.IsActionJustPressed(InputActions.Interact))
+        if (lever is not null && Input.IsActionJustPressed(InputActions.Interact) && Session.Prompts.TryUse(lever, Engine.GetPhysicsFrames()))
         {
+            Session.Prompts.Set(InteractionPriority.Lever, null);
             lever.Pull();
             Player.Items.Take(lever.Item.Id);
             Session.Remember(lever.NameText());

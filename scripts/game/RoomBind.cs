@@ -39,8 +39,8 @@ public static class RoomBind
         }
     }
 
-    /// <summary>Gives the room's heat, slag, lifts, laws and scripture plates the pilgrim and the banner they act on.</summary>
-    public static void Give(Room room, Player player, Banner banner)
+    /// <summary>Gives the room's heat, slag, lifts, laws and scripture plates the pilgrim, banner and prompt arbiter they act on.</summary>
+    public static void Give(Room room, Player player, Banner banner, PromptArbiter prompts)
     {
         foreach (HeatColumn zone in room.All<HeatColumn>())
         {
@@ -65,6 +65,7 @@ public static class RoomBind
         foreach (LawBreak law in room.All<LawBreak>())
         {
             law.Player = player;
+            law.Prompts = prompts;
         }
     }
 }

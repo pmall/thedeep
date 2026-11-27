@@ -96,6 +96,9 @@ public partial class LawBreak : Node3D, IAnnounces, IHints
     /// <summary>The pilgrim, set by the session when the room loads.</summary>
     public Player? Player { get; set; }
 
+    /// <summary>Shared prompt arbiter, set by the session when the room loads.</summary>
+    public PromptArbiter? Prompts { get; set; }
+
     /// <summary>The law's rules, built from the exports on first use.</summary>
     private LawStrain Rules => _strain ??= new LawStrain(new LawStrainTuning(Near, Lip, BehindLip, LipHeight, PushStrain, PushTime, ShowRate, ReleaseRate, BreakTime));
 
@@ -135,6 +138,7 @@ public partial class LawBreak : Node3D, IAnnounces, IHints
     public void Settle()
     {
         Rules.Settle();
+        Prompts?.Set(InteractionPriority.LawBreak, null);
         Prompt.Offer(false);
         Fence.ProcessMode = ProcessModeEnum.Disabled;
         Apply();
@@ -166,7 +170,8 @@ public partial class LawBreak : Node3D, IAnnounces, IHints
             Refusal?.Invoke(this);
         }
 
-        Prompt.Offer(Rules.Offering);
+        Prompts?.Set(InteractionPriority.LawBreak, Rules.Offering ? this : null, MathF.Abs(away));
+        Prompt.Offer(Rules.Offering && (Prompts?.IsActive(this) ?? true));
         Apply();
     }
 
@@ -179,6 +184,7 @@ public partial class LawBreak : Node3D, IAnnounces, IHints
         }
 
         Rules.Break();
+        Prompts?.Set(InteractionPriority.LawBreak, null);
         Prompt.Offer(false);
         Fence.ProcessMode = ProcessModeEnum.Disabled;
         Broke?.Invoke(this);
