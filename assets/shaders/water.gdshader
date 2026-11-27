@@ -16,6 +16,10 @@ render_mode blend_premul_alpha, depth_draw_always, cull_back, fog_disabled, spec
 instance uniform float floor_y = -1e4;
 /// The body's sides in world X/Z (x min, z min, x max, z max), set by the WaterBody.
 instance uniform vec4 bounds = vec4(-1e4, -1e4, 1e4, 1e4);
+/// Non-zero when the body extends into the open room behind the play plane, so its back dissolves into the room's haze.
+instance uniform float open_back = 0.0;
+
+global uniform vec4 biome_haze;
 
 group_uniforms ripples;
 /// Ripple size, meters (across the room; three times longer into the scene, where the view foreshortens them).
@@ -32,6 +36,11 @@ uniform float film : hint_range(0.0, 1.0) = 0.12;
 uniform float reflectance : hint_range(0.0, 1.0) = 0.04;
 /// How much of the biome's water tint the surface takes where it reflects (under the probe's picture).
 uniform float sky_tint : hint_range(0.0, 1.0) = 0.55;
+/// Aerial haze over open water behind the play plane (share per meter past z = -2, capped at `haze_max`), and how many meters
+/// before its far back edge (`bounds.y`) the surface dissolves into the mist.
+uniform float haze_per_meter : hint_range(0.0, 0.1) = 0.032;
+uniform float haze_max : hint_range(0.0, 0.95) = 0.72;
+uniform float back_fade : hint_range(0.0, 12.0) = 5.0;
 group_uniforms;
 
 varying vec3 v_world_pos;
@@ -75,12 +84,25 @@ void fragment() {
 
 	float facing = clamp(dot(n, -v), 0.0, 1.0);
 	float fresnel = reflectance + (1.0 - reflectance) * pow(1.0 - facing, 5.0);
+	vec3 surface = deep * sunk * (1.0 - fresnel) + reflected * fresnel;
+	float alpha = 1.0 - (1.0 - sunk) * (1.0 - fresnel);
+	if (open_back > 0.5) {
+		float behind = max(-v_world_pos.z - 2.0, 0.0);
+		float hz = clamp(behind * haze_per_meter, 0.0, haze_max);
+		vec3 haze_color = srgb_to_linear(biome_haze.rgb);
+		surface = mix(surface, haze_color * alpha, hz);
+		float edge = smoothstep(0.0, max(back_fade, 0.01), v_world_pos.z - bounds.y);
+		surface *= edge;
+		alpha *= edge;
+		SPECULAR = 0.5 * (1.0 - hz) * edge;
+	} else {
+		SPECULAR = 0.5;
+	}
 	ALBEDO = vec3(0.0);
 	// Premultiplied: what the surface adds over the scene, and how much of the scene it hides.
-	EMISSION = deep * sunk * (1.0 - fresnel) + reflected * fresnel;
-	ALPHA = 1.0 - (1.0 - sunk) * (1.0 - fresnel);
+	EMISSION = surface;
+	ALPHA = alpha;
 	ROUGHNESS = 0.02;
-	SPECULAR = 0.5;
 	METALLIC = 0.0;
 	NORMAL = n;
 }

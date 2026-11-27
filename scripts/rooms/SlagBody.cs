@@ -108,6 +108,10 @@ public partial class SlagBody : Node3D
         front.SetInstanceShaderParameter(HalfWidthParameter, 0.5f * Size.X);
         AddChild(front);
 
+        Material? basinLook = LiquidBasin.FindLook(this.Ancestor<Room>(), PlayRegion, out float bankTop);
+        float backZ = GlobalPosition.Z - 0.5f * Size.Y;
+        AddChild(LiquidBasin.BuildBackWall(GlobalPosition, PlayRegion, backZ, bankTop, basinLook));
+
         float half = 0.5f * Size.X - GlowInset;
         int gaps = Mathf.Max(1, Mathf.CeilToInt(2f * half / GlowSpacing));
         for (int i = 0; i <= gaps; i++)

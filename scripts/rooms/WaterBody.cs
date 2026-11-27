@@ -21,10 +21,12 @@ public partial class WaterBody : Node3D
     /// <summary>The section shader's per-instance surface height.</summary>
     private static readonly StringName SurfaceParameter = "surface_y";
 
-    /// <summary>The surface shader's per-instance floor height and sides, from which it draws the water's depth.</summary>
+    /// <summary>The surface shader's per-instance floor height, sides and whether its back edge dissolves into open room haze.</summary>
     private static readonly StringName FloorParameter = "floor_y";
 
     private static readonly StringName BoundsParameter = "bounds";
+
+    private static readonly StringName OpenBackParameter = "open_back";
 
     /// <summary>
     /// The render layer of the water's own meshes: only they take the reflection probe's picture, and the probe leaves
@@ -211,19 +213,35 @@ public partial class WaterBody : Node3D
 
         Vector3 center = GlobalPosition;
         Rect2 extent = Area;
-        var rect = new Vector4(extent.Position.X, extent.Position.Y, extent.End.X, extent.End.Y);
+        Room? room = this.Ancestor<Room>();
+        bool contained = LiquidBasin.IsContainedPool(this, room);
+        float zBack = extent.Position.Y;
+        float zFront = extent.End.Y;
+        if (contained)
+        {
+            zBack = PlayPlane.Back;
+            zFront = Mathf.Clamp(extent.End.Y, PlayPlane.Front, PlayPlane.SectionFront + 0.05f);
+            Material? basinLook = LiquidBasin.FindLook(room, PlayRegion, out float bankTop);
+            AddChild(LiquidBasin.BuildBackWall(center, PlayRegion, zBack, bankTop, basinLook));
+        }
+
+        float surfaceDepth = Mathf.Max(0.25f, zFront - zBack);
+        float surfaceCenterZ = 0.5f * (zBack + zFront) - center.Z;
+        var rect = new Vector4(extent.Position.X, zBack, extent.End.X, zFront);
         var surface = new MeshInstance3D
         {
-            Mesh = new PlaneMesh { Size = Size },
+            Mesh = new PlaneMesh { Size = new Vector2(Size.X, surfaceDepth) },
             MaterialOverride = SurfaceMaterial,
             CastShadow = GeometryInstance3D.ShadowCastingSetting.Off,
             Layers = WaterRenderLayer,
+            Position = new Vector3(0f, 0f, surfaceCenterZ),
         };
         surface.SetInstanceShaderParameter(FloorParameter, SurfaceY - Depth);
         surface.SetInstanceShaderParameter(BoundsParameter, rect);
+        surface.SetInstanceShaderParameter(OpenBackParameter, !contained && zBack < PlayPlane.Back - 0.5f ? 1f : 0f);
         AddChild(surface);
-        AddChild(ReflectionOfRoom());
-        if (LightCutoff() is { } cutoff)
+        AddChild(ReflectionOfRoom(surfaceDepth, surfaceCenterZ));
+        if (!contained && LightCutoff() is { } cutoff)
         {
             AddChild(cutoff);
         }
@@ -233,10 +251,12 @@ public partial class WaterBody : Node3D
             return;
         }
 
+        // Cover the visual basin back wall too so its submerged face takes underwater murk and caustics.
+        Vector4 waterArea = contained ? new Vector4(extent.Position.X, zBack - LiquidBasin.BackThickness - 0.1f, extent.End.X, zFront) : rect;
         RenderingServer.GlobalShaderParameterSet(ShaderGlobals.WaterLevel, center.Y);
         RenderingServer.GlobalShaderParameterSet(ShaderGlobals.WaterFloor, center.Y - Depth);
         RenderingServer.GlobalShaderParameterSet(ShaderGlobals.WaterMurk, Murk);
-        RenderingServer.GlobalShaderParameterSet(ShaderGlobals.WaterArea, rect);
+        RenderingServer.GlobalShaderParameterSet(ShaderGlobals.WaterArea, waterArea);
     }
 
     /// <summary>
@@ -244,13 +264,14 @@ public partial class WaterBody : Node3D
     /// flickers), box-projected so it lines up with the walls, and shown on the water alone. Its sharpness is the
     /// reflection atlas's size in project.godot.
     /// </summary>
-    private ReflectionProbe ReflectionOfRoom()
+    private ReflectionProbe ReflectionOfRoom(float depthZ, float centerZ)
     {
-        float eyeZ = Mathf.Clamp(-GlobalPosition.Z, -0.5f * Size.Y + 0.5f, 0.5f * Size.Y - 0.5f);
+        float probeDepth = Mathf.Max(depthZ, 6f);
+        float eyeZ = Mathf.Clamp(-(GlobalPosition.Z + centerZ), -0.5f * probeDepth + 0.5f, 0.5f * probeDepth - 0.5f);
         return new ReflectionProbe
         {
-            Size = new Vector3(Size.X, ReflectionHeight + ReflectionUnder, Size.Y),
-            Position = new Vector3(0f, 0.5f * (ReflectionHeight - ReflectionUnder), 0f),
+            Size = new Vector3(Size.X, ReflectionHeight + ReflectionUnder, probeDepth),
+            Position = new Vector3(0f, 0.5f * (ReflectionHeight - ReflectionUnder), centerZ),
             OriginOffset = new Vector3(0f, ReflectionEye + 0.5f * ReflectionUnder - 0.5f * ReflectionHeight, eyeZ),
             BlendDistance = 0f,
             Intensity = Reflection,
