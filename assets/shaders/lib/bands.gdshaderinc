@@ -37,7 +37,7 @@ void light() {
 	float reached = smoothstep(0.005, 0.02, amount);
 	float banded = max(look_band(amount), look_band_shade * reached);
 	// Or drawn in the look's marks (lib/look): the light's amount read as dots or hatching laid on the surface.
-	float drawn = look_mark > 0.0 ? mix(banded, look_marked(amount, look_uv, look_px, 1.0), look_mark) : banded;
+	float drawn = look_mark > 0.0 ? mix(banded, look_marked(amount, look_uv, look_px, 1.0, 1.0), look_mark) : banded;
 	DIFFUSE_LIGHT += LIGHT_COLOR / PI * drawn;
 
 	float ndh = dot(NORMAL, normalize(VIEW + LIGHT));

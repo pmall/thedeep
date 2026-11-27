@@ -43,55 +43,66 @@ float look_paper(vec2 uv, float pixel) {
 	return 1.0 + (coarse * 0.8 + fine * 0.5) * look_grain;
 }
 
-// Brush strokes through the paint: long strokes along the surface's first axis, each slanted a little its own way, in a
-// few flat values with crisp edges, as a painter lays a fill. A factor around 1 for the albedo, faded out before a stroke
-// gets under four pixels wide.
+// Brush strokes through the paint: patches of short strokes, each patch laid in its own direction, each stroke a flat
+// value with ragged ends, rows of them offset like a painter's dabs. A factor around 1 for the albedo, faded out before a
+// stroke gets under four pixels wide.
+float look_stroke_layer(vec2 uv, float angle, float layer) {
+	const vec2 STROKE = vec2(0.42, 0.1);
+	vec2 q = vec2(cos(angle) * uv.x + sin(angle) * uv.y, -sin(angle) * uv.x + cos(angle) * uv.y) / STROKE;
+	float row = floor(q.y);
+	// Each row's strokes start at their own offset, and each stroke's ends waver across its width.
+	float x = q.x + hash12(vec2(row, layer)) * 7.0 + (value_noise2(vec2(q.y * 2.5, row * 1.3 + layer)) - 0.5) * 0.7;
+	return hash12(vec2(floor(x), row + layer * 31.0));
+}
+
 float look_strokes(vec2 uv, float pixel) {
-	const float WIDTH = 0.12;
-	const float LENGTH = 0.9;
-	float slant = (value_noise2(uv * 0.35 + 4.0) - 0.5) * 0.9;
-	vec2 q = vec2(cos(slant) * uv.x - sin(slant) * uv.y, sin(slant) * uv.x + cos(slant) * uv.y);
-	float n = value_noise2(q / vec2(LENGTH, WIDTH)) * 0.75 + value_noise2(q / vec2(LENGTH * 0.5, WIDTH * 0.6) + 9.0) * 0.25;
-	float x = n * 4.0;
-	float below = floor(x);
-	float edge = fwidth(x) + 1e-4;
-	float level = (below + smoothstep(0.5 - edge, 0.5 + edge, x - below)) / 4.0;
-	float fade = 1.0 - smoothstep(WIDTH / 6.0, WIDTH / 4.0, pixel);
-	return 1.0 + (level - 0.5) * 0.9 * look_brush * fade;
+	float drift = (value_noise2(uv * 0.15 + 2.0) - 0.5) * 0.8;
+	float one = look_stroke_layer(uv, 0.45 + drift, 0.0);
+	float two = look_stroke_layer(uv, -0.6 + drift, 1.0);
+	// Patches about a meter across, each in one direction, meeting on a crisp edge.
+	float patch_noise = value_noise2(uv * 0.9 + 6.0);
+	float edge = fwidth(patch_noise) + 1e-4;
+	float value = mix(one, two, smoothstep(0.5 - edge, 0.5 + edge, patch_noise));
+	float fade = 1.0 - smoothstep(0.1 / 6.0, 0.1 / 4.0, pixel);
+	return 1.0 + (floor(value * 4.0) / 3.0 - 0.5) * 0.5 * look_brush * fade;
 }
 
 // How much of a cell is lit for a light of `tone` (0–1), in one of the look's marks, at `uv` (meters) with cells
 // `cell` meters wide: halftone dots growing from each cell's middle, or lines thinning as the light grows, a second family
-// across them in the darks.
-float look_mark_cover(float tone, vec2 uv, float cell, float pixel) {
+// across them in the darks (`crossed`: 1 for all of it, 0 for none).
+float look_mark_cover(float tone, vec2 uv, float cell, float pixel, float crossed) {
 	float aa = pixel / cell * 1.5 + 1e-3;
 	if (look_mark_kind < 0.5) {
 		// A grid turned 45 degrees, as a printer's screen.
 		vec2 q = vec2(uv.x + uv.y, uv.y - uv.x) * 0.7071 / cell;
-		float d = length(fract(q) - 0.5) / 0.7071;
+		// Each dot spreads a little more or less, as ink does on paper.
+		float d = length(fract(q) - 0.5) / 0.7071 + (value_noise2(uv * 3.0) - 0.5) * 0.18;
 		return smoothstep(d - aa, d + aa, tone);
 	}
-	vec2 q = uv / cell;
-	float wobble = (value_noise2(q * 0.25) - 0.5) * 0.35;
-	float a = abs(fract(q.x * 0.7071 + q.y * 0.7071 + wobble) - 0.5) * 2.0;
-	float b = abs(fract(q.x * 0.7071 - q.y * 0.7071 - wobble) - 0.5) * 2.0;
+	// The strokes' direction drifts slowly over the surface, as a hand turns, instead of one ruled angle everywhere.
+	float angle = 0.785 + (value_noise2(uv * 0.07 + 3.0) - 0.5) * 0.6;
+	vec2 along = vec2(cos(angle), sin(angle));
+	vec2 across = vec2(-along.y, along.x);
+	float wobble = (value_noise2(uv * 2.0) - 0.5) * 0.3;
+	float a = abs(fract(dot(uv, across) / cell + wobble) - 0.5) * 2.0;
+	float b = abs(fract(dot(uv, along) / cell - wobble) - 0.5) * 2.0;
 	float first = smoothstep(1.0 - tone - aa, 1.0 - tone + aa, a);
 	float second = smoothstep((0.5 - tone) * 2.0 - aa, (0.5 - tone) * 2.0 + aa, b);
-	return first * second;
+	return first * mix(1.0, second, crossed);
 }
 
 // A light of `amount` (what smooth shading would give, 0 and up) drawn as the look's marks at `uv` (meters), `pixel`
-// meters a pixel, the cells `scale` times the look's (a figure's limbs take finer ones): the share of the light the point
-// takes. Cells grow with distance in doublings, blended between the two
+// meters a pixel, the cells `scale` times the look's (a figure's limbs take finer ones), the hatching crossed in the darks
+// by `crossed`: the share of the light the point takes. Cells grow with distance in doublings, blended between the two
 // nearest, so they never get under seven pixels and none pops (docs/art-direction.md#stable-image).
-float look_marked(float amount, vec2 uv, float pixel, float scale) {
+float look_marked(float amount, vec2 uv, float pixel, float scale, float crossed) {
 	float gain = max(look_mark_gain, 1.0);
 	float tone = clamp(amount * gain, 0.0, 1.0);
 	float cell = max(look_mark_cell * scale, 0.005);
 	float level = max(log2(pixel * 7.0 / cell), 0.0);
 	float octave = floor(level);
-	float near = look_mark_cover(tone, uv, cell * exp2(octave), pixel);
-	float far = look_mark_cover(tone, uv, cell * exp2(octave + 1.0), pixel);
+	float near = look_mark_cover(tone, uv, cell * exp2(octave), pixel, crossed);
+	float far = look_mark_cover(tone, uv, cell * exp2(octave + 1.0), pixel, crossed);
 	return mix(near, far, fract(level)) / gain;
 }
 

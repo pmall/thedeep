@@ -39,9 +39,12 @@ void light() {
 		// Only where the light is strong: the marks draw the light, never the whole body.
 		// Never a solid fill (the body stays black between the marks) and in the light's value, not its hue, so a warm lamp
 		// draws pale lines instead of a skin-colored patch.
-		float lighter = smoothstep(0.3, 0.9, clamp(ndl, 0.0, 1.0) * lit) * 0.6 / max(look_mark_gain, 1.0);
+		float lighter = smoothstep(0.3, 0.9, clamp(ndl, 0.0, 1.0) * lit) * 0.3 / max(look_mark_gain, 1.0);
 		vec3 pale = mix(vec3(max(light.r, max(light.g, light.b))), light, 0.2);
-		SPECULAR_LIGHT += pale * look_marked(lighter, look_uv, look_px, 0.35) * max(look_mark_gain, 1.0) * toon_scratch * 0.3;
+		// Single lines, never crossed into a net; and only while the figure is large on screen (a close view): at the play
+		// camera a limb is a few cells wide and the marks read as camouflage, so they fade and the soft bands carry it.
+		float close = 1.0 - smoothstep(0.004, 0.008, look_px);
+		SPECULAR_LIGHT += pale * look_marked(lighter, look_uv, look_px, 0.35, 0.0) * max(look_mark_gain, 1.0) * toon_scratch * 0.3 * close;
 	}
 
 	float ndh = dot(NORMAL, normalize(VIEW + LIGHT));
