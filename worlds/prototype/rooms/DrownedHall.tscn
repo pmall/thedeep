@@ -227,13 +227,14 @@ cast_shadow = 3
 ; straight down the metal shaft from behind the hatch
 [node name="Shaft" type="SpotLight3D" parent="Shafts"]
 transform = Transform3D(-1, 0, 0, 0, 0.1414, 0.9899, 0, 0.9899, -0.1414, 51, 46, -6)
-light_energy = 5.0
-light_volumetric_fog_energy = 10.0
+light_energy = 2.5
+light_volumetric_fog_energy = 6.0
 shadow_enabled = true
+shadow_blur = 2.0
 spot_range = 70.0
 spot_attenuation = 0.25
 spot_angle = 9.0
-spot_angle_attenuation = 2.0
+spot_angle_attenuation = 0.5
 
 ; The drowned back of the hall: water from the play floor's back edge (Z = -2) to the far wall, 1.25 m
 ; over the sunken back floor; the racks, piers and wrecks stand in it.

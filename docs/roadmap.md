@@ -41,6 +41,7 @@ The open items, in order (owner: the world, its bricks and its look are finished
    1. **The pilgrim blended into the drawing** <a id="look-presets"></a>: the world's look narrowed to `painted-riso`; the pilgrim's look found anew, possibly by a radically different direction (owner), judged against it side by side in captures and by the owner.
    2. Bring what is still smooth into the same drawing (the skylines, the fog, the water, the particles, the machines' shells).
    3. **A liquid with no back** <a id="graphic-flaws"></a> (owner): a liquid body in the volcanic layer (and perhaps the water elsewhere) has no back, its box ending abruptly in plain sight behind it.
+   4. **Light shafts as curtains** <a id="shaft-curtains"></a> (owner): a shaft's spot light lit the play plane in a hard-edged column, a curtain cutting what stands in it in two. The Drowned Hall's `Shaft` is fixed (half the light on surfaces, a soft cone rim, blurred shadows, a fainter beam); every other room's shafts still carry the old values (`spot_angle_attenuation = 2`, strong volumetric energy) and get the same treatment, judged room by room in captures.
 
    Once the owner keeps it, it becomes the game's look: on by default, and `docs/art-direction.md` rewritten to it.
 
@@ -55,7 +56,7 @@ The open items, in order (owner: the world, its bricks and its look are finished
 
 **To play** <a id="to-play"></a>: what the owner's eye alone can judge, each line deleted once they have said. An item closes on what the agent can verify; the owner's word reopens it.
 
-- The drawn looks (`docs/roadmap.md#look-presets`): `godot --path . -- --room DrownedHall --abilities all --look painted-riso`, F9 cycling the presets (the name prints in the console), F6 the biome. Say whether the riso trace in `painted-riso` is subtle enough, whether a lamp's light still reads too on or off (under the east ledges, x 52), and what the pilgrim should become to belong in it; also `--room Slag` for the volcanic layer.
+- The drawn looks (`docs/roadmap.md#look-presets`): `godot --path . -- --room DrownedHall --abilities all --look painted-riso`, F9 cycling the presets (the name prints in the console), F6 the biome. Say whether the riso trace in `painted-riso` is subtle enough, whether the light still falls as a curtain (under the east ledges, x 52), and what the pilgrim should become to belong in it; also `--room Slag` for the volcanic layer.
 - The transitions: `godot --path . -- --room Nave --abilities all` (west and east doorways, the hatch down to the Cistern); the Brink's leap, `--room Brink`. Every doorway now stands in a wall its brick builds (most were never looked at): say where one reads wrong.
 - The gates that speak (`docs/gameplay.md#gate-says`): `--room Ashfall --abilities none` (the Pyre's door names its litany and the Belfry as soon as it is on screen, the heat's line read after it), `--room Narthex` (the Sacristy door), `--room Kiln` (its gate). Say whether the lines come too early, too late or too fast.
 - The law breaks (`docs/gameplay.md#law-act`): `--room Brink --abilities all`, walk into the law, then hold the prompt. Say whether the hold's length and the refusal read right.
