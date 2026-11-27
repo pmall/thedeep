@@ -669,6 +669,12 @@ script = ExtResource("7_spot")
 PlayerPosition = Vector3(22, 7.5, 0)
 PlayerFacing = -1
 
+; Under the east ledges, where a lamp's light crosses the low platform's face (the drawn look's light steps, its ink).
+[node name="Ledges" type="Marker3D" parent="PhotoSpots"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 55, 3.9, 22)
+script = ExtResource("7_spot")
+PlayerPosition = Vector3(52.5, 0, 0)
+
 ; rock and metal up close: the step (strata, cracks, glyphs) and the metal pillar (panels, rivets)
 [node name="Materials" type="Marker3D" parent="PhotoSpots"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 29, 2.4, 9.5)

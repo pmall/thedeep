@@ -1,5 +1,5 @@
 [gd_resource type="Resource" script_class="LookPreset" format=3]
-; Painted: heavy brush strokes laid through every surface, the world lit in flat steps, thick ink, a violet-and-paper grade; the pilgrim a lifted violet-black in the same strokes.
+; Painted: heavy brush strokes laid through every surface, the world lit in flat steps, a fine soft ink, a violet-and-paper grade; the pilgrim a lifted violet-black in the same strokes.
 
 [ext_resource type="Script" path="res://scripts/look/LookPreset.cs" id="1_look"]
 
@@ -23,8 +23,8 @@ ToneMid = Color(0.42, 0.4, 0.55, 1)
 ToneLight = Color(0.96, 0.93, 0.88, 1)
 ToneKeep = 0.9
 ToneContrast = 1.2
-InkPixels = 2.2
-WorldInk = 1.0
+InkPixels = 1.3
+WorldInk = 0.6
 FigureInk = 0.3
 PoseHoldSeconds = 0.0
 Shade = 0.5
