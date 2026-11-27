@@ -20,6 +20,8 @@
 [ext_resource type="Shader" path="res://assets/shaders/android_toon.gdshader" id="19_android_toon"]
 [ext_resource type="Material" path="res://assets/materials/looks/ink.tres" id="20_ink"]
 [ext_resource type="Shader" path="res://assets/shaders/rock.gdshader" id="30_band_rock"]
+[ext_resource type="Shader" path="res://assets/shaders/basalt.gdshader" id="36_band_basalt"]
+[ext_resource type="Shader" path="res://assets/shaders/cracked.gdshader" id="37_band_cracked"]
 [ext_resource type="Shader" path="res://assets/shaders/metal.gdshader" id="31_band_metal"]
 [ext_resource type="Shader" path="res://assets/shaders/architecture.gdshader" id="32_band_architecture"]
 [ext_resource type="Shader" path="res://assets/shaders/biome_surface.gdshader" id="33_band_biome_surface"]
@@ -159,4 +161,4 @@ Poses = NodePath("..")
 From = ExtResource("18_android")
 To = ExtResource("19_android_toon")
 Ink = ExtResource("20_ink")
-Banded = [ExtResource("30_band_rock"), ExtResource("31_band_metal"), ExtResource("32_band_architecture"), ExtResource("33_band_biome_surface"), ExtResource("34_band_ice"), ExtResource("35_band_machine")]
+Banded = [ExtResource("30_band_rock"), ExtResource("36_band_basalt"), ExtResource("37_band_cracked"), ExtResource("31_band_metal"), ExtResource("32_band_architecture"), ExtResource("33_band_biome_surface"), ExtResource("34_band_ice"), ExtResource("35_band_machine")]

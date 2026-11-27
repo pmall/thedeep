@@ -2,7 +2,7 @@
 ; Basalt: the volcanic layer's rock, the rock shader in columns (no beds) with a little ash on its ledges;
 ; the palette makes it dark, so what burns beside it shows its form.
 
-[ext_resource type="Shader" path="res://assets/shaders/rock.gdshader" id="1_shader"]
+[ext_resource type="Shader" path="res://assets/shaders/basalt.gdshader" id="1_shader"]
 [ext_resource type="Texture2D" uid="uid://nbsorywnpvq5" path="res://assets/textures/surfaces/masonry_normal.png" id="4_masonry_normal"]
 [ext_resource type="Texture2D" uid="uid://cyd8ptbp7r31i" path="res://assets/textures/surfaces/masonry_surface.png" id="5_masonry_surface"]
 [ext_resource type="Texture2D" path="res://assets/textures/surfaces/basalt_normal.png" id="6_basalt_normal"]
@@ -12,7 +12,6 @@
 shader = ExtResource("1_shader")
 shader_parameter/masonry_normal = ExtResource("4_masonry_normal")
 shader_parameter/masonry_surface = ExtResource("5_masonry_surface")
-shader_parameter/columnar = true
 shader_parameter/basalt_normal = ExtResource("6_basalt_normal")
 shader_parameter/basalt_surface = ExtResource("7_basalt_surface")
 shader_parameter/column_contrast = 0.2
