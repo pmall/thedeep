@@ -1,5 +1,5 @@
 [gd_resource type="Resource" script_class="LookPreset" format=3]
-; Painted with some of riso-dots' tone: the brush strokes, flat steps of light and thick ink of painted, printed partway into riso's violet and indigo on warm paper, its ink the riso's indigo.
+; Painted with a trace of riso-dots' tone: the brush strokes, flat steps of light and thick ink of painted, under a subtle veil of riso's violet and warm paper, its ink the riso's indigo.
 
 [ext_resource type="Script" path="res://scripts/look/LookPreset.cs" id="1_look"]
 
@@ -17,12 +17,12 @@ Lift = 0.06
 InkBody = 0.0
 Softness = 0.3
 Gloss = 0.08
-ToneAmount = 0.6
+ToneAmount = 0.25
 ToneShadow = Color(0.12, 0.1, 0.3, 1)
 ToneMid = Color(0.45, 0.36, 0.6, 1)
 ToneLight = Color(0.97, 0.93, 0.88, 1)
 ToneKeep = 0.9
-ToneContrast = 1.25
+ToneContrast = 1.1
 InkPixels = 2.2
 WorldInk = 1.0
 FigureInk = 0.3
