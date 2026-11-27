@@ -75,6 +75,7 @@ public partial class ToonLook : Node
     private static readonly StringName ToonEdge = "toon_edge";
     private static readonly StringName ToonScratch = "toon_scratch";
     private static readonly StringName ToonInkBody = "toon_ink_body";
+    private static readonly StringName ToonWorldBands = "toon_world_bands";
 
     public override void _Ready()
     {
@@ -178,9 +179,6 @@ public partial class ToonLook : Node
             RenderingServer.GlobalShaderParameterSet(ShaderGlobals.LookBandSoftness, look.BandSoftness);
             RenderingServer.GlobalShaderParameterSet(ShaderGlobals.LookBandShade, look.BandShade);
             RenderingServer.GlobalShaderParameterSet(ShaderGlobals.LookBandGloss, look.BandGloss);
-        }
-        if (look is not null)
-        {
             RenderingServer.GlobalShaderParameterSet(ShaderGlobals.LookInkPixels, look.InkPixels);
             RenderingServer.GlobalShaderParameterSet(ShaderGlobals.LookInkColor, look.InkColor);
         }
@@ -257,5 +255,6 @@ public partial class ToonLook : Node
         twin.SetShaderParameter(ToonEdge, look.Edge);
         twin.SetShaderParameter(ToonScratch, look.Scratch);
         twin.SetShaderParameter(ToonInkBody, look.InkBody);
+        twin.SetShaderParameter(ToonWorldBands, look.WorldBands ? 1f : 0f);
     }
 }

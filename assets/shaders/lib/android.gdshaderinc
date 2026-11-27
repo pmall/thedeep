@@ -57,9 +57,12 @@ group_uniforms;
 #ifdef ANDROID_TOON
 #include "res://assets/shaders/lib/palette.gdshaderinc"
 #include "res://assets/shaders/lib/dirt.gdshaderinc"
-// What the toon light reads of the surface (android_toon.gdshader): where on the part, and how rough.
+// What the toon light reads of the surface (android_toon.gdshader): where on the part, how rough, and how high on the body.
 varying vec2 toon_uv;
 varying float toon_rough;
+varying float toon_height;
+// 1 when the active look bands the world (lib/bands), so the figure shares its painted light steps, pigments and brushwork.
+uniform float toon_world_bands : hint_range(0.0, 1.0) = 0.0;
 // How much the black lifts toward a dark grey, so the drawn figure shows its light and shade as the world's dark pieces do.
 uniform float toon_lift : hint_range(0.0, 0.2) = 0.035;
 // How much of the world's dust (lib/dirt's wash, look_wash) the dark parts carry: pale blooms of the biome's silt, fixed to
@@ -89,6 +92,9 @@ instance uniform float hurt : hint_range(0.0, 1.0) = 0.0;
 
 void vertex() {
 	SURFACE_VERTEX
+#ifdef ANDROID_TOON
+	toon_height = VERTEX.y;
+#endif
 }
 
 void fragment() {
@@ -146,29 +152,84 @@ void fragment() {
 #ifdef ANDROID_TOON
 	float dark_part = 1.0 - smoothstep(0.05, 0.2, dot(albedo, vec3(0.2126, 0.7152, 0.0722)));
 	vec3 ink_hue = look_ink_color.rgb / max(max(look_ink_color.r, max(look_ink_color.g, look_ink_color.b)), 1e-4);
-	albedo = mix(albedo, look_ink_color.rgb, toon_ink_body * dark_part * (1.0 - trim));
-	albedo += toon_lift * dark_part * (1.0 - trim) * mix(vec3(1.0), ink_hue, toon_ink_body);
 	vec3 silt = srgb_to_linear(biome_silt.rgb);
-	float dusted = toon_dust * look_wash * dark_part * (1.0 - trim);
-	// Dust gathers where a part meets the next (its ends and seams), ragged, with the darker tide line its edge dried to;
-	// laid on each part from its own corner shifted by its size.
+	vec3 rock = srgb_to_linear(biome_rock.rgb);
 	vec2 dust_uv = f.uv + f.size * 3.7;
-	float bloom = value_noise2(dust_uv / 0.05) * 0.6 + value_noise2(dust_uv / 0.02 + 5.0) * 0.4;
-	bloom += (1.0 - smoothstep(0.0, 0.06, f.edge)) * 0.45;
-	float bloom_aa = fwidth(bloom) + 1e-4;
-	float dust = smoothstep(0.8 - bloom_aa, 0.8 + bloom_aa, bloom);
-	float tide = 1.0 - smoothstep(0.0, 0.015 + bloom_aa * 1.5, abs(bloom - 0.8));
-	albedo = mix(albedo, silt * 0.3, dust * 0.55 * dusted);
-	albedo = mix(albedo, silt * 0.45, tide * 0.3 * dusted);
-	rough = mix(rough, 1.0, dust * dusted);
-	// Chips along the parts' edges, where the black wears to the pale primer under it: a ragged band, broken along.
-	float ragged = value_noise2(dust_uv / 0.02) * 0.6 + value_noise2(dust_uv / 0.06 + 9.0) * 0.4;
-	float chip_width = toon_chips * (ragged - 0.62) * 2.5;
-	float chip = (1.0 - smoothstep(chip_width - aa, chip_width + aa, f.edge)) * step(0.0, chip_width);
-	albedo = mix(albedo, silt * 0.55, chip * look_wash * dark_part * (1.0 - trim));
+	if (toon_world_bands > 0.5) {
+		// Painted look: separate sculpted plates from the dark matte undersuit, pigment them in the world's ink and stone
+		// tones, and lay figure-scale painterly brushstrokes wide enough to stay readable and stable at gameplay distance.
+		float plate = 1.0 - smoothstep(0.3, 0.5, roughness);
+		// Mute the stark white mannequin trims into soft warm-paper silver accents so cuffs read without chopping the body.
+		vec3 paper = vec3(0.96, 0.92, 0.86);
+		vec3 painted_trim = mix(silt, paper, 0.4) * 0.32;
+		albedo = mix(albedo, painted_trim, trim * 0.88);
+		// Deep velvety ink for the matte undersuit; slightly lifted painted slate-indigo/charcoal for the sculpted plates
+		// so the body has painted form and clearly shows light bands and brushwork instead of collapsing to flat black.
+		vec3 rock_hue = rock / max(max(rock.r, max(rock.g, rock.b)), 1e-4);
+		vec3 shadow_ink = mix(look_ink_color.rgb, rock * 0.08, 0.35);
+		vec3 plate_base = mix(shadow_ink, rock * 0.16 + look_ink_color.rgb * 0.9, 0.65);
+		vec3 dark_body = mix(shadow_ink, plate_base, plate);
+		albedo = mix(albedo, dark_body, toon_ink_body * dark_part * (1.0 - trim));
+		vec3 lift_hue = mix(ink_hue, rock_hue, 0.45);
+		albedo += toon_lift * mix(0.45, 1.35, plate) * dark_part * (1.0 - trim) * lift_hue;
+		// Pale hair takes a gentle warm-paper paint wash, pulled slightly under white so high-exposure biomes still show its
+		// painted steps and brushwork instead of clipping flat white, and darkens softly toward the nape.
+		float pale_part = (1.0 - dark_part) * (1.0 - trim);
+		vec3 hair_tint = mix(vec3(1.0), mix(silt, paper, 0.65), 0.35) * 0.84;
+		float nape = 1.0 - smoothstep(1.48, 1.68, toon_height);
+		albedo = mix(albedo, albedo * hair_tint * (1.0 - 0.18 * nape), pale_part);
+		// Painterly brush strokes at 0.55x architectural scale (~23 x 5.5 cm: >=4 px wide at gameplay distance, zero shimmer).
+		float paint_px = look_pixel(dust_uv);
+		float dab = look_stroke_dab(dust_uv, paint_px, 0.55) * look_brush;
+		albedo *= 1.0 + dab * mix(0.55, 0.85, dark_part);
+		// Pigment dabs in dark plates catch a whisper of the world's pale wash/stone tone, like opaque gouache strokes.
+		albedo += max(dab, 0.0) * mix(silt, rock, 0.4) * mix(0.025, 0.065, plate) * dark_part * (1.0 - trim);
+		// Watercolor wash and boot grounding: deeper ink toward the soles, soft silt bloom along seams and calves.
+		float foot_wash = 1.0 - smoothstep(0.0, 0.42, toon_height);
+		albedo = mix(albedo, shadow_ink * 0.65, foot_wash * 0.4 * look_wash * dark_part);
+		float bloom = value_noise2(dust_uv / 0.12) * 0.6 + value_noise2(dust_uv / 0.05 + 5.0) * 0.4;
+		float bloom_aa = fwidth(bloom) + 1e-4;
+		float dust = smoothstep(0.66 - bloom_aa, 0.66 + bloom_aa, bloom);
+		float tide = 1.0 - smoothstep(0.0, 0.022 + bloom_aa * 1.5, abs(bloom - 0.66));
+		float dusted = toon_dust * look_wash * dark_part * (1.0 - trim);
+		albedo = mix(albedo, silt * 0.18, dust * 0.45 * dusted);
+		albedo *= 1.0 - tide * 0.28 * dusted;
+		// Subtle hand-drawn ink hatching in lower/crevice zones (6 cm spacing: stays readable and clean at play scale).
+		float shade_hatch = clamp(foot_wash * 0.7 + (1.0 - smoothstep(0.0, 0.06, f.edge)) * 0.35, 0.0, 1.0);
+		float hatch = look_hatch_lines(dust_uv, 0.785, 0.06, shade_hatch * 0.4, paint_px);
+		albedo = mix(albedo, look_ink_color.rgb * 0.6, hatch * min(look_hatch, 1.0) * 0.6);
+		rough = mix(rough, 0.82, 0.5 * look_brush);
+	} else {
+		albedo = mix(albedo, look_ink_color.rgb, toon_ink_body * dark_part * (1.0 - trim));
+		albedo += toon_lift * dark_part * (1.0 - trim) * mix(vec3(1.0), ink_hue, toon_ink_body);
+		float dusted = toon_dust * look_wash * dark_part * (1.0 - trim);
+		// Dust gathers where a part meets the next (its ends and seams), ragged, with the darker tide line its edge dried to;
+		// laid on each part from its own corner shifted by its size.
+		float bloom = value_noise2(dust_uv / 0.05) * 0.6 + value_noise2(dust_uv / 0.02 + 5.0) * 0.4;
+		bloom += (1.0 - smoothstep(0.0, 0.06, f.edge)) * 0.45;
+		float bloom_aa = fwidth(bloom) + 1e-4;
+		float dust = smoothstep(0.8 - bloom_aa, 0.8 + bloom_aa, bloom);
+		float tide = 1.0 - smoothstep(0.0, 0.015 + bloom_aa * 1.5, abs(bloom - 0.8));
+		albedo = mix(albedo, silt * 0.3, dust * 0.55 * dusted);
+		albedo = mix(albedo, silt * 0.45, tide * 0.3 * dusted);
+		rough = mix(rough, 1.0, dust * dusted);
+		// Chips along the parts' edges, where the black wears to the pale primer under it: a ragged band, broken along.
+		float ragged = value_noise2(dust_uv / 0.02) * 0.6 + value_noise2(dust_uv / 0.06 + 9.0) * 0.4;
+		float chip_width = toon_chips * (ragged - 0.62) * 2.5;
+		float chip = (1.0 - smoothstep(chip_width - aa, chip_width + aa, f.edge)) * step(0.0, chip_width);
+		albedo = mix(albedo, silt * 0.55, chip * look_wash * dark_part * (1.0 - trim));
+	}
 #endif
-	// Grain only: the ink outline (ink_outline.gdshader) draws the figure's edges, not each part's.
+	// Paper grain only on banded figures (their brushwork is already laid at figure scale above); ink is on the outline pass.
+#ifdef ANDROID_TOON
+	if (toon_world_bands > 0.5) {
+		albedo *= look_paper(f.uv, look_pixel(f.uv));
+	} else {
+		albedo = look_drawn(albedo, f.uv, 1e3);
+	}
+#else
 	albedo = look_drawn(albedo, f.uv, 1e3);
+#endif
 	look_mark_at(f.uv);
 	ALBEDO = mix(mix(albedo, glow_color, glow * 0.6), vec3(1.0), hurt * 0.5);
 	ROUGHNESS = rough;

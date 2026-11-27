@@ -25,6 +25,13 @@ global uniform float look_mark;
 global uniform float look_mark_kind;
 global uniform float look_mark_cell;
 global uniform float look_mark_gain;
+// The flat painted light bands shared by the world (lib/bands) and the pilgrim (android_toon.gdshader): how many steps of
+// light, how soft the edge between two steps is (as a share of a step), the least light a reached face keeps, and the hard
+// highlight's strength on smooth finishes.
+global uniform float look_band_steps;
+global uniform float look_band_softness;
+global uniform float look_band_shade;
+global uniform float look_band_gloss;
 
 // Where on the surface the marks are laid (meters) and how many meters a pixel covers there: written in fragment() by
 // look_mark_at, read by the light (lib/bands, android_toon.gdshader).
@@ -44,27 +51,33 @@ float look_paper(vec2 uv, float pixel) {
 }
 
 // Brush strokes through the paint: patches of short strokes, each patch laid in its own direction, each stroke a flat
-// value with ragged ends, rows of them offset like a painter's dabs. A factor around 1 for the albedo, faded out before a
-// stroke gets under four pixels wide.
-float look_stroke_layer(vec2 uv, float angle, float layer) {
-	const vec2 STROKE = vec2(0.42, 0.1);
-	vec2 q = vec2(cos(angle) * uv.x + sin(angle) * uv.y, -sin(angle) * uv.x + cos(angle) * uv.y) / STROKE;
+// value with ragged ends, rows of them offset like a painter's dabs. `scale` scales the stroke size (1 for architecture,
+// smaller for a figure's limbs), returning a signed dab value in [-0.5, 0.5], faded out before a stroke gets under four
+// pixels wide.
+float look_stroke_layer(vec2 uv, float angle, float layer, float scale) {
+	vec2 stroke = vec2(0.42, 0.1) * scale;
+	vec2 q = vec2(cos(angle) * uv.x + sin(angle) * uv.y, -sin(angle) * uv.x + cos(angle) * uv.y) / stroke;
 	float row = floor(q.y);
 	// Each row's strokes start at their own offset, and each stroke's ends waver across its width.
 	float x = q.x + hash12(vec2(row, layer)) * 7.0 + (value_noise2(vec2(q.y * 2.5, row * 1.3 + layer)) - 0.5) * 0.7;
 	return hash12(vec2(floor(x), row + layer * 31.0));
 }
 
-float look_strokes(vec2 uv, float pixel) {
-	float drift = (value_noise2(uv * 0.15 + 2.0) - 0.5) * 0.8;
-	float one = look_stroke_layer(uv, 0.45 + drift, 0.0);
-	float two = look_stroke_layer(uv, -0.6 + drift, 1.0);
-	// Patches about a meter across, each in one direction, meeting on a crisp edge.
-	float patch_noise = value_noise2(uv * 0.9 + 6.0);
+float look_stroke_dab(vec2 uv, float pixel, float scale) {
+	float inv = 1.0 / max(scale, 0.05);
+	float drift = (value_noise2(uv * 0.15 * inv + 2.0) - 0.5) * 0.8;
+	float one = look_stroke_layer(uv, 0.45 + drift, 0.0, scale);
+	float two = look_stroke_layer(uv, -0.6 + drift, 1.0, scale);
+	// Patches about a meter across (scaled with the strokes), each in one direction, meeting on a crisp edge.
+	float patch_noise = value_noise2(uv * 0.9 * inv + 6.0);
 	float edge = fwidth(patch_noise) + 1e-4;
 	float value = mix(one, two, smoothstep(0.5 - edge, 0.5 + edge, patch_noise));
-	float fade = 1.0 - smoothstep(0.1 / 6.0, 0.1 / 4.0, pixel);
-	return 1.0 + (floor(value * 4.0) / 3.0 - 0.5) * 0.5 * look_brush * fade;
+	float fade = 1.0 - smoothstep(0.1 * scale / 6.0, 0.1 * scale / 4.0, pixel);
+	return (floor(value * 4.0) / 3.0 - 0.5) * fade;
+}
+
+float look_strokes(vec2 uv, float pixel) {
+	return 1.0 + look_stroke_dab(uv, pixel, 1.0) * 0.5 * look_brush;
 }
 
 // How much of a cell is lit for a light of `tone` (0–1), in one of the look's marks, at `uv` (meters) with cells
@@ -104,6 +117,29 @@ float look_marked(float amount, vec2 uv, float pixel, float scale, float crossed
 	float near = look_mark_cover(tone, uv, cell * exp2(octave), pixel, crossed);
 	float far = look_mark_cover(tone, uv, cell * exp2(octave + 1.0), pixel, crossed);
 	return mix(near, far, fract(level)) / gain;
+}
+
+// `amount` (0 and up) rounded to steps of 1 / look_band_steps, each edge a smooth step `look_band_softness` of a step wide.
+float look_band(float amount) {
+	float steps = max(look_band_steps, 1.0);
+	float x = amount * steps;
+	float below = floor(x);
+	float soft = clamp(look_band_softness, 0.01, 0.5);
+	return (below + smoothstep(0.5 - soft, 0.5 + soft, x - below)) / steps;
+}
+
+// One light's banded diffuse share (0 and up), shared by the world and the figure so both step to the same light.
+float look_band_diffuse(float amount, float shade, vec2 uv, float pixel, float mark_scale, float crossed) {
+	float reached = smoothstep(0.005, 0.02, amount);
+	float banded = max(look_band(amount), shade * reached);
+	return look_mark > 0.0 ? mix(banded, look_marked(amount, uv, pixel, mark_scale, crossed), look_mark) : banded;
+}
+
+// One light's hard painted highlight on smooth finishes (0 on rough stone/cloth).
+float look_band_highlight(float ndh, float rough, float amount) {
+	float at = mix(0.985, 0.9, rough);
+	float gloss = smoothstep(at - 0.004, at + 0.004, ndh) * smoothstep(0.3, 0.4, amount);
+	return gloss * (1.0 - smoothstep(0.45, 0.7, rough));
 }
 
 // Records where the marks are laid, for the light; a statement for fragment(), before ALBEDO is set.

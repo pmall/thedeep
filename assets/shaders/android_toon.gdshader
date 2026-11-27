@@ -29,32 +29,67 @@ group_uniforms;
 
 void light() {
 	float rag = toon_noise(toon_uv) * toon_grain;
-	vec3 light = LIGHT_COLOR * ATTENUATION;
-	float peak = max(light.r, max(light.g, light.b));
-	light *= min(1.0, toon_light_cap / max(peak, 1e-4));
-	float ndl = dot(NORMAL, LIGHT);
-	float lit = smoothstep(toon_threshold - toon_softness, toon_threshold + toon_softness, ndl + rag);
-	DIFFUSE_LIGHT += light * mix(toon_shade, 1.0, lit) / PI;
-	if (toon_scratch > 0.0) {
-		// Only where the light is strong: the marks draw the light, never the whole body.
-		// Never a solid fill (the body stays black between the marks) and in the light's value, not its hue, so a warm lamp
-		// draws pale lines instead of a skin-colored patch.
-		float lighter = smoothstep(0.3, 0.9, clamp(ndl, 0.0, 1.0) * lit) * 0.3 / max(look_mark_gain, 1.0);
-		vec3 pale = mix(vec3(max(light.r, max(light.g, light.b))), light, 0.2);
-		// Single lines, never crossed into a net; and only while the figure is large on screen (a close view): at the play
-		// camera a limb is a few cells wide and the marks read as camouflage, so they fade and the soft bands carry it.
-		float close = 1.0 - smoothstep(0.004, 0.008, look_px);
-		SPECULAR_LIGHT += pale * look_marked(lighter, look_uv, look_px, 0.35, 0.0) * max(look_mark_gain, 1.0) * toon_scratch * 0.3 * close;
+	if (toon_world_bands > 0.5) {
+		// Unified painted lighting (lib/look): the figure steps to the same bands as the world (lib/bands), gently wrapped
+		// around curved limbs and keeping a painted shade floor wherever a light reaches (ATTENUATION), so low/hip lamps
+		// never slice the hair into a dark cap while cast shadows still fall cleanly across the body.
+		float raw_ndl = dot(NORMAL, LIGHT);
+		float wrapped = clamp((raw_ndl + 0.28) / 1.28, 0.0, 1.0);
+		float ragged = clamp(wrapped + rag * 0.3 * smoothstep(0.0, 0.2, wrapped), 0.0, 1.0);
+		float amount = ragged * ATTENUATION;
+		float shade_floor = max(look_band_shade, toon_shade * 0.55) * ATTENUATION;
+		float banded = max(look_band(amount), shade_floor);
+		float drawn = look_mark > 0.0 ? mix(banded, look_marked(amount, look_uv, look_px, 0.35, 0.0), look_mark) : banded;
+		vec3 color = LIGHT_COLOR;
+		float peak = max(color.r, max(color.g, color.b));
+		color *= min(1.0, (toon_light_cap * 1.4) / max(peak * max(drawn, 0.01), 1e-4));
+		DIFFUSE_LIGHT += color / PI * drawn;
+
+		if (toon_scratch > 0.0) {
+			float lighter = smoothstep(0.3, 0.9, clamp(raw_ndl, 0.0, 1.0) * smoothstep(0.15, 0.4, drawn)) * 0.3 / max(look_mark_gain, 1.0);
+			vec3 pale = mix(vec3(max(color.r, max(color.g, color.b))), color, 0.2);
+			float close = 1.0 - smoothstep(0.004, 0.008, look_px);
+			SPECULAR_LIGHT += pale * look_marked(lighter, look_uv, look_px, 0.35, 0.0) * max(look_mark_gain, 1.0) * toon_scratch * 0.3 * close;
+		}
+
+		float ndh = dot(NORMAL, normalize(VIEW + LIGHT));
+		float gloss = look_band_highlight(ndh, toon_rough, amount);
+		vec3 shine = mix(vec3(max(color.r, max(color.g, color.b))), color, toon_gloss_tint);
+		SPECULAR_LIGHT += shine * gloss * toon_gloss * look_band_gloss;
+
+		if (toon_rim > 0.0) {
+			float behind = smoothstep(-0.1, 0.3, -dot(LIGHT, VIEW));
+			float back_rim = smoothstep(0.7, 0.74, 1.0 - dot(NORMAL, VIEW) + rag) * behind * clamp(raw_ndl + 0.5, 0.0, 1.0);
+			SPECULAR_LIGHT += color * ATTENUATION * back_rim * toon_rim;
+		}
+	} else {
+		vec3 light = LIGHT_COLOR * ATTENUATION;
+		float peak = max(light.r, max(light.g, light.b));
+		light *= min(1.0, toon_light_cap / max(peak, 1e-4));
+		float ndl = dot(NORMAL, LIGHT);
+		float lit = smoothstep(toon_threshold - toon_softness, toon_threshold + toon_softness, ndl + rag);
+		DIFFUSE_LIGHT += light * mix(toon_shade, 1.0, lit) / PI;
+		if (toon_scratch > 0.0) {
+			// Only where the light is strong: the marks draw the light, never the whole body.
+			// Never a solid fill (the body stays black between the marks) and in the light's value, not its hue, so a warm lamp
+			// draws pale lines instead of a skin-colored patch.
+			float lighter = smoothstep(0.3, 0.9, clamp(ndl, 0.0, 1.0) * lit) * 0.3 / max(look_mark_gain, 1.0);
+			vec3 pale = mix(vec3(max(light.r, max(light.g, light.b))), light, 0.2);
+			// Single lines, never crossed into a net; and only while the figure is large on screen (a close view): at the play
+			// camera a limb is a few cells wide and the marks read as camouflage, so they fade and the soft bands carry it.
+			float close = 1.0 - smoothstep(0.004, 0.008, look_px);
+			SPECULAR_LIGHT += pale * look_marked(lighter, look_uv, look_px, 0.35, 0.0) * max(look_mark_gain, 1.0) * toon_scratch * 0.3 * close;
+		}
+
+		float ndh = dot(NORMAL, normalize(VIEW + LIGHT));
+		float at = mix(toon_gloss_smooth, toon_gloss_rough, toon_rough);
+		float gloss = smoothstep(at - toon_softness * 0.5, at + toon_softness * 0.5, ndh + rag * 0.15) * lit;
+		// Shine, not glow: the highlight keeps little of a warm lamp's color, so it never reads as a lit patch.
+		vec3 shine = mix(vec3(max(light.r, max(light.g, light.b))), light, toon_gloss_tint);
+		SPECULAR_LIGHT += shine * gloss * toon_gloss * (1.0 - 0.6 * toon_rough);
+
+		float behind = smoothstep(-0.1, 0.3, -dot(LIGHT, VIEW));
+		float back_rim = smoothstep(0.7, 0.74, 1.0 - dot(NORMAL, VIEW) + rag) * behind * clamp(ndl + 0.5, 0.0, 1.0);
+		SPECULAR_LIGHT += light * back_rim * toon_rim;
 	}
-
-	float ndh = dot(NORMAL, normalize(VIEW + LIGHT));
-	float at = mix(toon_gloss_smooth, toon_gloss_rough, toon_rough);
-	float gloss = smoothstep(at - toon_softness * 0.5, at + toon_softness * 0.5, ndh + rag * 0.15) * lit;
-	// Shine, not glow: the highlight keeps little of a warm lamp's color, so it never reads as a lit patch.
-	vec3 shine = mix(vec3(max(light.r, max(light.g, light.b))), light, toon_gloss_tint);
-	SPECULAR_LIGHT += shine * gloss * toon_gloss * (1.0 - 0.6 * toon_rough);
-
-	float behind = smoothstep(-0.1, 0.3, -dot(LIGHT, VIEW));
-	float back_rim = smoothstep(0.7, 0.74, 1.0 - dot(NORMAL, VIEW) + rag) * behind * clamp(ndl + 0.5, 0.0, 1.0);
-	SPECULAR_LIGHT += light * back_rim * toon_rim;
 }

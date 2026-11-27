@@ -5,6 +5,8 @@
 shader_type spatial;
 render_mode unshaded, cull_front, depth_draw_opaque, shadows_disabled;
 
+#include "res://assets/shaders/lib/noise.gdshaderinc"
+
 // The line's color and width in pixels of the frame, whatever the distance: the drawn look's, shared with the world's
 // edges (lib/look).
 global uniform float look_ink_pixels;
@@ -18,8 +20,10 @@ void vertex() {
 	vec2 out_dir = (PROJECTION_MATRIX * vec4(normal, 0.0)).xy;
 	float len = length(out_dir);
 	if (len > 1e-6) {
+		// The line wavers gently along the body, fixed to the part's UVs, matching the hand-drawn ink on world edges.
+		float waver = 0.7 + 0.6 * value_noise2(UV / 0.12);
 		// Clip space spans 2 across the viewport; times w so the push survives the perspective divide.
-		clip.xy += out_dir / len * look_ink_pixels * width_share * 2.0 / VIEWPORT_SIZE * clip.w;
+		clip.xy += out_dir / len * look_ink_pixels * width_share * waver * 2.0 / VIEWPORT_SIZE * clip.w;
 	}
 	POSITION = clip;
 }
