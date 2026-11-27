@@ -39,6 +39,9 @@ public partial class LockedDoor : Node3D
     /// <summary>Unlocked: the way through is open.</summary>
     public bool Opened { get; private set; }
 
+    /// <summary>Raised when the lock releases and the gate begins to rise (never during <see cref="Settle"/>).</summary>
+    public event System.Action<LockedDoor>? Unlocked;
+
     public override void _Ready()
     {
         Gate.Settle(open: false);
@@ -62,10 +65,16 @@ public partial class LockedDoor : Node3D
     /// <summary>The lock turns and the gate rises.</summary>
     public void Open()
     {
+        if (Opened)
+        {
+            return;
+        }
+
         Opened = true;
         Gate.Open();
         _lock?.Release();
         CreateTween().TweenProperty(Light, Names.LightEnergy, 0f, LightFadeSeconds).SetTrans(Tween.TransitionType.Sine);
+        Unlocked?.Invoke(this);
     }
 
     /// <summary>Opened before (from the save): up already.</summary>

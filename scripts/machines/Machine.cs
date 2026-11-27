@@ -103,6 +103,18 @@ public partial class Machine : CharacterBody3D
     /// <summary>Broken by the pilgrim: folding down, then gone until the room is entered again.</summary>
     public bool Broken => Vitals.Broken;
 
+    /// <summary>Raised when a blow lands on the machine.</summary>
+    public event System.Action<Machine>? Hurt;
+
+    /// <summary>Raised when a blow breaks the machine (never during <see cref="Gone"/>).</summary>
+    public event System.Action<Machine>? Broke;
+
+    /// <summary>Raised on the tick the machine lands a strike intent.</summary>
+    public event System.Action<Machine>? Attacked;
+
+    /// <summary>Raised when a hostile machine first becomes alert.</summary>
+    public event System.Action<Machine>? Alerted;
+
     /// <summary>The box the body fills on the play plane (what a swing must reach).</summary>
     public Rect2 BodyRect
     {
@@ -224,9 +236,11 @@ public partial class Machine : CharacterBody3D
             Velocity = push.OnPlane();
         }
 
+        Hurt?.Invoke(this);
         if (broke)
         {
             _frameScale = FrameNode.Scale;
+            Broke?.Invoke(this);
         }
 
         return broke;
@@ -274,8 +288,19 @@ public partial class Machine : CharacterBody3D
         float speed = _gait.Moved(travelled, delta);
         Animator.Update(delta, _time, intent, Mathf.Clamp(speed / Mathf.Max(Species.MaxSpeed, 0.1f), 0f, 1f), _gait.Walked, _gait.Stepping);
         BodyNode.StepChains(delta, Species.Locomotion == Locomotion.Walk && IsOnFloor() ? GlobalPosition.Y + FootLift : float.NaN);
+        if (intent.Hit)
+        {
+            Attacked?.Invoke(this);
+        }
+
         // Eyes take the hazard color only on machines that can hurt: color means gameplay.
-        Push(AlertParameter, ref _alert, Species.Hostile ? intent.Alert : 0f);
+        float alert = Species.Hostile ? intent.Alert : 0f;
+        if (alert > 0f && !(_alert > 0f))
+        {
+            Alerted?.Invoke(this);
+        }
+
+        Push(AlertParameter, ref _alert, alert);
         Push(RouseParameter, ref _rouse, intent.Rouse);
         // A machine faces the way it moves, so its treads always roll forward.
         Push(ScrollParameter, ref _scroll, _gait.Walked);

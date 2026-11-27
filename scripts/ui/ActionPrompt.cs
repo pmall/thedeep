@@ -86,15 +86,14 @@ public partial class ActionPrompt : Node3D, INamesLines
     {
         float dt = (float)delta;
         _shown = Motion.Approach(_shown, Offered ? 1f : 0f, dt / TextStyle.Shared.Panel);
-        Camera3D? camera = GetViewport().GetCamera3D();
         Vector3 place = GlobalPosition + Vector3.Up * Rise * _shown;
-        bool visible = _shown > 0f && IsVisibleInTree() && camera is not null && !camera.IsPositionBehind(place);
-        Screen.Visible = visible;
-        if (!visible)
+        if (_shown <= 0f || !IsVisibleInTree() || GetViewport().GetCamera3D() is not { } camera || camera.IsPositionBehind(place))
         {
+            Screen.Visible = false;
             return;
         }
 
+        Screen.Visible = true;
         if (_device != _drawn || _drawnVerb != Verb)
         {
             _drawn = _device;
@@ -105,7 +104,7 @@ public partial class ActionPrompt : Node3D, INamesLines
         Face.Fill = Fill;
         Face.QueueRedraw();
         Face.Modulate = Colors.White with { A = Motion.SmoothStep(0f, 1f, _shown) };
-        Vector2 at = camera!.UnprojectPosition(place);
+        Vector2 at = camera.UnprojectPosition(place);
         Vector2 canvas = GetViewport().GetVisibleRect().Size;
         System.Numerics.Vector2 corner = PromptPlace.TopLeft(new(at.X, at.Y), new(Face.Size.X, Face.Size.Y), Reach, new(canvas.X, canvas.Y), Margin);
         // On whole pixels, so its letters stay crisp as the camera glides.

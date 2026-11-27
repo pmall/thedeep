@@ -29,8 +29,6 @@ public partial class HeatCheck : StepDriver
     /// <summary>How long the pilgrim keeps walking into the channel (step 3), seconds.</summary>
     private const float Pressing = 4f;
 
-    private HintLog? _hinted;
-
     /// <summary>The physics ticks at which a blow hurt the pilgrim, since the check began.</summary>
     private readonly List<int> _hurts = new();
 
@@ -58,7 +56,7 @@ public partial class HeatCheck : StepDriver
 
     protected override void Build()
     {
-        _hinted = new HintLog(Hints);
+        var hinted = new HintLog(Hints);
         Player.Hurt += () => _hurts.Add(_clock);
         Vector3 bank = new(Channel.MinX - 4f, 1f, 0f);
         Vector3 cavern = new(Vent.MaxX + 3.5f, Vent.MinY, 0f);
@@ -111,7 +109,7 @@ public partial class HeatCheck : StepDriver
                 Press(InputActions.MoveLeft);
                 ventFrom = _clock;
             },
-            () => _hurts.Count > 0 && _hurts[^1] >= ventFrom && _hinted!.Said(Ability.HeatPlating)));
+            () => _hurts.Count > 0 && _hurts[^1] >= ventFrom && hinted.Said(Ability.HeatPlating)));
         Steps.Add(new("with Heat plating, the pilgrim walks into the vent's heat to the wall behind it and stands there unharmed", 2.5f,
             () =>
             {

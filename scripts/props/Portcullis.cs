@@ -73,8 +73,17 @@ public partial class Portcullis : Node3D
     public Box ShutBox => Box.Around(GlobalPosition.Flat() + new System.Numerics.Vector2(0f, Height / 2f),
         new System.Numerics.Vector2(Width * CollisionShare, Height));
 
+    /// <summary>Raised when the gate starts dropping shut.</summary>
+    public event System.Action<Portcullis>? Closing;
+
     /// <summary>Raised when the gate hits the floor (for a shake, dust).</summary>
     public event System.Action<Portcullis>? Slammed;
+
+    /// <summary>Raised when the gate starts winching open.</summary>
+    public event System.Action<Portcullis>? Opening;
+
+    /// <summary>Raised when the gate reaches its full open height.</summary>
+    public event System.Action<Portcullis>? Opened;
 
     public override void _Ready()
     {
@@ -85,10 +94,26 @@ public partial class Portcullis : Node3D
     }
 
     /// <summary>The gate is to shut: it moves there over the next frames.</summary>
-    public void Close() => _target = 0f;
+    public void Close()
+    {
+        bool starting = _target > 0f;
+        _target = 0f;
+        if (starting)
+        {
+            Closing?.Invoke(this);
+        }
+    }
 
     /// <summary>The gate is to open: it moves there over the next frames.</summary>
-    public void Open() => _target = 1f;
+    public void Open()
+    {
+        bool starting = _target < 1f;
+        _target = 1f;
+        if (starting)
+        {
+            Opening?.Invoke(this);
+        }
+    }
 
     /// <summary>Open or shut at once, without the drop or the winch (a room loaded with the gate already so).</summary>
     public void Settle(bool open)
@@ -111,6 +136,10 @@ public partial class Portcullis : Node3D
         if (falling && _open <= 0f)
         {
             Slammed?.Invoke(this);
+        }
+        else if (!falling && _open >= 1f)
+        {
+            Opened?.Invoke(this);
         }
     }
 

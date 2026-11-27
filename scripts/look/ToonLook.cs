@@ -153,15 +153,6 @@ public partial class ToonLook : Node
     private void Show()
     {
         LookPreset? look = Current;
-        foreach (Dressed d in _dressed)
-        {
-            d.Mesh.SetSurfaceOverrideMaterial(d.Surface, look is null ? d.Own : d.Twin);
-            if (look is not null)
-            {
-                Dress(d.Twin, look);
-            }
-        }
-
         _ink?.SetShaderParameter(WidthShare, look?.FigureInk ?? 0f);
         RenderingServer.GlobalShaderParameterSet(ShaderGlobals.LookInk, look?.WorldInk ?? 0f);
         RenderingServer.GlobalShaderParameterSet(ShaderGlobals.LookGrain, look?.Grain ?? 0f);
@@ -170,17 +161,30 @@ public partial class ToonLook : Node
         RenderingServer.GlobalShaderParameterSet(ShaderGlobals.LookHatch, look?.Hatch ?? 0f);
         RenderingServer.GlobalShaderParameterSet(ShaderGlobals.LookBrush, look?.Brush ?? 0f);
         RenderingServer.GlobalShaderParameterSet(ShaderGlobals.LookMark, look?.Mark ?? 0f);
-        if (look is not null)
+        if (look is { } preset)
         {
-            RenderingServer.GlobalShaderParameterSet(ShaderGlobals.LookMarkKind, (float)look.MarkKind);
-            RenderingServer.GlobalShaderParameterSet(ShaderGlobals.LookMarkCell, look.MarkCell);
-            RenderingServer.GlobalShaderParameterSet(ShaderGlobals.LookMarkGain, look.MarkGain);
-            RenderingServer.GlobalShaderParameterSet(ShaderGlobals.LookBandSteps, look.BandSteps);
-            RenderingServer.GlobalShaderParameterSet(ShaderGlobals.LookBandSoftness, look.BandSoftness);
-            RenderingServer.GlobalShaderParameterSet(ShaderGlobals.LookBandShade, look.BandShade);
-            RenderingServer.GlobalShaderParameterSet(ShaderGlobals.LookBandGloss, look.BandGloss);
-            RenderingServer.GlobalShaderParameterSet(ShaderGlobals.LookInkPixels, look.InkPixels);
-            RenderingServer.GlobalShaderParameterSet(ShaderGlobals.LookInkColor, look.InkColor);
+            foreach (Dressed d in _dressed)
+            {
+                d.Mesh.SetSurfaceOverrideMaterial(d.Surface, d.Twin);
+                Dress(d.Twin, preset);
+            }
+
+            RenderingServer.GlobalShaderParameterSet(ShaderGlobals.LookMarkKind, (float)preset.MarkKind);
+            RenderingServer.GlobalShaderParameterSet(ShaderGlobals.LookMarkCell, preset.MarkCell);
+            RenderingServer.GlobalShaderParameterSet(ShaderGlobals.LookMarkGain, preset.MarkGain);
+            RenderingServer.GlobalShaderParameterSet(ShaderGlobals.LookBandSteps, preset.BandSteps);
+            RenderingServer.GlobalShaderParameterSet(ShaderGlobals.LookBandSoftness, preset.BandSoftness);
+            RenderingServer.GlobalShaderParameterSet(ShaderGlobals.LookBandShade, preset.BandShade);
+            RenderingServer.GlobalShaderParameterSet(ShaderGlobals.LookBandGloss, preset.BandGloss);
+            RenderingServer.GlobalShaderParameterSet(ShaderGlobals.LookInkPixels, preset.InkPixels);
+            RenderingServer.GlobalShaderParameterSet(ShaderGlobals.LookInkColor, preset.InkColor);
+        }
+        else
+        {
+            foreach (Dressed d in _dressed)
+            {
+                d.Mesh.SetSurfaceOverrideMaterial(d.Surface, d.Own);
+            }
         }
 
         if (Poses is not null)

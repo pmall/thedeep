@@ -34,10 +34,11 @@ public sealed class MachineAnimator
             JointDriver driver = _drivers[i];
             if (body.Joint(driver.Joint) is { } joint)
             {
-                _driven[i] = new Driven(joint, body.RestOffset(driver.Joint));
+                var driven = new Driven(joint, body.RestOffset(driver.Joint));
+                _driven[i] = driven;
                 if (seen.Add(driver.Joint))
                 {
-                    _resting.Add(_driven[i]!);
+                    _resting.Add(driven);
                 }
             }
             else

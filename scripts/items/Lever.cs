@@ -38,6 +38,9 @@ public partial class Lever : Node3D
     /// <summary>Thrown already.</summary>
     public bool Pulled { get; private set; }
 
+    /// <summary>Raised when the pilgrim pulls the lever (never during <see cref="Settle"/>).</summary>
+    public event System.Action<Lever>? Thrown;
+
     public override void _Ready()
     {
         Handle.RotationDegrees = new Vector3(0f, 0f, SetAngle);
@@ -55,6 +58,11 @@ public partial class Lever : Node3D
     /// <summary>Thrown: the handle swings down across the quadrant and bounces on its stop, the glow flares and dies.</summary>
     public void Pull()
     {
+        if (Pulled)
+        {
+            return;
+        }
+
         Pulled = true;
         Prompt.Offer(false);
         Tween tween = CreateTween();
@@ -63,6 +71,8 @@ public partial class Lever : Node3D
         {
             TokenGlow.FlareOut(tween, glow, FlarePeak, FlareSeconds);
         }
+
+        Thrown?.Invoke(this);
     }
 
     /// <summary>Pulled before (from the save, or its mechanism already set): down already.</summary>
