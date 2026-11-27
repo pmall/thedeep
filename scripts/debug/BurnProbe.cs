@@ -24,6 +24,8 @@ public partial class BurnProbe : Node
     public required Player Player { get; init; }
     /// <summary>The running game's world: its rooms, and the one loaded.</summary>
     public required World World { get; init; }
+    /// <summary>Which part of the burn rooms this run probes (`--shard K/N`: every Nth burn room from the Kth, 1-based); all by default.</summary>
+    public (int Index, int Count) Shard { get; init; } = (1, 1);
 
     /// <summary>How far from a burn's edge the pilgrim starts, meters: clear of every keep-off margin, so it is footing.</summary>
     private const float Offset = 1.6f;
@@ -83,17 +85,19 @@ public partial class BurnProbe : Node
             Player.Abilities.Lock(ability); // on foot, as any pilgrim first meets a burn
         }
 
+        var burnRooms = new List<string>();
         foreach (string path in World.RoomScenes())
         {
             var room = World.Scene(path).Instantiate<Room>();
             if (room.All<SlagBody>().Any() || room.All<HeatColumn>().Any())
             {
-                _rooms.Add(path);
+                burnRooms.Add(path);
             }
 
             room.Free();
         }
 
+        _rooms.AddRange(burnRooms.Where((_, i) => i % Shard.Count == Shard.Index - 1));
         NextRoom();
     }
 
@@ -156,7 +160,8 @@ public partial class BurnProbe : Node
             float x = dir > 0 ? region.MinX - Offset : region.MaxX + Offset;
             float edge = dir > 0 ? region.MinX : region.MaxX;
             float? top = solids.Where(s => s.MinX <= x && x <= s.MaxX && s.MaxY >= low - 0.01f && s.MaxY <= high).Select(s => s.MaxY).OrderBy(t => t)
-                .Cast<float?>().FirstOrDefault(t => !solids.Any(new Box(Math.Min(x - half, edge), t!.Value + 0.05f, Math.Max(x + half, edge), t.Value + height).Overlaps));
+                .Where(t => !solids.Any(new Box(Math.Min(x - half, edge), t + 0.05f, Math.Max(x + half, edge), t + height).Overlaps))
+                .Cast<float?>().FirstOrDefault();
             if (top is { } y)
             {
                 _walked++;

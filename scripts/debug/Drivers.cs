@@ -55,7 +55,7 @@ public static class Drivers
         Run("--key-check", (m, _) => new KeyCheck { Player = m.Player, World = m.World, Keyring = m.Keyring, Session = m.Session, Hint = m.Hint }),
         Run("--code-check", (m, _) => new KeyCheck { Player = m.Player, World = m.World, Keyring = m.Keyring, Session = m.Session, Hint = m.Hint, Checked = KeyCheck.Pyre }),
         Run("--heat-check", (m, _) => new HeatCheck { Player = m.Player, World = m.World, Hints = m.Hints }),
-        Run("--burn-probe", (m, _) => new BurnProbe { Player = m.Player, World = m.World }),
+        Run("--burn-probe", (m, o) => new BurnProbe { Player = m.Player, World = m.World, Shard = o.Shard }),
         Run("--route-check", (m, o) => new RouteCheck
         {
             Player = m.Player,

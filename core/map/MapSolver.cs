@@ -20,8 +20,10 @@ public static class MapSolver
     /// abilities can be collected in.</summary>
     public static MapReport Solve(MapGraph map)
     {
+        MapItemReduction reduction = MapItemReduction.Analyze(map);
+
         // 1. Every reachable state, with how it was first reached (for softlock paths).
-        SolverState start = Enter(map, map.Start, Ability.None, ItemSet.Empty);
+        SolverState start = Enter(map, map.Start, Ability.None, ItemSet.Empty, reduction);
         var parent = new Dictionary<SolverState, SolverState?> { [start] = null };
         var successors = new Dictionary<SolverState, List<SolverState>>();
         var queue = new Queue<SolverState>();
@@ -29,15 +31,16 @@ public static class MapSolver
         while (queue.Count > 0)
         {
             SolverState s = queue.Dequeue();
+            ItemSet effective = reduction.LocalItems.Count > 0 ? s.Held.Union(reduction.LocalItems) : s.Held;
             var next = new List<SolverState>();
             foreach (MapEdge edge in map.From(s.Room))
             {
-                if (!edge.Requires.IsMetBy(s.Owned, s.Held))
+                if (reduction.MentionsOptional(edge.Requires) || !edge.Requires.IsMetBy(s.Owned, effective))
                 {
                     continue;
                 }
 
-                SolverState t = Enter(map, edge.To, s.Owned, s.Held);
+                SolverState t = Enter(map, edge.To, s.Owned, s.Held, reduction);
                 next.Add(t);
                 if (!parent.ContainsKey(t))
                 {
@@ -49,7 +52,7 @@ public static class MapSolver
             successors[s] = next;
         }
 
-        // 2. States that can still reach a goal: grown backward from the goal states until nothing changes.
+        // 2. States that can still reach a goal: backward BFS from the goal states.
         var good = CanReach(parent.Keys, successors, parent.Keys.Where(s => map.Goals.Contains(s.Room)));
 
         var softlocks = parent.Keys.Where(s => !good.Contains(s))
@@ -59,7 +62,15 @@ public static class MapSolver
             .ToList();
 
         var reachedRooms = new HashSet<string>(parent.Keys.Select(s => s.Room));
-        (List<Ability[]> orders, int count) = Orders(map);
+        foreach ((string item, MapItemReduction.OptionalPocket pocket) in reduction.OptionalPockets)
+        {
+            if (reduction.PocketReachable(map, item, pocket, parent.Keys, successors))
+            {
+                reachedRooms.UnionWith(pocket.Rooms);
+            }
+        }
+
+        (List<Ability[]> orders, int count) = Orders(map, start, successors);
         var positions = new Dictionary<Ability, SortedSet<int>>();
         foreach (Ability a in AbilitySet.All.Where(a => map.AbilitiesOnMap.HasFlag(a)))
         {
@@ -277,10 +288,11 @@ public static class MapSolver
         return null;
     }
 
-    /// <summary>Arriving in <paramref name="room"/> with <paramref name="owned"/> and <paramref name="held"/>: its relics and items are taken.</summary>
-    private static SolverState Enter(MapGraph map, string room, Ability owned, ItemSet held) =>
+    /// <summary>Arriving in <paramref name="room"/> with <paramref name="owned"/> and <paramref name="held"/>: its relics and tracked items are taken.</summary>
+    private static SolverState Enter(MapGraph map, string room, Ability owned, ItemSet held, MapItemReduction? reduction = null) =>
         new(room, map.RelicsIn(room).Aggregate(owned, (o, relic) => o | relic.Ability),
-            map.ItemsIn(room).Aggregate(held, (h, item) => h.With(item.Item)));
+            map.ItemsIn(room).Where(item => reduction is null || !reduction.Ignored(item.Item))
+                .Aggregate(held, (h, item) => h.With(item.Item)));
 
     /// <summary>What a state holds, for reports: <c> [MagGrip, Drill; CryptKey]</c>, empty for nothing.</summary>
     public static string Holding(Ability owned, ItemSet held) =>
@@ -289,21 +301,47 @@ public static class MapSolver
         : owned == Ability.None ? $" [{held}]"
         : $" [{owned}; {held}]";
 
-    /// <summary>The states that can still reach one of <paramref name="goals"/>: grown backward from them until nothing changes.</summary>
+    /// <summary>The states that can still reach one of <paramref name="goals"/>: backward BFS over the reversed edges, linear in states and edges.</summary>
     private static HashSet<T> CanReach<T>(IEnumerable<T> states, Dictionary<T, List<T>> successors, IEnumerable<T> goals)
         where T : struct
     {
-        var good = new HashSet<T>(goals);
-        bool grew = true;
-        while (grew)
+        var reverse = new Dictionary<T, List<T>>();
+        foreach (T s in states)
         {
-            grew = false;
-            foreach (T s in states)
+            foreach (T next in successors[s])
             {
-                if (!good.Contains(s) && successors[s].Any(good.Contains))
+                if (!reverse.TryGetValue(next, out List<T>? from))
                 {
-                    good.Add(s);
-                    grew = true;
+                    reverse[next] = from = new List<T>();
+                }
+
+                from.Add(s);
+            }
+        }
+
+        var good = new HashSet<T>();
+        var queue = new Queue<T>();
+        foreach (T g in goals)
+        {
+            if (good.Add(g))
+            {
+                queue.Enqueue(g);
+            }
+        }
+
+        while (queue.Count > 0)
+        {
+            T at = queue.Dequeue();
+            if (!reverse.TryGetValue(at, out List<T>? from))
+            {
+                continue;
+            }
+
+            foreach (T prev in from)
+            {
+                if (good.Add(prev))
+                {
+                    queue.Enqueue(prev);
                 }
             }
         }
@@ -326,60 +364,184 @@ public static class MapSolver
     }
 
     /// <summary>
-    /// Every order in which all the map's abilities can be taken: explores (room, abilities taken in order),
-    /// relics in one room taken in the order they are listed.
+    /// Every order in which all the map's abilities can be taken, computed directly over the already-explored state graph:
+    /// condenses strongly connected components (reverse topological order) and propagates packed suffix orders backward, so
+    /// states reached by different permutations of the same owned set share their remaining suffixes instead of re-exploring
+    /// the map per permutation. Relics in one room are taken in the order they are listed.
     /// </summary>
-    private static (List<Ability[]> Orders, int Count) Orders(MapGraph map)
+    private static (List<Ability[]> Orders, int Count) Orders(MapGraph map, SolverState start, Dictionary<SolverState, List<SolverState>> successors)
     {
         Ability all = map.AbilitiesOnMap;
-        int count = AbilitySet.Count(all);
-        var found = new SortedSet<string>(StringComparer.Ordinal);
-        var result = new List<Ability[]>();
+        Ability[] abilities = AbilitySet.All.Where(a => all.HasFlag(a)).ToArray();
+        int count = abilities.Length;
         if (count == 0)
         {
-            return (result, 0);
+            return (new List<Ability[]>(), 0);
         }
 
-        var seen = new HashSet<(string, string, ItemSet)>();
-        var queue = new Queue<(string Room, List<Ability> Taken, ItemSet Held)>();
-
-        void Visit(string room, List<Ability> taken, ItemSet held)
+        var nibble = new Dictionary<Ability, ulong>(count);
+        for (int i = 0; i < count; i++)
         {
-            held = map.ItemsIn(room).Aggregate(held, (h, item) => h.With(item.Item));
-            var now = new List<Ability>(taken);
-            foreach (MapRelic item in map.RelicsIn(room))
+            nibble[abilities[i]] = (ulong)(i + 1);
+        }
+
+        // Iterative Tarjan SCC over the reachable state graph: outputs components in reverse topological order (sinks first).
+        List<List<SolverState>> components = StronglyConnected(start, successors, out Dictionary<SolverState, int> componentOf);
+        var suffixes = new HashSet<ulong>[components.Count];
+        var gained = new List<Ability>();
+        for (int c = 0; c < components.Count; c++)
+        {
+            var set = new HashSet<ulong>();
+            List<SolverState> members = components[c];
+            if (members[0].Owned == all)
             {
-                if (!now.Contains(item.Ability))
+                set.Add(0UL);
+                suffixes[c] = set;
+                continue;
+            }
+
+            foreach (SolverState u in members)
+            {
+                foreach (SolverState v in successors[u])
                 {
-                    now.Add(item.Ability);
+                    int target = componentOf[v];
+                    if (target == c || suffixes[target].Count == 0)
+                    {
+                        continue;
+                    }
+
+                    if (v.Owned == u.Owned)
+                    {
+                        set.UnionWith(suffixes[target]);
+                    }
+                    else
+                    {
+                        CollectNewRelics(map, v.Room, u.Owned, gained);
+                        foreach (ulong tail in suffixes[target])
+                        {
+                            set.Add(Prepend(tail, gained, nibble));
+                        }
+                    }
                 }
             }
 
-            string key = string.Join(",", now);
-            if (!seen.Add((room, key, held)))
-            {
-                return;
-            }
-
-            if (now.Count == count && found.Add(key))
-            {
-                result.Add(now.ToArray());
-            }
-
-            queue.Enqueue((room, now, held));
+            suffixes[c] = set;
         }
 
-        Visit(map.Start, new List<Ability>(), ItemSet.Empty);
-        while (queue.Count > 0)
+        CollectNewRelics(map, map.Start, Ability.None, gained);
+        var orders = new List<Ability[]>();
+        foreach (ulong tail in suffixes[componentOf[start]])
         {
-            (string room, List<Ability> taken, ItemSet held) = queue.Dequeue();
-            Ability owned = taken.Aggregate(Ability.None, (o, a) => o | a);
-            foreach (MapEdge edge in map.From(room).Where(e => e.Requires.IsMetBy(owned, held)))
+            ulong full = Prepend(tail, gained, nibble);
+            var order = new Ability[count];
+            for (int i = 0; i < count; i++)
             {
-                Visit(edge.To, taken, held);
+                order[i] = abilities[(int)(full & 0xFUL) - 1];
+                full >>= 4;
+            }
+
+            orders.Add(order);
+        }
+
+        orders.Sort((a, b) => string.CompareOrdinal(string.Join(",", a), string.Join(",", b)));
+        return (orders, count);
+    }
+
+    private static void CollectNewRelics(MapGraph map, string room, Ability alreadyOwned, List<Ability> result)
+    {
+        result.Clear();
+        Ability seen = alreadyOwned;
+        foreach (MapRelic relic in map.RelicsIn(room))
+        {
+            if ((seen & relic.Ability) == 0)
+            {
+                seen |= relic.Ability;
+                result.Add(relic.Ability);
+            }
+        }
+    }
+
+    private static ulong Prepend(ulong tail, List<Ability> gained, Dictionary<Ability, ulong> nibble)
+    {
+        ulong code = tail;
+        for (int i = gained.Count - 1; i >= 0; i--)
+        {
+            code = (code << 4) | nibble[gained[i]];
+        }
+
+        return code;
+    }
+
+    /// <summary>Iterative Tarjan strongly connected components from <paramref name="start"/>, returned in reverse topological order.</summary>
+    private static List<List<SolverState>> StronglyConnected(SolverState start, Dictionary<SolverState, List<SolverState>> successors,
+        out Dictionary<SolverState, int> componentOf)
+    {
+        var index = new Dictionary<SolverState, int>(successors.Count);
+        var lowlink = new Dictionary<SolverState, int>(successors.Count);
+        var onStack = new HashSet<SolverState>();
+        var tarjan = new Stack<SolverState>();
+        var frames = new Stack<(SolverState Node, int Edge)>();
+        var components = new List<List<SolverState>>();
+        componentOf = new Dictionary<SolverState, int>(successors.Count);
+        int nextIndex = 0;
+
+        index[start] = lowlink[start] = nextIndex++;
+        tarjan.Push(start);
+        onStack.Add(start);
+        frames.Push((start, 0));
+
+        while (frames.Count > 0)
+        {
+            (SolverState v, int edge) = frames.Pop();
+            List<SolverState> edges = successors[v];
+            if (edge < edges.Count)
+            {
+                frames.Push((v, edge + 1));
+                SolverState w = edges[edge];
+                if (!index.TryGetValue(w, out int wIndex))
+                {
+                    index[w] = lowlink[w] = nextIndex++;
+                    tarjan.Push(w);
+                    onStack.Add(w);
+                    frames.Push((w, 0));
+                }
+                else if (onStack.Contains(w) && wIndex < lowlink[v])
+                {
+                    lowlink[v] = wIndex;
+                }
+            }
+            else
+            {
+                if (lowlink[v] == index[v])
+                {
+                    int id = components.Count;
+                    var component = new List<SolverState>();
+                    while (true)
+                    {
+                        SolverState w = tarjan.Pop();
+                        onStack.Remove(w);
+                        componentOf[w] = id;
+                        component.Add(w);
+                        if (w.Equals(v))
+                        {
+                            break;
+                        }
+                    }
+
+                    components.Add(component);
+                }
+
+                if (frames.Count > 0)
+                {
+                    SolverState parent = frames.Peek().Node;
+                    if (lowlink[v] < lowlink[parent])
+                    {
+                        lowlink[parent] = lowlink[v];
+                    }
+                }
             }
         }
 
-        return (result, count);
+        return components;
     }
 }

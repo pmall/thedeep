@@ -8,32 +8,12 @@ namespace TheDeep;
 /// <summary>
 /// What the base moveset can reach in one room, pure (the geometry sanity check, docs/long-term.md#any-order): the
 /// pilgrim's body as a box walks along ledges and is simulated tick by tick through jumps (full and cut),
-/// walk-offs and air dashes, with the real tuning numbers and collisions against the room's solids. From
-/// an arrival point it finds every ledge it can stand on and every trigger area (an exit) its body can
-/// enter. Conservative where it must be: the body is a box (the real capsule slips off edges a little
-/// more easily), take-offs are sampled (ledge ends and every 2 m), so a gap the planner can't cross may
-/// still be crossable by a hair; the check treats "reached" as proof, "not reached" as the designer's claim.
-/// Given <see cref="HarpoonLimits"/> and anchors, it also fires the Harpoon: from standing, and from the top of a full jump
-/// straight up (as high as the room lets it rise), at every take-off point, and from each anchor reached, at every anchor in range and in clear sight,
-/// then lets go there (drifting either way or not, jumping off or not, dashing or not).
-/// Lifts (<see cref="LiftPath"/>) stand at their lower stop as solids; landing on one rides it up, the body touching every
-/// trigger it passes through on the way (stepping off at the top is not simulated: keep a lift's way out in its path).
-/// Water (boxes whose top is the surface, with <see cref="WaterLimits"/>): a body whose feet go deep enough swims with the
-/// pilgrim's own water motion (<see cref="WaterMotion"/>): it floats, dips after a plunge and bobs back to its float line,
-/// which is a ledge to swim along and jump from. Floors deeper than a jump out of the water are not take-off points. With
-/// <c>ballast</c>, a body in water reaches every point of the water connected to where it went in (sinking and rising at
-/// will), touching what the body passes and standing on every floor it finds there.
-/// Mag-grip (<see cref="GripLimits"/> and the metal solids): a body pushing into a metal wall (walking, jumping or falling, not
-/// dashing) or rising into a metal ceiling grips it, and then walks the whole surface connected to that point: along each face,
-/// around a metal block's corners, onto a metal wall met at an inner corner, standing up on a top; it touches what its body
-/// passes (lying along the normal), and from anywhere on a wall it leaps off or lets go, from anywhere under a ceiling it drops.
-/// Only metal holds (rock going on in the same plane is the surface's end, as in the game, and so is any gap: the walk goes on only within
-/// one metal solid or onto one it meets). The game's grip may bridge a narrow gap, so a room may have none between metal solids facing
-/// each other in one plane (<see cref="GripGaps"/>, held by the room check): the model stays exact for every room that passes. Water lets go of a body whose center it drowns (<see cref="GripMath.Drowned"/>): no grip pose lies there.
-/// Ledge assist: an airborne body (not dashing) pressing into a wall whose top is at most <see cref="MoveLimits.LedgeAssist"/> above
-/// its feet is lifted onto it, as the pilgrim is.
-/// Hazards (heat zones, for a planner without Heat plating) are space the body never enters: a trajectory that touches one
-/// ends there, and no ledge or water reaches into one.
+/// walk-offs and air dashes, with the real tuning numbers and collisions against the room's solids (<see cref="SolidSpace"/>).
+/// Optional capability graphs extend it when their limits and room geometry are present: <see cref="HarpoonReach"/> for mooring
+/// rings, <see cref="WaterGraph"/> for swimming and Ballast, and <see cref="GripGraph"/> for Mag-grip metal surfaces.
+/// Conservative where it must be: the body is a box (the real capsule slips off edges a little more easily), take-offs are
+/// sampled (ledge ends and every 2 m), so a gap the planner can't cross may still be crossable by a hair; the check treats
+/// "reached" as proof, "not reached" as the designer's claim.
 /// </summary>
 public sealed class ReachPlanner
 {
@@ -44,54 +24,16 @@ public sealed class ReachPlanner
 
     /// <summary>Longest a body may float before it settles (rising from the bottom of deep water), ticks.</summary>
     private const int MaxSwimTicks = 900;
-    private const float Skin = 0.001f;
 
-    private readonly MoveLimits _m;
-    private readonly List<Box> _solids;
-    private readonly SolidGrid _grid;
-
-    /// <summary>Each thread's list of the solids near a moving body (walks of one planner run on several threads at once).</summary>
-    [ThreadStatic]
-    private static List<int>? _near;
+    private readonly SolidSpace _space;
     private readonly List<Ledge> _ledges;
 
     /// <summary>For each ledge, whether another floor goes on level past its west and its east end (no edge to walk off there).</summary>
     private readonly List<(bool West, bool East)> _goesOn;
-    /// <summary>The Harpoon's numbers and the room's anchors, or null for a planner without it (or a room without anchors).</summary>
-    private readonly Harpoon? _harpoon;
     private readonly List<LiftPath> _lifts;
-    /// <summary>The room's swimmable water and how a body moves in it, or null for a room (or a planner) without water.</summary>
-    private readonly Waters? _water;
-    private readonly bool _ballast;
-    private readonly List<Box> _hazards;
-    private readonly GripLimits? _grip;
-
-    /// <summary>The solids (by index) that are metal, with Mag-grip.</summary>
-    private readonly HashSet<int> _metal = new();
-
-    /// <summary>With Mag-grip: poses on metal surfaces where the body fits, grouped into the parts walkable together.</summary>
-    private readonly List<GripNode> _gripNodes = new();
-    private readonly List<List<int>> _gripParts = new();
-    private readonly Dictionary<(int X, int Y), List<int>> _gripCells = new();
-
-    /// <summary>Spacing of the grip poses along a face, meters.</summary>
-    private const float GripStep = 0.25f;
-
-    /// <summary>
-    /// Two grip poses this close (not on opposite faces, and on one metal solid or on two that meet) are one walk apart: along a face,
-    /// or round a corner.
-    /// </summary>
-    private const float GripLink = 0.8f;
-
-    /// <summary>A pose on the face of the metal solid <paramref name="Solid"/> (an index into the solids).</summary>
-    private readonly record struct GripNode(Vector2 Feet, Vector2 Up, bool Launch, int Solid, int Part);
-
-    /// <summary>With Ballast, the water reachable together (feet positions on a grid where the body fits, by connected part).</summary>
-    private readonly Dictionary<(int X, int Y), int> _cellPart = new();
-    private readonly List<List<Vector2>> _parts = new();
-
-    /// <summary>The grid of feet positions under water, with Ballast.</summary>
-    private const float Cell = 0.25f;
+    private readonly HarpoonReach? _harpoon;
+    private readonly WaterGraph? _water;
+    private readonly GripGraph? _grip;
 
     /// <summary>A planner for one room: the base moveset's <paramref name="limits"/> over the room's <paramref name="solids"/>.
     /// Each ability is simulated only when both its limits and what it works on are given: the Harpoon with
@@ -102,41 +44,24 @@ public sealed class ReachPlanner
         IEnumerable<LiftPath>? lifts = null, WaterLimits? water = null, IEnumerable<Box>? waters = null, bool ballast = false,
         IEnumerable<Box>? hazards = null, GripLimits? grip = null, IEnumerable<Box>? metal = null)
     {
-        _m = limits;
-        _hazards = hazards?.ToList() ?? new List<Box>();
         _lifts = lifts?.ToList() ?? new List<LiftPath>();
-        _solids = solids.Concat(_lifts.Select(l => l.Platform)).ToList();
-        _grid = new SolidGrid(_solids);
-        List<Box> bodies = waters?.ToList() ?? new List<Box>();
-        _water = water is not null && bodies.Count > 0 ? new Waters(water, bodies) : null;
-        _ballast = ballast && _water is not null;
-        _ledges = FindLedges();
-        _ledges.AddRange(FindSwimLedges());
+        _space = new SolidSpace(limits, solids.Concat(_lifts.Select(l => l.Platform)).ToList(), hazards?.ToList() ?? new List<Box>());
+
+        List<Box> waterBodies = waters?.ToList() ?? new List<Box>();
+        _water = water is not null && waterBodies.Count > 0 ? new WaterGraph(water, waterBodies, ballast) : null;
+
+        _ledges = _space.FindLedges();
+        if (_water is not null)
+        {
+            _ledges.AddRange(_water.FindSwimLedges(_space));
+            _water.BuildParts(_space, _ledges);
+        }
+
         _goesOn = _ledges.Select(l => (GoesOn(l, l.MinX - 0.01f), GoesOn(l, l.MaxX + 0.01f))).ToList();
+
         List<Vector2> anchorList = anchors?.ToList() ?? new List<Vector2>();
-        _harpoon = harpoon is not null && anchorList.Count > 0 ? new Harpoon(harpoon, anchorList) : null;
-        if (_ballast)
-        {
-            FindWaterParts();
-        }
-
-        if (grip is not null && metal is not null)
-        {
-            var metalBoxes = metal.ToHashSet();
-            for (int i = 0; i < _solids.Count; i++)
-            {
-                if (metalBoxes.Contains(_solids[i]))
-                {
-                    _metal.Add(i);
-                }
-            }
-
-            _grip = _metal.Count > 0 ? grip : null;
-            if (_grip is not null)
-            {
-                FindGripParts();
-            }
-        }
+        _harpoon = harpoon is not null && anchorList.Count > 0 ? new HarpoonReach(harpoon, anchorList) : null;
+        _grip = GripGraph.Build(grip, metal, _space, _water);
     }
 
     /// <summary>Every floor the pilgrim can stand on in the room, and every water's float line.</summary>
@@ -163,53 +88,34 @@ public sealed class ReachPlanner
         var queue = new Queue<int>();
         var reachedAnchors = new HashSet<int>();
         var anchorQueue = new Queue<(Vector2 Anchor, Vector2 From)>();
-
-        // The Harpoon from a body center: every anchor in range and in sight.
-        void Fire(Vector2 center)
-        {
-            if (_harpoon is not { } harpoon)
-            {
-                return;
-            }
-
-            for (int a = 0; a < harpoon.Anchors.Count; a++)
-            {
-                Vector2 anchor = harpoon.Anchors[a];
-                if (HarpoonAim.InReach(Vector2.Distance(center, anchor), harpoon.Limits.Range, harpoon.Limits.MinDistance) && !reachedAnchors.Contains(a)
-                    && InSight(center, anchor))
-                {
-                    reachedAnchors.Add(a);
-                    anchorQueue.Enqueue((anchor, center));
-                }
-            }
-        }
-
         var sunkParts = new HashSet<int>();
         var grippedParts = new HashSet<int>();
         var gripQueue = new Queue<int>();
 
-        // With Mag-grip: gripping a metal surface at a pose walks the whole part of the surface connected to it.
         void Grab(GripPose pose)
         {
-            int node = GripNodeNear(pose.Feet, pose.Up);
-            if (node >= 0 && grippedParts.Add(_gripNodes[node].Part))
+            if (_grip is not null && _grip.PartNear(pose.Feet, pose.Up) is >= 0 and var part && grippedParts.Add(part))
             {
-                gripQueue.Enqueue(_gripNodes[node].Part);
+                gripQueue.Enqueue(part);
             }
         }
 
-        // With Ballast: everywhere in the water connected to where the body went in.
         void Sink(Vector2 feet)
         {
-            int part = PartNear(feet);
+            if (_water is null || !_water.Ballast)
+            {
+                return;
+            }
+
+            int part = _water.PartNear(feet);
             if (part < 0 || !sunkParts.Add(part))
             {
                 return;
             }
 
-            foreach (Vector2 cell in _parts[part])
+            foreach (Vector2 cell in _water.Cells(part))
             {
-                Touch(cell, triggers, reachedTriggers);
+                _space.Touch(cell, triggers, reachedTriggers);
                 for (int i = 0; i < _ledges.Count; i++)
                 {
                     Ledge l = _ledges[i];
@@ -227,8 +133,7 @@ public sealed class ReachPlanner
             {
                 queue.Enqueue(ledge);
                 Ledge l = _ledges[ledge];
-                // Standing anywhere along it.
-                var walk = new Box(l.MinX - _m.Width * 0.5f, l.Y + Skin, l.MaxX + _m.Width * 0.5f, l.Y + _m.Height);
+                var walk = new Box(l.MinX - _space.Limits.Width * 0.5f, l.Y + SolidSpace.Skin, l.MaxX + _space.Limits.Width * 0.5f, l.Y + _space.Limits.Height);
                 for (int t = 0; t < triggers.Count; t++)
                 {
                     if (walk.Overlaps(triggers[t]))
@@ -258,11 +163,9 @@ public sealed class ReachPlanner
             if (queue.Count == 0 && gripQueue.Count > 0)
             {
                 int part = gripQueue.Dequeue();
-                if (_grip is { } grip)
-                {
-                    Walk(_gripParts[part], grip, triggers, reachedTriggers, Land, Sink, Grab);
-                }
-
+                _grip?.Walk(part, triggers, reachedTriggers, feet => _space.LedgeAt(_ledges, feet), Land,
+                    (start, velocity, dir, dash, regrab) =>
+                        Simulate(start, velocity, dir, jumpTicks: 0, dash, triggers, reachedTriggers, Land, Sink, Grab, airborne: true, gripFrom: regrab));
                 continue;
             }
 
@@ -271,10 +174,12 @@ public sealed class ReachPlanner
                 (Vector2 anchor, Vector2 from) = anchorQueue.Dequeue();
                 if (_harpoon is { } harpoon)
                 {
-                    LetGo(anchor, from, harpoon.Limits, triggers, reachedTriggers, Land, Sink, Grab);
+                    harpoon.LetGo(anchor, from, _space, triggers, reachedTriggers,
+                        (start, velocity, dir, jump, dash) =>
+                            Simulate(start, velocity, dir, jump, dash, triggers, reachedTriggers, Land, Sink, Grab, airborne: true));
+                    harpoon.Fire(anchor, _space, reachedAnchors, anchorQueue);
                 }
 
-                Fire(anchor);
                 continue;
             }
 
@@ -285,15 +190,12 @@ public sealed class ReachPlanner
             foreach (float x in takeOffs)
             {
                 var at = new Vector2(x, l.Y);
-                if (!l.Swim && Submerged(at))
+                if (!l.Swim && _water is not null && _water.Submerged(at))
                 {
                     continue; // under water, deeper than a jump out of it
                 }
 
-                if (_harpoon is not null)
-                {
-                    Fire(at + new Vector2(0f, _m.Height * 0.5f));
-                }
+                _harpoon?.Fire(at + new Vector2(0f, _space.Limits.Height * 0.5f), _space, reachedAnchors, anchorQueue);
 
                 foreach (GroundMove move in GroundMoves)
                 {
@@ -302,14 +204,14 @@ public sealed class ReachPlanner
                     if (move.JumpTicks != 0
                         || (!l.Swim && (move.Dir > 0 ? x == last && !_goesOn[ledge].East : x == first && !_goesOn[ledge].West)))
                     {
-                        var running = new Vector2(move.Dir * (l.Swim && _water is { } wet ? wet.Limits.SwimSpeed : _m.RunSpeed), 0f);
+                        var running = new Vector2(move.Dir * (l.Swim && _water is { } wet ? wet.Limits.SwimSpeed : _space.Limits.RunSpeed), 0f);
                         bool leap = leaps is not null && !l.Swim;
                         bool fires = _harpoon is not null && move == StraightUp;
                         Trace? trace = leap || fires ? new Trace() : null;
                         Simulate(at, running, move.Dir, move.JumpTicks, move.DashTick, triggers, reachedTriggers, Land, Sink, Grab, trace: trace);
                         if (fires && trace is not null)
                         {
-                            Fire(Apex(trace) + new Vector2(0f, _m.Height * 0.5f)); // as high as the room lets the jump rise
+                            _harpoon?.Fire(Apex(trace) + new Vector2(0f, _space.Limits.Height * 0.5f), _space, reachedAnchors, anchorQueue);
                         }
 
                         if (leap && leaps is not null && trace is not null && (move.DashTick < 0 || trace.DashedAt >= 0))
@@ -371,205 +273,6 @@ public sealed class ReachPlanner
         public bool Assisted { get; set; }
     }
 
-    /// <summary>
-    /// Gripping a part of the metal surface: walking all of it, touching what the body passes, standing up on its tops, and leaping
-    /// off (or letting go of) its walls and dropping from under its ceilings, every meter or so.
-    /// </summary>
-    private void Walk(List<int> part, GripLimits g, IReadOnlyList<Box> triggers, HashSet<int> reachedTriggers, Action<int> land, Action<Vector2> sink,
-        Action<GripPose> grab)
-    {
-        int regrab = (int)MathF.Ceiling(g.RegrabDelay / Tick);
-        float centerHeight = _m.Height * 0.5f;
-        foreach (int n in part)
-        {
-            GripNode node = _gripNodes[n];
-            Box body = GripBody(node.Feet, node.Up);
-            for (int t = 0; t < triggers.Count; t++)
-            {
-                if (body.Overlaps(triggers[t]))
-                {
-                    reachedTriggers.Add(t);
-                }
-            }
-
-            if (node.Up.Y > 0.5f)
-            {
-                land(LedgeAt(node.Feet));
-                continue;
-            }
-
-            if (!node.Launch)
-            {
-                continue;
-            }
-
-            Vector2 upright = GripMath.Upright(node.Feet, node.Up, centerHeight);
-            foreach (int dir in new[] { -1, 0, 1 })
-            {
-                if (node.Up.Y < -0.5f)
-                {
-                    // Under a ceiling: the leap pushes off downward.
-                    foreach (int dash in new[] { -1, 8 })
-                    {
-                        Simulate(upright, new Vector2(dir * _m.RunSpeed, -g.DropSpeed), dir, 0, dash, triggers, reachedTriggers, land, sink, grab,
-                            airborne: true, gripFrom: regrab);
-                    }
-
-                    continue;
-                }
-
-                var leap = new Vector2(node.Up.X * g.LeapAwaySpeed, _m.TakeOff * g.LeapUpFactor);
-                foreach (int dash in new[] { -1, 10 })
-                {
-                    Simulate(upright, leap, dir, 0, dash, triggers, reachedTriggers, land, sink, grab, airborne: true, gripFrom: regrab);
-                }
-
-                Simulate(upright, node.Up * g.LetGoSpeed, dir, 0, -1, triggers, reachedTriggers, land, sink, grab, airborne: true, gripFrom: regrab);
-            }
-        }
-    }
-
-    /// <summary>Whether a gripping body centered at <paramref name="center"/> is drowned in some water (water lets go of it).</summary>
-    private bool Drowned(Vector2 center) =>
-        _water is { } water
-        && water.Bodies.Any(w => center.X > w.MinX && center.X < w.MaxX && center.Y > w.MinY && GripMath.Drowned(center.Y, w.MaxY, water.Limits));
-
-    /// <summary>The body lying along <paramref name="up"/> from feet on a surface (upright on a floor).</summary>
-    private Box GripBody(Vector2 feet, Vector2 up) =>
-        Box.Around(feet + up * (_m.Height * 0.5f), MathF.Abs(up.X) > 0.5f ? new Vector2(_m.Height, _m.Width) : new Vector2(_m.Width, _m.Height));
-
-    /// <summary>The grip pose with this <paramref name="up"/> nearest to <paramref name="feet"/> (within a meter), or −1.</summary>
-    private int GripNodeNear(Vector2 feet, Vector2 up)
-    {
-        int best = -1;
-        float bestDistance = 1f;
-        int cx = (int)MathF.Floor(feet.X), cy = (int)MathF.Floor(feet.Y);
-        for (int dx = -1; dx <= 1; dx++)
-        {
-            for (int dy = -1; dy <= 1; dy++)
-            {
-                if (!_gripCells.TryGetValue((cx + dx, cy + dy), out List<int>? cell))
-                {
-                    continue;
-                }
-
-                foreach (int n in cell)
-                {
-                    float d = Vector2.Distance(_gripNodes[n].Feet, feet);
-                    if (_gripNodes[n].Up == up && d <= bestDistance)
-                    {
-                        best = n;
-                        bestDistance = d;
-                    }
-                }
-            }
-        }
-
-        return best;
-    }
-
-    /// <summary>
-    /// With Mag-grip: every pose on a metal face (every <see cref="GripStep"/>) where the body fits, linked to the poses a short walk
-    /// away on the same metal solid or one sharing an edge with it (along the face, round a block's outer corner, onto a wall at an inner
-    /// corner, up onto a top), grouped into parts.
-    /// </summary>
-    private void FindGripParts()
-    {
-        foreach (int i in _metal.Order())
-        {
-            Box b = _solids[i];
-            var faces = new (Vector2 Up, Vector2 From, Vector2 To)[]
-            {
-                (new Vector2(-1f, 0f), new Vector2(b.MinX, b.MinY), new Vector2(b.MinX, b.MaxY)),
-                (new Vector2(1f, 0f), new Vector2(b.MaxX, b.MinY), new Vector2(b.MaxX, b.MaxY)),
-                (new Vector2(0f, -1f), new Vector2(b.MinX, b.MinY), new Vector2(b.MaxX, b.MinY)),
-                (new Vector2(0f, 1f), new Vector2(b.MinX, b.MaxY), new Vector2(b.MaxX, b.MaxY)),
-            };
-            foreach ((Vector2 up, Vector2 from, Vector2 to) in faces)
-            {
-                int steps = Math.Max(1, (int)MathF.Ceiling(Vector2.Distance(from, to) / GripStep));
-                for (int k = 0; k <= steps; k++)
-                {
-                    Vector2 feet = Vector2.Lerp(from, to, k / (float)steps);
-                    Box body = GripBody(feet, up);
-                    var inner = new Box(body.MinX + Skin, body.MinY + Skin, body.MaxX - Skin, body.MaxY - Skin);
-                    if (_solids.Any(s => s.Overlaps(inner)) || _hazards.Any(h => h.Overlaps(inner)) || Drowned(feet + up * (_m.Height * 0.5f)))
-                    {
-                        continue;
-                    }
-
-                    var key = ((int)MathF.Floor(feet.X), (int)MathF.Floor(feet.Y));
-                    if (!_gripCells.TryGetValue(key, out List<int>? cell))
-                    {
-                        _gripCells[key] = cell = new List<int>();
-                    }
-
-                    cell.Add(_gripNodes.Count);
-                    _gripNodes.Add(new GripNode(feet, up, k % 4 == 0 || k == steps, i, -1));
-                }
-            }
-        }
-
-        // Whether the grip goes on from one metal solid onto the other: the same, or two sharing an edge (or more), with nothing between.
-        bool Meet(int a, int b)
-        {
-            Box p = _solids[a], q = _solids[b];
-            float x = MathF.Min(p.MaxX, q.MaxX) - MathF.Max(p.MinX, q.MinX), y = MathF.Min(p.MaxY, q.MaxY) - MathF.Max(p.MinY, q.MinY);
-            return a == b || (x >= -Skin && y >= -Skin && (x > Skin || y > Skin));
-        }
-
-        // Union the poses a short walk apart on metal that holds all the way (rock between two solids ends the grip; a gap is taken as its end too).
-        int[] root = Enumerable.Range(0, _gripNodes.Count).ToArray();
-        int Find(int x)
-        {
-            while (root[x] != x)
-            {
-                x = root[x] = root[root[x]];
-            }
-
-            return x;
-        }
-
-        for (int n = 0; n < _gripNodes.Count; n++)
-        {
-            GripNode a = _gripNodes[n];
-            int cx = (int)MathF.Floor(a.Feet.X), cy = (int)MathF.Floor(a.Feet.Y);
-            for (int dx = -1; dx <= 1; dx++)
-            {
-                for (int dy = -1; dy <= 1; dy++)
-                {
-                    if (!_gripCells.TryGetValue((cx + dx, cy + dy), out List<int>? cell))
-                    {
-                        continue;
-                    }
-
-                    foreach (int m in cell.Where(m => m > n))
-                    {
-                        GripNode b = _gripNodes[m];
-                        if (Vector2.Dot(a.Up, b.Up) > -0.5f && Vector2.Distance(a.Feet, b.Feet) <= GripLink && Meet(a.Solid, b.Solid))
-                        {
-                            root[Find(m)] = Find(n);
-                        }
-                    }
-                }
-            }
-        }
-
-        var parts = new Dictionary<int, int>();
-        for (int n = 0; n < _gripNodes.Count; n++)
-        {
-            int r = Find(n);
-            if (!parts.TryGetValue(r, out int part))
-            {
-                parts[r] = part = _gripParts.Count;
-                _gripParts.Add(new List<int>());
-            }
-
-            _gripParts[part].Add(n);
-            _gripNodes[n] = _gripNodes[n] with { Part = part };
-        }
-    }
-
     /// <summary>Standing on a lift's platform anywhere along <paramref name="on"/>, carried up the whole of its rise.</summary>
     private void Ride(LiftPath lift, Ledge on, IReadOnlyList<Box> triggers, HashSet<int> reachedTriggers)
     {
@@ -578,70 +281,21 @@ public sealed class ReachPlanner
         {
             for (float up = 0f; up <= lift.Rise + 0.001f; up += 0.25f)
             {
-                Touch(new Vector2(x, on.Y + MathF.Min(up, lift.Rise)), triggers, reachedTriggers);
+                _space.Touch(new Vector2(x, on.Y + MathF.Min(up, lift.Rise)), triggers, reachedTriggers);
             }
 
-            Touch(new Vector2(x, on.Y + lift.Rise), triggers, reachedTriggers);
+            _space.Touch(new Vector2(x, on.Y + lift.Rise), triggers, reachedTriggers);
         }
-    }
-
-    /// <summary>Pulled from <paramref name="from"/> to <paramref name="anchor"/> (the body's center), then letting go there.</summary>
-    private void LetGo(Vector2 anchor, Vector2 from, HarpoonLimits h, IReadOnlyList<Box> triggers, HashSet<int> reachedTriggers, Action<int> land,
-        Action<Vector2> sink, Action<GripPose> grab)
-    {
-        float distance = Vector2.Distance(from, anchor);
-        float speed = MathF.Min(h.ZipSpeed, MathF.Sqrt(2f * h.ZipAcceleration * distance));
-        Vector2 release = HarpoonAim.Release(Vector2.Normalize(anchor - from), speed, h.ExitSpeedFactor, h.ExitLift);
-        var feet = anchor - new Vector2(0f, _m.Height * 0.5f);
-        Touch(feet, triggers, reachedTriggers);
-        foreach (int dir in new[] { -1, 0, 1 })
-        {
-            foreach (int jump in new[] { 0, -1 })
-            {
-                foreach (int dash in new[] { -1, 6, 14 })
-                {
-                    Simulate(feet, release, dir, jump, dash, triggers, reachedTriggers, land, sink, grab, airborne: true);
-                }
-            }
-        }
-    }
-
-    /// <summary>Whether nothing solid lies between two points on the play plane (stopping a little short of <paramref name="to"/>).</summary>
-    private bool InSight(Vector2 from, Vector2 to)
-    {
-        float length = Vector2.Distance(from, to) - HarpoonAim.SightMargin;
-        if (length <= 0f)
-        {
-            return true;
-        }
-
-        Vector2 dir = Vector2.Normalize(to - from), end = from + dir * length;
-        List<int> near = _near ??= new List<int>();
-        _grid.Near(new Box(MathF.Min(from.X, end.X), MathF.Min(from.Y, end.Y), MathF.Max(from.X, end.X), MathF.Max(from.Y, end.Y)), near);
-        for (float t = 0f; t <= length; t += 0.1f)
-        {
-            Vector2 p = from + dir * t;
-            foreach (int i in near)
-            {
-                Box s = _solids[i];
-                if (p.X > s.MinX && p.X < s.MaxX && p.Y > s.MinY && p.Y < s.MaxY)
-                {
-                    return false;
-                }
-            }
-        }
-
-        return true;
     }
 
     /// <summary>Where on a ledge to take off: its ends (or <see cref="MoveLimits.EdgeMargin"/> inside them), and every 2 m between.</summary>
     private IEnumerable<float> TakeOffs(Ledge l)
     {
         float a = l.MinX, b = l.MaxX;
-        if (b - a > 2f * _m.EdgeMargin)
+        if (b - a > 2f * _space.Limits.EdgeMargin)
         {
-            a += _m.EdgeMargin;
-            b -= _m.EdgeMargin;
+            a += _space.Limits.EdgeMargin;
+            b -= _space.Limits.EdgeMargin;
         }
         else
         {
@@ -670,14 +324,15 @@ public sealed class ReachPlanner
         HashSet<int> reachedTriggers, Action<int> land, Action<Vector2> sink, Action<GripPose> grab, bool airborne = false,
         int gripFrom = 0, Trace? trace = null)
     {
+        MoveLimits m = _space.Limits;
         Vector2 p = start, v = velocity;
         trace?.Path.Add(start);
         bool jumping = jumpTicks != 0, cut = false;
-        WaterHit? swimming = null;
+        Box? swimming = null;
         airborne |= jumping;
         if (jumping)
         {
-            v.Y = _m.TakeOff;
+            v.Y = m.TakeOff;
         }
 
         int dashLeft = 0, dashDir = dir == 0 ? 1 : dir;
@@ -686,9 +341,10 @@ public sealed class ReachPlanner
         for (int tick = 0; tick < limit; tick++)
         {
             bool held = jumpTicks < 0 || tick < jumpTicks;
-            if (swimming is null && v.Y <= 0f && WaterAt(p) is { } water && WaterMotion.Deep(p.Y, water.Body.MaxY, water.Limits))
+            if (swimming is null && v.Y <= 0f && _water is not null && _water.WaterAt(p) is { } water
+                && WaterMotion.Deep(p.Y, water.MaxY, _water.Limits))
             {
-                if (_ballast)
+                if (_water.Ballast)
                 {
                     sink(p);
                     return;
@@ -702,18 +358,18 @@ public sealed class ReachPlanner
 
                 limit = tick + MaxSwimTicks; // floating up from deep water takes a while
                 dashLeft = 0;
-                v.Y = WaterMotion.Splash(v.Y, water.Limits);
+                v.Y = WaterMotion.Splash(v.Y, _water.Limits);
             }
 
-            if (swimming is { } w)
+            if (swimming is { } w && _water is not null)
             {
-                if (WaterAt(p) is null)
+                if (_water.WaterAt(p) is null)
                 {
                     swimming = null; // swum out of its side
                 }
                 else
                 {
-                    if (Swim(ref p, ref v, dir, w, triggers, reachedTriggers, land))
+                    if (_water.Swim(_space, _ledges, ref p, ref v, dir, w, triggers, reachedTriggers, land))
                     {
                         return;
                     }
@@ -722,10 +378,10 @@ public sealed class ReachPlanner
                 }
             }
 
-            if (dashTick >= 0 && tick == dashTick && !dashed && _m.AirDashes > 0 && airborne)
+            if (dashTick >= 0 && tick == dashTick && !dashed && m.AirDashes > 0 && airborne)
             {
                 dashed = true;
-                dashLeft = (int)MathF.Round(_m.DashDuration / Tick);
+                dashLeft = (int)MathF.Round(m.DashDuration / Tick);
                 if (trace is not null)
                 {
                     trace.DashedAt = tick;
@@ -734,47 +390,46 @@ public sealed class ReachPlanner
 
             if (dashLeft > 0)
             {
-                v = new Vector2(dashDir * _m.DashDistance / _m.DashDuration, 0f);
+                v = new Vector2(dashDir * m.DashDistance / m.DashDuration, 0f);
                 if (--dashLeft == 0)
                 {
-                    v = new Vector2(dashDir * _m.RunSpeed * _m.DashExitSpeedFactor, 0f);
+                    v = new Vector2(dashDir * m.RunSpeed * m.DashExitSpeedFactor, 0f);
                 }
             }
             else
             {
                 if (jumping && !cut && !held && v.Y > 0f)
                 {
-                    v.Y *= _m.JumpCutFactor;
+                    v.Y *= m.JumpCutFactor;
                     cut = true;
                 }
 
-                v.X = MoveRules.Air(v.X, dir, _m.RunSpeed, _m.AirCarrySpeed, _m.AirAcceleration, _m.AirDeceleration, _m.AirDrag, Tick);
-                float g = _m.Gravity;
+                v.X = MoveRules.Air(v.X, dir, m.RunSpeed, m.AirCarrySpeed, m.AirAcceleration, m.AirDeceleration, m.AirDrag, Tick);
+                float g = m.Gravity;
                 if (jumping && tick == 0)
                 {
                     g = 0f; // the take-off tick moves at the whole take-off speed, as the pilgrim's (JumpState.Enter, after gravity)
                 }
-                else if (held && jumping && MathF.Abs(v.Y) < _m.ApexHangThreshold)
+                else if (held && jumping && MathF.Abs(v.Y) < m.ApexHangThreshold)
                 {
-                    g *= _m.ApexGravityMultiplier;
+                    g *= m.ApexGravityMultiplier;
                 }
                 else if (v.Y < 0f)
                 {
-                    g *= _m.FallGravityMultiplier;
+                    g *= m.FallGravityMultiplier;
                 }
 
-                v.Y = MathF.Max(v.Y - g * Tick, -_m.MaxFallSpeed);
+                v.Y = MathF.Max(v.Y - g * Tick, -m.MaxFallSpeed);
             }
 
             // Move X, then Y, stopping at faces.
             bool grips = _grip is not null && dashLeft == 0 && tick >= gripFrom;
             float pushX = v.X;
-            p.X = MoveAxis(p, v.X * Tick, horizontal: true, out bool hitX, out int solidX);
-            if (hitX && dashLeft == 0 && dir != 0 && MathF.Sign(pushX) == dir && airborne && LedgeAssist(p, dir, _solids[solidX]) is { } lifted)
+            p.X = _space.MoveAxis(p, v.X * Tick, horizontal: true, out bool hitX, out int solidX);
+            if (hitX && dashLeft == 0 && dir != 0 && MathF.Sign(pushX) == dir && airborne && _space.LedgeAssist(p, dir, _space.Solids[solidX]) is { } lifted)
             {
-                // Just short of a ledge's top: lifted onto it, keeping the way and the speed (Player.LedgeAssist).
                 p = lifted;
-                v = new Vector2(dir * TheDeep.LedgeAssist.Speed(pushX, _m.RunSpeed), 0f);
+                v = new Vector2(dir * TheDeep.LedgeAssist.Speed(pushX, m.RunSpeed), 0f);
                 hitX = false;
                 if (trace is not null)
                 {
@@ -789,21 +444,19 @@ public sealed class ReachPlanner
                 {
                     trace.Touched = true;
                 }
-                if (grips && dir != 0 && MathF.Sign(pushX) == dir && _metal.Contains(solidX))
+
+                if (grips && dir != 0 && MathF.Sign(pushX) == dir && _grip is not null && _grip.IsMetal(solidX))
                 {
-                    // Pushing into a metal wall: onto it. The trajectory goes on too, sliding down the wall (a pilgrim that lets the
-                    // stick go a moment doesn't grip).
-                    Box wall = _solids[solidX];
-                    grab(GripMath.OntoWall(p, _m.Height * 0.5f, dir > 0 ? wall.MinX : wall.MaxX, new Vector2(-dir, 0f)));
+                    Box wall = _space.Solids[solidX];
+                    grab(GripMath.OntoWall(p, m.Height * 0.5f, dir > 0 ? wall.MinX : wall.MaxX, new Vector2(-dir, 0f)));
                 }
             }
 
             float pushY = v.Y;
-            p.Y = MoveAxis(p, v.Y * Tick, horizontal: false, out bool hitY, out int solidY);
-            if (hitY && grips && pushY > 0f && _metal.Contains(solidY))
+            p.Y = _space.MoveAxis(p, v.Y * Tick, horizontal: false, out bool hitY, out int solidY);
+            if (hitY && grips && pushY > 0f && _grip is not null && _grip.IsMetal(solidY))
             {
-                // Rising into a metal ceiling: hanging under it; or not, bumping it (as above).
-                grab(GripMath.OntoCeiling(p, _solids[solidY].MinY));
+                grab(GripMath.OntoCeiling(p, _space.Solids[solidY].MinY));
             }
 
             if (!hitY || v.Y >= 0f)
@@ -812,26 +465,29 @@ public sealed class ReachPlanner
             }
 
             trace?.Path.Add(p);
-            Touch(p, triggers, reachedTriggers);
-            if (InHazard(p))
+            _space.Touch(p, triggers, reachedTriggers);
+            if (_space.InHazard(p))
             {
                 if (trace is not null)
                 {
                     trace.Burned = true;
                 }
+
                 return;
             }
 
             if (hitY && v.Y < 0f)
             {
                 // On a floor: a landing after a flight ends the trajectory; before take-off (walking to an edge) it goes on.
-                land(LedgeAt(p));
+                int landed = _space.LedgeAt(_ledges, p);
+                land(landed);
                 if (airborne || dir == 0 || hitX)
                 {
                     if (trace is not null)
                     {
-                        trace.Lands = LedgeAt(p);
+                        trace.Lands = landed;
                     }
+
                     return;
                 }
 
@@ -848,351 +504,6 @@ public sealed class ReachPlanner
         }
     }
 
-    /// <summary>
-    /// Ledge assist (<see cref="MoveLimits.LedgeAssist"/>): a body with its feet at <paramref name="p"/>, against the side of
-    /// <paramref name="wall"/> moving <paramref name="dir"/>, whose top is a little above the feet: the feet on the top, just past
-    /// the edge, if the body fits there; otherwise null.
-    /// </summary>
-    private Vector2? LedgeAssist(Vector2 p, int dir, Box wall)
-    {
-        float rise = wall.MaxY - p.Y;
-        if (_m.LedgeAssist <= 0f || rise <= 0f || rise > _m.LedgeAssist)
-        {
-            return null;
-        }
-
-        var lifted = new Vector2(p.X + dir * TheDeep.LedgeAssist.Reach, wall.MaxY + Skin);
-        Box body = Box.Around(lifted + new Vector2(0f, _m.Height * 0.5f), new Vector2(_m.Width, _m.Height));
-        return _solids.Any(s => s.Overlaps(body)) ? null : lifted;
-    }
-
-    /// <summary>One tick floating in the water; returns true once settled (on the float line, or wading on a floor).</summary>
-    private bool Swim(ref Vector2 p, ref Vector2 v, int dir, WaterHit wet, IReadOnlyList<Box> triggers, HashSet<int> reachedTriggers, Action<int> land)
-    {
-        (Box water, WaterLimits w) = wet;
-        v.X = WaterMotion.Horizontal(v.X, dir, w, Tick);
-        v.Y = WaterMotion.Vertical(v.Y, p.Y, water.MaxY, sunk: false, w, Tick);
-        p.X = MoveAxis(p, v.X * Tick, horizontal: true, out bool hitX, out _);
-        if (hitX)
-        {
-            v.X = 0f;
-        }
-
-        p.Y = MoveAxis(p, v.Y * Tick, horizontal: false, out bool hitY, out _);
-        Touch(p, triggers, reachedTriggers);
-        if (InHazard(p))
-        {
-            return true; // burned: the trajectory ends without a landing
-        }
-
-        float line = WaterMotion.FloatLine(water.MaxY, w);
-        if (hitY && v.Y < 0f && WaterMotion.CanJumpOut(p.Y, water.MaxY, w))
-        {
-            land(LedgeAt(p)); // wading: standing on a floor shallow enough to jump from
-            return true;
-        }
-
-        if (hitY)
-        {
-            v.Y = 0f;
-        }
-
-        if (MathF.Abs(p.Y - line) < 0.08f && MathF.Abs(v.Y) < 0.6f)
-        {
-            land(LedgeAt(p, swim: true));
-            return true;
-        }
-
-        return false;
-    }
-
-    /// <summary>Whether the body with its feet at <paramref name="p"/> touches a hazard.</summary>
-    private bool InHazard(Vector2 p)
-    {
-        if (_hazards.Count == 0)
-        {
-            return false;
-        }
-
-        Box body = BodyAt(p);
-        foreach (Box h in _hazards)
-        {
-            if (h.Overlaps(body))
-            {
-                return true;
-            }
-        }
-
-        return false;
-    }
-
-    /// <summary>The water the feet at <paramref name="p"/> are in, or null; of overlapping bodies (one water), the one whose surface is highest.</summary>
-    private WaterHit? WaterAt(Vector2 p)
-    {
-        if (_water is not { } water)
-        {
-            return null;
-        }
-
-        Box? hit = null;
-        foreach (Box w in water.Bodies)
-        {
-            if (p.X >= w.MinX && p.X <= w.MaxX && p.Y >= w.MinY && p.Y < w.MaxY && (hit is not { } h || w.MaxY > h.MaxY))
-            {
-                hit = w;
-            }
-        }
-
-        return hit is { } body ? new WaterHit(body, water.Limits) : null;
-    }
-
-    /// <summary>The Harpoon's numbers and the anchors it fires at.</summary>
-    private sealed record Harpoon(HarpoonLimits Limits, List<Vector2> Anchors);
-
-    /// <summary>The swimmable water bodies of a room, and the numbers a body moves by in them.</summary>
-    private sealed record Waters(WaterLimits Limits, List<Box> Bodies);
-
-    /// <summary>A body of water the feet are in, with the numbers it moves them by.</summary>
-    private readonly record struct WaterHit(Box Body, WaterLimits Limits);
-
-    /// <summary>Whether feet at <paramref name="p"/> are under water deeper than a jump out of it.</summary>
-    private bool Submerged(Vector2 p) => WaterAt(p) is { } w && !WaterMotion.CanJumpOut(p.Y, w.Body.MaxY, w.Limits);
-
-    private void Touch(Vector2 p, IReadOnlyList<Box> triggers, HashSet<int> reached)
-    {
-        Box body = BodyAt(p);
-        for (int t = 0; t < triggers.Count; t++)
-        {
-            if (body.Overlaps(triggers[t]))
-            {
-                reached.Add(t);
-            }
-        }
-    }
-
-    private Box BodyAt(Vector2 feet) => new(feet.X - _m.Width * 0.5f, feet.Y, feet.X + _m.Width * 0.5f, feet.Y + _m.Height);
-
-    /// <summary>Moves the body along one axis by <paramref name="delta"/>, stopping against the first solid.</summary>
-    private float MoveAxis(Vector2 p, float delta, bool horizontal, out bool hit, out int hitSolid)
-    {
-        hit = false;
-        hitSolid = -1;
-        Box body = BodyAt(p);
-        float moved = delta;
-        List<int> near = _near ??= new List<int>();
-        const float margin = 0.01f; // past the skin either side: every solid the tests below could stop at
-        _grid.Near(horizontal
-            ? new Box(MathF.Min(body.MinX, body.MinX + delta) - margin, body.MinY - margin, MathF.Max(body.MaxX, body.MaxX + delta) + margin, body.MaxY + margin)
-            : new Box(body.MinX - margin, MathF.Min(body.MinY, body.MinY + delta) - margin, body.MaxX + margin, MathF.Max(body.MaxY, body.MaxY + delta) + margin),
-            near);
-        foreach (int i in near)
-        {
-            Box s = _solids[i];
-            if (horizontal)
-            {
-                if (body.MinY >= s.MaxY - Skin || body.MaxY <= s.MinY + Skin)
-                {
-                    continue;
-                }
-
-                if (delta > 0f && body.MaxX <= s.MinX + Skin && body.MaxX + moved > s.MinX)
-                {
-                    moved = s.MinX - body.MaxX - Skin;
-                    hit = true;
-                    hitSolid = i;
-                }
-                else if (delta < 0f && body.MinX >= s.MaxX - Skin && body.MinX + moved < s.MaxX)
-                {
-                    moved = s.MaxX - body.MinX + Skin;
-                    hit = true;
-                    hitSolid = i;
-                }
-            }
-            else
-            {
-                if (body.MinX >= s.MaxX - Skin || body.MaxX <= s.MinX + Skin)
-                {
-                    continue;
-                }
-
-                if (delta > 0f && body.MaxY <= s.MinY + Skin && body.MaxY + moved > s.MinY)
-                {
-                    moved = s.MinY - body.MaxY - Skin;
-                    hit = true;
-                    hitSolid = i;
-                }
-                else if (delta < 0f && body.MinY >= s.MaxY - Skin && body.MinY + moved < s.MaxY)
-                {
-                    moved = s.MaxY - body.MinY + Skin;
-                    hit = true;
-                    hitSolid = i;
-                }
-            }
-        }
-
-        return (horizontal ? p.X : p.Y) + moved;
-    }
-
     /// <summary>Whether another floor than <paramref name="l"/>, at its height, holds feet at <paramref name="x"/>.</summary>
     private bool GoesOn(Ledge l, float x) => _ledges.Any(o => o != l && !o.Swim && MathF.Abs(o.Y - l.Y) < 0.01f && x >= o.MinX && x <= o.MaxX);
-
-    /// <summary>How far past half the body's width a landing's feet may be beyond a ledge's end and still be on it, meters.</summary>
-    private const float LandingMargin = 0.05f;
-
-    /// <summary>
-    /// The ledge (or with <paramref name="swim"/>, the float line) whose range holds feet at <paramref name="p"/>, or −1: feet within half
-    /// the body's width (and <see cref="LandingMargin"/>) past an end still stand on it, the body's edge over the floor.
-    /// </summary>
-    private int LedgeAt(Vector2 p, bool swim = false)
-    {
-        float tolerance = swim ? 0.1f : 0.01f;
-        float overhang = _m.Width * 0.5f + LandingMargin;
-        for (int i = 0; i < _ledges.Count; i++)
-        {
-            Ledge l = _ledges[i];
-            if (l.Swim == swim && MathF.Abs(l.Y - p.Y) < tolerance && p.X >= l.MinX - overhang && p.X <= l.MaxX + overhang)
-            {
-                return i;
-            }
-        }
-
-        return -1;
-    }
-
-    /// <summary>
-    /// The standing ranges on every solid's top: where the feet can be with the body clear of other solids
-    /// (split where a solid sits on top or overhangs within a body's height).
-    /// </summary>
-    private List<Ledge> FindLedges()
-    {
-        var ledges = new List<Ledge>();
-        foreach (Box s in _solids)
-        {
-            foreach ((float from, float to) in Clear(s.MinX, s.MaxX, s.MaxY))
-            {
-                ledges.Add(new Ledge(s.MaxY, from, to));
-            }
-        }
-
-        return ledges;
-    }
-
-    /// <summary>Each water's float line, where a floating body's feet ride: split where solids cut through the body.</summary>
-    private List<Ledge> FindSwimLedges()
-    {
-        var ledges = new List<Ledge>();
-        if (_water is not { } wet)
-        {
-            return ledges;
-        }
-
-        foreach (Box water in wet.Bodies)
-        {
-            float y = WaterMotion.FloatLine(water.MaxY, wet.Limits);
-            ledges.AddRange(Clear(water.MinX, water.MaxX, y).Select(f => new Ledge(y, f.From, f.To, Swim: true)));
-        }
-
-        return ledges;
-    }
-
-    /// <summary>
-    /// The stretches of [<paramref name="from"/>, <paramref name="to"/>] where feet at height <paramref name="y"/> keep the body clear
-    /// of every solid and hazard, wider than 5 cm.
-    /// </summary>
-    private IEnumerable<(float From, float To)> Clear(float from, float to, float y)
-    {
-        float half = _m.Width * 0.5f;
-        var body = new Box(from - half, y + Skin, to + half, y + _m.Height);
-        IEnumerable<(float, float)> blocked = _solids.Concat(_hazards).Where(o => o.Overlaps(body)).Select(o => (o.MinX - half, o.MaxX + half));
-        return Spans.Gaps(blocked, from, to).Where(f => f.To - f.From > 0.05f);
-    }
-
-    /// <summary>
-    /// With Ballast: the feet positions under each water's float line where the body fits, on a <see cref="Cell"/> grid, grouped
-    /// into the parts connected through the water (the body sinks, rises and swims anywhere inside one).
-    /// </summary>
-    private void FindWaterParts()
-    {
-        if (_water is not { } wet)
-        {
-            return;
-        }
-
-        foreach (Box water in wet.Bodies)
-        {
-            float top = WaterMotion.FloatLine(water.MaxY, wet.Limits);
-            for (int ix = (int)MathF.Ceiling(water.MinX / Cell); ix * Cell <= water.MaxX; ix++)
-            {
-                for (int iy = (int)MathF.Ceiling(water.MinY / Cell); iy * Cell <= top + 0.001f; iy++)
-                {
-                    Box body = BodyAt(new Vector2(ix * Cell, iy * Cell));
-                    if (!_solids.Any(s => s.Overlaps(body)) && !_hazards.Any(h => h.Overlaps(body)))
-                    {
-                        _cellPart[(ix, iy)] = -1;
-                    }
-                }
-            }
-        }
-
-        foreach ((int, int) start in _cellPart.Keys.ToList())
-        {
-            if (_cellPart[start] >= 0)
-            {
-                continue;
-            }
-
-            var cells = new List<Vector2>();
-            var open = new Queue<(int X, int Y)>();
-            _cellPart[start] = _parts.Count;
-            open.Enqueue(start);
-            while (open.Count > 0)
-            {
-                (int x, int y) = open.Dequeue();
-                cells.Add(new Vector2(x * Cell, y * Cell));
-                foreach ((int, int) n in new[] { (x + 1, y), (x - 1, y), (x, y + 1), (x, y - 1) })
-                {
-                    if (_cellPart.TryGetValue(n, out int part) && part < 0)
-                    {
-                        _cellPart[n] = _parts.Count;
-                        open.Enqueue(n);
-                    }
-                }
-            }
-
-            // The float lines over this part: a floating body rests there too.
-            foreach (Ledge l in _ledges.Where(l => l.Swim))
-            {
-                for (float x = l.MinX; x <= l.MaxX + 0.001f; x += Cell)
-                {
-                    if (cells.Any(c => MathF.Abs(c.X - x) < Cell && c.Y <= l.Y && l.Y - c.Y < Cell * 1.5f))
-                    {
-                        cells.Add(new Vector2(MathF.Min(x, l.MaxX), l.Y));
-                    }
-                }
-            }
-
-            _parts.Add(cells);
-        }
-    }
-
-    /// <summary>The water part holding (or nearest to) feet at <paramref name="p"/>, or −1.</summary>
-    private int PartNear(Vector2 p)
-    {
-        int cx = (int)MathF.Round(p.X / Cell), cy = (int)MathF.Round(p.Y / Cell);
-        for (int r = 0; r <= 4; r++)
-        {
-            for (int dx = -r; dx <= r; dx++)
-            {
-                for (int dy = -r; dy <= r; dy++)
-                {
-                    if (_cellPart.TryGetValue((cx + dx, cy + dy), out int part) && part >= 0)
-                    {
-                        return part;
-                    }
-                }
-            }
-        }
-
-        return -1;
-    }
 }
