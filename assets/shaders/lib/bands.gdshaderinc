@@ -1,8 +1,8 @@
 // The drawn look's light for the world (ToonLook): a light() that paints each light in a few flat steps instead of smooth
-// shading, as android_toon.gdshader paints the pilgrim, so the place and the figure are lit by the same hand. A face's turn
-// to the light is rounded to look_band_steps steps with crisp edges between them, so each face takes one flat value and the
-// frame keeps its brightness; the lamp's falloff and the shadow then dim it as they would (a step on the falloff sliced
-// flat faces in two); a face turned to any light at all keeps at least look_band_shade of it; one hard highlight on smooth finishes.
+// shading, as android_toon.gdshader paints the pilgrim, so the place and the figure are lit by the same hand. The light a
+// face takes (its turn to the light, the lamp's falloff, the shadow: what the smooth look would give it) is rounded to
+// look_band_steps steps with crisp edges between them, so the frame keeps its brightness while a lamp throws rings of flat
+// light and a shadow ends on a line; a face any light reaches keeps at least look_band_shade of it; one hard highlight on smooth finishes.
 // Global uniforms (project.godot [shader_globals]), set by ToonLook.
 // Never written into a shader's file: ToonLook appends this include to a twin of each world shader it bands (a shader with
 // no light() of its own), so the plain look is untouched. Each term is a smooth step of the light's own values: nothing is
@@ -33,11 +33,9 @@ float look_band(float amount) {
 }
 
 void light() {
-	float turn = clamp(dot(NORMAL, LIGHT), 0.0, 1.0);
-	float amount = turn * ATTENUATION;
-	// Only the face's turn to the light is stepped, so each face takes one flat value; the lamp's falloff and the shadow
-	// stay as they are, so no step edge ever slices a flat face in two where a lamp's reach fades across it.
-	float banded = max(look_band(turn), look_band_shade * smoothstep(0.005, 0.02, turn)) * ATTENUATION;
+	float amount = clamp(dot(NORMAL, LIGHT), 0.0, 1.0) * ATTENUATION;
+	float reached = smoothstep(0.005, 0.02, amount);
+	float banded = max(look_band(amount), look_band_shade * reached);
 	// Or drawn in the look's marks (lib/look): the light's amount read as dots or hatching laid on the surface.
 	float drawn = look_mark > 0.0 ? mix(banded, look_marked(amount, look_uv, look_px, 1.0, 1.0), look_mark) : banded;
 	DIFFUSE_LIGHT += LIGHT_COLOR / PI * drawn;
