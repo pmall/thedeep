@@ -19,6 +19,12 @@
 [ext_resource type="Shader" path="res://assets/shaders/android.gdshader" id="18_android"]
 [ext_resource type="Shader" path="res://assets/shaders/android_toon.gdshader" id="19_android_toon"]
 [ext_resource type="Material" path="res://assets/materials/looks/ink.tres" id="20_ink"]
+[ext_resource type="Shader" path="res://assets/shaders/rock.gdshader" id="30_band_rock"]
+[ext_resource type="Shader" path="res://assets/shaders/metal.gdshader" id="31_band_metal"]
+[ext_resource type="Shader" path="res://assets/shaders/architecture.gdshader" id="32_band_architecture"]
+[ext_resource type="Shader" path="res://assets/shaders/biome_surface.gdshader" id="33_band_biome_surface"]
+[ext_resource type="Shader" path="res://assets/shaders/ice.gdshader" id="34_band_ice"]
+[ext_resource type="Shader" path="res://assets/shaders/machine.gdshader" id="35_band_machine"]
 
 ; Sized and placed over the feet from the tuning's body (Player._Ready).
 [sub_resource type="CapsuleShape3D" id="CapsuleShape3D_body"]
@@ -145,7 +151,7 @@ script = ExtResource("8_trail")
 script = ExtResource("13_attack")
 Player = NodePath("..")
 
-; The cartoon look, off unless switched on (F9 in debug builds, `--toon` at launch): a layer over the body, removable whole.
+; The cartoon look, off unless switched on (F9 cycles its presets in debug builds, `--look <name>` at launch): a layer over the body, removable whole.
 [node name="Look" type="Node" parent="Visual" node_paths=PackedStringArray("Figure", "Poses")]
 script = ExtResource("17_toon")
 Figure = NodePath("..")
@@ -153,3 +159,4 @@ Poses = NodePath("..")
 From = ExtResource("18_android")
 To = ExtResource("19_android_toon")
 Ink = ExtResource("20_ink")
+Banded = [ExtResource("30_band_rock"), ExtResource("31_band_metal"), ExtResource("32_band_architecture"), ExtResource("33_band_biome_surface"), ExtResource("34_band_ice"), ExtResource("35_band_machine")]

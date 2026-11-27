@@ -29,7 +29,7 @@ public partial class Main : Node3D
     [Export] public HintLine Hint { get; set; } = null!;
     [Export] public AnchorPointer Pointer { get; set; } = null!;
 
-    /// <summary>The pilgrim's cartoon look, switched on by `--toon`, or none.</summary>
+    /// <summary>The drawn look, chosen by `--look &lt;name&gt;`, or none; it grades every room loaded.</summary>
     [Export] public ToonLook? Look { get; set; }
 
     [Export] public MapScreen MapScreen { get; set; } = null!;
@@ -155,9 +155,16 @@ public partial class Main : Node3D
             room.ApplyBiome(biome);
         }
 
-        if (_options.Toon && Look is not null)
+        if (Look is not null)
         {
-            Look.On = true;
+            if (_options.Look is { } lookName && !Look.Choose(lookName))
+            {
+                Refuse($"--look {lookName}: no look of that name in {LookPreset.Folder} ({string.Join(", ", Look.Presets.Select(p => p.Name))})");
+                return;
+            }
+
+            Look.StyleRoom(room);
+            World.RoomLoaded += Look.StyleRoom;
         }
 
         if (_options.Shot)

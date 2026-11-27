@@ -1,0 +1,36 @@
+[gd_resource type="Resource" script_class="LookPreset" format=3]
+; A woodcut: thick ink, values pushed hard apart so the darks pool into one black the pilgrim is cut from, a crisp rim of light along it, the accent kept.
+
+[ext_resource type="Script" path="res://scripts/look/LookPreset.cs" id="1_look"]
+
+[resource]
+script = ExtResource("1_look")
+WorldInk = 1.0
+InkPixels = 3.0
+InkColor = Color(0.012, 0.008, 0.022, 1)
+Grain = 0.4
+Wash = 0.4
+Drips = 0.3
+Hatch = 0.7
+FigureInk = 1.0
+PoseHoldSeconds = 0.0833
+Threshold = 0.2
+Softness = 0.04
+Shade = 0.3
+Gloss = 0.0
+Rim = 1.0
+Lift = 0.04
+Dust = 0.0
+Chips = 0.0
+Edge = 0.0
+InkBody = 0.6
+ToneAmount = 0.7
+ToneShadow = Color(0.04, 0.03, 0.07, 1)
+ToneMid = Color(0.36, 0.36, 0.46, 1)
+ToneLight = Color(0.9, 0.9, 0.95, 1)
+ToneKeep = 1.0
+ToneContrast = 1.6
+WorldBands = true
+BandSoftness = 0.1
+BandShade = 0.15
+BandGloss = 0.0

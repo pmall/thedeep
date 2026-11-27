@@ -257,7 +257,7 @@ public partial class BiomeProfile : Resource
         environment.AdjustmentBrightness = Brightness;
         environment.AdjustmentContrast = Contrast;
         environment.AdjustmentSaturation = Saturation;
-        environment.AdjustmentColorCorrection = Lift == Colors.Black && Gain == Colors.White ? null : GradeLookup();
+        Grade(environment);
         environment.GlowIntensity = GlowIntensity;
 
         keyLight.LightColor = KeyColor;
@@ -279,6 +279,11 @@ public partial class BiomeProfile : Resource
             glyphLight.LightColor = GlyphLightColor;
         }
     }
+
+    /// <summary>Sets the profile's own lift and gain as the environment's color correction (a look's grade replaces it:
+    /// <see cref="ToonLook"/>).</summary>
+    public void Grade(Environment environment) =>
+        environment.AdjustmentColorCorrection = Lift == Colors.Black && Gain == Colors.White ? null : GradeLookup();
 
     /// <summary>
     /// Places the depth fog behind the play plane for a camera <paramref name="cameraDistance"/> meters in front of it

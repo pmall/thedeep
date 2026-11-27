@@ -1,0 +1,36 @@
+[gd_resource type="Resource" script_class="LookPreset" format=3]
+; A risograph print: the frame in two inks, indigo and violet on warm paper, grainy, the pilgrim printed in the indigo with a few scratched lights.
+
+[ext_resource type="Script" path="res://scripts/look/LookPreset.cs" id="1_look"]
+
+[resource]
+script = ExtResource("1_look")
+WorldInk = 0.9
+InkPixels = 1.5
+InkColor = Color(0.012, 0.008, 0.06, 1)
+Grain = 1.0
+Wash = 0.8
+Drips = 0.6
+Hatch = 1.0
+FigureInk = 0.8
+PoseHoldSeconds = 0.0833
+Shade = 0.35
+Gloss = 0.05
+Rim = 0.5
+Lift = 0.05
+Dust = 0.5
+Chips = 0.008
+Edge = 0.0
+Scratch = 0.6
+InkBody = 1.0
+ToneAmount = 0.85
+ToneShadow = Color(0.12, 0.1, 0.3, 1)
+ToneMid = Color(0.45, 0.36, 0.6, 1)
+ToneLight = Color(0.97, 0.93, 0.88, 1)
+ToneKeep = 0.9
+ToneContrast = 1.25
+WorldBands = true
+BandSoftness = 0.1
+BandShade = 0.15
+BandGloss = 0.15
+Softness = 0.06

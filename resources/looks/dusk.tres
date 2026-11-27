@@ -1,0 +1,36 @@
+[gd_resource type="Resource" script_class="LookPreset" format=3]
+; Dusk: the frame split between violet shadows and cream lights, the world lit in the pilgrim's bands, the pilgrim a violet charcoal made of the shadows' ink.
+
+[ext_resource type="Script" path="res://scripts/look/LookPreset.cs" id="1_look"]
+
+[resource]
+script = ExtResource("1_look")
+WorldBands = true
+BandSoftness = 0.1
+BandShade = 0.15
+BandGloss = 0.15
+Softness = 0.1
+Shade = 0.4
+Threshold = 0.1
+WorldInk = 0.9
+InkPixels = 1.8
+InkColor = Color(0.03, 0.008, 0.05, 1)
+Grain = 0.8
+Wash = 0.8
+Drips = 0.6
+Hatch = 0.8
+FigureInk = 0.8
+PoseHoldSeconds = 0.0833
+Gloss = 0.05
+Rim = 0.6
+Lift = 0.08
+Dust = 0.6
+Chips = 0.008
+Edge = 0.0
+InkBody = 0.8
+ToneAmount = 0.6
+ToneShadow = Color(0.12, 0.06, 0.2, 1)
+ToneMid = Color(0.5, 0.4, 0.52, 1)
+ToneLight = Color(1, 0.92, 0.78, 1)
+ToneKeep = 0.9
+ToneContrast = 1.2

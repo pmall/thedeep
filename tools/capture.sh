@@ -11,7 +11,7 @@
 #   tools/capture.sh [label] --biome NAME    render with resources/biomes/NAME.tres instead of each room's own
 #   tools/capture.sh [label] --rooms "A B"   render only these rooms, quoted as one argument (quick looks while building a room)
 #   tools/capture.sh [label] --world NAME    render worlds/NAME's rooms instead (all of them, or --rooms of them): --world sequel
-#   tools/capture.sh [label] --toon          render in the drawn look (ToonLook, as `--toon` in the game)
+#   tools/capture.sh [label] --look NAME     render in the drawn look NAME (resources/looks/NAME.tres, as `--look` in the game)
 #   tools/capture.sh --compare BEFORE AFTER  only build the sheet for two existing runs
 #
 # Opens a small window: about 8 minutes for every room, under a minute for one with --rooms (rendering needs a GPU). See instructions/testing.md#lookdev.
@@ -42,11 +42,11 @@ if [ "${1:-}" = "--compare" ]; then
     exit 0
 fi
 
-USAGE='usage: tools/capture.sh [label] [--against DIR] [--biome NAME] [--rooms "A B"] [--world NAME] [--toon] (several rooms in one quoted argument)'
+USAGE='usage: tools/capture.sh [label] [--against DIR] [--biome NAME] [--rooms "A B"] [--world NAME] [--look NAME] (several rooms in one quoted argument)'
 label="" against="" biome_args=() world_args=() look_args=() only=""
 while [ $# -gt 0 ]; do
     case "$1" in
-        --against | --biome | --rooms | --world)
+        --against | --biome | --rooms | --world | --look)
             [ $# -ge 2 ] && [ -n "$2" ] && [ "${2#-}" = "$2" ] || fail "$1 needs a value; $USAGE"
             ;;&
         --against)
@@ -65,9 +65,9 @@ while [ $# -gt 0 ]; do
             world_args=(--world "$2")
             shift 2
             ;;
-        --toon)
-            look_args=(--toon)
-            shift
+        --look)
+            look_args=(--look "$2")
+            shift 2
             ;;
         -*) fail "unknown option $1; $USAGE" ;;
         *)
@@ -91,7 +91,7 @@ touch "$ROOT/.gdignore" # Godot must not import the captures
     echo "label   ${label:-none}"
     echo "world   ${world_args[1]:-prototype}"
     echo "biome   ${biome_args[1]:-room default}"
-    echo "look    ${look_args[0]:-plain}"
+    echo "look    ${look_args[1]:-plain}"
     echo "commit  $(git rev-parse --short HEAD 2>/dev/null || echo unknown)$(git diff --quiet HEAD 2>/dev/null || echo ' + uncommitted changes')"
 } >"$out/run.txt"
 

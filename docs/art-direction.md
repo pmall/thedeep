@@ -10,7 +10,7 @@ Read this before any visual work. Every room is built to this direction. How a m
 - **White plus one accent.** The base is pale blue-white and cool grey. The accent is a saturated **purple/magenta**, used sparingly, roughly 10–15% of the screen at most.
 - **The palette tracks depth:** pale and misty near the surface, the accent and light getting warmer with depth, down to dark amber and ember near the core. Machine colors follow it (`docs/art-direction.md#machine-palette`).
 - Environments: ruined pilgrim machinery, drowned halls of ancient servers, industrial cathedrals. The setting decides the props, not the references.
-- **The frame is a smooth vignette** (owner): no dirt, texture or drawn marks on the screen's edges, in any look.
+- **Nothing on the screen's edges** (owner): no vignette, dirt, texture or drawn marks there in the drawn look (`ToonLook` clears the biome's vignette); the plain look keeps its smooth vignette until the drawn look replaces it.
 - **Three depth layers:** a blurred foreground, the play plane, and a hazy backdrop with parallax (the camera: `docs/architecture.md#tech-stack`).
 - Gameplay readability first: the player, hazards and grippable **metal** versus non-grippable **rock** must read at a glance in every lighting setup.
 

@@ -3,7 +3,7 @@
 //   look_wash   watercolor blooms: broad stains of the biome's silt, each with the darker tide line its pigment dried to
 //   look_drips  streaks run down a side face from its top edge, each its own length
 //   look_hatch  ink hatching where a surface is dark or dirty: its underside, its foot, its drips and stains, its hollows;
-//               denser and doubled the darker it is, as an etcher shades
+//               denser and doubled the darker it is, as an etcher shades; past 1 it spreads over the whole surface
 // All of it is fixed to the surface and in meters, each line several pixels wide at the play camera and faded out before
 // it gets finer (docs/art-direction.md#stable-image).
 // Needs lib/noise, lib/palette and lib/look; look_dirt reads a Surface (lib/surface). Usage, in fragment() after the finish and before look_drawn:
@@ -119,10 +119,12 @@ LookDirt look_dirt_at(vec3 albedo, vec3 p, vec3 n, vec2 uv, vec2 under_top, floa
 	float tall = under_top.y >= 0.0 ? smoothstep(1.4, 1.6, height + under_top.y) : 1.0;
 	float foot = abs(n.y) < 0.5 ? (1.0 - smoothstep(0.0, 0.6, height)) * tall : 0.0;
 	float dark = max(max(below * 0.8, foot * 0.7), max(drip * 0.5, cavity));
+	// Past 1, the hatching spreads from the dark places over the whole surface, as an etcher tones a plate.
+	dark += max(look_hatch - 1.0, 0.0) * 0.45;
 	dark = clamp(dark + (value_noise3(p * 1.7) - 0.5) * 0.5, 0.0, 1.0);
 	float hatch = look_hatch_lines(uv, 0.785, LOOK_HATCH_SPACING, dark * 0.4, pixel);
 	hatch = max(hatch, look_hatch_lines(uv, -0.785, LOOK_HATCH_SPACING, (dark - 0.6) * 0.8, pixel));
-	albedo = mix(albedo, look_ink_color.rgb, hatch * look_hatch * 0.75);
+	albedo = mix(albedo, look_ink_color.rgb, hatch * min(look_hatch, 1.0) * 0.75);
 
 	d.albedo = mix(clean, albedo, LOOK_DIRT_SHARE);
 	d.matte = max(stain * look_wash * 0.5, drip * look_drips * 0.6) * LOOK_DIRT_SHARE;

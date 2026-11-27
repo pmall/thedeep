@@ -211,6 +211,22 @@ look_hatch={
 "type": "float",
 "value": 0.0
 }
+look_band_steps={
+"type": "float",
+"value": 3.0
+}
+look_band_softness={
+"type": "float",
+"value": 0.1
+}
+look_band_shade={
+"type": "float",
+"value": 0.4
+}
+look_band_gloss={
+"type": "float",
+"value": 0.0
+}
 
 biome_rock={
 "type": "color",

@@ -30,7 +30,7 @@ A check that crashes in `GodotObject.Finalize` (`gchandle.is_released`, "Handle 
 | Start in a room, with the abilities and items a route there needs | `godot --path . -- --room <Name>` (`--abilities all`, `none` or `MagGrip,Drill` says otherwise; `--items SacristyKey` adds items) |
 | Another world | `godot --path . -- --world <name>` (`worlds/<name>/world.tres`; every check takes it too): `--world sequel --new` plays the sequel world |
 | Start with another biome | `godot --path . -- --biome volcanic` |
-| The pilgrim in its cartoon look (`ToonLook`; F9 switches it in debug builds) | `godot --path . -- --room Nave --toon` |
+| In a drawn look (`ToonLook`, a preset of `resources/looks/`; F9 cycles them in debug builds) | `godot --path . -- --room Nave --look ink` |
 | One screenshot of a room's start, then quit (to captures/, as F12) | `godot --path . -- --room Undercroft --shot` |
 | Re-bake the materials' texture sets after changing a pattern (`SurfaceBake`), then import them | `godot --headless --path . -- --bake-surfaces && godot --headless --import` |
 | Print the map (built rooms and the network: ways, placements, orders) and draw it | `tools/map.sh` |
@@ -38,7 +38,7 @@ A check that crashes in `GodotObject.Finalize` (`gchandle.is_released`, "Handle 
 | The ground rules' findings per room, each failing the room check (small steps, a solid in a seam frame's column, meshes across the play plane (a spinner's over its whole turn), pockets under low ceilings, faces in one plane the camera sees) | `godot --headless --path . -- --room MechanicsLab --validate-rooms 2>&1 \| grep GROUND` (`--world sequel --room Strongroom` for the sequel) |
 | Every room's ground routes as the reach planner flies them, played through the real inputs; each must land where the planner said along its path | `godot --headless --path . --fixed-fps 60 --quit-after 20000 -- --route-check 2>&1 \| grep ROUTE` (`--world sequel` for the sequel; `--shard K/N` plays every Nth room) |
 | Every slag body and heat column walked into, plated and not (burned once, set back on rock, in control; plated, through heat unharmed), each fault an error | `godot --headless --path . --fixed-fps 60 --quit-after 20000 -- --burn-probe 2>&1 \| grep BURN` (`--world sequel` for the sequel) |
-| Look-dev captures and frame times | `tools/capture.sh [label]` (`instructions/testing.md#lookdev`; `--world sequel` for another world's rooms, `--toon` in the drawn look) |
+| Look-dev captures and frame times | `tools/capture.sh [label]` (`instructions/testing.md#lookdev`; `--world sequel` for another world's rooms, `--look <name>` in a drawn look) |
 | UI screens to PNGs (windowed) | `godot --path . --disable-vsync -- --room Undercroft --ui-shot <dir>` (`--hops 18` shows the map after more rooms) |
 | Windowed capture check (needs a GPU; after touching capture code) | `godot --path . -- --capture-test` (add `--disable-vsync` before `--` for the raw cost) |
 

@@ -23,6 +23,14 @@ public static class ShaderGlobals
     public static readonly StringName LookDrips = "look_drips";
     /// <summary>How strong the drawn look's ink hatching is, 0–1 (<see cref="ToonLook"/>, lib/dirt).</summary>
     public static readonly StringName LookHatch = "look_hatch";
+    /// <summary>How many steps of light the world is painted in under the drawn look's bands (<see cref="ToonLook"/>, lib/bands).</summary>
+    public static readonly StringName LookBandSteps = "look_band_steps";
+    /// <summary>How soft the world's band edges are (<see cref="ToonLook"/>, lib/bands).</summary>
+    public static readonly StringName LookBandSoftness = "look_band_softness";
+    /// <summary>The least light a face any light reaches takes (<see cref="ToonLook"/>, lib/bands).</summary>
+    public static readonly StringName LookBandShade = "look_band_shade";
+    /// <summary>The world's hard highlight under the bands (<see cref="ToonLook"/>, lib/bands).</summary>
+    public static readonly StringName LookBandGloss = "look_band_gloss";
     /// <summary>The biome's rock color (<see cref="BiomeProfile.Rock"/>).</summary>
     public static readonly StringName BiomeRock = "biome_rock";
     /// <summary>The biome's metal color (<see cref="BiomeProfile.Metal"/>).</summary>

@@ -51,7 +51,7 @@ public static class InputActions
     public static readonly StringName DebugToggleHeatPlating = "debug_toggle_heat_plating";
     /// <summary>Dresses the room in the next layer's biome.</summary>
     public static readonly StringName DebugCycleBiome = "debug_cycle_biome";
-    /// <summary>Switches the pilgrim's cartoon look on or off (<see cref="ToonLook"/>).</summary>
+    /// <summary>Cycles the drawn looks (<see cref="ToonLook"/>).</summary>
     public static readonly StringName DebugToggleLook = "debug_toggle_look";
     /// <summary>Shows or hides the debug readout (<see cref="DebugHud"/>).</summary>
     public static readonly StringName DebugToggleHud = "debug_toggle_hud";

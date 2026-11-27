@@ -73,6 +73,13 @@ uniform float toon_grain : hint_range(0.0, 0.5) = 0.14;
 uniform float toon_grain_size : hint_range(0.005, 0.2) = 0.035;
 // How bright the drawn rim is, as a share of the smooth look's edge light.
 uniform float toon_edge : hint_range(0.0, 1.0) = 0.1;
+// How strong the pale lines scratched across the parts on their lit side are, as on a scratchboard: the world's hatching
+// drawn inverted, light out of the black (0: none). Drawn in android_toon.gdshader's light().
+uniform float toon_scratch : hint_range(0.0, 2.0) = 0.0;
+// How far the black takes the drawn look's ink color, so the figure is made of the ink the world's lines are drawn in.
+uniform float toon_ink_body : hint_range(0.0, 1.0) = 0.0;
+// Meters per pixel on the part, for the scratches' spacing (fragment() writes it, light() reads it).
+varying float toon_pixel;
 
 float toon_noise(vec2 uv) {
 	return value_noise2(uv / toon_grain_size) - 0.5;
@@ -140,7 +147,9 @@ void fragment() {
 
 #ifdef ANDROID_TOON
 	float dark_part = 1.0 - smoothstep(0.05, 0.2, dot(albedo, vec3(0.2126, 0.7152, 0.0722)));
-	albedo += toon_lift * dark_part * (1.0 - trim);
+	vec3 ink_hue = look_ink_color.rgb / max(max(look_ink_color.r, max(look_ink_color.g, look_ink_color.b)), 1e-4);
+	albedo = mix(albedo, look_ink_color.rgb, toon_ink_body * dark_part * (1.0 - trim));
+	albedo += toon_lift * dark_part * (1.0 - trim) * mix(vec3(1.0), ink_hue, toon_ink_body);
 	vec3 silt = srgb_to_linear(biome_silt.rgb);
 	float dusted = toon_dust * look_wash * dark_part * (1.0 - trim);
 	// Dust gathers where a part meets the next (its ends and seams), ragged, with the darker tide line its edge dried to;
@@ -193,5 +202,6 @@ void fragment() {
 	CLEARCOAT = 0.0;
 	toon_uv = f.uv;
 	toon_rough = rough;
+	toon_pixel = look_pixel(f.uv);
 #endif
 }

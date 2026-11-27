@@ -1,0 +1,7 @@
+[gd_resource type="Resource" script_class="LookPreset" format=3]
+; The drawn look as first built: violet-black ink on the world's edges, its dirt, the pilgrim in soft bands on twos. The baseline the others are judged against.
+
+[ext_resource type="Script" path="res://scripts/look/LookPreset.cs" id="1_look"]
+
+[resource]
+script = ExtResource("1_look")

@@ -35,8 +35,8 @@ public sealed record LaunchOptions
     /// <summary>`--shot`: one screenshot after a moment of play, then quit.</summary>
     public bool Shot { get; init; }
 
-    /// <summary>`--toon`: the pilgrim starts in its cartoon look (ToonLook).</summary>
-    public bool Toon { get; init; }
+    /// <summary>The drawn look to start in (`--look`, a preset's name: ToonLook), or null for the plain one.</summary>
+    public string? Look { get; init; }
 
     /// <summary>`--shard K/N`: the Kth part (1-based) of N of a check's list; the whole list (1/1) when not given.</summary>
     public (int Index, int Count) Shard { get; init; } = (1, 1);
@@ -176,11 +176,11 @@ public sealed record LaunchOptions
             : null;
     }
 
-    private static readonly HashSet<string> Switches = new() { "--new", "--shot", "--toon", "--map-report", "--slack-report" };
+    private static readonly HashSet<string> Switches = new() { "--new", "--shot", "--map-report", "--slack-report" };
 
     private static readonly HashSet<string> ValueFlags = new()
     {
-        "--world", "--room", "--abilities", "--items", "--biome", "--save-name", "--shard", "--reach-report", "--perf", "--size", "--hops",
+        "--world", "--room", "--abilities", "--items", "--biome", "--look", "--save-name", "--shard", "--reach-report", "--perf", "--size", "--hops",
     };
 
     private static DriverFlag? Find(IReadOnlyList<DriverFlag> drivers, string flag)
@@ -205,8 +205,6 @@ public sealed record LaunchOptions
                 return options with { NewGame = true };
             case "--shot":
                 return options with { Shot = true };
-            case "--toon":
-                return options with { Toon = true };
             case "--map-report":
                 return options with { MapReport = true };
             case "--slack-report":
@@ -217,6 +215,8 @@ public sealed record LaunchOptions
                 return options with { Room = value };
             case "--biome":
                 return options with { Biome = value };
+            case "--look":
+                return options with { Look = value };
             case "--save-name":
                 return options with { SaveName = value };
             case "--reach-report":

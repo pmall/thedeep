@@ -1,0 +1,36 @@
+[gd_resource type="Resource" script_class="LookPreset" format=3]
+; Noir: black and pale paper only, the accent alone keeping its color; big black shapes the pilgrim moves through as one of them, no outline, read by its rim.
+
+[ext_resource type="Script" path="res://scripts/look/LookPreset.cs" id="1_look"]
+
+[resource]
+script = ExtResource("1_look")
+WorldInk = 1.0
+InkPixels = 2.0
+InkColor = Color(0.004, 0.003, 0.008, 1)
+Grain = 0.5
+Wash = 0.5
+Drips = 0.4
+Hatch = 0.8
+FigureInk = 0.0
+PoseHoldSeconds = 0.0833
+Threshold = 0.1
+Softness = 0.03
+Shade = 0.35
+Gloss = 0.0
+Rim = 1.6
+Lift = 0.06
+Dust = 0.0
+Chips = 0.0
+Edge = 0.0
+InkBody = 1.0
+ToneAmount = 1.0
+ToneShadow = Color(0.07, 0.06, 0.09, 1)
+ToneMid = Color(0.3, 0.3, 0.33, 1)
+ToneLight = Color(0.95, 0.94, 0.92, 1)
+ToneKeep = 1.0
+ToneContrast = 1.5
+WorldBands = true
+BandSoftness = 0.1
+BandShade = 0.15
+BandGloss = 0.0

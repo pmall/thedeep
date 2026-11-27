@@ -4,14 +4,14 @@ namespace TheDeep;
 
 /// <summary>
 /// Debug keys for playtesting: R / pad Back respawns, F1–F5 toggle each ability, F6 cycles the
-/// room's biome through the world's layers, F9 switches the pilgrim's cartoon look. Removed from release builds.
+/// room's biome through the world's layers, F9 cycles the drawn looks (<see cref="ToonLook"/>). Removed from release builds.
 /// </summary>
 public partial class DebugCheats : Node
 {
     [Export] public Player Player { get; set; } = null!;
     [Export] public World World { get; set; } = null!;
 
-    /// <summary>The pilgrim's cartoon look, switched by F9, or none.</summary>
+    /// <summary>The drawn look, cycled by F9, or none.</summary>
     [Export] public ToonLook? Look { get; set; }
 
     private static readonly (StringName Action, Ability Ability)[] Toggles =
@@ -42,8 +42,8 @@ public partial class DebugCheats : Node
 
         if (@event.IsActionPressed(InputActions.DebugToggleLook) && Look is not null)
         {
-            Look.Toggle();
-            GD.Print($"[debug] cartoon look: {(Look.On ? "on" : "off")}");
+            Look.Cycle();
+            GD.Print($"[debug] look: {Look.Current?.Name ?? "plain"}");
             GetViewport().SetInputAsHandled();
             return;
         }
@@ -53,6 +53,7 @@ public partial class DebugCheats : Node
         {
             int next = (System.Array.FindIndex(layers, l => l.Biome == World.Room.Biome) + 1) % layers.Length;
             World.Room.ApplyBiome(layers[next].Biome);
+            Look?.StyleRoom(World.Room);
             GD.Print($"[debug] biome: {layers[next].Biome.DisplayName}");
             GetViewport().SetInputAsHandled();
             return;

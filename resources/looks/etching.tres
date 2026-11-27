@@ -1,0 +1,36 @@
+[gd_resource type="Resource" script_class="LookPreset" format=3]
+; An etching: Prussian ink, hatching toning every surface, the pilgrim scratched out of its black in pale lines where the light falls (the world's hatching inverted), the frame printed on warm paper.
+
+[ext_resource type="Script" path="res://scripts/look/LookPreset.cs" id="1_look"]
+
+[resource]
+script = ExtResource("1_look")
+WorldInk = 1.0
+InkPixels = 2.0
+InkColor = Color(0.004, 0.009, 0.035, 1)
+Grain = 0.8
+Wash = 0.6
+Drips = 0.5
+Hatch = 1.6
+FigureInk = 1.0
+PoseHoldSeconds = 0.0833
+Shade = 0.3
+Gloss = 0.0
+Rim = 0.3
+Lift = 0.06
+Dust = 0.4
+Chips = 0.005
+Edge = 0.0
+Scratch = 0.6
+InkBody = 0.7
+ToneAmount = 0.45
+ToneShadow = Color(0.05, 0.06, 0.14, 1)
+ToneMid = Color(0.42, 0.45, 0.55, 1)
+ToneLight = Color(0.94, 0.92, 0.86, 1)
+ToneKeep = 0.85
+ToneContrast = 1.15
+WorldBands = true
+BandSoftness = 0.1
+BandShade = 0.15
+BandGloss = 0.15
+Softness = 0.06

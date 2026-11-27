@@ -1,0 +1,31 @@
+[gd_resource type="Resource" script_class="LookPreset" format=3]
+; A watercolor: fine soft ink, heavy stains and drips, warm paper lights and cool washed darks, the pilgrim a charcoal-blue body painted in soft bands, moving smoothly.
+
+[ext_resource type="Script" path="res://scripts/look/LookPreset.cs" id="1_look"]
+
+[resource]
+script = ExtResource("1_look")
+WorldInk = 0.5
+InkPixels = 1.0
+InkColor = Color(0.03, 0.02, 0.045, 1)
+Grain = 1.0
+Wash = 1.0
+Drips = 1.0
+Hatch = 0.3
+FigureInk = 0.6
+PoseHoldSeconds = 0.0
+Softness = 0.35
+Shade = 0.5
+Gloss = 0.1
+Rim = 0.4
+Lift = 0.12
+Dust = 1.0
+Chips = 0.012
+Edge = 0.0
+InkBody = 0.5
+ToneAmount = 0.3
+ToneShadow = Color(0.1, 0.12, 0.2, 1)
+ToneMid = Color(0.45, 0.48, 0.56, 1)
+ToneLight = Color(0.96, 0.93, 0.86, 1)
+ToneKeep = 0.9
+ToneContrast = 0.9
